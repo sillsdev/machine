@@ -55,7 +55,7 @@ namespace SIL.Machine
                 watch.Stop();
 
                 Out.WriteLine($"Execution time: {watch.Elapsed:c}");
-                Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainedSegmentCount}");
+                Out.WriteLine($"# of Segments Trained: {trainer.Stats.TrainSize}");
                 Out.WriteLine($"LM Perplexity: {trainer.Stats.Metrics["perplexity"]:0.0000}");
                 Out.WriteLine($"TM BLEU: {trainer.Stats.Metrics["bleu"] * 100:0.00}");
             }

@@ -26,7 +26,7 @@ namespace SIL.Machine.WebApi
             string url,
             string body,
             string contentType,
-            CancellationToken ct = default(CancellationToken)
+            CancellationToken cancellationToken = default
         )
         {
             HttpMethod httpMethod;
@@ -54,7 +54,7 @@ namespace SIL.Machine.WebApi
                   ? new StringContent(body, Encoding.UTF8)
                   : new StringContent(body, Encoding.UTF8, contentType);
             }
-            HttpResponseMessage response = await _client.SendAsync(request, ct);
+            HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
                 return new HttpResponse(false, (int)response.StatusCode);
 

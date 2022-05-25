@@ -29,13 +29,13 @@ namespace SIL.Machine.WebApi.Client
         public string BaseUrl => HttpClient.BaseUrl;
         public IHttpClient HttpClient { get; }
 
-        public async Task<EngineDto> GetEngineAsync(string engineId)
+        public async Task<TranslationEngineDto> GetEngineAsync(string engineId)
         {
             string url = $"translation/engines/{engineId}";
             HttpResponse response = await HttpClient.SendAsync(HttpRequestMethod.Get, url, null, null);
             if (!response.IsSuccess)
                 throw new HttpException("Error getting project.") { StatusCode = response.StatusCode };
-            return JsonConvert.DeserializeObject<EngineDto>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
         public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)

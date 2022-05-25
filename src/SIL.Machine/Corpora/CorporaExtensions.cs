@@ -9,6 +9,26 @@ namespace SIL.Machine.Corpora
 {
     public static class CorporaExtensions
     {
+        #region IEnumerable operations
+
+        public static IEnumerable<IReadOnlyList<T>> Batch<T>(this IEnumerable<T> items, int batchSize)
+        {
+            var batch = new List<T>();
+            foreach (T item in items)
+            {
+                batch.Add(item);
+                if (batch.Count == batchSize)
+                {
+                    yield return batch;
+                    batch = new List<T>();
+                }
+            }
+            if (batch.Count > 0)
+                yield return batch;
+        }
+
+        #endregion
+
         #region ICorpus operations
 
         public static (IEnumerable<(T, bool)>, int, int) InterleavedSplit<T>(
@@ -56,7 +76,8 @@ namespace SIL.Machine.Corpora
             return corpus.Transform(
                 row =>
                 {
-                    row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
+                    if (row.Segment.Count > 1)
+                        row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
                     return row;
                 }
             );
@@ -529,8 +550,10 @@ namespace SIL.Machine.Corpora
             return corpus.Transform(
                 row =>
                 {
-                    row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
-                    row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
+                    if (row.SourceSegment.Count > 0)
+                        row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
+                    if (row.TargetSegment.Count > 0)
+                        row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
                     return row;
                 }
             );
@@ -543,6 +566,136 @@ namespace SIL.Machine.Corpora
             var sourceTokenizer = new TSource();
             var targetTokenizer = new TTarget();
             return corpus.Tokenize(sourceTokenizer, targetTokenizer);
+        }
+
+        public static IParallelTextCorpus TokenizeSource(
+            this IParallelTextCorpus corpus,
+            ITokenizer<string, int, string> tokenizer
+        )
+        {
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.SourceSegment.Count > 0)
+                        row.SourceSegment = tokenizer.Tokenize(row.SourceText).ToArray();
+                    return row;
+                }
+            );
+        }
+
+        public static IParallelTextCorpus TokenizeSource<T>(this IParallelTextCorpus corpus)
+            where T : ITokenizer<string, int, string>, new()
+        {
+            var tokenizer = new T();
+            return corpus.TokenizeSource(tokenizer);
+        }
+
+        public static IParallelTextCorpus TokenizeTarget(
+            this IParallelTextCorpus corpus,
+            ITokenizer<string, int, string> tokenizer
+        )
+        {
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.TargetSegment.Count > 0)
+                        row.TargetSegment = tokenizer.Tokenize(row.TargetText).ToArray();
+                    return row;
+                }
+            );
+        }
+
+        public static IParallelTextCorpus TokenizeTarget<T>(this IParallelTextCorpus corpus)
+            where T : ITokenizer<string, int, string>, new()
+        {
+            var tokenizer = new T();
+            return corpus.TokenizeTarget(tokenizer);
+        }
+
+        public static IParallelTextCorpus Detokenize(
+            this IParallelTextCorpus corpus,
+            IDetokenizer<string, string> detokenizer
+        )
+        {
+            return corpus.Detokenize(detokenizer, detokenizer);
+        }
+
+        public static IParallelTextCorpus Detokenize<T>(this IParallelTextCorpus corpus)
+            where T : IDetokenizer<string, string>, new()
+        {
+            var detokenizer = new T();
+            return corpus.Detokenize(detokenizer);
+        }
+
+        public static IParallelTextCorpus Detokenize(
+            this IParallelTextCorpus corpus,
+            IDetokenizer<string, string> sourceDetokenizer,
+            IDetokenizer<string, string> targetDetokenizer
+        )
+        {
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.SourceSegment.Count > 1)
+                        row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
+                    if (row.TargetSegment.Count > 1)
+                        row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
+                    return row;
+                }
+            );
+        }
+
+        public static IParallelTextCorpus Detokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
+            where TSource : IDetokenizer<string, string>, new()
+            where TTarget : IDetokenizer<string, string>, new()
+        {
+            var sourceDetokenizer = new TSource();
+            var targetDetokenizer = new TTarget();
+            return corpus.Detokenize(sourceDetokenizer, targetDetokenizer);
+        }
+
+        public static IParallelTextCorpus DetokenizeSource(
+            this IParallelTextCorpus corpus,
+            IDetokenizer<string, string> detokenizer
+        )
+        {
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.SourceSegment.Count > 1)
+                        row.SourceSegment = new[] { detokenizer.Detokenize(row.SourceSegment) };
+                    return row;
+                }
+            );
+        }
+
+        public static IParallelTextCorpus DetokenizeSource<T>(this IParallelTextCorpus corpus)
+            where T : IDetokenizer<string, string>, new()
+        {
+            var detokenizer = new T();
+            return corpus.DetokenizeSource(detokenizer);
+        }
+
+        public static IParallelTextCorpus DetokenizeTarget(
+            this IParallelTextCorpus corpus,
+            IDetokenizer<string, string> detokenizer
+        )
+        {
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.TargetSegment.Count > 1)
+                        row.TargetSegment = new[] { detokenizer.Detokenize(row.TargetSegment) };
+                    return row;
+                }
+            );
+        }
+
+        public static IParallelTextCorpus DetokenizeTarget<T>(this IParallelTextCorpus corpus)
+            where T : IDetokenizer<string, string>, new()
+        {
+            var detokenizer = new T();
+            return corpus.DetokenizeTarget(detokenizer);
         }
 
         public static IParallelTextCorpus Invert(this IParallelTextCorpus corpus)
@@ -696,6 +849,15 @@ namespace SIL.Machine.Corpora
             return new FlattenParallelTextCorpus(corpusArray);
         }
 
+        public static IParallelTextCorpus Translate(
+            this IParallelTextCorpus corpus,
+            ITranslationEngine translationEngine,
+            int bufferSize = 1024
+        )
+        {
+            return new TranslateParallelTextCorpus(corpus, translationEngine, bufferSize);
+        }
+
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
         {
             private readonly IParallelTextCorpus _corpus;
@@ -776,6 +938,56 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<ParallelTextRow> GetRows()
             {
                 return _corpora.SelectMany(corpus => corpus.GetRows());
+            }
+        }
+
+        private class TranslateParallelTextCorpus : ParallelTextCorpusBase
+        {
+            private readonly IParallelTextCorpus _corpus;
+            private readonly ITranslationEngine _translationEngine;
+            private readonly int _bufferSize;
+
+            public TranslateParallelTextCorpus(
+                IParallelTextCorpus corpus,
+                ITranslationEngine translationEngine,
+                int bufferSize
+            )
+            {
+                _corpus = corpus;
+                _translationEngine = translationEngine;
+                _bufferSize = bufferSize;
+            }
+
+            public override IEnumerable<ParallelTextRow> GetRows()
+            {
+                var buffer = new List<ParallelTextRow>();
+                foreach (ParallelTextRow row in _corpus.GetRows())
+                {
+                    buffer.Add(row);
+                    if (buffer.Count == _bufferSize)
+                    {
+                        Translate(buffer);
+                        foreach (ParallelTextRow r in buffer)
+                            yield return r;
+                        buffer.Clear();
+                    }
+                }
+
+                if (buffer.Count > 0)
+                {
+                    Translate(buffer);
+                    foreach (ParallelTextRow r in buffer)
+                        yield return r;
+                }
+            }
+
+            private void Translate(List<ParallelTextRow> buffer)
+            {
+                IEnumerable<TranslationResult> translations = _translationEngine.Translate(
+                    buffer.Select(r => r.SourceSegment)
+                );
+                foreach (var (row, translation) in buffer.Zip(translations, (r, t) => (r, t)))
+                    row.TargetSegment = translation.TargetSegment;
             }
         }
 

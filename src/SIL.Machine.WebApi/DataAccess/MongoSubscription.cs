@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.WebApi.DataAccess;
+﻿using SIL.ObjectModel;
+
+namespace SIL.Machine.WebApi.DataAccess;
 
 public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : IEntity
 {

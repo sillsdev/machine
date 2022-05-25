@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.WebApi.Utils;
+﻿using SIL.ObjectModel;
+
+namespace SIL.Machine.WebApi.Utils;
 
 public class ObjectPoolItem<T> : DisposableBase
 {

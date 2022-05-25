@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Python.Deployment" Version="1.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj" />
   </ItemGroup>
 

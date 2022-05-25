@@ -7,7 +7,7 @@ namespace SIL.Machine.WebApi
         public int Revision { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]
-        public ResourceDto Engine { get; set; }
+        public ResourceDto Parent { get; set; }
         public int Step { get; set; }
         public double? PercentCompleted { get; set; }
         public string Message { get; set; }

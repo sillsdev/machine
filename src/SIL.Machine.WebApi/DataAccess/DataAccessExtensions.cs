@@ -81,64 +81,6 @@ public static class DataAccessExtensions
         return (await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken)) != null;
     }
 
-    public static Task<Build?> GetByEngineIdAsync(
-        this IRepository<Build> builds,
-        string engineId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return builds.GetAsync(
-            b => b.EngineRef == engineId && (b.State == BuildState.Active || b.State == BuildState.Pending),
-            cancellationToken
-        );
-    }
-
-    public static Task<EntityChange<Build>> GetNewerRevisionAsync(
-        this IRepository<Build> builds,
-        string id,
-        long minRevision,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return builds.GetNewerRevisionAsync(b => b.Id == id, minRevision, cancellationToken);
-    }
-
-    public static Task<EntityChange<Build>> GetNewerRevisionByEngineIdAsync(
-        this IRepository<Build> builds,
-        string engineId,
-        long minRevision,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return builds.GetNewerRevisionAsync(
-            b => b.EngineRef == engineId && (b.State == BuildState.Active || b.State == BuildState.Pending),
-            minRevision,
-            cancellationToken
-        );
-    }
-
-    public static async Task<EntityChange<Build>> GetNewerRevisionAsync(
-        this IRepository<Build> builds,
-        Expression<Func<Build, bool>> filter,
-        long minRevision,
-        CancellationToken cancellationToken = default
-    )
-    {
-        using ISubscription<Build> subscription = await builds.SubscribeAsync(filter, cancellationToken);
-        EntityChange<Build> curChange = subscription.Change;
-        if (curChange.Type == EntityChangeType.Delete && minRevision > 1)
-            return curChange;
-        while (true)
-        {
-            if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity!.Revision)
-                return curChange;
-            await subscription.WaitForChangeAsync(cancellationToken: cancellationToken);
-            curChange = subscription.Change;
-            if (curChange.Type == EntityChangeType.Delete)
-                return curChange;
-        }
-    }
-
     public static async Task CreateOrUpdateAsync<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
     {
         try

@@ -109,7 +109,7 @@ namespace SIL.Machine.Translation.Thot
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
                 TrainTuneCorpus(trainTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, phaseProgress);
 
-            Stats.TrainedSegmentCount = _trainCount + _testCount;
+            Stats.TrainSize = _trainCount + _testCount;
         }
 
         public virtual void Save()

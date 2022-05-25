@@ -9,7 +9,7 @@ public class WebhookServiceTests
         var env = new TestEnvironment();
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
 
-        var build = new Build { Id = "build1", EngineRef = "engine1" };
+        var build = new Build { Id = "build1", ParentRef = "engine1" };
         await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
         Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
@@ -33,11 +33,11 @@ public class WebhookServiceTests
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5"
+                "sha256=F0A5C120AF1C2BB581802DEB53089F0A1209F97D450F2F7D627127D36001CB3F"
             )
             .Respond(HttpStatusCode.OK);
 
-        var build = new Build { Id = "build1", EngineRef = "engine1" };
+        var build = new Build { Id = "build1", ParentRef = "engine1" };
         await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
         env.MockHttp.VerifyNoOutstandingExpectation();
@@ -59,7 +59,7 @@ public class WebhookServiceTests
         );
         MockedRequest req = env.MockHttp.When("*").Respond(HttpStatusCode.OK);
 
-        var build = new Build { Id = "build1", EngineRef = "engine1" };
+        var build = new Build { Id = "build1", ParentRef = "engine1" };
         await env.Service.SendEventAsync(WebhookEvent.BuildFinished, "client", build);
 
         Assert.That(env.MockHttp.GetMatchCount(req), Is.EqualTo(0));
@@ -83,11 +83,11 @@ public class WebhookServiceTests
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5"
+                "sha256=F0A5C120AF1C2BB581802DEB53089F0A1209F97D450F2F7D627127D36001CB3F"
             )
             .Respond(HttpStatusCode.RequestTimeout);
 
-        var build = new Build { Id = "build1", EngineRef = "engine1" };
+        var build = new Build { Id = "build1", ParentRef = "engine1" };
         await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
         env.MockHttp.VerifyNoOutstandingExpectation();
@@ -111,11 +111,11 @@ public class WebhookServiceTests
             .Expect("https://test.client.com/hook")
             .WithHeaders(
                 "X-Hub-Signature-256",
-                "sha256=EF62D1A771694912EAD89D9B1185491E7EB7892B069202C090C5396B3CE000C5"
+                "sha256=F0A5C120AF1C2BB581802DEB53089F0A1209F97D450F2F7D627127D36001CB3F"
             )
             .Throw(new HttpRequestException());
 
-        var build = new Build { Id = "build1", EngineRef = "engine1" };
+        var build = new Build { Id = "build1", ParentRef = "engine1" };
         await env.Service.SendEventAsync(WebhookEvent.BuildStarted, "client", build);
 
         env.MockHttp.VerifyNoOutstandingExpectation();

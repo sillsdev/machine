@@ -17,22 +17,50 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddEngineOptions(this IMachineBuilder builder, Action<EngineOptions> configureOptions)
+    public static IMachineBuilder AddTranslationEngineOptions(
+        this IMachineBuilder builder,
+        Action<TranslationEngineOptions> configureOptions
+    )
     {
         builder.Services.Configure(configureOptions);
         return builder;
     }
 
-    public static IMachineBuilder AddEngineOptions(this IMachineBuilder builder, IConfiguration config)
+    public static IMachineBuilder AddTranslationEngineOptions(this IMachineBuilder builder, IConfiguration config)
     {
-        builder.Services.Configure<EngineOptions>(config);
+        builder.Services.Configure<TranslationEngineOptions>(config);
         return builder;
     }
 
-    public static IMachineBuilder AddEngineService(this IMachineBuilder builder)
+    public static IMachineBuilder AddCorpusOptions(this IMachineBuilder builder, Action<CorpusOptions> configureOptions)
     {
-        builder.Services.AddSingleton<IEngineService, EngineService>();
-        builder.Services.AddSingleton<IEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddCorpusOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<CorpusOptions>(config);
+        return builder;
+    }
+
+    public static IMachineBuilder AddApiOptions(this IMachineBuilder builder, Action<ApiOptions> configureOptions)
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddApiOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<ApiOptions>(config);
+        return builder;
+    }
+
+    public static IMachineBuilder AddTranslationEngineService(this IMachineBuilder builder)
+    {
+        builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, NmtEngineRuntime.Factory>();
         return builder;
     }
 
@@ -105,20 +133,28 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder)
+    public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder, string[]? queues = null)
     {
-        builder.Services.AddHangfireServer();
+        builder.Services.AddSingleton<INmtBuildJobRunner, NmtBuildJobRunner>();
+        builder.Services.AddHangfireServer(
+            o =>
+            {
+                if (queues is not null)
+                    o.Queues = queues;
+            }
+        );
         return builder;
     }
 
     public static IMachineBuilder AddMemoryDataAccess(this IMachineBuilder builder)
     {
-        builder.Services.AddSingleton<IRepository<Engine>, MemoryRepository<Engine>>();
+        builder.Services.AddSingleton<IRepository<TranslationEngine>, MemoryRepository<TranslationEngine>>();
         builder.Services.AddSingleton<IRepository<Build>, MemoryRepository<Build>>();
-        builder.Services.AddSingleton<IRepository<DataFile>, MemoryRepository<DataFile>>();
+        builder.Services.AddSingleton<IRepository<Corpus>, MemoryRepository<Corpus>>();
         builder.Services.AddSingleton<IRepository<RWLock>, MemoryRepository<RWLock>>();
         builder.Services.AddSingleton<IRepository<TrainSegmentPair>, MemoryRepository<TrainSegmentPair>>();
         builder.Services.AddSingleton<IRepository<Webhook>, MemoryRepository<Webhook>>();
+        builder.Services.AddSingleton<IRepository<Pretranslation>, MemoryRepository<Pretranslation>>();
 
         return builder;
     }
@@ -138,20 +174,28 @@ public static class IMachineBuilderExtensions
         builder.Services.AddSingleton<IMongoClient>(sp => new MongoClient(mongoUrl));
         builder.Services.AddSingleton(sp => sp.GetService<IMongoClient>()!.GetDatabase(mongoUrl.DatabaseName));
 
-        builder.Services.AddMongoRepository<Engine>("engines");
+        builder.Services.AddMongoRepository<TranslationEngine>(
+            "translation_engines",
+            init: async c =>
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<TranslationEngine>(
+                        Builders<TranslationEngine>.IndexKeys.Ascending(p => p.Owner)
+                    )
+                )
+        );
         builder.Services.AddMongoRepository<Build>(
             "builds",
             init: async c =>
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.EngineRef))
+                    new CreateIndexModel<Build>(Builders<Build>.IndexKeys.Ascending(b => b.ParentRef))
                 ),
             isSubscribable: true
         );
-        builder.Services.AddMongoRepository<DataFile>(
-            "files",
+        builder.Services.AddMongoRepository<Corpus>(
+            "corpora",
             init: async c =>
                 await c.Indexes.CreateOrUpdateAsync(
-                    new CreateIndexModel<DataFile>(Builders<DataFile>.IndexKeys.Ascending(f => f.EngineRef))
+                    new CreateIndexModel<Corpus>(Builders<Corpus>.IndexKeys.Ascending(p => p.Owner))
                 )
         );
         builder.Services.AddMongoRepository<RWLock>(
@@ -175,7 +219,7 @@ public static class IMachineBuilderExtensions
             init: async c =>
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<TrainSegmentPair>(
-                        Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.EngineRef)
+                        Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
                     )
                 )
         );
@@ -188,6 +232,25 @@ public static class IMachineBuilderExtensions
                 );
                 await c.Indexes.CreateOrUpdateAsync(
                     new CreateIndexModel<Webhook>(Builders<Webhook>.IndexKeys.Ascending(h => h.Events))
+                );
+            }
+        );
+        builder.Services.AddMongoRepository<Pretranslation>(
+            "pretranslations",
+            init: async c =>
+            {
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TranslationEngineRef)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(
+                        Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.CorpusRef)
+                    )
+                );
+                await c.Indexes.CreateOrUpdateAsync(
+                    new CreateIndexModel<Pretranslation>(Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.TextId))
                 );
             }
         );
