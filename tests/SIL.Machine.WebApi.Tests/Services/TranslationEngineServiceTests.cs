@@ -193,8 +193,10 @@ public class TranslationEngineServiceTests
             var engineRuntimeFactory = Substitute.For<ITranslationEngineRuntimeFactory>();
             engineRuntimeFactory.Type.Returns(TranslationEngineType.SmtTransfer);
             engineRuntimeFactory.CreateTranslationEngineRuntime(Arg.Any<string>()).Returns(engineRuntime);
+            var engineOptions = Substitute.For<IOptionsMonitor<TranslationEngineOptions>>();
+            engineOptions.CurrentValue.Returns(new TranslationEngineOptions());
             Service = new TranslationEngineService(
-                new OptionsWrapper<TranslationEngineOptions>(new TranslationEngineOptions()),
+                engineOptions,
                 Engines,
                 new MemoryRepository<Build>(),
                 new[] { engineRuntimeFactory }

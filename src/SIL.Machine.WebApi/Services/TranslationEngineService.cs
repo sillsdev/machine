@@ -2,14 +2,14 @@
 
 public class TranslationEngineService : EntityServiceBase<TranslationEngine>, ITranslationEngineService
 {
-    private readonly IOptions<TranslationEngineOptions> _translationEngineOptions;
+    private readonly IOptionsMonitor<TranslationEngineOptions> _translationEngineOptions;
     private readonly ConcurrentDictionary<string, ITranslationEngineRuntime> _runtimes;
     private readonly IRepository<Build> _builds;
     private readonly Dictionary<TranslationEngineType, ITranslationEngineRuntimeFactory> _engineRuntimeFactories;
     private readonly AsyncTimer _commitTimer;
 
     public TranslationEngineService(
-        IOptions<TranslationEngineOptions> translationEngineOptions,
+        IOptionsMonitor<TranslationEngineOptions> translationEngineOptions,
         IRepository<TranslationEngine> translationEngines,
         IRepository<Build> builds,
         IEnumerable<ITranslationEngineRuntimeFactory> engineRuntimeFactories
@@ -24,7 +24,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
 
     public void Init()
     {
-        _commitTimer.Start(_translationEngineOptions.Value.EngineCommitFrequency);
+        _commitTimer.Start(_translationEngineOptions.CurrentValue.EngineCommitFrequency);
     }
 
     private async Task EngineCommitAsync()

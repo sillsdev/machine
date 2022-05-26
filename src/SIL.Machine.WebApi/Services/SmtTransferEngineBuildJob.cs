@@ -38,39 +38,34 @@ public class SmtTransferEngineBuildJob
 
     [Queue("smt_transfer")]
     [AutomaticRetry(Attempts = 0)]
-    public async Task RunAsync(
-        string engineId,
-        string buildId,
-        PerformContext performContext,
-        CancellationToken cancellationToken
-    )
+    public async Task RunAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
+        TranslationEngine? engine = await _engines.GetAsync(engineId, cancellationToken);
+        if (engine is null)
+            return;
+
         IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
 
         ITrainer? smtModelTrainer = null;
         ITrainer? truecaseTrainer = null;
         try
         {
-            Build? build;
-            TranslationEngine? engine;
+            Build? build = await _builds.UpdateAsync(
+                b => b.Id == buildId && b.State != BuildState.Canceled,
+                u => u.Set(b => b.State, BuildState.Active),
+                cancellationToken: cancellationToken
+            );
+            if (build is null)
+                throw new OperationCanceledException();
+
             var stopwatch = new Stopwatch();
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                build = await _builds.UpdateAsync(
-                    b => b.Id == buildId && b.State == BuildState.Pending,
-                    u => u.Set(b => b.State, BuildState.Active).Set(b => b.JobId, performContext.BackgroundJob.Id),
-                    cancellationToken: cancellationToken
-                );
-                if (build is null)
-                    throw new OperationCanceledException();
-
-                engine = await _engines.UpdateAsync(
+                await _engines.UpdateAsync(
                     engineId,
                     u => u.Set(e => e.IsBuilding, true),
                     cancellationToken: CancellationToken.None
                 );
-                if (engine is null)
-                    return;
 
                 await _webhookService.SendEventAsync(WebhookEvent.BuildStarted, engine.Owner, build);
 
@@ -130,7 +125,7 @@ public class SmtTransferEngineBuildJob
                     }
                 }
 
-                engine = await _engines.UpdateAsync(
+                await _engines.UpdateAsync(
                     engineId,
                     u =>
                         u.Set(
@@ -146,8 +141,6 @@ public class SmtTransferEngineBuildJob
                             .Inc(e => e.ModelRevision),
                     cancellationToken: CancellationToken.None
                 );
-                if (engine is null)
-                    return;
             }
 
             build = await _builds.UpdateAsync(
@@ -158,45 +151,44 @@ public class SmtTransferEngineBuildJob
                         .Set(b => b.DateFinished, DateTime.UtcNow),
                 cancellationToken: CancellationToken.None
             );
-            if (build is null)
-                return;
 
             stopwatch.Stop();
-            _logger.LogInformation("Build completed in {0}ms ({1})", stopwatch.Elapsed.TotalMilliseconds, buildId);
+            _logger.LogInformation("Build completed in {0}s ({1})", stopwatch.Elapsed.TotalSeconds, buildId);
             await _webhookService.SendEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
         }
         catch (OperationCanceledException)
         {
-            TranslationEngine? engine;
             await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
             {
-                engine = await _engines.UpdateAsync(
-                    engineId,
+                await _engines.UpdateAsync(
+                    e => e.Id == engineId && e.IsBuilding,
                     u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: CancellationToken.None
                 );
-                if (engine is null)
-                    return;
             }
 
-            Build? build = await _builds.UpdateAsync(
-                b => b.Id == buildId && b.State == BuildState.Canceled,
-                u => u.Set(b => b.DateFinished, DateTime.UtcNow),
-                cancellationToken: CancellationToken.None
-            );
-            if (build is not null)
+            // Check if the cancellation was initiated by an API call or a shutdown.
+            Build? build = await _builds.GetAsync(buildId, CancellationToken.None);
+            if (build?.State is BuildState.Canceled)
             {
+                build =
+                    await _builds.UpdateAsync(
+                        b => b.Id == buildId && b.DateFinished == null,
+                        u => u.Set(b => b.DateFinished, DateTime.UtcNow),
+                        cancellationToken: CancellationToken.None
+                    ) ?? build;
+
                 _logger.LogInformation("Build canceled ({0})", buildId);
                 await _webhookService.SendEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
             }
-            else
+            else if (build is not null)
             {
                 // the build was canceled, because of a server shutdown
                 // switch state back to pending
                 await _builds.UpdateAsync(
                     buildId,
                     u =>
-                        u.Set(b => b.Message, "Canceled")
+                        u.Set(b => b.Message, "Restarting")
                             .Set(b => b.Step, 0)
                             .Set(b => b.PercentCompleted, 0)
                             .Set(b => b.State, BuildState.Pending),
@@ -208,16 +200,13 @@ public class SmtTransferEngineBuildJob
         }
         catch (Exception e)
         {
-            TranslationEngine? engine;
             await using (await rwLock.WriterLockAsync(cancellationToken: CancellationToken.None))
             {
-                engine = await _engines.UpdateAsync(
-                    engineId,
+                await _engines.UpdateAsync(
+                    e => e.Id == engineId && e.IsBuilding,
                     u => u.Set(e => e.IsBuilding, false),
                     cancellationToken: CancellationToken.None
                 );
-                if (engine is null)
-                    return;
             }
 
             Build? build = await _builds.UpdateAsync(

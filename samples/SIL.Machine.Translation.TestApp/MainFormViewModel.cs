@@ -286,7 +286,7 @@ namespace SIL.Machine.Translation.TestApp
                 Dictionary<string, TextViewModel> textLookup = _texts.ToDictionary(t => t.Name);
                 IParallelTextCorpus corpus = _sourceCorpus
                     .AlignRows(_targetCorpus, _alignmentCorpus)
-                    .Where(r => textLookup[((RowRef)r.Ref).Keys[0]].IsApproved((RowRef)r.Ref))
+                    .Where(r => textLookup[((TextFileRef)r.Ref).TextId].IsApproved((TextFileRef)r.Ref))
                     .Tokenize<LatinWordTokenizer>()
                     .Lowercase();
                 using (ThotSmtModelTrainer trainer = _smtModel.CreateTrainer(corpus))

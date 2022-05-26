@@ -4,11 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aa9e7440-5a04-4de6-ba51-bab9ef4a62e1</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Python.Deployment" Version="1.3.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj" />

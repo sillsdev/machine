@@ -117,13 +117,12 @@ public class MemoryRepository<T> : IRepository<T> where T : IEntity
     public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
     {
         entity.Revision = 1;
+        if (string.IsNullOrEmpty(entity.Id))
+            entity.Id = ObjectId.GenerateNewId().ToString();
         var allSubscriptions = new List<MemorySubscription<T>>();
         string serializedEntity;
         using (await _lock.LockAsync(cancellationToken))
         {
-            if (string.IsNullOrEmpty(entity.Id))
-                entity.Id = ObjectId.GenerateNewId().ToString();
-
             if (_entities.ContainsKey(entity.Id) || CheckDuplicateKeys(entity))
                 throw new DuplicateKeyException();
 
@@ -131,6 +130,32 @@ public class MemoryRepository<T> : IRepository<T> where T : IEntity
             GetSubscriptions(entity, allSubscriptions);
         }
         SendToSubscribers(allSubscriptions, EntityChangeType.Insert, entity.Id, serializedEntity);
+    }
+
+    public async Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default)
+    {
+        foreach (T entity in entities)
+        {
+            entity.Revision = 1;
+            if (string.IsNullOrEmpty(entity.Id))
+                entity.Id = ObjectId.GenerateNewId().ToString();
+        }
+        var serializedEntities = new List<(string, string, List<MemorySubscription<T>>)>();
+        using (await _lock.LockAsync(cancellationToken))
+        {
+            foreach (T entity in entities)
+            {
+                if (_entities.ContainsKey(entity.Id) || CheckDuplicateKeys(entity))
+                    throw new DuplicateKeyException();
+
+                string serializedEntity = Add(entity);
+                var allSubscriptions = new List<MemorySubscription<T>>();
+                GetSubscriptions(entity, allSubscriptions);
+                serializedEntities.Add((entity.Id, serializedEntity, allSubscriptions));
+            }
+        }
+        foreach (var (id, serializedEntity, allSubscriptions) in serializedEntities)
+            SendToSubscribers(allSubscriptions, EntityChangeType.Insert, id, serializedEntity);
     }
 
     public async Task<T?> UpdateAsync(

@@ -2,16 +2,16 @@
 
 public class TransferEngineFactory : ITransferEngineFactory
 {
-    private readonly IOptions<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
 
-    public TransferEngineFactory(IOptions<TranslationEngineOptions> engineOptions)
+    public TransferEngineFactory(IOptionsMonitor<TranslationEngineOptions> engineOptions)
     {
         _engineOptions = engineOptions;
     }
 
     public ITranslationEngine? Create(string engineId)
     {
-        string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
         string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
         TransferEngine? transferEngine = null;
@@ -41,7 +41,7 @@ public class TransferEngineFactory : ITransferEngineFactory
 
     public void Cleanup(string engineId)
     {
-        string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
             return;
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");

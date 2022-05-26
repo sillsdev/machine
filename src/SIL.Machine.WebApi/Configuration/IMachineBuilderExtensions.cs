@@ -56,11 +56,64 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddClearMLOptions(
+        this IMachineBuilder builder,
+        Action<ClearMLOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddClearMLOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<ClearMLOptions>(config);
+        return builder;
+    }
+
+    public static IMachineBuilder AddSharedFileOptions(
+        this IMachineBuilder builder,
+        Action<SharedFileOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddSharedFileOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<SharedFileOptions>(config);
+        return builder;
+    }
+
+    public static IMachineBuilder AddOptions(this IMachineBuilder builder, IConfiguration? config = null)
+    {
+        if (config is null)
+        {
+            builder.AddApiOptions(o => { });
+            builder.AddCorpusOptions(o => { });
+            builder.AddServiceOptions(o => { });
+            builder.AddSharedFileOptions(o => { });
+            builder.AddTranslationEngineOptions(o => { });
+            builder.AddClearMLOptions(o => { });
+        }
+        else
+        {
+            builder.AddApiOptions(config.GetSection(ApiOptions.Key));
+            builder.AddCorpusOptions(config.GetSection(CorpusOptions.Key));
+            builder.AddServiceOptions(config.GetSection(ServiceOptions.Key));
+            builder.AddSharedFileOptions(config.GetSection(SharedFileOptions.Key));
+            builder.AddTranslationEngineOptions(config.GetSection(TranslationEngineOptions.Key));
+            builder.AddClearMLOptions(config.GetSection(ClearMLOptions.Key));
+        }
+        return builder;
+    }
+
     public static IMachineBuilder AddTranslationEngineService(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
         builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
-        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, NmtEngineRuntime.Factory>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, ClearMLNmtEngineRuntime.Factory>();
         return builder;
     }
 
@@ -135,7 +188,6 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder, string[]? queues = null)
     {
-        builder.Services.AddSingleton<INmtBuildJobRunner, NmtBuildJobRunner>();
         builder.Services.AddHangfireServer(
             o =>
             {

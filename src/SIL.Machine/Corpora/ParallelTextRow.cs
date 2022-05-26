@@ -6,14 +6,17 @@ namespace SIL.Machine.Corpora
 {
     public class ParallelTextRow : IRow
     {
-        public ParallelTextRow(IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
+        public ParallelTextRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
         {
             if (sourceRefs.Count == 0 && targetRefs.Count == 0)
                 throw new ArgumentNullException("Either a source or target ref must be provided.");
 
+            TextId = textId;
             SourceRefs = sourceRefs;
             TargetRefs = targetRefs;
         }
+
+        public string TextId { get; }
 
         public object Ref => SourceRefs.Count > 0 ? SourceRefs[0] : TargetRefs[0];
 
@@ -33,14 +36,14 @@ namespace SIL.Machine.Corpora
         public bool IsTargetInRange { get; set; }
         public bool IsTargetRangeStart { get; set; }
 
-        public bool IsEmpty { get; set; } = true;
+        public bool IsEmpty => SourceSegment.Count == 0 || TargetSegment.Count == 0;
 
         public string SourceText => string.Join(" ", SourceSegment);
         public string TargetText => string.Join(" ", TargetSegment);
 
         public ParallelTextRow Invert()
         {
-            return new ParallelTextRow(TargetRefs, SourceRefs)
+            return new ParallelTextRow(TextId, TargetRefs, SourceRefs)
             {
                 SourceSegment = TargetSegment,
                 TargetSegment = SourceSegment,
@@ -53,8 +56,7 @@ namespace SIL.Machine.Corpora
                 IsSourceRangeStart = IsTargetRangeStart,
                 IsTargetSentenceStart = IsSourceSentenceStart,
                 IsTargetInRange = IsSourceInRange,
-                IsTargetRangeStart = IsSourceRangeStart,
-                IsEmpty = IsEmpty
+                IsTargetRangeStart = IsSourceRangeStart
             };
         }
     }

@@ -11,6 +11,6 @@ namespace SIL.Machine.WebApi
         public string[] Refs { get; set; }
 
         [JsonProperty(Required = Required.DisallowNull)]
-        public string Text { get; set; }
+        public string Translation { get; set; }
     }
 }

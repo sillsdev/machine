@@ -59,7 +59,8 @@ public class CorporaController : ControllerBase
         {
             Name = corpusConfig.Name,
             Type = corpusConfig.Type,
-            Format = corpusConfig.Format
+            Format = corpusConfig.Format,
+            Owner = User.Identity!.Name!
         };
 
         await _corpusService.CreateAsync(newCorpus);

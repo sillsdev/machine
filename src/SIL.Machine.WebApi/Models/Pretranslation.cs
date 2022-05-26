@@ -8,5 +8,5 @@ public class Pretranslation : IEntity
     public string CorpusRef { get; set; } = default!;
     public string TextId { get; set; } = default!;
     public List<string> Refs { get; set; } = new List<string>();
-    public string Text { get; set; } = default!;
+    public string Translation { get; set; } = default!;
 }
