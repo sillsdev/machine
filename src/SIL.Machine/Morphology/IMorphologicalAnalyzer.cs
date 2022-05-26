@@ -2,8 +2,8 @@
 
 namespace SIL.Machine.Morphology
 {
-	public interface IMorphologicalAnalyzer
-	{
-		IEnumerable<WordAnalysis> AnalyzeWord(string word);
-	}
+    public interface IMorphologicalAnalyzer
+    {
+        IEnumerable<WordAnalysis> AnalyzeWord(string word);
+    }
 }

@@ -1,4 +1,8 @@
 namespace SIL.Machine.DataStructures
 {
-	public enum Direction { LeftToRight, RightToLeft };
+    public enum Direction
+    {
+        LeftToRight,
+        RightToLeft
+    };
 }

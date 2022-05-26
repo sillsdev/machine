@@ -4,11 +4,11 @@ using SIL.Machine.Translation;
 
 namespace SIL.Machine.Plugin
 {
-	public interface ITranslationModelFactory
-	{
-		string ModelType { get; }
+    public interface ITranslationModelFactory
+    {
+        string ModelType { get; }
 
-		ITranslationModel CreateModel(string modelPath);
-		ITrainer CreateTrainer(string modelPath, IEnumerable<ParallelTextRow> parallelCorpus, int maxCorpusCount);
-	}
+        ITranslationModel CreateModel(string modelPath);
+        ITrainer CreateTrainer(string modelPath, IEnumerable<ParallelTextRow> parallelCorpus, int maxCorpusCount);
+    }
 }
