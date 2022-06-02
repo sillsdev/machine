@@ -22,25 +22,45 @@ namespace SIL.Machine.WebApi.Client
         };
 
         private RestClient restClient { get; }
+        private bool _authentication_added = false;
 
         public WebApiClient(string baseUrl, bool bypassSsl = false, string api_access_token = "")
         {
             var options = new RestClientOptions(baseUrl);
-            if (bypassSsl) {
+            if (bypassSsl)
+            {
                 options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             }
             restClient = new RestClient(options);
-            if (api_access_token != "")
+            restClient.AddDefaultHeader("content-type", "application/json");
+        }
+
+        public void AquireAccessToken(string client_id, string client_secret)
+        {
+            if (!_authentication_added)
             {
-                restClient.AddDefaultHeaders(new Dictionary<string, string>
+                var request = new RestRequest();
+                request.AddParameter("client_id", client_id);
+                request.AddParameter("client_secret", client_secret);
+                request.AddParameter("audience", "https://machine.sil.org");
+                request.AddParameter("grant_type", "client_credentials");
+                var auth0client = new RestClient(
+                    new RestClientOptions("https://sil-appbuilder.auth0.com/oauth/token")
+                    {
+                        Timeout = 3000,
+                        ThrowOnAnyError = true
+                    }
+                );
+                auth0client.AddDefaultHeader("content-type", "application/x-www-form-urlencoded");
+                var response = auth0client.PostAsync(request).Result;
+                if (response.Content is null)
+                    throw new HttpException("Error getting auth0 Authentication.");
+                else
                 {
-                    ["content-type"] = "application/json",
-                    ["authorization"] = $"Bearer {api_access_token}"
-                });
-            }
-            else
-            {
-                restClient.AddDefaultHeader("content-type","application/json");
+                    var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
+                    restClient.AddDefaultHeader("authorization", $"Bearer {dict["access_token"]}");
+                    _authentication_added = true;
+                }
             }
         }
 
@@ -62,21 +82,39 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
-        public async Task<TranslationEngineDto> PostEngineAsync(string name, string sourceLanguageTag, string targetLanguageTag, string type = "SmtTransfer")
+        public async Task<TranslationEngineDto> PostEngineAsync(
+            string name,
+            string sourceLanguageTag,
+            string targetLanguageTag,
+            string type = "SmtTransfer"
+        )
         {
             var request = new RestRequest($"translation-engines");
-            request.AddJsonBody(JsonConvert.SerializeObject(
-                new Dictionary<string,string>
-                {
-                    ["name"] = name,
-                    ["sourceLanguageTag"] = sourceLanguageTag,
-                    ["targetLanguageTag"] = targetLanguageTag,
-                    ["type"] = type
-                }, SerializerSettings));
+            Enum.TryParse(type, out TranslationEngineType translationEngineType);
+            request.AddJsonBody(
+                JsonConvert.SerializeObject(
+                    new TranslationEngineConfigDto
+                    {
+                        Name = name,
+                        SourceLanguageTag = sourceLanguageTag,
+                        TargetLanguageTag = targetLanguageTag,
+                        Type = translationEngineType
+                    },
+                    SerializerSettings
+                )
+            );
             var response = await restClient.PostAsync(request);
             if (!response.IsSuccessful)
                 throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task DeleteEngineAsync(string id)
+        {
+            var request = new RestRequest($"translation-engines/{id}");
+            var response = await restClient.DeleteAsync(request);
+            if (!response.IsSuccessful)
+                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
         }
 
         public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
@@ -104,7 +142,10 @@ namespace SIL.Machine.WebApi.Client
             request.AddJsonBody(JsonConvert.SerializeObject(pairDto, SerializerSettings));
             var response = await restClient.PostAsync(request);
             if (!response.IsSuccessful)
-                throw new HttpException("Error calling train-segment action.") { StatusCode = (int)response.StatusCode };
+                throw new HttpException("Error calling train-segment action.")
+                {
+                    StatusCode = (int)response.StatusCode
+                };
         }
 
         public async Task StartTrainingAsync(string engineId)
@@ -148,8 +189,10 @@ namespace SIL.Machine.WebApi.Client
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
-                var request = new RestRequest($"translation/engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}");
-                var response = await restClient.GetAsync(request,ct);
+                var request = new RestRequest(
+                    $"translation/engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}"
+                );
+                var response = await restClient.GetAsync(request, ct);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
@@ -165,7 +208,9 @@ namespace SIL.Machine.WebApi.Client
                 {
                     continue;
                 }
-                else if (response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.NoContent)
+                else if (
+                    response.StatusCode == HttpStatusCode.NotFound || response.StatusCode == HttpStatusCode.NoContent
+                )
                 {
                     break;
                 }
