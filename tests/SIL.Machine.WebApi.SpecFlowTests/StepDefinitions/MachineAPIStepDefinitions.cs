@@ -45,7 +45,15 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
                     await client.DeleteEngineAsync(translationEngine.Id);
                 }
             }
-            await client.PostEngineAsync(user, source_language, target_language);
+            await client.PostEngineAsync(
+                new TranslationEngineConfigDto()
+                {
+                    Name = user,
+                    SourceLanguageTag = source_language,
+                    TargetLanguageTag = target_language,
+                    Type = TranslationEngineType.SmtTransfer
+                }
+            );
         }
 
         [Given(@"(.*) corpora for (.*) in (.*)")]

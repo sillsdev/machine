@@ -52,7 +52,7 @@ namespace SIL.Machine.WebApi.Client
                     }
                 );
                 auth0client.AddDefaultHeader("content-type", "application/x-www-form-urlencoded");
-                var response = auth0client.PostAsync(request).Result;
+                var response = auth0client.ExecutePostAsync(request).Result;
                 if (response.Content is null)
                     throw new HttpException("Error getting auth0 Authentication.");
                 else
@@ -67,62 +67,40 @@ namespace SIL.Machine.WebApi.Client
         public async Task<List<TranslationEngineDto>> GetEnginesAsync()
         {
             var request = new RestRequest($"translation-engines");
-            var response = await restClient.GetAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project list.") { StatusCode = (int)response.StatusCode };
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error getting project list.");
             return JsonConvert.DeserializeObject<List<TranslationEngineDto>>(response.Content, SerializerSettings);
         }
 
         public async Task<TranslationEngineDto> GetEngineAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}");
-            var response = await restClient.GetAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error getting project.");
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
-        public async Task<TranslationEngineDto> PostEngineAsync(
-            string name,
-            string sourceLanguageTag,
-            string targetLanguageTag,
-            string type = "SmtTransfer"
-        )
+        public async Task<TranslationEngineDto> PostEngineAsync(TranslationEngineConfigDto engineConfig)
         {
             var request = new RestRequest($"translation-engines");
-            Enum.TryParse(type, out TranslationEngineType translationEngineType);
-            request.AddJsonBody(
-                JsonConvert.SerializeObject(
-                    new TranslationEngineConfigDto
-                    {
-                        Name = name,
-                        SourceLanguageTag = sourceLanguageTag,
-                        TargetLanguageTag = targetLanguageTag,
-                        Type = translationEngineType
-                    },
-                    SerializerSettings
-                )
-            );
-            var response = await restClient.PostAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
+            request.AddStringBody(JsonConvert.SerializeObject(engineConfig, SerializerSettings),dataFormat: DataFormat.Json);
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error creating project.");
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
         public async Task DeleteEngineAsync(string id)
         {
             var request = new RestRequest($"translation-engines/{id}");
-            var response = await restClient.DeleteAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
+            // will throw error if unsuccessful
+            await restClient.DeleteAsync(request);
         }
 
         public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
         {
             var request = new RestRequest($"translation-engines/{engineId}/get-word-graph");
-            var response = await restClient.GetAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error getting word graph.");
             var resultDto = JsonConvert.DeserializeObject<WordGraphDto>(response.Content, SerializerSettings);
             return CreateWordGraph(resultDto);
         }
@@ -140,12 +118,8 @@ namespace SIL.Machine.WebApi.Client
                 TargetSegment = targetSegment.ToArray()
             };
             request.AddJsonBody(JsonConvert.SerializeObject(pairDto, SerializerSettings));
-            var response = await restClient.PostAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error calling train-segment action.")
-                {
-                    StatusCode = (int)response.StatusCode
-                };
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error calling train-segment action.");
         }
 
         public async Task StartTrainingAsync(string engineId)
@@ -172,9 +146,8 @@ namespace SIL.Machine.WebApi.Client
         private async Task<BuildDto> CreateBuildAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds");
-            var response = await restClient.PostAsync(request);
-            if (!response.IsSuccessful)
-                throw new HttpException("Error getting project.") { StatusCode = (int)response.StatusCode };
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error building engine.");
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
 
@@ -192,7 +165,7 @@ namespace SIL.Machine.WebApi.Client
                 var request = new RestRequest(
                     $"translation/engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}"
                 );
-                var response = await restClient.GetAsync(request, ct);
+                var response = await restClient.ExecuteGetAsync(request, ct);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
@@ -216,7 +189,7 @@ namespace SIL.Machine.WebApi.Client
                 }
                 else
                 {
-                    throw new HttpException("Error getting build status.") { StatusCode = (int)response.StatusCode };
+                    ThrowResponseIfNotSucessful(response, "Error getting build status.");
                 }
             }
         }
@@ -284,6 +257,49 @@ namespace SIL.Machine.WebApi.Client
         private static Range<int> CreateRange(RangeDto dto)
         {
             return Range<int>.Create(dto.Start, dto.End);
+        }
+
+        private void ThrowResponseIfNotSucessful(RestResponse response, string message)
+        {
+            if (!response.IsSuccessful)
+            {
+                var added_message = "";
+                if (response.ErrorException != null)
+                {
+                    added_message = $"\nError Message: {response.ErrorMessage ?? ""}\n{LogResponse(response)}";
+                }
+                throw new HttpException(message + added_message) { StatusCode = (int)response.StatusCode, };
+            }
+        }
+
+        private string LogResponse(RestResponse response)
+        {
+            var request = response.Request;
+            var requestToLog = new
+            {
+                resource = request.Resource,
+                parameters = request.Parameters.Select(
+                    parameter =>
+                        new { name = parameter.Name, value = parameter.Value, type = parameter.Type.ToString() }
+                ),
+                method = request.Method.ToString(),
+                uri = restClient.BuildUri(request),
+            };
+
+            var responseToLog = new
+            {
+                statusCode = response.StatusCode,
+                content = response.Content,
+                headers = response.Headers,
+                responseUri = response.ResponseUri,
+                errorMessage = response.ErrorMessage,
+            };
+
+            return string.Format(
+                "Request: {0}, Response: {1}",
+                JsonConvert.SerializeObject(requestToLog, formatting: Formatting.Indented),
+                JsonConvert.SerializeObject(responseToLog, formatting: Formatting.Indented)
+            );
         }
     }
 }
