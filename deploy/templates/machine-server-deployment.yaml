@@ -27,7 +27,7 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/SIL.Machine.WebApi.Server.dll
+            - /app/SIL.Machine.WebApi.ApiServer.dll
           env:
             - name: ASPNETCORE_Auth__Audience
               value: https://machine.sil.org

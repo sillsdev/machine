@@ -20,7 +20,7 @@ services:
     volumes:
       - "C:\\usr\\local\\engines:/var/lib/machine/engines"
       - "C:\\usr\\local\\data:/var/lib/machine/data"
-    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.Server.dll' ]
+    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.ApiServer.dll' ]
   machine-job-server:
     hostname: machine-job-server
     image: ghcr.io/sillsdev/machine:latest
