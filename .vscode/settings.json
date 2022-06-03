@@ -1,6 +1,9 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/src/sentencepiece4c",
-    "cmake.buildDirectory": "${workspaceFolder}/src/sentencepiece4c/build",
-    "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
-    "editor.formatOnSave": true
+  "cmake.sourceDirectory": "${workspaceFolder}/src/sentencepiece4c",
+  "cmake.buildDirectory": "${workspaceFolder}/src/sentencepiece4c/build",
+  "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
+  "editor.formatOnSave": true,
+  "[csharp]": {
+    "editor.defaultFormatter": "csharpier.csharpier-vscode"
+  }
 }

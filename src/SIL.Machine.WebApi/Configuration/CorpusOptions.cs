@@ -2,5 +2,5 @@
 
 public class CorpusOptions
 {
-	public string DataFilesDir { get; set; } = "data";
+    public string DataFilesDir { get; set; } = "data";
 }

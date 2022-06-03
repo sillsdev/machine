@@ -136,9 +136,9 @@ namespace SIL.Machine.Threading
         /// </summary>
         public void Start()
         {
-// ReSharper disable UnusedVariable
+            // ReSharper disable UnusedVariable
             var unused = Task;
-// ReSharper restore UnusedVariable
+            // ReSharper restore UnusedVariable
         }
 
         internal enum LazyState

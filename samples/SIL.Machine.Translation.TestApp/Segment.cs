@@ -1,19 +1,19 @@
 ﻿namespace SIL.Machine.Translation.TestApp
 {
-	public class Segment
-	{
-		public Segment()
-		{
-			Text = string.Empty;
-		}
+    public class Segment
+    {
+        public Segment()
+        {
+            Text = string.Empty;
+        }
 
-		public string Text { get; set; }
+        public string Text { get; set; }
 
-		public int StartIndex { get; set; }
+        public int StartIndex { get; set; }
 
-		public override string ToString()
-		{
-			return Text;
-		}
-	}
+        public override string ToString()
+        {
+            return Text;
+        }
+    }
 }

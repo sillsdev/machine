@@ -2,5 +2,5 @@
 
 public interface IOwnedEntity : IEntity
 {
-	string Owner { get; set; }
+    string Owner { get; set; }
 }

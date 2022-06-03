@@ -5,16 +5,16 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-	public class TransferResult
-	{
-		public TransferResult(IEnumerable<WordAnalysis> analyses, WordAlignmentMatrix alignment)
-		{
-			TargetAnalyses = new ReadOnlyList<WordAnalysis>(analyses.ToArray());
-			WordAlignmentMatrix = alignment;
-		}
+    public class TransferResult
+    {
+        public TransferResult(IEnumerable<WordAnalysis> analyses, WordAlignmentMatrix alignment)
+        {
+            TargetAnalyses = new ReadOnlyList<WordAnalysis>(analyses.ToArray());
+            WordAlignmentMatrix = alignment;
+        }
 
-		public IReadOnlyList<WordAnalysis> TargetAnalyses { get; }
+        public IReadOnlyList<WordAnalysis> TargetAnalyses { get; }
 
-		public WordAlignmentMatrix WordAlignmentMatrix { get; }
-	}
+        public WordAlignmentMatrix WordAlignmentMatrix { get; }
+    }
 }

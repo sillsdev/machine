@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.Translation
 {
-	public interface IWordConfidences
-	{
-		double GetConfidence(string targetWord);
-	}
+    public interface IWordConfidences
+    {
+        double GetConfidence(string targetWord);
+    }
 }

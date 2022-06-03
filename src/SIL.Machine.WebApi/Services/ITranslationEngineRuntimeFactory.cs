@@ -2,6 +2,6 @@
 
 public interface ITranslationEngineRuntimeFactory
 {
-	TranslationEngineType Type { get; }
-	ITranslationEngineRuntime CreateTranslationEngineRuntime(string engineId);
+    TranslationEngineType Type { get; }
+    ITranslationEngineRuntime CreateTranslationEngineRuntime(string engineId);
 }

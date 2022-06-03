@@ -6,29 +6,27 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-	public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset> where TData : IAnnotatedData<TOffset>
-	{
-		public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
-			: base(rules, false)
-		{
-		}
+    public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    {
+        public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules) : base(rules, false) { }
 
-		public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
-			: base(rules, false, comparer)
-		{
-		}
+        public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
+            : base(rules, false, comparer) { }
 
-		public override IEnumerable<TData> Apply(TData input)
-		{
-			var output = new ConcurrentStack<TData>();
-			Parallel.ForEach(Rules, rule =>
-				{
-					TData[] outData = rule.Apply(input).ToArray();
-					if (outData.Length > 0)
-						output.PushRange(outData);
-				});
+        public override IEnumerable<TData> Apply(TData input)
+        {
+            var output = new ConcurrentStack<TData>();
+            Parallel.ForEach(
+                Rules,
+                rule =>
+                {
+                    TData[] outData = rule.Apply(input).ToArray();
+                    if (outData.Length > 0)
+                        output.PushRange(outData);
+                }
+            );
 
-			return output.Distinct(Comparer);
-		}
-	}
+            return output.Distinct(Comparer);
+        }
+    }
 }

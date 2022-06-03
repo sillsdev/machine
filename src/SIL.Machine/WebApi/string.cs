@@ -1,9 +1,9 @@
 ﻿namespace SIL.Machine.WebApi
 {
-	public enum @string
-	{
-		Source,
-		Target,
-		Both
-	}
+    public enum @string
+    {
+        Source,
+        Target,
+        Both
+    }
 }

@@ -1,8 +1,8 @@
 ﻿namespace SIL.Machine.WebApi
 {
-	public enum TranslationEngineType
-	{
-		SmtTransfer,
-		Nmt
-	}
+    public enum TranslationEngineType
+    {
+        SmtTransfer,
+        Nmt
+    }
 }

@@ -1,11 +1,10 @@
+version: "3"
 services:
-  machine_api:
-    hostname: machine_api
-    image: mcr.microsoft.com/dotnet/sdk:6.0-focal
+  machine-server:
+    hostname: machine-server
+    image: ghcr.io/sillsdev/machine:latest
     environment:
-      - ASPNETCORE_Kestrel__Endpoints__Https__Url=https://*:7274
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=password
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/usr/local/share/ca-certificates/aspnetapp.pfx
+      - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:8087
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
       - ASPNETCORE_Logging__LogLevel__Default=Information
@@ -13,21 +12,36 @@ services:
       - ASPNETCORE_Auth__Domain=sil-appbuilder.auth0.com
       - ASPNETCORE_Auth__Audience=https://machine.sil.org
     expose:
-      - 7274
+      - 8087
     ports:
-      - 7274:7274
+      - 8087:8087
     depends_on:
       - mongo
     volumes:
-      - "..\\..:/app"
-      - "C:\\usr\\local\\DataProtection-Keys:/root/.aspnet/DataProtection-Keys"
-      - "C:\\usr\\local\\ca-certificates:/usr/local/share/ca-certificates"
-    entrypoint: [ '/app/docker/development/start.sh' ]
+      - "C:\\usr\\local\\engines:/var/lib/machine/engines"
+      - "C:\\usr\\local\\data:/var/lib/machine/data"
+    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.Server.dll' ]
+  machine-job-server:
+    hostname: machine-job-server
+    image: ghcr.io/sillsdev/machine:latest
+    environment:
+      - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
+      - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
+      - ASPNETCORE_Logging__LogLevel__Default=Information
+      - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+    depends_on:
+      - mongo
+    volumes:
+      - "C:\\usr\\local\\engines:/var/lib/machine/engines"
+      - "C:\\usr\\local\\data:/var/lib/machine/data"
+    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.JobServer.dll' ]
   mongo:
     hostname: mongo
     container_name: mongo
     image: mongo:4.2-bionic
     restart: always
+    ports:
+      - 27017:27017
     volumes:
       - "/usr/local/mongo-volume:/data/db"
     entrypoint: [ '/usr/bin/mongod', '--bind_ip', '0.0.0.0' ]

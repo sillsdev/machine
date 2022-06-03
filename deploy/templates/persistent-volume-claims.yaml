@@ -1,0 +1,53 @@
+{{- if not .Values.localVolume}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: machine-data-claim
+  namespace: {{ .Values.namespace}}
+spec:
+  storageClassName: "longhorn"
+  accessModes:
+      - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: machine-engines-claim
+  namespace: {{ .Values.namespace}}
+spec:
+  storageClassName: "longhorn"
+  accessModes:
+      - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: machine-keys-claim
+  namespace: {{ .Values.namespace}}
+spec:
+  storageClassName: "longhorn"
+  accessModes:
+      - ReadWriteMany
+  resources:
+    requests:
+      storage: 50M
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: machine-mongo-claim
+  namespace: {{ .Values.namespace}}
+spec:
+  storageClassName: "longhorn"
+  accessModes:
+      - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+{{- end }}

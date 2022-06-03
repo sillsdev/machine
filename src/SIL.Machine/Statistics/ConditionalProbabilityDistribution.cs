@@ -4,30 +4,32 @@ using System.Linq;
 
 namespace SIL.Machine.Statistics
 {
-	public class ConditionalProbabilityDistribution<TCondition, TSample>
-		: IConditionalProbabilityDistribution<TCondition, TSample>
-	{
-		private readonly Dictionary<TCondition, IProbabilityDistribution<TSample>> _probDists; 
+    public class ConditionalProbabilityDistribution<TCondition, TSample>
+        : IConditionalProbabilityDistribution<TCondition, TSample>
+    {
+        private readonly Dictionary<TCondition, IProbabilityDistribution<TSample>> _probDists;
 
-		public ConditionalProbabilityDistribution(ConditionalFrequencyDistribution<TCondition, TSample> cfd,
-			Func<TCondition, FrequencyDistribution<TSample>, IProbabilityDistribution<TSample>> getProbDist)
-		{
-			_probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cond, cfd[cond]));
-		}
+        public ConditionalProbabilityDistribution(
+            ConditionalFrequencyDistribution<TCondition, TSample> cfd,
+            Func<TCondition, FrequencyDistribution<TSample>, IProbabilityDistribution<TSample>> getProbDist
+        )
+        {
+            _probDists = cfd.Conditions.ToDictionary(cond => cond, cond => getProbDist(cond, cfd[cond]));
+        }
 
-		public IReadOnlyCollection<TCondition> Conditions
-		{
-			get { return _probDists.Keys; }
-		}
+        public IReadOnlyCollection<TCondition> Conditions
+        {
+            get { return _probDists.Keys; }
+        }
 
-		public IProbabilityDistribution<TSample> this[TCondition condition]
-		{
-			get { return _probDists[condition]; }
-		}
+        public IProbabilityDistribution<TSample> this[TCondition condition]
+        {
+            get { return _probDists[condition]; }
+        }
 
-		public bool TryGetProbabilityDistribution(TCondition condition, out IProbabilityDistribution<TSample> probDist)
-		{
-			return _probDists.TryGetValue(condition, out probDist);
-		}
-	}
+        public bool TryGetProbabilityDistribution(TCondition condition, out IProbabilityDistribution<TSample> probDist)
+        {
+            return _probDists.TryGetValue(condition, out probDist);
+        }
+    }
 }
