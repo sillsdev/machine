@@ -146,6 +146,8 @@ public class ClearMLNmtEngineBuildJob
             // The ClearML task has successfully completed, so insert the generated pretranslations into the database.
             await InsertPretranslationsAsync(engineId, buildId, cancellationToken);
 
+            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+
             await _engines.UpdateAsync(
                 engineId,
                 u => u.Set(e => e.IsBuilding, false).Inc(e => e.ModelRevision),
@@ -161,8 +163,6 @@ public class ClearMLNmtEngineBuildJob
                 cancellationToken: CancellationToken.None
             );
 
-            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
-
             _logger.LogInformation("Build completed in {0}s ({1})", clearMLTask.ActiveDuration, buildId);
             await _webhookService.SendEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
         }
@@ -172,6 +172,16 @@ public class ClearMLNmtEngineBuildJob
             Build? build = await _builds.GetAsync(buildId, CancellationToken.None);
             if (build?.State is BuildState.Canceled)
             {
+                ClearMLTask? task = await _clearMLService.GetTaskAsync(
+                    buildId,
+                    clearMLProjectId,
+                    CancellationToken.None
+                );
+                if (task is not null)
+                    await _clearMLService.StopTaskAsync(task.Id, CancellationToken.None);
+
+                await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+
                 // This is an actual cancellation triggered by an API call.
                 bool buildStarted =
                     (
@@ -190,16 +200,6 @@ public class ClearMLNmtEngineBuildJob
                         cancellationToken: CancellationToken.None
                     ) ?? build;
 
-                ClearMLTask? task = await _clearMLService.GetTaskAsync(
-                    buildId,
-                    clearMLProjectId,
-                    CancellationToken.None
-                );
-                if (task is not null)
-                    await _clearMLService.StopTaskAsync(task.Id, CancellationToken.None);
-
-                await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
-
                 if (buildStarted)
                 {
                     _logger.LogInformation("Build canceled ({0})", buildId);
@@ -211,6 +211,8 @@ public class ClearMLNmtEngineBuildJob
         }
         catch (Exception e)
         {
+            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+
             await _engines.UpdateAsync(
                 e => e.Id == engineId && e.IsBuilding,
                 u => u.Set(e => e.IsBuilding, false),
@@ -225,8 +227,6 @@ public class ClearMLNmtEngineBuildJob
                         .Set(b => b.DateFinished, DateTime.UtcNow),
                 cancellationToken: CancellationToken.None
             );
-
-            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
 
             _logger.LogError(0, e, "Build faulted ({0})", buildId);
             await _webhookService.SendEventAsync(WebhookEvent.BuildFinished, engine.Owner, build);
@@ -297,6 +297,8 @@ public class ClearMLNmtEngineBuildJob
 
     private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
+        await _pretranslations.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+
         await using var targetPretranslateStream = await _sharedFileService.OpenReadAsync(
             $"{buildId}/pretranslate.trg.json",
             cancellationToken
