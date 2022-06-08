@@ -144,6 +144,38 @@ public class ClearMLService : IClearMLService
         return GetTaskAsync(new JsonObject { ["id"] = id }, cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<string, double>> GetTaskMetricsAsync(
+        string id,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var body = new JsonObject { ["task"] = id };
+        JsonObject? result = await CallAsync("events", "get_task_latest_scalar_values", body, cancellationToken);
+        var metrics = (JsonArray?)result?["data"]?["metrics"];
+        if (metrics is null)
+            throw new InvalidOperationException("Malformed response from ClearML server.");
+        var performanceMetrics = (JsonObject?)metrics.FirstOrDefault(m => (string?)m?["name"] == "metrics");
+        var results = new Dictionary<string, double>();
+        if (performanceMetrics is null)
+            return results;
+        var variants = (JsonArray?)performanceMetrics?["variants"];
+        if (variants is null)
+            return results;
+        foreach (JsonObject? variant in variants)
+        {
+            if (variant is null)
+                continue;
+            var name = (string?)variant?["name"];
+            if (name is null)
+                continue;
+            var value = (double?)variant?["value"];
+            if (value is null)
+                continue;
+            results[name] = value.Value;
+        }
+        return results;
+    }
+
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
     {
         body["only_fields"] = new JsonArray(

@@ -146,11 +146,16 @@ public class ClearMLNmtEngineBuildJob
             // The ClearML task has successfully completed, so insert the generated pretranslations into the database.
             await InsertPretranslationsAsync(engineId, buildId, cancellationToken);
 
+            IReadOnlyDictionary<string, double> metrics = await _clearMLService.GetTaskMetricsAsync(
+                clearMLTaskId,
+                CancellationToken.None
+            );
+
             await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
 
             await _engines.UpdateAsync(
                 engineId,
-                u => u.Set(e => e.IsBuilding, false).Inc(e => e.ModelRevision),
+                u => u.Set(e => e.IsBuilding, false).Inc(e => e.ModelRevision).Set(e => e.Confidence, metrics["bleu"]),
                 cancellationToken: CancellationToken.None
             );
 

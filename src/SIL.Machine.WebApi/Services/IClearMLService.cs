@@ -23,4 +23,8 @@ public interface IClearMLService
     Task<bool> StopTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<ClearMLTask?> GetTaskAsync(string name, string projectId, CancellationToken cancellationToken = default);
     Task<ClearMLTask?> GetTaskAsync(string id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<string, double>> GetTaskMetricsAsync(
+        string id,
+        CancellationToken cancellationToken = default
+    );
 }
