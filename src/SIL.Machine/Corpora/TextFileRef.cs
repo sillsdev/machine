@@ -52,7 +52,7 @@ namespace SIL.Machine.Corpora
 
         public override string ToString()
         {
-            return $"{TextId} {LineNum}";
+            return $"{TextId}:{LineNum}";
         }
     }
 }

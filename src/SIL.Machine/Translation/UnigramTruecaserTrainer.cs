@@ -40,7 +40,7 @@ namespace SIL.Machine.Translation
                 if (progress != null)
                     progress.Report(new ProgressStatus(currentStep, stepCount));
             }
-            Stats.TrainSize = currentStep;
+            Stats.TrainCorpusSize = currentStep;
         }
 
         public virtual void Save()

@@ -136,7 +136,7 @@ public class SmtTransferEngineBuildJob
                                     MidpointRounding.AwayFromZero
                                 )
                             )
-                            .Set(e => e.TrainSize, smtModelTrainer.Stats.TrainSize + segmentPairs.Count)
+                            .Set(e => e.CorpusSize, smtModelTrainer.Stats.TrainCorpusSize + segmentPairs.Count)
                             .Set(e => e.IsBuilding, false)
                             .Inc(e => e.ModelRevision),
                     cancellationToken: CancellationToken.None

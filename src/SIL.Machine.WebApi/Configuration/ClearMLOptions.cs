@@ -10,4 +10,5 @@ public class ClearMLOptions
     public string SecretKey { get; set; } = "";
     public string Branch { get; set; } = "release";
     public TimeSpan BuildPollingTimeout { get; set; } = TimeSpan.FromSeconds(2);
+    public int? MaxStep { get; set; }
 }

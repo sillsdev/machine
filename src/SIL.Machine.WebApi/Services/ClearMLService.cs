@@ -67,6 +67,14 @@ public class ClearMLService : IClearMLService
     {
         string scheme = buildUri.Scheme;
         string uri = buildUri.ToString().Substring(scheme.Length + 3);
+        string entryPoint =
+            $"-m machine.webapi.clearml_nmt_engine_build_job "
+            + $"--src-lang {sourceLanguageTag} "
+            + $"--trg-lang {targetLanguageTag} "
+            + $"--build-uri-scheme {scheme} "
+            + $"--build-uri {uri}";
+        if (_options.CurrentValue.MaxStep is not null)
+            entryPoint += $" --max-step {_options.CurrentValue.MaxStep}";
         var body = new JsonObject
         {
             ["name"] = name,
@@ -74,12 +82,7 @@ public class ClearMLService : IClearMLService
             ["script"] = new JsonObject
             {
                 ["repository"] = "https://github.com/sillsdev/machine.py.git",
-                ["entry_point"] =
-                    $"-m machine.webapi.clearml_nmt_engine_build_job "
-                    + $"--src-lang {sourceLanguageTag} "
-                    + $"--trg-lang {targetLanguageTag} "
-                    + $"--build-uri-scheme {scheme} "
-                    + $"--build-uri {uri} ",
+                ["entry_point"] = entryPoint,
                 ["branch"] = _options.CurrentValue.Branch
             },
             ["container"] = new JsonObject
@@ -168,7 +171,7 @@ public class ClearMLService : IClearMLService
             var name = (string?)variant?["name"];
             if (name is null)
                 continue;
-            var value = (double?)variant?["value"];
+            var value = (double?)variant?["last_value"];
             if (value is null)
                 continue;
             results[name] = value.Value;

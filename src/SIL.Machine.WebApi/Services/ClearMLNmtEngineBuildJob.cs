@@ -55,8 +55,11 @@ public class ClearMLNmtEngineBuildJob
             if (build is null || build.State is BuildState.Canceled)
                 throw new OperationCanceledException();
 
+            int corpusSize;
             if (build.State is BuildState.Pending)
-                await WriteDataFilesAsync(engine, buildId, cancellationToken);
+                corpusSize = await WriteDataFilesAsync(engine, buildId, cancellationToken);
+            else
+                corpusSize = await GetCorpusSizeAsync(engine);
 
             string clearMLTaskId;
             ClearMLTask? clearMLTask = await _clearMLService.GetTaskAsync(buildId, clearMLProjectId, cancellationToken);
@@ -155,7 +158,11 @@ public class ClearMLNmtEngineBuildJob
 
             await _engines.UpdateAsync(
                 engineId,
-                u => u.Set(e => e.IsBuilding, false).Inc(e => e.ModelRevision).Set(e => e.Confidence, metrics["bleu"]),
+                u =>
+                    u.Set(e => e.IsBuilding, false)
+                        .Inc(e => e.ModelRevision)
+                        .Set(e => e.Confidence, Math.Round(metrics["bleu"], 2, MidpointRounding.AwayFromZero))
+                        .Set(e => e.CorpusSize, corpusSize),
                 cancellationToken: CancellationToken.None
             );
 
@@ -239,7 +246,7 @@ public class ClearMLNmtEngineBuildJob
         }
     }
 
-    private async Task WriteDataFilesAsync(
+    private async Task<int> WriteDataFilesAsync(
         TranslationEngine engine,
         string buildId,
         CancellationToken cancellationToken
@@ -252,6 +259,7 @@ public class ClearMLNmtEngineBuildJob
             await _sharedFileService.OpenWriteAsync($"{buildId}/train.trg.txt", cancellationToken)
         );
 
+        int corpusSize = 0;
         async IAsyncEnumerable<PretranslationInfo> ProcessRowsAsync()
         {
             foreach (TranslationEngineCorpus corpus in engine.Corpora)
@@ -283,6 +291,8 @@ public class ClearMLNmtEngineBuildJob
                             Segment = row.SourceText
                         };
                     }
+                    if (!row.IsEmpty)
+                        corpusSize++;
                 }
             }
         }
@@ -298,6 +308,32 @@ public class ClearMLNmtEngineBuildJob
             new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
             cancellationToken: cancellationToken
         );
+        return corpusSize;
+    }
+
+    private async Task<int> GetCorpusSizeAsync(TranslationEngine engine)
+    {
+        int corpusSize = 0;
+        foreach (TranslationEngineCorpus corpus in engine.Corpora)
+        {
+            ITextCorpus? sourceCorpus = await _corpusService.CreateTextCorpusAsync(
+                corpus.CorpusRef,
+                engine.SourceLanguageTag
+            );
+            if (sourceCorpus is null)
+                continue;
+            ITextCorpus? targetCorpus = await _corpusService.CreateTextCorpusAsync(
+                corpus.CorpusRef,
+                engine.TargetLanguageTag
+            );
+            if (targetCorpus is null)
+                continue;
+
+            IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
+
+            corpusSize += parallelCorpus.Count(includeEmpty: false);
+        }
+        return corpusSize;
     }
 
     private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
