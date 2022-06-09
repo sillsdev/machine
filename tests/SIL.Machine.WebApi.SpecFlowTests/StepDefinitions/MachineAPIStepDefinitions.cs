@@ -37,7 +37,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         [Given(@"a new SMT engine for (.*) from (.*) to (.*)")]
         public async Task GivenNewSMTEngine(string user, string source_language, string target_language)
         {
-            var existingTranslationEngines = await client.GetEnginesAsync();
+            var existingTranslationEngines = await client.GetAllEnginesAsync();
             foreach (var translationEngine in existingTranslationEngines)
             {
                 if (translationEngine.Name == user)

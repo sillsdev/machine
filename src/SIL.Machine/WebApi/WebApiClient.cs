@@ -64,36 +64,77 @@ namespace SIL.Machine.WebApi.Client
             }
         }
 
-        public async Task<List<TranslationEngineDto>> GetEnginesAsync()
+        public async Task<IEnumerable<TranslationEngineDto>> GetAllEnginesAsync()
         {
             var request = new RestRequest($"translation-engines");
             var response = await restClient.ExecuteGetAsync(request);
             ThrowResponseIfNotSucessful(response, "Error getting project list.");
-            return JsonConvert.DeserializeObject<List<TranslationEngineDto>>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<IEnumerable<TranslationEngineDto>>(
+                response.Content,
+                SerializerSettings
+            );
+        }
+
+        public async Task<TranslationEngineDto> PostEngineAsync(TranslationEngineConfigDto engineConfig)
+        {
+            var request = new RestRequest($"translation-engines");
+            request.AddStringBody(
+                JsonConvert.SerializeObject(engineConfig, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error creating project.");
+            return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
         public async Task<TranslationEngineDto> GetEngineAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}");
             var response = await restClient.ExecuteGetAsync(request);
-            ThrowResponseIfNotSucessful(response, "Error getting project.");
+            ThrowResponseIfNotSucessful(response, $"Error getting project {engineId}.");
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
 
-        public async Task<TranslationEngineDto> PostEngineAsync(TranslationEngineConfigDto engineConfig)
+        public async Task DeleteEngineAsync(string engineId)
         {
-            var request = new RestRequest($"translation-engines");
-            request.AddStringBody(JsonConvert.SerializeObject(engineConfig, SerializerSettings),dataFormat: DataFormat.Json);
-            var response = await restClient.ExecutePostAsync(request);
-            ThrowResponseIfNotSucessful(response, "Error creating project.");
-            return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
-        }
-
-        public async Task DeleteEngineAsync(string id)
-        {
-            var request = new RestRequest($"translation-engines/{id}");
+            var request = new RestRequest($"translation-engines/{engineId}");
             // will throw error if unsuccessful
             await restClient.DeleteAsync(request);
+        }
+
+        public async Task<TranslationResult> TranslateSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment)
+        {
+            var sourceSegmentArray = sourceSegment.ToArray();
+            var request = new RestRequest($"translation-engines/{engineId}/translate");
+            request.AddJsonBody(JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings));
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error translating on engine {engineId}.");
+            var translationResultDto = JsonConvert.DeserializeObject<TranslationResultDto>(
+                response.Content,
+                SerializerSettings
+            );
+            return CreateTranslationResult(translationResultDto, sourceSegmentArray.Length);
+        }
+
+        public async Task<IEnumerable<TranslationResult>> TranslateSegmentNResultsAsync(
+            string engineId,
+            IReadOnlyList<string> sourceSegment,
+            int numberOfResults
+        )
+        {
+            var sourceSegmentArray = sourceSegment.ToArray();
+            var request = new RestRequest($"translation-engines/{engineId}/translate/{numberOfResults}");
+            request.AddJsonBody(JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings));
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(
+                response,
+                $"Error translating on engine {engineId} for {numberOfResults} results."
+            );
+            var trDtoIEnum = JsonConvert.DeserializeObject<IEnumerable<TranslationResultDto>>(
+                response.Content,
+                SerializerSettings
+            );
+            return trDtoIEnum.Select(trDto => CreateTranslationResult(trDto, sourceSegmentArray.Length));
         }
 
         public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
@@ -122,54 +163,165 @@ namespace SIL.Machine.WebApi.Client
             ThrowResponseIfNotSucessful(response, "Error calling train-segment action.");
         }
 
-        public async Task StartTrainingAsync(string engineId)
+        public async Task<TranslationEngineCorpusDto> PostCorporaToEngineAsync(
+            string engineId,
+            TranslationEngineCorpusConfigDto engineCorpusConfig
+        )
         {
-            await CreateBuildAsync(engineId);
+            var request = new RestRequest($"translation-engines/{engineId}/corpora");
+            request.AddStringBody(
+                JsonConvert.SerializeObject(engineCorpusConfig, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(
+                response,
+                $"Error adding corpora {engineCorpusConfig.CorpusId} to engine {engineId}."
+            );
+            return JsonConvert.DeserializeObject<TranslationEngineCorpusDto>(response.Content, SerializerSettings);
         }
 
-        public async Task TrainAsync(string engineId, Action<ProgressStatus> progress, CancellationToken ct = default)
+        public async Task<IEnumerable<TranslationEngineCorpusDto>> GetAllCorporaFromEngineAsync(string engineId)
         {
-            BuildDto buildDto = await CreateBuildAsync(engineId);
-            progress(CreateProgressStatus(buildDto));
-            await PollBuildProgressAsync(engineId, $"builds/{buildDto.Id}", buildDto.Revision + 1, progress, ct);
+            var request = new RestRequest($"translation-engines/{engineId}/corpora");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting corpora list from project {engineId}.");
+            return JsonConvert.DeserializeObject<IEnumerable<TranslationEngineCorpusDto>>(
+                response.Content,
+                SerializerSettings
+            );
+        }
+
+        public async Task<TranslationEngineCorpusDto> GetCorporaFromEngineAsync(string engineId, string corpusId)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting corpus {corpusId} from project {engineId}.");
+            return JsonConvert.DeserializeObject<TranslationEngineCorpusDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task DeleteCorpusFromEngineAsync(string engineId, string corpusId)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}");
+            // will throw error if unsuccessful
+            await restClient.DeleteAsync(request);
+        }
+
+        public async Task<IEnumerable<PretranslationDto>> GetAllPrestranslationsFromCorporaFromEngineAsync(
+            string engineId,
+            string corpusId
+        )
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}/pretranslations");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(
+                response,
+                $"Error getting pretranslation list from corpora {corpusId} from project {engineId}."
+            );
+            return JsonConvert.DeserializeObject<IEnumerable<PretranslationDto>>(response.Content, SerializerSettings);
+        }
+
+        public async Task<PretranslationDto> GetPrestranslationFromCorporaFromEngineAsync(
+            string engineId,
+            string corpusId,
+            string pretranslationId
+        )
+        {
+            var request = new RestRequest(
+                $"translation-engines/{engineId}/corpora/{corpusId}/pretranslations/{pretranslationId}"
+            );
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(
+                response,
+                $"Error getting pretranslation {pretranslationId} from corpora {corpusId} from project {engineId}."
+            );
+            return JsonConvert.DeserializeObject<PretranslationDto>(response.Content, SerializerSettings);
+        }
+
+        private async Task<IEnumerable<BuildDto>> GetAllBuildsAsync(string engineId)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/builds");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting builds for engine {engineId}.");
+            return JsonConvert.DeserializeObject<IEnumerable<BuildDto>>(response.Content, SerializerSettings);
+        }
+
+        private async Task<BuildDto> PostBuildAsync(string engineId)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/builds");
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error building engine {engineId}.");
+            return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+        }
+
+        private async Task<BuildDto> GetBuildAsync(string engineId, string buildId, int minRevision = 0)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/builds{buildId}?minRevision={minRevision}");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting build {buildId} for engine {engineId}.");
+            return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+        }
+
+        private async Task<BuildDto> GetCurrentBuildAsync(string engineId, int minRevision = 0)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/current-build?minRevision={minRevision}");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting current build for engine {engineId}.");
+            return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+        }
+
+        private async Task CancelCurrentBuildAsync(string engineId)
+        {
+            var request = new RestRequest($"translation-engines/{engineId}/current-build/cancel");
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error cancelling current build for engine {engineId}.");
+        }
+
+        public async Task TrainAsync(
+            string engineId,
+            Action<ProgressStatus> updateWithProgress,
+            CancellationToken ct = default
+        )
+        {
+            BuildDto buildDto = await PostBuildAsync(engineId);
+            updateWithProgress(CreateProgressStatus(buildDto));
+            await PollBuildProgressAsync(
+                engineId,
+                $"builds/{buildDto.Id}",
+                buildDto.Revision + 1,
+                updateWithProgress,
+                ct
+            );
         }
 
         public async Task ListenForTrainingStatusAsync(
             string engineId,
-            Action<ProgressStatus> progress,
+            Action<ProgressStatus> updateWithProgress,
             CancellationToken ct = default
         )
         {
-            await PollBuildProgressAsync(engineId, "current-build", 0, progress, ct);
-        }
-
-        private async Task<BuildDto> CreateBuildAsync(string engineId)
-        {
-            var request = new RestRequest($"translation-engines/{engineId}/builds");
-            var response = await restClient.ExecutePostAsync(request);
-            ThrowResponseIfNotSucessful(response, "Error building engine.");
-            return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
+            await PollBuildProgressAsync(engineId, "current-build", 0, updateWithProgress, ct);
         }
 
         private async Task PollBuildProgressAsync(
             string engineId,
             string buildRelativeUrl,
             int minRevision,
-            Action<ProgressStatus> progress,
-            CancellationToken ct
+            Action<ProgressStatus> updateWithProgress,
+            CancellationToken ct = default
         )
         {
             while (true)
             {
                 ct.ThrowIfCancellationRequested();
                 var request = new RestRequest(
-                    $"translation/engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}"
+                    $"translation-engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}"
                 );
                 var response = await restClient.ExecuteGetAsync(request, ct);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
-                    progress(CreateProgressStatus(buildDto));
+                    updateWithProgress(CreateProgressStatus(buildDto));
                     buildRelativeUrl = $"builds/{buildDto.Id}";
                     if (buildDto.State == BuildState.Completed || buildDto.State == BuildState.Canceled)
                         break;
@@ -192,6 +344,80 @@ namespace SIL.Machine.WebApi.Client
                     ThrowResponseIfNotSucessful(response, "Error getting build status.");
                 }
             }
+        }
+
+        public async Task<IEnumerable<CorpusDto>> GetAllCorporaAsync()
+        {
+            var request = new RestRequest($"corpora");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error getting corpus list.");
+            return JsonConvert.DeserializeObject<IEnumerable<CorpusDto>>(response.Content, SerializerSettings);
+        }
+
+        public async Task<CorpusDto> PostCorporaAsync(CorpusConfigDto corpusConfig)
+        {
+            var request = new RestRequest($"corpora");
+            request.AddStringBody(
+                JsonConvert.SerializeObject(corpusConfig, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, "Error creating project.");
+            return JsonConvert.DeserializeObject<CorpusDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task<CorpusDto> GetCorporaAsync(string corpusId)
+        {
+            var request = new RestRequest($"corpora/{corpusId}");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting Corpus {corpusId}.");
+            return JsonConvert.DeserializeObject<CorpusDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task DeleteCorpusAsync(string corpusId)
+        {
+            var request = new RestRequest($"corpora/{corpusId}");
+            // will throw error if unsuccessful
+            await restClient.DeleteAsync(request);
+        }
+
+        public async Task<IEnumerable<DataFileDto>> GetAllCorporaFilesAsync(string corpusId)
+        {
+            var request = new RestRequest($"corpora/{corpusId}/files");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting corpus {corpusId} file list.");
+            return JsonConvert.DeserializeObject<IEnumerable<DataFileDto>>(response.Content, SerializerSettings);
+        }
+
+        public async Task<DataFileDto> PostCorporaFileAsync(
+            string corpusId,
+            string languageTag,
+            string textId,
+            string filePath
+        )
+        {
+            var request = new RestRequest($"corpora/{corpusId}/files");
+            request.AddParameter(name: "languageTag", value: languageTag);
+            request.AddParameter(name: "textId", value: textId);
+            request.AddFile(name: textId, path: filePath);
+            var response = await restClient.ExecutePostAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error posting {filePath} to {corpusId}.");
+            return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task<DataFileDto> GetCorporaFileAsync(string corpusId, string fileId)
+        {
+            var request = new RestRequest($"corpora/{corpusId}/files/{fileId}");
+            var response = await restClient.ExecuteGetAsync(request);
+            ThrowResponseIfNotSucessful(response, $"Error getting file {fileId} from {corpusId}.");
+            return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
+        }
+
+        public async Task DeleteCorpusFileAsync(string corpusId, string fileId)
+        {
+            var request = new RestRequest($"corpora/{corpusId}/files/{fileId}");
+            // will throw error if unsuccessful
+            await restClient.DeleteAsync(request);
         }
 
         private static ProgressStatus CreateProgressStatus(BuildDto buildDto)
