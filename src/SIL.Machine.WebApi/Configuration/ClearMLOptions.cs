@@ -8,7 +8,6 @@ public class ClearMLOptions
     public string Queue { get; set; } = "default";
     public string AccessKey { get; set; } = "";
     public string SecretKey { get; set; } = "";
-    public string Branch { get; set; } = "release";
     public TimeSpan BuildPollingTimeout { get; set; } = TimeSpan.FromSeconds(2);
-    public int? MaxStep { get; set; }
+    public int MaxStep { get; set; } = 500_000;
 }

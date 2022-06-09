@@ -65,26 +65,21 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        string scheme = buildUri.Scheme;
-        string uri = buildUri.ToString().Substring(scheme.Length + 3);
-        string entryPoint =
-            $"-m machine.webapi.clearml_nmt_engine_build_job "
-            + $"--src-lang {sourceLanguageTag} "
-            + $"--trg-lang {targetLanguageTag} "
-            + $"--build-uri-scheme {scheme} "
-            + $"--build-uri {uri}";
-        if (_options.CurrentValue.MaxStep is not null)
-            entryPoint += $" --max-step {_options.CurrentValue.MaxStep}";
+        string script =
+            "from machine.webapi.clearml_nmt_engine_build_job import run\n"
+            + "args = {\n"
+            + $"    'src_lang': '{sourceLanguageTag}',\n"
+            + $"    'trg_lang': '{targetLanguageTag}',\n"
+            + $"    'build_uri': '{buildUri}',\n"
+            + $"    'max_step': {_options.CurrentValue.MaxStep}\n"
+            + "}\n"
+            + "run(args)\n";
+
         var body = new JsonObject
         {
             ["name"] = name,
             ["project"] = projectId,
-            ["script"] = new JsonObject
-            {
-                ["repository"] = "https://github.com/sillsdev/machine.py.git",
-                ["entry_point"] = entryPoint,
-                ["branch"] = _options.CurrentValue.Branch
-            },
+            ["script"] = new JsonObject { ["diff"] = script },
             ["container"] = new JsonObject
             {
                 ["image"] = "ghcr.io/sillsdev/machine.py:latest",
