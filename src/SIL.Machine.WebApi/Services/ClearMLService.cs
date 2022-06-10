@@ -20,7 +20,11 @@ public class ClearMLService : IClearMLService
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
-        var body = new JsonObject { ["name"] = $"Machine/{name}", ["only_fields"] = new JsonArray("id") };
+        var body = new JsonObject
+        {
+            ["name"] = $"{_options.CurrentValue.RootProject}/{name}",
+            ["only_fields"] = new JsonArray("id")
+        };
         JsonObject? result = await CallAsync("projects", "get_all", body, cancellationToken);
         var projects = (JsonArray?)result?["data"]?["projects"];
         if (projects is null)
@@ -36,7 +40,7 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["name"] = $"Machine/{name}" };
+        var body = new JsonObject { ["name"] = $"{_options.CurrentValue.RootProject}/{name}" };
         if (description != null)
             body["description"] = description;
         JsonObject? result = await CallAsync("projects", "create", body, cancellationToken);
