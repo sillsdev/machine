@@ -11,7 +11,7 @@ public class BuildServiceTests
         Task task = Task.Run(
             async () =>
             {
-                await Task.Delay(10);
+                await Task.Delay(50);
                 var build = new Build { ParentRef = "engine1", PercentCompleted = 0.1 };
                 await builds.InsertAsync(build);
             }
@@ -33,7 +33,7 @@ public class BuildServiceTests
         Task task = Task.Run(
             async () =>
             {
-                await Task.Delay(10);
+                await Task.Delay(50);
                 await builds.UpdateAsync(build, u => u.Set(b => b.PercentCompleted, 0.1));
             }
         );
@@ -54,7 +54,7 @@ public class BuildServiceTests
         Task task = Task.Run(
             async () =>
             {
-                await Task.Delay(10);
+                await Task.Delay(50);
                 await builds.DeleteAsync(build);
             }
         );
