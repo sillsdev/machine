@@ -1,6 +1,4 @@
-using Newtonsoft.Json;
-using RestSharp;
-using RestSharp.Authenticators;
+using NUnit.Framework;
 using SIL.Machine.WebApi.Client;
 
 namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
@@ -9,6 +7,8 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
     public sealed class MachineApiStepDefinitions
     {
         const string MACHINE_API_TEST_URL = "https://machine-api.org/"; // localhost "http://machine-api.vcap.me/" QA server: https://machine-api.org/
+        readonly Dictionary<string, string> EnginePerUser = new();
+        readonly Dictionary<string, string> CorporaPerName = new();
 
         // For additional details on SpecFlow step definitions see https://go.specflow.org/doc-stepdef
         private readonly WebApiClient client;
@@ -45,7 +45,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
                     await client.DeleteEngineAsync(translationEngine.Id);
                 }
             }
-            await client.PostEngineAsync(
+            var engine = await client.PostEngineAsync(
                 new TranslationEngineConfigDto()
                 {
                     Name = user,
@@ -54,30 +54,130 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
                     Type = TranslationEngineType.SmtTransfer
                 }
             );
+            EnginePerUser.Add(user, engine.Id);
         }
 
-        [Given(@"(.*) corpora for (.*) in (.*)")]
-        public void GivenCorporaForEngine(string corpora, string user, string language)
+        [Given(@"a new (.*) corpora named (.*) for (.*)")]
+        public async Task GivenCorporaForEngine(string fileFormatString, string corpora, string user)
         {
-            throw new PendingStepException();
+            if (!Enum.TryParse(fileFormatString, ignoreCase: true, result: out FileFormat fileFormat))
+                throw new ArgumentException(
+                    "Corpus format type needs to be one of: " + string.Join(", ", EnumToStringList<FileFormat>())
+                );
+            var corpusId = await PostCorpus(corporaName: corpora, fileFormat: fileFormat);
+            var engineId = await GetEngineFromUser(user);
+            await client.PostCorporaToEngineAsync(engineId, corpusId);
+        }
+
+        [Given(@"(.*) are added to corpora (.*) in (.*) and (.*)")]
+        public async Task AddFilesToCorpora(string filesToAddString, string corporaName, string language1, string language2)
+        {
+            var filesToAdd = filesToAddString.Split(", ");
+            var corpusId = await GetCorporaFromName(corporaName);
+            await PostFilesToCorpus(corpusId: corpusId, filesToAdd: filesToAdd, language: language1);
+            await PostFilesToCorpus(corpusId: corpusId, filesToAdd: filesToAdd, language: language2);
         }
 
         [When(@"the engine is built for (.*)")]
-        public void WhenEngineIsBuild(string user)
+        public async Task WhenEngineIsBuild(string user)
         {
-            throw new PendingStepException();
+            var engineId = await GetEngineFromUser(user);
+            await client.PostBuildAsync(engineId);
         }
 
         [When(@"a translation for (.*) is added with ""(.*)"" for ""(.*)""")]
-        public void WhenTranslationAdded(string user, string targetSegment, string sourceSegment)
+        public async Task WhenTranslationAdded(string user, string targetSegment, string sourceSegment)
         {
-            throw new PendingStepException();
+            var engineId = await GetEngineFromUser(user);
+            await client.TrainSegmentPairAsync(engineId: engineId, targetSegment.Split(" "), sourceSegment.Split(" "));
         }
 
         [Then(@"the translation for (.*) for ""(.*)"" should be ""(.*)""")]
-        public void ThenTheTranslationShouldBe(string user, string sourceSegment, string targetSegment)
+        public async Task ThenTheTranslationShouldBe(string user, string sourceSegment, string targetSegment)
         {
-            throw new PendingStepException();
+            var engineId = await GetEngineFromUser(user);
+            var translation = await client.TranslateSegmentAsync(engineId, sourceSegment.Split(" "));
+            Assert.AreSame(translation.ToString(), targetSegment);
         }
+
+        public async Task<string> GetEngineFromUser(string user)
+        {
+            if (EnginePerUser.ContainsKey(user))
+                return EnginePerUser[user];
+            var engines = await client.GetAllEnginesAsync();
+            foreach (var engine in engines)
+            {
+                if (engine.Name == user)
+                    return engine.Id;
+            }
+            throw new ArgumentException($"No engine for user {user} available.");
+        }
+
+        public async Task<string> GetCorporaFromName(string corporaName)
+        {
+            if (CorporaPerName.ContainsKey(corporaName))
+                return CorporaPerName[corporaName];
+            var allCorpora = await client.GetAllCorporaAsync();
+            foreach (var corpus in allCorpora)
+            {
+                if (corpus.Name == corporaName)
+                    return corpus.Id;
+            }
+            throw new ArgumentException($"No corpus of name {corporaName} available.");
+        }
+
+        public async Task<string> PostCorpus(string corporaName, FileFormat fileFormat)
+        {
+            if (CorporaPerName.ContainsKey(corporaName))
+                // we have already used it for this test.  Just return the id.
+                return CorporaPerName[corporaName];
+            var allCorpora = await client.GetAllCorporaAsync();
+            foreach (var corpus in allCorpora)
+            {
+                if (corpus.Name == corporaName)
+                {
+                    // we want to recreate it to test out the process.
+                    await client.DeleteCorpusAsync(corpus.Id);
+                }
+            }
+            var newCorpus = await client.PostCorporaAsync(
+                new CorpusConfigDto
+                {
+                    Name = corporaName,
+                    Type = CorpusType.Text,
+                    Format = fileFormat
+                }
+            );
+            CorporaPerName.Add(corporaName, newCorpus.Id);
+            return newCorpus.Id;
+        }
+
+        public async Task PostFilesToCorpus(string corpusId, IEnumerable<string> filesToAdd, string language)
+        {
+            string languageFolder = Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "data", language)
+            );
+            if (!Directory.Exists(languageFolder))
+                throw new ArgumentException($"The langauge data directory {languageFolder} does not exist!");
+            // Collect files for the corpus
+            var files = Directory.GetFiles(languageFolder);
+            if (files.Length == 0)
+                throw new ArgumentException($"The langauge data directory {languageFolder} contains no files!");
+            foreach (var fileName in filesToAdd)
+            {
+                string filePath = Path.GetFullPath(
+                    Path.Combine(languageFolder, fileName)
+                );
+                if (!File.Exists(filePath))
+                    throw new FileNotFoundException($"The corpus file {filePath} does not exist!");
+                await client.PostCorporaFileAsync(corpusId: corpusId, languageTag: language, textId: fileName, filePath: filePath);
+            }
+        }
+
+        public static IEnumerable<string> EnumToStringList<T>() where T : Enum
+        {
+            return ((IEnumerable<T>)Enum.GetValues(typeof(T))).Select(v => v.ToString());
+        }
+            
     }
 }

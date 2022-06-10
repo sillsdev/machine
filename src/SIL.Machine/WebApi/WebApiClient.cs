@@ -165,9 +165,14 @@ namespace SIL.Machine.WebApi.Client
 
         public async Task<TranslationEngineCorpusDto> PostCorporaToEngineAsync(
             string engineId,
-            TranslationEngineCorpusConfigDto engineCorpusConfig
+            string corpusId,
+            bool pretranslateCorpus = false
         )
         {
+            var engineCorpusConfig = new TranslationEngineCorpusConfigDto() {
+                CorpusId = corpusId,
+                Pretranslate = pretranslateCorpus
+            };
             var request = new RestRequest($"translation-engines/{engineId}/corpora");
             request.AddStringBody(
                 JsonConvert.SerializeObject(engineCorpusConfig, SerializerSettings),
@@ -238,7 +243,7 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<PretranslationDto>(response.Content, SerializerSettings);
         }
 
-        private async Task<IEnumerable<BuildDto>> GetAllBuildsAsync(string engineId)
+        public async Task<IEnumerable<BuildDto>> GetAllBuildsAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds");
             var response = await restClient.ExecuteGetAsync(request);
@@ -246,7 +251,7 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<IEnumerable<BuildDto>>(response.Content, SerializerSettings);
         }
 
-        private async Task<BuildDto> PostBuildAsync(string engineId)
+        public async Task<BuildDto> PostBuildAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds");
             var response = await restClient.ExecutePostAsync(request);
@@ -254,7 +259,7 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
 
-        private async Task<BuildDto> GetBuildAsync(string engineId, string buildId, int minRevision = 0)
+        public async Task<BuildDto> GetBuildAsync(string engineId, string buildId, int minRevision = 0)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds{buildId}?minRevision={minRevision}");
             var response = await restClient.ExecuteGetAsync(request);
@@ -262,7 +267,7 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
 
-        private async Task<BuildDto> GetCurrentBuildAsync(string engineId, int minRevision = 0)
+        public async Task<BuildDto> GetCurrentBuildAsync(string engineId, int minRevision = 0)
         {
             var request = new RestRequest($"translation-engines/{engineId}/current-build?minRevision={minRevision}");
             var response = await restClient.ExecuteGetAsync(request);
@@ -270,7 +275,7 @@ namespace SIL.Machine.WebApi.Client
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
 
-        private async Task CancelCurrentBuildAsync(string engineId)
+        public async Task CancelCurrentBuildAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/current-build/cancel");
             var response = await restClient.ExecutePostAsync(request);
