@@ -2,9 +2,9 @@
 
 public class UnigramTruecaserFactory : ITruecaserFactory
 {
-    private readonly IOptions<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
 
-    public UnigramTruecaserFactory(IOptions<TranslationEngineOptions> engineOptions)
+    public UnigramTruecaserFactory(IOptionsMonitor<TranslationEngineOptions> engineOptions)
     {
         _engineOptions = engineOptions;
     }
@@ -32,6 +32,6 @@ public class UnigramTruecaserFactory : ITruecaserFactory
 
     private string GetModelPath(string engineId)
     {
-        return Path.Combine(_engineOptions.Value.EnginesDir, engineId, "unigram-casing-model.txt");
+        return Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "unigram-casing-model.txt");
     }
 }

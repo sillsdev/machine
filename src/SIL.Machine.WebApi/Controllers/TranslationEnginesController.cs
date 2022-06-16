@@ -8,7 +8,7 @@ public class TranslationEnginesController : ControllerBase
     private readonly ICorpusService _corpusService;
     private readonly IBuildService _buildService;
     private readonly IPretranslationService _pretranslationService;
-    private readonly IOptions<ApiOptions> _apiOptions;
+    private readonly IOptionsMonitor<ApiOptions> _apiOptions;
     private readonly IMapper _mapper;
 
     public TranslationEnginesController(
@@ -17,7 +17,7 @@ public class TranslationEnginesController : ControllerBase
         ICorpusService corpusService,
         IBuildService buildService,
         IPretranslationService pretranslationService,
-        IOptions<ApiOptions> apiOptions,
+        IOptionsMonitor<ApiOptions> apiOptions,
         IMapper mapper
     ) : base(authService)
     {
@@ -458,7 +458,7 @@ public class TranslationEnginesController : ControllerBase
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetNewerRevisionAsync(buildId, minRevision.Value, ct),
-                _apiOptions.Value.LongPollTimeout,
+                _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken
             );
             return change.Type switch
@@ -533,7 +533,7 @@ public class TranslationEnginesController : ControllerBase
         {
             EntityChange<Build> change = await TaskEx.Timeout(
                 ct => _buildService.GetActiveNewerRevisionAsync(id, minRevision.Value, ct),
-                _apiOptions.Value.LongPollTimeout,
+                _apiOptions.CurrentValue.LongPollTimeout,
                 cancellationToken
             );
             return change.Type switch

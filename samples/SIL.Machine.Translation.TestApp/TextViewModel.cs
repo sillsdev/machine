@@ -158,9 +158,9 @@ namespace SIL.Machine.Translation.TestApp
             }
         }
 
-        internal bool IsApproved(RowRef segmentRef)
+        internal bool IsApproved(TextFileRef segmentRef)
         {
-            return _approvedSegments.Contains(int.Parse(segmentRef.Keys[1]) - 1);
+            return _approvedSegments.Contains(segmentRef.LineNum - 1);
         }
 
         private void LoadMetadataFile()

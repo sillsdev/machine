@@ -2,7 +2,7 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IMachineBuilder AddMachine(this IServiceCollection services)
+    public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? config = null)
     {
         services.AddSingleton<ICorpusService, CorpusService>();
         services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
@@ -13,13 +13,13 @@ public static class IServiceCollectionExtensions
             );
         services.AddSingleton<IPretranslationService, PretranslationService>();
         services.AddSingleton<IBuildService, BuildService>();
+        services.AddSingleton<IClearMLService, ClearMLService>();
+        services.AddSingleton<ISharedFileService, SharedFileService>();
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
         var builder = new MachineBuilder(services)
-            .AddTranslationEngineOptions(o => { })
-            .AddCorpusOptions(o => { })
-            .AddApiOptions(o => { })
+            .AddOptions(config)
             .AddThotSmtModel()
             .AddTransferEngine()
             .AddUnigramTruecaser()

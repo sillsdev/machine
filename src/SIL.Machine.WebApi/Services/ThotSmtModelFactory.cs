@@ -2,10 +2,13 @@
 
 public class ThotSmtModelFactory : ISmtModelFactory
 {
-    private readonly IOptions<ThotSmtModelOptions> _options;
-    private readonly IOptions<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<ThotSmtModelOptions> _options;
+    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
 
-    public ThotSmtModelFactory(IOptions<ThotSmtModelOptions> options, IOptions<TranslationEngineOptions> engineOptions)
+    public ThotSmtModelFactory(
+        IOptionsMonitor<ThotSmtModelOptions> options,
+        IOptionsMonitor<TranslationEngineOptions> engineOptions
+    )
     {
         _options = options;
         _engineOptions = engineOptions;
@@ -13,28 +16,28 @@ public class ThotSmtModelFactory : ISmtModelFactory
 
     public IInteractiveTranslationModel Create(string engineId)
     {
-        string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
+        string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
         var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName);
         return model;
     }
 
     public ITrainer CreateTrainer(string engineId, IParallelTextCorpus corpus)
     {
-        string smtConfigFileName = Path.Combine(_engineOptions.Value.EnginesDir, engineId, "smt.cfg");
+        string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
         return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName);
     }
 
     public void InitNew(string engineId)
     {
-        string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
             Directory.CreateDirectory(engineDir);
-        ZipFile.ExtractToDirectory(_options.Value.NewModelFile, engineDir);
+        ZipFile.ExtractToDirectory(_options.CurrentValue.NewModelFile, engineDir);
     }
 
     public void Cleanup(string engineId)
     {
-        string engineDir = Path.Combine(_engineOptions.Value.EnginesDir, engineId);
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
             return;
         string lmDir = Path.Combine(engineDir, "lm");

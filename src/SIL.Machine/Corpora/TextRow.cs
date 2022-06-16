@@ -5,14 +5,17 @@ namespace SIL.Machine.Corpora
 {
     public class TextRow : IRow
     {
-        public TextRow(object rowRef)
+        public TextRow(string textId, object rowRef)
         {
+            TextId = textId;
             Ref = rowRef;
         }
 
+        public string TextId { get; }
+
         public object Ref { get; }
 
-        public bool IsEmpty { get; set; } = true;
+        public bool IsEmpty => Segment.Count == 0;
 
         public bool IsSentenceStart { get; set; } = true;
 

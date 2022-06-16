@@ -20,14 +20,14 @@ namespace SIL.Machine.Translation.Thot
                             "text1",
                             new[]
                             {
-                                Segment(1, "¿ le importaría darnos las llaves de la habitación , por favor ?"),
-                                Segment(
+                                Row(1, "¿ le importaría darnos las llaves de la habitación , por favor ?"),
+                                Row(
                                     2,
                                     "he hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y televisión a nombre de rosario cabedo ."
                                 ),
-                                Segment(3, "¿ le importaría cambiarme a otra habitación más tranquila ?"),
-                                Segment(4, "por favor , tengo reservada una habitación ."),
-                                Segment(5, "me parece que existe un problema .")
+                                Row(3, "¿ le importaría cambiarme a otra habitación más tranquila ?"),
+                                Row(4, "por favor , tengo reservada una habitación ."),
+                                Row(5, "me parece que existe un problema .")
                             }
                         )
                     }
@@ -40,14 +40,14 @@ namespace SIL.Machine.Translation.Thot
                             "text1",
                             new[]
                             {
-                                Segment(1, "would you mind giving us the keys to the room , please ?"),
-                                Segment(
+                                Row(1, "would you mind giving us the keys to the room , please ?"),
+                                Row(
                                     2,
                                     "i have made a reservation for a quiet , double room with a ||| telephone ||| and a tv for rosario cabedo ."
                                 ),
-                                Segment(3, "would you mind moving me to a quieter room ?"),
-                                Segment(4, "i have booked a room ."),
-                                Segment(5, "i think that there is a problem .")
+                                Row(3, "would you mind moving me to a quieter room ?"),
+                                Row(4, "i have booked a room ."),
+                                Row(5, "i think that there is a problem .")
                             }
                         )
                     }
@@ -123,14 +123,14 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        private static TextRow Segment(int key, string text)
+        private static TextRow Row(int rowRef, string text)
         {
-            return new TextRow(new RowRef(key)) { Segment = text.Split(), IsEmpty = text.Length == 0 };
+            return new TextRow("text1", rowRef) { Segment = text.Split() };
         }
 
-        private static AlignmentRow Alignment(int key, params AlignedWordPair[] pairs)
+        private static AlignmentRow Alignment(int rowRef, params AlignedWordPair[] pairs)
         {
-            return new AlignmentRow(new RowRef(key)) { AlignedWordPairs = pairs };
+            return new AlignmentRow("text1", rowRef) { AlignedWordPairs = pairs };
         }
     }
 }

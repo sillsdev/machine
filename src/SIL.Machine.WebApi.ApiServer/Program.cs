@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -54,14 +55,14 @@ builder.Services.AddAuthorization(
 builder.Services.AddSingleton<IAuthorizationHandler, HasScopeHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, IsEntityOwnerHandler>();
 
-builder.Services
-    .AddMachine()
+var machineBuilder = builder.Services
+    .AddMachine(builder.Configuration)
     .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-    .AddTranslationEngineOptions(builder.Configuration.GetSection("TranslationEngine"))
-    .AddCorpusOptions(builder.Configuration.GetSection("Corpus"))
-    .AddServiceOptions(builder.Configuration.GetSection("Service"))
     .AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
     .AddTranslationEngineService();
+
+if (builder.Environment.IsDevelopment())
+    machineBuilder.AddBackgroundJobServer(builder.Configuration.GetSection("Job:Queues").Get<string[]?>());
 
 builder.Services.AddSwaggerDocument(
     doc =>
@@ -122,5 +123,10 @@ app.UseAuthorization();
 app.MapControllers();
 
 await app.UseMachineAsync();
+
+if (builder.Environment.IsDevelopment())
+{
+    app.UseHangfireDashboard();
+}
 
 app.Run();

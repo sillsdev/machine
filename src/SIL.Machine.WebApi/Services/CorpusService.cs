@@ -2,11 +2,11 @@
 
 public class CorpusService : EntityServiceBase<Corpus>, ICorpusService
 {
-    private readonly IOptions<CorpusOptions> _corpusOptions;
+    private readonly IOptionsMonitor<CorpusOptions> _options;
 
-    public CorpusService(IRepository<Corpus> corpora, IOptions<CorpusOptions> corpusOptions) : base(corpora)
+    public CorpusService(IRepository<Corpus> corpora, IOptionsMonitor<CorpusOptions> options) : base(corpora)
     {
-        _corpusOptions = corpusOptions;
+        _options = options;
     }
 
     public async Task<IEnumerable<Corpus>> GetAllAsync(string owner)
@@ -75,6 +75,6 @@ public class CorpusService : EntityServiceBase<Corpus>, ICorpusService
 
     private string GetDataFilePath(DataFile dataFile)
     {
-        return Path.Combine(_corpusOptions.Value.DataFilesDir, dataFile.Filename);
+        return Path.Combine(_options.CurrentValue.DataFilesDir, dataFile.Filename);
     }
 }

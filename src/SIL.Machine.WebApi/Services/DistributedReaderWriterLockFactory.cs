@@ -2,12 +2,12 @@
 
 public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFactory
 {
-    private readonly IOptions<ServiceOptions> _serviceOptions;
+    private readonly ServiceOptions _serviceOptions;
     private readonly IRepository<RWLock> _locks;
 
     public DistributedReaderWriterLockFactory(IOptions<ServiceOptions> serviceOptions, IRepository<RWLock> locks)
     {
-        _serviceOptions = serviceOptions;
+        _serviceOptions = serviceOptions.Value;
         _locks = locks;
     }
 
@@ -20,7 +20,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     public IDistributedReaderWriterLock Create(string id)
     {
-        return new DistributedReaderWriterLock(_serviceOptions.Value.ServiceId, _locks, id);
+        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, id);
     }
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     private async Task ReleaseAllWriterLocksAsync()
     {
-        string hostId = _serviceOptions.Value.ServiceId;
+        string hostId = _serviceOptions.ServiceId;
         IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(
             rwl => rwl.WriterLock != null && rwl.WriterLock.HostId == hostId
         );
@@ -43,7 +43,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     private async Task ReleaseAllReaderLocksAsync()
     {
-        string hostId = _serviceOptions.Value.ServiceId;
+        string hostId = _serviceOptions.ServiceId;
         IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.ReaderLocks.Any(l => l.HostId == hostId));
         var tasks = new List<Task>();
         foreach (RWLock rwLock in rwLocks)
@@ -55,7 +55,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     private async Task RemoveAllWaitersAsync()
     {
-        string hostId = _serviceOptions.Value.ServiceId;
+        string hostId = _serviceOptions.ServiceId;
         IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.WriterQueue.Any(l => l.HostId == hostId));
         var tasks = new List<Task>();
         foreach (RWLock rwLock in rwLocks)

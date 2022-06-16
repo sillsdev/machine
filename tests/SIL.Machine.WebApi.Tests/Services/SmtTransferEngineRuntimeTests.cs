@@ -56,8 +56,6 @@ public class SmtTransferEngineRuntimeTests
         Assert.That(build.State, Is.EqualTo(BuildState.Active));
         await env.Runtime.CancelBuildAsync();
         await env.WaitForBuildToFinishAsync(build.Id);
-        env.SmtBatchTrainer.Received().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
-        env.TruecaserTrainer.DidNotReceive().Train(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<Action>());
         env.SmtBatchTrainer.DidNotReceive().Save();
         await env.TruecaserTrainer.DidNotReceive().SaveAsync();
         build = env.Builds.Get(build.Id);
@@ -211,15 +209,18 @@ public class SmtTransferEngineRuntimeTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "smt_transfer" }
+                Queues = new[] { "smt_transfer" },
+                CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
         private SmtTransferEngineRuntime CreateRuntime()
         {
+            var engineOptions = Substitute.For<IOptionsMonitor<TranslationEngineOptions>>();
+            engineOptions.CurrentValue.Returns(EngineOptions);
             return new SmtTransferEngineRuntime(
-                new OptionsWrapper<TranslationEngineOptions>(EngineOptions),
+                engineOptions,
                 Engines,
                 Builds,
                 TrainSegmentPairs,

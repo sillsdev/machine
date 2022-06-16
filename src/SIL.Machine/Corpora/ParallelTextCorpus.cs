@@ -106,12 +106,9 @@ namespace SIL.Machine.Corpora
                             }
                             rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
                             targetSameRefRows.Clear();
-                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
                             if (rangeInfo.IsSourceEmpty)
-                            {
-                                rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
                                 rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            }
+                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
                         }
                         else
                         {
@@ -144,12 +141,9 @@ namespace SIL.Machine.Corpora
                             }
                             rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
                             sourceSameRefRows.Clear();
-                            rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
                             if (rangeInfo.IsTargetEmpty)
-                            {
-                                rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
                                 rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                            }
+                            rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
                         }
                         else
                         {
@@ -208,22 +202,17 @@ namespace SIL.Machine.Corpora
                                 yield return rangeInfo.CreateRow();
                             }
 
+                            rangeInfo.TextId = srcEnumerator.Current.TextId;
                             rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
                             rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
                             sourceSameRefRows.Clear();
                             targetSameRefRows.Clear();
+                            if (rangeInfo.IsSourceEmpty)
+                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
+                            if (rangeInfo.IsTargetEmpty)
+                                rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
                             rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
                             rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
-                            if (rangeInfo.IsSourceEmpty)
-                            {
-                                rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
-                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            }
-                            if (rangeInfo.IsTargetEmpty)
-                            {
-                                rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
-                                rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                            }
                         }
                         else
                         {
@@ -286,14 +275,12 @@ namespace SIL.Machine.Corpora
                 {
                     if (!AllTargetRows && srcEnumerator.Current.IsInRange)
                     {
+                        rangeInfo.TextId = srcEnumerator.Current.TextId;
                         rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
                         targetSameRefRows.Clear();
-                        rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
                         if (rangeInfo.IsSourceEmpty)
-                        {
-                            rangeInfo.IsSourceEmpty = srcEnumerator.Current.IsEmpty;
                             rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                        }
+                        rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
                     }
                     else
                     {
@@ -311,14 +298,12 @@ namespace SIL.Machine.Corpora
                 {
                     if (!AllSourceRows && trgEnumerator.Current.IsInRange)
                     {
+                        rangeInfo.TextId = trgEnumerator.Current.TextId;
                         rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
                         sourceSameRefRows.Clear();
-                        rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
                         if (rangeInfo.IsTargetEmpty)
-                        {
-                            rangeInfo.IsTargetEmpty = trgEnumerator.Current.IsEmpty;
                             rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                        }
+                        rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
                     }
                     else
                     {
@@ -347,9 +332,17 @@ namespace SIL.Machine.Corpora
             if (rangeInfo.IsInRange)
                 yield return rangeInfo.CreateRow();
 
+            string textId;
+            if (srcRow != null)
+                textId = srcRow.TextId;
+            else if (trgRow != null)
+                textId = trgRow.TextId;
+            else
+                throw new ArgumentNullException("Either a source or target must be specified.");
+
             var sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
             var targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
-            yield return new ParallelTextRow(sourceRefs, targetRefs)
+            yield return new ParallelTextRow(textId, sourceRefs, targetRefs)
             {
                 SourceSegment = srcRow != null ? srcRow.Segment : Array.Empty<string>(),
                 TargetSegment = trgRow != null ? trgRow.Segment : Array.Empty<string>(),
@@ -359,8 +352,7 @@ namespace SIL.Machine.Corpora
                 IsSourceRangeStart = srcRow != null && srcRow.IsRangeStart,
                 IsTargetSentenceStart = trgRow != null && trgRow.IsSentenceStart,
                 IsTargetInRange = trgRow != null && trgRow.IsInRange,
-                IsTargetRangeStart = trgRow != null && trgRow.IsRangeStart,
-                IsEmpty = srcRow == null || srcRow.IsEmpty || trgRow == null || trgRow.IsEmpty
+                IsTargetRangeStart = trgRow != null && trgRow.IsRangeStart
             };
         }
 
@@ -416,6 +408,7 @@ namespace SIL.Machine.Corpora
 
         private class RangeInfo
         {
+            public string TextId { get; set; } = "";
             public List<object> SourceRefs { get; } = new List<object>();
             public List<object> TargetRefs { get; } = new List<object>();
             public List<string> SourceSegment { get; } = new List<string>();
@@ -423,27 +416,25 @@ namespace SIL.Machine.Corpora
             public bool IsSourceSentenceStart { get; set; } = false;
             public bool IsTargetSentenceStart { get; set; } = false;
             public bool IsInRange => SourceRefs.Count > 0 && TargetRefs.Count > 0;
-            public bool IsSourceEmpty { get; set; } = true;
-            public bool IsTargetEmpty { get; set; } = true;
+            public bool IsSourceEmpty => SourceSegment.Count == 0;
+            public bool IsTargetEmpty => TargetSegment.Count == 0;
 
             public ParallelTextRow CreateRow()
             {
-                var row = new ParallelTextRow(SourceRefs.ToArray(), TargetRefs.ToArray())
+                var row = new ParallelTextRow(TextId, SourceRefs.ToArray(), TargetRefs.ToArray())
                 {
                     SourceSegment = SourceSegment.ToArray(),
                     TargetSegment = TargetSegment.ToArray(),
                     IsSourceSentenceStart = IsSourceSentenceStart,
-                    IsTargetSentenceStart = IsTargetSentenceStart,
-                    IsEmpty = IsSourceEmpty || IsTargetEmpty
+                    IsTargetSentenceStart = IsTargetSentenceStart
                 };
+                TextId = "";
                 SourceRefs.Clear();
                 TargetRefs.Clear();
                 SourceSegment.Clear();
                 TargetSegment.Clear();
                 IsSourceSentenceStart = false;
                 IsTargetSentenceStart = false;
-                IsSourceEmpty = true;
-                IsTargetEmpty = true;
                 return row;
             }
         }
@@ -559,16 +550,15 @@ namespace SIL.Machine.Corpora
                             isRangeStart = !rangeStartRow.IsInRange || rangeStartRow.IsRangeStart;
                         rowList[rowList.Count + rangeStartOffset] = (
                             rangeStartVerseRef,
-                            new TextRow(rangeStartRow.Ref)
+                            new TextRow(rangeStartRow.TextId, rangeStartRow.Ref)
                             {
                                 Segment = rangeStartRow.Segment.Concat(row.Segment).ToArray(),
                                 IsSentenceStart = rangeStartRow.IsSentenceStart,
                                 IsInRange = true,
-                                IsRangeStart = isRangeStart,
-                                IsEmpty = rangeStartRow.IsEmpty && row.IsEmpty
+                                IsRangeStart = isRangeStart
                             }
                         );
-                        row = new TextRow(row.Ref) { IsInRange = true };
+                        row = new TextRow(row.TextId, row.Ref) { IsInRange = true };
                         rangeStartOffset--;
                     }
                     else

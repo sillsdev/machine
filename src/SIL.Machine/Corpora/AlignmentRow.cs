@@ -6,10 +6,13 @@ namespace SIL.Machine.Corpora
 {
     public class AlignmentRow : IRow
     {
-        public AlignmentRow(object segRef)
+        public AlignmentRow(string textId, object segRef)
         {
+            TextId = textId;
             Ref = segRef;
         }
+
+        public string TextId { get; }
 
         public object Ref { get; }
 
@@ -19,7 +22,7 @@ namespace SIL.Machine.Corpora
 
         public AlignmentRow Invert()
         {
-            return new AlignmentRow(Ref)
+            return new AlignmentRow(TextId, Ref)
             {
                 AlignedWordPairs = new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert()))
             };

@@ -4,7 +4,7 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
 {
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
-    private readonly IOptions<JsonOptions> _jsonOptions;
+    private readonly JsonOptions _jsonOptions;
 
     public WebhookService(
         IRepository<Webhook> hooks,
@@ -14,7 +14,7 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
     ) : base(hooks)
     {
         _mapper = mapper;
-        _jsonOptions = jsonOptions;
+        _jsonOptions = jsonOptions.Value;
         _httpClient = httpClient;
     }
 
@@ -74,7 +74,7 @@ public class WebhookService : EntityServiceBase<Webhook>, IWebhookService
         var payload = new JsonObject
         {
             ["event"] = webhookEvent.ToString(),
-            [resourcePropName] = JsonSerializer.SerializeToNode(dto, dtoType, _jsonOptions.Value.JsonSerializerOptions)
+            [resourcePropName] = JsonSerializer.SerializeToNode(dto, dtoType, _jsonOptions.JsonSerializerOptions)
         };
         return payload.ToJsonString();
     }

@@ -6,13 +6,13 @@ public class PretranslationService : EntityServiceBase<Pretranslation>, IPretran
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(string engineId, string corpusId)
     {
-        return await Entities.GetAllAsync(pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == engineId);
+        return await Entities.GetAllAsync(pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId);
     }
 
     public async Task<IEnumerable<Pretranslation>> GetAllAsync(string engineId, string corpusId, string textId)
     {
         return await Entities.GetAllAsync(
-            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == engineId && pt.TextId == textId
+            pt => pt.TranslationEngineRef == engineId && pt.CorpusRef == corpusId && pt.TextId == textId
         );
     }
 }
