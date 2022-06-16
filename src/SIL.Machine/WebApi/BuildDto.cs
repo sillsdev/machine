@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 
 namespace SIL.Machine.WebApi
 {
@@ -17,5 +18,6 @@ namespace SIL.Machine.WebApi
         /// </summary>
         [JsonProperty(Required = Required.DisallowNull)]
         public BuildState State { get; set; }
+        public DateTime? DateFinished { get; set; }
     }
 }

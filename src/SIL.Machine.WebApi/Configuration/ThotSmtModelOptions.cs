@@ -2,6 +2,8 @@
 
 public class ThotSmtModelOptions
 {
+    public const string ThotSmtModel = "ThotSmtModel";
+
     public ThotSmtModelOptions()
     {
         string installDir = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;

@@ -55,6 +55,7 @@ public class MapperProfile : Profile
             .ForMember(dto => dto.Confidences, o => o.MapFrom(a => a.WordConfidences))
             .ForMember(dto => dto.Sources, o => o.MapFrom(a => a.WordSources));
         CreateMap<Webhook, WebhookDto>().ForMember(dto => dto.Href, o => o.MapFrom((h, _) => $"{WebhooksUrl}/{h.Id}"));
+        CreateMap<Pretranslation, PretranslationDto>();
     }
 }
 

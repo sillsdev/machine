@@ -89,6 +89,38 @@ public class MongoRepository<T> : IRepository<T> where T : IEntity
         }
     }
 
+    public async Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default)
+    {
+        foreach (T entity in entities)
+            entity.Revision = 1;
+
+        try
+        {
+            await _collection.InsertManyAsync(entities, cancellationToken: cancellationToken);
+            if (_changeEvents is not null)
+            {
+                await _changeEvents.InsertManyAsync(
+                    entities.Select(
+                        e =>
+                            new ChangeEvent
+                            {
+                                EntityRef = e.Id,
+                                ChangeType = EntityChangeType.Insert,
+                                Revision = e.Revision
+                            }
+                    ),
+                    cancellationToken: CancellationToken.None
+                );
+            }
+        }
+        catch (MongoWriteException e)
+        {
+            if (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
+                throw new DuplicateKeyException(e);
+            throw;
+        }
+    }
+
     public async Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,

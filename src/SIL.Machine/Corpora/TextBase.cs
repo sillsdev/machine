@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,19 +35,18 @@ namespace SIL.Machine.Corpora
         )
         {
             text = text.Trim();
-            return new TextRow(segRef)
+            return new TextRow(Id, segRef)
             {
-                Segment = new[] { text },
+                Segment = text.Length == 0 ? Array.Empty<string>() : new[] { text },
                 IsSentenceStart = isSentenceStart,
                 IsInRange = isInRange,
-                IsRangeStart = isRangeStart,
-                IsEmpty = text.Length == 0
+                IsRangeStart = isRangeStart
             };
         }
 
         protected TextRow CreateEmptyRow(object segRef, bool isInRange = false)
         {
-            return new TextRow(segRef) { IsInRange = isInRange };
+            return new TextRow(Id, segRef) { IsInRange = isInRange };
         }
 
         public IEnumerator<TextRow> GetEnumerator()

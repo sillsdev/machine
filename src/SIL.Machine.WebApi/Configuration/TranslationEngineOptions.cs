@@ -2,6 +2,8 @@
 
 public class TranslationEngineOptions
 {
+    public const string Key = "TranslationEngine";
+
     public string EnginesDir { get; set; } = "translation_engines";
     public string ParentModelsDir { get; set; } = "parents";
     public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);

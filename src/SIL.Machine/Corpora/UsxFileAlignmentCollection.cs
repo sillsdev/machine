@@ -178,7 +178,7 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
-            return new AlignmentRow(verseRef) { AlignedWordPairs = wordPairs };
+            return new AlignmentRow(Id, verseRef) { AlignedWordPairs = wordPairs };
         }
 
         private static Dictionary<string, HashSet<int>> GetLinks(

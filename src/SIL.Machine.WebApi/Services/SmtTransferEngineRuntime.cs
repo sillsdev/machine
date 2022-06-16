@@ -15,7 +15,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
     private readonly ISmtModelFactory _smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory;
     private readonly ITruecaserFactory _truecaserFactory;
-    private readonly IOptions<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
     private readonly IBackgroundJobClient _jobClient;
     private readonly string _engineId;
     private readonly IDistributedReaderWriterLock _lock;
@@ -29,7 +29,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
     private int _currentModelRevision = -1;
 
     public SmtTransferEngineRuntime(
-        IOptions<TranslationEngineOptions> engineOptions,
+        IOptionsMonitor<TranslationEngineOptions> engineOptions,
         IRepository<TranslationEngine> engines,
         IRepository<Build> builds,
         IRepository<TrainSegmentPair> trainSegmentPairs,
@@ -141,8 +141,8 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
             using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
             item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
             (await _truecaser).TrainSegment(targetSegment, sentenceStart);
-            TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.TrainSize, 1));
-            if (engine != null && engine.IsBuilding)
+            TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.CorpusSize, 1));
+            if (engine is not null && engine.IsBuilding)
             {
                 await _trainSegmentPairs.InsertAsync(
                     new TrainSegmentPair
@@ -167,14 +167,24 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         {
             // cancel the existing build before starting a new build
             string? buildId = await CancelBuildInternalAsync();
-            if (buildId != null)
+            if (buildId is not null)
                 await WaitForBuildToFinishAsync(buildId);
 
-            var build = new Build { ParentRef = _engineId };
-            await _builds.InsertAsync(build);
-            _jobClient.Enqueue<SmtTransferEngineBuildJob>(
-                r => r.RunAsync(_engineId, build.Id, default!, CancellationToken.None)
+            buildId = ObjectId.GenerateNewId().ToString();
+            // Schedule the job to occur way in the future, just so we can get the job id.
+            string jobId = _jobClient.Schedule<SmtTransferEngineBuildJob>(
+                r => r.RunAsync(_engineId, buildId, CancellationToken.None),
+                TimeSpan.FromDays(1000)
             );
+            var build = new Build
+            {
+                Id = buildId,
+                ParentRef = _engineId,
+                JobId = jobId
+            };
+            await _builds.InsertAsync(build);
+            // Enqueue the job now that the build has been created.
+            _jobClient.Requeue(jobId);
             _lastUsedTime = DateTime.Now;
             return build;
         }
@@ -198,7 +208,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
                 return;
 
             TranslationEngine? engine = await _engines.GetAsync(_engineId);
-            if (engine == null || engine.IsBuilding)
+            if (engine is null || engine.IsBuilding)
                 return;
 
             if (_currentModelRevision == -1)
@@ -208,7 +218,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
                 await UnloadAsync();
                 _currentModelRevision = engine.ModelRevision;
             }
-            else if (DateTime.Now - _lastUsedTime > _engineOptions.Value.InactiveEngineTimeout)
+            else if (DateTime.Now - _lastUsedTime > _engineOptions.CurrentValue.InactiveEngineTimeout)
             {
                 await UnloadAsync();
             }
@@ -227,7 +237,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         {
             // ensure that there is no build running before unloading
             string? buildId = await CancelBuildInternalAsync();
-            if (buildId != null)
+            if (buildId is not null)
                 await WaitForBuildToFinishAsync(buildId);
 
             await UnloadAsync();
@@ -240,11 +250,21 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
 
     private async Task<string?> CancelBuildInternalAsync()
     {
+        // First, try to cancel a job that hasn't started yet
         Build? build = await _builds.UpdateAsync(
-            b => b.ParentRef == _engineId && (b.State == BuildState.Active || b.State == BuildState.Pending),
-            u => u.Set(b => b.State, BuildState.Canceled)
+            b => b.ParentRef == _engineId && b.State == BuildState.Pending,
+            u => u.Set(b => b.State, BuildState.Canceled).Set(b => b.DateFinished, DateTime.UtcNow)
         );
-        if (build?.JobId != null)
+        if (build is null)
+        {
+            // Second, try to cancel a job that is already running
+            build = await _builds.UpdateAsync(
+                b => b.ParentRef == _engineId && b.State == BuildState.Active,
+                u => u.Set(b => b.State, BuildState.Canceled)
+            );
+        }
+        if (build is not null)
+            // If pending, the job will be deleted from the queue, otherwise this will trigger the cancellation token
             _jobClient.Delete(build.JobId);
         return build?.Id;
     }
@@ -252,13 +272,15 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
     private async Task WaitForBuildToFinishAsync(string buildId)
     {
         ISubscription<Build> sub = await _builds.SubscribeAsync(b => b.Id == buildId);
-        if (sub.Change.Entity == null)
+        if (sub.Change.Entity is null)
             return;
-        while (true)
+
+        var timeout = DateTime.UtcNow + TimeSpan.FromSeconds(30);
+        while (DateTime.UtcNow < timeout)
         {
-            await sub.WaitForChangeAsync(TimeSpan.FromSeconds(10));
+            await sub.WaitForChangeAsync(TimeSpan.FromSeconds(5));
             Build? build = sub.Change.Entity;
-            if (build == null || build.DateFinished != null)
+            if (build is null || build.DateFinished is not null)
                 return;
         }
     }

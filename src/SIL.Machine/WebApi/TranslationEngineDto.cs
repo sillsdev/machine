@@ -17,6 +17,6 @@ namespace SIL.Machine.WebApi
         public bool IsBuilding { get; set; }
         public int ModelRevision { get; set; }
         public double Confidence { get; set; }
-        public int TrainSize { get; set; }
+        public int CorpusSize { get; set; }
     }
 }

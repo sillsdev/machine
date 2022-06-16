@@ -1,23 +1,38 @@
 ﻿namespace SIL.Machine.WebApi.Services;
 
 [TestFixture]
-public class NmtEngineRuntimeTests
+public class ClearMLNmtEngineRuntimeTests
 {
     [Test]
     public async Task CancelBuildAsync()
     {
         using var env = new TestEnvironment();
-        await env.JobRunner.RunAsync(
-            Arg.Any<string>(),
-            Arg.Any<string>(),
-            Arg.Do<CancellationToken>(
-                ct =>
+        env.ClearMLService
+            .CreateTaskAsync(Arg.Any<string>(), "project1", "es", "en", Arg.Any<Uri>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult("task1"));
+        var task = new ClearMLTask
+        {
+            Id = "task1",
+            Project = new ClearMLProject { Id = "project1" },
+            Status = ClearMLTaskStatus.InProgress
+        };
+        bool first = true;
+        env.ClearMLService
+            .GetTaskAsync(Arg.Any<string>(), "project1", Arg.Any<CancellationToken>())
+            .Returns(
+                x =>
                 {
-                    while (true)
-                        ct.ThrowIfCancellationRequested();
+                    if (first)
+                    {
+                        first = false;
+                        return Task.FromResult<ClearMLTask?>(null);
+                    }
+                    return Task.FromResult<ClearMLTask?>(task);
                 }
-            )
-        );
+            );
+        env.ClearMLService
+            .GetTaskAsync("task1", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ClearMLTask?>(task));
         await env.Runtime.InitNewAsync();
         Build build = await env.Runtime.StartBuildAsync();
         Assert.That(build, Is.Not.Null);
@@ -28,6 +43,7 @@ public class NmtEngineRuntimeTests
         await env.WaitForBuildToFinishAsync(build.Id);
         build = env.Builds.Get(build.Id);
         Assert.That(build.State, Is.EqualTo(BuildState.Canceled));
+        await env.ClearMLService.Received().StopTaskAsync("task1", Arg.Any<CancellationToken>());
     }
 
     private class TestEnvironment : DisposableBase
@@ -36,6 +52,9 @@ public class NmtEngineRuntimeTests
         private readonly BackgroundJobClient _jobClient;
         private BackgroundJobServer _jobServer;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
+        private readonly ICorpusService _corpusService;
+        private readonly ISharedFileService _sharedFileService;
+        private readonly IOptionsMonitor<ClearMLOptions> _options;
 
         public TestEnvironment()
         {
@@ -51,25 +70,34 @@ public class NmtEngineRuntimeTests
                 }
             );
             Builds = new MemoryRepository<Build>();
+            Pretranslations = new MemoryRepository<Pretranslation>();
             EngineOptions = new TranslationEngineOptions();
             _memoryStorage = new MemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             WebhookService = Substitute.For<IWebhookService>();
-            JobRunner = Substitute.For<INmtBuildJobRunner>();
+            ClearMLService = Substitute.For<IClearMLService>();
+            ClearMLService
+                .GetProjectIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>("project1"));
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
                 new MemoryRepository<RWLock>()
             );
+            _corpusService = Substitute.For<ICorpusService>();
+            _sharedFileService = new SharedFileService();
+            _options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            _options.CurrentValue.Returns(new ClearMLOptions { BuildPollingTimeout = TimeSpan.FromMilliseconds(50) });
             _jobServer = CreateJobServer();
             Runtime = CreateRuntime();
         }
 
-        public NmtEngineRuntime Runtime { get; private set; }
+        public ClearMLNmtEngineRuntime Runtime { get; private set; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<Build> Builds { get; }
+        public MemoryRepository<Pretranslation> Pretranslations { get; }
         public TranslationEngineOptions EngineOptions { get; }
         public IWebhookService WebhookService { get; }
-        public INmtBuildJobRunner JobRunner { get; }
+        public IClearMLService ClearMLService { get; }
 
         public void StopServer()
         {
@@ -88,14 +116,15 @@ public class NmtEngineRuntimeTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "nmt" }
+                Queues = new[] { "nmt" },
+                CancellationCheckInterval = TimeSpan.FromMilliseconds(100),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
-        private NmtEngineRuntime CreateRuntime()
+        private ClearMLNmtEngineRuntime CreateRuntime()
         {
-            return new NmtEngineRuntime(Builds, _jobClient, _lockFactory, "engine1");
+            return new ClearMLNmtEngineRuntime(Engines, Builds, ClearMLService, _jobClient, _lockFactory, "engine1");
         }
 
         public Task WaitForBuildToFinishAsync(string buildId)
@@ -137,15 +166,18 @@ public class NmtEngineRuntimeTests
 
             public override object ActivateJob(Type jobType)
             {
-                if (jobType == typeof(NmtEngineBuildJob))
+                if (jobType == typeof(ClearMLNmtEngineBuildJob))
                 {
-                    return new NmtEngineBuildJob(
+                    return new ClearMLNmtEngineBuildJob(
                         _env.Engines,
                         _env.Builds,
-                        _env._lockFactory,
-                        Substitute.For<ILogger<NmtEngineBuildJob>>(),
+                        _env.Pretranslations,
+                        Substitute.For<ILogger<ClearMLNmtEngineBuildJob>>(),
                         _env.WebhookService,
-                        _env.JobRunner
+                        _env.ClearMLService,
+                        _env._corpusService,
+                        _env._sharedFileService,
+                        _env._options
                     );
                 }
                 return base.ActivateJob(jobType);

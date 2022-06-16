@@ -8,6 +8,7 @@ public interface IRepository<T> where T : IEntity
     Task<bool> ExistsAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default);
 
     Task InsertAsync(T entity, CancellationToken cancellationToken = default);
+    Task InsertAllAsync(IReadOnlyCollection<T> entities, CancellationToken cancellationToken = default);
     Task<T?> UpdateAsync(
         Expression<Func<T, bool>> filter,
         Action<IUpdateBuilder<T>> update,
