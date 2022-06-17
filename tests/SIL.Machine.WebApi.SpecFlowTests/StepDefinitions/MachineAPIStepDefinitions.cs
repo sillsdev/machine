@@ -6,7 +6,9 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
     [Binding]
     public sealed class MachineApiStepDefinitions
     {
-        const string MACHINE_API_TEST_URL = "https://machine-api.org/"; // localhost "http://machine-api.vcap.me/" QA server: https://machine-api.org/
+        // QA server: "https://machine-api.org/"
+        // localhost: "https://machine-api.vcap.me:8444/"
+        const string MACHINE_API_TEST_URL = "https://machine-api.vcap.me:8444/";
         readonly Dictionary<string, string> EnginePerUser = new();
         readonly Dictionary<string, string> CorporaPerName = new();
 
@@ -155,7 +157,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         public async Task PostFilesToCorpus(string corpusId, IEnumerable<string> filesToAdd, string language)
         {
             string languageFolder = Path.GetFullPath(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "data", language)
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..", "data", language)
             );
             if (!Directory.Exists(languageFolder))
                 throw new ArgumentException($"The langauge data directory {languageFolder} does not exist!");

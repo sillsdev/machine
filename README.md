@@ -102,6 +102,18 @@ If you would like to find out more about how to use Machine, check out the tutor
 
 All C# code should be formatted using [CSharpier](https://csharpier.com/). The best way to enable support for CSharpier is to install the appropriate [IDE extension](https://csharpier.com/docs/Editors) and configure it to format on save.
 
+### Development locally
+
+- Install MongoDB 4.2 and MongoDBCompass and run it on localhost:27017
+- Open the Machine solution and debug the ApiServer and JobServer projects at the same time
+  - To select both to be debugged at the same time, in the Solution Explorer, right click on solution -> Properties -> Common Properties -> Startup Properties -> "Multiple Startup Projects" -> "Start" ApiServer and JobServer
+  - Now start debugging
+  - You should be able to access the locally hosted swagger at https://machine-api.vcap.me:8444/swagger/index.html
+- Open "Machine Specflow Testing.sln"
+  - In Test Explorer, debug the Specflow tests
+- Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
+
+
 ### Development in Docker Compose
 
 Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-dotnet-dev-certs-https-trust):
