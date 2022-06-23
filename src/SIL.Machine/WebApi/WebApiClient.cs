@@ -75,9 +75,22 @@ namespace SIL.Machine.WebApi.Client
             );
         }
 
-        public async Task<TranslationEngineDto> PostEngineAsync(TranslationEngineConfigDto engineConfig)
+        public async Task<TranslationEngineDto> PostEngineAsync(
+            string name,
+            string sourceLanguageTag,
+            string targetLanguageTag,
+            TranslationEngineType type = TranslationEngineType.SmtTransfer
+        )
         {
             var request = new RestRequest($"translation-engines");
+            var engineConfig = new TranslationEngineConfigDto()
+            {
+                Name = name,
+                SourceLanguageTag = sourceLanguageTag,
+                TargetLanguageTag = targetLanguageTag,
+                Type = type
+            };
+
             request.AddStringBody(
                 JsonConvert.SerializeObject(engineConfig, SerializerSettings),
                 dataFormat: DataFormat.Json
@@ -106,7 +119,10 @@ namespace SIL.Machine.WebApi.Client
         {
             var sourceSegmentArray = sourceSegment.ToArray();
             var request = new RestRequest($"translation-engines/{engineId}/translate");
-            request.AddJsonBody(JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings));
+            request.AddStringBody(
+                JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
             var response = await restClient.ExecutePostAsync(request);
             ThrowResponseIfNotSucessful(response, $"Error translating on engine {engineId}.");
             var translationResultDto = JsonConvert.DeserializeObject<TranslationResultDto>(
@@ -124,7 +140,10 @@ namespace SIL.Machine.WebApi.Client
         {
             var sourceSegmentArray = sourceSegment.ToArray();
             var request = new RestRequest($"translation-engines/{engineId}/translate/{numberOfResults}");
-            request.AddJsonBody(JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings));
+            request.AddStringBody(
+                JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
             var response = await restClient.ExecutePostAsync(request);
             ThrowResponseIfNotSucessful(
                 response,
@@ -156,9 +175,13 @@ namespace SIL.Machine.WebApi.Client
             var pairDto = new SegmentPairDto
             {
                 SourceSegment = sourceSegment.ToArray(),
-                TargetSegment = targetSegment.ToArray()
+                TargetSegment = targetSegment.ToArray(),
+                SentenceStart = true
             };
-            request.AddJsonBody(JsonConvert.SerializeObject(pairDto, SerializerSettings));
+            request.AddStringBody(
+                JsonConvert.SerializeObject(pairDto, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
             var response = await restClient.ExecutePostAsync(request);
             ThrowResponseIfNotSucessful(response, "Error calling train-segment action.");
         }
@@ -169,7 +192,8 @@ namespace SIL.Machine.WebApi.Client
             bool pretranslateCorpus = false
         )
         {
-            var engineCorpusConfig = new TranslationEngineCorpusConfigDto() {
+            var engineCorpusConfig = new TranslationEngineCorpusConfigDto()
+            {
                 CorpusId = corpusId,
                 Pretranslate = pretranslateCorpus
             };
@@ -404,7 +428,7 @@ namespace SIL.Machine.WebApi.Client
             var request = new RestRequest($"corpora/{corpusId}/files");
             request.AddParameter(name: "languageTag", value: languageTag);
             request.AddParameter(name: "textId", value: textId);
-            request.AddFile(name: textId, path: filePath);
+            request.AddFile(name: "file", path: filePath, contentType: "text/plain");
             var response = await restClient.ExecutePostAsync(request);
             ThrowResponseIfNotSucessful(response, $"Error posting {filePath} to {corpusId}.");
             return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
@@ -465,7 +489,7 @@ namespace SIL.Machine.WebApi.Client
             return new TranslationResult(
                 sourceSegmentLength,
                 dto.Target,
-                dto.Confidences.Cast<double>(),
+                dto.Confidences.Select(x => (double)x),
                 dto.Sources,
                 CreateWordAlignmentMatrix(dto.Alignment, sourceSegmentLength, dto.Target.Length),
                 dto.Phrases.Select(CreatePhrase)

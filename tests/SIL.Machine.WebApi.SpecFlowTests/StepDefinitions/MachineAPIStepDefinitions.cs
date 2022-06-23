@@ -8,7 +8,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
     {
         // QA server: "https://machine-api.org/"
         // localhost: "https://machine-api.vcap.me:8444/"
-        const string MACHINE_API_TEST_URL = "https://machine-api.vcap.me:8444/";
+        const string MACHINE_API_TEST_URL = "http://machine-api.vcap.me:81/";
         readonly Dictionary<string, string> EnginePerUser = new();
         readonly Dictionary<string, string> CorporaPerName = new();
 
@@ -48,13 +48,10 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
                 }
             }
             var engine = await client.PostEngineAsync(
-                new TranslationEngineConfigDto()
-                {
-                    Name = user,
-                    SourceLanguageTag = source_language,
-                    TargetLanguageTag = target_language,
-                    Type = TranslationEngineType.SmtTransfer
-                }
+                name: user,
+                sourceLanguageTag: source_language,
+                targetLanguageTag: target_language,
+                type: TranslationEngineType.SmtTransfer
             );
             EnginePerUser.Add(user, engine.Id);
         }
@@ -72,7 +69,12 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         }
 
         [Given(@"(.*) are added to corpora (.*) in (.*) and (.*)")]
-        public async Task AddFilesToCorpora(string filesToAddString, string corporaName, string language1, string language2)
+        public async Task AddFilesToCorpora(
+            string filesToAddString,
+            string corporaName,
+            string language1,
+            string language2
+        )
         {
             var filesToAdd = filesToAddString.Split(", ");
             var corpusId = await GetCorporaFromName(corporaName);
@@ -84,7 +86,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         public async Task WhenEngineIsBuild(string user)
         {
             var engineId = await GetEngineFromUser(user);
-            await client.PostBuildAsync(engineId);
+            await client.TrainAsync(engineId, progressStatus => { });
         }
 
         [When(@"a translation for (.*) is added with ""(.*)"" for ""(.*)""")]
@@ -94,12 +96,17 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
             await client.TrainSegmentPairAsync(engineId: engineId, targetSegment.Split(" "), sourceSegment.Split(" "));
         }
 
+        [When(@"the translation for (.*) for ""(.*)"" is ""(.*)""")]
+        public async Task WhenTheTranslationIs(string user, string sourceSegment, string targetSegment)
+        {
+            await ThenTheTranslationShouldBe(user, sourceSegment, targetSegment);
+        }
         [Then(@"the translation for (.*) for ""(.*)"" should be ""(.*)""")]
         public async Task ThenTheTranslationShouldBe(string user, string sourceSegment, string targetSegment)
         {
             var engineId = await GetEngineFromUser(user);
             var translation = await client.TranslateSegmentAsync(engineId, sourceSegment.Split(" "));
-            Assert.AreSame(translation.ToString(), targetSegment);
+            Assert.AreEqual(targetSegment, String.Join(" ", translation.TargetSegment));
         }
 
         public async Task<string> GetEngineFromUser(string user)
@@ -167,12 +174,15 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
                 throw new ArgumentException($"The langauge data directory {languageFolder} contains no files!");
             foreach (var fileName in filesToAdd)
             {
-                string filePath = Path.GetFullPath(
-                    Path.Combine(languageFolder, fileName)
-                );
+                string filePath = Path.GetFullPath(Path.Combine(languageFolder, fileName));
                 if (!File.Exists(filePath))
                     throw new FileNotFoundException($"The corpus file {filePath} does not exist!");
-                await client.PostCorporaFileAsync(corpusId: corpusId, languageTag: language, textId: fileName, filePath: filePath);
+                await client.PostCorporaFileAsync(
+                    corpusId: corpusId,
+                    languageTag: language,
+                    textId: fileName,
+                    filePath: filePath
+                );
             }
         }
 
@@ -180,6 +190,5 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         {
             return ((IEnumerable<T>)Enum.GetValues(typeof(T))).Select(v => v.ToString());
         }
-            
     }
 }

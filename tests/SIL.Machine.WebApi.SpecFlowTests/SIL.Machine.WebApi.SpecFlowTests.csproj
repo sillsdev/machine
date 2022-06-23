@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SIL.Machine.WebApi.JobServer\SIL.Machine.WebApi.JobServer.csproj" />
-    <ProjectReference Include="..\..\src\SIL.Machine.WebApi.Server\SIL.Machine.WebApi.Server.csproj" />
+    <ProjectReference Include="..\..\src\SIL.Machine.WebApi.ApiServer\SIL.Machine.WebApi.ApiServer.csproj" />
   </ItemGroup>
 
 </Project>
