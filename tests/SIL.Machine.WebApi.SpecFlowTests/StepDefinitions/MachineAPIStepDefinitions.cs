@@ -56,7 +56,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
             EnginePerUser.Add(user, engine.Id);
         }
 
-        [Given(@"a new (.*) corpora named (.*) for (.*)")]
+        [When(@"a new (.*) corpora named (.*) for (.*)")]
         public async Task GivenCorporaForEngine(string fileFormatString, string corpora, string user)
         {
             if (!Enum.TryParse(fileFormatString, ignoreCase: true, result: out FileFormat fileFormat))
@@ -68,7 +68,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
             await client.PostCorporaToEngineAsync(engineId, corpusId);
         }
 
-        [Given(@"(.*) are added to corpora (.*) in (.*) and (.*)")]
+        [When(@"(.*) are added to corpora (.*) in (.*) and (.*)")]
         public async Task AddFilesToCorpora(
             string filesToAddString,
             string corporaName,
