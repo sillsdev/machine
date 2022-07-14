@@ -1,5 +1,6 @@
 ﻿namespace SIL.Machine.WebApi.Models;
 
+[MongoDB.Bson.Serialization.Attributes.BsonIgnoreExtraElements]
 public class ChangeEvent
 {
     public string EntityRef { get; set; } = default!;

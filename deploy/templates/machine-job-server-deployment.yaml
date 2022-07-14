@@ -24,6 +24,7 @@ spec:
       labels:
         io.kompose.service: machine-job-server
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
@@ -38,11 +39,15 @@ spec:
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
           image: ghcr.io/sillsdev/machine:latest
+          imagePullPolicy: "Always"
           name: machine-job-server
           resources:
             limits:
               memory: "350Mi"
               cpu: "500m"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
           volumeMounts:
             - mountPath: /var/lib/machine/engines
               name: machine-job-server-engines
