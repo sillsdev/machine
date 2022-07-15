@@ -5,16 +5,6 @@
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "Kestrel": {
-    "EndPoints": {
-      "Http": {
-        "Url": "http://*:81"
-      },
-      "Https": {
-        "Url": "https://*:8444"
-      }
-    }
-  },
   "AllowedHosts": "*",
   "Service": {
     "ServiceId": "machine_api"

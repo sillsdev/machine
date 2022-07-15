@@ -12,6 +12,10 @@ using SIL.Machine.WebApi.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile($"machine-api.settings.json", optional: false, reloadOnChange: false);
+if(builder.Environment.IsDevelopment())
+    builder.Configuration.AddJsonFile($"machine-api.settings.Development.json", optional: false, reloadOnChange: false);
+
 // Add services to the container.
 
 builder.Services.AddRouting(o => o.LowercaseUrls = true);

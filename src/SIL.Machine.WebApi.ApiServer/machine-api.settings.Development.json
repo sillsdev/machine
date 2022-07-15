@@ -3,6 +3,16 @@
     "Domain": "sil-appbuilder.auth0.com",
     "Audience": "https://machine.sil.org"
   },
+  "Kestrel": {
+    "EndPoints": {
+      "Http": {
+        "Url": "http://*:81"
+      },
+      "Https": {
+        "Url": "https://*:8444"
+      }
+    }
+  },
   "ConnectionStrings": {
     "Hangfire": "mongodb://localhost:27017/machine_jobs",
     "Mongo": "mongodb://localhost:27017/machine"
@@ -15,6 +25,9 @@
     "Uri": "file:///var/lib/machine/builds"
   },
   "Job": {
-    "Queues": [ "nmt", "smt_transfer" ]
+    "Queues": [
+      "nmt",
+      "smt_transfer"
+    ]
   }
 }
