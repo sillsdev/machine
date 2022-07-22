@@ -118,6 +118,7 @@ app.UseSwaggerUi3(
     }
 );
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseAuthentication();
