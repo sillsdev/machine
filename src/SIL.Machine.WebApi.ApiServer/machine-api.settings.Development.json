@@ -1,8 +1,4 @@
 {
-  "Auth": {
-    "Domain": "sil-appbuilder.auth0.com",
-    "Audience": "https://machine.sil.org"
-  },
   "Kestrel": {
     "EndPoints": {
       "Http": {
@@ -24,10 +20,10 @@
   "SharedFile": {
     "Uri": "file:///var/lib/machine/builds"
   },
-  "Job": {
-    "Queues": [
-      "nmt",
-      "smt_transfer"
-    ]
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
   }
 }

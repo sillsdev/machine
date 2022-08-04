@@ -1,10 +1,4 @@
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  },
   "AllowedHosts": "*",
   "Service": {
     "ServiceId": "machine_job"
@@ -13,6 +7,12 @@
     "EnginesDir": "/var/lib/machine/engines"
   },
   "Corpus": {
-    "DataFilesDir": "/var/lib/machine/data"
+    "DataFilesDir": "/var/lib/machine/corpora"
+  },
+  "Job": {
+    "Queues": [
+      "nmt",
+      "smt_transfer"
+    ]
   }
 }

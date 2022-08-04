@@ -106,13 +106,11 @@ All C# code should be formatted using [CSharpier](https://csharpier.com/). The b
 
 - Install MongoDB 4.2 and MongoDBCompass and run it on localhost:27017
   - Create the following folders:
-  - C:\var\lib\machine\corpora
+  - C:\var\lib\machine\data
   - C:\var\lib\machine\machine
 - set the following environment variables:
   - ASPNETCORE_ENVIRONMENT=Development
 - Open "Machine.sln" and debug the ApiServer
-- Open "Machine Specflow Testing.sln"
-  - In Test Explorer, debug the Specflow tests
 - Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
 
 

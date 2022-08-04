@@ -8,7 +8,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
     {
         // QA server: "https://machine-api.org/"
         // localhost: "https://machine-api.vcap.me:8444/"
-        const string MACHINE_API_TEST_URL = "http://machine-api.vcap.me:81/";
+        const string MACHINE_API_TEST_URL = "https://machine-api.org/";
         readonly Dictionary<string, string> EnginePerUser = new();
         readonly Dictionary<string, string> CorporaPerName = new();
 

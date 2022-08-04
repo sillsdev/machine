@@ -30,6 +30,7 @@ spec:
             - dotnet
             - /app/SIL.Machine.WebApi.JobServer.dll
           env:
+            # Note - ASPNETCORE settings here will not override the *.settings.json files because they are custom named and added after builder initialization. 
             - name: ASPNETCORE_ConnectionStrings__Hangfire
               value: mongodb://mongo:27017/machine_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
@@ -51,7 +52,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/machine/engines
               name: machine-job-server-engines
-            - mountPath: /var/lib/machine/data
+            - mountPath: /var/lib/machine/corpora
               name: machine-job-server-data
       hostname: machine-job-server
       restartPolicy: Always
@@ -61,7 +62,7 @@ spec:
             path: /host/engines #/host should be mounted from C:\usr\local
           name: machine-job-server-engines
         - hostPath:
-            path: /host/data
+            path: /host/corpora
           name: machine-job-server-data
       {{- else}}
       volumes:
@@ -70,6 +71,6 @@ spec:
             claimName: machine-engines-claim
         - name: machine-job-server-data
           persistentVolumeClaim:
-            claimName: machine-data-claim
+            claimName: machine-corpora-claim
       {{- end}}
 status: {}
