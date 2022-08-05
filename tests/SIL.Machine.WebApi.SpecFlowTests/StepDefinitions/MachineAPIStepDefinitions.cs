@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SIL.Machine.WebApi.Client;
+using System.ComponentModel;
 
 namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
 {
@@ -23,17 +24,18 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
 
         private void SetAccessTokenFromEnvironment()
         {
-            var client_id =
-                Environment.GetEnvironmentVariable("MACHINE_CLIENT_ID")
-                ?? throw new ArgumentException(
-                    "You need an auth0 client_id in the environment variable MACHINE_CLIENT_ID!  Look at README for instructions on getting one."
-                );
-            var client_secret =
-                Environment.GetEnvironmentVariable("MACHINE_CLIENT_SECRET")
-                ?? throw new ArgumentException(
-                    "You need an auth0 client_secret in the environment variable MACHINE_CLIENT_SECRET!  Look at README for instructions on getting one."
-                );
-            client.AquireAccessToken(client_id, client_secret);
+            var client_id = Environment.GetEnvironmentVariable("MACHINE_CLIENT_ID");
+            var client_secret = Environment.GetEnvironmentVariable("MACHINE_CLIENT_SECRET");
+            if (client_id == null)
+            {
+                Console.WriteLine("You need an auth0 client_id in the environment variable MACHINE_CLIENT_ID!  Look at README for instructions on getting one.");
+            } else if (client_secret == null)
+            {
+                Console.WriteLine("You need an auth0 client_secret in the environment variable MACHINE_CLIENT_SECRET!  Look at README for instructions on getting one.");
+            } else
+            {
+                client.AquireAccessToken(client_id, client_secret);
+            }
         }
 
         [Given(@"a new SMT engine for (.*) from (.*) to (.*)")]
