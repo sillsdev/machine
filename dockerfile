@@ -12,6 +12,8 @@ RUN dotnet publish -c Release -o out
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 as production
+# libgomp needed for thot.
+RUN apt-get update && apt-get install -y libgomp1
 WORKDIR /app
 COPY --from=build-env /app/out .
 CMD ["bash"]
