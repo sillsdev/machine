@@ -28,7 +28,7 @@ spec:
       containers:
         - command:
             - dotnet
-            - /app/SIL.Machine.WebApi.JobServer.dll
+            - /app/job_server/SIL.Machine.WebApi.JobServer.dll
           env:
             # Note - ASPNETCORE settings here will not override the *.settings.json files because they are custom named and added after builder initialization. 
             - name: ASPNETCORE_ConnectionStrings__Hangfire
@@ -44,7 +44,7 @@ spec:
           name: machine-job-server
           resources:
             limits:
-              memory: "350Mi"
+              memory: "1000Mi"
               cpu: "500m"
             requests:
               memory: "100Mi"

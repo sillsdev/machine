@@ -1,0 +1,29 @@
+{
+  "Kestrel": {
+    "EndPoints": {
+      "Http": {
+        "Url": "http://*:81"
+      },
+      "Https": {
+        "Url": "https://*:8444"
+      }
+    }
+  },
+  "ConnectionStrings": {
+    "Hangfire": "mongodb://localhost:27017/machine_jobs",
+    "Mongo": "mongodb://localhost:27017/machine"
+  },
+  "ClearML": {
+    "ApiServer": "http://localhost:8008",
+    "Queue": "default"
+  },
+  "SharedFile": {
+    "Uri": "file:///var/lib/machine/builds"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}

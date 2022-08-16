@@ -2,10 +2,6 @@ using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile($"job-server.settings.json", optional: false, reloadOnChange: false);
-if(builder.Environment.IsDevelopment())
-    builder.Configuration.AddJsonFile($"job-server.settings.Development.json", optional: false, reloadOnChange: false);
-
 builder.Services
     .AddMachine(builder.Configuration)
     .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
