@@ -12,12 +12,5 @@
   </ItemGroup>
 
 	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
-	<ItemGroup>
-		<AppSettingsFiles
-		Include="$(MSBuildProjectDirectory)\**\appsettings.json;$(MSBuildProjectDirectory)\**\appsettings.*.json;" />
-	</ItemGroup>
-	<Error
-		Condition="Exists(@(AppSettingsFiles))"
-		Text="Do not use generic names like: 'AppSettings.json'. Be explicit instead, e.g. '$(AssemblyName).settings.json'." />
 	</Target>
 </Project>
