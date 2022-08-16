@@ -95,7 +95,7 @@ namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions
         public async Task WhenTranslationAdded(string user, string targetSegment, string sourceSegment)
         {
             var engineId = await GetEngineFromUser(user);
-            await client.TrainSegmentPairAsync(engineId: engineId, targetSegment.Split(" "), sourceSegment.Split(" "));
+            await client.TrainSegmentPairAsync(engineId: engineId, sourceSegment.Split(" "), targetSegment.Split(" "));
         }
 
         [When(@"the translation for (.*) for ""(.*)"" is ""(.*)""")]

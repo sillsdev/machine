@@ -29,6 +29,7 @@ spec:
         - command:
             - dotnet
             - /app/api_server/SIL.Machine.WebApi.ApiServer.dll
+          workingDir: /app/api_server
           env:
             # Note - ASPNETCORE settings here will not override the *.settings.json files because they are custom named and added after builder initialization. 
             - name: ASPNETCORE_Kestrel__Endpoints__Https__Url

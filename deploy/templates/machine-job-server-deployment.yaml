@@ -29,6 +29,7 @@ spec:
         - command:
             - dotnet
             - /app/job_server/SIL.Machine.WebApi.JobServer.dll
+          workingDir: /app/job_server
           env:
             # Note - ASPNETCORE settings here will not override the *.settings.json files because they are custom named and added after builder initialization. 
             - name: ASPNETCORE_ConnectionStrings__Hangfire
