@@ -83,7 +83,7 @@ namespace SIL.Machine.Corpora
 
             // for figures, convert 2.0 format to 3.0 format. Will need to write this as the 2.0 format
             // if the project is not upgrated.
-            if (NestlessMarker == "fig" && attributesValue.Count(c => c == '|') == 5)
+            if (NestlessMarker == "fig" && attributesValue.Count(c => c == '|') == 6)
             {
                 List<UsfmAttribute> attributeList = new List<UsfmAttribute>(6);
                 string[] parts = attributesValue.Split('|');
