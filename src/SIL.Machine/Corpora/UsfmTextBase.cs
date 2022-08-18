@@ -249,7 +249,7 @@ namespace SIL.Machine.Corpora
 
                 if (state.IsVersePara)
                 {
-                    if (_verseText.Length > 0)
+                    if (_verseText.Length > 0 && !char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
                         _verseText.Append(" ");
                     _nextParaTokens.Add(state.Token);
                     _nextParaTextStarted = false;

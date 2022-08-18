@@ -70,7 +70,7 @@ namespace SIL.Machine.Corpora
             Assert.That(rows.Length, Is.EqualTo(17));
 
             Assert.That(rows[3].Ref, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
-            Assert.That(rows[3].Text, Is.EqualTo("Chapter one, verse four,"));
+            Assert.That(rows[3].Text, Is.EqualTo("Chapter one, verse four,"));
             Assert.That(rows[3].IsSentenceStart, Is.True);
 
             Assert.That(rows[4].Ref, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));
@@ -113,7 +113,7 @@ namespace SIL.Machine.Corpora
             Assert.That(rows[1].Ref, Is.EqualTo(new VerseRef("MAT 1:2", corpus.Versification)));
             Assert.That(
                 rows[1].Text,
-                Is.EqualTo("Chapter one, \\li2 verse\\f + \\fr 1:2: \\ft This is a footnote.\\f* two.")
+                Is.EqualTo("\\bd C\\bd*hapter one, \\li2 verse\\f + \\fr 1:2: \\ft This is a footnote.\\f* two.")
             );
 
             Assert.That(rows[4].Ref, Is.EqualTo(new VerseRef("MAT 1:5", corpus.Versification)));

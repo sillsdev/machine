@@ -6,11 +6,11 @@
 \s Chapter One
 \v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
 \li1
-\v 2 Chapter one,
+\v 2 \bd C\bd*hapter one,
 \li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
 \v 3 Chapter one,
 \li2 verse three.
-\v 4 Chapter one,
+\v 4 Chapter one, 
 \li2 verse four,
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
