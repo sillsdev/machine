@@ -11,4 +11,6 @@
     <ProjectReference Include="..\SIL.Machine.WebApi\SIL.Machine.WebApi.csproj" />
   </ItemGroup>
 
+	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
+	</Target>
 </Project>

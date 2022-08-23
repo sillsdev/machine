@@ -24,38 +24,41 @@ spec:
       labels:
         io.kompose.service: machine-server
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - command:
             - dotnet
-            - /app/SIL.Machine.WebApi.ApiServer.dll
+            - /app/api_server/SIL.Machine.WebApi.ApiServer.dll
+          workingDir: /app/api_server
           env:
-            - name: ASPNETCORE_Auth__Audience
-              value: https://machine.sil.org
-            - name: ASPNETCORE_Auth__Domain
-              value: sil-appbuilder.auth0.com
+            # Note - ASPNETCORE settings here will not override the *.settings.json files because they are custom named and added after builder initialization. 
+            - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
+              value: http://*
             - name: ASPNETCORE_ConnectionStrings__Hangfire
               value: mongodb://mongo:27017/machine_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo
               value: mongodb://mongo:27017/machine
-            - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
-              value: http://*
             - name: ASPNETCORE_Logging__LogLevel__Default
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
           image: ghcr.io/sillsdev/machine:latest
+          imagePullPolicy: "Always"
           name: machine-server
           ports:
             - containerPort: 80
           resources:
             limits:
-              memory: "350Mi"
+              memory: "1000Mi"
               cpu: "500m"
+            requests:
+              memory: "100Mi"
+              cpu: "100m"
           volumeMounts:
             - mountPath: /var/lib/machine/engines
               name: machine-server-engines
-            - mountPath: /var/lib/machine/data
-              name: machine-server-data
+            - mountPath: /var/lib/machine/corpora
+              name: machine-server-corpora
             - mountPath: /root/.aspnet/DataProtection-Keys
               name: machine-server-keys
       hostname: machine-server
@@ -66,8 +69,8 @@ spec:
             path: /host/engines #/host should be mounted from C:\usr\local
           name: machine-server-engines
         - hostPath:
-            path: /host/data
-          name: machine-server-data
+            path: /host/corpora
+          name: machine-server-corpora
         - hostPath:
             path: /host/DataProtection-Keys
           name: machine-server-keys
@@ -76,9 +79,9 @@ spec:
         - name: machine-server-engines
           persistentVolumeClaim:
             claimName: machine-engines-claim
-        - name: machine-server-data
+        - name: machine-server-corpora
           persistentVolumeClaim:
-            claimName: machine-data-claim
+            claimName: machine-corpora-claim
         - name: machine-server-keys
           persistentVolumeClaim:
             claimName: machine-keys-claim

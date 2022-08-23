@@ -19,7 +19,7 @@ services:
       - mongo
     volumes:
       - "C:\\usr\\local\\engines:/var/lib/machine/engines"
-      - "C:\\usr\\local\\data:/var/lib/machine/data"
+      - "C:\\usr\\local\\data:/var/lib/machine/corpora"
     entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.ApiServer.dll' ]
   machine-job-server:
     hostname: machine-job-server
@@ -33,7 +33,7 @@ services:
       - mongo
     volumes:
       - "C:\\usr\\local\\engines:/var/lib/machine/engines"
-      - "C:\\usr\\local\\data:/var/lib/machine/data"
+      - "C:\\usr\\local\\data:/var/lib/machine/corpora"
     entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.JobServer.dll' ]
   mongo:
     hostname: mongo

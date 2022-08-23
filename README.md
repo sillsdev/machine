@@ -102,6 +102,18 @@ If you would like to find out more about how to use Machine, check out the tutor
 
 All C# code should be formatted using [CSharpier](https://csharpier.com/). The best way to enable support for CSharpier is to install the appropriate [IDE extension](https://csharpier.com/docs/Editors) and configure it to format on save.
 
+### Development locally
+
+- Install MongoDB 4.2 and MongoDBCompass and run it on localhost:27017
+  - Create the following folders:
+  - C:\var\lib\machine\data
+  - C:\var\lib\machine\machine
+- set the following environment variables:
+  - ASPNETCORE_ENVIRONMENT=Development
+- Open "Machine.sln" and debug the ApiServer
+- Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
+
+
 ### Development in Docker Compose
 
 Following [this guide](https://stackoverflow.com/questions/55485511/how-to-run-dotnet-dev-certs-https-trust):
@@ -162,3 +174,13 @@ This is the QA staging environment. To access it,
 - Run `kubectl config use-context dallas-rke`
 - Run `cd deploy`
 - Run `helm upgrade machine-api . -f qa-values.yaml`
+
+## API BDD Testing
+- Prepare VSC env: follow this guide: https://docs.specflow.org/projects/specflow/en/latest/vscode/vscode-specflow.html
+- Get auth0 token using curl:
+  - Get Client ID and Client Secret from auth0.com
+    - Login, go to Applications-> Applications -> "Machine API (Test Application)", or similar
+    - Copy `Client ID` into Environment variable `MACHINE_CLIENT_ID`
+    - Copy `Client Secret` into Environment variable `MACHINE_CLIENT_SECRET`
+  - Run tests from `SIL.Machine.WebApi.SpecFlowTests`
+    - The token will automatically be retrieved from Auth0 when you run the tests 

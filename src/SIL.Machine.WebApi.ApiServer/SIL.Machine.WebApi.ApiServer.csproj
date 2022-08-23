@@ -21,4 +21,6 @@
 	  <None Include="wwwroot\js\auth0.js" />
 	</ItemGroup>
 
+	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
+	</Target>
 </Project>

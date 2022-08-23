@@ -59,8 +59,9 @@ public class BuildService : EntityServiceBase<Build>, IBuildService
             return curChange;
         while (true)
         {
-            if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity!.Revision)
-                return curChange;
+            if (curChange.Entity is not null)
+                if (curChange.Type != EntityChangeType.Delete && minRevision <= curChange.Entity.Revision)
+                    return curChange;
             await subscription.WaitForChangeAsync(cancellationToken: cancellationToken);
             curChange = subscription.Change;
             if (curChange.Type == EntityChangeType.Delete)
