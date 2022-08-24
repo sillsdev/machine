@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="RestSharp" Version="107.3.0" />
 		<PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
 		<PackageReference Include="SIL.Scripture" Version="7.0.0" />
