@@ -156,9 +156,15 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         return Entities.UpdateAsync(engineId, u => u.Add(e => e.Corpora, corpus));
     }
 
-    public Task<bool> DeleteCorpusAsync(string engineId, string corpusId)
+    public async Task<bool> DeleteCorpusAsync(string engineId, string corpusId)
     {
-        throw new NotImplementedException();
+        CheckDisposed();
+
+        TranslationEngine? engine = await Entities.UpdateAsync(
+            engineId,
+            u => u.RemoveAll(e => e.Corpora, c => c.CorpusRef == corpusId)
+        );
+        return engine is not null;
     }
 
     private ITranslationEngineRuntime GetOrCreateRuntime(TranslationEngine engine)
