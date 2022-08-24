@@ -65,7 +65,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
       - name: Test
-        run: dotnet test --no-build --verbosity normal -c Release
+        run: dotnet test --no-build --verbosity normal -c Release --filter TestCategory!=Integration
 
   create_package:
     name: Create NuGet package

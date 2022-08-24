@@ -1,6 +1,6 @@
-﻿Feature: TranslationAssist
+﻿@Integration
+Feature: TranslationAssist
 		
-	@mytag
 	Scenario: Get Translation Suggestion
 		Given a new SMT engine for John from es to en
 		When a new text corpora named C1 for John
