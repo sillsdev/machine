@@ -112,6 +112,7 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddTranslationEngineService(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeService, TranslationEngineRuntimeService>();
         builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
         builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, ClearMLNmtEngineRuntime.Factory>();
         return builder;

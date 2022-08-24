@@ -2,8 +2,6 @@
 
 public interface ITranslationEngineService
 {
-    void Init();
-
     Task<IEnumerable<TranslationEngine>> GetAllAsync(string owner);
     Task<TranslationEngine?> GetAsync(string engineId, CancellationToken cancellationToken = default);
 
@@ -16,7 +14,7 @@ public interface ITranslationEngineService
 
     Task<WordGraph?> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment);
 
-    Task<bool> TrainSegmentAsync(
+    Task<bool> TrainSegmentPairAsync(
         string engineId,
         IReadOnlyList<string> sourceSegment,
         IReadOnlyList<string> targetSegment,

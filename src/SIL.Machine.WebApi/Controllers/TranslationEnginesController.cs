@@ -226,7 +226,7 @@ public class TranslationEnginesController : ControllerBase
             return Forbid();
 
         if (
-            !await _translationEngineService.TrainSegmentAsync(
+            !await _translationEngineService.TrainSegmentPairAsync(
                 engine.Id,
                 segmentPair.SourceSegment,
                 segmentPair.TargetSegment,

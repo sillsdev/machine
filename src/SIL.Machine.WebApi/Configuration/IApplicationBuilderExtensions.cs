@@ -13,7 +13,7 @@ public static class IApplicationBuilderExtensions
         await app.ApplicationServices.GetService<IRepository<Pretranslation>>()!.InitAsync();
 
         await app.ApplicationServices.GetService<IDistributedReaderWriterLockFactory>()!.InitAsync();
-        app.ApplicationServices.GetService<ITranslationEngineService>()?.Init();
+        app.ApplicationServices.GetService<ITranslationEngineRuntimeService>()?.Init();
 
         return app;
     }

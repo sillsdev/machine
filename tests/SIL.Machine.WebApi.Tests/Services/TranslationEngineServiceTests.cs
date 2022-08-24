@@ -43,7 +43,7 @@ public class TranslationEngineServiceTests
     public async Task TrainSegmentAsync_EngineDoesNotExist()
     {
         using var env = new TestEnvironment();
-        bool result = await env.Service.TrainSegmentAsync(
+        bool result = await env.Service.TrainSegmentPairAsync(
             "engine1",
             "Esto es una prueba .".Split(),
             "This is a test .".Split(),
@@ -57,7 +57,7 @@ public class TranslationEngineServiceTests
     {
         using var env = new TestEnvironment();
         string engineId = (await env.CreateEngineAsync()).Id;
-        bool result = await env.Service.TrainSegmentAsync(
+        bool result = await env.Service.TrainSegmentPairAsync(
             engineId,
             "Esto es una prueba .".Split(),
             "This is a test .".Split(),
@@ -196,10 +196,9 @@ public class TranslationEngineServiceTests
             var engineOptions = Substitute.For<IOptionsMonitor<TranslationEngineOptions>>();
             engineOptions.CurrentValue.Returns(new TranslationEngineOptions());
             Service = new TranslationEngineService(
-                engineOptions,
                 Engines,
                 new MemoryRepository<Build>(),
-                new[] { engineRuntimeFactory }
+                new TranslationEngineRuntimeService(engineOptions, new[] { engineRuntimeFactory })
             );
         }
 
