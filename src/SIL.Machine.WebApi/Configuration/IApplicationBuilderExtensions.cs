@@ -17,4 +17,11 @@ public static class IApplicationBuilderExtensions
 
         return app;
     }
+
+    public static IApplicationBuilder UseTranslationEngineServer(this IApplicationBuilder app)
+    {
+        app.UseRouting();
+        app.UseEndpoints(e => e.MapGrpcService<GrpcTranslationEngineService>());
+        return app;
+    }
 }

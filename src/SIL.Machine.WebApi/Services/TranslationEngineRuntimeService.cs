@@ -15,7 +15,9 @@ public class TranslationEngineRuntimeService : AsyncDisposableBase, ITranslation
         _translationEngineOptions = translationEngineOptions;
         _runtimes = new ConcurrentDictionary<string, ITranslationEngineRuntime>();
         _commitTimer = new AsyncTimer(EngineCommitAsync);
-        _engineRuntimeFactories = engineRuntimeFactories.ToDictionary(f => f.Type);
+        _engineRuntimeFactories = engineRuntimeFactories
+            .Where(f => _translationEngineOptions.CurrentValue.Types.Contains(f.Type))
+            .ToDictionary(f => f.Type);
     }
 
     public void Init()
@@ -29,54 +31,64 @@ public class TranslationEngineRuntimeService : AsyncDisposableBase, ITranslation
             await runtime.CommitAsync();
     }
 
-    public async Task CreateAsync(TranslationEngine engine)
+    public async Task CreateAsync(TranslationEngineType engineType, string engineId)
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = CreateRuntime(engine);
+        ITranslationEngineRuntime runtime = CreateRuntime(engineType, engineId);
         await runtime.InitNewAsync();
     }
 
-    public async Task DeleteAsync(TranslationEngine engine)
+    public async Task DeleteAsync(TranslationEngineType engineType, string engineId)
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
-        _runtimes.TryRemove(engine.Id, out _);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
+        _runtimes.TryRemove(engineId, out _);
         await runtime.DeleteDataAsync();
         await runtime.DisposeAsync();
     }
 
-    public async Task<TranslationResult?> TranslateAsync(TranslationEngine engine, IReadOnlyList<string> segment)
+    public async Task<TranslationResult> TranslateAsync(
+        TranslationEngineType engineType,
+        string engineId,
+        IReadOnlyList<string> segment
+    )
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
         return await runtime.TranslateAsync(segment);
     }
 
-    public async Task<IEnumerable<TranslationResult>?> TranslateAsync(
-        TranslationEngine engine,
+    public async Task<IEnumerable<TranslationResult>> TranslateAsync(
+        TranslationEngineType engineType,
+        string engineId,
         int n,
         IReadOnlyList<string> segment
     )
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
         return await runtime.TranslateAsync(n, segment);
     }
 
-    public async Task<WordGraph?> GetWordGraphAsync(TranslationEngine engine, IReadOnlyList<string> segment)
+    public async Task<WordGraph> GetWordGraphAsync(
+        TranslationEngineType engineType,
+        string engineId,
+        IReadOnlyList<string> segment
+    )
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
         return await runtime.GetWordGraphAsync(segment);
     }
 
     public async Task TrainSegmentPairAsync(
-        TranslationEngine engine,
+        TranslationEngineType engineType,
+        string engineId,
         IReadOnlyList<string> sourceSegment,
         IReadOnlyList<string> targetSegment,
         bool sentenceStart
@@ -84,37 +96,37 @@ public class TranslationEngineRuntimeService : AsyncDisposableBase, ITranslation
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
         await runtime.TrainSegmentPairAsync(sourceSegment, targetSegment, sentenceStart);
     }
 
-    public async Task<Build?> StartBuildAsync(TranslationEngine engine)
+    public async Task<Build> StartBuildAsync(TranslationEngineType engineType, string engineId)
     {
         CheckDisposed();
 
-        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engine);
+        ITranslationEngineRuntime runtime = GetOrCreateRuntime(engineType, engineId);
         return await runtime.StartBuildAsync();
     }
 
-    public async Task CancelBuildAsync(TranslationEngine engine)
+    public async Task CancelBuildAsync(string engineId)
     {
         CheckDisposed();
 
-        if (_runtimes.TryGetValue(engine.Id, out ITranslationEngineRuntime? runtime))
+        if (_runtimes.TryGetValue(engineId, out ITranslationEngineRuntime? runtime))
             await runtime.CancelBuildAsync();
     }
 
-    private ITranslationEngineRuntime GetOrCreateRuntime(TranslationEngine engine)
+    private ITranslationEngineRuntime GetOrCreateRuntime(TranslationEngineType engineType, string engineId)
     {
-        return _runtimes.GetOrAdd(engine.Id, _engineRuntimeFactories[engine.Type].CreateTranslationEngineRuntime);
+        return _runtimes.GetOrAdd(engineId, _engineRuntimeFactories[engineType].CreateTranslationEngineRuntime);
     }
 
-    private ITranslationEngineRuntime CreateRuntime(TranslationEngine engine)
+    private ITranslationEngineRuntime CreateRuntime(TranslationEngineType engineType, string engineId)
     {
-        ITranslationEngineRuntime runtime = _engineRuntimeFactories[engine.Type].CreateTranslationEngineRuntime(
-            engine.Id
+        ITranslationEngineRuntime runtime = _engineRuntimeFactories[engineType].CreateTranslationEngineRuntime(
+            engineId
         );
-        _runtimes.TryAdd(engine.Id, runtime);
+        _runtimes.TryAdd(engineId, runtime);
         return runtime;
     }
 

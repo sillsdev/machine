@@ -109,15 +109,6 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddTranslationEngineService(this IMachineBuilder builder)
-    {
-        builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
-        builder.Services.AddSingleton<ITranslationEngineRuntimeService, TranslationEngineRuntimeService>();
-        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
-        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, ClearMLNmtEngineRuntime.Factory>();
-        return builder;
-    }
-
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
@@ -196,6 +187,7 @@ public static class IMachineBuilderExtensions
                     o.Queues = queues;
             }
         );
+        builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
         return builder;
     }
 
@@ -308,6 +300,44 @@ public static class IMachineBuilderExtensions
             }
         );
 
+        return builder;
+    }
+
+    public static IMachineBuilder AddTranslationEngineServer(this IMachineBuilder builder)
+    {
+        builder.Services.AddCodeFirstGrpc(
+            o =>
+            {
+                o.Interceptors.Add<UnimplementedInterceptor>();
+            }
+        );
+        builder.Services.AddSingleton<ITranslationEngineRuntimeService, TranslationEngineRuntimeService>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, ClearMLNmtEngineRuntime.Factory>();
+        builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
+        return builder;
+    }
+
+    public static IMachineBuilder AddTranslationEngineClient(this IMachineBuilder builder, string connectionString)
+    {
+        builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+        builder.Services.AddCodeFirstGrpcClient<IGrpcTranslationEngineService>(
+            o =>
+            {
+                o.Address = new Uri(connectionString);
+            }
+        );
+        builder.Services.AddSingleton<ITranslationEngineRuntimeService, RemoteTranslationEngineRuntimeService>();
+        return builder;
+    }
+
+    public static IMachineBuilder AddTranslationEngineService(this IMachineBuilder builder)
+    {
+        builder.Services.AddSingleton<ITranslationEngineService, TranslationEngineService>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeService, TranslationEngineRuntimeService>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, SmtTransferEngineRuntime.Factory>();
+        builder.Services.AddSingleton<ITranslationEngineRuntimeFactory, ClearMLNmtEngineRuntime.Factory>();
+        builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
         return builder;
     }
 

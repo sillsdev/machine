@@ -18,12 +18,7 @@ public static class IServiceCollectionExtensions
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        var builder = new MachineBuilder(services)
-            .AddOptions(config)
-            .AddThotSmtModel()
-            .AddTransferEngine()
-            .AddUnigramTruecaser()
-            .AddMemoryDataAccess();
+        var builder = new MachineBuilder(services).AddOptions(config);
         return builder;
     }
 }

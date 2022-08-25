@@ -47,13 +47,43 @@ public class MapperProfile : Profile
             .ForMember(dto => dto.Target, o => o.MapFrom(r => r.TargetSegment))
             .ForMember(dto => dto.Confidences, o => o.MapFrom(r => r.WordConfidences))
             .ForMember(dto => dto.Sources, o => o.MapFrom(r => r.WordSources));
+        CreateMap<TranslationResultDto, TranslationResult>()
+            .ForCtorParam("sourceSegmentLength", o => o.MapFrom((_, ctxt) => ctxt.Items["SourceSegmentLength"]))
+            .ForCtorParam("targetSegment", o => o.MapFrom(dto => dto.Target))
+            .ForCtorParam(
+                "alignment",
+                o =>
+                    o.MapFrom(
+                        (dto, ctxt) =>
+                            new WordAlignmentMatrix(
+                                (int)ctxt.Items["SourceSegmentLength"],
+                                dto.Target.Length,
+                                dto.Alignment.Select(wp => (wp.SourceIndex, wp.TargetIndex))
+                            )
+                    )
+            );
         CreateMap<WordAlignmentMatrix, AlignedWordPairDto[]>().ConvertUsing<WordAlignmentConverter>();
-        CreateMap<Range<int>, RangeDto>();
-        CreateMap<Phrase, PhraseDto>();
-        CreateMap<WordGraph, WordGraphDto>();
+        CreateMap<Range<int>, RangeDto>().ReverseMap().ConvertUsing((dto, _) => Range<int>.Create(dto.Start, dto.End));
+        CreateMap<Phrase, PhraseDto>().ReverseMap();
+        CreateMap<WordGraph, WordGraphDto>().ReverseMap();
         CreateMap<WordGraphArc, WordGraphArcDto>()
             .ForMember(dto => dto.Confidences, o => o.MapFrom(a => a.WordConfidences))
-            .ForMember(dto => dto.Sources, o => o.MapFrom(a => a.WordSources));
+            .ForMember(dto => dto.Sources, o => o.MapFrom(a => a.WordSources))
+            .ReverseMap()
+            .ForCtorParam(
+                "alignment",
+                o =>
+                    o.MapFrom(
+                        (dto, _) =>
+                            new WordAlignmentMatrix(
+                                dto.SourceSegmentRange.End - dto.SourceSegmentRange.Start,
+                                dto.Words.Length,
+                                dto.Alignment.Select(wp => (wp.SourceIndex, wp.TargetIndex))
+                            )
+                    )
+            )
+            .ForCtorParam("wordConfidences", o => o.MapFrom(dto => dto.Confidences))
+            .ForCtorParam("wordSources", o => o.MapFrom(dto => dto.Sources));
         CreateMap<Webhook, WebhookDto>().ForMember(dto => dto.Href, o => o.MapFrom((h, _) => $"{WebhooksUrl}/{h.Id}"));
         CreateMap<Pretranslation, PretranslationDto>();
     }

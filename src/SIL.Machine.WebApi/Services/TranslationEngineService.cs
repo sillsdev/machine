@@ -22,7 +22,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return null;
-        return await _engineRuntimeService.TranslateAsync(engine, segment);
+        return await _engineRuntimeService.TranslateAsync(engine.Type, engine.Id, segment);
     }
 
     public async Task<IEnumerable<TranslationResult>?> TranslateAsync(
@@ -36,7 +36,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return null;
-        return await _engineRuntimeService.TranslateAsync(engine, n, segment);
+        return await _engineRuntimeService.TranslateAsync(engine.Type, engine.Id, n, segment);
     }
 
     public async Task<WordGraph?> GetWordGraphAsync(string engineId, IReadOnlyList<string> segment)
@@ -46,7 +46,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return null;
-        return await _engineRuntimeService.GetWordGraphAsync(engine, segment);
+        return await _engineRuntimeService.GetWordGraphAsync(engine.Type, engine.Id, segment);
     }
 
     public async Task<bool> TrainSegmentPairAsync(
@@ -61,7 +61,13 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return false;
-        await _engineRuntimeService.TrainSegmentPairAsync(engine, sourceSegment, targetSegment, sentenceStart);
+        await _engineRuntimeService.TrainSegmentPairAsync(
+            engine.Type,
+            engine.Id,
+            sourceSegment,
+            targetSegment,
+            sentenceStart
+        );
         return true;
     }
 
@@ -77,7 +83,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         CheckDisposed();
 
         await Entities.InsertAsync(engine);
-        await _engineRuntimeService.CreateAsync(engine);
+        await _engineRuntimeService.CreateAsync(engine.Type, engine.Id);
     }
 
     public override async Task<bool> DeleteAsync(string engineId)
@@ -89,7 +95,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
             return false;
         await _builds.DeleteAllAsync(b => b.ParentRef == engineId);
 
-        await _engineRuntimeService.DeleteAsync(engine);
+        await _engineRuntimeService.DeleteAsync(engine.Type, engine.Id);
         return true;
     }
 
@@ -100,7 +106,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return null;
-        return await _engineRuntimeService.StartBuildAsync(engine);
+        return await _engineRuntimeService.StartBuildAsync(engine.Type, engine.Id);
     }
 
     public async Task CancelBuildAsync(string engineId)
@@ -110,7 +116,7 @@ public class TranslationEngineService : EntityServiceBase<TranslationEngine>, IT
         TranslationEngine? engine = await GetAsync(engineId);
         if (engine == null)
             return;
-        await _engineRuntimeService.CancelBuildAsync(engine);
+        await _engineRuntimeService.CancelBuildAsync(engine.Id);
     }
 
     public Task AddCorpusAsync(string engineId, TranslationEngineCorpus corpus)

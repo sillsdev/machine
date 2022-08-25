@@ -435,12 +435,14 @@ public class TranslationEnginesController : ControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The build job.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="499">The long polling request timed out.</response>
+    /// <response code="404">The build does not exist.</response>
+    /// <response code="408">The long polling request timed out.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/builds/{buildId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), 499)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
     public async Task<ActionResult<BuildDto>> GetBuildAsync(
         [NotNull] string id,
         [NotNull] string buildId,
@@ -510,13 +512,15 @@ public class TranslationEnginesController : ControllerBase
     /// <param name="minRevision">The minimum revision.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <response code="200">The build job.</response>
+    /// <response code="204">There is no build currently running.</response>
     /// <response code="403">The authenticated client does not own the translation engine.</response>
-    /// <response code="499">The long polling request timed out.</response>
+    /// <response code="408">The long polling request timed out.</response>
     [Authorize(Scopes.ReadTranslationEngines)]
     [HttpGet("{id}/current-build")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(void), StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(typeof(void), 499)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status408RequestTimeout)]
     public async Task<ActionResult<BuildDto>> GetCurrentBuildAsync(
         [NotNull] string id,
         [FromQuery] long? minRevision,

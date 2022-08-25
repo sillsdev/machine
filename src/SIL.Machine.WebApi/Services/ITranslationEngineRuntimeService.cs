@@ -4,27 +4,33 @@ public interface ITranslationEngineRuntimeService
 {
     void Init();
 
-    Task CreateAsync(TranslationEngine engine);
-    Task DeleteAsync(TranslationEngine engine);
+    Task CreateAsync(TranslationEngineType engineType, string engineId);
+    Task DeleteAsync(TranslationEngineType engineType, string engineId);
 
-    Task<TranslationResult?> TranslateAsync(TranslationEngine engine, IReadOnlyList<string> segment);
+    Task<TranslationResult> TranslateAsync(
+        TranslationEngineType engineType,
+        string engineId,
+        IReadOnlyList<string> segment
+    );
 
-    Task<IEnumerable<TranslationResult>?> TranslateAsync(
-        TranslationEngine engine,
+    Task<IEnumerable<TranslationResult>> TranslateAsync(
+        TranslationEngineType engineType,
+        string engineId,
         int n,
         IReadOnlyList<string> segment
     );
 
-    Task<WordGraph?> GetWordGraphAsync(TranslationEngine engine, IReadOnlyList<string> segment);
+    Task<WordGraph> GetWordGraphAsync(TranslationEngineType engineType, string engineId, IReadOnlyList<string> segment);
 
     Task TrainSegmentPairAsync(
-        TranslationEngine engine,
+        TranslationEngineType engineType,
+        string engineId,
         IReadOnlyList<string> sourceSegment,
         IReadOnlyList<string> targetSegment,
         bool sentenceStart
     );
 
-    Task<Build?> StartBuildAsync(TranslationEngine engine);
+    Task<Build> StartBuildAsync(TranslationEngineType engineType, string engineId);
 
-    Task CancelBuildAsync(TranslationEngine engine);
+    Task CancelBuildAsync(string engineId);
 }

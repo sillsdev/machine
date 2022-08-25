@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Text.Json.Serialization;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -59,10 +58,7 @@ var machineBuilder = builder.Services
     .AddMachine(builder.Configuration)
     .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
     .AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
-    .AddTranslationEngineService();
-
-if (builder.Environment.IsDevelopment())
-    machineBuilder.AddBackgroundJobServer(builder.Configuration.GetSection("Job:Queues").Get<string[]?>());
+    .AddTranslationEngineClient(builder.Configuration.GetConnectionString("EngineServer"));
 
 builder.Services.AddSwaggerDocument(
     doc =>
@@ -120,17 +116,8 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// https://stackoverflow.com/a/62193352
-if (app.Environment.IsDevelopment())
-    app.MapControllers().AllowAnonymous();
-else
-    app.MapControllers();
+app.MapControllers();
 
 await app.UseMachineAsync();
-
-if (builder.Environment.IsDevelopment())
-{
-    app.UseHangfireDashboard();
-}
 
 app.Run();
