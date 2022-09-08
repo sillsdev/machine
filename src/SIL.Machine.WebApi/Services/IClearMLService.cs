@@ -11,11 +11,11 @@ public interface IClearMLService
     Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default);
 
     Task<string> CreateTaskAsync(
-        string name,
+        string buildId,
         string projectId,
+        string engineId,
         string sourceLanguageTag,
         string targetLanguageTag,
-        Uri buildUri,
         CancellationToken cancellationToken = default
     );
     Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default);

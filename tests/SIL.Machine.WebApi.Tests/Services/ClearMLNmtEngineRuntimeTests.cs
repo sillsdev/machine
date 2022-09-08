@@ -8,7 +8,7 @@ public class ClearMLNmtEngineRuntimeTests
     {
         using var env = new TestEnvironment();
         env.ClearMLService
-            .CreateTaskAsync(Arg.Any<string>(), "project1", "es", "en", Arg.Any<Uri>(), Arg.Any<CancellationToken>())
+            .CreateTaskAsync(Arg.Any<string>(), "project1", "engine1", "es", "en", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("task1"));
         var task = new ClearMLTask
         {

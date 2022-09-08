@@ -61,27 +61,28 @@ public class ClearMLService : IClearMLService
     }
 
     public async Task<string> CreateTaskAsync(
-        string name,
+        string buildId,
         string projectId,
+        string engineId,
         string sourceLanguageTag,
         string targetLanguageTag,
-        Uri buildUri,
         CancellationToken cancellationToken = default
     )
     {
         string script =
             "from machine.webapi.clearml_nmt_engine_build_job import run\n"
             + "args = {\n"
+            + $"    'engine_id': '{engineId}',\n"
+            + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{sourceLanguageTag}',\n"
             + $"    'trg_lang': '{targetLanguageTag}',\n"
-            + $"    'build_uri': '{buildUri}',\n"
             + $"    'max_step': {_options.CurrentValue.MaxStep}\n"
             + "}\n"
             + "run(args)\n";
 
         var body = new JsonObject
         {
-            ["name"] = name,
+            ["name"] = buildId,
             ["project"] = projectId,
             ["script"] = new JsonObject { ["diff"] = script },
             ["container"] = new JsonObject

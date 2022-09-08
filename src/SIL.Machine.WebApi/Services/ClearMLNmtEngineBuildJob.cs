@@ -68,9 +68,9 @@ public class ClearMLNmtEngineBuildJob
                 clearMLTaskId = await _clearMLService.CreateTaskAsync(
                     buildId,
                     clearMLProjectId,
+                    engine.Id,
                     engine.SourceLanguageTag,
                     engine.TargetLanguageTag,
-                    _sharedFileService.GetUri(buildId),
                     cancellationToken
                 );
                 await _clearMLService.EnqueueTaskAsync(clearMLTaskId, CancellationToken.None);
@@ -154,7 +154,7 @@ public class ClearMLNmtEngineBuildJob
                 CancellationToken.None
             );
 
-            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+            await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
 
             await _engines.UpdateAsync(
                 engineId,
@@ -192,7 +192,7 @@ public class ClearMLNmtEngineBuildJob
                 if (task is not null)
                     await _clearMLService.StopTaskAsync(task.Id, CancellationToken.None);
 
-                await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+                await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
 
                 // This is an actual cancellation triggered by an API call.
                 bool buildStarted =
@@ -223,7 +223,7 @@ public class ClearMLNmtEngineBuildJob
         }
         catch (Exception e)
         {
-            await _sharedFileService.DeleteAsync($"{buildId}/", CancellationToken.None);
+            await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
 
             await _engines.UpdateAsync(
                 e => e.Id == engineId && e.IsBuilding,
@@ -253,10 +253,10 @@ public class ClearMLNmtEngineBuildJob
     )
     {
         await using var sourceTrainWriter = new StreamWriter(
-            await _sharedFileService.OpenWriteAsync($"{buildId}/train.src.txt", cancellationToken)
+            await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
         );
         await using var targetTrainWriter = new StreamWriter(
-            await _sharedFileService.OpenWriteAsync($"{buildId}/train.trg.txt", cancellationToken)
+            await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken)
         );
 
         int corpusSize = 0;
@@ -298,7 +298,7 @@ public class ClearMLNmtEngineBuildJob
         }
 
         await using var sourcePretranslateStream = await _sharedFileService.OpenWriteAsync(
-            $"{buildId}/pretranslate.src.json",
+            $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );
 
@@ -341,7 +341,7 @@ public class ClearMLNmtEngineBuildJob
         await _pretranslations.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
 
         await using var targetPretranslateStream = await _sharedFileService.OpenReadAsync(
-            $"{buildId}/pretranslate.trg.json",
+            $"builds/{buildId}/pretranslate.trg.json",
             cancellationToken
         );
         var batch = new List<Pretranslation>();

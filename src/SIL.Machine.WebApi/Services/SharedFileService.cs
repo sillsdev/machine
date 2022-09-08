@@ -24,11 +24,13 @@ public class SharedFileService : ISharedFileService
                     _fileStorage = Files.Of.LocalDisk(_baseUri.LocalPath);
                     break;
                 case "s3":
-                    _fileStorage = Files.Of.AmazonS3(
-                        _baseUri.Host,
-                        options.Value.S3AccessKeyId,
-                        options.Value.S3SecretAccessKey,
-                        options.Value.S3Region
+                    _fileStorage = new S3FileStorage(
+                        new Uri($"https://{_baseUri.Host}.s3.amazonaws.com"),
+                        new S3AuthHandler(
+                            options.Value.S3AccessKeyId,
+                            options.Value.S3SecretAccessKey,
+                            options.Value.S3Region
+                        )
                     );
                     _supportFolderDelete = false;
                     break;
@@ -52,7 +54,7 @@ public class SharedFileService : ISharedFileService
 
     public Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default)
     {
-        return _fileStorage.OpenWrite(path, WriteMode.Create, cancellationToken);
+        return _fileStorage.OpenWrite(path, cancellationToken);
     }
 
     public async Task DeleteAsync(string path, CancellationToken cancellationToken = default)
