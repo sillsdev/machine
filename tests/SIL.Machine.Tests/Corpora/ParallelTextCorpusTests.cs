@@ -1029,7 +1029,7 @@ namespace SIL.Machine.Corpora
 
         private static AlignmentRow AlignmentRow(string textId, object rowRef, params AlignedWordPair[] pairs)
         {
-            return new AlignmentRow(textId, rowRef) { AlignedWordPairs = new HashSet<AlignedWordPair>(pairs) };
+            return new AlignmentRow(textId, rowRef) { AlignedWordPairs = new List<AlignedWordPair>(pairs) };
         }
     }
 }

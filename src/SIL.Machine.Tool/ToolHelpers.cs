@@ -162,18 +162,18 @@ namespace SIL.Machine
         {
             switch (modelType)
             {
-                case FastAlign:
+                case "fastAlign":
                     return ThotWordAlignmentModelType.FastAlign;
-                case Ibm1:
+                case "ibm1":
                     return ThotWordAlignmentModelType.Ibm1;
-                case Ibm2:
+                case "ibm2":
                     return ThotWordAlignmentModelType.Ibm2;
                 default:
-                case Hmm:
+                case "hmm":
                     return ThotWordAlignmentModelType.Hmm;
-                case Ibm3:
+                case "ibm3":
                     return ThotWordAlignmentModelType.Ibm3;
-                case Ibm4:
+                case "ibm4":
                     return ThotWordAlignmentModelType.Ibm4;
             }
         }
