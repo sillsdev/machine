@@ -1,28 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: C:\Users\johnm\Documents\repos\machine\docker\development\kompose.exe convert -c --volumes hostPath
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
-    io.kompose.service: mongo
+    app: mongo
   name: mongo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: mongo
+      app: mongo
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: C:\Users\johnm\Documents\repos\machine\docker\development\kompose.exe convert -c --volumes hostPath
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
-        io.kompose.service: mongo
+        app: mongo
     spec:
       terminationGracePeriodSeconds: 30
       containers:
