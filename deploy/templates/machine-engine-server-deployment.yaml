@@ -23,8 +23,10 @@ spec:
             - /app/engine_server/SIL.Machine.WebApi.EngineServer.dll
           workingDir: /app/engine_server
           env:
-            - name: ASPNETCORE_Kestrel__Endpoints__Https__Url
-              value: http://*
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Url
+              value: http://*:81
+            - name: ASPNETCORE_Kestrel__Endpoints__Grpc__Protocols
+              value: Http2
             - name: ASPNETCORE_ConnectionStrings__Hangfire
               value: mongodb://mongo:27017/machine_jobs
             - name: ASPNETCORE_ConnectionStrings__Mongo

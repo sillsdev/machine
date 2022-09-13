@@ -20,6 +20,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: machine-server
+                name: machine-api-server
                 port:
                   number: 80

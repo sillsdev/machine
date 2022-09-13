@@ -47,6 +47,28 @@ spec:
             requests:
               memory: "100Mi"
               cpu: "100m"
+          volumeMounts:
+            - mountPath: /var/lib/machine/corpora
+              name: machine-api-server-corpora
+            - mountPath: /root/.aspnet/DataProtection-Keys
+              name: machine-api-server-keys
       hostname: machine-api-server
       restartPolicy: Always
+      {{- if .Values.localVolume }}
+      volumes:
+        - hostPath:
+            path: /host/corpora
+          name: machine-api-server-corpora
+        - hostPath:
+            path: /host/DataProtection-Keys
+          name: machine-api-server-keys
+      {{- else}}
+      volumes:
+        - name: machine-api-server-corpora
+          persistentVolumeClaim:
+            claimName: machine-corpora-claim
+        - name: machine-api-server-keys
+          persistentVolumeClaim:
+            claimName: machine-keys-claim
+      {{- end}}
 status: {}
