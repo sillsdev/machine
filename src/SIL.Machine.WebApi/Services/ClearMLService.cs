@@ -4,6 +4,8 @@ public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLOptions> _options;
+    private static string authorizationToken = "";
+    private static bool isAuthenticated = false;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -16,6 +18,30 @@ public class ClearMLService : IClearMLService
     {
         _httpClient = httpClient;
         _options = options;
+    }
+
+    private async Task<bool> AuthorizeAsync(CancellationToken cancellationToken = default)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
+        };
+        var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
+        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+        request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
+        HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        isAuthenticated = false;
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            string result = await response.Content.ReadAsStringAsync();
+            authorizationToken = (string)((JsonObject?)JsonNode.Parse(result))["data"]["token"];
+            isAuthenticated = true;
+        }
+        else
+        {
+            Console.WriteLine("Error authenticating with ClearML using access key and secret key.");
+        }
+        return isAuthenticated;
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -204,14 +230,27 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
+        if (!isAuthenticated)
+            await AuthorizeAsync();
         var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/{service}.{action}")
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
-        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
-        request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
+        request.Headers.Add("Authorization", $"Bearer {authorizationToken}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+        {
+            if (await AuthorizeAsync())
+            {
+                request.Headers.Remove("Authorization");
+                request.Headers.Add("Authorization", $"Bearer {authorizationToken}");
+                response = await _httpClient.SendAsync(request, cancellationToken);
+            }
+        }
+        if(response.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+            var ok = false;
+        }
         string result = await response.Content.ReadAsStringAsync();
         return (JsonObject?)JsonNode.Parse(result);
     }

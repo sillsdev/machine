@@ -39,7 +39,8 @@ public class TranslationEngineRuntimeService : AsyncDisposableBase, ITranslation
         await runtime.InitNewAsync();
     }
 
-    public async Task DeleteAsync(TranslationEngineType engineType, string engineId)
+    public async Task
+        DeleteAsync(TranslationEngineType engineType, string engineId)
     {
         CheckDisposed();
 

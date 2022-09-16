@@ -4,6 +4,7 @@
 [Produces("application/json")]
 [TypeFilter(typeof(OperationCancelledExceptionFilter))]
 [TypeFilter(typeof(NotSupportedExceptionFilter))]
+[TypeFilter(typeof(InternalServerErrorExceptionFilter))]
 public class ControllerBase : Controller
 {
     private readonly IAuthorizationService _authService;

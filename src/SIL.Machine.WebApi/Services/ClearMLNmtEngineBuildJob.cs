@@ -223,6 +223,7 @@ public class ClearMLNmtEngineBuildJob
         }
         catch (Exception e)
         {
+            Console.WriteLine(e.ToString());
             await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
 
             await _engines.UpdateAsync(

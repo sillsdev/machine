@@ -43,9 +43,23 @@ public sealed class MachineApiStepDefinitions
         }
     }
 
-    [Given(@"a new SMT engine for (.*) from (.*) to (.*)")]
-    public async Task GivenNewSmtEngine(string user, string source_language, string target_language)
+    [Given(@"a new (.*) engine for (.*) from (.*) to (.*)")]
+    public async Task GivenNewEngine(
+        string engineTypeString,
+        string user,
+        string source_language,
+        string target_language
+    )
     {
+        var translationEngineType = TranslationEngineType.SmtTransfer;
+        if (engineTypeString.ToLower() == "nmt")
+        {
+            translationEngineType = TranslationEngineType.Nmt;
+        }
+        else if (engineTypeString.ToLower() != "smt")
+        {
+            throw new ArgumentException($"Must choose SMT or NMT for translation engine type.");
+        }
         var existingTranslationEngines = await client.GetAllEnginesAsync();
         foreach (var translationEngine in existingTranslationEngines)
         {
@@ -84,6 +98,14 @@ public sealed class MachineApiStepDefinitions
         await PostFilesToCorpus(corpusId: corpusId, filesToAdd: filesToAdd, language: language2);
     }
 
+    [When(@"(.*) are added to corpora (.*) in (.*) only")]
+    public async Task AddFilesToCorporaInOneLangauge(string filesToAddString, string corporaName, string language1)
+    {
+        var filesToAdd = filesToAddString.Split(", ");
+        var corpusId = await GetCorporaFromName(corporaName);
+        await PostFilesToCorpus(corpusId: corpusId, filesToAdd: filesToAdd, language: language1);
+    }
+
     [When(@"the engine is built for (.*)")]
     public async Task WhenEngineIsBuild(string user)
     {
@@ -110,6 +132,23 @@ public sealed class MachineApiStepDefinitions
         var engineId = await GetEngineFromUser(user);
         var translation = await client.TranslateSegmentAsync(engineId, sourceSegment.Split(" "));
         Assert.AreEqual(targetSegment, String.Join(" ", translation.TargetSegment));
+    }
+
+    [Then(@"the pretranslation for (.*) from (.*) for (.*) starts with ""(.*)""")]
+    public async Task ThenThePretranslationShouldBe(string user, string corpusName, string fileId, string targetSegment)
+    {
+        var engineId = await GetEngineFromUser(user);
+        var corpusId = await GetCorporaFromName(corpusName);
+        var pretranslation = await client.GetPrestranslationFromCorporaFromEngineAsync(engineId, corpusId, fileId);
+        Assert.IsTrue(
+            pretranslation.Translation.StartsWith(targetSegment),
+            string.Concat(
+                "The pretranslation should start with ",
+                targetSegment,
+                " but instead starts with ",
+                pretranslation.Translation.AsSpan(0, 30)
+            )
+        );
     }
 
     public async Task<string> GetEngineFromUser(string user)
