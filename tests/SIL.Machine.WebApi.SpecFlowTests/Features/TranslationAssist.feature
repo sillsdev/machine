@@ -37,7 +37,7 @@ Feature: TranslationAssist
 	Scenario: Get NMT Pretranslation
 		Given a new NMT engine for John from es to en
 		When a new text corpora named CTrain for John
-		And 1JN.txt, 2JN.txt are added to corpora CTrain in es and en
+		And MAT.txt, 1JN.txt, 2JN.txt are added to corpora CTrain in es and en
 		When a new text corpora named CPreTrans for John
 		And 3JN.txt are added to corpora CPreTrans in es only
 		And the engine is built for John

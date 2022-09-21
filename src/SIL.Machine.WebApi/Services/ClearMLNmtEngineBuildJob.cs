@@ -265,6 +265,8 @@ public class ClearMLNmtEngineBuildJob
         {
             foreach (TranslationEngineCorpus corpus in engine.Corpora)
             {
+                if (corpus.Pretranslate == false) continue;
+
                 ITextCorpus sourceCorpus =
                     await _corpusService.CreateTextCorpusAsync(corpus.CorpusRef, engine.SourceLanguageTag)
                     ?? new DictionaryTextCorpus();
@@ -282,7 +284,7 @@ public class ClearMLNmtEngineBuildJob
                 {
                     await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                     await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                    if (corpus.Pretranslate && row.SourceSegment.Count > 0 && row.TargetSegment.Count == 0)
+                    if (row.SourceSegment.Count > 0 && row.TargetSegment.Count == 0)
                     {
                         yield return new PretranslationInfo
                         {

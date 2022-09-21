@@ -236,7 +236,7 @@ namespace SIL.Machine.WebApi.Client
             await restClient.DeleteAsync(request);
         }
 
-        public async Task<IEnumerable<PretranslationDto>> GetAllPrestranslationsFromCorporaFromEngineAsync(
+        public async Task<IList<PretranslationDto>> GetAllPrestranslationsFromCorporaFromEngineAsync(
             string engineId,
             string corpusId
         )
@@ -247,10 +247,10 @@ namespace SIL.Machine.WebApi.Client
                 response,
                 $"Error getting pretranslation list from corpora {corpusId} from project {engineId}."
             );
-            return JsonConvert.DeserializeObject<IEnumerable<PretranslationDto>>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<IList<PretranslationDto>>(response.Content, SerializerSettings);
         }
 
-        public async Task<PretranslationDto> GetPrestranslationFromCorporaFromEngineAsync(
+        public async Task<IList<PretranslationDto>> GetPrestranslationFromCorporaFromEngineAsync(
             string engineId,
             string corpusId,
             string pretranslationId
@@ -264,7 +264,7 @@ namespace SIL.Machine.WebApi.Client
                 response,
                 $"Error getting pretranslation {pretranslationId} from corpora {corpusId} from project {engineId}."
             );
-            return JsonConvert.DeserializeObject<PretranslationDto>(response.Content, SerializerSettings);
+            return JsonConvert.DeserializeObject<IList<PretranslationDto>>(response.Content, SerializerSettings);
         }
 
         public async Task<IEnumerable<BuildDto>> GetAllBuildsAsync(string engineId)

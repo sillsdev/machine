@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using SIL.Machine.WebApi.Client;
+using System;
 
 namespace SIL.Machine.WebApi.SpecFlowTests.StepDefinitions;
 
@@ -72,7 +73,7 @@ public sealed class MachineApiStepDefinitions
             name: user,
             sourceLanguageTag: source_language,
             targetLanguageTag: target_language,
-            type: TranslationEngineType.SmtTransfer
+            type: translationEngineType
         );
         EnginePerUser.Add(user, engine.Id);
     }
@@ -86,7 +87,7 @@ public sealed class MachineApiStepDefinitions
             );
         var corpusId = await PostCorpus(corporaName: corpora, fileFormat: fileFormat);
         var engineId = await GetEngineFromUser(user);
-        await client.PostCorporaToEngineAsync(engineId, corpusId);
+        await client.PostCorporaToEngineAsync(engineId, corpusId, pretranslateCorpus: true);
     }
 
     [When(@"(.*) are added to corpora (.*) in (.*) and (.*)")]
@@ -139,14 +140,14 @@ public sealed class MachineApiStepDefinitions
     {
         var engineId = await GetEngineFromUser(user);
         var corpusId = await GetCorporaFromName(corpusName);
-        var pretranslation = await client.GetPrestranslationFromCorporaFromEngineAsync(engineId, corpusId, fileId);
+        var pretranslations = await client.GetPrestranslationFromCorporaFromEngineAsync(engineId, corpusId, fileId);
         Assert.IsTrue(
-            pretranslation.Translation.StartsWith(targetSegment),
+            pretranslations[0].Translation.StartsWith(targetSegment),
             string.Concat(
                 "The pretranslation should start with ",
                 targetSegment,
                 " but instead starts with ",
-                pretranslation.Translation.AsSpan(0, 30)
+                pretranslations[0].Translation.AsSpan(0, 30)
             )
         );
     }

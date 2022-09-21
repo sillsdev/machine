@@ -78,7 +78,7 @@ public class ClearMLService : IClearMLService
 
     public async Task<bool> DeleteProjectAsync(string id, CancellationToken cancellationToken = default)
     {
-        var body = new JsonObject { ["project"] = id, ["delete_contents"] = true };
+        var body = new JsonObject { ["project"] = id, ["delete_contents"] = true, ["force"] = true };
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
         var deleted = (int?)result?["data"]?["deleted"];
         if (deleted is null)
