@@ -33,6 +33,10 @@ spec:
               value: Information
             - name: ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore
               value: Warning
+              {{- if not .Values.localVolume}}
+              {{- template "secrets.clearml" }}
+              {{- template "secrets.s3" }}
+              {{- end}}
           image: ghcr.io/sillsdev/machine:latest
           imagePullPolicy: "Always"
           name: machine-job-server
