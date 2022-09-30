@@ -16,6 +16,7 @@ namespace SIL.Machine.Corpora
         );
         public static readonly string UsfmTestProjectPath = Path.Combine(TestDataPath, "usfm", "Tes");
         public static readonly string UsxTestProjectPath = Path.Combine(TestDataPath, "usx", "Tes");
+        public static readonly string TextTestProjectPath = Path.Combine(TestDataPath, "txt");
 
         public static string CreateTestDblBundle()
         {
