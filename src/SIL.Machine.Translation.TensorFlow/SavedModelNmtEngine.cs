@@ -72,28 +72,32 @@ namespace SIL.Machine.Translation.TensorFlow
         {
             CheckDisposed();
 
-            return Translate(n, new[] { segment }).First();
+            return TranslateBatch(n, new[] { segment }).First();
         }
 
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
-        {
-            CheckDisposed();
-
-            return Translate(1, segments).Select(hypotheses => hypotheses[0]);
-        }
-
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
-            int n,
-            IEnumerable<IReadOnlyList<string>> segments
+        public IEnumerable<TranslationResult> TranslateBatch(
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
         )
         {
             CheckDisposed();
 
-            foreach (var (inputTokens, inputLengths) in Batch(segments))
+            return TranslateBatch(1, segments, batchSize).Select(hypotheses => hypotheses[0]);
+        }
+
+        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+            int n,
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
+        )
+        {
+            CheckDisposed();
+
+            foreach (var (inputTokens, inputLengths) in Batch(segments, batchSize))
             {
-                var batchSize = (int)inputTokens.dims[0];
-                NDArray refs = new NDArray(Enumerable.Repeat("", batchSize).ToArray(), new Shape(batchSize, 1));
-                NDArray refsLengths = np.array(Enumerable.Repeat(1, batchSize).ToArray());
+                var curBatchSize = (int)inputTokens.dims[0];
+                NDArray refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
+                NDArray refsLengths = np.array(Enumerable.Repeat(1, curBatchSize).ToArray());
 
                 _session.graph.as_default();
                 NDArray[] results = _session.run(
@@ -150,15 +154,19 @@ namespace SIL.Machine.Translation.TensorFlow
             return op.outputs[int.Parse(parts[1])];
         }
 
-        private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments)
+        private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments, int? batchSize)
         {
             var batch = new List<IReadOnlyList<string>>();
             int maxLength = 0;
+            if (batchSize == null)
+                batchSize = BatchSize;
+            else
+                batchSize = Math.Min((int)batchSize, BatchSize);
             foreach (IReadOnlyList<string> segment in segments)
             {
                 maxLength = Math.Max(maxLength, segment.Count);
                 batch.Add(segment);
-                if (batch.Count == BatchSize)
+                if (batch.Count == batchSize)
                 {
                     yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
                     batch.Clear();

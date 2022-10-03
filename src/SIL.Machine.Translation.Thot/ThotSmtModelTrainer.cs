@@ -279,7 +279,7 @@ namespace SIL.Machine.Translation.Thot
 
         private void GenerateWordAlignmentModel(
             string swmPrefix,
-            IEnumerable<ParallelTextRow> trainCorpus,
+            IParallelTextCorpus trainCorpus,
             ThotTrainProgressReporter reporter
         )
         {
@@ -401,7 +401,7 @@ namespace SIL.Machine.Translation.Thot
 
         private void TrainWordAlignmentModel(
             string swmPrefix,
-            IEnumerable<ParallelTextRow> trainCorpus,
+            IParallelTextCorpus trainCorpus,
             IProgress<ProgressStatus> progress
         )
         {
@@ -437,7 +437,7 @@ namespace SIL.Machine.Translation.Thot
         private void GenerateBestAlignments(
             string swmPrefix,
             string fileName,
-            IEnumerable<ParallelTextRow> trainCorpus,
+            IParallelTextCorpus trainCorpus,
             IProgress<ProgressStatus> progress
         )
         {
@@ -446,10 +446,10 @@ namespace SIL.Machine.Translation.Thot
             {
                 model.Load(swmPrefix);
                 int i = 0;
-                foreach (ParallelTextRow row in trainCorpus)
+                foreach (ParallelTextRow row in trainCorpus.Transform(EscapeTokens))
                 {
                     writer.Write("# 1\n");
-                    writer.Write(model.GetGizaFormatString(row, EscapeTokens, EscapeTokens));
+                    writer.Write(model.GetGizaFormatString(row));
                     i++;
                     progress.Report(new ProgressStatus(i, _trainCount));
                 }
@@ -605,6 +605,13 @@ namespace SIL.Machine.Translation.Thot
         protected override void DisposeManagedResources()
         {
             Directory.Delete(_tempDir, true);
+        }
+
+        private static ParallelTextRow EscapeTokens(ParallelTextRow row)
+        {
+            row.SourceSegment = EscapeTokens(row.SourceSegment);
+            row.TargetSegment = EscapeTokens(row.TargetSegment);
+            return row;
         }
 
         private static IReadOnlyList<string> EscapeTokens(IReadOnlyList<string> tokens)

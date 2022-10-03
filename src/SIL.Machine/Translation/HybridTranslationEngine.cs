@@ -44,30 +44,38 @@ namespace SIL.Machine.Translation
             return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
         }
 
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
-        {
-            CheckDisposed();
-
-            IEnumerable<TranslationResult> results = InteractiveEngine.Translate(segments);
-            if (RuleEngine == null)
-                return results;
-
-            IEnumerable<TranslationResult> ruleResults = RuleEngine.Translate(segments);
-            return results.Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult));
-        }
-
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
-            int n,
-            IEnumerable<IReadOnlyList<string>> segments
+        public IEnumerable<TranslationResult> TranslateBatch(
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
         )
         {
             CheckDisposed();
 
-            IEnumerable<IReadOnlyList<TranslationResult>> results = InteractiveEngine.Translate(n, segments);
+            IEnumerable<TranslationResult> results = InteractiveEngine.TranslateBatch(segments, batchSize);
             if (RuleEngine == null)
                 return results;
 
-            IEnumerable<TranslationResult> ruleResults = RuleEngine.Translate(segments);
+            IEnumerable<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments, batchSize);
+            return results.Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult));
+        }
+
+        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+            int n,
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
+        )
+        {
+            CheckDisposed();
+
+            IEnumerable<IReadOnlyList<TranslationResult>> results = InteractiveEngine.TranslateBatch(
+                n,
+                segments,
+                batchSize
+            );
+            if (RuleEngine == null)
+                return results;
+
+            IEnumerable<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments, batchSize);
             return results.Zip(
                 ruleResults,
                 (hypotheses, ruleResult) =>

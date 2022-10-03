@@ -9,8 +9,15 @@ namespace SIL.Machine.Translation
 
         IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment);
 
-        IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments);
+        IEnumerable<TranslationResult> TranslateBatch(
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
+        );
 
-        IEnumerable<IReadOnlyList<TranslationResult>> Translate(int n, IEnumerable<IReadOnlyList<string>> segments);
+        IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+            int n,
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
+        );
     }
 }

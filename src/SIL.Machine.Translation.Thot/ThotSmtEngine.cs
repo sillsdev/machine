@@ -48,16 +48,20 @@ namespace SIL.Machine.Translation.Thot
             return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
         }
 
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+        public IEnumerable<TranslationResult> TranslateBatch(
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
+        )
         {
             CheckDisposed();
 
             return segments.Select(segment => Translate(segment));
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
+        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments
+            IEnumerable<IReadOnlyList<string>> segments,
+            int? batchSize = null
         )
         {
             CheckDisposed();

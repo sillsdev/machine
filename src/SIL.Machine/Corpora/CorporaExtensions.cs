@@ -852,10 +852,15 @@ namespace SIL.Machine.Corpora
         public static IParallelTextCorpus Translate(
             this IParallelTextCorpus corpus,
             ITranslationEngine translationEngine,
-            int bufferSize = 1024
+            int batchSize = 1024
         )
         {
-            return new TranslateParallelTextCorpus(corpus, translationEngine, bufferSize);
+            return new TranslateParallelTextCorpus(corpus, translationEngine, batchSize);
+        }
+
+        public static IParallelTextCorpus Align(this IParallelTextCorpus corpus, IWordAligner aligner)
+        {
+            return new AlignParallelTextCorpus(corpus, aligner);
         }
 
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
@@ -945,49 +950,57 @@ namespace SIL.Machine.Corpora
         {
             private readonly IParallelTextCorpus _corpus;
             private readonly ITranslationEngine _translationEngine;
-            private readonly int _bufferSize;
+            private readonly int _batchSize;
 
             public TranslateParallelTextCorpus(
                 IParallelTextCorpus corpus,
                 ITranslationEngine translationEngine,
-                int bufferSize
+                int batchSize
             )
             {
                 _corpus = corpus;
                 _translationEngine = translationEngine;
-                _bufferSize = bufferSize;
+                _batchSize = batchSize;
             }
 
             public override IEnumerable<ParallelTextRow> GetRows()
             {
-                var buffer = new List<ParallelTextRow>();
-                foreach (ParallelTextRow row in _corpus.GetRows())
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    buffer.Add(row);
-                    if (buffer.Count == _bufferSize)
+                    IEnumerable<TranslationResult> translations = _translationEngine.TranslateBatch(
+                        batch.Select(r => r.SourceSegment)
+                    );
+                    foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
-                        Translate(buffer);
-                        foreach (ParallelTextRow r in buffer)
-                            yield return r;
-                        buffer.Clear();
+                        row.TargetSegment = translation.TargetSegment;
+                        yield return row;
                     }
                 }
+            }
+        }
 
-                if (buffer.Count > 0)
-                {
-                    Translate(buffer);
-                    foreach (ParallelTextRow r in buffer)
-                        yield return r;
-                }
+        private class AlignParallelTextCorpus : ParallelTextCorpusBase
+        {
+            private readonly IParallelTextCorpus _corpus;
+            private readonly IWordAligner _aligner;
+
+            public AlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner)
+            {
+                _corpus = corpus;
+                _aligner = aligner;
             }
 
-            private void Translate(List<ParallelTextRow> buffer)
+            public override IEnumerable<ParallelTextRow> GetRows()
             {
-                IEnumerable<TranslationResult> translations = _translationEngine.Translate(
-                    buffer.Select(r => r.SourceSegment)
-                );
-                foreach (var (row, translation) in buffer.Zip(translations, (r, t) => (r, t)))
-                    row.TargetSegment = translation.TargetSegment;
+                foreach (ParallelTextRow row in _corpus.GetRows())
+                {
+                    WordAlignmentMatrix alignment = _aligner.GetBestAlignment(row);
+                    IReadOnlyCollection<AlignedWordPair> wordPairs = alignment.ToAlignedWordPairs();
+                    if (_aligner is IWordAlignmentModel model)
+                        model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);
+                    row.AlignedWordPairs = wordPairs;
+                    yield return row;
+                }
             }
         }
 
