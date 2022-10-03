@@ -48,7 +48,7 @@ namespace SIL.Machine.Corpora
                     }
                     else
                     {
-                        rowRef = new TextFileRef(Id, lineNum);
+                        rowRef = new MultiKeyRef(Id, lineNum);
                     }
                     yield return CreateRow(line, rowRef);
                     lineNum++;

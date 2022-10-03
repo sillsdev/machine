@@ -36,13 +36,13 @@ namespace SIL.Machine.Corpora
             TextRow[] segments = text.GetRows().ToArray();
             Assert.That(segments.Length, Is.EqualTo(3));
 
-            Assert.That(segments[0].Ref, Is.EqualTo(new TextFileRef("3", 1)));
+            Assert.That(segments[0].Ref, Is.EqualTo(new MultiKeyRef("3", 1)));
             Assert.That(segments[0].Text, Is.EqualTo("Line one."));
 
-            Assert.That(segments[1].Ref, Is.EqualTo(new TextFileRef("3", 2)));
+            Assert.That(segments[1].Ref, Is.EqualTo(new MultiKeyRef("3", 2)));
             Assert.That(segments[1].Text, Is.EqualTo("Line two."));
 
-            Assert.That(segments[2].Ref, Is.EqualTo(new TextFileRef("3", 3)));
+            Assert.That(segments[2].Ref, Is.EqualTo(new MultiKeyRef("3", 3)));
             Assert.That(segments[2].Text, Is.EqualTo("Line three."));
         }
 
