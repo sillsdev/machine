@@ -1,11 +1,10 @@
-﻿using SIL.Machine.Annotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SIL.Machine.Translation
 {
@@ -105,41 +104,21 @@ namespace SIL.Machine.Translation
                 .ToArray();
         }
 
-        public IEnumerable<TranslationResult> TranslateBatch(
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
-        )
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
-            if (batchSize == null)
-                return segments.AsParallel().AsOrdered().Select(segment => Translate(segment));
-
-            return Partitioner
-                .Create(segments.Batch((int)batchSize), EnumerablePartitionerOptions.NoBuffering)
-                .AsParallel()
-                .AsOrdered()
-                .Select(batch => batch.Select(segment => Translate(segment)))
-                .SelectMany(batch => batch);
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(segment)).ToArray();
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
+            IReadOnlyList<IReadOnlyList<string>> segments
         )
         {
             CheckDisposed();
 
-            if (batchSize == null)
-                return segments.AsParallel().AsOrdered().Select(segment => Translate(n, segment));
-
-            return Partitioner
-                .Create(segments.Batch((int)batchSize), EnumerablePartitionerOptions.NoBuffering)
-                .AsParallel()
-                .AsOrdered()
-                .Select(batch => batch.Select(segment => Translate(n, segment)))
-                .SelectMany(batch => batch);
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(n, segment)).ToArray();
         }
     }
 }

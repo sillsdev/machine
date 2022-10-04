@@ -44,43 +44,39 @@ namespace SIL.Machine.Translation
             return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
         }
 
-        public IEnumerable<TranslationResult> TranslateBatch(
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
-        )
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
-            IEnumerable<TranslationResult> results = InteractiveEngine.TranslateBatch(segments, batchSize);
+            IReadOnlyList<TranslationResult> results = InteractiveEngine.TranslateBatch(segments);
             if (RuleEngine == null)
                 return results;
 
-            IEnumerable<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments, batchSize);
-            return results.Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult));
+            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            return results
+                .Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult))
+                .ToArray();
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
+            IReadOnlyList<IReadOnlyList<string>> segments
         )
         {
             CheckDisposed();
 
-            IEnumerable<IReadOnlyList<TranslationResult>> results = InteractiveEngine.TranslateBatch(
-                n,
-                segments,
-                batchSize
-            );
+            IReadOnlyList<IReadOnlyList<TranslationResult>> results = InteractiveEngine.TranslateBatch(n, segments);
             if (RuleEngine == null)
                 return results;
 
-            IEnumerable<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments, batchSize);
-            return results.Zip(
-                ruleResults,
-                (hypotheses, ruleResult) =>
-                    hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray()
-            );
+            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            return results
+                .Zip(
+                    ruleResults,
+                    (hypotheses, ruleResult) =>
+                        hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray()
+                )
+                .ToArray();
         }
 
         public WordGraph GetWordGraph(IReadOnlyList<string> segment)

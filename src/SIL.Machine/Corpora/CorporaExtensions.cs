@@ -858,9 +858,9 @@ namespace SIL.Machine.Corpora
             return new TranslateParallelTextCorpus(corpus, translationEngine, batchSize);
         }
 
-        public static IParallelTextCorpus Align(this IParallelTextCorpus corpus, IWordAligner aligner)
+        public static IParallelTextCorpus WordAlign(this IParallelTextCorpus corpus, IWordAligner aligner)
         {
-            return new AlignParallelTextCorpus(corpus, aligner);
+            return new WordAlignParallelTextCorpus(corpus, aligner);
         }
 
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
@@ -968,7 +968,7 @@ namespace SIL.Machine.Corpora
                 foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
                     IEnumerable<TranslationResult> translations = _translationEngine.TranslateBatch(
-                        batch.Select(r => r.SourceSegment)
+                        batch.Select(r => r.SourceSegment).ToArray()
                     );
                     foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
@@ -979,12 +979,12 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private class AlignParallelTextCorpus : ParallelTextCorpusBase
+        private class WordAlignParallelTextCorpus : ParallelTextCorpusBase
         {
             private readonly IParallelTextCorpus _corpus;
             private readonly IWordAligner _aligner;
 
-            public AlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner)
+            public WordAlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner)
             {
                 _corpus = corpus;
                 _aligner = aligner;

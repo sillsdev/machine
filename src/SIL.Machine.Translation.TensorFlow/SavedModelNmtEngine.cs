@@ -72,35 +72,32 @@ namespace SIL.Machine.Translation.TensorFlow
         {
             CheckDisposed();
 
-            return TranslateBatch(n, new[] { segment }).First();
+            return TranslateBatch(n, new[] { segment })[0];
         }
 
-        public IEnumerable<TranslationResult> TranslateBatch(
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
-        )
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
-            return TranslateBatch(1, segments, batchSize).Select(hypotheses => hypotheses[0]);
+            return TranslateBatch(1, segments).Select(hypotheses => hypotheses[0]).ToArray();
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> TranslateBatch(
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments,
-            int? batchSize = null
+            IReadOnlyList<IReadOnlyList<string>> segments
         )
         {
             CheckDisposed();
 
-            foreach (var (inputTokens, inputLengths) in Batch(segments, batchSize))
+            var results = new List<IReadOnlyList<TranslationResult>>();
+            foreach (var (inputTokens, inputLengths) in Batch(segments))
             {
                 var curBatchSize = (int)inputTokens.dims[0];
                 NDArray refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
                 NDArray refsLengths = np.array(Enumerable.Repeat(1, curBatchSize).ToArray());
 
                 _session.graph.as_default();
-                NDArray[] results = _session.run(
+                NDArray[] sessionResults = _session.run(
                     _outputs,
                     (_inputs[_signature.InputTokensKey], inputTokens),
                     (_inputs[_signature.InputLengthKey], inputLengths),
@@ -108,9 +105,9 @@ namespace SIL.Machine.Translation.TensorFlow
                     (_inputs[_signature.InputRefLengthKey], refsLengths)
                 );
 
-                NDArray outputTokens = results[_outputIndices[_signature.OutputTokensKey]];
-                NDArray outputLengths = results[_outputIndices[_signature.OutputLengthKey]];
-                NDArray alignments = results[_outputIndices[_signature.OutputAlignmentKey]];
+                NDArray outputTokens = sessionResults[_outputIndices[_signature.OutputTokensKey]];
+                NDArray outputLengths = sessionResults[_outputIndices[_signature.OutputLengthKey]];
+                NDArray alignments = sessionResults[_outputIndices[_signature.OutputAlignmentKey]];
                 string[] outputTokenStrs = outputTokens.StringData();
 
                 for (int i = 0; i < outputLengths.dims[0]; i++)
@@ -137,9 +134,10 @@ namespace SIL.Machine.Translation.TensorFlow
 
                         hypotheses.Add(builder.ToResult(inputLength));
                     }
-                    yield return hypotheses;
+                    results.Add(hypotheses);
                 }
             }
+            return results;
         }
 
         protected override void DisposeManagedResources()
@@ -154,19 +152,15 @@ namespace SIL.Machine.Translation.TensorFlow
             return op.outputs[int.Parse(parts[1])];
         }
 
-        private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments, int? batchSize)
+        private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments)
         {
             var batch = new List<IReadOnlyList<string>>();
             int maxLength = 0;
-            if (batchSize == null)
-                batchSize = BatchSize;
-            else
-                batchSize = Math.Min((int)batchSize, BatchSize);
             foreach (IReadOnlyList<string> segment in segments)
             {
                 maxLength = Math.Max(maxLength, segment.Count);
                 batch.Add(segment);
-                if (batch.Count == batchSize)
+                if (batch.Count == BatchSize)
                 {
                     yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
                     batch.Clear();
