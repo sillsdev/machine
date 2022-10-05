@@ -4,11 +4,14 @@ using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.Translation
 {
-    public class ExclusiveLinkWordAlignmentMethod : IWordAlignmentMethod
+    public class ExclusiveLinkWordAlignmentMethod : WordAlignerBase, IWordAlignmentMethod
     {
         public Func<IReadOnlyList<string>, int, IReadOnlyList<string>, int, double> ScoreSelector { get; set; }
 
-        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+        public override WordAlignmentMatrix Align(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        )
         {
             var queue = new PriorityQueue<WordPair>(sourceSegment.Count * targetSegment.Count);
             for (int j = 0; j < targetSegment.Count; j++)

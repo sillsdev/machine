@@ -5,7 +5,7 @@ using SIL.Machine.SequenceAlignment;
 
 namespace SIL.Machine.Translation
 {
-    public class FuzzyEditDistanceWordAlignmentMethod : IWordAlignmentMethod
+    public class FuzzyEditDistanceWordAlignmentMethod : WordAlignerBase, IWordAlignmentMethod
     {
         private const double DefaultAlpha = 0.2f;
         private const int DefaultMaxDistance = 3;
@@ -26,7 +26,10 @@ namespace SIL.Machine.Translation
         public int MaxDistance { get; set; } = DefaultMaxDistance;
         public double Alpha { get; set; } = DefaultAlpha;
 
-        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+        public override WordAlignmentMatrix Align(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        )
         {
             if (_scorer == null)
                 throw new InvalidOperationException("A score selector has not been assigned.");

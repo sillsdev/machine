@@ -859,7 +859,11 @@ namespace SIL.Machine.Corpora
             return new TranslateParallelTextCorpus(corpus, translationEngine, batchSize);
         }
 
-        public static IParallelTextCorpus WordAlign(this IParallelTextCorpus corpus, IWordAligner aligner)
+        public static IParallelTextCorpus WordAlign(
+            this IParallelTextCorpus corpus,
+            IWordAligner aligner,
+            int batchSize = 1024
+        )
         {
             return new WordAlignParallelTextCorpus(corpus, aligner);
         }
@@ -984,23 +988,40 @@ namespace SIL.Machine.Corpora
         {
             private readonly IParallelTextCorpus _corpus;
             private readonly IWordAligner _aligner;
+            private readonly int _batchSize;
 
-            public WordAlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner)
+            public WordAlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner, int batchSize)
             {
                 _corpus = corpus;
                 _aligner = aligner;
+                _batchSize = batchSize;
             }
 
             public override IEnumerable<ParallelTextRow> GetRows()
             {
-                foreach (ParallelTextRow row in _corpus.GetRows())
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    WordAlignmentMatrix alignment = _aligner.Align(row);
-                    IReadOnlyCollection<AlignedWordPair> wordPairs = alignment.ToAlignedWordPairs();
-                    if (_aligner is IWordAlignmentModel model)
-                        model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);
-                    row.AlignedWordPairs = wordPairs;
-                    yield return row;
+                    IReadOnlyList<WordAlignmentMatrix> alignments = _aligner.AlignBatch(
+                        batch.Select(r => (r.SourceSegment, r.TargetSegment)).ToArray()
+                    );
+                    foreach (var (row, alignment) in batch.Zip(alignments, (r, a) => (r, a)))
+                    {
+                        WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();
+                        IReadOnlyCollection<AlignedWordPair> wordPairs;
+                        if (knownAlignment != null)
+                        {
+                            knownAlignment.PrioritySymmetrizeWith(alignment);
+                            wordPairs = knownAlignment.ToAlignedWordPairs();
+                        }
+                        else
+                        {
+                            wordPairs = alignment.ToAlignedWordPairs();
+                        }
+                        if (_aligner is IWordAlignmentModel model)
+                            model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);
+                        row.AlignedWordPairs = wordPairs;
+                        yield return row;
+                    }
                 }
             }
         }

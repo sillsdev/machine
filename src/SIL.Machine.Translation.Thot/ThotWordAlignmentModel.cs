@@ -219,6 +219,15 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
+        public IReadOnlyList<WordAlignmentMatrix> AlignBatch(
+            IReadOnlyList<(IReadOnlyList<string> SourceSegment, IReadOnlyList<string> TargetSegment)> segments
+        )
+        {
+            CheckDisposed();
+
+            return segments.AsParallel().AsOrdered().Select(s => Align(s.SourceSegment, s.TargetSegment)).ToArray();
+        }
+
         public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
         {
             CheckDisposed();

@@ -77,6 +77,15 @@ namespace SIL.Machine.Translation
             return _aligner.Align(sourceSegment, targetSegment);
         }
 
+        public IReadOnlyList<WordAlignmentMatrix> AlignBatch(
+            IReadOnlyList<(IReadOnlyList<string> SourceSegment, IReadOnlyList<string> TargetSegment)> segments
+        )
+        {
+            CheckDisposed();
+
+            return _aligner.AlignBatch(segments);
+        }
+
         public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
         {
             CheckDisposed();

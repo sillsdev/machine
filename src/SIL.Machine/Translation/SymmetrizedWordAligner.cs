@@ -2,7 +2,7 @@
 
 namespace SIL.Machine.Translation
 {
-    public class SymmetrizedWordAligner : IWordAligner
+    public class SymmetrizedWordAligner : WordAlignerBase
     {
         private readonly IWordAligner _srcTrgAligner;
         private readonly IWordAligner _trgSrcAligner;
@@ -15,7 +15,10 @@ namespace SIL.Machine.Translation
 
         public SymmetrizationHeuristic Heuristic { get; set; } = SymmetrizationHeuristic.Och;
 
-        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
+        public override WordAlignmentMatrix Align(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        )
         {
             WordAlignmentMatrix matrix = _srcTrgAligner.Align(sourceSegment, targetSegment);
             if (Heuristic != SymmetrizationHeuristic.None)
