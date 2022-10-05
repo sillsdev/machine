@@ -54,11 +54,43 @@ namespace SIL.Machine.Utils
             return new ObjectPoolItem<T>(this, await _bufferBlock.ReceiveAsync(cancellationToken));
         }
 
+        public ObjectPoolItem<T> Get()
+        {
+            CheckDisposed();
+
+            if (_bufferBlock.TryReceive(out T obj))
+                return new ObjectPoolItem<T>(this, obj);
+
+            if (Count < MaxCount)
+            {
+                using (_lock.Lock())
+                {
+                    if (Count < MaxCount)
+                    {
+                        Count++;
+                        obj = _factory().WaitAndUnwrapException();
+                        _objs.Add(obj);
+                        _bufferBlock.Post(obj);
+                    }
+                }
+            }
+
+            return new ObjectPoolItem<T>(this, _bufferBlock.Receive());
+        }
+
         public async Task ResetAsync(CancellationToken cancellationToken = default)
         {
             using (await _lock.LockAsync(cancellationToken))
             {
-                Reset();
+                ResetObjects();
+            }
+        }
+
+        public void Reset()
+        {
+            using (_lock.Lock())
+            {
+                ResetObjects();
             }
         }
 
@@ -69,7 +101,7 @@ namespace SIL.Machine.Utils
             _bufferBlock.Post(item);
         }
 
-        private void Reset()
+        private void ResetObjects()
         {
             _bufferBlock.TryReceiveAll(out _);
             foreach (T obj in _objs)
@@ -83,7 +115,7 @@ namespace SIL.Machine.Utils
 
         protected override void DisposeManagedResources()
         {
-            Reset();
+            ResetObjects();
             _bufferBlock.Complete();
         }
     }

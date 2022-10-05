@@ -190,15 +190,97 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        public void Save()
+        public WordGraph GetWordGraph(IReadOnlyList<string> segment)
         {
-            Thot.smtModel_saveModels(_handle);
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.GetWordGraph(segment);
+            }
+        }
+
+        public void TrainSegment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true
+        )
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                item.Object.TrainSegment(sourceSegment, targetSegment, sentenceStart);
+            }
+        }
+
+        public TranslationResult Translate(IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.Translate(segment);
+            }
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.Translate(n, segment);
+            }
+        }
+
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.TranslateBatch(segments);
+            }
+        }
+
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments
+        )
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.TranslateBatch(n, segments);
+            }
+        }
+
+        public TranslationResult GetBestPhraseAlignment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        )
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.GetBestPhraseAlignment(sourceSegment, targetSegment);
+            }
         }
 
         public Task SaveAsync(CancellationToken cancellationToken = default)
         {
             Save();
             return Task.CompletedTask;
+        }
+
+        public void Save()
+        {
+            CheckDisposed();
+
+            Thot.smtModel_saveModels(_handle);
         }
 
         public ThotSmtModelTrainer CreateTrainer(IParallelTextCorpus corpus)
