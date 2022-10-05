@@ -26,10 +26,7 @@ namespace SIL.Machine.Translation
         public int MaxDistance { get; set; } = DefaultMaxDistance;
         public double Alpha { get; set; } = DefaultAlpha;
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             if (_scorer == null)
                 throw new InvalidOperationException("A score selector has not been assigned.");

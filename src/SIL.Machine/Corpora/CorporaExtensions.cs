@@ -995,7 +995,7 @@ namespace SIL.Machine.Corpora
             {
                 foreach (ParallelTextRow row in _corpus.GetRows())
                 {
-                    WordAlignmentMatrix alignment = _aligner.GetBestAlignment(row);
+                    WordAlignmentMatrix alignment = _aligner.Align(row);
                     IReadOnlyCollection<AlignedWordPair> wordPairs = alignment.ToAlignedWordPairs();
                     if (_aligner is IWordAlignmentModel model)
                         model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);

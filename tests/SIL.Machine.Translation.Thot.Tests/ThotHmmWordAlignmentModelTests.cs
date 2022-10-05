@@ -14,12 +14,12 @@ namespace SIL.Machine.Translation.Thot
         private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusHmmFolderName, "tm", "src_trg_swm");
 
         [Test]
-        public void GetBestAlignment()
+        public void Align()
         {
             using var model = new ThotHmmWordAlignmentModel(DirectModelPath);
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             var expected = new WordAlignmentMatrix(
                 9,
                 8,
@@ -34,7 +34,7 @@ namespace SIL.Machine.Translation.Thot
             using var model = new ThotHmmWordAlignmentModel(DirectModelPath);
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
             Assert.That(score, Is.EqualTo(0.40).Within(0.01));
         }
@@ -60,7 +60,7 @@ namespace SIL.Machine.Translation.Thot
             using var model = new ThotHmmWordAlignmentModel(DirectModelPath);
             string[] sourceSegment = "hablé hasta cinco en punto .".Split(' ');
             string[] targetSegment = "i am staying until five o ' clock .".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             AlignedWordPair[] pairs = waMatrix.ToAlignedWordPairs(includeNull: true).ToArray();
             model.ComputeAlignedWordPairScores(sourceSegment, targetSegment, pairs);
             Assert.That(pairs.Length, Is.EqualTo(11));
@@ -168,7 +168,7 @@ namespace SIL.Machine.Translation.Thot
             );
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
             Assert.That(score, Is.EqualTo(0.46).Within(0.01));
         }
@@ -200,7 +200,7 @@ namespace SIL.Machine.Translation.Thot
             );
             string[] sourceSegment = "hablé hasta cinco en punto .".Split(' ');
             string[] targetSegment = "i am staying until five o ' clock .".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             AlignedWordPair[] pairs = waMatrix.ToAlignedWordPairs(includeNull: true).ToArray();
             model.ComputeAlignedWordPairScores(sourceSegment, targetSegment, pairs);
             Assert.That(pairs.Length, Is.EqualTo(10));
@@ -237,7 +237,7 @@ namespace SIL.Machine.Translation.Thot
             await trainer.TrainAsync();
             await trainer.SaveAsync();
 
-            WordAlignmentMatrix matrix = model.GetBestAlignment(
+            WordAlignmentMatrix matrix = model.Align(
                 "isthay isyay ayay esttay-N .".Split(),
                 "this is a test N .".Split()
             );
@@ -248,10 +248,7 @@ namespace SIL.Machine.Translation.Thot
             );
             Assert.That(matrix.ValueEquals(expected), Is.True);
 
-            matrix = model.GetBestAlignment(
-                "isthay isyay otnay ayay esttay-N .".Split(),
-                "this is not a test N .".Split()
-            );
+            matrix = model.Align("isthay isyay otnay ayay esttay-N .".Split(), "this is not a test N .".Split());
             expected = new WordAlignmentMatrix(
                 6,
                 7,
@@ -259,10 +256,7 @@ namespace SIL.Machine.Translation.Thot
             );
             Assert.That(matrix.ValueEquals(expected), Is.True);
 
-            matrix = model.GetBestAlignment(
-                "isthay isyay ayay esttay-N ardhay .".Split(),
-                "this is a hard test N .".Split()
-            );
+            matrix = model.Align("isthay isyay ayay esttay-N ardhay .".Split(), "this is a hard test N .".Split());
             expected = new WordAlignmentMatrix(
                 6,
                 7,

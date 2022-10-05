@@ -20,10 +20,7 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             if (_scorer == null)
                 throw new InvalidOperationException("A score selector has not been assigned.");

@@ -13,12 +13,12 @@ namespace SIL.Machine.Translation.Thot
         private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusFastAlignFolderName, "tm", "src_trg_swm");
 
         [Test]
-        public void GetBestAlignment()
+        public void Align()
         {
             using var model = new ThotFastAlignWordAlignmentModel(DirectModelPath);
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             var expected = new WordAlignmentMatrix(
                 9,
                 8,
@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation.Thot
             using var model = new ThotFastAlignWordAlignmentModel(DirectModelPath);
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
             Assert.That(score, Is.EqualTo(0.34).Within(0.01));
         }
@@ -125,7 +125,7 @@ namespace SIL.Machine.Translation.Thot
             );
             string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
             string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix waMatrix = model.Align(sourceSegment, targetSegment);
             double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
             Assert.That(score, Is.EqualTo(0.36).Within(0.01));
         }

@@ -70,14 +70,11 @@ namespace SIL.Machine.Translation
 
         public IReadOnlySet<int> SpecialSymbolIndices => _directWordAlignmentModel.SpecialSymbolIndices;
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             CheckDisposed();
 
-            return _aligner.GetBestAlignment(sourceSegment, targetSegment);
+            return _aligner.Align(sourceSegment, targetSegment);
         }
 
         public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
@@ -136,7 +133,7 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            WordAlignmentMatrix matrix = GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix matrix = Align(sourceSegment, targetSegment);
             IReadOnlyCollection<AlignedWordPair> wordPairs = matrix.ToAlignedWordPairs();
             ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
             return wordPairs;

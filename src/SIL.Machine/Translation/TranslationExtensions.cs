@@ -64,9 +64,9 @@ namespace SIL.Machine.Translation
             return results;
         }
 
-        public static WordAlignmentMatrix GetBestAlignment(this IWordAligner aligner, ParallelTextRow row)
+        public static WordAlignmentMatrix Align(this IWordAligner aligner, ParallelTextRow row)
         {
-            WordAlignmentMatrix alignment = aligner.GetBestAlignment(row.SourceSegment, row.TargetSegment);
+            WordAlignmentMatrix alignment = aligner.Align(row.SourceSegment, row.TargetSegment);
             WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();
             if (knownAlignment != null)
             {
@@ -94,13 +94,13 @@ namespace SIL.Machine.Translation
             bool includeScores = true
         )
         {
-            WordAlignmentMatrix alignment = model.GetBestAlignment(row);
+            WordAlignmentMatrix alignment = model.Align(row);
             return alignment.ToString(model, row.SourceSegment, row.TargetSegment, includeScores);
         }
 
         public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextRow row)
         {
-            WordAlignmentMatrix alignment = aligner.GetBestAlignment(row);
+            WordAlignmentMatrix alignment = aligner.Align(row);
             return alignment.ToGizaFormat(row.SourceSegment, row.TargetSegment);
         }
 

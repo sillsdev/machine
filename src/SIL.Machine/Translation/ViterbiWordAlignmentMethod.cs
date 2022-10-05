@@ -7,10 +7,7 @@ namespace SIL.Machine.Translation
     {
         public Func<IReadOnlyList<string>, int, IReadOnlyList<string>, int, double> ScoreSelector { get; set; }
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             var alignment = new WordAlignmentMatrix(sourceSegment.Count, targetSegment.Count);
             for (int j = 0; j < targetSegment.Count; j++)

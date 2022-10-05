@@ -189,10 +189,7 @@ namespace SIL.Machine.Translation.Thot
             );
         }
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             CheckDisposed();
 
@@ -276,7 +273,7 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            WordAlignmentMatrix matrix = GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix matrix = Align(sourceSegment, targetSegment);
             IReadOnlyCollection<AlignedWordPair> wordPairs = matrix.ToAlignedWordPairs();
             ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
             return wordPairs;

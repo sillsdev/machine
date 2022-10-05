@@ -4,6 +4,6 @@ namespace SIL.Machine.Translation
 {
     public interface IWordAligner
     {
-        WordAlignmentMatrix GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
+        WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
     }
 }

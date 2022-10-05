@@ -85,7 +85,7 @@ namespace SIL.Machine.Translation.Thot
             await trainer.TrainAsync();
             await trainer.SaveAsync();
 
-            WordAlignmentMatrix matrix = model.GetBestAlignment(
+            WordAlignmentMatrix matrix = model.Align(
                 "isthay isyay ayay esttay-N .".Split(),
                 "this is a test N .".Split()
             );
@@ -96,10 +96,7 @@ namespace SIL.Machine.Translation.Thot
             );
             Assert.That(matrix.ValueEquals(expected), Is.True);
 
-            matrix = model.GetBestAlignment(
-                "isthay isyay otnay ayay esttay-N .".Split(),
-                "this is not a test N .".Split()
-            );
+            matrix = model.Align("isthay isyay otnay ayay esttay-N .".Split(), "this is not a test N .".Split());
             expected = new WordAlignmentMatrix(
                 6,
                 7,
@@ -107,10 +104,7 @@ namespace SIL.Machine.Translation.Thot
             );
             Assert.That(matrix.ValueEquals(expected), Is.True);
 
-            matrix = model.GetBestAlignment(
-                "isthay isyay ayay esttay-N ardhay .".Split(),
-                "this is a hard test N .".Split()
-            );
+            matrix = model.Align("isthay isyay ayay esttay-N ardhay .".Split(), "this is a hard test N .".Split());
             expected = new WordAlignmentMatrix(
                 6,
                 7,
