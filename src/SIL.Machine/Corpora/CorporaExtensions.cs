@@ -865,7 +865,7 @@ namespace SIL.Machine.Corpora
             int batchSize = 1024
         )
         {
-            return new WordAlignParallelTextCorpus(corpus, aligner);
+            return new WordAlignParallelTextCorpus(corpus, aligner, batchSize);
         }
 
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
