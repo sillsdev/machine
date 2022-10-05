@@ -136,6 +136,88 @@ namespace SIL.Machine.Translation
             return InteractiveEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
         }
 
+        public TranslationResult Translate(IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            TranslationResult result = InteractiveEngine.Translate(segment);
+            if (RuleEngine == null)
+                return result;
+
+            TranslationResult ruleResult = RuleEngine.Translate(segment);
+            return result.Merge(RuleEngineThreshold, ruleResult);
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            IReadOnlyList<TranslationResult> hypotheses = InteractiveEngine.Translate(n, segment);
+            if (RuleEngine == null || hypotheses.Count == 0)
+                return hypotheses;
+
+            TranslationResult ruleResult = RuleEngine.Translate(segment);
+            return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
+        }
+
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
+        {
+            CheckDisposed();
+
+            IReadOnlyList<TranslationResult> results = InteractiveEngine.TranslateBatch(segments);
+            if (RuleEngine == null)
+                return results;
+
+            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            return results
+                .Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult))
+                .ToArray();
+        }
+
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments
+        )
+        {
+            CheckDisposed();
+
+            IReadOnlyList<IReadOnlyList<TranslationResult>> results = InteractiveEngine.TranslateBatch(n, segments);
+            if (RuleEngine == null)
+                return results;
+
+            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            return results
+                .Zip(
+                    ruleResults,
+                    (hypotheses, ruleResult) =>
+                        hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray()
+                )
+                .ToArray();
+        }
+
+        public WordGraph GetWordGraph(IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            WordGraph wordGraph = InteractiveEngine.GetWordGraph(segment);
+            if (RuleEngine == null)
+                return wordGraph;
+
+            TranslationResult ruleResult = RuleEngine.Translate(segment);
+            return wordGraph.Merge(RuleEngineThreshold, ruleResult);
+        }
+
+        public void TrainSegment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true
+        )
+        {
+            CheckDisposed();
+
+            InteractiveEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
+        }
+
         protected override void DisposeManagedResources()
         {
             InteractiveEngine.Dispose();

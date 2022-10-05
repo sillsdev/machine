@@ -14,5 +14,13 @@ namespace SIL.Machine.Translation
             bool sentenceStart = true,
             CancellationToken cancellationToken = default
         );
+
+        WordGraph GetWordGraph(IReadOnlyList<string> segment);
+
+        void TrainSegment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true
+        );
     }
 }

@@ -968,9 +968,9 @@ namespace SIL.Machine.Corpora
             {
                 foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    IReadOnlyList<TranslationResult> translations = _translationEngine
-                        .TranslateBatchAsync(batch.Select(r => r.SourceSegment).ToArray())
-                        .WaitAndUnwrapException();
+                    IReadOnlyList<TranslationResult> translations = _translationEngine.TranslateBatch(
+                        batch.Select(r => r.SourceSegment).ToArray()
+                    );
                     foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
                         row.TargetSegment = translation.TargetSegment;
