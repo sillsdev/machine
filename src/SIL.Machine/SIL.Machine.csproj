@@ -25,6 +25,7 @@
 		<PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
 		<PackageReference Include="SIL.Scripture" Version="7.0.0" />
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
+		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net461'">

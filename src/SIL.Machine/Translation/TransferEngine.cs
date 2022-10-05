@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology;
@@ -23,6 +25,40 @@ namespace SIL.Machine.Translation
             _sourceAnalyzer = sourceAnalyzer;
             _transferer = transferer;
             _targetGenerator = targetGenerator;
+        }
+
+        public Task<TranslationResult> TranslateAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
         }
 
         public TranslationResult Translate(IReadOnlyList<string> segment)

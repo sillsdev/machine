@@ -26,9 +26,9 @@ namespace SIL.Machine
             _quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
         }
 
-        protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
+        protected override async Task<int> ExecuteCommandAsync(CancellationToken cancellationToken)
         {
-            int code = await base.ExecuteCommandAsync(ct);
+            int code = await base.ExecuteCommandAsync(cancellationToken);
             if (code != 0)
                 return code;
 
@@ -46,9 +46,9 @@ namespace SIL.Machine
                         new Phase("Saving model")
                     );
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Train(phaseProgress);
+                        await trainer.TrainAsync(phaseProgress, cancellationToken);
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Save();
+                        await trainer.SaveAsync(cancellationToken);
                 }
                 if (!_quietOption.HasValue())
                     Out.WriteLine("done.");

@@ -49,9 +49,9 @@ namespace SIL.Machine
             _quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
         }
 
-        protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
+        protected override async Task<int> ExecuteCommandAsync(CancellationToken cancellationToken)
         {
-            int result = await base.ExecuteCommandAsync(ct);
+            int result = await base.ExecuteCommandAsync(cancellationToken);
             if (result != 0)
                 return result;
 
@@ -102,7 +102,6 @@ namespace SIL.Machine
             int corpusCount = _corpusSpec.Corpus.Count(IsValid);
             int segmentCount = 0;
             using (ITranslationModel model = _modelSpec.CreateModel())
-            using (ITranslationEngine engine = model.CreateEngine())
             {
                 if (!_quietOption.HasValue())
                 {
@@ -118,7 +117,10 @@ namespace SIL.Machine
                     {
                         if (IsValid(row))
                         {
-                            TranslationResult translateResult = engine.Translate(row.Segment);
+                            TranslationResult translateResult = await model.TranslateAsync(
+                                row.Segment,
+                                cancellationToken
+                            );
                             translations?.Add(translateResult.TargetSegment);
                             string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
                             writer.WriteLine(translation);

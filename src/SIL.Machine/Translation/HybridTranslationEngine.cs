@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -20,56 +22,84 @@ namespace SIL.Machine.Translation
         public IInteractiveTranslationEngine InteractiveEngine { get; }
         public ITranslationEngine RuleEngine { get; }
 
-        public TranslationResult Translate(IReadOnlyList<string> segment)
+        public async Task<TranslationResult> TranslateAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
         {
             CheckDisposed();
 
-            TranslationResult result = InteractiveEngine.Translate(segment);
+            TranslationResult result = await InteractiveEngine.TranslateAsync(segment, cancellationToken);
             if (RuleEngine == null)
                 return result;
 
-            TranslationResult ruleResult = RuleEngine.Translate(segment);
+            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
             return result.Merge(RuleEngineThreshold, ruleResult);
         }
 
-        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        public async Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
         {
             CheckDisposed();
 
-            IReadOnlyList<TranslationResult> hypotheses = InteractiveEngine.Translate(n, segment);
+            IReadOnlyList<TranslationResult> hypotheses = await InteractiveEngine.TranslateAsync(
+                n,
+                segment,
+                cancellationToken
+            );
             if (RuleEngine == null || hypotheses.Count == 0)
                 return hypotheses;
 
-            TranslationResult ruleResult = RuleEngine.Translate(segment);
+            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
             return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
         }
 
-        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
+        public async Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
         {
             CheckDisposed();
 
-            IReadOnlyList<TranslationResult> results = InteractiveEngine.TranslateBatch(segments);
+            IReadOnlyList<TranslationResult> results = await InteractiveEngine.TranslateBatchAsync(
+                segments,
+                cancellationToken
+            );
             if (RuleEngine == null)
                 return results;
 
-            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine.TranslateBatchAsync(
+                segments,
+                cancellationToken
+            );
             return results
                 .Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult))
                 .ToArray();
         }
 
-        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
+        public async Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
             int n,
-            IReadOnlyList<IReadOnlyList<string>> segments
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
         )
         {
             CheckDisposed();
 
-            IReadOnlyList<IReadOnlyList<TranslationResult>> results = InteractiveEngine.TranslateBatch(n, segments);
+            IReadOnlyList<IReadOnlyList<TranslationResult>> results = await InteractiveEngine.TranslateBatchAsync(
+                n,
+                segments,
+                cancellationToken
+            );
             if (RuleEngine == null)
                 return results;
 
-            IReadOnlyList<TranslationResult> ruleResults = RuleEngine.TranslateBatch(segments);
+            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine.TranslateBatchAsync(
+                segments,
+                cancellationToken
+            );
             return results
                 .Zip(
                     ruleResults,
@@ -79,27 +109,31 @@ namespace SIL.Machine.Translation
                 .ToArray();
         }
 
-        public WordGraph GetWordGraph(IReadOnlyList<string> segment)
-        {
-            CheckDisposed();
-
-            WordGraph wordGraph = InteractiveEngine.GetWordGraph(segment);
-            if (RuleEngine == null)
-                return wordGraph;
-
-            TranslationResult ruleResult = RuleEngine.Translate(segment);
-            return wordGraph.Merge(RuleEngineThreshold, ruleResult);
-        }
-
-        public void TrainSegment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
-            bool sentenceStart = true
+        public async Task<WordGraph> GetWordGraphAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
         )
         {
             CheckDisposed();
 
-            InteractiveEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
+            WordGraph wordGraph = await InteractiveEngine.GetWordGraphAsync(segment, cancellationToken);
+            if (RuleEngine == null)
+                return wordGraph;
+
+            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
+            return wordGraph.Merge(RuleEngineThreshold, ruleResult);
+        }
+
+        public Task TrainSegmentAsync(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            return InteractiveEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
         }
 
         protected override void DisposeManagedResources()

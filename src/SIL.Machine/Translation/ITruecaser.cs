@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
@@ -10,9 +11,8 @@ namespace SIL.Machine.Translation
 
         void TrainSegment(IReadOnlyList<string> segment, bool sentenceStart = true);
 
-        Task SaveAsync();
-        void Save();
-
         IReadOnlyList<string> Truecase(IReadOnlyList<string> segment);
+
+        Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }

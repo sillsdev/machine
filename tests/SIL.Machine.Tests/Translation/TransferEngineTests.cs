@@ -1,4 +1,5 @@
-﻿using NSubstitute;
+﻿using System.Threading.Tasks;
+using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
@@ -9,7 +10,7 @@ namespace SIL.Machine.Translation
     public class TransferEngineTests
     {
         [Test]
-        public void Translate_CanTranslate_ReturnsCorrectTranslation()
+        public async Task TranslateAsync_CanTranslate_ReturnsCorrectTranslation()
         {
             var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
             sourceAnalyzer.AddAnalyses(
@@ -39,11 +40,11 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(engine.TranslateWord("habló"), Is.EqualTo("talked".Split(' ')));
+            Assert.That(await engine.TranslateWordAsync("habló"), Is.EqualTo("talked".Split(' ')));
         }
 
         [Test]
-        public void Translate_CannotAnalyze_ReturnsEmptyTranslation()
+        public async Task TranslateAsync_CannotAnalyze_ReturnsEmptyTranslation()
         {
             var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
             sourceAnalyzer.AddAnalyses("habló");
@@ -62,11 +63,11 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(engine.TranslateWord("habló"), Is.Empty);
+            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
         }
 
         [Test]
-        public void Translate_CannotGenerate_ReturnsEmptyTranslation()
+        public async Task TranslateAsync_CannotGenerate_ReturnsEmptyTranslation()
         {
             var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
             sourceAnalyzer.AddAnalyses(
@@ -95,11 +96,11 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(engine.TranslateWord("habló"), Is.Empty);
+            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
         }
 
         [Test]
-        public void Translate_CannotMapMorphemes_ReturnsEmptyTranslation()
+        public async Task TranslateAsync_CannotMapMorphemes_ReturnsEmptyTranslation()
         {
             var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
             sourceAnalyzer.AddAnalyses(
@@ -119,7 +120,7 @@ namespace SIL.Machine.Translation
             targetGenerator.Morphemes.Returns(targetMorphemes);
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(engine.TranslateWord("habló"), Is.Empty);
+            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
         }
     }
 }

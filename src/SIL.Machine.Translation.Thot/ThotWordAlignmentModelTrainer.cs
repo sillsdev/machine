@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
@@ -142,7 +143,7 @@ namespace SIL.Machine.Translation.Thot
 
         public int MaxCorpusCount { get; set; } = int.MaxValue;
 
-        public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
+        public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
         {
             int numSteps = _models.Select(m => m.IterationCount).Where(ic => ic > 0).Sum(ic => ic + 1) + 1;
             int curStep = 0;
@@ -171,7 +172,7 @@ namespace SIL.Machine.Translation.Thot
             }
             curStep++;
             progress?.Report(new ProgressStatus(curStep, numSteps));
-            checkCanceled?.Invoke();
+            cancellationToken.ThrowIfCancellationRequested();
 
             int trainedSegmentCount = 0;
             foreach ((IntPtr handle, int iterationCount) in _models)
@@ -182,18 +183,20 @@ namespace SIL.Machine.Translation.Thot
                 trainedSegmentCount = (int)Thot.swAlignModel_startTraining(handle);
                 curStep++;
                 progress?.Report(new ProgressStatus(curStep, numSteps));
-                checkCanceled?.Invoke();
+                cancellationToken.ThrowIfCancellationRequested();
 
                 for (int i = 0; i < iterationCount; i++)
                 {
                     Thot.swAlignModel_train(handle, 1);
                     curStep++;
                     progress?.Report(new ProgressStatus(curStep, numSteps));
-                    checkCanceled?.Invoke();
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
                 Thot.swAlignModel_endTraining(handle);
             }
             Stats.TrainCorpusSize = trainedSegmentCount;
+
+            return Task.CompletedTask;
         }
 
         public virtual void Save()
@@ -202,7 +205,7 @@ namespace SIL.Machine.Translation.Thot
                 Thot.swAlignModel_save(Handle, _prefFileName);
         }
 
-        public Task SaveAsync()
+        public Task SaveAsync(CancellationToken cancellationToken = default)
         {
             Save();
             return Task.CompletedTask;

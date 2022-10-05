@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using SIL.Machine.Corpora;
 
@@ -221,57 +222,53 @@ namespace SIL.Machine.Translation.Thot
         }
 
         [Test]
-        public void CreateTrainer()
+        public async Task CreateTrainer()
         {
-            using (
-                var model = new ThotHmmWordAlignmentModel
-                {
-                    Parameters = new ThotWordAlignmentParameters
-                    {
-                        Ibm1IterationCount = 2,
-                        HmmIterationCount = 2,
-                        HmmP0 = 0.1
-                    }
-                }
-            )
+            using var model = new ThotHmmWordAlignmentModel
             {
-                ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
-                trainer.Train();
-                trainer.Save();
+                Parameters = new ThotWordAlignmentParameters
+                {
+                    Ibm1IterationCount = 2,
+                    HmmIterationCount = 2,
+                    HmmP0 = 0.1
+                }
+            };
+            ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
+            await trainer.TrainAsync();
+            await trainer.SaveAsync();
 
-                WordAlignmentMatrix matrix = model.GetBestAlignment(
-                    "isthay isyay ayay esttay-N .".Split(),
-                    "this is a test N .".Split()
-                );
-                var expected = new WordAlignmentMatrix(
-                    5,
-                    6,
-                    new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (3, 4), (4, 5) }
-                );
-                Assert.That(matrix.ValueEquals(expected), Is.True);
+            WordAlignmentMatrix matrix = model.GetBestAlignment(
+                "isthay isyay ayay esttay-N .".Split(),
+                "this is a test N .".Split()
+            );
+            var expected = new WordAlignmentMatrix(
+                5,
+                6,
+                new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (3, 4), (4, 5) }
+            );
+            Assert.That(matrix.ValueEquals(expected), Is.True);
 
-                matrix = model.GetBestAlignment(
-                    "isthay isyay otnay ayay esttay-N .".Split(),
-                    "this is not a test N .".Split()
-                );
-                expected = new WordAlignmentMatrix(
-                    6,
-                    7,
-                    new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (4, 5), (5, 6) }
-                );
-                Assert.That(matrix.ValueEquals(expected), Is.True);
+            matrix = model.GetBestAlignment(
+                "isthay isyay otnay ayay esttay-N .".Split(),
+                "this is not a test N .".Split()
+            );
+            expected = new WordAlignmentMatrix(
+                6,
+                7,
+                new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (4, 5), (5, 6) }
+            );
+            Assert.That(matrix.ValueEquals(expected), Is.True);
 
-                matrix = model.GetBestAlignment(
-                    "isthay isyay ayay esttay-N ardhay .".Split(),
-                    "this is a hard test N .".Split()
-                );
-                expected = new WordAlignmentMatrix(
-                    6,
-                    7,
-                    new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (4, 3), (3, 4), (3, 5), (3, 6) }
-                );
-                Assert.That(matrix.ValueEquals(expected), Is.True);
-            }
+            matrix = model.GetBestAlignment(
+                "isthay isyay ayay esttay-N ardhay .".Split(),
+                "this is a hard test N .".Split()
+            );
+            expected = new WordAlignmentMatrix(
+                6,
+                7,
+                new HashSet<(int, int)> { (0, 0), (1, 1), (2, 2), (4, 3), (3, 4), (3, 5), (3, 6) }
+            );
+            Assert.That(matrix.ValueEquals(expected), Is.True);
         }
     }
 }

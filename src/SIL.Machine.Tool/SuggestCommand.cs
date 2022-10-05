@@ -61,9 +61,9 @@ namespace SIL.Machine
             _quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
         }
 
-        protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
+        protected override async Task<int> ExecuteCommandAsync(CancellationToken cancellationToken)
         {
-            int code = await base.ExecuteCommandAsync(ct);
+            int code = await base.ExecuteCommandAsync(cancellationToken);
             if (code != 0)
                 return code;
 
@@ -101,7 +101,6 @@ namespace SIL.Machine
             int segmentCount = 0;
             _acceptedSuggestionCounts = new int[n];
             using (var smtModel = (IInteractiveTranslationModel)_modelSpec.CreateModel())
-            using (IInteractiveTranslationEngine engine = smtModel.CreateInteractiveEngine())
             {
                 if (!_quietOption.HasValue())
                 {
@@ -121,7 +120,7 @@ namespace SIL.Machine
                     progress?.Report(new ProgressStatus(segmentCount, corpusCount));
                     foreach (ParallelTextRow row in corpus)
                     {
-                        TestSegment(ecm, engine, suggester, n, row, traceWriter);
+                        await TestSegmentAsync(ecm, smtModel, suggester, n, row, traceWriter, cancellationToken);
                         segmentCount++;
                         progress?.Report(new ProgressStatus(segmentCount, corpusCount));
                         if (segmentCount == _corpusSpec.MaxCorpusCount)
@@ -167,13 +166,14 @@ namespace SIL.Machine
             return null;
         }
 
-        private void TestSegment(
+        private async Task TestSegmentAsync(
             ErrorCorrectionModel ecm,
             IInteractiveTranslationEngine engine,
             ITranslationSuggester suggester,
             int n,
             ParallelTextRow row,
-            StreamWriter traceWriter
+            StreamWriter traceWriter,
+            CancellationToken cancellationToken
         )
         {
             traceWriter?.WriteLine($"Segment:      {row.Ref}");
@@ -183,7 +183,7 @@ namespace SIL.Machine
             string[][] prevSuggestionWords = null;
             bool isLastWordSuggestion = false;
             string suggestionResult = null;
-            var translator = InteractiveTranslator.Create(ecm, engine, row.SourceSegment);
+            var translator = await InteractiveTranslator.CreateAsync(ecm, engine, row.SourceSegment, cancellationToken);
             while (translator.Prefix.Count < row.TargetSegment.Count || !translator.IsLastWordComplete)
             {
                 int targetIndex = translator.Prefix.Count;
@@ -288,7 +288,7 @@ namespace SIL.Machine
 
             WritePrefix(traceWriter, suggestionResult, translator.Prefix);
 
-            translator.Approve(_approveAlignedOption.HasValue());
+            await translator.ApproveAsync(_approveAlignedOption.HasValue(), cancellationToken);
 
             _charCount += row.TargetSegment.Sum(w => w.Length + 1);
             traceWriter?.WriteLine();

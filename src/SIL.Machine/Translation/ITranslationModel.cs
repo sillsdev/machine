@@ -3,9 +3,8 @@ using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
-    public interface ITranslationModel : IDisposable
+    public interface ITranslationModel : ITranslationEngine, IDisposable
     {
-        ITranslationEngine CreateEngine();
         ITrainer CreateTrainer(IParallelTextCorpus corpus);
     }
 }

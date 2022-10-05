@@ -1,22 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SIL.Machine.Translation
 {
     public class InteractiveTranslator
     {
-        public static InteractiveTranslator Create(
+        public static async Task<InteractiveTranslator> CreateAsync(
             ErrorCorrectionModel ecm,
             IInteractiveTranslationEngine engine,
-            IReadOnlyList<string> segment
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
         )
         {
-            return new InteractiveTranslator(ecm, engine, segment, engine.GetWordGraph(segment));
+            return new InteractiveTranslator(
+                ecm,
+                engine,
+                segment,
+                await engine.GetWordGraphAsync(segment, cancellationToken)
+            );
         }
 
         private readonly IInteractiveTranslationEngine _engine;
-        private List<string> _prefix;
+        private readonly List<string> _prefix;
         private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
 
         private InteractiveTranslator(
@@ -95,7 +103,7 @@ namespace SIL.Machine.Translation
                 Correct();
         }
 
-        public void Approve(bool alignedOnly)
+        public async Task ApproveAsync(bool alignedOnly, CancellationToken cancellationToken = default)
         {
             if (!IsSourceSegmentValid || _prefix.Count > TranslationConstants.MaxSegmentLength)
                 return;
@@ -110,7 +118,7 @@ namespace SIL.Machine.Translation
             }
 
             if (sourceSegment.Count > 0)
-                _engine.TrainSegment(sourceSegment, _prefix);
+                await _engine.TrainSegmentAsync(sourceSegment, _prefix, cancellationToken: cancellationToken);
         }
 
         public IEnumerable<TranslationResult> GetCurrentResults()

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SIL.Machine.Threading;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 
@@ -967,9 +968,9 @@ namespace SIL.Machine.Corpora
             {
                 foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    IEnumerable<TranslationResult> translations = _translationEngine.TranslateBatch(
-                        batch.Select(r => r.SourceSegment).ToArray()
-                    );
+                    IReadOnlyList<TranslationResult> translations = _translationEngine
+                        .TranslateBatchAsync(batch.Select(r => r.SourceSegment).ToArray())
+                        .WaitAndUnwrapException();
                     foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
                         row.TargetSegment = translation.TargetSegment;

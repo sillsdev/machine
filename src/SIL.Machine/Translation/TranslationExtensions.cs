@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
     public static class TranslationExtensions
     {
-        public static IReadOnlyList<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
+        public static async Task<IReadOnlyList<string>> TranslateWordAsync(
+            this ITranslationEngine engine,
+            string sourceWord
+        )
         {
-            TranslationResult result = engine.Translate(new[] { sourceWord });
+            TranslationResult result = await engine.TranslateAsync(new[] { sourceWord });
             if (result.WordSources.Any(s => s == TranslationSources.None))
                 return new string[0];
             return result.TargetSegment;

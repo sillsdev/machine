@@ -3,6 +3,7 @@ using NUnit.Framework;
 using NSubstitute;
 using SIL.Machine.Annotations;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
@@ -10,10 +11,10 @@ namespace SIL.Machine.Translation
     public class InteractiveTranslatorTests
     {
         [Test]
-        public void GetCurrentResults_EmptyPrefix()
+        public async Task GetCurrentResults_EmptyPrefix()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
             TranslationResult result = translator.GetCurrentResults().First();
             Assert.That(
@@ -23,10 +24,10 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void GetCurrentResults_AppendCompleteWord()
+        public async Task GetCurrentResults_AppendCompleteWord()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", true);
 
             TranslationResult result = translator.GetCurrentResults().First();
@@ -37,10 +38,10 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void GetCurrentResults_AppendPartialWord()
+        public async Task GetCurrentResults_AppendPartialWord()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", true);
             translator.AppendToPrefix("t", false);
 
@@ -52,10 +53,10 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void GetCurrentResults_RemoveWord()
+        public async Task GetCurrentResults_RemoveWord()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", "the", "beginning");
             translator.SetPrefix(new[] { "In", "the" }, true);
 
@@ -67,10 +68,10 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void GetCurrentResults_RemoveAllWords()
+        public async Task GetCurrentResults_RemoveAllWords()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", "the", "beginning");
             translator.SetPrefix(new string[0], true);
 
@@ -82,73 +83,73 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void IsSourceSegmentValid_Valid()
+        public async Task IsSourceSegmentValid_Valid()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
             Assert.That(translator.IsSourceSegmentValid, Is.True);
         }
 
         [Test]
-        public void IsSourceSegmentValid_Invalid()
+        public async Task IsSourceSegmentValid_Invalid()
         {
             var env = new TestEnvironment();
             string[] sourceSegment = Enumerable
                 .Repeat("word", TranslationConstants.MaxSegmentLength)
                 .Concat(new[] { "." })
                 .ToArray();
-            env.Engine.GetWordGraph(SegmentEqual(sourceSegment)).Returns(new WordGraph());
-            InteractiveTranslator translator = env.CreateTranslator(sourceSegment);
+            env.Engine.GetWordGraphAsync(SegmentEqual(sourceSegment)).Returns(Task.FromResult(new WordGraph()));
+            InteractiveTranslator translator = await env.CreateTranslatorAsync(sourceSegment);
 
             Assert.That(translator.IsSourceSegmentValid, Is.False);
         }
 
         [Test]
-        public void Approve_AlignedOnly()
+        public async Task Approve_AlignedOnly()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", "the", "beginning");
-            translator.Approve(alignedOnly: true);
+            await translator.ApproveAsync(alignedOnly: true);
 
-            env.Engine
+            await env.Engine
                 .Received()
-                .TrainSegment(SegmentEqual("En", "el", "principio"), SegmentEqual("In", "the", "beginning"));
+                .TrainSegmentAsync(SegmentEqual("En", "el", "principio"), SegmentEqual("In", "the", "beginning"));
 
             translator.AppendToPrefix("the", "Word", "already", "existed", ".");
-            translator.Approve(alignedOnly: true);
+            await translator.ApproveAsync(alignedOnly: true);
 
-            env.Engine
+            await env.Engine
                 .Received()
-                .TrainSegment(
+                .TrainSegmentAsync(
                     SegmentEqual("En", "el", "principio", "la", "Palabra", "ya", "existía", "."),
                     SegmentEqual("In", "the", "beginning", "the", "Word", "already", "existed", ".")
                 );
         }
 
         [Test]
-        public void Approve_WholeSourceSegment()
+        public async Task Approve_WholeSourceSegment()
         {
             var env = new TestEnvironment();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", "the", "beginning");
-            translator.Approve(alignedOnly: false);
+            await translator.ApproveAsync(alignedOnly: false);
 
-            env.Engine
+            await env.Engine
                 .Received()
-                .TrainSegment(
+                .TrainSegmentAsync(
                     SegmentEqual("En", "el", "principio", "la", "Palabra", "ya", "existía", "."),
                     SegmentEqual("In", "the", "beginning")
                 );
         }
 
         [Test]
-        public void GetCurrentResults_MultipleSuggestionsEmptyPrefix()
+        public async Task GetCurrentResults_MultipleSuggestionsEmptyPrefix()
         {
             var env = new TestEnvironment();
             env.UseSimpleWordGraph();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
             TranslationResult[] results = translator.GetCurrentResults().Take(2).ToArray();
             Assert.That(
@@ -162,11 +163,11 @@ namespace SIL.Machine.Translation
         }
 
         [Test]
-        public void GetCurrentResults_MultipleSuggestionsNonemptyPrefix()
+        public async Task GetCurrentResults_MultipleSuggestionsNonemptyPrefix()
         {
             var env = new TestEnvironment();
             env.UseSimpleWordGraph();
-            InteractiveTranslator translator = env.CreateTranslator();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync();
             translator.AppendToPrefix("In", "the");
 
             TranslationResult[] results = translator.GetCurrentResults().Take(2).ToArray();
@@ -506,7 +507,7 @@ namespace SIL.Machine.Translation
                     -191.0998
                 );
 
-                Engine.GetWordGraph(SegmentEqual(SourceSegment)).Returns(wordGraph);
+                Engine.GetWordGraphAsync(SegmentEqual(SourceSegment)).Returns(Task.FromResult(wordGraph));
             }
 
             public IInteractiveTranslationEngine Engine { get; }
@@ -600,15 +601,15 @@ namespace SIL.Machine.Translation
                     new[] { 5 }
                 );
 
-                Engine.GetWordGraph(SegmentEqual(SourceSegment)).Returns(wordGraph);
+                Engine.GetWordGraphAsync(SegmentEqual(SourceSegment)).Returns(Task.FromResult(wordGraph));
             }
 
-            public InteractiveTranslator CreateTranslator(IReadOnlyList<string> segment = null)
+            public Task<InteractiveTranslator> CreateTranslatorAsync(IReadOnlyList<string> segment = null)
             {
                 if (segment == null)
                     segment = SourceSegment;
 
-                return InteractiveTranslator.Create(_ecm, Engine, segment);
+                return InteractiveTranslator.CreateAsync(_ecm, Engine, segment);
             }
         }
     }

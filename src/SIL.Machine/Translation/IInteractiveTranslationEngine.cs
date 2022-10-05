@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
     public interface IInteractiveTranslationEngine : ITranslationEngine
     {
-        WordGraph GetWordGraph(IReadOnlyList<string> segment);
+        Task<WordGraph> GetWordGraphAsync(IReadOnlyList<string> segment, CancellationToken cancellationToken = default);
 
-        void TrainSegment(
+        Task TrainSegmentAsync(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment,
-            bool sentenceStart = true
+            bool sentenceStart = true,
+            CancellationToken cancellationToken = default
         );
     }
 }

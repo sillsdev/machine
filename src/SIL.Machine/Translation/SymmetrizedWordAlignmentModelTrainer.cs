@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Utils;
 using SIL.ObjectModel;
@@ -18,7 +19,10 @@ namespace SIL.Machine.Translation
             _inverseTrainer = inverseTrainer;
         }
 
-        public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
+        public async Task TrainAsync(
+            IProgress<ProgressStatus> progress = null,
+            CancellationToken cancellationToken = default
+        )
         {
             CheckDisposed();
 
@@ -29,26 +33,18 @@ namespace SIL.Machine.Translation
             );
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                _directTrainer.Train(phaseProgress, checkCanceled);
-            checkCanceled?.Invoke();
+                await _directTrainer.TrainAsync(phaseProgress, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                _inverseTrainer.Train(phaseProgress, checkCanceled);
+                await _inverseTrainer.TrainAsync(phaseProgress, cancellationToken);
         }
 
-        public async Task SaveAsync()
+        public async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
 
-            await _directTrainer.SaveAsync();
-            await _inverseTrainer.SaveAsync();
-        }
-
-        public void Save()
-        {
-            CheckDisposed();
-
-            _directTrainer.Save();
-            _inverseTrainer.Save();
+            await _directTrainer.SaveAsync(cancellationToken);
+            await _inverseTrainer.SaveAsync(cancellationToken);
         }
 
         protected override void DisposeManagedResources()

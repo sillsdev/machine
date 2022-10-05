@@ -5,16 +5,18 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using SIL.ObjectModel;
 using SIL.Machine.Annotations;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SIL.Machine.Translation.Thot
 {
-    public class ThotSmtEngine : DisposableBase, IInteractiveTranslationEngine
+    public class ThotSmtDecoder : DisposableBase, IInteractiveTranslationEngine
     {
-        private readonly IThotSmtModelInternal _smtModel;
+        private readonly ThotSmtModel _smtModel;
         private readonly IWordConfidenceEstimator _confidenceEstimator;
         private IntPtr _decoderHandle;
 
-        internal ThotSmtEngine(IThotSmtModelInternal smtModel)
+        internal ThotSmtDecoder(ThotSmtModel smtModel)
         {
             _smtModel = smtModel;
             LoadHandle();
@@ -34,18 +36,57 @@ namespace SIL.Machine.Translation.Thot
             _decoderHandle = Thot.LoadDecoder(_smtModel.Handle, _smtModel.Parameters);
         }
 
-        public TranslationResult Translate(IReadOnlyList<string> segment)
+        public Task<WordGraph> GetWordGraphAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
         {
-            CheckDisposed();
-
-            return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, CreateResult);
+            return Task.FromResult(GetWordGraph(segment));
         }
 
-        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        public Task TrainSegmentAsync(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            bool sentenceStart = true,
+            CancellationToken cancellationToken = default
+        )
         {
-            CheckDisposed();
+            TrainSegment(sourceSegment, targetSegment, sentenceStart);
+            return Task.CompletedTask;
+        }
 
-            return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
+        public Task<TranslationResult> TranslateAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
         }
 
         public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
@@ -63,6 +104,20 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             return segments.Select(segment => Translate(n, segment)).ToArray();
+        }
+
+        public TranslationResult Translate(IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, CreateResult);
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        {
+            CheckDisposed();
+
+            return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
         }
 
         public WordGraph GetWordGraph(IReadOnlyList<string> segment)
@@ -338,11 +393,6 @@ namespace SIL.Machine.Translation.Thot
             {
                 Marshal.FreeHGlobal(nativeTargetUnknownWords);
             }
-        }
-
-        protected override void DisposeManagedResources()
-        {
-            _smtModel.RemoveEngine(this);
         }
 
         protected override void DisposeUnmanagedResources()

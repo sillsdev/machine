@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
@@ -19,17 +20,17 @@ namespace SIL.Machine.Translation.Thot
             new Phase("Finalizing", 0.05, reportSteps: false)
         };
 
-        private readonly Action _checkCanceled;
+        private readonly CancellationToken _cancellationToken;
 
-        public ThotTrainProgressReporter(IProgress<ProgressStatus> progress, Action checkCanceled)
+        public ThotTrainProgressReporter(IProgress<ProgressStatus> progress, CancellationToken cancellationToken)
             : base(progress, TrainPhases)
         {
-            _checkCanceled = checkCanceled;
+            _cancellationToken = cancellationToken;
         }
 
         public void CheckCanceled()
         {
-            _checkCanceled?.Invoke();
+            _cancellationToken.ThrowIfCancellationRequested();
         }
 
         public override PhaseProgress StartNextPhase()
