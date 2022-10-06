@@ -75,6 +75,66 @@ namespace SIL.Machine.Translation.Thot
         }
 
         [Test]
+        public async Task TranslateBatchAsync_Batch_Hmm()
+        {
+            string[] batch =
+            {
+                "por favor , desearía reservar una habitación hasta mañana .",
+                "por favor , despiértenos mañana a las siete y cuarto .",
+                "voy a marcharme hoy por la tarde .",
+                "por favor , ¿ les importaría bajar nuestro equipaje a la habitación número cero trece ?",
+                "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?"
+            };
+
+            using ThotSmtModel smtModel = CreateHmmModel();
+            IReadOnlyList<TranslationResult> results = await smtModel.TranslateBatchAsync(
+                batch.Select(s => s.Split()).ToArray()
+            );
+            Assert.That(
+                results.Select(tr => string.Join(" ", tr.TargetSegment)),
+                Is.EqualTo(
+                    new[]
+                    {
+                        "please i would like to book a room until tomorrow .",
+                        "please wake us up tomorrow at a quarter past seven .",
+                        "i am leaving today in the afternoon .",
+                        "please would you mind sending down our luggage to room number oh thirteenth ?",
+                        "could you give me the key to room number two four four , please ?"
+                    }
+                )
+            );
+        }
+
+        [Test]
+        public void TranslateBatch_Batch_Hmm()
+        {
+            string[] batch =
+            {
+                "por favor , desearía reservar una habitación hasta mañana .",
+                "por favor , despiértenos mañana a las siete y cuarto .",
+                "voy a marcharme hoy por la tarde .",
+                "por favor , ¿ les importaría bajar nuestro equipaje a la habitación número cero trece ?",
+                "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?"
+            };
+
+            using ThotSmtModel smtModel = CreateHmmModel();
+            IReadOnlyList<TranslationResult> results = smtModel.TranslateBatch(batch.Select(s => s.Split()).ToArray());
+            Assert.That(
+                results.Select(tr => string.Join(" ", tr.TargetSegment)),
+                Is.EqualTo(
+                    new[]
+                    {
+                        "please i would like to book a room until tomorrow .",
+                        "please wake us up tomorrow at a quarter past seven .",
+                        "i am leaving today in the afternoon .",
+                        "please would you mind sending down our luggage to room number oh thirteenth ?",
+                        "could you give me the key to room number two four four , please ?"
+                    }
+                )
+            );
+        }
+
+        [Test]
         public async Task TranslateAsync_TargetSegment_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();

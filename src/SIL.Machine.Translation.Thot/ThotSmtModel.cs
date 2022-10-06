@@ -175,7 +175,7 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             var transformBlock = new TransformBlock<IReadOnlyList<string>, TranslationResult>(
-                s => TranslateAsync(s),
+                s => TranslateAsync(s, cancellationToken),
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
@@ -183,13 +183,16 @@ namespace SIL.Machine.Translation.Thot
                 }
             );
 
+            var bufferBlock = new BufferBlock<TranslationResult>();
+            transformBlock.LinkTo(bufferBlock);
+
             foreach (IReadOnlyList<string> segment in segments)
                 transformBlock.Post(segment);
             transformBlock.Complete();
 
             await transformBlock.Completion.ConfigureAwait(false);
 
-            transformBlock.TryReceiveAll(out IList<TranslationResult> results);
+            bufferBlock.TryReceiveAll(out IList<TranslationResult> results);
 
             return new ReadOnlyList<TranslationResult>(results);
         }
@@ -203,7 +206,7 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             var transformBlock = new TransformBlock<IReadOnlyList<string>, IReadOnlyList<TranslationResult>>(
-                s => TranslateAsync(n, s),
+                s => TranslateAsync(n, s, cancellationToken),
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
@@ -211,13 +214,16 @@ namespace SIL.Machine.Translation.Thot
                 }
             );
 
+            var bufferBlock = new BufferBlock<IReadOnlyList<TranslationResult>>();
+            transformBlock.LinkTo(bufferBlock);
+
             foreach (IReadOnlyList<string> segment in segments)
                 transformBlock.Post(segment);
             transformBlock.Complete();
 
             await transformBlock.Completion.ConfigureAwait(false);
 
-            transformBlock.TryReceiveAll(out IList<IReadOnlyList<TranslationResult>> results);
+            bufferBlock.TryReceiveAll(out IList<IReadOnlyList<TranslationResult>> results);
 
             return new ReadOnlyList<IReadOnlyList<TranslationResult>>(results);
         }
