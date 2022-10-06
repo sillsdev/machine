@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
-using RestSharp.Authenticators;
 using SIL.Machine.Annotations;
 using SIL.Machine.Translation;
 using SIL.Machine.Utils;
@@ -21,7 +20,7 @@ namespace SIL.Machine.WebApi.Client
             ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
-        private RestClient restClient { get; }
+        private RestClient RestClient { get; }
         private bool _authentication_added = false;
 
         public WebApiClient(string baseUrl, bool bypassSsl = false, string api_access_token = "")
@@ -31,8 +30,8 @@ namespace SIL.Machine.WebApi.Client
             {
                 options.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
             }
-            restClient = new RestClient(options);
-            restClient.AddDefaultHeader("content-type", "application/json");
+            RestClient = new RestClient(options);
+            RestClient.AddDefaultHeader("content-type", "application/json");
         }
 
         public void AquireAccessToken(string client_id, string client_secret)
@@ -58,7 +57,7 @@ namespace SIL.Machine.WebApi.Client
                 else
                 {
                     var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
-                    restClient.AddDefaultHeader("authorization", $"Bearer {dict["access_token"]}");
+                    RestClient.AddDefaultHeader("authorization", $"Bearer {dict["access_token"]}");
                     _authentication_added = true;
                 }
             }
@@ -67,7 +66,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<IEnumerable<TranslationEngineDto>> GetAllEnginesAsync()
         {
             var request = new RestRequest($"translation-engines");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error getting project list.");
             return JsonConvert.DeserializeObject<IEnumerable<TranslationEngineDto>>(
                 response.Content,
@@ -95,7 +94,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(engineConfig, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error creating project.");
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
@@ -103,7 +102,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<TranslationEngineDto> GetEngineAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting project {engineId}.");
             return JsonConvert.DeserializeObject<TranslationEngineDto>(response.Content, SerializerSettings);
         }
@@ -112,7 +111,7 @@ namespace SIL.Machine.WebApi.Client
         {
             var request = new RestRequest($"translation-engines/{engineId}");
             // will throw error if unsuccessful
-            await restClient.DeleteAsync(request);
+            await RestClient.DeleteAsync(request).ConfigureAwait(false);
         }
 
         public async Task<TranslationResult> TranslateSegmentAsync(string engineId, IReadOnlyList<string> sourceSegment)
@@ -123,7 +122,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error translating on engine {engineId}.");
             var translationResultDto = JsonConvert.DeserializeObject<TranslationResultDto>(
                 response.Content,
@@ -144,7 +143,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(
                 response,
                 $"Error translating on engine {engineId} for {numberOfResults} results."
@@ -158,8 +157,13 @@ namespace SIL.Machine.WebApi.Client
 
         public async Task<WordGraph> GetWordGraph(string engineId, IReadOnlyList<string> sourceSegment)
         {
+            var sourceSegmentArray = sourceSegment.ToArray();
             var request = new RestRequest($"translation-engines/{engineId}/get-word-graph");
-            var response = await restClient.ExecuteGetAsync(request);
+            request.AddStringBody(
+                JsonConvert.SerializeObject(sourceSegmentArray, SerializerSettings),
+                dataFormat: DataFormat.Json
+            );
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error getting word graph.");
             var resultDto = JsonConvert.DeserializeObject<WordGraphDto>(response.Content, SerializerSettings);
             return CreateWordGraph(resultDto);
@@ -182,7 +186,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(pairDto, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error calling train-segment action.");
         }
 
@@ -202,7 +206,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(engineCorpusConfig, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(
                 response,
                 $"Error adding corpora {engineCorpusConfig.CorpusId} to engine {engineId}."
@@ -213,7 +217,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<IEnumerable<TranslationEngineCorpusDto>> GetAllCorporaFromEngineAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/corpora");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting corpora list from project {engineId}.");
             return JsonConvert.DeserializeObject<IEnumerable<TranslationEngineCorpusDto>>(
                 response.Content,
@@ -224,7 +228,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<TranslationEngineCorpusDto> GetCorporaFromEngineAsync(string engineId, string corpusId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting corpus {corpusId} from project {engineId}.");
             return JsonConvert.DeserializeObject<TranslationEngineCorpusDto>(response.Content, SerializerSettings);
         }
@@ -233,7 +237,7 @@ namespace SIL.Machine.WebApi.Client
         {
             var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}");
             // will throw error if unsuccessful
-            await restClient.DeleteAsync(request);
+            await RestClient.DeleteAsync(request).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<PretranslationDto>> GetAllPrestranslationsFromCorporaFromEngineAsync(
@@ -242,7 +246,7 @@ namespace SIL.Machine.WebApi.Client
         )
         {
             var request = new RestRequest($"translation-engines/{engineId}/corpora/{corpusId}/pretranslations");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(
                 response,
                 $"Error getting pretranslation list from corpora {corpusId} from project {engineId}."
@@ -259,7 +263,7 @@ namespace SIL.Machine.WebApi.Client
             var request = new RestRequest(
                 $"translation-engines/{engineId}/corpora/{corpusId}/pretranslations/{pretranslationId}"
             );
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(
                 response,
                 $"Error getting pretranslation {pretranslationId} from corpora {corpusId} from project {engineId}."
@@ -270,7 +274,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<IEnumerable<BuildDto>> GetAllBuildsAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting builds for engine {engineId}.");
             return JsonConvert.DeserializeObject<IEnumerable<BuildDto>>(response.Content, SerializerSettings);
         }
@@ -278,7 +282,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<BuildDto> PostBuildAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds");
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error building engine {engineId}.");
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
@@ -286,7 +290,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<BuildDto> GetBuildAsync(string engineId, string buildId, int minRevision = 0)
         {
             var request = new RestRequest($"translation-engines/{engineId}/builds{buildId}?minRevision={minRevision}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting build {buildId} for engine {engineId}.");
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
@@ -294,7 +298,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<BuildDto> GetCurrentBuildAsync(string engineId, int minRevision = 0)
         {
             var request = new RestRequest($"translation-engines/{engineId}/current-build?minRevision={minRevision}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting current build for engine {engineId}.");
             return JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
         }
@@ -302,7 +306,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task CancelCurrentBuildAsync(string engineId)
         {
             var request = new RestRequest($"translation-engines/{engineId}/current-build/cancel");
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error cancelling current build for engine {engineId}.");
         }
 
@@ -312,15 +316,16 @@ namespace SIL.Machine.WebApi.Client
             CancellationToken ct = default
         )
         {
-            BuildDto buildDto = await PostBuildAsync(engineId);
+            BuildDto buildDto = await PostBuildAsync(engineId).ConfigureAwait(false);
             updateWithProgress(CreateProgressStatus(buildDto));
             await PollBuildProgressAsync(
-                engineId,
-                $"builds/{buildDto.Id}",
-                buildDto.Revision + 1,
-                updateWithProgress,
-                ct
-            );
+                    engineId,
+                    $"builds/{buildDto.Id}",
+                    buildDto.Revision + 1,
+                    updateWithProgress,
+                    ct
+                )
+                .ConfigureAwait(false);
         }
 
         public async Task ListenForTrainingStatusAsync(
@@ -329,7 +334,7 @@ namespace SIL.Machine.WebApi.Client
             CancellationToken ct = default
         )
         {
-            await PollBuildProgressAsync(engineId, "current-build", 0, updateWithProgress, ct);
+            await PollBuildProgressAsync(engineId, "current-build", 0, updateWithProgress, ct).ConfigureAwait(false);
         }
 
         private async Task PollBuildProgressAsync(
@@ -346,7 +351,7 @@ namespace SIL.Machine.WebApi.Client
                 var request = new RestRequest(
                     $"translation-engines/{engineId}/{buildRelativeUrl}?minRevision={minRevision}"
                 );
-                var response = await restClient.ExecuteGetAsync(request, ct);
+                var response = await RestClient.ExecuteGetAsync(request, ct).ConfigureAwait(false);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     BuildDto buildDto = JsonConvert.DeserializeObject<BuildDto>(response.Content, SerializerSettings);
@@ -378,7 +383,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<IEnumerable<CorpusDto>> GetAllCorporaAsync()
         {
             var request = new RestRequest($"corpora");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error getting corpus list.");
             return JsonConvert.DeserializeObject<IEnumerable<CorpusDto>>(response.Content, SerializerSettings);
         }
@@ -390,7 +395,7 @@ namespace SIL.Machine.WebApi.Client
                 JsonConvert.SerializeObject(corpusConfig, SerializerSettings),
                 dataFormat: DataFormat.Json
             );
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, "Error creating project.");
             return JsonConvert.DeserializeObject<CorpusDto>(response.Content, SerializerSettings);
         }
@@ -398,7 +403,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<CorpusDto> GetCorporaAsync(string corpusId)
         {
             var request = new RestRequest($"corpora/{corpusId}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting Corpus {corpusId}.");
             return JsonConvert.DeserializeObject<CorpusDto>(response.Content, SerializerSettings);
         }
@@ -407,13 +412,13 @@ namespace SIL.Machine.WebApi.Client
         {
             var request = new RestRequest($"corpora/{corpusId}");
             // will throw error if unsuccessful
-            await restClient.DeleteAsync(request);
+            await RestClient.DeleteAsync(request).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<DataFileDto>> GetAllCorporaFilesAsync(string corpusId)
         {
             var request = new RestRequest($"corpora/{corpusId}/files");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting corpus {corpusId} file list.");
             return JsonConvert.DeserializeObject<IEnumerable<DataFileDto>>(response.Content, SerializerSettings);
         }
@@ -429,7 +434,7 @@ namespace SIL.Machine.WebApi.Client
             request.AddParameter(name: "languageTag", value: languageTag);
             request.AddParameter(name: "textId", value: textId);
             request.AddFile(name: "file", path: filePath, contentType: "text/plain");
-            var response = await restClient.ExecutePostAsync(request);
+            var response = await RestClient.ExecutePostAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error posting {filePath} to {corpusId}.");
             return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
         }
@@ -437,7 +442,7 @@ namespace SIL.Machine.WebApi.Client
         public async Task<DataFileDto> GetCorporaFileAsync(string corpusId, string fileId)
         {
             var request = new RestRequest($"corpora/{corpusId}/files/{fileId}");
-            var response = await restClient.ExecuteGetAsync(request);
+            var response = await RestClient.ExecuteGetAsync(request).ConfigureAwait(false);
             ThrowResponseIfNotSucessful(response, $"Error getting file {fileId} from {corpusId}.");
             return JsonConvert.DeserializeObject<DataFileDto>(response.Content, SerializerSettings);
         }
@@ -446,7 +451,7 @@ namespace SIL.Machine.WebApi.Client
         {
             var request = new RestRequest($"corpora/{corpusId}/files/{fileId}");
             // will throw error if unsuccessful
-            await restClient.DeleteAsync(request);
+            await RestClient.DeleteAsync(request).ConfigureAwait(false);
         }
 
         private static ProgressStatus CreateProgressStatus(BuildDto buildDto)
@@ -538,7 +543,7 @@ namespace SIL.Machine.WebApi.Client
                         new { name = parameter.Name, value = parameter.Value, type = parameter.Type.ToString() }
                 ),
                 method = request.Method.ToString(),
-                uri = restClient.BuildUri(request),
+                uri = RestClient.BuildUri(request),
             };
 
             var responseToLog = new

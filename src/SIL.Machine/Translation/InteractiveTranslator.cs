@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation
                 ecm,
                 engine,
                 segment,
-                await engine.GetWordGraphAsync(segment, cancellationToken)
+                await engine.GetWordGraphAsync(segment, cancellationToken).ConfigureAwait(false)
             );
         }
 
@@ -118,7 +118,9 @@ namespace SIL.Machine.Translation
             }
 
             if (sourceSegment.Count > 0)
-                await _engine.TrainSegmentAsync(sourceSegment, _prefix, cancellationToken: cancellationToken);
+                await _engine
+                    .TrainSegmentAsync(sourceSegment, _prefix, cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
         }
 
         public IEnumerable<TranslationResult> GetCurrentResults()

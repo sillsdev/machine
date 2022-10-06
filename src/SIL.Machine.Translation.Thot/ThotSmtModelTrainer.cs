@@ -87,7 +87,7 @@ namespace SIL.Machine.Translation.Thot
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
                 TrainLanguageModel(trainLMPrefix, 3);
 
-            await TrainTranslationModelAsync(trainTMPrefix, reporter, cancellationToken);
+            await TrainTranslationModelAsync(trainTMPrefix, reporter, cancellationToken).ConfigureAwait(false);
 
             reporter.CheckCanceled();
 
@@ -112,19 +112,20 @@ namespace SIL.Machine.Translation.Thot
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
                 await TrainTuneCorpusAsync(
-                    trainTMPrefix,
-                    trainLMPrefix,
-                    tuneSourceCorpus,
-                    tuneTargetCorpus,
-                    phaseProgress
-                );
+                        trainTMPrefix,
+                        trainLMPrefix,
+                        tuneSourceCorpus,
+                        tuneTargetCorpus,
+                        phaseProgress
+                    )
+                    .ConfigureAwait(false);
 
             Stats.TrainCorpusSize = _trainCount + _testCount;
         }
 
         public virtual async Task SaveAsync(CancellationToken cancellationToken = default)
         {
-            await SaveParametersAsync();
+            await SaveParametersAsync().ConfigureAwait(false);
 
             string lmDir = Path.GetDirectoryName(Parameters.LanguageModelFileNamePrefix);
             Debug.Assert(lmDir != null);
@@ -152,7 +153,7 @@ namespace SIL.Machine.Translation.Thot
                 {
                     if (ThotSmtParameters.GetConfigParameter(line, out string name, out string value) && name == "tmw")
                     {
-                        await WriteModelWeightsAsync(writer);
+                        await WriteModelWeightsAsync(writer).ConfigureAwait(false);
                         weightsWritten = true;
                     }
                     else
@@ -162,7 +163,7 @@ namespace SIL.Machine.Translation.Thot
                 }
 
                 if (!weightsWritten)
-                    await WriteModelWeightsAsync(writer);
+                    await WriteModelWeightsAsync(writer).ConfigureAwait(false);
             }
         }
 
@@ -270,10 +271,12 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             string invswmPrefix = tmPrefix + "_invswm";
-            await GenerateWordAlignmentModelAsync(invswmPrefix, _trainCorpus, reporter, cancellationToken);
+            await GenerateWordAlignmentModelAsync(invswmPrefix, _trainCorpus, reporter, cancellationToken)
+                .ConfigureAwait(false);
 
             string swmPrefix = tmPrefix + "_swm";
-            await GenerateWordAlignmentModelAsync(swmPrefix, _trainCorpus.Invert(), reporter, cancellationToken);
+            await GenerateWordAlignmentModelAsync(swmPrefix, _trainCorpus.Invert(), reporter, cancellationToken)
+                .ConfigureAwait(false);
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
                 Thot.giza_symmetr1(swmPrefix + ".bestal", invswmPrefix + ".bestal", tmPrefix + ".A3.final", true);
@@ -295,7 +298,8 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                await TrainWordAlignmentModelAsync(swmPrefix, trainCorpus, phaseProgress, cancellationToken);
+                await TrainWordAlignmentModelAsync(swmPrefix, trainCorpus, phaseProgress, cancellationToken)
+                    .ConfigureAwait(false);
 
             reporter.CheckCanceled();
 
@@ -441,8 +445,8 @@ namespace SIL.Machine.Translation.Thot
                 )
             )
             {
-                await trainer.TrainAsync(progress, cancellationToken);
-                await trainer.SaveAsync(cancellationToken);
+                await trainer.TrainAsync(progress, cancellationToken).ConfigureAwait(false);
+                await trainer.SaveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -600,7 +604,7 @@ namespace SIL.Machine.Translation.Thot
                 {
                     if (i > 0)
                         progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
-                    await smtModel.TrainSegmentAsync(tuneSourceCorpus[i], tuneTargetCorpus[i]);
+                    await smtModel.TrainSegmentAsync(tuneSourceCorpus[i], tuneTargetCorpus[i]).ConfigureAwait(false);
                 }
                 progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
             }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using SIL.Machine.Threading;
 using SIL.Machine.Tokenization;
 using SIL.Machine.Translation;
 

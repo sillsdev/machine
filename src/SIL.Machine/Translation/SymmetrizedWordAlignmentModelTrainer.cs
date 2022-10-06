@@ -33,18 +33,18 @@ namespace SIL.Machine.Translation
             );
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                await _directTrainer.TrainAsync(phaseProgress, cancellationToken);
+                await _directTrainer.TrainAsync(phaseProgress, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                await _inverseTrainer.TrainAsync(phaseProgress, cancellationToken);
+                await _inverseTrainer.TrainAsync(phaseProgress, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
 
-            await _directTrainer.SaveAsync(cancellationToken);
-            await _inverseTrainer.SaveAsync(cancellationToken);
+            await _directTrainer.SaveAsync(cancellationToken).ConfigureAwait(false);
+            await _inverseTrainer.SaveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         protected override void DisposeManagedResources()

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
 using SIL.ObjectModel;
@@ -101,7 +103,11 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 return item.Object.GetWordGraph(segment);
             }
@@ -116,7 +122,11 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 item.Object.TrainSegment(sourceSegment, targetSegment, sentenceStart);
             }
@@ -129,7 +139,11 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 return item.Object.Translate(segment);
             }
@@ -143,7 +157,11 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 return item.Object.Translate(n, segment);
             }
@@ -156,10 +174,24 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
-            {
-                return item.Object.TranslateBatch(segments);
-            }
+            var transformBlock = new TransformBlock<IReadOnlyList<string>, TranslationResult>(
+                s => TranslateAsync(s),
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = MaxDecoderPoolSize,
+                    CancellationToken = cancellationToken
+                }
+            );
+
+            foreach (IReadOnlyList<string> segment in segments)
+                transformBlock.Post(segment);
+            transformBlock.Complete();
+
+            await transformBlock.Completion.ConfigureAwait(false);
+
+            transformBlock.TryReceiveAll(out IList<TranslationResult> results);
+
+            return new ReadOnlyList<TranslationResult>(results);
         }
 
         public async Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
@@ -170,10 +202,24 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
-            {
-                return item.Object.TranslateBatch(n, segments);
-            }
+            var transformBlock = new TransformBlock<IReadOnlyList<string>, IReadOnlyList<TranslationResult>>(
+                s => TranslateAsync(n, s),
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = MaxDecoderPoolSize,
+                    CancellationToken = cancellationToken
+                }
+            );
+
+            foreach (IReadOnlyList<string> segment in segments)
+                transformBlock.Post(segment);
+            transformBlock.Complete();
+
+            await transformBlock.Completion.ConfigureAwait(false);
+
+            transformBlock.TryReceiveAll(out IList<IReadOnlyList<TranslationResult>> results);
+
+            return new ReadOnlyList<IReadOnlyList<TranslationResult>>(results);
         }
 
         public async Task<TranslationResult> GetBestPhraseAlignmentAsync(
@@ -184,7 +230,11 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool.GetAsync(cancellationToken))
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
             {
                 return item.Object.GetBestPhraseAlignment(sourceSegment, targetSegment);
             }
@@ -238,10 +288,12 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
-            {
-                return item.Object.TranslateBatch(segments);
-            }
+            return segments
+                .AsParallel()
+                .AsOrdered()
+                .WithDegreeOfParallelism(MaxDecoderPoolSize)
+                .Select(s => Translate(s))
+                .ToArray();
         }
 
         public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
@@ -251,10 +303,12 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
-            {
-                return item.Object.TranslateBatch(n, segments);
-            }
+            return segments
+                .AsParallel()
+                .AsOrdered()
+                .WithDegreeOfParallelism(MaxDecoderPoolSize)
+                .Select(s => Translate(n, s))
+                .ToArray();
         }
 
         public TranslationResult GetBestPhraseAlignment(
@@ -272,6 +326,8 @@ namespace SIL.Machine.Translation.Thot
 
         public Task SaveAsync(CancellationToken cancellationToken = default)
         {
+            CheckDisposed();
+
             Save();
             return Task.CompletedTask;
         }
@@ -340,10 +396,10 @@ namespace SIL.Machine.Translation.Thot
 
             public override async Task SaveAsync(CancellationToken cancellationToken)
             {
-                await _smtModel._decoderPool.ResetAsync(cancellationToken);
+                await _smtModel._decoderPool.ResetAsync(cancellationToken).ConfigureAwait(false);
                 Thot.smtModel_close(_smtModel._handle);
 
-                await base.SaveAsync(cancellationToken);
+                await base.SaveAsync(cancellationToken).ConfigureAwait(false);
 
                 _smtModel.Parameters = Parameters;
                 _smtModel._handle = Thot.LoadSmtModel(_smtModel.WordAlignmentModelType, _smtModel.Parameters);

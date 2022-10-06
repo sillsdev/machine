@@ -29,11 +29,15 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            TranslationResult result = await InteractiveEngine.TranslateAsync(segment, cancellationToken);
+            TranslationResult result = await InteractiveEngine
+                .TranslateAsync(segment, cancellationToken)
+                .ConfigureAwait(false);
             if (RuleEngine == null)
                 return result;
 
-            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
+            TranslationResult ruleResult = await RuleEngine
+                .TranslateAsync(segment, cancellationToken)
+                .ConfigureAwait(false);
             return result.Merge(RuleEngineThreshold, ruleResult);
         }
 
@@ -45,15 +49,15 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            IReadOnlyList<TranslationResult> hypotheses = await InteractiveEngine.TranslateAsync(
-                n,
-                segment,
-                cancellationToken
-            );
+            IReadOnlyList<TranslationResult> hypotheses = await InteractiveEngine
+                .TranslateAsync(n, segment, cancellationToken)
+                .ConfigureAwait(false);
             if (RuleEngine == null || hypotheses.Count == 0)
                 return hypotheses;
 
-            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
+            TranslationResult ruleResult = await RuleEngine
+                .TranslateAsync(segment, cancellationToken)
+                .ConfigureAwait(false);
             return hypotheses.Select(hypothesis => hypothesis.Merge(RuleEngineThreshold, ruleResult)).ToArray();
         }
 
@@ -64,17 +68,15 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            IReadOnlyList<TranslationResult> results = await InteractiveEngine.TranslateBatchAsync(
-                segments,
-                cancellationToken
-            );
+            IReadOnlyList<TranslationResult> results = await InteractiveEngine
+                .TranslateBatchAsync(segments, cancellationToken)
+                .ConfigureAwait(false);
             if (RuleEngine == null)
                 return results;
 
-            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine.TranslateBatchAsync(
-                segments,
-                cancellationToken
-            );
+            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine
+                .TranslateBatchAsync(segments, cancellationToken)
+                .ConfigureAwait(false);
             return results
                 .Zip(ruleResults, (result, ruleResult) => result.Merge(RuleEngineThreshold, ruleResult))
                 .ToArray();
@@ -88,18 +90,15 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            IReadOnlyList<IReadOnlyList<TranslationResult>> results = await InteractiveEngine.TranslateBatchAsync(
-                n,
-                segments,
-                cancellationToken
-            );
+            IReadOnlyList<IReadOnlyList<TranslationResult>> results = await InteractiveEngine
+                .TranslateBatchAsync(n, segments, cancellationToken)
+                .ConfigureAwait(false);
             if (RuleEngine == null)
                 return results;
 
-            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine.TranslateBatchAsync(
-                segments,
-                cancellationToken
-            );
+            IReadOnlyList<TranslationResult> ruleResults = await RuleEngine
+                .TranslateBatchAsync(segments, cancellationToken)
+                .ConfigureAwait(false);
             return results
                 .Zip(
                     ruleResults,
@@ -116,11 +115,15 @@ namespace SIL.Machine.Translation
         {
             CheckDisposed();
 
-            WordGraph wordGraph = await InteractiveEngine.GetWordGraphAsync(segment, cancellationToken);
+            WordGraph wordGraph = await InteractiveEngine
+                .GetWordGraphAsync(segment, cancellationToken)
+                .ConfigureAwait(false);
             if (RuleEngine == null)
                 return wordGraph;
 
-            TranslationResult ruleResult = await RuleEngine.TranslateAsync(segment, cancellationToken);
+            TranslationResult ruleResult = await RuleEngine
+                .TranslateAsync(segment, cancellationToken)
+                .ConfigureAwait(false);
             return wordGraph.Merge(RuleEngineThreshold, ruleResult);
         }
 

@@ -11,13 +11,11 @@ namespace SIL.Machine.Utils
     public class ObjectPool<T> : DisposableBase
     {
         private readonly BufferBlock<T> _bufferBlock;
-        private readonly Func<Task<T>> _factory;
+        private readonly Func<T> _factory;
         private readonly AsyncLock _lock;
         private readonly List<T> _objs;
 
-        public ObjectPool(int maxCount, Func<T> factory) : this(maxCount, () => Task.FromResult(factory())) { }
-
-        public ObjectPool(int maxCount, Func<Task<T>> factory)
+        public ObjectPool(int maxCount, Func<T> factory)
         {
             _lock = new AsyncLock();
             MaxCount = maxCount;
@@ -39,19 +37,22 @@ namespace SIL.Machine.Utils
 
             if (Count < MaxCount)
             {
-                using (await _lock.LockAsync(cancellationToken))
+                using (await _lock.LockAsync(cancellationToken).ConfigureAwait(false))
                 {
                     if (Count < MaxCount)
                     {
                         Count++;
-                        obj = await _factory();
+                        obj = _factory();
                         _objs.Add(obj);
                         _bufferBlock.Post(obj);
                     }
                 }
             }
 
-            return new ObjectPoolItem<T>(this, await _bufferBlock.ReceiveAsync(cancellationToken));
+            return new ObjectPoolItem<T>(
+                this,
+                await _bufferBlock.ReceiveAsync(cancellationToken).ConfigureAwait(false)
+            );
         }
 
         public ObjectPoolItem<T> Get()
@@ -68,7 +69,7 @@ namespace SIL.Machine.Utils
                     if (Count < MaxCount)
                     {
                         Count++;
-                        obj = _factory().WaitAndUnwrapException();
+                        obj = _factory();
                         _objs.Add(obj);
                         _bufferBlock.Post(obj);
                     }
@@ -80,7 +81,7 @@ namespace SIL.Machine.Utils
 
         public async Task ResetAsync(CancellationToken cancellationToken = default)
         {
-            using (await _lock.LockAsync(cancellationToken))
+            using (await _lock.LockAsync(cancellationToken).ConfigureAwait(false))
             {
                 ResetObjects();
             }

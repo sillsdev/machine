@@ -50,7 +50,7 @@ namespace SIL.Machine.Translation
         public virtual async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             if (_modelPath != null)
-                await NewTruecaser.SaveAsync(_modelPath, cancellationToken);
+                await NewTruecaser.SaveAsync(_modelPath, cancellationToken).ConfigureAwait(false);
         }
     }
 }

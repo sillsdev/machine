@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace SIL.Machine.Translation.Thot
 {
-    public class ThotSmtDecoder : DisposableBase, IInteractiveTranslationEngine
+    public class ThotSmtDecoder : DisposableBase
     {
         private readonly ThotSmtModel _smtModel;
         private readonly IWordConfidenceEstimator _confidenceEstimator;
@@ -34,76 +34,6 @@ namespace SIL.Machine.Translation.Thot
         internal void LoadHandle()
         {
             _decoderHandle = Thot.LoadDecoder(_smtModel.Handle, _smtModel.Parameters);
-        }
-
-        public Task<WordGraph> GetWordGraphAsync(
-            IReadOnlyList<string> segment,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(GetWordGraph(segment));
-        }
-
-        public Task TrainSegmentAsync(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
-            bool sentenceStart = true,
-            CancellationToken cancellationToken = default
-        )
-        {
-            TrainSegment(sourceSegment, targetSegment, sentenceStart);
-            return Task.CompletedTask;
-        }
-
-        public Task<TranslationResult> TranslateAsync(
-            IReadOnlyList<string> segment,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(Translate(segment));
-        }
-
-        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
-            int n,
-            IReadOnlyList<string> segment,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(Translate(n, segment));
-        }
-
-        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
-            IReadOnlyList<IReadOnlyList<string>> segments,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(TranslateBatch(segments));
-        }
-
-        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
-            int n,
-            IReadOnlyList<IReadOnlyList<string>> segments,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return Task.FromResult(TranslateBatch(n, segments));
-        }
-
-        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
-        {
-            CheckDisposed();
-
-            return segments.Select(segment => Translate(segment)).ToArray();
-        }
-
-        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
-            int n,
-            IReadOnlyList<IReadOnlyList<string>> segments
-        )
-        {
-            CheckDisposed();
-
-            return segments.Select(segment => Translate(n, segment)).ToArray();
         }
 
         public TranslationResult Translate(IReadOnlyList<string> segment)

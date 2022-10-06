@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation
             using (var reader = new StreamReader(path))
             {
                 string line;
-                while ((line = await reader.ReadLineAsync()) != null)
+                while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     ParseLine(line);
             }
         }
@@ -102,7 +102,7 @@ namespace SIL.Machine.Translation
         public async Task SaveAsync(string modelPath, CancellationToken cancellationToken = default)
         {
             _modelPath = modelPath;
-            await SaveAsync(cancellationToken);
+            await SaveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task SaveAsync(CancellationToken cancellationToken = default)
@@ -113,7 +113,7 @@ namespace SIL.Machine.Translation
                 {
                     FrequencyDistribution<string> counts = _casing[lowerToken];
                     string line = string.Join(" ", counts.ObservedSamples.Select(t => $"{t} {counts[t]}"));
-                    await writer.WriteAsync($"{line}\n");
+                    await writer.WriteAsync($"{line}\n").ConfigureAwait(false);
                 }
             }
         }
@@ -168,7 +168,7 @@ namespace SIL.Machine.Translation
             {
                 _truecaser._casing = NewTruecaser._casing;
                 _truecaser._bestTokens = NewTruecaser._bestTokens;
-                await _truecaser.SaveAsync(cancellationToken);
+                await _truecaser.SaveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }

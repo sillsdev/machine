@@ -12,7 +12,7 @@ namespace SIL.Machine.Translation
             string sourceWord
         )
         {
-            TranslationResult result = await engine.TranslateAsync(new[] { sourceWord });
+            TranslationResult result = await engine.TranslateAsync(new[] { sourceWord }).ConfigureAwait(false);
             if (result.WordSources.Any(s => s == TranslationSources.None))
                 return new string[0];
             return result.TargetSegment;
