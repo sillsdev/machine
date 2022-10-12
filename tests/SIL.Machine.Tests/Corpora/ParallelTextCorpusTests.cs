@@ -27,7 +27,7 @@ namespace SIL.Machine.Corpora
                     "text1",
                     new[]
                     {
-                        TextRow("text1", 1, "source segment 1 .", isSentenceStart: false),
+                        TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
                         TextRow("text1", 2, "source segment 2 ."),
                         TextRow("text1", 3, "source segment 3 .")
                     }
@@ -40,7 +40,7 @@ namespace SIL.Machine.Corpora
                     {
                         TextRow("text1", 1, "target segment 1 ."),
                         TextRow("text1", 2, "target segment 2 ."),
-                        TextRow("text1", 3, "target segment 3 .", isSentenceStart: false)
+                        TextRow("text1", 3, "target segment 3 .", TextRowFlags.None)
                     }
                 )
             );
@@ -364,11 +364,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             2,
                             "source segment 2 . source segment 3 .",
-                            isSentenceStart: false,
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 3, isInRange: true),
+                        TextRow("text1", 3, flags: TextRowFlags.InRange),
                         TextRow("text1", 4, "source segment 4 .")
                     }
                 )
@@ -410,10 +408,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             2,
                             "source segment 2 . source segment 3 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 3, isInRange: true)
+                        TextRow("text1", 3, flags: TextRowFlags.InRange)
                     }
                 )
             );
@@ -426,10 +423,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             1,
                             "target segment 1 . target segment 2 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 2, isInRange: true),
+                        TextRow("text1", 2, flags: TextRowFlags.InRange),
                         TextRow("text1", 3, "target segment 3 .")
                     }
                 )
@@ -464,19 +460,16 @@ namespace SIL.Machine.Corpora
                             "text1",
                             1,
                             "source segment 1 . source segment 2 .",
-                            isSentenceStart: false,
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 2, isInRange: true),
+                        TextRow("text1", 2, flags: TextRowFlags.InRange),
                         TextRow(
                             "text1",
                             3,
                             "source segment 3 . source segment 4 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 4, isInRange: true)
+                        TextRow("text1", 4, flags: TextRowFlags.InRange)
                     }
                 )
             );
@@ -485,7 +478,7 @@ namespace SIL.Machine.Corpora
                     "text1",
                     new[]
                     {
-                        TextRow("text1", 1, "target segment 1 .", isSentenceStart: false),
+                        TextRow("text1", 1, "target segment 1 .", TextRowFlags.None),
                         TextRow("text1", 2, "target segment 2 ."),
                         TextRow("text1", 3, "target segment 3 ."),
                         TextRow("text1", 4, "target segment 4 .")
@@ -522,10 +515,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             1,
                             "source segment 1 . source segment 2 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 2, isInRange: true),
+                        TextRow("text1", 2, flags: TextRowFlags.InRange),
                         TextRow("text1", 3, "source segment 3 ."),
                         TextRow("text1", 4, "source segment 4 .")
                     }
@@ -542,10 +534,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             3,
                             "target segment 3 . target segment 4 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 4, isInRange: true)
+                        TextRow("text1", 4, flags: TextRowFlags.InRange)
                     }
                 )
             );
@@ -653,10 +644,9 @@ namespace SIL.Machine.Corpora
                             "text1",
                             2,
                             "source segment 2 . source segment 3 .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("text1", 3, isInRange: true),
+                        TextRow("text1", 3, flags: TextRowFlags.InRange),
                         TextRow("text1", 4, "source segment 4 .")
                     }
                 )
@@ -922,10 +912,9 @@ namespace SIL.Machine.Corpora
                             "MAT",
                             new VerseRef("MAT 1:2", versification),
                             "target chapter one, verse two . target chapter one, verse three .",
-                            isInRange: true,
-                            isRangeStart: true
+                            TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                         ),
-                        TextRow("MAT", new VerseRef("MAT 1:3", versification), isInRange: true),
+                        TextRow("MAT", new VerseRef("MAT 1:3", versification), flags: TextRowFlags.InRange),
                         TextRow("MAT", new VerseRef("MAT 1:4", versification), "target chapter one, verse four .")
                     }
                 )
@@ -1013,17 +1002,13 @@ namespace SIL.Machine.Corpora
             string textId,
             object rowRef,
             string text = "",
-            bool isSentenceStart = true,
-            bool isInRange = false,
-            bool isRangeStart = false
+            TextRowFlags flags = TextRowFlags.SentenceStart
         )
         {
             return new TextRow(textId, rowRef)
             {
                 Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
-                IsSentenceStart = isSentenceStart,
-                IsInRange = isInRange,
-                IsRangeStart = isRangeStart
+                Flags = flags
             };
         }
 

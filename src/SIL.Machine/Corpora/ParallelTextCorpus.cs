@@ -347,12 +347,8 @@ namespace SIL.Machine.Corpora
                 SourceSegment = srcRow != null ? srcRow.Segment : Array.Empty<string>(),
                 TargetSegment = trgRow != null ? trgRow.Segment : Array.Empty<string>(),
                 AlignedWordPairs = alignedWordPairs,
-                IsSourceSentenceStart = srcRow != null && srcRow.IsSentenceStart,
-                IsSourceInRange = srcRow != null && srcRow.IsInRange,
-                IsSourceRangeStart = srcRow != null && srcRow.IsRangeStart,
-                IsTargetSentenceStart = trgRow != null && trgRow.IsSentenceStart,
-                IsTargetInRange = trgRow != null && trgRow.IsInRange,
-                IsTargetRangeStart = trgRow != null && trgRow.IsRangeStart
+                SourceFlags = srcRow?.Flags ?? TextRowFlags.None,
+                TargetFlags = trgRow?.Flags ?? TextRowFlags.None
             };
         }
 
@@ -425,8 +421,8 @@ namespace SIL.Machine.Corpora
                 {
                     SourceSegment = SourceSegment.ToArray(),
                     TargetSegment = TargetSegment.ToArray(),
-                    IsSourceSentenceStart = IsSourceSentenceStart,
-                    IsTargetSentenceStart = IsTargetSentenceStart
+                    SourceFlags = IsSourceSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None,
+                    TargetFlags = IsTargetSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 };
                 TextId = "";
                 SourceRefs.Clear();
@@ -545,20 +541,20 @@ namespace SIL.Machine.Corpora
                     if (verseRef.Equals(prevVerseRef))
                     {
                         var (rangeStartVerseRef, rangeStartRow) = rowList[rowList.Count + rangeStartOffset];
-                        bool isRangeStart = false;
-                        if (rangeStartOffset == -1)
-                            isRangeStart = !rangeStartRow.IsInRange || rangeStartRow.IsRangeStart;
+                        var flags = TextRowFlags.InRange;
+                        if (rangeStartRow.IsSentenceStart)
+                            flags |= TextRowFlags.SentenceStart;
+                        if (rangeStartOffset == -1 && (!rangeStartRow.IsInRange || rangeStartRow.IsRangeStart))
+                            flags |= TextRowFlags.RangeStart;
                         rowList[rowList.Count + rangeStartOffset] = (
                             rangeStartVerseRef,
                             new TextRow(rangeStartRow.TextId, rangeStartRow.Ref)
                             {
                                 Segment = rangeStartRow.Segment.Concat(row.Segment).ToArray(),
-                                IsSentenceStart = rangeStartRow.IsSentenceStart,
-                                IsInRange = true,
-                                IsRangeStart = isRangeStart
+                                Flags = flags
                             }
                         );
-                        row = new TextRow(row.TextId, row.Ref) { IsInRange = true };
+                        row = new TextRow(row.TextId, row.Ref) { Flags = TextRowFlags.InRange };
                         rangeStartOffset--;
                     }
                     else

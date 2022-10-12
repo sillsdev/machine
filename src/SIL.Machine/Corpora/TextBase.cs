@@ -26,27 +26,19 @@ namespace SIL.Machine.Corpora
 
         public abstract IEnumerable<TextRow> GetRows();
 
-        protected TextRow CreateRow(
-            string text,
-            object segRef,
-            bool isSentenceStart = true,
-            bool isInRange = false,
-            bool isRangeStart = false
-        )
+        protected TextRow CreateRow(string text, object segRef, TextRowFlags flags = TextRowFlags.SentenceStart)
         {
             text = text.Trim();
             return new TextRow(Id, segRef)
             {
                 Segment = text.Length == 0 ? Array.Empty<string>() : new[] { text },
-                IsSentenceStart = isSentenceStart,
-                IsInRange = isInRange,
-                IsRangeStart = isRangeStart
+                Flags = flags
             };
         }
 
-        protected TextRow CreateEmptyRow(object segRef, bool isInRange = false)
+        protected TextRow CreateEmptyRow(object segRef, TextRowFlags flags = TextRowFlags.None)
         {
-            return new TextRow(Id, segRef) { IsInRange = isInRange };
+            return new TextRow(Id, segRef) { Flags = flags };
         }
 
         public IEnumerator<TextRow> GetEnumerator()

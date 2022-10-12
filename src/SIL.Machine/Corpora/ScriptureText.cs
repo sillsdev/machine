@@ -49,18 +49,21 @@ namespace SIL.Machine.Corpora
                 {
                     if (firstVerse)
                     {
-                        yield return CreateRow(text, vref, sentenceStart, isInRange: true, isRangeStart: true);
+                        var flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        if (sentenceStart)
+                            flags |= TextRowFlags.SentenceStart;
+                        yield return CreateRow(text, vref, flags);
                         firstVerse = false;
                     }
                     else
                     {
-                        yield return CreateEmptyRow(vref, isInRange: true);
+                        yield return CreateEmptyRow(vref, TextRowFlags.InRange);
                     }
                 }
             }
             else
             {
-                yield return CreateRow(text, verseRef, sentenceStart);
+                yield return CreateRow(text, verseRef, sentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None);
             }
         }
     }
