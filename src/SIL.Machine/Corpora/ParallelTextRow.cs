@@ -20,6 +20,8 @@ namespace SIL.Machine.Corpora
 
         public object Ref => SourceRefs.Count > 0 ? SourceRefs[0] : TargetRefs[0];
 
+        public IReadOnlyList<object> Refs => SourceRefs.Count > 0 ? SourceRefs : TargetRefs;
+
         public IReadOnlyList<object> SourceRefs { get; }
         public IReadOnlyList<object> TargetRefs { get; }
 

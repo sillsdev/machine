@@ -57,7 +57,10 @@ namespace SIL.Machine.Corpora
 
         public override int GetHashCode()
         {
-            return Keys.GetSequenceHashCode();
+            int code = 23;
+            code = code * 31 + TextId.GetHashCode();
+            code = code * 31 + Keys.GetSequenceHashCode();
+            return code;
         }
 
         public override string ToString()
