@@ -78,7 +78,7 @@ public class MapperProfile : Profile
                             new WordAlignmentMatrix(
                                 dto.SourceSegmentRange.End - dto.SourceSegmentRange.Start,
                                 dto.Words.Length,
-                                dto.Alignment.Select(wp => (wp.SourceIndex, wp.TargetIndex))
+                                dto.Alignment?.Select(wp => (wp.SourceIndex, wp.TargetIndex))
                             )
                     )
             )
