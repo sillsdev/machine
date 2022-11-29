@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -170,7 +171,7 @@ namespace SIL.Machine.Translation.Thot
         private Task WriteModelWeightsAsync(StreamWriter writer)
         {
             return writer.WriteAsync(
-                $"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######")))}\n"
+                $"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n"
             );
         }
 
@@ -247,7 +248,7 @@ namespace SIL.Machine.Translation.Thot
         {
             File.WriteAllText(
                 lmPrefix + ".weights",
-                $"{ngramSize} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######")))}\n"
+                $"{ngramSize.ToString(CultureInfo.InvariantCulture)} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n"
             );
         }
 
