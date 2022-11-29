@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -185,7 +186,7 @@ namespace SIL.Machine.Translation.Thot
 
 		private void WriteModelWeights(StreamWriter writer)
 		{
-			writer.Write($"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######")))}\n");
+			writer.Write($"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n");
 		}
 
 		private static void CopyFiles(string srcDir, string destDir, string filePrefix)
@@ -254,7 +255,7 @@ namespace SIL.Machine.Translation.Thot
 		private static void WriteLanguageModelWeightsFile(string lmPrefix, int ngramSize, IEnumerable<double> weights)
 		{
 			File.WriteAllText(lmPrefix + ".weights",
-				$"{ngramSize} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######")))}\n");
+				$"{ngramSize.ToString(CultureInfo.InvariantCulture)} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n");
 		}
 
 		private void WriteWordPredictionFile(string lmPrefix)
