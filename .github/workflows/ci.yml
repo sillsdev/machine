@@ -12,9 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, windows-latest]
+        os: [ubuntu-latest, windows-latest]
         include:
-          - os: ubuntu-18.04
+          - os: ubuntu-latest
             sentencepiece4c-dll: libsentencepiece4c.so
             sentencepiece4c-artifact: sp4c-linux-x64
             cmake-args: "-G Ninja -DCMAKE_BUILD_TYPE=Release"
@@ -24,11 +24,11 @@ jobs:
             cmake-args: "-A x64"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: lukka/get-cmake@latest
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: |
             3.1.x
@@ -41,19 +41,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgoogle-perftools-dev
-        if: matrix.os == 'ubuntu-18.04'
+        if: matrix.os == 'ubuntu-latest'
 
       - name: sentencepiece4c build
-        uses: lukka/run-cmake@v3.4
-        with:
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: "${{ github.workspace }}/src/sentencepiece4c/CMakeLists.txt"
-          buildDirectory: "${{ github.workspace }}/src/sentencepiece4c/build"
-          cmakeAppendedArgs: ${{ matrix.cmake-args }}
-          buildWithCMakeArgs: "--config Release --target sentencepiece4c"
+        run: |
+          cmake -S ${{ github.workspace }}/src/sentencepiece4c -B ${{ github.workspace }}/src/sentencepiece4c/build ${{ matrix.cmake-args }}
+          cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
 
       - name: Upload sentence4c artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.sentencepiece4c-artifact }}
           path: ${{ github.workspace }}/src/sentencepiece4c/bin/${{ matrix.sentencepiece4c-dll }}
@@ -73,19 +69,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 3.1.x
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: sp4c-linux-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
 
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: sp4c-win-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
@@ -103,7 +99,7 @@ jobs:
           dotnet pack src\SIL.Machine.Translation.TensorFlow\SIL.Machine.Translation.TensorFlow.csproj -c Release -o artifacts
 
       - name: Upload package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: nuget-package
           path: artifacts/*.nupkg
