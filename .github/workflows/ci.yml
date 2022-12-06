@@ -9,9 +9,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-20.04, windows-latest]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             sentencepiece4c-dll: libsentencepiece4c.so
             sentencepiece4c-artifact: sp4c-linux-x64
             cmake-args: "-G Ninja -DCMAKE_BUILD_TYPE=Release"
@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libunwind-dev
           sudo apt-get install -y libgoogle-perftools-dev
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
 
       - name: sentencepiece4c build
         run: |
