@@ -135,7 +135,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    if (!char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                    if (_verseText.Length > 0 && !char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
                         _verseText.Append(" ");
                 }
             }
