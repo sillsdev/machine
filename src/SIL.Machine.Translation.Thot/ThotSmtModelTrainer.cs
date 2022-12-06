@@ -521,7 +521,10 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             if (tuneSourceCorpus.Count == 0)
+            {
+                Stats.Metrics["bleu"] = 0.0;
                 return;
+            }
 
             string phraseTableFileName = tuneTMPrefix + ".ttable";
             FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
