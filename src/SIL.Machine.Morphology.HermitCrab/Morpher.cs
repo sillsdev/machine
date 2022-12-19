@@ -19,9 +19,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
-        private static readonly IEqualityComparer<IEnumerable<Allomorph>> MorphsEqualityComparer =
-            SequenceEqualityComparer.Create(ProjectionEqualityComparer<Allomorph>.Create(allo => allo.Morpheme));
-
         private readonly Language _lang;
         private readonly IRule<Word, ShapeNode> _analysisRule;
         private readonly IRule<Word, ShapeNode> _synthesisRule;
