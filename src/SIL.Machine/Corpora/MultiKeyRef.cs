@@ -65,7 +65,7 @@ namespace SIL.Machine.Corpora
 
         public override string ToString()
         {
-            string keys = string.Join("-", Keys.Select(k => k.ToString()));
+            string keys = string.Join("_", Keys.Select(k => k.ToString()));
             return $"{TextId}:{keys}";
         }
     }

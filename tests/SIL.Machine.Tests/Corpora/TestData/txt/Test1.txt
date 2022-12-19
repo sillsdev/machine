@@ -1,5 +1,5 @@
-s-1-1	Section one, sentence one.	sentence_start
-s-1-2	Section one, sentence two. sentence three.	sentence_start,in_range,range_start
-s-1-3		in_range
-s-2-1	Section two, sentence one.	sentence_start
-s-2-2	Section two, sentence two.	
+s_1_1	Section one, sentence one.	sentence_start
+s_1_2	Section one, sentence two. sentence three.	sentence_start,in_range,range_start
+s_1_3		in_range
+s_2_1	Section two, sentence one.	sentence_start
+s_2_2	Section two, sentence two.	

@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
                     var flags = TextRowFlags.SentenceStart;
                     if (columns.Length > 1)
                     {
-                        string[] keys = columns[0].Trim().Split('-', '_');
+                        string[] keys = columns[0].Trim().Split('_');
                         rowRef = new MultiKeyRef(Id, keys.Select(k => int.TryParse(k, out int ki) ? (object)ki : k));
                         line = columns[1];
                         if (columns.Length == 3)
