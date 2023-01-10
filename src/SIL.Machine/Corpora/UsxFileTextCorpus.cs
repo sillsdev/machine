@@ -12,8 +12,6 @@ namespace SIL.Machine.Corpora
                 AddText(new UsxFileText(fileName, Versification));
         }
 
-        public override ScrVers Versification { get; }
-
         private static ScrVers GetVersification(string projectPath, ScrVers versification)
         {
             string versificationFileName = Path.Combine(projectPath, "versification.vrs");

@@ -41,11 +41,11 @@ namespace SIL.Machine.Corpora
             bool isSentenceStart = true
         )
         {
-            foreach (TextRow row in CreateRows(new VerseRef(Id, chapter, verse, Versification), text, isSentenceStart))
+            foreach (TextRow row in CreateRows(CreateVerseRef(chapter, verse), text, isSentenceStart))
                 yield return row;
         }
 
-        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text, bool isSentenceStart = true)
+        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text = "", bool isSentenceStart = true)
         {
             if (verseRef.HasMultiple)
             {
@@ -74,6 +74,11 @@ namespace SIL.Machine.Corpora
                     isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 );
             }
+        }
+
+        protected VerseRef CreateVerseRef(string chapter, string verse)
+        {
+            return new VerseRef(Id, chapter, verse, Versification);
         }
     }
 }

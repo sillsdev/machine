@@ -83,7 +83,5 @@ namespace SIL.Machine.Corpora
             foreach (string sfmFileName in Directory.EnumerateFiles(projectDir, $"{prefix}*{suffix}"))
                 AddText(new UsfmFileText(stylesheet, encoding, sfmFileName, Versification, includeMarkers));
         }
-
-        public override ScrVers Versification { get; }
     }
 }

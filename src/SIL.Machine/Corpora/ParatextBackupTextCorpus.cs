@@ -121,7 +121,5 @@ namespace SIL.Machine.Corpora
                 }
             }
         }
-
-        public override ScrVers Versification { get; }
     }
 }
