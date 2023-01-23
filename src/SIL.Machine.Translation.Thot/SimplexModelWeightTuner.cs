@@ -31,20 +31,21 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             float sentLenWeight = parameters.ModelWeights[7];
-            int numFuncEvals = 0;
-            double Evaluate(Vector weights)
+            double Evaluate(Vector weights, int evalCount)
             {
                 ThotSmtParameters newParameters = parameters.Clone();
                 newParameters.ModelWeights = weights.Select(w => (float)w).Concat(sentLenWeight).ToArray();
                 newParameters.Freeze();
                 double quality = CalculateBleu(newParameters, tuneSourceCorpus, tuneTargetCorpus);
-                numFuncEvals++;
-                int currentStep = Math.Min(numFuncEvals, MaxProgressFunctionEvaluations);
-                progress.Report(new ProgressStatus(currentStep, MaxProgressFunctionEvaluations));
+                if (evalCount != -1)
+                {
+                    int currentStep = Math.Min(evalCount + 1, MaxProgressFunctionEvaluations);
+                    progress.Report(new ProgressStatus(currentStep, MaxProgressFunctionEvaluations));
+                }
                 return quality;
             }
             ;
-            progress.Report(new ProgressStatus(0, MaxFunctionEvaluations));
+            progress.Report(new ProgressStatus(0, MaxProgressFunctionEvaluations));
             var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
             MinimizationResult result = simplex.FindMinimum(
                 Evaluate,

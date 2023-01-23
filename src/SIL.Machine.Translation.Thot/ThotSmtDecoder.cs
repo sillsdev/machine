@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using SIL.ObjectModel;
 using SIL.Machine.Annotations;
-using System.Threading.Tasks;
-using System.Threading;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
 {

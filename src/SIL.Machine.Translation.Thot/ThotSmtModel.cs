@@ -411,11 +411,11 @@ namespace SIL.Machine.Translation.Thot
                 _smtModel._handle = Thot.LoadSmtModel(_smtModel.WordAlignmentModelType, _smtModel.Parameters);
                 _smtModel._directWordAlignmentModel.SetHandle(
                     Thot.smtModel_getSingleWordAlignmentModel(_smtModel._handle),
-                    true
+                    owned: true
                 );
                 _smtModel._inverseWordAlignmentModel.SetHandle(
                     Thot.smtModel_getInverseSingleWordAlignmentModel(_smtModel._handle),
-                    true
+                    owned: true
                 );
             }
         }
