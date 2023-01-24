@@ -69,6 +69,7 @@ namespace SIL.Machine.Translation.Thot
         public ThotSmtParameters Parameters { get; private set; }
         public TrainStats Stats { get; } = new TrainStats();
         public int MaxCorpusCount { get; set; } = int.MaxValue;
+        public int Seed { get; set; } = 31415;
 
         public virtual async Task TrainAsync(
             IProgress<ProgressStatus> progress = null,
@@ -80,7 +81,7 @@ namespace SIL.Machine.Translation.Thot
             (IParallelTextCorpus trainCorpus, IParallelTextCorpus testCorpus, int trainCount, int testCount) = _corpus
                 .Where(IsSegmentValid)
                 .Take(MaxCorpusCount)
-                .Split(percent: 0.1, size: 1000, seed: 31415);
+                .Split(percent: 0.1, size: 1000, seed: Seed);
 
             Directory.CreateDirectory(_trainLMDir);
             string trainLMPrefix = Path.Combine(_trainLMDir, _lmFilePrefix);
@@ -256,7 +257,7 @@ namespace SIL.Machine.Translation.Thot
 
         private void WriteWordPredictionFile(string lmPrefix, IParallelTextCorpus trainCorpus)
         {
-            var rand = new Random(31415);
+            var rand = new Random(Seed);
             using (var writer = new StreamWriter(lmPrefix + ".wp"))
             {
                 foreach (ParallelTextRow segment in trainCorpus.Take(100000).OrderBy(i => rand.Next()))
@@ -377,6 +378,9 @@ namespace SIL.Machine.Translation.Thot
             }
 #endif
 
+            if (entries.Count == 0)
+                return;
+
 #if THOT_TEXT_FORMAT
             using (var writer = new StreamWriter(fileName))
 #else
@@ -398,7 +402,7 @@ namespace SIL.Machine.Translation.Thot
                     int count = 0;
                     foreach (Tuple<uint, uint, float> entry in groupEntries)
                     {
-                        double prob = Math.Exp(entry.Item3 - lcSrc);
+                        double prob = LogSpace.ToStandardSpace(LogSpace.Divide(entry.Item3, lcSrc));
                         if (prob < threshold)
                             break;
                         newLcSrc = LogSpace.Add(newLcSrc, entry.Item3);
@@ -490,7 +494,7 @@ namespace SIL.Machine.Translation.Thot
             if (tuneTargetCorpus.Count == 0)
                 return;
 
-            var simplex = new NelderMeadSimplex(0.1, 200, 1.0);
+            var simplex = new NelderMeadSimplex(convergenceTolerance: 0.1, maxFunctionEvaluations: 200, scale: 1.0);
             MinimizationResult result = simplex.FindMinimum(
                 (w, _) => CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w),
                 Enumerable.Repeat(0.5, ngramSize * 3)
