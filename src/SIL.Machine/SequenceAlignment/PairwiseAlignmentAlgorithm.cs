@@ -436,8 +436,8 @@ namespace SIL.Machine.SequenceAlignment
                             > alignment in Retrieve(i - 2, j - 1, score + opScore, threshold)
                         )
                         {
-                            alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 2], _items1[i - 1]));
-                            alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 1]));
+                            alignment.Item1.Add(new AlignmentCell<TItem>(Get1(i - 1), Get1(i)));
+                            alignment.Item2.Add(new AlignmentCell<TItem>(Get2(j)));
                             yield return alignment;
                         }
                     }
@@ -465,10 +465,10 @@ namespace SIL.Machine.SequenceAlignment
                             > alignment in Retrieve(i - 2, j - 2, score + opScore, threshold)
                         )
                         {
-                            alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 2]));
-                            alignment.Item1.Add(new AlignmentCell<TItem>(_items1[i - 1]));
-                            alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 1]));
-                            alignment.Item2.Add(new AlignmentCell<TItem>(_items2[j - 2]));
+                            alignment.Item1.Add(new AlignmentCell<TItem>(Get1(i - 1)));
+                            alignment.Item1.Add(new AlignmentCell<TItem>(Get1(i)));
+                            alignment.Item2.Add(new AlignmentCell<TItem>(Get2(j)));
+                            alignment.Item2.Add(new AlignmentCell<TItem>(Get2(j - 1)));
                             yield return alignment;
                         }
                     }

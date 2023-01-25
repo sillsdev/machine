@@ -565,22 +565,24 @@ namespace SIL.Machine.Translation.Thot
             Parameters.Freeze();
         }
 
-        private static void FilterPhraseTableUsingCorpus(string fileName, IEnumerable<IEnumerable<string>> sourceCorpus)
+        private static void FilterPhraseTableUsingCorpus(
+            string fileName,
+            IEnumerable<IReadOnlyList<string>> sourceCorpus
+        )
         {
             var phrases = new HashSet<string>();
-            foreach (IEnumerable<string> segment in sourceCorpus)
+            foreach (IReadOnlyList<string> segment in sourceCorpus)
             {
-                string[] segmentArray = segment.ToArray();
-                for (int i = 0; i < segmentArray.Length; i++)
+                for (int i = 0; i < segment.Count; i++)
                 {
-                    for (int j = 0; j < segmentArray.Length && j + i < segmentArray.Length; j++)
+                    for (int j = 0; j < segment.Count && j + i < segment.Count; j++)
                     {
                         var phrase = new StringBuilder();
                         for (int k = i; k <= i + j; k++)
                         {
                             if (k != i)
                                 phrase.Append(" ");
-                            phrase.Append(segmentArray[k]);
+                            phrase.Append(segment[k]);
                         }
                         phrases.Add(phrase.ToString());
                     }
@@ -627,6 +629,7 @@ namespace SIL.Machine.Translation.Thot
                     await smtModel.TrainSegmentAsync(tuneSourceCorpus[i], tuneTargetCorpus[i]).ConfigureAwait(false);
                 }
                 progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
+                await smtModel.SaveAsync().ConfigureAwait(false);
             }
         }
 
