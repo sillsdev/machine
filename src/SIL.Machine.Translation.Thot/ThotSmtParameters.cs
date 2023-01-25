@@ -38,7 +38,8 @@ namespace SIL.Machine.Translation.Thot
             string cfgDirPath = Path.GetDirectoryName(cfgFileName);
             foreach (string line in File.ReadAllLines(cfgFileName))
             {
-                string name, value;
+                string name;
+                string value;
                 if (!GetConfigParameter(line, out name, out value))
                     continue;
 
