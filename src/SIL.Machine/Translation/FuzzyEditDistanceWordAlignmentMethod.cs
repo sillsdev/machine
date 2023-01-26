@@ -127,6 +127,8 @@ namespace SIL.Machine.Translation
 
         private static double ComputeDistanceScore(int i1, int i2, int sourceLength)
         {
+            if (sourceLength == 1)
+                return 0.1;
             return (double)Math.Abs(i1 - i2) / (sourceLength - 1);
         }
 
