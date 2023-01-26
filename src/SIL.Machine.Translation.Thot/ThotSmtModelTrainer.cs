@@ -582,7 +582,7 @@ namespace SIL.Machine.Translation.Thot
                         {
                             if (k != i)
                                 phrase.Append(" ");
-                            phrase.Append(segment[k]);
+                            phrase.Append(Thot.EscapeToken(segment[k]));
                         }
                         phrases.Add(phrase.ToString());
                     }
