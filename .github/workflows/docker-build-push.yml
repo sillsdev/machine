@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "release"
+    tags:
+      - 'v*'
 
 jobs:
   docker:
@@ -34,7 +36,9 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
+        env:
+          DOCKER_BUILDKIT: 1
         with:
           context: .
           push: true
