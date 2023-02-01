@@ -1,9 +1,12 @@
-﻿using SIL.Machine.Annotations;
-using SIL.Machine.Morphology;
-using SIL.ObjectModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using SIL.Machine.Annotations;
+using SIL.Machine.Corpora;
+using SIL.Machine.Morphology;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
@@ -22,6 +25,40 @@ namespace SIL.Machine.Translation
             _sourceAnalyzer = sourceAnalyzer;
             _transferer = transferer;
             _targetGenerator = targetGenerator;
+        }
+
+        public Task<TranslationResult> TranslateAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
         }
 
         public TranslationResult Translate(IReadOnlyList<string> segment)
@@ -103,21 +140,21 @@ namespace SIL.Machine.Translation
                 .ToArray();
         }
 
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
-            return segments.Select(segment => Translate(segment));
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(segment)).ToArray();
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments
+            IReadOnlyList<IReadOnlyList<string>> segments
         )
         {
             CheckDisposed();
 
-            return segments.Select(segment => Translate(n, segment));
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(n, segment)).ToArray();
         }
     }
 }

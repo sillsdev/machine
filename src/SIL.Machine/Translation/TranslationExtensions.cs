@@ -1,15 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
     public static class TranslationExtensions
     {
-        public static IReadOnlyList<string> TranslateWord(this ITranslationEngine engine, string sourceWord)
+        public static async Task<IReadOnlyList<string>> TranslateWordAsync(
+            this ITranslationEngine engine,
+            string sourceWord
+        )
         {
-            TranslationResult result = engine.Translate(new[] { sourceWord });
+            TranslationResult result = await engine.TranslateAsync(new[] { sourceWord }).ConfigureAwait(false);
             if (result.WordSources.Any(s => s == TranslationSources.None))
                 return new string[0];
             return result.TargetSegment;
@@ -61,36 +64,14 @@ namespace SIL.Machine.Translation
             return results;
         }
 
-        public static WordAlignmentMatrix GetBestAlignment(
-            this IWordAligner aligner,
-            ParallelTextRow segment,
-            TokenProcessor sourcePreprocessor = null,
-            TokenProcessor targetPreprocessor = null
-        )
+        public static WordAlignmentMatrix Align(this IWordAligner aligner, ParallelTextRow row)
         {
-            if (sourcePreprocessor == null)
-                sourcePreprocessor = TokenProcessors.NoOp;
-            if (targetPreprocessor == null)
-                targetPreprocessor = TokenProcessors.NoOp;
-            IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
-            IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
-
-            return aligner.GetBestAlignment(sourceSegment, targetSegment, segment.CreateAlignmentMatrix());
-        }
-
-        public static WordAlignmentMatrix GetBestAlignment(
-            this IWordAligner aligner,
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
-            WordAlignmentMatrix knownAlignment
-        )
-        {
-            WordAlignmentMatrix estimatedAlignment = aligner.GetBestAlignment(sourceSegment, targetSegment);
-            WordAlignmentMatrix alignment = estimatedAlignment;
+            WordAlignmentMatrix alignment = aligner.Align(row.SourceSegment, row.TargetSegment);
+            WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();
             if (knownAlignment != null)
             {
-                alignment = knownAlignment.Clone();
-                alignment.PrioritySymmetrizeWith(estimatedAlignment);
+                knownAlignment.PrioritySymmetrizeWith(alignment);
+                alignment = knownAlignment;
             }
             return alignment;
         }
@@ -109,47 +90,18 @@ namespace SIL.Machine.Translation
 
         public static string GetAlignmentString(
             this IWordAlignmentModel model,
-            ParallelTextRow segment,
-            bool includeScores = true,
-            TokenProcessor sourcePreprocessor = null,
-            TokenProcessor targetPreprocessor = null
+            ParallelTextRow row,
+            bool includeScores = true
         )
         {
-            if (sourcePreprocessor == null)
-                sourcePreprocessor = TokenProcessors.NoOp;
-            if (targetPreprocessor == null)
-                targetPreprocessor = TokenProcessors.NoOp;
-            IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
-            IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
-            WordAlignmentMatrix alignment = model.GetBestAlignment(
-                sourceSegment,
-                targetSegment,
-                segment.CreateAlignmentMatrix()
-            );
-
-            return alignment.ToString(model, sourceSegment, targetSegment, includeScores);
+            WordAlignmentMatrix alignment = model.Align(row);
+            return alignment.ToString(model, row.SourceSegment, row.TargetSegment, includeScores);
         }
 
-        public static string GetGizaFormatString(
-            this IWordAligner aligner,
-            ParallelTextRow segment,
-            TokenProcessor sourcePreprocessor = null,
-            TokenProcessor targetPreprocessor = null
-        )
+        public static string GetGizaFormatString(this IWordAligner aligner, ParallelTextRow row)
         {
-            if (sourcePreprocessor == null)
-                sourcePreprocessor = TokenProcessors.NoOp;
-            if (targetPreprocessor == null)
-                targetPreprocessor = TokenProcessors.NoOp;
-            IReadOnlyList<string> sourceSegment = sourcePreprocessor(segment.SourceSegment);
-            IReadOnlyList<string> targetSegment = targetPreprocessor(segment.TargetSegment);
-            WordAlignmentMatrix alignment = aligner.GetBestAlignment(
-                sourceSegment,
-                targetSegment,
-                segment.CreateAlignmentMatrix()
-            );
-
-            return alignment.ToGizaFormat(sourceSegment, targetSegment);
+            WordAlignmentMatrix alignment = aligner.Align(row);
+            return alignment.ToGizaFormat(row.SourceSegment, row.TargetSegment);
         }
 
         public static void TrainSegment(this ITruecaser truecaser, TextRow segment)

@@ -852,10 +852,19 @@ namespace SIL.Machine.Corpora
         public static IParallelTextCorpus Translate(
             this IParallelTextCorpus corpus,
             ITranslationEngine translationEngine,
-            int bufferSize = 1024
+            int batchSize = 1024
         )
         {
-            return new TranslateParallelTextCorpus(corpus, translationEngine, bufferSize);
+            return new TranslateParallelTextCorpus(corpus, translationEngine, batchSize);
+        }
+
+        public static IParallelTextCorpus WordAlign(
+            this IParallelTextCorpus corpus,
+            IWordAligner aligner,
+            int batchSize = 1024
+        )
+        {
+            return new WordAlignParallelTextCorpus(corpus, aligner, batchSize);
         }
 
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
@@ -945,49 +954,74 @@ namespace SIL.Machine.Corpora
         {
             private readonly IParallelTextCorpus _corpus;
             private readonly ITranslationEngine _translationEngine;
-            private readonly int _bufferSize;
+            private readonly int _batchSize;
 
             public TranslateParallelTextCorpus(
                 IParallelTextCorpus corpus,
                 ITranslationEngine translationEngine,
-                int bufferSize
+                int batchSize
             )
             {
                 _corpus = corpus;
                 _translationEngine = translationEngine;
-                _bufferSize = bufferSize;
+                _batchSize = batchSize;
             }
 
             public override IEnumerable<ParallelTextRow> GetRows()
             {
-                var buffer = new List<ParallelTextRow>();
-                foreach (ParallelTextRow row in _corpus.GetRows())
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    buffer.Add(row);
-                    if (buffer.Count == _bufferSize)
+                    IReadOnlyList<TranslationResult> translations = _translationEngine.TranslateBatch(
+                        batch.Select(r => r.SourceSegment).ToArray()
+                    );
+                    foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
-                        Translate(buffer);
-                        foreach (ParallelTextRow r in buffer)
-                            yield return r;
-                        buffer.Clear();
+                        row.TargetSegment = translation.TargetSegment;
+                        yield return row;
                     }
                 }
+            }
+        }
 
-                if (buffer.Count > 0)
-                {
-                    Translate(buffer);
-                    foreach (ParallelTextRow r in buffer)
-                        yield return r;
-                }
+        private class WordAlignParallelTextCorpus : ParallelTextCorpusBase
+        {
+            private readonly IParallelTextCorpus _corpus;
+            private readonly IWordAligner _aligner;
+            private readonly int _batchSize;
+
+            public WordAlignParallelTextCorpus(IParallelTextCorpus corpus, IWordAligner aligner, int batchSize)
+            {
+                _corpus = corpus;
+                _aligner = aligner;
+                _batchSize = batchSize;
             }
 
-            private void Translate(List<ParallelTextRow> buffer)
+            public override IEnumerable<ParallelTextRow> GetRows()
             {
-                IEnumerable<TranslationResult> translations = _translationEngine.Translate(
-                    buffer.Select(r => r.SourceSegment)
-                );
-                foreach (var (row, translation) in buffer.Zip(translations, (r, t) => (r, t)))
-                    row.TargetSegment = translation.TargetSegment;
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
+                {
+                    IReadOnlyList<WordAlignmentMatrix> alignments = _aligner.AlignBatch(
+                        batch.Select(r => (r.SourceSegment, r.TargetSegment)).ToArray()
+                    );
+                    foreach (var (row, alignment) in batch.Zip(alignments, (r, a) => (r, a)))
+                    {
+                        WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();
+                        IReadOnlyCollection<AlignedWordPair> wordPairs;
+                        if (knownAlignment != null)
+                        {
+                            knownAlignment.PrioritySymmetrizeWith(alignment);
+                            wordPairs = knownAlignment.ToAlignedWordPairs();
+                        }
+                        else
+                        {
+                            wordPairs = alignment.ToAlignedWordPairs();
+                        }
+                        if (_aligner is IWordAlignmentModel model)
+                            model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);
+                        row.AlignedWordPairs = wordPairs;
+                        yield return row;
+                    }
+                }
             }
         }
 

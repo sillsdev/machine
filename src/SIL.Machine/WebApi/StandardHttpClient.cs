@@ -54,11 +54,11 @@ namespace SIL.Machine.WebApi
                   ? new StringContent(body, Encoding.UTF8)
                   : new StringContent(body, Encoding.UTF8, contentType);
             }
-            HttpResponseMessage response = await _client.SendAsync(request, cancellationToken);
+            HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return new HttpResponse(false, (int)response.StatusCode);
 
-            string content = await response.Content.ReadAsStringAsync();
+            string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return new HttpResponse(true, (int)response.StatusCode, content);
         }
     }

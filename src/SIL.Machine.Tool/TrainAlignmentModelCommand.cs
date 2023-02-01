@@ -35,9 +35,9 @@ namespace SIL.Machine
             _quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
         }
 
-        protected override async Task<int> ExecuteCommandAsync(CancellationToken ct)
+        protected override async Task<int> ExecuteCommandAsync(CancellationToken cancellationToken)
         {
-            int code = await base.ExecuteCommandAsync(ct);
+            int code = await base.ExecuteCommandAsync(cancellationToken);
             if (code != 0)
                 return code;
 
@@ -85,9 +85,9 @@ namespace SIL.Machine
                 )
                 {
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Train(phaseProgress);
+                        await trainer.TrainAsync(phaseProgress, cancellationToken);
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Save();
+                        await trainer.SaveAsync(cancellationToken);
                     trainedSegmentCount = trainer.Stats.TrainCorpusSize;
                 }
 
@@ -100,9 +100,9 @@ namespace SIL.Machine
                         direct: false
                     );
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Train(phaseProgress);
+                        await trainer.TrainAsync(phaseProgress, cancellationToken);
                     using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                        trainer.Save();
+                        await trainer.SaveAsync(cancellationToken);
 
                     trainedSegmentCount = Math.Max(trainedSegmentCount, trainer.Stats.TrainCorpusSize);
                 }

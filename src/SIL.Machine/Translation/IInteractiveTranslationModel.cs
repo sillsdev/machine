@@ -1,12 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
-    public interface IInteractiveTranslationModel : ITranslationModel
+    public interface IInteractiveTranslationModel : IInteractiveTranslationEngine, ITranslationModel
     {
-        IInteractiveTranslationEngine CreateInteractiveEngine();
-
-        void Save();
-        Task SaveAsync();
+        Task SaveAsync(CancellationToken cancellationToken = default);
     }
 }

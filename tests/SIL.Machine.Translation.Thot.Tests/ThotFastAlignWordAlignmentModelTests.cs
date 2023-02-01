@@ -13,28 +13,67 @@ namespace SIL.Machine.Translation.Thot
         private string InverseModelPath => Path.Combine(TestHelpers.ToyCorpusFastAlignFolderName, "tm", "src_trg_swm");
 
         [Test]
-        public void GetBestAlignment()
+        public void Align()
         {
             using var model = new ThotFastAlignWordAlignmentModel(DirectModelPath);
-            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
-            string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
-            var expected = new WordAlignmentMatrix(
-                9,
-                8,
-                new[] { (0, 0), (4, 1), (5, 2), (6, 3), (7, 4), (8, 6), (8, 7) }
+            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split();
+            string[] targetSegment = "could we see another room , please ?".Split();
+            WordAlignmentMatrix alignment = model.Align(sourceSegment, targetSegment);
+            Assert.That(alignment.ToString(), Is.EqualTo("0-0 4-1 5-2 6-3 7-4 8-6 8-7"));
+        }
+
+        [Test]
+        public void AlignBatch()
+        {
+            using var model = new ThotFastAlignWordAlignmentModel(DirectModelPath);
+            (string, string)[] batch =
+            {
+                (
+                    "por favor , desearía reservar una habitación hasta mañana .",
+                    "i would like to book a room until tomorrow , please ."
+                ),
+                (
+                    "por favor , despiértenos mañana a las siete y cuarto .",
+                    "please wake us up tomorrow at a quarter past seven ."
+                ),
+                ("voy a marcharme hoy por la tarde .", "i am leaving today in the afternoon ."),
+                (
+                    "por favor , ¿ les importaría bajar nuestro equipaje a la habitación número cero trece ?",
+                    "would you mind sending down our luggage to room number oh one three , please ?"
+                ),
+                (
+                    "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?",
+                    "could you give me the key to room number two four four , please ?"
+                )
+            };
+            IReadOnlyList<WordAlignmentMatrix> alignments = model.AlignBatch(
+                batch
+                    .Select(p => ((IReadOnlyList<string>)p.Item1.Split(), (IReadOnlyList<string>)p.Item2.Split()))
+                    .ToArray()
             );
-            Assert.That(waMatrix.ValueEquals(expected), Is.True);
+            Assert.That(
+                alignments.Select(m => m.ToString()),
+                Is.EqualTo(
+                    new[]
+                    {
+                        "0-0 3-1 3-2 4-3 4-4 5-5 6-6 7-7 8-8 9-11",
+                        "1-0 3-1 3-2 3-3 4-4 6-5 7-9 8-6 8-8 9-7 10-10",
+                        "0-0 0-1 2-2 3-3 5-5 6-4 6-6 7-7",
+                        "3-1 4-0 5-2 5-3 6-4 7-5 8-6 8-7 10-11 10-12 11-8 12-9 13-10 15-14 15-15",
+                        "0-0 0-1 1-3 3-2 4-4 5-5 5-6 7-8 8-7 9-9 11-10 11-11 13-12 14-13 15-14"
+                    }
+                )
+            );
         }
 
         [Test]
         public void GetAvgTranslationScore()
         {
             using var model = new ThotFastAlignWordAlignmentModel(DirectModelPath);
-            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
-            string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
-            double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
+            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split();
+            string[] targetSegment = "could we see another room , please ?".Split();
+            WordAlignmentMatrix alignment = model.Align(sourceSegment, targetSegment);
+            double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, alignment);
             Assert.That(score, Is.EqualTo(0.34).Within(0.01));
         }
 
@@ -123,10 +162,10 @@ namespace SIL.Machine.Translation.Thot
                 new ThotFastAlignWordAlignmentModel(DirectModelPath),
                 new ThotFastAlignWordAlignmentModel(InverseModelPath)
             );
-            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split(' ');
-            string[] targetSegment = "could we see another room , please ?".Split(' ');
-            WordAlignmentMatrix waMatrix = model.GetBestAlignment(sourceSegment, targetSegment);
-            double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, waMatrix);
+            string[] sourceSegment = "por favor , ¿ podríamos ver otra habitación ?".Split();
+            string[] targetSegment = "could we see another room , please ?".Split();
+            WordAlignmentMatrix alignment = model.Align(sourceSegment, targetSegment);
+            double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, alignment);
             Assert.That(score, Is.EqualTo(0.36).Within(0.01));
         }
     }

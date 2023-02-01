@@ -34,13 +34,18 @@ namespace SIL.Machine.Corpora
 
         protected abstract IEnumerable<TextRow> GetVersesInDocOrder();
 
-        protected IEnumerable<TextRow> CreateRows(string chapter, string verse, string text, bool sentenceStart = true)
+        protected IEnumerable<TextRow> CreateRows(
+            string chapter,
+            string verse,
+            string text,
+            bool isSentenceStart = true
+        )
         {
-            foreach (TextRow row in CreateRows(new VerseRef(Id, chapter, verse, Versification), text, sentenceStart))
+            foreach (TextRow row in CreateRows(new VerseRef(Id, chapter, verse, Versification), text, isSentenceStart))
                 yield return row;
         }
 
-        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text, bool sentenceStart = true)
+        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text, bool isSentenceStart = true)
         {
             if (verseRef.HasMultiple)
             {
@@ -49,18 +54,25 @@ namespace SIL.Machine.Corpora
                 {
                     if (firstVerse)
                     {
-                        yield return CreateRow(text, vref, sentenceStart, isInRange: true, isRangeStart: true);
+                        var flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        if (isSentenceStart)
+                            flags |= TextRowFlags.SentenceStart;
+                        yield return CreateRow(text, vref, flags);
                         firstVerse = false;
                     }
                     else
                     {
-                        yield return CreateEmptyRow(vref, isInRange: true);
+                        yield return CreateEmptyRow(vref, TextRowFlags.InRange);
                     }
                 }
             }
             else
             {
-                yield return CreateRow(text, verseRef, sentenceStart);
+                yield return CreateRow(
+                    text,
+                    verseRef,
+                    isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
+                );
             }
         }
     }

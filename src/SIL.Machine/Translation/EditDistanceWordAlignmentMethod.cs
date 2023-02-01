@@ -5,7 +5,7 @@ using SIL.Machine.SequenceAlignment;
 
 namespace SIL.Machine.Translation
 {
-    public class EditDistanceWordAlignmentMethod : IWordAlignmentMethod
+    public class EditDistanceWordAlignmentMethod : WordAlignerBase, IWordAlignmentMethod
     {
         private Func<IReadOnlyList<string>, int, IReadOnlyList<string>, int, double> _scoreSelector;
         private SegmentScorer _scorer;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public WordAlignmentMatrix GetBestAlignment(
+        public override WordAlignmentMatrix Align(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment
         )

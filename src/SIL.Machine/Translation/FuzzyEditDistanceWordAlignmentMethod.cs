@@ -5,7 +5,7 @@ using SIL.Machine.SequenceAlignment;
 
 namespace SIL.Machine.Translation
 {
-    public class FuzzyEditDistanceWordAlignmentMethod : IWordAlignmentMethod
+    public class FuzzyEditDistanceWordAlignmentMethod : WordAlignerBase, IWordAlignmentMethod
     {
         private const double DefaultAlpha = 0.2f;
         private const int DefaultMaxDistance = 3;
@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation
         public int MaxDistance { get; set; } = DefaultMaxDistance;
         public double Alpha { get; set; } = DefaultAlpha;
 
-        public WordAlignmentMatrix GetBestAlignment(
+        public override WordAlignmentMatrix Align(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment
         )

@@ -5,16 +5,18 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using SIL.ObjectModel;
 using SIL.Machine.Annotations;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SIL.Machine.Translation.Thot
 {
-    public class ThotSmtEngine : DisposableBase, IInteractiveTranslationEngine
+    public class ThotSmtDecoder : DisposableBase
     {
-        private readonly IThotSmtModelInternal _smtModel;
+        private readonly ThotSmtModel _smtModel;
         private readonly IWordConfidenceEstimator _confidenceEstimator;
         private IntPtr _decoderHandle;
 
-        internal ThotSmtEngine(IThotSmtModelInternal smtModel)
+        internal ThotSmtDecoder(ThotSmtModel smtModel)
         {
             _smtModel = smtModel;
             LoadHandle();
@@ -46,23 +48,6 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
-        }
-
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
-        {
-            CheckDisposed();
-
-            return segments.Select(segment => Translate(segment));
-        }
-
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
-            int n,
-            IEnumerable<IReadOnlyList<string>> segments
-        )
-        {
-            CheckDisposed();
-
-            return segments.Select(segment => Translate(n, segment));
         }
 
         public WordGraph GetWordGraph(IReadOnlyList<string> segment)
@@ -149,7 +134,7 @@ namespace SIL.Machine.Translation.Thot
                 {
                     var srcPhrase = new string[srcPhraseLen];
                     Array.Copy(segmentArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-                    waMatrix = _smtModel.WordAligner.GetBestAlignment(srcPhrase, words);
+                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, words);
                 }
 
                 var sources = new TranslationSources[words.Length];
@@ -257,7 +242,7 @@ namespace SIL.Machine.Translation.Thot
                     var trgPhrase = new string[trgPhraseLen];
                     for (int j = 0; j < trgPhraseLen; j++)
                         trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
-                    waMatrix = _smtModel.WordAligner.GetBestAlignment(srcPhrase, trgPhrase);
+                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, trgPhrase);
                 }
                 builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
                 trgPhraseStartIndex += trgPhraseLen;
@@ -338,11 +323,6 @@ namespace SIL.Machine.Translation.Thot
             {
                 Marshal.FreeHGlobal(nativeTargetUnknownWords);
             }
-        }
-
-        protected override void DisposeManagedResources()
-        {
-            _smtModel.RemoveEngine(this);
         }
 
         protected override void DisposeUnmanagedResources()

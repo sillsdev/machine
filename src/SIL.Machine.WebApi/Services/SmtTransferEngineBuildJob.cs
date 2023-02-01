@@ -102,13 +102,13 @@ public class SmtTransferEngineBuildJob
             }
 
             var progress = new BuildProgress(_builds, buildId);
-            smtModelTrainer.Train(progress, cancellationToken.ThrowIfCancellationRequested);
-            truecaseTrainer.Train(checkCanceled: cancellationToken.ThrowIfCancellationRequested);
+            await smtModelTrainer.TrainAsync(progress, cancellationToken);
+            await truecaseTrainer.TrainAsync(cancellationToken: cancellationToken);
 
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                smtModelTrainer.Save();
+                await smtModelTrainer.SaveAsync();
                 await truecaseTrainer.SaveAsync();
                 ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
                 IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
@@ -116,11 +116,13 @@ public class SmtTransferEngineBuildJob
                     CancellationToken.None
                 );
                 using (IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId))
-                using (IInteractiveTranslationEngine smtEngine = smtModel.CreateInteractiveEngine())
                 {
                     foreach (TrainSegmentPair segmentPair in segmentPairs)
                     {
-                        smtEngine.TrainSegment(segmentPair.Source.Lowercase(), segmentPair.Target.Lowercase());
+                        await smtModel.TrainSegmentAsync(
+                            segmentPair.Source.Lowercase(),
+                            segmentPair.Target.Lowercase()
+                        );
                         truecaser.TrainSegment(segmentPair.Target, segmentPair.SentenceStart);
                     }
                 }

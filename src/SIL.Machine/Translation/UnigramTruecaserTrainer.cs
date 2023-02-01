@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
@@ -26,33 +27,30 @@ namespace SIL.Machine.Translation
 
         protected UnigramTruecaser NewTruecaser { get; }
 
-        public void Train(IProgress<ProgressStatus> progress = null, Action checkCanceled = null)
+        public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
         {
+            CheckDisposed();
+
             int stepCount = 0;
             if (progress != null)
                 stepCount = _corpus.Count();
             int currentStep = 0;
             foreach (TextRow row in _corpus)
             {
-                checkCanceled?.Invoke();
+                cancellationToken.ThrowIfCancellationRequested();
                 NewTruecaser.TrainSegment(row);
                 currentStep++;
                 if (progress != null)
                     progress.Report(new ProgressStatus(currentStep, stepCount));
             }
             Stats.TrainCorpusSize = currentStep;
+            return Task.CompletedTask;
         }
 
-        public virtual void Save()
+        public virtual async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             if (_modelPath != null)
-                NewTruecaser.Save(_modelPath);
-        }
-
-        public virtual async Task SaveAsync()
-        {
-            if (_modelPath != null)
-                await NewTruecaser.SaveAsync(_modelPath);
+                await NewTruecaser.SaveAsync(_modelPath, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.ObjectModel;
 using Tensorflow;
 using Tensorflow.NumPy;
@@ -61,6 +63,40 @@ namespace SIL.Machine.Translation.TensorFlow
         public int BatchSize { get; set; } = 32;
         public string PaddingToken { get; set; } = "<blank>";
 
+        public Task<TranslationResult> TranslateAsync(
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            IReadOnlyList<string> segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<IReadOnlyList<string>> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
+        }
+
         public TranslationResult Translate(IReadOnlyList<string> segment)
         {
             CheckDisposed();
@@ -72,31 +108,32 @@ namespace SIL.Machine.Translation.TensorFlow
         {
             CheckDisposed();
 
-            return Translate(n, new[] { segment }).First();
+            return TranslateBatch(n, new[] { segment })[0];
         }
 
-        public IEnumerable<TranslationResult> Translate(IEnumerable<IReadOnlyList<string>> segments)
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
-            return Translate(1, segments).Select(hypotheses => hypotheses[0]);
+            return TranslateBatch(1, segments).Select(hypotheses => hypotheses[0]).ToArray();
         }
 
-        public IEnumerable<IReadOnlyList<TranslationResult>> Translate(
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
             int n,
-            IEnumerable<IReadOnlyList<string>> segments
+            IReadOnlyList<IReadOnlyList<string>> segments
         )
         {
             CheckDisposed();
 
+            var results = new List<IReadOnlyList<TranslationResult>>();
             foreach (var (inputTokens, inputLengths) in Batch(segments))
             {
-                var batchSize = (int)inputTokens.dims[0];
-                NDArray refs = new NDArray(Enumerable.Repeat("", batchSize).ToArray(), new Shape(batchSize, 1));
-                NDArray refsLengths = np.array(Enumerable.Repeat(1, batchSize).ToArray());
+                var curBatchSize = (int)inputTokens.dims[0];
+                NDArray refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
+                NDArray refsLengths = np.array(Enumerable.Repeat(1, curBatchSize).ToArray());
 
                 _session.graph.as_default();
-                NDArray[] results = _session.run(
+                NDArray[] sessionResults = _session.run(
                     _outputs,
                     (_inputs[_signature.InputTokensKey], inputTokens),
                     (_inputs[_signature.InputLengthKey], inputLengths),
@@ -104,9 +141,9 @@ namespace SIL.Machine.Translation.TensorFlow
                     (_inputs[_signature.InputRefLengthKey], refsLengths)
                 );
 
-                NDArray outputTokens = results[_outputIndices[_signature.OutputTokensKey]];
-                NDArray outputLengths = results[_outputIndices[_signature.OutputLengthKey]];
-                NDArray alignments = results[_outputIndices[_signature.OutputAlignmentKey]];
+                NDArray outputTokens = sessionResults[_outputIndices[_signature.OutputTokensKey]];
+                NDArray outputLengths = sessionResults[_outputIndices[_signature.OutputLengthKey]];
+                NDArray alignments = sessionResults[_outputIndices[_signature.OutputAlignmentKey]];
                 string[] outputTokenStrs = outputTokens.StringData();
 
                 for (int i = 0; i < outputLengths.dims[0]; i++)
@@ -133,9 +170,10 @@ namespace SIL.Machine.Translation.TensorFlow
 
                         hypotheses.Add(builder.ToResult(inputLength));
                     }
-                    yield return hypotheses;
+                    results.Add(hypotheses);
                 }
             }
+            return results;
         }
 
         protected override void DisposeManagedResources()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
@@ -11,6 +12,27 @@ namespace SIL.Machine.Translation
     [TestFixture]
     public class HybridTranslationEngineTests
     {
+        [Test]
+        public async Task InteractiveTranslator_TransferredWord()
+        {
+            using var env = new TestEnvironment();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync("caminé a mi habitación .");
+            TranslationResult result = translator.GetCurrentResults().First();
+            Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
+            Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
+            Assert.That(result.WordSources[2], Is.EqualTo(TranslationSources.Transfer));
+        }
+
+        [Test]
+        public async Task InteractiveTranslator_UnknownWord()
+        {
+            using var env = new TestEnvironment();
+            InteractiveTranslator translator = await env.CreateTranslatorAsync("hablé con recepción .");
+            TranslationResult result = translator.GetCurrentResults().First();
+            Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
+            Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
+        }
+
         private class TestEnvironment : DisposableBase
         {
             public TestEnvironment()
@@ -99,46 +121,21 @@ namespace SIL.Machine.Translation
                 }
 
                 engine
-                    .GetWordGraph(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
-                    .Returns(new WordGraph(arcs, new int[] { sourceSegmentArray.Length }));
+                    .GetWordGraphAsync(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
+                    .Returns(Task.FromResult(new WordGraph(arcs, new int[] { sourceSegmentArray.Length })));
             }
 
             public HybridTranslationEngine Engine { get; }
             public ErrorCorrectionModel Ecm { get; }
 
-            public InteractiveTranslator CreateTranslator(string segment)
+            public Task<InteractiveTranslator> CreateTranslatorAsync(string segment)
             {
-                return InteractiveTranslator.Create(Ecm, Engine, segment.Split());
+                return InteractiveTranslator.CreateAsync(Ecm, Engine, segment.Split());
             }
 
             protected override void DisposeManagedResources()
             {
                 Engine.Dispose();
-            }
-        }
-
-        [Test]
-        public void InteractiveTranslator_TransferredWord()
-        {
-            using (var env = new TestEnvironment())
-            {
-                InteractiveTranslator translator = env.CreateTranslator("caminé a mi habitación .");
-                TranslationResult result = translator.GetCurrentResults().First();
-                Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
-                Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
-                Assert.That(result.WordSources[2], Is.EqualTo(TranslationSources.Transfer));
-            }
-        }
-
-        [Test]
-        public void InteractiveTranslator_UnknownWord()
-        {
-            using (var env = new TestEnvironment())
-            {
-                InteractiveTranslator translator = env.CreateTranslator("hablé con recepción .");
-                TranslationResult result = translator.GetCurrentResults().First();
-                Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-                Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
             }
         }
     }

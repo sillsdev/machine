@@ -7,7 +7,7 @@ public class ObjectPoolTests
     public async Task GetAsync_Empty()
     {
         int i = 0;
-        using var pool = new ObjectPool<int>(2, () => Task.FromResult(i++));
+        using var pool = new ObjectPool<int>(2, () => i++);
         Assert.That(pool.Count, Is.EqualTo(0));
         using (ObjectPoolItem<int> item = await pool.GetAsync())
         {
@@ -20,7 +20,7 @@ public class ObjectPoolTests
     public async Task GetAsync_NotEmpty()
     {
         int i = 0;
-        using var pool = new ObjectPool<int>(2, () => Task.FromResult(i++));
+        using var pool = new ObjectPool<int>(2, () => i++);
         Assert.That(pool.Count, Is.EqualTo(0));
         using (ObjectPoolItem<int> item = await pool.GetAsync()) { }
         Assert.That(pool.Count, Is.EqualTo(1));
@@ -35,7 +35,7 @@ public class ObjectPoolTests
     public async Task GetAsync_ObjectInUse()
     {
         int i = 0;
-        using var pool = new ObjectPool<int>(2, () => Task.FromResult(i++));
+        using var pool = new ObjectPool<int>(2, () => i++);
         Assert.That(pool.Count, Is.EqualTo(0));
         var evt = new AsyncAutoResetEvent();
         Task task = HoldObjectAsync(pool, evt);
@@ -53,7 +53,7 @@ public class ObjectPoolTests
     public async Task GetAsync_MaxObjectsInUse()
     {
         int i = 0;
-        using var pool = new ObjectPool<int>(2, () => Task.FromResult(i++));
+        using var pool = new ObjectPool<int>(2, () => i++);
         Assert.That(pool.Count, Is.EqualTo(0));
         var evt1 = new AsyncAutoResetEvent();
         Task task1 = HoldObjectAsync(pool, evt1);

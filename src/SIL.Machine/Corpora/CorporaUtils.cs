@@ -71,6 +71,14 @@ namespace SIL.Machine.Corpora
             {
                 foreach (string filePattern in filePatternArray)
                 {
+                    if (
+                        !filePattern.Contains("*")
+                        && !filePattern.Contains("?")
+                        && !File.Exists(filePattern)
+                        && !Directory.Exists(filePattern)
+                    )
+                        throw new FileNotFoundException("The specified path does not exist.", filePattern);
+
                     string path = filePattern;
                     string searchPattern = "*";
                     if (!filePattern.EndsWith(Path.PathSeparator.ToString()) && !Directory.Exists(filePattern))

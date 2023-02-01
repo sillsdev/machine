@@ -189,10 +189,7 @@ namespace SIL.Machine.Translation.Thot
             );
         }
 
-        public WordAlignmentMatrix GetBestAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
-        )
+        public WordAlignmentMatrix Align(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment)
         {
             CheckDisposed();
 
@@ -220,6 +217,15 @@ namespace SIL.Machine.Translation.Thot
                 Marshal.FreeHGlobal(nativeTargetSegment);
                 Marshal.FreeHGlobal(nativeSourceSegment);
             }
+        }
+
+        public IReadOnlyList<WordAlignmentMatrix> AlignBatch(
+            IReadOnlyList<(IReadOnlyList<string> SourceSegment, IReadOnlyList<string> TargetSegment)> segments
+        )
+        {
+            CheckDisposed();
+
+            return segments.AsParallel().AsOrdered().Select(s => Align(s.SourceSegment, s.TargetSegment)).ToArray();
         }
 
         public IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0)
@@ -276,7 +282,7 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            WordAlignmentMatrix matrix = GetBestAlignment(sourceSegment, targetSegment);
+            WordAlignmentMatrix matrix = Align(sourceSegment, targetSegment);
             IReadOnlyCollection<AlignedWordPair> wordPairs = matrix.ToAlignedWordPairs();
             ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
             return wordPairs;

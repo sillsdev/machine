@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.Corpora
 {
+    [Flags]
+    public enum TextRowFlags
+    {
+        None = 0x0,
+        SentenceStart = 0x1,
+        InRange = 0x2,
+        RangeStart = 0x4
+    }
+
     public class TextRow : IRow
     {
         public TextRow(string textId, object rowRef)
@@ -17,10 +26,11 @@ namespace SIL.Machine.Corpora
 
         public bool IsEmpty => Segment.Count == 0;
 
-        public bool IsSentenceStart { get; set; } = true;
+        public TextRowFlags Flags { get; set; } = TextRowFlags.SentenceStart;
 
-        public bool IsInRange { get; set; }
-        public bool IsRangeStart { get; set; }
+        public bool IsSentenceStart => Flags.HasFlag(TextRowFlags.SentenceStart);
+        public bool IsInRange => Flags.HasFlag(TextRowFlags.InRange);
+        public bool IsRangeStart => Flags.HasFlag(TextRowFlags.RangeStart);
 
         public IReadOnlyList<string> Segment { get; set; } = Array.Empty<string>();
         public string Text => string.Join(" ", Segment);

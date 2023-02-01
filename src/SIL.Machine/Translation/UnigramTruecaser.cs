@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
 using SIL.Machine.Statistics;
@@ -32,7 +33,7 @@ namespace SIL.Machine.Translation
             using (var reader = new StreamReader(path))
             {
                 string line;
-                while ((line = await reader.ReadLineAsync()) != null)
+                while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
                     ParseLine(line);
             }
         }
@@ -98,13 +99,13 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public async Task SaveAsync(string modelPath)
+        public async Task SaveAsync(string modelPath, CancellationToken cancellationToken = default)
         {
             _modelPath = modelPath;
-            await SaveAsync();
+            await SaveAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task SaveAsync()
+        public async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             using (var writer = new StreamWriter(_modelPath))
             {
@@ -112,26 +113,7 @@ namespace SIL.Machine.Translation
                 {
                     FrequencyDistribution<string> counts = _casing[lowerToken];
                     string line = string.Join(" ", counts.ObservedSamples.Select(t => $"{t} {counts[t]}"));
-                    await writer.WriteAsync($"{line}\n");
-                }
-            }
-        }
-
-        public void Save(string modelPath)
-        {
-            _modelPath = modelPath;
-            Save();
-        }
-
-        public void Save()
-        {
-            using (var writer = new StreamWriter(_modelPath))
-            {
-                foreach (string lowerToken in _casing.Conditions)
-                {
-                    FrequencyDistribution<string> counts = _casing[lowerToken];
-                    string line = string.Join(" ", counts.ObservedSamples.Select(t => $"{t} {counts[t]}"));
-                    writer.Write($"{line}\n");
+                    await writer.WriteAsync($"{line}\n").ConfigureAwait(false);
                 }
             }
         }
@@ -182,18 +164,11 @@ namespace SIL.Machine.Translation
                 _truecaser = truecaser;
             }
 
-            public override async Task SaveAsync()
+            public override async Task SaveAsync(CancellationToken cancellationToken = default)
             {
                 _truecaser._casing = NewTruecaser._casing;
                 _truecaser._bestTokens = NewTruecaser._bestTokens;
-                await _truecaser.SaveAsync();
-            }
-
-            public override void Save()
-            {
-                _truecaser._casing = NewTruecaser._casing;
-                _truecaser._bestTokens = NewTruecaser._bestTokens;
-                _truecaser.Save();
+                await _truecaser.SaveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }

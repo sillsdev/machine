@@ -20,6 +20,8 @@ namespace SIL.Machine.Corpora
 
         public object Ref => SourceRefs.Count > 0 ? SourceRefs[0] : TargetRefs[0];
 
+        public IReadOnlyList<object> Refs => SourceRefs.Count > 0 ? SourceRefs : TargetRefs;
+
         public IReadOnlyList<object> SourceRefs { get; }
         public IReadOnlyList<object> TargetRefs { get; }
 
@@ -29,12 +31,15 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; set; }
 
-        public bool IsSourceSentenceStart { get; set; } = true;
-        public bool IsSourceInRange { get; set; }
-        public bool IsSourceRangeStart { get; set; }
-        public bool IsTargetSentenceStart { get; set; } = true;
-        public bool IsTargetInRange { get; set; }
-        public bool IsTargetRangeStart { get; set; }
+        public TextRowFlags SourceFlags { get; set; } = TextRowFlags.SentenceStart;
+        public TextRowFlags TargetFlags { get; set; } = TextRowFlags.SentenceStart;
+
+        public bool IsSourceSentenceStart => SourceFlags.HasFlag(TextRowFlags.SentenceStart);
+        public bool IsSourceInRange => SourceFlags.HasFlag(TextRowFlags.InRange);
+        public bool IsSourceRangeStart => SourceFlags.HasFlag(TextRowFlags.RangeStart);
+        public bool IsTargetSentenceStart => TargetFlags.HasFlag(TextRowFlags.SentenceStart);
+        public bool IsTargetInRange => TargetFlags.HasFlag(TextRowFlags.InRange);
+        public bool IsTargetRangeStart => TargetFlags.HasFlag(TextRowFlags.RangeStart);
 
         public bool IsEmpty => SourceSegment.Count == 0 || TargetSegment.Count == 0;
 
@@ -51,12 +56,8 @@ namespace SIL.Machine.Corpora
                     AlignedWordPairs == null
                         ? null
                         : new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert())),
-                IsSourceSentenceStart = IsTargetSentenceStart,
-                IsSourceInRange = IsTargetInRange,
-                IsSourceRangeStart = IsTargetRangeStart,
-                IsTargetSentenceStart = IsSourceSentenceStart,
-                IsTargetInRange = IsSourceInRange,
-                IsTargetRangeStart = IsSourceRangeStart
+                SourceFlags = TargetFlags,
+                TargetFlags = SourceFlags
             };
         }
     }

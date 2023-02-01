@@ -7,8 +7,6 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         public Factory(IServiceProvider serviceProvider) : base(serviceProvider, TranslationEngineType.SmtTransfer) { }
     }
 
-    private const int MaxEnginePoolSize = 3;
-
     private readonly IRepository<TranslationEngine> _engines;
     private readonly IRepository<Build> _builds;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
@@ -22,7 +20,8 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
     private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
     private Lazy<IInteractiveTranslationModel> _smtModel;
-    private ObjectPool<HybridTranslationEngine> _enginePool;
+    private Lazy<ITranslationEngine?> _transferEngine;
+    private Lazy<HybridTranslationEngine> _hybridEngine;
     private AsyncLazy<ITruecaser> _truecaser;
     private bool _isUpdated;
     private DateTime _lastUsedTime;
@@ -53,7 +52,8 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         _engineId = engineId;
         _lock = _lockFactory.Create(_engineId);
         _smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
-        _enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
+        _transferEngine = new Lazy<ITranslationEngine?>(CreateTransferEngine);
+        _hybridEngine = new Lazy<HybridTranslationEngine>(CreateHybridEngine);
         _truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
         _lastUsedTime = DateTime.Now;
     }
@@ -80,8 +80,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         await using (await _lock.ReaderLockAsync())
         {
             await CheckReloadAsync();
-            using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
-            TranslationResult result = item.Object.Translate(preprocSegment);
+            TranslationResult result = await _hybridEngine.Value.TranslateAsync(preprocSegment);
             result = (await _truecaser).Truecase(result);
             _lastUsedTime = DateTime.Now;
             return result;
@@ -97,10 +96,9 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         await using (await _lock.ReaderLockAsync())
         {
             await CheckReloadAsync();
-            using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
             ITruecaser truecaser = await _truecaser;
             var results = new List<TranslationResult>();
-            foreach (TranslationResult result in item.Object.Translate(n, preprocSegment))
+            foreach (TranslationResult result in await _hybridEngine.Value.TranslateAsync(n, preprocSegment))
                 results.Add(truecaser.Truecase(result));
             _lastUsedTime = DateTime.Now;
             return results;
@@ -116,8 +114,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         await using (await _lock.ReaderLockAsync())
         {
             await CheckReloadAsync();
-            using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
-            WordGraph result = item.Object.GetWordGraph(preprocSegment);
+            WordGraph result = await _hybridEngine.Value.GetWordGraphAsync(preprocSegment);
             result = (await _truecaser).Truecase(result);
             _lastUsedTime = DateTime.Now;
             return result;
@@ -138,8 +135,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         await using (await _lock.WriterLockAsync())
         {
             await CheckReloadAsync();
-            using ObjectPoolItem<HybridTranslationEngine> item = await _enginePool.GetAsync();
-            item.Object.TrainSegment(preprocSourceSegment, preprocTargetSegment);
+            await _hybridEngine.Value.TrainSegmentAsync(preprocSourceSegment, preprocTargetSegment);
             (await _truecaser).TrainSegment(targetSegment, sentenceStart);
             TranslationEngine? engine = await _engines.UpdateAsync(_engineId, u => u.Inc(e => e.CorpusSize, 1));
             if (engine is not null && engine.IsBuilding)
@@ -289,7 +285,7 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
     {
         if (_isUpdated)
         {
-            _smtModel.Value.Save();
+            await _smtModel.Value.SaveAsync();
             ITruecaser truecaser = await _truecaser;
             await truecaser.SaveAsync();
             _isUpdated = false;
@@ -322,11 +318,12 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
 
         await SaveModelAsync();
 
-        _enginePool.Dispose();
         _smtModel.Value.Dispose();
+        _transferEngine.Value?.Dispose();
 
         _smtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
-        _enginePool = new ObjectPool<HybridTranslationEngine>(MaxEnginePoolSize, CreateEngine);
+        _transferEngine = new Lazy<ITranslationEngine?>(CreateTransferEngine);
+        _hybridEngine = new Lazy<HybridTranslationEngine>(CreateHybridEngine);
         _truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
         _currentModelRevision = -1;
     }
@@ -336,11 +333,16 @@ public class SmtTransferEngineRuntime : AsyncDisposableBase, ITranslationEngineR
         return _smtModelFactory.Create(_engineId);
     }
 
-    private HybridTranslationEngine CreateEngine()
+    private ITranslationEngine? CreateTransferEngine()
     {
-        IInteractiveTranslationEngine interactiveEngine = _smtModel.Value.CreateInteractiveEngine();
-        ITranslationEngine? ruleEngine = _transferEngineFactory.Create(_engineId);
-        return new HybridTranslationEngine(interactiveEngine, ruleEngine);
+        return _transferEngineFactory.Create(_engineId);
+    }
+
+    private HybridTranslationEngine CreateHybridEngine()
+    {
+        IInteractiveTranslationEngine interactiveEngine = _smtModel.Value;
+        ITranslationEngine? transferEngine = _transferEngine.Value;
+        return new HybridTranslationEngine(interactiveEngine, transferEngine);
     }
 
     private Task<ITruecaser> CreateTruecaserAsync()
