@@ -32,6 +32,8 @@
 \p
 \v 8 This is a list:
 \b
-\tr \tc1 \v 9 Chapter\tcr2 2\tc3 verse\tcr4 9
-\tr \tc1-2 \v 10 Chapter 2\tc3-4 verse 10
+\tr \tc1
+\v 9 Chapter\tcr2 2\tc3 verse\tcr4 9
+\tr \tc1-2
+\v 10 \tc3-4 Chapter 2 verse 10
 \restore restore information

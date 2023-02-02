@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,16 +19,14 @@ namespace SIL.Machine.Translation.Thot
 {
     public class ThotSmtModelTrainer : DisposableBase, ITrainer
     {
-        private readonly IParallelTextCorpus _trainCorpus;
-        private readonly int _trainCount;
-        private readonly IParallelTextCorpus _testCorpus;
-        private readonly int _testCount;
+        private readonly IParallelTextCorpus _corpus;
         private readonly IParameterTuner _modelWeightTuner;
         private readonly string _tempDir;
         private readonly string _lmFilePrefix;
         private readonly string _tmFilePrefix;
         private readonly string _trainLMDir;
         private readonly string _trainTMDir;
+        private readonly string _tuneTMDir;
         private readonly ThotWordAlignmentModelType _wordAlignmentModelType;
 
         public ThotSmtModelTrainer(
@@ -47,11 +46,8 @@ namespace SIL.Machine.Translation.Thot
         {
             Parameters = parameters ?? new ThotSmtParameters();
             Parameters.Freeze();
-            (_trainCorpus, _testCorpus, _trainCount, _testCount) = corpus
-                .Where(IsSegmentValid)
-                .Take(MaxCorpusCount)
-                .Split(percent: 0.1, size: 1000, seed: 31415);
             _wordAlignmentModelType = wordAlignmentModelType;
+            _corpus = corpus;
             // _modelWeightTuner = new MiraModelWeightTuner(swAlignClassName);
             _modelWeightTuner = new SimplexModelWeightTuner(wordAlignmentModelType);
 
@@ -61,16 +57,19 @@ namespace SIL.Machine.Translation.Thot
             } while (Directory.Exists(_tempDir));
             Directory.CreateDirectory(_tempDir);
 
-            _lmFilePrefix = Path.GetFileName(Parameters.LanguageModelFileNamePrefix);
-            _tmFilePrefix = Path.GetFileName(Parameters.TranslationModelFileNamePrefix);
             _trainLMDir = Path.Combine(_tempDir, "lm");
             _trainTMDir = Path.Combine(_tempDir, "tm_train");
+            _tuneTMDir = Path.Combine(_tempDir, "tm_tune");
+
+            _lmFilePrefix = Path.GetFileName(Parameters.LanguageModelFileNamePrefix);
+            _tmFilePrefix = Path.GetFileName(Parameters.TranslationModelFileNamePrefix);
         }
 
         public string ConfigFileName { get; }
         public ThotSmtParameters Parameters { get; private set; }
         public TrainStats Stats { get; } = new TrainStats();
         public int MaxCorpusCount { get; set; } = int.MaxValue;
+        public int Seed { get; set; } = 31415;
 
         public virtual async Task TrainAsync(
             IProgress<ProgressStatus> progress = null,
@@ -79,26 +78,31 @@ namespace SIL.Machine.Translation.Thot
         {
             var reporter = new ThotTrainProgressReporter(progress, cancellationToken);
 
+            (IParallelTextCorpus trainCorpus, IParallelTextCorpus testCorpus, int trainCount, int testCount) = _corpus
+                .Where(IsSegmentValid)
+                .Take(MaxCorpusCount)
+                .Split(percent: 0.1, size: 1000, seed: Seed);
+
             Directory.CreateDirectory(_trainLMDir);
             string trainLMPrefix = Path.Combine(_trainLMDir, _lmFilePrefix);
             Directory.CreateDirectory(_trainTMDir);
             string trainTMPrefix = Path.Combine(_trainTMDir, _tmFilePrefix);
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                TrainLanguageModel(trainLMPrefix, 3);
+                TrainLanguageModel(trainLMPrefix, 3, trainCorpus);
 
-            await TrainTranslationModelAsync(trainTMPrefix, reporter, cancellationToken).ConfigureAwait(false);
+            await TrainTranslationModelAsync(trainTMPrefix, trainCorpus, trainCount, reporter, cancellationToken)
+                .ConfigureAwait(false);
 
             reporter.CheckCanceled();
 
-            string tuneTMDir = Path.Combine(_tempDir, "tm_tune");
-            Directory.CreateDirectory(tuneTMDir);
-            string tuneTMPrefix = Path.Combine(tuneTMDir, _tmFilePrefix);
-            CopyFiles(_trainTMDir, tuneTMDir, _tmFilePrefix);
+            Directory.CreateDirectory(_tuneTMDir);
+            string tuneTMPrefix = Path.Combine(_tuneTMDir, _tmFilePrefix);
+            CopyFiles(_trainTMDir, _tuneTMDir, _tmFilePrefix);
 
             var tuneSourceCorpus = new List<IReadOnlyList<string>>();
             var tuneTargetCorpus = new List<IReadOnlyList<string>>();
-            foreach (ParallelTextRow row in _testCorpus)
+            foreach (ParallelTextRow row in testCorpus)
             {
                 tuneSourceCorpus.Add(row.SourceSegment);
                 tuneTargetCorpus.Add(row.TargetSegment);
@@ -120,7 +124,7 @@ namespace SIL.Machine.Translation.Thot
                     )
                     .ConfigureAwait(false);
 
-            Stats.TrainCorpusSize = _trainCount + _testCount;
+            Stats.TrainCorpusSize = trainCount + testCount;
         }
 
         public virtual async Task SaveAsync(CancellationToken cancellationToken = default)
@@ -170,7 +174,7 @@ namespace SIL.Machine.Translation.Thot
         private Task WriteModelWeightsAsync(StreamWriter writer)
         {
             return writer.WriteAsync(
-                $"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######")))}\n"
+                $"-tmw {string.Join(" ", Parameters.ModelWeights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n"
             );
         }
 
@@ -184,19 +188,19 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        private void TrainLanguageModel(string lmPrefix, int ngramSize)
+        private void TrainLanguageModel(string lmPrefix, int ngramSize, IParallelTextCorpus trainCorpus)
         {
-            WriteNgramCountsFile(lmPrefix, ngramSize);
+            WriteNgramCountsFile(lmPrefix, ngramSize, trainCorpus);
             WriteLanguageModelWeightsFile(lmPrefix, ngramSize, Enumerable.Repeat(0.5, ngramSize * 3));
-            WriteWordPredictionFile(lmPrefix);
+            WriteWordPredictionFile(lmPrefix, trainCorpus);
         }
 
-        private void WriteNgramCountsFile(string lmPrefix, int ngramSize)
+        private void WriteNgramCountsFile(string lmPrefix, int ngramSize, IParallelTextCorpus trainCorpus)
         {
             int wordCount = 0;
             var ngrams = new Dictionary<Ngram<string>, int>();
             var vocab = new HashSet<string>();
-            foreach (ParallelTextRow row in _trainCorpus)
+            foreach (ParallelTextRow row in trainCorpus)
             {
                 var words = new List<string> { "<s>" };
                 foreach (string word in row.TargetSegment.Select(Thot.EscapeToken))
@@ -247,16 +251,16 @@ namespace SIL.Machine.Translation.Thot
         {
             File.WriteAllText(
                 lmPrefix + ".weights",
-                $"{ngramSize} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######")))}\n"
+                $"{ngramSize.ToString(CultureInfo.InvariantCulture)} 3 10 {string.Join(" ", weights.Select(w => w.ToString("0.######", CultureInfo.InvariantCulture)))}\n"
             );
         }
 
-        private void WriteWordPredictionFile(string lmPrefix)
+        private void WriteWordPredictionFile(string lmPrefix, IParallelTextCorpus trainCorpus)
         {
-            var rand = new Random(31415);
+            var rand = new Random(Seed);
             using (var writer = new StreamWriter(lmPrefix + ".wp"))
             {
-                foreach (ParallelTextRow segment in _trainCorpus.Take(100000).OrderBy(i => rand.Next()))
+                foreach (ParallelTextRow segment in trainCorpus.Take(100000).OrderBy(i => rand.Next()))
                 {
                     string segmentStr = string.Join(" ", segment.TargetSegment.Select(Thot.EscapeToken));
                     writer.Write("{0}\n", segmentStr);
@@ -266,16 +270,24 @@ namespace SIL.Machine.Translation.Thot
 
         private async Task TrainTranslationModelAsync(
             string tmPrefix,
+            IParallelTextCorpus trainCorpus,
+            int trainCount,
             ThotTrainProgressReporter reporter,
             CancellationToken cancellationToken
         )
         {
             string invswmPrefix = tmPrefix + "_invswm";
-            await GenerateWordAlignmentModelAsync(invswmPrefix, _trainCorpus, reporter, cancellationToken)
+            await GenerateWordAlignmentModelAsync(invswmPrefix, trainCorpus, trainCount, reporter, cancellationToken)
                 .ConfigureAwait(false);
 
             string swmPrefix = tmPrefix + "_swm";
-            await GenerateWordAlignmentModelAsync(swmPrefix, _trainCorpus.Invert(), reporter, cancellationToken)
+            await GenerateWordAlignmentModelAsync(
+                    swmPrefix,
+                    trainCorpus.Invert(),
+                    trainCount,
+                    reporter,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
@@ -293,6 +305,7 @@ namespace SIL.Machine.Translation.Thot
         private async Task GenerateWordAlignmentModelAsync(
             string swmPrefix,
             IParallelTextCorpus trainCorpus,
+            int trainCount,
             ThotTrainProgressReporter reporter,
             CancellationToken cancellationToken
         )
@@ -322,7 +335,7 @@ namespace SIL.Machine.Translation.Thot
             PruneLexTable(swmPrefix + ext, 0.00001);
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
-                GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", trainCorpus, phaseProgress);
+                GenerateBestAlignments(swmPrefix, swmPrefix + ".bestal", trainCorpus, trainCount, phaseProgress);
         }
 
         private static void PruneLexTable(string fileName, double threshold)
@@ -365,6 +378,9 @@ namespace SIL.Machine.Translation.Thot
             }
 #endif
 
+            if (entries.Count == 0)
+                return;
+
 #if THOT_TEXT_FORMAT
             using (var writer = new StreamWriter(fileName))
 #else
@@ -386,7 +402,7 @@ namespace SIL.Machine.Translation.Thot
                     int count = 0;
                     foreach (Tuple<uint, uint, float> entry in groupEntries)
                     {
-                        double prob = Math.Exp(entry.Item3 - lcSrc);
+                        double prob = LogSpace.ToStandardSpace(LogSpace.Divide(entry.Item3, lcSrc));
                         if (prob < threshold)
                             break;
                         newLcSrc = LogSpace.Add(newLcSrc, entry.Item3);
@@ -454,6 +470,7 @@ namespace SIL.Machine.Translation.Thot
             string swmPrefix,
             string fileName,
             IParallelTextCorpus trainCorpus,
+            int trainCount,
             IProgress<ProgressStatus> progress
         )
         {
@@ -467,7 +484,7 @@ namespace SIL.Machine.Translation.Thot
                     writer.Write("# 1\n");
                     writer.Write(model.GetGizaFormatString(row));
                     i++;
-                    progress.Report(new ProgressStatus(i, _trainCount));
+                    progress.Report(new ProgressStatus(i, trainCount));
                 }
             }
         }
@@ -477,9 +494,9 @@ namespace SIL.Machine.Translation.Thot
             if (tuneTargetCorpus.Count == 0)
                 return;
 
-            var simplex = new NelderMeadSimplex(0.1, 200, 1.0);
+            var simplex = new NelderMeadSimplex(convergenceTolerance: 0.1, maxFunctionEvaluations: 200, scale: 1.0);
             MinimizationResult result = simplex.FindMinimum(
-                w => CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w),
+                (w, _) => CalculatePerplexity(tuneTargetCorpus, lmPrefix, ngramSize, w),
                 Enumerable.Repeat(0.5, ngramSize * 3)
             );
             WriteLanguageModelWeightsFile(lmPrefix, ngramSize, result.MinimizingPoint);
@@ -520,7 +537,10 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             if (tuneSourceCorpus.Count == 0)
+            {
+                Stats.Metrics["bleu"] = 0.0;
                 return;
+            }
 
             string phraseTableFileName = tuneTMPrefix + ".ttable";
             FilterPhraseTableUsingCorpus(phraseTableFileName, tuneSourceCorpus);
@@ -545,22 +565,24 @@ namespace SIL.Machine.Translation.Thot
             Parameters.Freeze();
         }
 
-        private static void FilterPhraseTableUsingCorpus(string fileName, IEnumerable<IEnumerable<string>> sourceCorpus)
+        private static void FilterPhraseTableUsingCorpus(
+            string fileName,
+            IEnumerable<IReadOnlyList<string>> sourceCorpus
+        )
         {
             var phrases = new HashSet<string>();
-            foreach (IEnumerable<string> segment in sourceCorpus)
+            foreach (IReadOnlyList<string> segment in sourceCorpus)
             {
-                string[] segmentArray = segment.ToArray();
-                for (int i = 0; i < segmentArray.Length; i++)
+                for (int i = 0; i < segment.Count; i++)
                 {
-                    for (int j = 0; j < segmentArray.Length && j + i < segmentArray.Length; j++)
+                    for (int j = 0; j < segment.Count && j + i < segment.Count; j++)
                     {
                         var phrase = new StringBuilder();
                         for (int k = i; k <= i + j; k++)
                         {
                             if (k != i)
                                 phrase.Append(" ");
-                            phrase.Append(segmentArray[k]);
+                            phrase.Append(Thot.EscapeToken(segment[k]));
                         }
                         phrases.Add(phrase.ToString());
                     }
@@ -607,6 +629,7 @@ namespace SIL.Machine.Translation.Thot
                     await smtModel.TrainSegmentAsync(tuneSourceCorpus[i], tuneTargetCorpus[i]).ConfigureAwait(false);
                 }
                 progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
+                await smtModel.SaveAsync().ConfigureAwait(false);
             }
         }
 

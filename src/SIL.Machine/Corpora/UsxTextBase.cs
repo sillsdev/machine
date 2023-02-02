@@ -21,7 +21,11 @@ namespace SIL.Machine.Corpora
                 foreach (UsxVerse verse in _parser.Parse(stream))
                 {
                     foreach (
-                        TextRow segment in CreateRows(verse.Chapter, verse.Verse, verse.Text, verse.IsSentenceStart)
+                        TextRow segment in CreateRows(
+                            CreateVerseRef(verse.Chapter, verse.Verse),
+                            verse.Text,
+                            verse.IsSentenceStart
+                        )
                     )
                     {
                         yield return segment;

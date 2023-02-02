@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.SequenceAlignment
 {
@@ -45,7 +44,7 @@ namespace SIL.Machine.SequenceAlignment
         {
             get
             {
-                if (_items.Length == 0)
+                if (_items == null || _items.Length == 0)
                     throw new InvalidOperationException("The alignment cell is empty.");
                 return _items[0];
             }
@@ -55,7 +54,7 @@ namespace SIL.Machine.SequenceAlignment
         {
             get
             {
-                if (_items.Length == 0)
+                if (_items == null || _items.Length == 0)
                     throw new InvalidOperationException("The alignment cell is empty.");
                 return _items[_items.Length - 1];
             }

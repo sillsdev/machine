@@ -34,18 +34,7 @@ namespace SIL.Machine.Corpora
 
         protected abstract IEnumerable<TextRow> GetVersesInDocOrder();
 
-        protected IEnumerable<TextRow> CreateRows(
-            string chapter,
-            string verse,
-            string text,
-            bool isSentenceStart = true
-        )
-        {
-            foreach (TextRow row in CreateRows(new VerseRef(Id, chapter, verse, Versification), text, isSentenceStart))
-                yield return row;
-        }
-
-        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text, bool isSentenceStart = true)
+        protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text = "", bool isSentenceStart = true)
         {
             if (verseRef.HasMultiple)
             {
@@ -74,6 +63,11 @@ namespace SIL.Machine.Corpora
                     isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 );
             }
+        }
+
+        protected VerseRef CreateVerseRef(string chapter, string verse)
+        {
+            return new VerseRef(Id, chapter, verse, Versification);
         }
     }
 }

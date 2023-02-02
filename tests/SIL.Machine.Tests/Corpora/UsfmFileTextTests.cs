@@ -161,7 +161,7 @@ namespace SIL.Machine.Corpora
             Assert.That(rows[15].Text, Is.EqualTo("Chapter\\tcr2 2\\tc3 verse\\tcr4 9"));
 
             Assert.That(rows[16].Ref, Is.EqualTo(new VerseRef("MAT 2:10", corpus.Versification)));
-            Assert.That(rows[16].Text, Is.EqualTo("Chapter 2\\tc3-4 verse 10"));
+            Assert.That(rows[16].Text, Is.EqualTo("\\tc3-4 Chapter 2 verse 10"));
         }
     }
 }

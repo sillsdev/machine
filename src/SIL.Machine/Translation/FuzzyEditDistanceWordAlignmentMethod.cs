@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.SequenceAlignment;
+using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation
 {
@@ -126,12 +127,17 @@ namespace SIL.Machine.Translation
 
         private static double ComputeDistanceScore(int i1, int i2, int sourceLength)
         {
+            if (sourceLength == 1)
+                return 0.1;
             return (double)Math.Abs(i1 - i2) / (sourceLength - 1);
         }
 
         private double ComputeAlignmentScore(double probability, double distanceScore)
         {
-            return (Math.Log(probability) * Alpha) + (Math.Log(1.0f - distanceScore) * (1.0f - Alpha));
+            return LogSpace.Multiply(
+                LogSpace.ToLogSpace(probability) * Alpha,
+                LogSpace.ToLogSpace(1.0f - distanceScore) * (1.0f - Alpha)
+            );
         }
     }
 }

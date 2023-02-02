@@ -10,33 +10,33 @@ namespace SIL.Machine.SequenceAlignment
         public void GlobalAlign()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars);
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars);
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.66).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars);
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars);
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r t |", "| b a r - |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.25).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars);
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars);
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r t |", "| - a r t |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.50).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars);
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars);
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| s t a r t |", "| - t a - n |"));
@@ -49,12 +49,12 @@ namespace SIL.Machine.SequenceAlignment
         public void LocalAlign()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
             {
                 Mode = AlignmentMode.Local
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
@@ -62,41 +62,41 @@ namespace SIL.Machine.SequenceAlignment
             AssertAlignmentsEqual(alignments[1], CreateAlignment("c | a r |", "b | a r |"));
             Assert.That(alignments[1].NormalizedScore, Is.EqualTo(0.80).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
             {
                 Mode = AlignmentMode.Local
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r | t", "| b a r |  "));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r | t", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.57).Within(0.01));
-            AssertAlignmentsEqual(alignments[1], CreateAlignment("c | a r | t", "b | a r |  "));
-            Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.57).Within(0.01));
+            AssertAlignmentsEqual(alignments[1], CreateAlignment("c | a r | t", "b | a r |"));
+            Assert.That(alignments[1].NormalizedScore, Is.EqualTo(0.66).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
             {
                 Mode = AlignmentMode.Local
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("c | a r t |", "  | a r t |"));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("c | a r t |", "| a r t |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.86).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
             {
                 Mode = AlignmentMode.Local
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("s | t a | rt", "  | t a | n"));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("s | t a | rt", "| t a | n"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.57).Within(0.01));
-            AssertAlignmentsEqual(alignments[1], CreateAlignment("s | t a r | t", "  | t a n |  "));
+            AssertAlignmentsEqual(alignments[1], CreateAlignment("s | t a r | t", "| t a n |"));
             Assert.That(alignments[1].NormalizedScore, Is.EqualTo(0.50).Within(0.01));
         }
 
@@ -104,50 +104,50 @@ namespace SIL.Machine.SequenceAlignment
         public void HalfLocalAlign()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
             {
                 Mode = AlignmentMode.HalfLocal
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.66).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
             {
                 Mode = AlignmentMode.HalfLocal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r | t", "| b a r |  "));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.57).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
             {
                 Mode = AlignmentMode.HalfLocal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r t |", "| - a r t |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.50).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
             {
                 Mode = AlignmentMode.HalfLocal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| s t a | rt", "| - t a | n"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.25).Within(0.01));
-            AssertAlignmentsEqual(alignments[1], CreateAlignment("| s t a r | t", "| - t a n |  "));
+            AssertAlignmentsEqual(alignments[1], CreateAlignment("| s t a r | t", "| - t a n |"));
             Assert.That(alignments[1].NormalizedScore, Is.EqualTo(0.22).Within(0.01));
         }
 
@@ -155,48 +155,48 @@ namespace SIL.Machine.SequenceAlignment
         public void SemiGlobalAlign()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
             {
                 Mode = AlignmentMode.SemiGlobal
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.66).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
             {
                 Mode = AlignmentMode.SemiGlobal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r | t", "| b a r |  "));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r | t", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.57).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
             {
                 Mode = AlignmentMode.SemiGlobal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("c | a r t |", "  | a r t |"));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("c | a r t |", "| a r t |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.86).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
             {
                 Mode = AlignmentMode.SemiGlobal
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("s | t a r | t", "  | t a n |  "));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("s | t a r | t", "| t a n |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.50).Within(0.01));
         }
 
@@ -204,50 +204,50 @@ namespace SIL.Machine.SequenceAlignment
         public void ExpansionCompressionAlign()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
             {
                 ExpansionCompressionEnabled = true
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.66).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
             {
                 ExpansionCompressionEnabled = true
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a rt |", "| b a r  |"));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a rt |", "| b a r |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.50).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
             {
                 ExpansionCompressionEnabled = true
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
-            AssertAlignmentsEqual(alignments[0], CreateAlignment("| ca r t |", "| a  r t |"));
+            AssertAlignmentsEqual(alignments[0], CreateAlignment("| ca r t |", "| a r t |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.75).Within(0.01));
 
-            msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
+            paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
             {
                 ExpansionCompressionEnabled = true
             };
-            msa.Compute();
-            alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(2));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| st ar t |", "| t  a  n |"));
             Assert.That(alignments[0].NormalizedScore, Is.EqualTo(0.40).Within(0.01));
-            AssertAlignmentsEqual(alignments[1], CreateAlignment("| st a rt |", "| t  a n  |"));
+            AssertAlignmentsEqual(alignments[1], CreateAlignment("| st a rt |", "| t  a n |"));
             Assert.That(alignments[1].NormalizedScore, Is.EqualTo(0.40).Within(0.01));
         }
 
@@ -255,12 +255,12 @@ namespace SIL.Machine.SequenceAlignment
         public void ZeroMaxScore()
         {
             var scorer = new ZeroMaxScoreStringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
             {
                 ExpansionCompressionEnabled = true
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("| c a r |", "| b a r |"));
@@ -271,9 +271,9 @@ namespace SIL.Machine.SequenceAlignment
         public void GlobalAlign_EmptySequence()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars);
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars);
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("||", "||"));
@@ -284,12 +284,12 @@ namespace SIL.Machine.SequenceAlignment
         public void LocalAlign_EmptySequence()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
             {
                 Mode = AlignmentMode.Local
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("||", "||"));
@@ -300,12 +300,12 @@ namespace SIL.Machine.SequenceAlignment
         public void HalfLocalAlign_EmptySequence()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
             {
                 Mode = AlignmentMode.HalfLocal
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("||", "||"));
@@ -316,12 +316,12 @@ namespace SIL.Machine.SequenceAlignment
         public void SemiGlobalAlign_EmptySequence()
         {
             var scorer = new StringScorer();
-            var msa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
+            var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
             {
                 Mode = AlignmentMode.SemiGlobal
             };
-            msa.Compute();
-            Alignment<string, char>[] alignments = msa.GetAlignments().ToArray();
+            paa.Compute();
+            Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
 
             Assert.That(alignments.Length, Is.EqualTo(1));
             AssertAlignmentsEqual(alignments[0], CreateAlignment("||", "||"));

@@ -28,10 +28,10 @@ namespace SIL.Machine.Optimization
         /// <summary>
         /// Finds the minimum of the objective function with an intial pertubation
         /// </summary>
-        /// <param name="objectiveFunction">The objective function</param>
-        /// <param name="initialGuess">The intial guess</param>
-        /// <returns>The minimum point</returns>
-        public MinimizationResult FindMinimum(Func<Vector, double> objectiveFunction, IEnumerable<double> initialGuess)
+        public MinimizationResult FindMinimum(
+            Func<Vector, int, double> objectiveFunction,
+            IEnumerable<double> initialGuess
+        )
         {
             // confirm that we are in a position to commence
             if (objectiveFunction == null)
@@ -42,8 +42,6 @@ namespace SIL.Machine.Optimization
 
             // create the initial simplex
             var initialGuessVector = new Vector(initialGuess);
-            int numDimensions = initialGuessVector.Count;
-            int numVertices = numDimensions + 1;
             Vector[] vertices = InitializeVertices(initialGuessVector);
 
             int evaluationCount = 0;
@@ -67,16 +65,17 @@ namespace SIL.Machine.Optimization
                 // attempt a reflection of the simplex
                 double reflectionPointValue = TryToScaleSimplex(
                     -1.0,
-                    ref errorProfile,
+                    errorProfile,
                     vertices,
                     errorValues,
-                    objectiveFunction
+                    objectiveFunction,
+                    evaluationCount
                 );
                 ++evaluationCount;
                 if (reflectionPointValue <= errorValues[errorProfile.LowestIndex])
                 {
                     // it's better than the best point, so attempt an expansion of the simplex
-                    TryToScaleSimplex(2.0, ref errorProfile, vertices, errorValues, objectiveFunction);
+                    TryToScaleSimplex(2.0, errorProfile, vertices, errorValues, objectiveFunction, evaluationCount);
                     ++evaluationCount;
                 }
                 else if (reflectionPointValue >= errorValues[errorProfile.NextHighestIndex])
@@ -86,10 +85,11 @@ namespace SIL.Machine.Optimization
                     double currentWorst = errorValues[errorProfile.HighestIndex];
                     double contractionPointValue = TryToScaleSimplex(
                         0.5,
-                        ref errorProfile,
+                        errorProfile,
                         vertices,
                         errorValues,
-                        objectiveFunction
+                        objectiveFunction,
+                        evaluationCount
                     );
                     ++evaluationCount;
                     if (contractionPointValue >= currentWorst)
@@ -97,8 +97,8 @@ namespace SIL.Machine.Optimization
                         // that would be even worse, so let's try to contract uniformly towards the low point;
                         // don't bother to update the error profile, we'll do it at the start of the
                         // next iteration
-                        ShrinkSimplex(errorProfile, vertices, errorValues, objectiveFunction);
-                        evaluationCount += numVertices; // that required one function evaluation for each vertex; keep track
+                        ShrinkSimplex(errorProfile, vertices, errorValues, objectiveFunction, evaluationCount);
+                        evaluationCount += vertices.Length - 1; // that required one function evaluation for each vertex; keep track
                     }
                 }
                 // check to see if we have exceeded our alloted number of evaluations
@@ -123,11 +123,11 @@ namespace SIL.Machine.Optimization
         /// <param name="vertices"></param>
         /// <param name="objectiveFunction"></param>
         /// <returns></returns>
-        private static double[] InitializeErrorValues(Vector[] vertices, Func<Vector, double> objectiveFunction)
+        private static double[] InitializeErrorValues(Vector[] vertices, Func<Vector, int, double> objectiveFunction)
         {
             double[] errorValues = new double[vertices.Length];
             for (int i = 0; i < vertices.Length; i++)
-                errorValues[i] = objectiveFunction(vertices[i]);
+                errorValues[i] = objectiveFunction(vertices[i], -1);
             return errorValues;
         }
 
@@ -135,8 +135,6 @@ namespace SIL.Machine.Optimization
         /// Check whether the points in the error profile have so little range that we
         /// consider ourselves to have converged
         /// </summary>
-        /// <param name="errorValues"></param>
-        /// <returns></returns>
         private bool HasConverged(double[] errorValues)
         {
             double avg = errorValues.Average();
@@ -151,8 +149,6 @@ namespace SIL.Machine.Optimization
         /// <summary>
         /// Examine all error values to determine the ErrorProfile
         /// </summary>
-        /// <param name="errorValues"></param>
-        /// <returns></returns>
         private static ErrorProfile EvaluateSimplex(double[] errorValues)
         {
             ErrorProfile errorProfile = new ErrorProfile();
@@ -193,8 +189,6 @@ namespace SIL.Machine.Optimization
         /// Construct an initial simplex, given starting guesses for the constants, and
         /// initial step sizes for each dimension
         /// </summary>
-        /// <param name="initialGuess"></param>
-        /// <returns></returns>
         private Vector[] InitializeVertices(Vector initialGuess)
         {
             int numDimensions = initialGuess.Count;
@@ -222,18 +216,13 @@ namespace SIL.Machine.Optimization
         /// <summary>
         /// Test a scaling operation of the high point, and replace it if it is an improvement
         /// </summary>
-        /// <param name="scaleFactor"></param>
-        /// <param name="errorProfile"></param>
-        /// <param name="vertices"></param>
-        /// <param name="errorValues"></param>
-        /// <param name="objectiveFunction"></param>
-        /// <returns></returns>
         private static double TryToScaleSimplex(
             double scaleFactor,
-            ref ErrorProfile errorProfile,
+            ErrorProfile errorProfile,
             Vector[] vertices,
             double[] errorValues,
-            Func<Vector, double> objectiveFunction
+            Func<Vector, int, double> objectiveFunction,
+            int evaluationCount
         )
         {
             // find the centroid through which we will reflect
@@ -246,7 +235,7 @@ namespace SIL.Machine.Optimization
             Vector newPoint = centroidToHighPoint.Multiply(scaleFactor).Add(centroid);
 
             // evaluate the new point
-            double newErrorValue = objectiveFunction(newPoint);
+            double newErrorValue = objectiveFunction(newPoint, evaluationCount);
 
             // if it's better, replace the old high point
             if (newErrorValue < errorValues[errorProfile.HighestIndex])
@@ -261,15 +250,12 @@ namespace SIL.Machine.Optimization
         /// <summary>
         /// Contract the simplex uniformly around the lowest point
         /// </summary>
-        /// <param name="errorProfile"></param>
-        /// <param name="vertices"></param>
-        /// <param name="errorValues"></param>
-        /// <param name="objectiveFunction"></param>
         private static void ShrinkSimplex(
             ErrorProfile errorProfile,
             Vector[] vertices,
             double[] errorValues,
-            Func<Vector, double> objectiveFunction
+            Func<Vector, int, double> objectiveFunction,
+            int evaluationCount
         )
         {
             Vector lowestVertex = vertices[errorProfile.LowestIndex];
@@ -278,7 +264,7 @@ namespace SIL.Machine.Optimization
                 if (i != errorProfile.LowestIndex)
                 {
                     vertices[i] = vertices[i].Add(lowestVertex).Multiply(0.5);
-                    errorValues[i] = objectiveFunction(vertices[i]);
+                    errorValues[i] = objectiveFunction(vertices[i], evaluationCount);
                 }
             }
         }
@@ -286,9 +272,6 @@ namespace SIL.Machine.Optimization
         /// <summary>
         /// Compute the centroid of all points except the worst
         /// </summary>
-        /// <param name="vertices"></param>
-        /// <param name="errorProfile"></param>
-        /// <returns></returns>
         private static Vector ComputeCentroid(Vector[] vertices, ErrorProfile errorProfile)
         {
             int numVertices = vertices.Length;

@@ -32,6 +32,8 @@ namespace SIL.Machine.Statistics
 
         public static double ToLogSpace(double value)
         {
+            if (value == 0)
+                return Zero;
             return Math.Log(value);
         }
 
