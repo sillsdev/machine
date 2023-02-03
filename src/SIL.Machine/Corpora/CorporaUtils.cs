@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -42,11 +43,25 @@ namespace SIL.Machine.Corpora
             var sb = new StringBuilder();
             (int, string) startVerseNum = (-1, null);
             (int, string) prevVerseNum = (-1, null);
-            foreach ((int, string) verseNum in GetVerseNums(verse1).Union(GetVerseNums(verse2)).OrderBy(vn => vn.Item1))
+            foreach (
+                (int, string) verseNum in GetVerseNums(verse1)
+                    .Union(GetVerseNums(verse2))
+                    .OrderBy(vn => vn.Item1)
+                    .ThenBy(vn => vn.Item2)
+            )
             {
                 if (prevVerseNum.Item1 == -1)
                 {
                     startVerseNum = verseNum;
+                }
+                else if (
+                    prevVerseNum.Item1 == verseNum.Item1
+                    && prevVerseNum.Item1.ToString(CultureInfo.InvariantCulture) == prevVerseNum.Item2
+                    && verseNum.Item1.ToString(CultureInfo.InvariantCulture) != verseNum.Item2
+                )
+                {
+                    // the verse segment is subsumed by the previous full verse, so skip it
+                    continue;
                 }
                 else if (prevVerseNum.Item1 != verseNum.Item1 - 1)
                 {

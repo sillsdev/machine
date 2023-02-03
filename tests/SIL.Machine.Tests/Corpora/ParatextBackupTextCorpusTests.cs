@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
         public void Texts()
         {
             using var env = new TestEnvironment();
-            Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
+            Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "LEV", "1CH", "MAT", "MRK" }));
         }
 
         [Test]

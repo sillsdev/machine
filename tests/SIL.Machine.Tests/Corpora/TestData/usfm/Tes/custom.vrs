@@ -1,5 +1,6 @@
 # custom.vrs 
 
+LEV 14:56
 ROM 14:26
 REV 12:17
 TOB 5:22
@@ -24,3 +25,7 @@ BAR 1:22
 -ESG 4:6
 -ESG 9:5
 -ESG 9:30
+
+LEV 14:55 = LEV 14:55
+LEV 14:55 = LEV 14:56
+LEV 14:56 = LEV 14:57
