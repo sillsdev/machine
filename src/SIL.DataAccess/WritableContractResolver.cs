@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace SIL.Machine.WebApi.DataAccess;
+namespace SIL.DataAccess;
 
 public class WritableContractResolver : DefaultContractResolver
 {

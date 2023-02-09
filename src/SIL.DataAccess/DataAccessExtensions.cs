@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.WebApi.DataAccess;
+﻿using SIL.DataAccess;
+
+namespace SIL.DataAccess;
 
 public static class DataAccessExtensions
 {
@@ -78,7 +80,7 @@ public static class DataAccessExtensions
         CancellationToken cancellationToken = default
     ) where T : class, IEntity
     {
-        return (await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken)) != null;
+        return await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken) != null;
     }
 
     public static async Task CreateOrUpdateAsync<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)

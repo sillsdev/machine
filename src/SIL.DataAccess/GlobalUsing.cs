@@ -1,0 +1,15 @@
+﻿global using System.Collections;
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Linq.Expressions;
+global using System.Reflection;
+global using System.Text.Encodings.Web;
+global using System.Text.Json;
+global using System.Text.Json.Serialization;
+global using MongoDB.Bson;
+global using MongoDB.Bson.Serialization;
+global using MongoDB.Bson.Serialization.Conventions;
+global using MongoDB.Bson.Serialization.Serializers;
+global using MongoDB.Driver;
+global using MongoDB.Driver.Linq;
+global using Nito.AsyncEx;

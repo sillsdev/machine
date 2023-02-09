@@ -1,4 +1,4 @@
-namespace SIL.Machine.WebApi.DataAccess;
+namespace SIL.DataAccess;
 
 public static class ArrayPosition
 {

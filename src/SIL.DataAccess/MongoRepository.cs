@@ -1,4 +1,6 @@
-namespace SIL.Machine.WebApi.DataAccess;
+using SIL.DataAccess;
+
+namespace SIL.DataAccess;
 
 public class MongoRepository<T> : IRepository<T> where T : IEntity
 {

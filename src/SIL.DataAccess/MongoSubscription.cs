@@ -1,12 +1,11 @@
-﻿using SIL.ObjectModel;
+﻿namespace SIL.DataAccess;
 
-namespace SIL.Machine.WebApi.DataAccess;
-
-public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : IEntity
+public class MongoSubscription<T> : ISubscription<T> where T : IEntity
 {
     private readonly IMongoCollection<T> _entities;
     private readonly IMongoCollection<ChangeEvent> _changeEvents;
     private readonly Func<T, bool> _filter;
+    private bool disposedValue;
 
     public MongoSubscription(
         IMongoCollection<T> entities,
@@ -25,6 +24,8 @@ public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : I
     }
 
     public EntityChange<T> Change { get; private set; }
+
+    EntityChange<T> ISubscription<T>.Change => throw new NotImplementedException();
 
     public async Task WaitForChangeAsync(TimeSpan? timeout = default, CancellationToken cancellationToken = default)
     {
@@ -68,5 +69,27 @@ public class MongoSubscription<T> : DisposableBase, ISubscription<T> where T : I
             if (timeout.HasValue && DateTime.UtcNow - started >= timeout)
                 return;
         }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // TODO: dispose managed state (managed objects)
+            }
+
+            // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+            // TODO: set large fields to null
+            disposedValue = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

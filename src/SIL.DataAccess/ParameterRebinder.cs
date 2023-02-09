@@ -1,4 +1,4 @@
-namespace SIL.Machine.WebApi.Utils;
+namespace SIL.DataAccess;
 
 internal class ParameterRebinder : System.Linq.Expressions.ExpressionVisitor
 {

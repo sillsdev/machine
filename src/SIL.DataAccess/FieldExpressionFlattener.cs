@@ -1,4 +1,4 @@
-namespace SIL.Machine.WebApi.Utils;
+namespace SIL.DataAccess;
 
 internal class FieldExpressionFlattener : System.Linq.Expressions.ExpressionVisitor
 {

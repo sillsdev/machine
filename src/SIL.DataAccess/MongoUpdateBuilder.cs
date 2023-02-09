@@ -1,4 +1,4 @@
-namespace SIL.Machine.WebApi.DataAccess;
+namespace SIL.DataAccess;
 
 public class MongoUpdateBuilder<T> : IUpdateBuilder<T> where T : IEntity
 {

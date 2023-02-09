@@ -1,4 +1,4 @@
-﻿namespace SIL.Machine.WebApi.Utils;
+﻿namespace SIL.DataAccess;
 
 public sealed class CustomEnumConverterFactory : JsonConverterFactory
 {

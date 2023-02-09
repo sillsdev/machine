@@ -1,4 +1,4 @@
-namespace SIL.Machine.WebApi.DataAccess;
+namespace SIL.DataAccess;
 
 public interface IUpdateBuilder<T> where T : IEntity
 {
