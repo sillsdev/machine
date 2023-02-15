@@ -1,0 +1,16 @@
+﻿global using Hangfire;
+global using Hangfire.MemoryStorage;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using NSubstitute;
+global using NSubstitute.ClearExtensions;
+global using NSubstitute.ReceivedExtensions;
+global using NUnit.Framework;
+global using SIL.DataAccess;
+global using SIL.Machine.Annotations;
+global using SIL.Machine.AspNetCore.Configuration;
+global using SIL.Machine.AspNetCore.Models;
+global using SIL.Machine.Corpora;
+global using SIL.Machine.Translation;
+global using SIL.Machine.Utils;
+global using SIL.ObjectModel;

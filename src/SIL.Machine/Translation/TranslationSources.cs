@@ -3,7 +3,7 @@
 namespace SIL.Machine.Translation
 {
     [Flags]
-    public enum TranslationSources
+    public enum TranslationSources : uint
     {
         None = 0x0,
         Smt = 0x1,

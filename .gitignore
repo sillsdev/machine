@@ -46,6 +46,6 @@ launchSettings.json
 thot-new-model.zip
 *.tgz
 out/
-build/
+src/sentencepiece4c/build/
 !samples/**/release
 **/*.feature.cs

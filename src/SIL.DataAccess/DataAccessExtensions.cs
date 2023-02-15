@@ -1,6 +1,4 @@
-﻿using SIL.DataAccess;
-
-namespace SIL.DataAccess;
+﻿namespace SIL.DataAccess;
 
 public static class DataAccessExtensions
 {
@@ -83,19 +81,19 @@ public static class DataAccessExtensions
         return await repo.DeleteAsync(e => e.Id == entity.Id, cancellationToken) != null;
     }
 
-    public static async Task CreateOrUpdateAsync<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
+    public static void CreateOrUpdate<T>(this IMongoIndexManager<T> indexes, CreateIndexModel<T> indexModel)
     {
         try
         {
-            await indexes.CreateOneAsync(indexModel);
+            indexes.CreateOne(indexModel);
         }
         catch (MongoCommandException ex)
         {
             if (ex.CodeName == "IndexOptionsConflict")
             {
                 string name = ex.Command["indexes"][0]["name"].AsString;
-                await indexes.DropOneAsync(name);
-                await indexes.CreateOneAsync(indexModel);
+                indexes.DropOne(name);
+                indexes.CreateOne(indexModel);
             }
             else
             {

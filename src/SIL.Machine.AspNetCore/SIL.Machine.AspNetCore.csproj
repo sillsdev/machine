@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Description>An ASP.NET Core web API middleware for the Machine library.</Description>
+		<NoWarn>1591</NoWarn>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<Import Project="../AssemblyInfo.props" />
+
+	<ItemGroup>
+		<None Remove="thot-new-model.zip" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="thot-new-model.zip">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.AspNetCore" Version="2.51.0" />
+		<PackageReference Include="HangFire" Version="1.7.33" />
+		<PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
+		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.14" />
+		<PackageReference Include="Stowage" Version="1.2.5" />
+		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Serval.Grpc\Serval.Grpc.csproj" />
+		<ProjectReference Include="..\SIL.DataAccess\SIL.DataAccess.csproj" />
+		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+		<ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
+		<ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
+	</ItemGroup>
+
+	<Target Name="ZipThotNewModel" BeforeTargets="BeforeBuild">
+		<ZipDirectory SourceDirectory="data\thot-new-model" DestinationFile="thot-new-model.zip" Overwrite="true" />
+	</Target>
+
+</Project>

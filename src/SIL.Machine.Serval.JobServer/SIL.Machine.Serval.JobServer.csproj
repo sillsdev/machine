@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aa9e7440-5a04-4de6-ba51-bab9ef4a62e1</UserSecretsId>
+  </PropertyGroup>
+
+	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
+	</Target>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,105 @@
+﻿syntax = "proto3";
+
+package serval.engine.translation.v1;
+
+import "google/protobuf/empty.proto";
+
+service TranslationService {
+	rpc Create(CreateRequest) returns (google.protobuf.Empty);
+	rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+	rpc Translate(TranslateRequest) returns (TranslateResponse);
+	rpc GetWordGraph(GetWordGraphRequest) returns (GetWordGraphResponse);
+	rpc TrainSegmentPair(TrainSegmentPairRequest) returns (google.protobuf.Empty);
+	rpc StartBuild(StartBuildRequest) returns (google.protobuf.Empty);
+	rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+}
+
+message CreateRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+}
+
+message DeleteRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+}
+
+message TranslateRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+	string segment = 3;
+	int32 n = 4;
+}
+
+message TranslateResponse {
+	repeated TranslationResult results = 1;
+}
+
+message GetWordGraphRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+	string segment = 3;
+}
+
+message GetWordGraphResponse {
+	WordGraph word_graph = 1;
+}
+
+message TrainSegmentPairRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+	string source_segment = 3;
+	string target_segment = 4;
+	bool sentence_start = 5;
+}
+
+message StartBuildRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+	string build_id = 3;
+}
+
+message CancelBuildRequest {
+	string engine_type = 1;
+	string engine_id = 2;
+}
+
+message AlignedWordPair {
+	int32 source_index = 1;
+	int32 target_index = 2;
+}
+
+message Phrase {
+	int32 source_segment_start = 1;
+	int32 source_segment_end = 2;
+	int32 target_segment_cut = 3;
+	double confidence = 4;
+}
+
+message TranslationResult {
+	string translation = 1;
+	repeated string tokens = 2;
+	repeated double confidences = 3;
+	repeated uint32 sources = 4;
+	repeated AlignedWordPair aligned_word_pairs = 5;
+	repeated Phrase phrases = 6;
+}
+
+message WordGraphArc {
+	int32 prev_state = 1;
+	int32 next_state = 2;
+	double score = 3;
+	repeated string tokens = 4;
+	repeated double confidences = 5;
+	int32 source_segment_start = 6;
+	int32 source_segment_end = 7;
+	repeated AlignedWordPair aligned_word_pairs = 8;
+	repeated uint32 sources = 9;
+}
+
+message WordGraph {
+	double initial_state_score = 1;
+	repeated int32 final_states = 2;
+	repeated WordGraphArc arcs = 3;
+}
+

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package serval.platform.build_status.v1;
+
+import "google/protobuf/empty.proto";
+
+service BuildStatusService {
+    rpc UpdateBuildStatus(UpdateBuildStatusRequest) returns (google.protobuf.Empty);
+    rpc BuildStarted(BuildStartedRequest) returns (google.protobuf.Empty);
+    rpc BuildCompleted(BuildCompletedRequest) returns (google.protobuf.Empty);
+    rpc BuildCanceled(BuildCanceledRequest) returns (google.protobuf.Empty);
+    rpc BuildFaulted(BuildFaultedRequest) returns (google.protobuf.Empty);
+    rpc BuildRestarting(BuildRestartingRequest) returns (google.protobuf.Empty);
+}
+
+message UpdateBuildStatusRequest {
+    string build_id = 1;
+    int32 step = 2;
+    optional double percent_completed = 3;
+    optional string message = 4;
+}
+
+message BuildStartedRequest {
+    string build_id = 1;
+}
+
+message BuildCompletedRequest {
+    string build_id = 1;
+    int32 corpus_size = 2;
+    double confidence = 3;
+}
+
+message BuildCanceledRequest {
+    string build_id = 1;
+}
+
+message BuildFaultedRequest {
+    string build_id = 1;
+    string message = 2;
+}
+
+message BuildRestartingRequest {
+    string build_id = 1;
+}

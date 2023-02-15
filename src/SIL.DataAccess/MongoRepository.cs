@@ -1,16 +1,14 @@
-using SIL.DataAccess;
-
 namespace SIL.DataAccess;
 
 public class MongoRepository<T> : IRepository<T> where T : IEntity
 {
     private readonly IMongoCollection<T> _collection;
-    private readonly Func<IMongoCollection<T>, Task>? _init;
+    private readonly Action<IMongoCollection<T>>? _init;
     private readonly IMongoCollection<ChangeEvent>? _changeEvents;
 
     public MongoRepository(
         IMongoCollection<T> collection,
-        Func<IMongoCollection<T>, Task>? init = null,
+        Action<IMongoCollection<T>>? init = null,
         bool isSubscribable = false
     )
     {
@@ -23,29 +21,25 @@ public class MongoRepository<T> : IRepository<T> where T : IEntity
         }
     }
 
-    public async Task InitAsync()
+    public void Init()
     {
         if (_changeEvents is not null)
         {
             string changeEventsName = _changeEvents.CollectionNamespace.CollectionName;
             var filter = new BsonDocument("name", changeEventsName);
-            if (
-                !await _changeEvents.Database
-                    .ListCollectionNames(new ListCollectionNamesOptions { Filter = filter })
-                    .AnyAsync()
-            )
+            if (!_changeEvents.Database.ListCollectionNames(new ListCollectionNamesOptions { Filter = filter }).Any())
             {
-                await _changeEvents.Database.CreateCollectionAsync(
+                _changeEvents.Database.CreateCollection(
                     changeEventsName,
                     new CreateCollectionOptions { Capped = true, MaxSize = 100 * 1024 }
                 );
             }
-            await _changeEvents.Indexes.CreateOrUpdateAsync(
+            _changeEvents.Indexes.CreateOrUpdate(
                 new CreateIndexModel<ChangeEvent>(Builders<ChangeEvent>.IndexKeys.Ascending(ce => ce.EntityRef))
             );
         }
         if (_init is not null)
-            await _init(_collection);
+            _init(_collection);
     }
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)

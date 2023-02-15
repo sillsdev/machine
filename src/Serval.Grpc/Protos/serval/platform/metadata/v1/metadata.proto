@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package serval.platform.metadata.v1;
+
+import "google/protobuf/empty.proto";
+
+service MetadataService {
+    rpc GetTranslationEngine(GetTranslationEngineRequest) returns (GetTranslationEngineResponse);
+    rpc IncrementTranslationEngineCorpusSize(IncrementTranslationEngineCorpusSizeRequest) returns (google.protobuf.Empty);
+    rpc GetParallelTextCorpora(GetParallelTextCorporaRequest) returns (GetParallelTextCorporaResponse);
+}
+
+message GetTranslationEngineRequest {
+    string engine_id = 1;
+}
+
+message GetTranslationEngineResponse {
+    string engine_type = 1;
+    string engine_id = 2;
+    string name = 3;
+    string source_language_tag = 4;
+    string target_language_tag = 5;
+}
+
+message IncrementTranslationEngineCorpusSizeRequest {
+    string engine_id = 1;
+    int32 count = 2;
+}
+
+message GetParallelTextCorporaRequest {
+    string engine_id = 1;
+}
+
+message GetParallelTextCorporaResponse {
+    repeated ParallelTextCorpus corpora = 1;
+}
+
+message ParallelTextCorpus {
+    string corpus_id = 1;
+    bool pretranslate = 2;
+    optional Corpus source_corpus = 3;
+    optional Corpus target_corpus = 4;
+}
+
+enum CorpusType {
+    CORPUS_TYPE_TEXT = 0;
+}
+
+enum FileFormat {
+    FILE_FORMAT_TEXT = 0;
+    FILE_FORMAT_PARATEXT = 1;
+}
+
+message Corpus {
+    string name = 1;
+    CorpusType type = 2;
+    FileFormat format = 3;
+    repeated DataFile files = 4;
+}
+
+message DataFile {
+    string language_tag = 1;
+    string name = 2;
+    string filename = 3;
+    optional string text_id = 4;
+}
