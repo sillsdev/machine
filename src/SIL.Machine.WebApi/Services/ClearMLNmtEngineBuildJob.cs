@@ -265,7 +265,8 @@ public class ClearMLNmtEngineBuildJob
         {
             foreach (TranslationEngineCorpus corpus in engine.Corpora)
             {
-                if (corpus.Pretranslate == false) continue;
+                if (corpus.Pretranslate == false)
+                    continue;
 
                 ITextCorpus sourceCorpus =
                     await _corpusService.CreateTextCorpusAsync(corpus.CorpusRef, engine.SourceLanguageTag)
