@@ -116,7 +116,10 @@ namespace SIL.Machine.Corpora
                                 ParallelTextRow row in CreateSourceRows(
                                     rangeInfo,
                                     srcEnumerator.Current,
-                                    targetSameRefRows
+                                    targetSameRefRows,
+                                    forceTargetInRange: srcEnumerator.Current.TextId == trgEnumerator.Current.TextId
+                                        && !trgEnumerator.Current.IsRangeStart
+                                        && trgEnumerator.Current.IsInRange
                                 )
                             )
                             {
@@ -151,7 +154,10 @@ namespace SIL.Machine.Corpora
                                 ParallelTextRow row in CreateTargetRows(
                                     rangeInfo,
                                     trgEnumerator.Current,
-                                    sourceSameRefRows
+                                    sourceSameRefRows,
+                                    forceSourceInRange: trgEnumerator.Current.TextId == srcEnumerator.Current.TextId
+                                        && !srcEnumerator.Current.IsRangeStart
+                                        && srcEnumerator.Current.IsInRange
                                 )
                             )
                             {
@@ -326,7 +332,9 @@ namespace SIL.Machine.Corpora
             RangeInfo rangeInfo,
             TextRow srcRow,
             TextRow trgRow,
-            IReadOnlyCollection<AlignedWordPair> alignedWordPairs = null
+            IReadOnlyCollection<AlignedWordPair> alignedWordPairs = null,
+            bool forceSourceInRange = false,
+            bool forceTargetInRange = false
         )
         {
             if (rangeInfo.IsInRange)
@@ -342,13 +350,26 @@ namespace SIL.Machine.Corpora
 
             var sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
             var targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
+
+            TextRowFlags sourceFlags;
+            if (srcRow == null)
+                sourceFlags = forceSourceInRange ? TextRowFlags.InRange : TextRowFlags.None;
+            else
+                sourceFlags = srcRow.Flags;
+
+            TextRowFlags targetFlags;
+            if (trgRow == null)
+                targetFlags = forceTargetInRange ? TextRowFlags.InRange : TextRowFlags.None;
+            else
+                targetFlags = trgRow.Flags;
+
             yield return new ParallelTextRow(textId, sourceRefs, targetRefs)
             {
                 SourceSegment = srcRow != null ? srcRow.Segment : Array.Empty<string>(),
                 TargetSegment = trgRow != null ? trgRow.Segment : Array.Empty<string>(),
                 AlignedWordPairs = alignedWordPairs,
-                SourceFlags = srcRow?.Flags ?? TextRowFlags.None,
-                TargetFlags = trgRow?.Flags ?? TextRowFlags.None
+                SourceFlags = sourceFlags,
+                TargetFlags = targetFlags
             };
         }
 
@@ -363,7 +384,8 @@ namespace SIL.Machine.Corpora
         private IEnumerable<ParallelTextRow> CreateSourceRows(
             RangeInfo rangeInfo,
             TextRow sourceRow,
-            List<TextRow> targetSameRefRows
+            List<TextRow> targetSameRefRows,
+            bool forceTargetInRange = false
         )
         {
             if (CheckSameRefRows(targetSameRefRows, sourceRow))
@@ -376,7 +398,14 @@ namespace SIL.Machine.Corpora
             }
             else if (AllSourceRows)
             {
-                foreach (ParallelTextRow row in CreateRows(rangeInfo, sourceRow, null))
+                foreach (
+                    ParallelTextRow row in CreateRows(
+                        rangeInfo,
+                        sourceRow,
+                        null,
+                        forceTargetInRange: forceTargetInRange
+                    )
+                )
                     yield return row;
             }
         }
@@ -384,7 +413,8 @@ namespace SIL.Machine.Corpora
         private IEnumerable<ParallelTextRow> CreateTargetRows(
             RangeInfo rangeInfo,
             TextRow targetRow,
-            List<TextRow> sourceSameRefRows
+            List<TextRow> sourceSameRefRows,
+            bool forceSourceInRange = false
         )
         {
             if (CheckSameRefRows(sourceSameRefRows, targetRow))
@@ -397,7 +427,14 @@ namespace SIL.Machine.Corpora
             }
             else if (AllTargetRows)
             {
-                foreach (ParallelTextRow row in CreateRows(rangeInfo, null, targetRow))
+                foreach (
+                    ParallelTextRow row in CreateRows(
+                        rangeInfo,
+                        null,
+                        targetRow,
+                        forceSourceInRange: forceSourceInRange
+                    )
+                )
                     yield return row;
             }
         }

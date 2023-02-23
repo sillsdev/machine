@@ -276,8 +276,8 @@ namespace SIL.Machine.Corpora
                 )
                 {
                     yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef);
+                    curTrgLineRange = curTrgLineRange || curTrgLine.Length > 0;
                     curTrgLine = new StringBuilder();
-                    curTrgLineRange = true;
                     curTrgRef = null;
                 }
 
@@ -304,12 +304,15 @@ namespace SIL.Machine.Corpora
                     }
                     if (startRef.Chapter == endRef.Chapter)
                     {
-                        curTrgRef = new VerseRef(
-                            startRef.Book,
-                            startRef.Chapter,
-                            $"{startRef.VerseNum}-{endRef.VerseNum}",
-                            startRef.Versification
-                        );
+                        if (startRef.VerseNum != endRef.VerseNum)
+                        {
+                            curTrgRef = new VerseRef(
+                                startRef.Book,
+                                startRef.Chapter,
+                                $"{startRef.VerseNum}-{endRef.VerseNum}",
+                                startRef.Versification
+                            );
+                        }
                     }
                     else
                     {

@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
 
             IText text = corpus["MAT"];
             TextRow[] rows = text.GetRows().ToArray();
-            Assert.That(rows.Length, Is.EqualTo(17));
+            Assert.That(rows.Length, Is.EqualTo(19));
 
             Assert.That(rows[0].Ref, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
             Assert.That(rows[0].Text, Is.EqualTo("Chapter one, verse one."));
@@ -67,7 +67,7 @@ namespace SIL.Machine.Corpora
 
             IText text = corpus["MAT"];
             TextRow[] rows = text.GetRows().ToArray();
-            Assert.That(rows.Length, Is.EqualTo(17));
+            Assert.That(rows.Length, Is.EqualTo(19));
 
             Assert.That(rows[3].Ref, Is.EqualTo(new VerseRef("MAT 1:4", corpus.Versification)));
             Assert.That(rows[3].Text, Is.EqualTo("Chapter one, verse four,"));
@@ -100,7 +100,7 @@ namespace SIL.Machine.Corpora
 
             IText text = corpus["MAT"];
             TextRow[] rows = text.GetRows().ToArray();
-            Assert.That(rows.Length, Is.EqualTo(17));
+            Assert.That(rows.Length, Is.EqualTo(19));
 
             Assert.That(rows[0].Ref, Is.EqualTo(new VerseRef("MAT 1:1", corpus.Versification)));
             Assert.That(
