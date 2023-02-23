@@ -1,0 +1,6 @@
+externalHost: machine-api.org
+enableTls: true
+namespace: serval
+localVolume: false
+lokiTenent: nlp-tenant
+lokiUrl: http://loki-gateway.loki.svc.cluster.local

@@ -1,0 +1,15 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: Output
+metadata:
+  name: nlp-loki-output
+  namespace: nlp
+spec:
+  loki:
+    buffer:
+      flush_interval: 10s
+      flush_mode: interval
+    configure_kubernetes_labels: true
+    tenant: nlp-tenant
+    url: http://loki-gateway.loki.svc.cluster.local
+status:
+  active: true
