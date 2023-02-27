@@ -30,13 +30,13 @@
 		<PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.14" />
+		<PackageReference Include="Serval.Grpc" Version="0.1.0" />
+		<PackageReference Include="SIL.DataAccess" Version="0.1.0" />
 		<PackageReference Include="Stowage" Version="1.2.5" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Serval.Grpc\Serval.Grpc.csproj" />
-		<ProjectReference Include="..\SIL.DataAccess\SIL.DataAccess.csproj" />
 		<ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
 		<ProjectReference Include="..\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj" />
 		<ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />

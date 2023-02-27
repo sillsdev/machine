@@ -3,8 +3,6 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<Description>A natural language processing library for .NET that is focused on providing tools for resource-poor languages.</Description>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<NoWarn>1591</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />
