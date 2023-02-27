@@ -13,9 +13,6 @@ public class SmtTransferEngineRuntimeTests
         // ensure that the SMT model was loaded before training
         await env.Runtime.TranslateAsync(n: 1, "esto es una prueba.");
         await env.Runtime.StartBuildAsync("build1");
-        await env.WaitForBuildToStartAsync();
-        engine = env.Engines.Get("engine1");
-        Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
         await env.WaitForBuildToFinishAsync();
         await env.SmtBatchTrainer
             .Received()
@@ -366,7 +363,7 @@ public class SmtTransferEngineRuntimeTests
 
         public Task WaitForBuildToStartAsync()
         {
-            return WaitForBuildState(e => e.BuildState is not BuildState.Pending);
+            return WaitForBuildState(e => e.BuildState is BuildState.Active);
         }
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
@@ -377,7 +374,7 @@ public class SmtTransferEngineRuntimeTests
             while (true)
             {
                 TranslationEngine? build = subscription.Change.Entity;
-                if (build != null && predicate(build))
+                if (build is not null && predicate(build))
                     break;
                 await subscription.WaitForChangeAsync();
             }

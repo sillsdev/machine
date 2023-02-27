@@ -128,7 +128,7 @@ public class ClearMLNmtEngineRuntimeTests
 
         public Task WaitForBuildToStartAsync()
         {
-            return WaitForBuildState(e => e.BuildState is not BuildState.Pending);
+            return WaitForBuildState(e => e.BuildState is BuildState.Active);
         }
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
@@ -139,7 +139,7 @@ public class ClearMLNmtEngineRuntimeTests
             while (true)
             {
                 TranslationEngine? build = subscription.Change.Entity;
-                if (build != null && predicate(build))
+                if (build is not null && predicate(build))
                     break;
                 await subscription.WaitForChangeAsync();
             }
