@@ -1,4 +1,3 @@
-using System;
 using NUnit.Framework;
 
 namespace SIL.Machine.Statistics
@@ -6,7 +5,7 @@ namespace SIL.Machine.Statistics
     [TestFixture]
     public class SimpleGoodTuringProbabilityDistributionTests
     {
-        private FrequencyDistribution<string> _fd;
+        private FrequencyDistribution<string> _fd = default!;
 
         [OneTimeSetUp]
         public void FixtureSetUp()

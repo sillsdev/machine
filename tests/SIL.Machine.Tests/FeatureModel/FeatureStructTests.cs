@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using NUnit.Framework;
 using SIL.ObjectModel;
 
@@ -11,22 +9,20 @@ namespace SIL.Machine.FeatureModel
         [Test]
         public void Unify()
         {
-            Func<FeatureStruct, FeatureStruct, FeatureStruct> resultsSelector = (fs1, fs2) =>
+            Func<FeatureStruct, FeatureStruct, FeatureStruct?> resultsSelector = (fs1, fs2) =>
             {
-                FeatureStruct res;
-                return fs1.Unify(fs2, out res) ? res : null;
+                return fs1.Unify(fs2, out FeatureStruct res) ? res : null;
             };
-            Func<FeatureStruct, FeatureStruct, VariableBindings, FeatureStruct> varResultsSelector = (
+            Func<FeatureStruct, FeatureStruct, VariableBindings, FeatureStruct?> varResultsSelector = (
                 fs1,
                 fs2,
                 varBindings
             ) =>
             {
-                FeatureStruct res;
-                return fs1.Unify(fs2, varBindings, out res) ? res : null;
+                return fs1.Unify(fs2, varBindings, out FeatureStruct res) ? res : null;
             };
             TestBinaryOperation(
-                FreezableEqualityComparer<FeatureStruct>.Default,
+                FreezableEqualityComparer<FeatureStruct?>.Default,
                 resultsSelector,
                 varResultsSelector,
                 // simple

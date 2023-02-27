@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using NSubstitute;
 using NUnit.Framework;
-using NSubstitute;
 using SIL.Machine.Annotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
@@ -604,9 +601,9 @@ namespace SIL.Machine.Translation
                 Engine.GetWordGraphAsync(SegmentEqual(SourceSegment)).Returns(Task.FromResult(wordGraph));
             }
 
-            public Task<InteractiveTranslator> CreateTranslatorAsync(IReadOnlyList<string> segment = null)
+            public Task<InteractiveTranslator> CreateTranslatorAsync(IReadOnlyList<string>? segment = null)
             {
-                if (segment == null)
+                if (segment is null)
                     segment = SourceSegment;
 
                 return InteractiveTranslator.CreateAsync(_ecm, Engine, segment);

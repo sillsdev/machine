@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
@@ -10,7 +7,7 @@ namespace SIL.Machine.FiniteState
     [TestFixture]
     public class FstTests : PhoneticTestsBase
     {
-        private PhoneticFstOperations _operations;
+        private PhoneticFstOperations _operations = default!;
 
         public override void FixtureSetUp()
         {

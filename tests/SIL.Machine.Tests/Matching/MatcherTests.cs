@@ -25,38 +25,38 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 1), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 1)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(10, 11), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(10, 11)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(17, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 1), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(13, 14), matches[7].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[16].Range);
+            Assert.That(matches.Length, Is.EqualTo(17));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 1)));
+            Assert.That(matches[7].Range, Is.EqualTo(Range<int>.Create(13, 14)));
+            Assert.That(matches[16].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(13, matches.Length);
-            Assert.AreEqual(Range<int>.Create(10, 11), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(17, 18), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[12].Range);
+            Assert.That(matches.Length, Is.EqualTo(13));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(10, 11)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(17, 18)));
+            Assert.That(matches[12].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(17, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 1), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(13, 14), matches[7].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[16].Range);
+            Assert.That(matches.Length, Is.EqualTo(17));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 1)));
+            Assert.That(matches[7].Range, Is.EqualTo(Range<int>.Create(13, 14)));
+            Assert.That(matches[16].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(13, matches.Length);
-            Assert.AreEqual(Range<int>.Create(10, 11), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(17, 18), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[12].Range);
+            Assert.That(matches.Length, Is.EqualTo(13));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(10, 11)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(17, 18)));
+            Assert.That(matches[12].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -80,38 +80,38 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(1, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(1, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(15, 17), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(15, 17)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(20, 22), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[2].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(20, 22)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(20, 22), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[2].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(20, 22)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -134,38 +134,38 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(1, 2), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(1, 2)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(8, 9), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(8, 9)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(16, matches.Length);
-            Assert.AreEqual(Range<int>.Create(1, 2), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(13, 14), matches[6].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[15].Range);
+            Assert.That(matches.Length, Is.EqualTo(16));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(1, 2)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(13, 14)));
+            Assert.That(matches[15].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(13, matches.Length);
-            Assert.AreEqual(Range<int>.Create(8, 9), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 16), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[12].Range);
+            Assert.That(matches.Length, Is.EqualTo(13));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(8, 9)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(15, 16)));
+            Assert.That(matches[12].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(16, matches.Length);
-            Assert.AreEqual(Range<int>.Create(1, 2), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(13, 14), matches[6].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[15].Range);
+            Assert.That(matches.Length, Is.EqualTo(16));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(1, 2)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(13, 14)));
+            Assert.That(matches[15].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(13, matches.Length);
-            Assert.AreEqual(Range<int>.Create(8, 9), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 16), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[12].Range);
+            Assert.That(matches.Length, Is.EqualTo(13));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(8, 9)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(15, 16)));
+            Assert.That(matches[12].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -194,32 +194,32 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 7), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 7)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 18), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 18)));
             match = matcher.Match(sentence, 10);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 7), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 18), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 7)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 18)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(1, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 18), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(1));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 18)));
             matches = matcher.Matches(sentence, 10).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 7), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 18), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 7)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 18)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(1, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 18), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(1));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 18)));
             matches = matcher.AllMatches(sentence, 10).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -241,38 +241,38 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(15, 17), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(15, 17)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[2].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(20, 22), matches[4].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(20, 22)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(20, 22), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(20, 22)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -306,22 +306,22 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 14), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 14)));
             match = matcher.Match(sentence, 7);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(1, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 14), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(1));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 14)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 14), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 7), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 14)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 7)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
@@ -346,22 +346,22 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 7), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 7)));
             match = matcher.Match(sentence, 7);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(1, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 7), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(1));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 7)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 7), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 14), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 7)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 14)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -383,45 +383,45 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 14), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 14)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 14), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 14)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(30, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(2, 3), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(4, 6), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(4, 5), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(16, 17), matches[14].Range);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[29].Range);
+            Assert.That(matches.Length, Is.EqualTo(30));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(2, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(4, 6)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(4, 5)));
+            Assert.That(matches[14].Range, Is.EqualTo(Range<int>.Create(16, 17)));
+            Assert.That(matches[29].Range, Is.EqualTo(Range<int>.Create(26, 27)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(24, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 14), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 13), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[23].Range);
+            Assert.That(matches.Length, Is.EqualTo(24));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 14)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 13)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[23].Range, Is.EqualTo(Range<int>.Create(26, 27)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -446,44 +446,44 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 10), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 10)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(4, 5), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[5].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(4, 5)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 10), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 27), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 10)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 27)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(30, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(2, 3), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(4, 5), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(4, 6), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(26, 29), matches[29].Range);
+            Assert.That(matches.Length, Is.EqualTo(30));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(2, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(4, 5)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(4, 6)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[29].Range, Is.EqualTo(Range<int>.Create(26, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(24, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 10), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 11), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(26, 29), matches[23].Range);
+            Assert.That(matches.Length, Is.EqualTo(24));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 10)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 11)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[23].Range, Is.EqualTo(Range<int>.Create(26, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -505,44 +505,44 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(15, 18)));
             match = matcher.Match(sentence, 16);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(19, 24)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[2].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 16).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(7, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(20, 24), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(20, 23), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[6].Range);
+            Assert.That(matches.Length, Is.EqualTo(7));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(20, 24)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(20, 23)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(25, 28)));
             matches = matcher.AllMatches(sentence, 16).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(20, 24), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(20, 23), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[5].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(20, 24)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(20, 23)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(25, 29)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 28)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -567,44 +567,44 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(15, 18)));
             match = matcher.Match(sentence, 16);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(19, 23), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(19, 23)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[2].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(25, 28)));
             matches = matcher.Matches(sentence, 16).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(25, 28)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(7, matches.Length);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(20, 23), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(20, 24), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[6].Range);
+            Assert.That(matches.Length, Is.EqualTo(7));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(20, 23)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(20, 24)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 28)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.AllMatches(sentence, 16).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(20, 23), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(20, 24), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(25, 28), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(20, 23)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(20, 24)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(25, 28)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -626,45 +626,45 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 12), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 12)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(9, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[8].Range);
+            Assert.That(matches.Length, Is.EqualTo(9));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[8].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(7, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[6].Range);
+            Assert.That(matches.Length, Is.EqualTo(7));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(51, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(0, 1), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(1, 2), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(2, 3), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(9, 10), matches[14].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[50].Range);
+            Assert.That(matches.Length, Is.EqualTo(51));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 2)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(0, 1)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(1, 2)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(2, 3)));
+            Assert.That(matches[14].Range, Is.EqualTo(Range<int>.Create(9, 10)));
+            Assert.That(matches[50].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(39, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 11), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(9, 10), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(13, 14), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(28, 29), matches[38].Range);
+            Assert.That(matches.Length, Is.EqualTo(39));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 11)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 10)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(13, 14)));
+            Assert.That(matches[38].Range, Is.EqualTo(Range<int>.Create(28, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -689,44 +689,44 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 13), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 13)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(15, 18)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 13), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[3].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 13)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(33, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(4, 6), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(12, 14), matches[14].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[32].Range);
+            Assert.That(matches.Length, Is.EqualTo(33));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 2)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(4, 6)));
+            Assert.That(matches[14].Range, Is.EqualTo(Range<int>.Create(12, 14)));
+            Assert.That(matches[32].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(27, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 13), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(9, 11), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(16, 18), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[26].Range);
+            Assert.That(matches.Length, Is.EqualTo(27));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 13)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 11)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(16, 18)));
+            Assert.That(matches[26].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
@@ -742,44 +742,44 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 2), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 2)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 11), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 11)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(9, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(15, 17), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[8].Range);
+            Assert.That(matches.Length, Is.EqualTo(9));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 2)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(15, 17)));
+            Assert.That(matches[8].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(7, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 11), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(19, 21), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[6].Range);
+            Assert.That(matches.Length, Is.EqualTo(7));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 11)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(19, 21)));
+            Assert.That(matches[6].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(33, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(4, 6), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(12, 14), matches[14].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[32].Range);
+            Assert.That(matches.Length, Is.EqualTo(33));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 2)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(4, 6)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[14].Range, Is.EqualTo(Range<int>.Create(12, 14)));
+            Assert.That(matches[32].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(27, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 11), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(9, 13), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(16, 18), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[26].Range);
+            Assert.That(matches.Length, Is.EqualTo(27));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 11)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 13)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(16, 18)));
+            Assert.That(matches[26].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -809,77 +809,77 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
             Assert.IsTrue(match.GroupCaptures["onset"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 2), match.GroupCaptures["onset"].Range);
+            Assert.That(match.GroupCaptures["onset"].Range, Is.EqualTo(Range<int>.Create(0, 2)));
             Assert.IsFalse(match.GroupCaptures["coda"].Success);
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 14), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 14)));
             Assert.IsFalse(match.GroupCaptures["onset"].Success);
             Assert.IsTrue(match.GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(10, 14), match.GroupCaptures["coda"].Range);
+            Assert.That(match.GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(10, 14)));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(4, 7)));
             Assert.IsFalse(matches[1].GroupCaptures["onset"].Success);
             Assert.IsTrue(matches[1].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(5, 7), matches[1].GroupCaptures["coda"].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
+            Assert.That(matches[1].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(5, 7)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             Assert.IsTrue(matches[5].GroupCaptures["onset"].Success);
-            Assert.AreEqual(Range<int>.Create(25, 26), matches[5].GroupCaptures["onset"].Range);
+            Assert.That(matches[5].GroupCaptures["onset"].Range, Is.EqualTo(Range<int>.Create(25, 26)));
             Assert.IsTrue(matches[5].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(27, 29), matches[5].GroupCaptures["coda"].Range);
+            Assert.That(matches[5].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(27, 29)));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 14), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(4));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 14)));
             Assert.IsFalse(matches[0].GroupCaptures["onset"].Success);
             Assert.IsTrue(matches[0].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(10, 14), matches[0].GroupCaptures["coda"].Range);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[1].Range);
+            Assert.That(matches[0].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(10, 14)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(matches[1].GroupCaptures["onset"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 16), matches[1].GroupCaptures["onset"].Range);
+            Assert.That(matches[1].GroupCaptures["onset"].Range, Is.EqualTo(Range<int>.Create(15, 16)));
             Assert.IsTrue(matches[1].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(17, 18), matches[1].GroupCaptures["coda"].Range);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[3].Range);
+            Assert.That(matches[1].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(17, 18)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(25, 29)));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(30, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(30));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
             Assert.IsTrue(matches[0].GroupCaptures["onset"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[0].GroupCaptures["onset"].Range);
+            Assert.That(matches[0].GroupCaptures["onset"].Range, Is.EqualTo(Range<int>.Create(0, 2)));
             Assert.IsFalse(matches[0].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[1].Range);
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(1, 3)));
             Assert.IsTrue(matches[1].GroupCaptures["onset"].Success);
-            Assert.AreEqual(Range<int>.Create(1, 2), matches[1].GroupCaptures["onset"].Range);
+            Assert.That(matches[1].GroupCaptures["onset"].Range, Is.EqualTo(Range<int>.Create(1, 2)));
             Assert.IsFalse(matches[1].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(2, 3), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[3].Range);
-            Assert.AreEqual(Range<int>.Create(4, 6), matches[4].Range);
-            Assert.AreEqual(Range<int>.Create(4, 5), matches[5].Range);
-            Assert.AreEqual(Range<int>.Create(16, 17), matches[14].Range);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[29].Range);
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(2, 3)));
+            Assert.That(matches[3].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[4].Range, Is.EqualTo(Range<int>.Create(4, 6)));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(4, 5)));
+            Assert.That(matches[14].Range, Is.EqualTo(Range<int>.Create(16, 17)));
+            Assert.That(matches[29].Range, Is.EqualTo(Range<int>.Create(26, 27)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(24, matches.Length);
-            Assert.AreEqual(Range<int>.Create(9, 14), matches[0].Range);
+            Assert.That(matches.Length, Is.EqualTo(24));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(9, 14)));
             Assert.IsFalse(matches[0].GroupCaptures["onset"].Success);
             Assert.IsTrue(matches[0].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(10, 14), matches[0].GroupCaptures["coda"].Range);
-            Assert.AreEqual(Range<int>.Create(9, 13), matches[1].Range);
+            Assert.That(matches[0].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(10, 14)));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(9, 13)));
             Assert.IsFalse(matches[1].GroupCaptures["onset"].Success);
             Assert.IsTrue(matches[1].GroupCaptures["coda"].Success);
-            Assert.AreEqual(Range<int>.Create(10, 13), matches[1].GroupCaptures["coda"].Range);
-            Assert.AreEqual(Range<int>.Create(9, 12), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[11].Range);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[23].Range);
+            Assert.That(matches[1].GroupCaptures["coda"].Range, Is.EqualTo(Range<int>.Create(10, 13)));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(9, 12)));
+            Assert.That(matches[11].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[23].Range, Is.EqualTo(Range<int>.Create(26, 27)));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             sentence.Annotations.Add(0, 3, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value);
             sentence.Annotations.Add(4, 7, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value);
@@ -942,60 +942,60 @@ namespace SIL.Machine.Matching
 
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 29), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 29)));
             Assert.IsTrue(match.GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 18), match.GroupCaptures["NP"].Range);
+            Assert.That(match.GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(0, 18)));
             Assert.IsTrue(match.GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.GroupCaptures["headNoun"].Range);
+            Assert.That(match.GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(match.GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 29), match.GroupCaptures["VP"].Range);
+            Assert.That(match.GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 29)));
             Assert.IsTrue(match.GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), match.GroupCaptures["headVerb"].Range);
+            Assert.That(match.GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
             match = matcher.Match(sentence, 7);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 29), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 29)));
             Assert.IsTrue(match.GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(9, 18), match.GroupCaptures["NP"].Range);
+            Assert.That(match.GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(9, 18)));
             Assert.IsTrue(match.GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.GroupCaptures["headNoun"].Range);
+            Assert.That(match.GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(match.GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 29), match.GroupCaptures["VP"].Range);
+            Assert.That(match.GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 29)));
             Assert.IsTrue(match.GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), match.GroupCaptures["headVerb"].Range);
+            Assert.That(match.GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
             match = matcher.Match(sentence, 16);
             Assert.IsFalse(match.Success);
 
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(1, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(1));
             matches = matcher.Matches(sentence, 7).ToArray();
-            Assert.AreEqual(1, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(1));
             matches = matcher.Matches(sentence, 16).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(8, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 24), matches[1].Range);
+            Assert.That(matches.Length, Is.EqualTo(8));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 24)));
             Assert.IsTrue(matches[1].GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 18), matches[1].GroupCaptures["NP"].Range);
+            Assert.That(matches[1].GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(0, 18)));
             Assert.IsTrue(matches[1].GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[1].GroupCaptures["headNoun"].Range);
+            Assert.That(matches[1].GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(matches[1].GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].GroupCaptures["VP"].Range);
+            Assert.That(matches[1].GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
             Assert.IsTrue(matches[1].GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].GroupCaptures["headVerb"].Range);
-            Assert.AreEqual(Range<int>.Create(15, 24), matches[7].Range);
+            Assert.That(matches[1].GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[7].Range, Is.EqualTo(Range<int>.Create(15, 24)));
             Assert.IsTrue(matches[7].GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[7].GroupCaptures["NP"].Range);
+            Assert.That(matches[7].GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(matches[7].GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), matches[7].GroupCaptures["headNoun"].Range);
+            Assert.That(matches[7].GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(matches[7].GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[7].GroupCaptures["VP"].Range);
+            Assert.That(matches[7].GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
             Assert.IsTrue(matches[7].GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[7].GroupCaptures["headVerb"].Range);
+            Assert.That(matches[7].GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
             matches = matcher.AllMatches(sentence, 7).ToArray();
-            Assert.AreEqual(4, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(4));
             matches = matcher.AllMatches(sentence, 16).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -1032,58 +1032,58 @@ namespace SIL.Machine.Matching
 
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
-            Assert.AreEqual("unvoiceInitial", match.PatternPath[0]);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(match.PatternPath[0], Is.EqualTo("unvoiceInitial"));
             match = matcher.Match(sentence, 19);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(19, 22), match.Range);
-            Assert.AreEqual("unvoiceInitial", match.PatternPath[0]);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(match.PatternPath[0], Is.EqualTo("unvoiceInitial"));
             match = matcher.Match(sentence, 29);
             Assert.IsFalse(match.Success);
 
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(6, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual("unvoiceInitial", matches[0].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(4, 7), matches[1].Range);
-            Assert.AreEqual("word", matches[1].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[5].Range);
-            Assert.AreEqual("word", matches[5].PatternPath[0]);
+            Assert.That(matches.Length, Is.EqualTo(6));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[0].PatternPath[0], Is.EqualTo("unvoiceInitial"));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(4, 7)));
+            Assert.That(matches[1].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[5].Range, Is.EqualTo(Range<int>.Create(25, 29)));
+            Assert.That(matches[5].PatternPath[0], Is.EqualTo("word"));
             matches = matcher.Matches(sentence, 19).ToArray();
-            Assert.AreEqual(2, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[0].Range);
-            Assert.AreEqual("unvoiceInitial", matches[0].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(25, 29), matches[1].Range);
-            Assert.AreEqual("word", matches[1].PatternPath[0]);
+            Assert.That(matches.Length, Is.EqualTo(2));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[0].PatternPath[0], Is.EqualTo("unvoiceInitial"));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(25, 29)));
+            Assert.That(matches[1].PatternPath[0], Is.EqualTo("word"));
             matches = matcher.Matches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
 
             matches = matcher.AllMatches(sentence).ToArray();
-            Assert.AreEqual(32, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].Range);
-            Assert.AreEqual("unvoiceInitial", matches[0].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[1].Range);
-            Assert.AreEqual("word", matches[1].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(1, 3), matches[2].Range);
-            Assert.AreEqual("word", matches[2].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(16, 17), matches[15].Range);
-            Assert.AreEqual("word", matches[15].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[31].Range);
-            Assert.AreEqual("word", matches[31].PatternPath[0]);
+            Assert.That(matches.Length, Is.EqualTo(32));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[0].PatternPath[0], Is.EqualTo("unvoiceInitial"));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[1].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(1, 3)));
+            Assert.That(matches[2].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[15].Range, Is.EqualTo(Range<int>.Create(16, 17)));
+            Assert.That(matches[15].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[31].Range, Is.EqualTo(Range<int>.Create(26, 27)));
+            Assert.That(matches[31].PatternPath[0], Is.EqualTo("word"));
             matches = matcher.AllMatches(sentence, 19).ToArray();
-            Assert.AreEqual(16, matches.Length);
-            Assert.AreEqual(Range<int>.Create(19, 22), matches[0].Range);
-            Assert.AreEqual("unvoiceInitial", matches[0].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(19, 24), matches[1].Range);
-            Assert.AreEqual("word", matches[1].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(19, 23), matches[2].Range);
-            Assert.AreEqual("word", matches[2].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(21, 24), matches[7].Range);
-            Assert.AreEqual("word", matches[7].PatternPath[0]);
-            Assert.AreEqual(Range<int>.Create(26, 27), matches[15].Range);
-            Assert.AreEqual("word", matches[15].PatternPath[0]);
+            Assert.That(matches.Length, Is.EqualTo(16));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(19, 22)));
+            Assert.That(matches[0].PatternPath[0], Is.EqualTo("unvoiceInitial"));
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(19, 24)));
+            Assert.That(matches[1].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(19, 23)));
+            Assert.That(matches[2].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[7].Range, Is.EqualTo(Range<int>.Create(21, 24)));
+            Assert.That(matches[7].PatternPath[0], Is.EqualTo("word"));
+            Assert.That(matches[15].Range, Is.EqualTo(Range<int>.Create(26, 27)));
+            Assert.That(matches[15].PatternPath[0], Is.EqualTo("word"));
             matches = matcher.AllMatches(sentence, 29).ToArray();
-            Assert.AreEqual(0, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -1136,15 +1136,15 @@ namespace SIL.Machine.Matching
             );
             Match<AnnotatedStringData, int> match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 29), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 29)));
             Assert.IsTrue(match.GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 18), match.GroupCaptures["NP"].Range);
+            Assert.That(match.GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(0, 18)));
             Assert.IsTrue(match.GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.GroupCaptures["headNoun"].Range);
+            Assert.That(match.GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(match.GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 29), match.GroupCaptures["VP"].Range);
+            Assert.That(match.GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 29)));
             Assert.IsTrue(match.GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), match.GroupCaptures["headVerb"].Range);
+            Assert.That(match.GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
@@ -1199,15 +1199,15 @@ namespace SIL.Machine.Matching
             );
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 29), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 29)));
             Assert.IsTrue(match.GroupCaptures["NP"].Success);
-            Assert.AreEqual(Range<int>.Create(0, 18), match.GroupCaptures["NP"].Range);
+            Assert.That(match.GroupCaptures["NP"].Range, Is.EqualTo(Range<int>.Create(0, 18)));
             Assert.IsTrue(match.GroupCaptures["headNoun"].Success);
-            Assert.AreEqual(Range<int>.Create(15, 18), match.GroupCaptures["headNoun"].Range);
+            Assert.That(match.GroupCaptures["headNoun"].Range, Is.EqualTo(Range<int>.Create(15, 18)));
             Assert.IsTrue(match.GroupCaptures["VP"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 29), match.GroupCaptures["VP"].Range);
+            Assert.That(match.GroupCaptures["VP"].Range, Is.EqualTo(Range<int>.Create(19, 29)));
             Assert.IsTrue(match.GroupCaptures["headVerb"].Success);
-            Assert.AreEqual(Range<int>.Create(19, 24), match.GroupCaptures["headVerb"].Range);
+            Assert.That(match.GroupCaptures["headVerb"].Range, Is.EqualTo(Range<int>.Create(19, 24)));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
@@ -1227,7 +1227,7 @@ namespace SIL.Machine.Matching
             );
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(0, 3), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(0, 3)));
 
             matcher = new Matcher<AnnotatedStringData, int>(
                 pattern,
@@ -1239,7 +1239,7 @@ namespace SIL.Machine.Matching
             );
             match = matcher.Match(sentence);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual(Range<int>.Create(9, 29), match.Range);
+            Assert.That(match.Range, Is.EqualTo(Range<int>.Create(9, 29)));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
@@ -1256,7 +1256,7 @@ namespace SIL.Machine.Matching
                 }
             );
             Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(4, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(4));
 
             matcher = new Matcher<AnnotatedStringData, int>(
                 pattern,
@@ -1268,7 +1268,7 @@ namespace SIL.Machine.Matching
                 }
             );
             matches = matcher.Matches(sentence).ToArray();
-            Assert.AreEqual(1, matches.Length);
+            Assert.That(matches.Length, Is.EqualTo(1));
         }
 
         [Test]
@@ -1330,7 +1330,7 @@ namespace SIL.Machine.Matching
             var matcher = new Matcher<AnnotatedStringData, int>(pattern);
             Match<AnnotatedStringData, int> match = matcher.Match(word);
             Assert.IsTrue(match.Success);
-            Assert.AreEqual("voice-", ((FeatureSymbol)match.VariableBindings["a"]).ID);
+            Assert.That(((FeatureSymbol)match.VariableBindings["a"]).ID, Is.EqualTo("voice-"));
 
             word = CreateStringData("dazk");
             match = matcher.Match(word);
@@ -1364,18 +1364,18 @@ namespace SIL.Machine.Matching
             word.Annotations.Add(3, 4, FeatureStruct.New(PhoneticFeatSys).Feature("strRep").EqualTo("t").Value);
 
             Match<AnnotatedStringData, int>[] matches = matcher.AllMatches(word).ToArray();
-            Assert.AreEqual(3, matches.Length);
-            Assert.AreEqual(Range<int>.Create(0, 4), matches[0].Range);
-            Assert.AreEqual(Range<int>.Create(0, 3), matches[0].GroupCaptures["first"].Range);
-            Assert.AreEqual(Range<int>.Create(3, 4), matches[0].GroupCaptures["second"].Range);
+            Assert.That(matches.Length, Is.EqualTo(3));
+            Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 4)));
+            Assert.That(matches[0].GroupCaptures["first"].Range, Is.EqualTo(Range<int>.Create(0, 3)));
+            Assert.That(matches[0].GroupCaptures["second"].Range, Is.EqualTo(Range<int>.Create(3, 4)));
 
-            Assert.AreEqual(Range<int>.Create(0, 4), matches[1].Range);
-            Assert.AreEqual(Range<int>.Create(0, 2), matches[1].GroupCaptures["first"].Range);
-            Assert.AreEqual(Range<int>.Create(2, 4), matches[1].GroupCaptures["second"].Range);
+            Assert.That(matches[1].Range, Is.EqualTo(Range<int>.Create(0, 4)));
+            Assert.That(matches[1].GroupCaptures["first"].Range, Is.EqualTo(Range<int>.Create(0, 2)));
+            Assert.That(matches[1].GroupCaptures["second"].Range, Is.EqualTo(Range<int>.Create(2, 4)));
 
-            Assert.AreEqual(Range<int>.Create(0, 4), matches[2].Range);
-            Assert.AreEqual(Range<int>.Create(0, 1), matches[2].GroupCaptures["first"].Range);
-            Assert.AreEqual(Range<int>.Create(1, 4), matches[2].GroupCaptures["second"].Range);
+            Assert.That(matches[2].Range, Is.EqualTo(Range<int>.Create(0, 4)));
+            Assert.That(matches[2].GroupCaptures["first"].Range, Is.EqualTo(Range<int>.Create(0, 1)));
+            Assert.That(matches[2].GroupCaptures["second"].Range, Is.EqualTo(Range<int>.Create(1, 4)));
 
             pattern = Pattern<AnnotatedStringData, int>
                 .New()

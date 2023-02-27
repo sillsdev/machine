@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 
@@ -8,18 +7,18 @@ namespace SIL.Machine
     [TestFixture]
     public abstract class PhoneticTestsBase
     {
-        protected FeatureSystem PhoneticFeatSys;
-        protected FeatureSystem WordFeatSys;
-        protected FeatureSystem TypeFeatSys;
-        protected SymbolicFeature Type;
-        protected FeatureSymbol Word;
-        protected FeatureSymbol NP;
-        protected FeatureSymbol VP;
-        protected FeatureSymbol Seg;
-        protected FeatureSymbol Bdry;
-        protected FeatureSymbol Allo;
-        protected FeatureSymbol Anchor;
-        protected Dictionary<char, FeatureStruct> Characters;
+        protected FeatureSystem PhoneticFeatSys = default!;
+        protected FeatureSystem WordFeatSys = default!;
+        protected FeatureSystem TypeFeatSys = default!;
+        protected SymbolicFeature Type = default!;
+        protected FeatureSymbol Word = default!;
+        protected FeatureSymbol NP = default!;
+        protected FeatureSymbol VP = default!;
+        protected FeatureSymbol Seg = default!;
+        protected FeatureSymbol Bdry = default!;
+        protected FeatureSymbol Allo = default!;
+        protected FeatureSymbol Anchor = default!;
+        protected Dictionary<char, FeatureStruct> Characters = default!;
 
         [OneTimeSetUp]
         public virtual void FixtureSetUp()

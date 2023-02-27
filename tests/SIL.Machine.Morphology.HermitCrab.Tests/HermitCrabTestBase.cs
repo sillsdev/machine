@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -10,22 +9,22 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     public abstract class HermitCrabTestBase
     {
-        protected TraceManager TraceManager;
-        protected CharacterDefinitionTable Table1;
-        protected CharacterDefinitionTable Table2;
-        protected CharacterDefinitionTable Table3;
-        protected MprFeature Latinate;
-        protected MprFeature Germanic;
+        protected TraceManager TraceManager = default!;
+        protected CharacterDefinitionTable Table1 = default!;
+        protected CharacterDefinitionTable Table2 = default!;
+        protected CharacterDefinitionTable Table3 = default!;
+        protected MprFeature Latinate = default!;
+        protected MprFeature Germanic = default!;
 
-        protected Dictionary<string, LexEntry> Entries;
+        protected Dictionary<string, LexEntry> Entries = default!;
 
-        protected Stratum Surface;
-        protected Stratum Allophonic;
-        protected Stratum Morphophonemic;
-        protected Language Language;
+        protected Stratum Surface = default!;
+        protected Stratum Allophonic = default!;
+        protected Stratum Morphophonemic = default!;
+        protected Language Language = default!;
 
-        protected ComplexFeature Head;
-        protected ComplexFeature Foot;
+        protected ComplexFeature Head = default!;
+        protected ComplexFeature Foot = default!;
 
         [OneTimeSetUp]
         public void FixtureSetUp()

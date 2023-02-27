@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace SIL.Machine.Morphology
 {
@@ -129,7 +125,7 @@ namespace SIL.Machine.Morphology
             string path = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Morphology", "LEX");
             using (var file = new StreamReader(File.OpenRead(path)))
             {
-                string line;
+                string? line;
                 while ((line = file.ReadLine()) != null)
                 {
                     string word = line.Substring(6);

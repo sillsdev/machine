@@ -1,12 +1,11 @@
-﻿using System;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace SIL.Machine.Statistics
 {
     [TestFixture]
     public class LidstoneProbabilityDistributionTests
     {
-        private FrequencyDistribution<string> _fd;
+        private FrequencyDistribution<string> _fd = default!;
 
         [OneTimeSetUp]
         public void FixtureSetUp()

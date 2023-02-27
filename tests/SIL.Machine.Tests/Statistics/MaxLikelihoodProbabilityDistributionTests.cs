@@ -5,7 +5,7 @@ namespace SIL.Machine.Statistics
     [TestFixture]
     public class MaxLikelihoodProbabilityDistributionTests
     {
-        private FrequencyDistribution<string> _fd;
+        private FrequencyDistribution<string> _fd = default!;
 
         [OneTimeSetUp]
         public void FixtureSetUp()

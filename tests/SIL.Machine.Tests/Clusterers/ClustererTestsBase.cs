@@ -37,8 +37,13 @@ namespace SIL.Machine.Clusterers
         {
             private readonly IEqualityComparer<Cluster<T>> _clusterComparer = new ClusterEqualityComparer<T>();
 
-            public bool Equals(ClusterEdge<T> x, ClusterEdge<T> y)
+            public bool Equals(ClusterEdge<T>? x, ClusterEdge<T>? y)
             {
+                if (x is null && y is null)
+                    return true;
+                if (x is null || y is null)
+                    return false;
+
                 return (
                         (_clusterComparer.Equals(x.Source, y.Source) && _clusterComparer.Equals(x.Target, y.Target))
                         || (_clusterComparer.Equals(x.Target, y.Source) && _clusterComparer.Equals(x.Source, y.Target))
@@ -58,8 +63,13 @@ namespace SIL.Machine.Clusterers
         {
             private readonly IEqualityComparer<Cluster<T>> _clusterComparer = new ClusterEqualityComparer<T>();
 
-            public bool Equals(ClusterEdge<T> x, ClusterEdge<T> y)
+            public bool Equals(ClusterEdge<T>? x, ClusterEdge<T>? y)
             {
+                if (x is null && y is null)
+                    return true;
+                if (x is null || y is null)
+                    return false;
+
                 return _clusterComparer.Equals(x.Source, y.Source)
                     && _clusterComparer.Equals(x.Target, y.Target)
                     && Math.Abs(x.Length - y.Length) < double.Epsilon;
@@ -77,15 +87,20 @@ namespace SIL.Machine.Clusterers
 
         protected class ClusterEqualityComparer<T> : IEqualityComparer<Cluster<T>>
         {
-            public bool Equals(Cluster<T> x, Cluster<T> y)
+            public bool Equals(Cluster<T>? x, Cluster<T>? y)
             {
+                if (x is null && y is null)
+                    return true;
+                if (x is null || y is null)
+                    return false;
+
                 return x.DataObjects.SetEquals(y.DataObjects) && x.Noise == y.Noise;
             }
 
             public int GetHashCode(Cluster<T> obj)
             {
                 int code = 23;
-                code = code * 31 + obj.DataObjects.Aggregate(0, (c, o) => c ^ o.GetHashCode());
+                code = code * 31 + obj.DataObjects.Aggregate(0, (c, o) => c ^ o?.GetHashCode() ?? 0);
                 code = code * 31 + obj.Noise.GetHashCode();
                 return code;
             }
