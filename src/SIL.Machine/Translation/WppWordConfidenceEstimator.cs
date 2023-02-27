@@ -1,7 +1,6 @@
-﻿using SIL.Machine.Statistics;
-using SIL.Machine.Threading;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation
 {

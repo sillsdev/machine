@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Nito.AsyncEx;
+using Nito.AsyncEx.Synchronous;
 using NUnit.Framework;
-using SIL.Machine.Threading;
 
 namespace SIL.Machine.Utils
 {

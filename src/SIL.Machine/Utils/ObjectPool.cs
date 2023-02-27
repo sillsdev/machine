@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using SIL.Machine.Threading;
+using Nito.AsyncEx;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Utils

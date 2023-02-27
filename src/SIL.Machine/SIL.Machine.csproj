@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 		<PackageReference Include="RestSharp" Version="107.3.0" />
 		<PackageReference Include="Sandwych.QuickGraph.Core" Version="1.0.0" />
 		<PackageReference Include="SIL.Scripture" Version="7.0.0" />
