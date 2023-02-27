@@ -13,10 +13,11 @@ namespace SIL.Machine.FiniteState
         private readonly int _enqueueCount;
         private readonly HashSet<FeatureStruct> _negatedFSs;
 
-        internal Input(int enqueueCount) : this(null, enqueueCount) { }
+        internal Input(int enqueueCount)
+            : this(null, enqueueCount) { }
 
-        internal Input(FeatureStruct fs, int enqueueCount) : this(fs, Enumerable.Empty<FeatureStruct>(), enqueueCount)
-        { }
+        internal Input(FeatureStruct fs, int enqueueCount)
+            : this(fs, Enumerable.Empty<FeatureStruct>(), enqueueCount) { }
 
         internal Input(FeatureStruct fs, IEnumerable<FeatureStruct> negatedFSs, int enqueueCount)
         {

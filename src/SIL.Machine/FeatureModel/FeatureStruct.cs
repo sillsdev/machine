@@ -62,14 +62,16 @@ namespace SIL.Machine.FeatureModel
             _definite = new IDBearerDictionary<Feature, FeatureValue>();
         }
 
-        protected FeatureStruct(FeatureStruct other) : this(other, new Dictionary<FeatureValue, FeatureValue>()) { }
+        protected FeatureStruct(FeatureStruct other)
+            : this(other, new Dictionary<FeatureValue, FeatureValue>()) { }
 
         /// <summary>
         /// Copy constructor.
         /// </summary>
         /// <param name="other">The fs.</param>
         /// <param name="copies"></param>
-        private FeatureStruct(FeatureStruct other, IDictionary<FeatureValue, FeatureValue> copies) : this()
+        private FeatureStruct(FeatureStruct other, IDictionary<FeatureValue, FeatureValue> copies)
+            : this()
         {
             copies[other] = this;
             foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
@@ -558,7 +560,8 @@ namespace SIL.Machine.FeatureModel
             throw new ArgumentException("The specified value could not be found.", "feature");
         }
 
-        public T GetValue<T>(Feature feature) where T : FeatureValue
+        public T GetValue<T>(Feature feature)
+            where T : FeatureValue
         {
             T value;
             if (TryGetValue(feature, out value))
@@ -576,7 +579,8 @@ namespace SIL.Machine.FeatureModel
             throw new ArgumentException("The specified value could not be found.", "featureID");
         }
 
-        public T GetValue<T>(string featureID) where T : FeatureValue
+        public T GetValue<T>(string featureID)
+            where T : FeatureValue
         {
             T value;
             if (TryGetValue(featureID, out value))
@@ -599,7 +603,8 @@ namespace SIL.Machine.FeatureModel
             return GetValue((IEnumerable<Feature>)path);
         }
 
-        public T GetValue<T>(IEnumerable<Feature> path) where T : FeatureValue
+        public T GetValue<T>(IEnumerable<Feature> path)
+            where T : FeatureValue
         {
             T value;
             if (TryGetValue(path, out value))
@@ -608,7 +613,8 @@ namespace SIL.Machine.FeatureModel
             throw new ArgumentException("The specified path is not valid.", "path");
         }
 
-        public T GetValue<T>(params Feature[] path) where T : FeatureValue
+        public T GetValue<T>(params Feature[] path)
+            where T : FeatureValue
         {
             return GetValue<T>((IEnumerable<Feature>)path);
         }
@@ -627,7 +633,8 @@ namespace SIL.Machine.FeatureModel
             return GetValue((IEnumerable<string>)path);
         }
 
-        public T GetValue<T>(IEnumerable<string> path) where T : FeatureValue
+        public T GetValue<T>(IEnumerable<string> path)
+            where T : FeatureValue
         {
             T value;
             if (TryGetValue(path, out value))
@@ -636,12 +643,14 @@ namespace SIL.Machine.FeatureModel
             throw new ArgumentException("The specified path is not valid.", "path");
         }
 
-        public T GetValue<T>(params string[] path) where T : FeatureValue
+        public T GetValue<T>(params string[] path)
+            where T : FeatureValue
         {
             return GetValue<T>((IEnumerable<string>)path);
         }
 
-        public bool TryGetValue<T>(Feature feature, out T value) where T : FeatureValue
+        public bool TryGetValue<T>(Feature feature, out T value)
+            where T : FeatureValue
         {
             if (feature == null)
                 throw new ArgumentNullException("feature");
@@ -653,7 +662,8 @@ namespace SIL.Machine.FeatureModel
             return false;
         }
 
-        public bool TryGetValue<T>(string featureID, out T value) where T : FeatureValue
+        public bool TryGetValue<T>(string featureID, out T value)
+            where T : FeatureValue
         {
             if (featureID == null)
                 throw new ArgumentNullException("featureID");
@@ -665,7 +675,8 @@ namespace SIL.Machine.FeatureModel
             return false;
         }
 
-        public bool TryGetValue<T>(IEnumerable<Feature> path, out T value) where T : FeatureValue
+        public bool TryGetValue<T>(IEnumerable<Feature> path, out T value)
+            where T : FeatureValue
         {
             if (path == null)
                 throw new ArgumentNullException("path");
@@ -682,7 +693,8 @@ namespace SIL.Machine.FeatureModel
             return false;
         }
 
-        public bool TryGetValue<T>(IEnumerable<string> path, out T value) where T : FeatureValue
+        public bool TryGetValue<T>(IEnumerable<string> path, out T value)
+            where T : FeatureValue
         {
             if (path == null)
                 throw new ArgumentNullException("path");

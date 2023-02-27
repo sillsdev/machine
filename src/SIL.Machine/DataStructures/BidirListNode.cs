@@ -1,6 +1,7 @@
 namespace SIL.Machine.DataStructures
 {
-    public abstract class BidirListNode<TNode> : IBidirListNode<TNode> where TNode : BidirListNode<TNode>
+    public abstract class BidirListNode<TNode> : IBidirListNode<TNode>
+        where TNode : BidirListNode<TNode>
     {
         private BidirList<TNode> _list;
         private TNode[] _next;

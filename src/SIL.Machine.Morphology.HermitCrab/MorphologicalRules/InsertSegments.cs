@@ -15,7 +15,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public InsertSegments(CharacterDefinitionTable table, string representation)
             : this(new Segments(table, representation)) { }
 
-        public InsertSegments(Segments segments) : base(null)
+        public InsertSegments(Segments segments)
+            : base(null)
         {
             _segments = segments;
         }

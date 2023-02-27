@@ -10,12 +10,14 @@ namespace SIL.Machine.Rules
     public class ParallelPermutationRuleCascade<TData, TOffset> : PermutationRuleCascade<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        public ParallelPermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules) : base(rules) { }
+        public ParallelPermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+            : base(rules) { }
 
         public ParallelPermutationRuleCascade(
             IEnumerable<IRule<TData, TOffset>> rules,
             IEqualityComparer<TData> comparer
-        ) : base(rules, comparer) { }
+        )
+            : base(rules, comparer) { }
 
         public ParallelPermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
             : base(rules, multiApp) { }
@@ -24,7 +26,8 @@ namespace SIL.Machine.Rules
             IEnumerable<IRule<TData, TOffset>> rules,
             bool multiApp,
             IEqualityComparer<TData> comparer
-        ) : base(rules, multiApp, comparer) { }
+        )
+            : base(rules, multiApp, comparer) { }
 
         public override IEnumerable<TData> Apply(TData input)
         {

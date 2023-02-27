@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.DataStructures
 {
-    public class IDBearerDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IIDBearer
+    public class IDBearerDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+        where TKey : IIDBearer
     {
         private readonly Dictionary<TKey, TValue> _idBearerDictionary;
         private readonly Dictionary<string, TValue> _idDictionary;

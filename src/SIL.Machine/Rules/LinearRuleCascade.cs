@@ -3,20 +3,24 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-    public class LinearRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class LinearRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
-        public LinearRuleCascade(IEnumerable<IRule<TData, TOffset>> rules) : base(rules) { }
+        public LinearRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+            : base(rules) { }
 
         public LinearRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, comparer) { }
 
-        public LinearRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp) : base(rules, multiApp) { }
+        public LinearRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
+            : base(rules, multiApp) { }
 
         public LinearRuleCascade(
             IEnumerable<IRule<TData, TOffset>> rules,
             bool multiApp,
             IEqualityComparer<TData> comparer
-        ) : base(rules, multiApp, comparer) { }
+        )
+            : base(rules, multiApp, comparer) { }
 
         public override IEnumerable<TData> Apply(TData input)
         {

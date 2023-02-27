@@ -350,8 +350,8 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             return string.IsNullOrEmpty(ConfigFileName)
-              ? new Trainer(this, corpus, Parameters)
-              : new Trainer(this, corpus, ConfigFileName);
+                ? new Trainer(this, corpus, Parameters)
+                : new Trainer(this, corpus, ConfigFileName);
         }
 
         ITrainer ITranslationModel.CreateTrainer(IParallelTextCorpus corpus)

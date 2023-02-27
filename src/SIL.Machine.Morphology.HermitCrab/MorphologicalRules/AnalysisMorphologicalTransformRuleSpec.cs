@@ -7,12 +7,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public abstract class AnalysisMorphologicalTransformRuleSpec
         : AnalysisMorphologicalTransform,
-          IPatternRuleSpec<Word, ShapeNode>
+            IPatternRuleSpec<Word, ShapeNode>
     {
         protected AnalysisMorphologicalTransformRuleSpec(
             IEnumerable<Pattern<Word, ShapeNode>> lhs,
             IList<MorphologicalOutputAction> rhs
-        ) : base(lhs, rhs) { }
+        )
+            : base(lhs, rhs) { }
 
         public bool IsApplicable(Word input)
         {

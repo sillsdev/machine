@@ -6,19 +6,21 @@ namespace SIL.Machine.Rules
     public class CombinationRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        public CombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules) : base(rules) { }
+        public CombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+            : base(rules) { }
 
         public CombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, comparer) { }
 
-        public CombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp) : base(rules, multiApp)
-        { }
+        public CombinationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
+            : base(rules, multiApp) { }
 
         public CombinationRuleCascade(
             IEnumerable<IRule<TData, TOffset>> rules,
             bool multiApp,
             IEqualityComparer<TData> comparer
-        ) : base(rules, multiApp, comparer) { }
+        )
+            : base(rules, multiApp, comparer) { }
 
         public override IEnumerable<TData> Apply(TData input)
         {

@@ -4,7 +4,8 @@ public class ClearMLNmtEngineRuntime : TranslationEngineRuntimeBase<ClearMLNmtEn
 {
     public class Factory : TranslationEngineRuntimeFactory<ClearMLNmtEngineRuntime>
     {
-        public Factory(IServiceProvider serviceProvider) : base(serviceProvider, TranslationEngineType.Nmt) { }
+        public Factory(IServiceProvider serviceProvider)
+            : base(serviceProvider, TranslationEngineType.Nmt) { }
     }
 
     private readonly IPlatformService _platformService;
@@ -17,7 +18,8 @@ public class ClearMLNmtEngineRuntime : TranslationEngineRuntimeBase<ClearMLNmtEn
         IDistributedReaderWriterLockFactory lockFactory,
         IRepository<TranslationEngine> engines,
         string engineId
-    ) : base(jobClient, lockFactory, engines, engineId)
+    )
+        : base(jobClient, lockFactory, engines, engineId)
     {
         _platformService = platformService;
         _clearMLService = clearMLService;

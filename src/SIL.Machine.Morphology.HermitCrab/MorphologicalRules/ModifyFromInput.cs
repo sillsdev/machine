@@ -19,7 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public ModifyFromInput(string partName, NaturalClass nc, IEnumerable<SymbolicFeatureValue> variables)
             : this(partName, new SimpleContext(nc, variables)) { }
 
-        public ModifyFromInput(string partName, SimpleContext simpleCtxt) : base(partName)
+        public ModifyFromInput(string partName, SimpleContext simpleCtxt)
+            : base(partName)
         {
             _simpleCtxt = simpleCtxt;
         }

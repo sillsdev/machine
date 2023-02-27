@@ -14,20 +14,26 @@ namespace SIL.Machine.FeatureModel.Fluent
         private Feature _lastFeature;
         private bool _not;
 
-        public FeatureStructBuilder() : this(new FeatureStruct()) { }
+        public FeatureStructBuilder()
+            : this(new FeatureStruct()) { }
 
-        public FeatureStructBuilder(bool mutable) : this(new FeatureStruct(), mutable) { }
+        public FeatureStructBuilder(bool mutable)
+            : this(new FeatureStruct(), mutable) { }
 
-        public FeatureStructBuilder(FeatureSystem featSys) : this(featSys, new FeatureStruct()) { }
+        public FeatureStructBuilder(FeatureSystem featSys)
+            : this(featSys, new FeatureStruct()) { }
 
-        public FeatureStructBuilder(FeatureSystem featSys, bool mutable) : this(featSys, new FeatureStruct(), mutable)
-        { }
+        public FeatureStructBuilder(FeatureSystem featSys, bool mutable)
+            : this(featSys, new FeatureStruct(), mutable) { }
 
-        public FeatureStructBuilder(FeatureStruct fs) : this(null, fs) { }
+        public FeatureStructBuilder(FeatureStruct fs)
+            : this(null, fs) { }
 
-        public FeatureStructBuilder(FeatureStruct fs, bool mutable) : this(null, fs, mutable) { }
+        public FeatureStructBuilder(FeatureStruct fs, bool mutable)
+            : this(null, fs, mutable) { }
 
-        public FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs) : this(featSys, fs, false) { }
+        public FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs)
+            : this(featSys, fs, false) { }
 
         public FeatureStructBuilder(FeatureSystem featSys, FeatureStruct fs, bool mutable)
             : this(featSys, fs, new Dictionary<int, FeatureValue>(), mutable) { }

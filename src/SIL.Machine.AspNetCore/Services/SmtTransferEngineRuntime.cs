@@ -4,7 +4,8 @@ public class SmtTransferEngineRuntime : TranslationEngineRuntimeBase<SmtTransfer
 {
     public class Factory : TranslationEngineRuntimeFactory<SmtTransferEngineRuntime>
     {
-        public Factory(IServiceProvider serviceProvider) : base(serviceProvider, TranslationEngineType.SmtTransfer) { }
+        public Factory(IServiceProvider serviceProvider)
+            : base(serviceProvider, TranslationEngineType.SmtTransfer) { }
     }
 
     private readonly IPlatformService _platformService;
@@ -34,7 +35,8 @@ public class SmtTransferEngineRuntime : TranslationEngineRuntimeBase<SmtTransfer
         IBackgroundJobClient jobClient,
         IDistributedReaderWriterLockFactory lockFactory,
         string engineId
-    ) : base(jobClient, lockFactory, engines, engineId)
+    )
+        : base(jobClient, lockFactory, engines, engineId)
     {
         _platformService = platformService;
         _trainSegmentPairs = trainSegmentPairs;

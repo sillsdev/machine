@@ -11,7 +11,8 @@ namespace SIL.Machine.FeatureModel
     {
         private FeatureValue _defaultValue;
 
-        protected Feature(string id) : base(id) { }
+        protected Feature(string id)
+            : base(id) { }
 
         /// <summary>
         /// Gets all default values.

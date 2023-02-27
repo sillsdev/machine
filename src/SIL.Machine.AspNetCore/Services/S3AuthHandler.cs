@@ -82,7 +82,6 @@ public class S3AuthHandler : DelegatingHandler
         Debug.WriteLine("canonical request: " + canonicalRequest);
 #endif
 
-
         // 2. Create a string to sign
 
         // step by step instructions: https://docs.aws.amazon.com/general/latest/gr/sigv4-create-string-to-sign.html

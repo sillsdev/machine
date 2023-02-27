@@ -16,7 +16,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             MatcherSettings<ShapeNode> matcherSettings,
             Pattern<Word, ShapeNode> lhs,
             RewriteSubrule subrule
-        ) : base(false)
+        )
+            : base(false)
         {
             var rhsAntiFSs = new List<FeatureStruct>();
             foreach (

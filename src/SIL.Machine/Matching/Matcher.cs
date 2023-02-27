@@ -10,7 +10,8 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Matching
 {
-    public class Matcher<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class Matcher<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         public const string EntireMatch = "*entire*";
 
@@ -18,7 +19,8 @@ namespace SIL.Machine.Matching
         private Fst<TData, TOffset> _fsa;
         private readonly IEqualityComparer<Match<TData, TOffset>> _matchComparer;
 
-        public Matcher(Pattern<TData, TOffset> pattern) : this(pattern, new MatcherSettings<TOffset>()) { }
+        public Matcher(Pattern<TData, TOffset> pattern)
+            : this(pattern, new MatcherSettings<TOffset>()) { }
 
         public Matcher(Pattern<TData, TOffset> pattern, MatcherSettings<TOffset> settings)
         {

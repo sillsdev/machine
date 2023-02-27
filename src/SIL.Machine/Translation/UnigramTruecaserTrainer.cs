@@ -21,7 +21,8 @@ namespace SIL.Machine.Translation
             NewTruecaser = new UnigramTruecaser();
         }
 
-        public UnigramTruecaserTrainer(IEnumerable<TextRow> corpus) : this(null, corpus) { }
+        public UnigramTruecaserTrainer(IEnumerable<TextRow> corpus)
+            : this(null, corpus) { }
 
         public TrainStats Stats { get; } = new TrainStats();
 

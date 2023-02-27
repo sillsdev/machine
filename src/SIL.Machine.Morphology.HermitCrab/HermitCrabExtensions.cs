@@ -39,15 +39,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (childFS != null)
                 {
                     newValue = HCFeatureSystem.Instance.ContainsFeature(feature)
-                      ? childFS.Clone()
-                      : childFS.AntiFeatureStruct();
+                        ? childFS.Clone()
+                        : childFS.AntiFeatureStruct();
                 }
                 else
                 {
                     var childSfv = (SimpleFeatureValue)value;
                     newValue = HCFeatureSystem.Instance.ContainsFeature(feature)
-                      ? childSfv.Clone()
-                      : childSfv.Negation();
+                        ? childSfv.Clone()
+                        : childSfv.Negation();
                 }
                 result.AddValue(feature, newValue);
             }

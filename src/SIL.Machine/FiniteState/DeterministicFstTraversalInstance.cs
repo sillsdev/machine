@@ -12,7 +12,8 @@ namespace SIL.Machine.FiniteState
         private readonly Dictionary<Annotation<TOffset>, Annotation<TOffset>> _mappings;
         private readonly Queue<Annotation<TOffset>> _queue;
 
-        public DeterministicFstTraversalInstance(int registerCount) : base(registerCount, true)
+        public DeterministicFstTraversalInstance(int registerCount)
+            : base(registerCount, true)
         {
             _mappings = new Dictionary<Annotation<TOffset>, Annotation<TOffset>>();
             _queue = new Queue<Annotation<TOffset>>();

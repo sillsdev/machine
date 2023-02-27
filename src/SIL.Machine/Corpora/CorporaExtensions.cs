@@ -38,7 +38,8 @@ namespace SIL.Machine.Corpora
             int? size = null,
             bool includeEmpty = true,
             int? seed = null
-        ) where T : IRow
+        )
+            where T : IRow
         {
             int corpusSize = corpus.Count(includeEmpty);
             ISet<int> splitIndices = CorporaUtils.GetSplitIndices(corpusSize, percent, size, seed);
@@ -57,16 +58,15 @@ namespace SIL.Machine.Corpora
 
         public static ITextCorpus Tokenize(this ITextCorpus corpus, ITokenizer<string, int, string> tokenizer)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = tokenizer.Tokenize(row.Text).ToArray();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = tokenizer.Tokenize(row.Text).ToArray();
+                return row;
+            });
         }
 
-        public static ITextCorpus Tokenize<T>(this ITextCorpus corpus) where T : ITokenizer<string, int, string>, new()
+        public static ITextCorpus Tokenize<T>(this ITextCorpus corpus)
+            where T : ITokenizer<string, int, string>, new()
         {
             var tokenizer = new T();
             return corpus.Tokenize(tokenizer);
@@ -74,17 +74,16 @@ namespace SIL.Machine.Corpora
 
         public static ITextCorpus Detokenize(this ITextCorpus corpus, IDetokenizer<string, string> detokenizer)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.Segment.Count > 1)
-                        row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.Segment.Count > 1)
+                    row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
+                return row;
+            });
         }
 
-        public static ITextCorpus Detokenize<T>(this ITextCorpus corpus) where T : IDetokenizer<string, string>, new()
+        public static ITextCorpus Detokenize<T>(this ITextCorpus corpus)
+            where T : IDetokenizer<string, string>, new()
         {
             var detokenizer = new T();
             return corpus.Detokenize(detokenizer);
@@ -95,13 +94,11 @@ namespace SIL.Machine.Corpora
             NormalizationForm normalizationForm = NormalizationForm.FormC
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = row.Segment.Normalize(normalizationForm);
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = row.Segment.Normalize(normalizationForm);
+                return row;
+            });
         }
 
         public static ITextCorpus NfcNormalize(this ITextCorpus corpus)
@@ -126,57 +123,47 @@ namespace SIL.Machine.Corpora
 
         public static ITextCorpus EscapeSpaces(this ITextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = row.Segment.EscapeSpaces();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = row.Segment.EscapeSpaces();
+                return row;
+            });
         }
 
         public static ITextCorpus UnescapeSpaces(this ITextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = row.Segment.UnescapeSpaces();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = row.Segment.UnescapeSpaces();
+                return row;
+            });
         }
 
         public static ITextCorpus Lowercase(this ITextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = row.Segment.Lowercase();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = row.Segment.Lowercase();
+                return row;
+            });
         }
 
         public static ITextCorpus Uppercase(this ITextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = row.Segment.Uppercase();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = row.Segment.Uppercase();
+                return row;
+            });
         }
 
         public static ITextCorpus Truecase(this ITextCorpus corpus, ITruecaser truecaser)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.Segment = truecaser.Truecase(row.Segment);
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.Segment = truecaser.Truecase(row.Segment);
+                return row;
+            });
         }
 
         public static ITextCorpus Transform(this ITextCorpus corpus, IRowProcessor<TextRow> processor)
@@ -630,16 +617,14 @@ namespace SIL.Machine.Corpora
             ITokenizer<string, int, string> targetTokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.SourceSegment.Count > 0)
-                        row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
-                    if (row.TargetSegment.Count > 0)
-                        row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.SourceSegment.Count > 0)
+                    row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
+                if (row.TargetSegment.Count > 0)
+                    row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus Tokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
@@ -656,14 +641,12 @@ namespace SIL.Machine.Corpora
             ITokenizer<string, int, string> tokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.SourceSegment.Count > 0)
-                        row.SourceSegment = tokenizer.Tokenize(row.SourceText).ToArray();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.SourceSegment.Count > 0)
+                    row.SourceSegment = tokenizer.Tokenize(row.SourceText).ToArray();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus TokenizeSource<T>(this IParallelTextCorpus corpus)
@@ -678,14 +661,12 @@ namespace SIL.Machine.Corpora
             ITokenizer<string, int, string> tokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.TargetSegment.Count > 0)
-                        row.TargetSegment = tokenizer.Tokenize(row.TargetText).ToArray();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.TargetSegment.Count > 0)
+                    row.TargetSegment = tokenizer.Tokenize(row.TargetText).ToArray();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus TokenizeTarget<T>(this IParallelTextCorpus corpus)
@@ -716,16 +697,14 @@ namespace SIL.Machine.Corpora
             IDetokenizer<string, string> targetDetokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.SourceSegment.Count > 1)
-                        row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
-                    if (row.TargetSegment.Count > 1)
-                        row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.SourceSegment.Count > 1)
+                    row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
+                if (row.TargetSegment.Count > 1)
+                    row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
+                return row;
+            });
         }
 
         public static IParallelTextCorpus Detokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
@@ -742,14 +721,12 @@ namespace SIL.Machine.Corpora
             IDetokenizer<string, string> detokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.SourceSegment.Count > 1)
-                        row.SourceSegment = new[] { detokenizer.Detokenize(row.SourceSegment) };
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.SourceSegment.Count > 1)
+                    row.SourceSegment = new[] { detokenizer.Detokenize(row.SourceSegment) };
+                return row;
+            });
         }
 
         public static IParallelTextCorpus DetokenizeSource<T>(this IParallelTextCorpus corpus)
@@ -764,14 +741,12 @@ namespace SIL.Machine.Corpora
             IDetokenizer<string, string> detokenizer
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    if (row.TargetSegment.Count > 1)
-                        row.TargetSegment = new[] { detokenizer.Detokenize(row.TargetSegment) };
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                if (row.TargetSegment.Count > 1)
+                    row.TargetSegment = new[] { detokenizer.Detokenize(row.TargetSegment) };
+                return row;
+            });
         }
 
         public static IParallelTextCorpus DetokenizeTarget<T>(this IParallelTextCorpus corpus)
@@ -791,14 +766,12 @@ namespace SIL.Machine.Corpora
             NormalizationForm normalizationForm = NormalizationForm.FormC
         )
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.SourceSegment = row.SourceSegment.Normalize(normalizationForm);
-                    row.TargetSegment = row.TargetSegment.Normalize(normalizationForm);
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.Normalize(normalizationForm);
+                row.TargetSegment = row.TargetSegment.Normalize(normalizationForm);
+                return row;
+            });
         }
 
         public static IParallelTextCorpus NfcNormalize(this IParallelTextCorpus corpus)
@@ -823,50 +796,42 @@ namespace SIL.Machine.Corpora
 
         public static IParallelTextCorpus EscapeSpaces(this IParallelTextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.SourceSegment = row.SourceSegment.EscapeSpaces();
-                    row.TargetSegment = row.TargetSegment.EscapeSpaces();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.EscapeSpaces();
+                row.TargetSegment = row.TargetSegment.EscapeSpaces();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus UnescapeSpaces(this IParallelTextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.SourceSegment = row.SourceSegment.UnescapeSpaces();
-                    row.TargetSegment = row.TargetSegment.UnescapeSpaces();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.UnescapeSpaces();
+                row.TargetSegment = row.TargetSegment.UnescapeSpaces();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus Lowercase(this IParallelTextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.SourceSegment = row.SourceSegment.Lowercase();
-                    row.TargetSegment = row.TargetSegment.Lowercase();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.Lowercase();
+                row.TargetSegment = row.TargetSegment.Lowercase();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus Uppercase(this IParallelTextCorpus corpus)
         {
-            return corpus.Transform(
-                row =>
-                {
-                    row.SourceSegment = row.SourceSegment.Uppercase();
-                    row.TargetSegment = row.TargetSegment.Uppercase();
-                    return row;
-                }
-            );
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.Uppercase();
+                row.TargetSegment = row.TargetSegment.Uppercase();
+                return row;
+            });
         }
 
         public static IParallelTextCorpus Transform(

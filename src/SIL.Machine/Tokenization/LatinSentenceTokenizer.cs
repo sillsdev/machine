@@ -9,9 +9,11 @@ namespace SIL.Machine.Tokenization
     {
         private static readonly LineSegmentTokenizer LineTokenizer = new LineSegmentTokenizer();
 
-        public LatinSentenceTokenizer() : this(Enumerable.Empty<string>()) { }
+        public LatinSentenceTokenizer()
+            : this(Enumerable.Empty<string>()) { }
 
-        public LatinSentenceTokenizer(IEnumerable<string> abbreviations) : base(abbreviations) { }
+        public LatinSentenceTokenizer(IEnumerable<string> abbreviations)
+            : base(abbreviations) { }
 
         public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
         {

@@ -9,7 +9,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public class CopyFromInput : MorphologicalOutputAction
     {
-        public CopyFromInput(string partName) : base(partName) { }
+        public CopyFromInput(string partName)
+            : base(partName) { }
 
         public override void GenerateAnalysisLhs(
             Pattern<Word, ShapeNode> analysisLhs,

@@ -10,7 +10,8 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private readonly ReadOnlyCollection<FeatureStruct> _regions;
 
-        public StemName(params FeatureStruct[] regions) : this((IEnumerable<FeatureStruct>)regions) { }
+        public StemName(params FeatureStruct[] regions)
+            : this((IEnumerable<FeatureStruct>)regions) { }
 
         public StemName(IEnumerable<FeatureStruct> regions)
         {

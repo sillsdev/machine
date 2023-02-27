@@ -7,7 +7,8 @@ namespace SIL.Machine.FiniteState
     public class ReplaceOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<ReplaceOutput<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        internal ReplaceOutput(FeatureStruct fs) : base(fs) { }
+        internal ReplaceOutput(FeatureStruct fs)
+            : base(fs) { }
 
         public override Annotation<TOffset> UpdateOutput(
             TData data,

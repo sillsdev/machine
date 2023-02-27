@@ -7,8 +7,8 @@ namespace SIL.Machine.Translation.Thot
     {
         public ThotIbm2WordAlignmentModel() { }
 
-        public ThotIbm2WordAlignmentModel(string prefFileName, bool createNew = false) : base(prefFileName, createNew)
-        { }
+        public ThotIbm2WordAlignmentModel(string prefFileName, bool createNew = false)
+            : base(prefFileName, createNew) { }
 
         public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Ibm2;
 

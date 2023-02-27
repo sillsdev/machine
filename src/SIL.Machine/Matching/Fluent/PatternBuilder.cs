@@ -6,18 +6,22 @@ namespace SIL.Machine.Matching.Fluent
 {
     public class PatternBuilder<TData, TOffset>
         : PatternNodeBuilder<TData, TOffset>,
-          IPatternSyntax<TData, TOffset>,
-          IQuantifierPatternSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
+            IPatternSyntax<TData, TOffset>,
+            IQuantifierPatternSyntax<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly string _name;
         private Func<Match<TData, TOffset>, bool> _acceptable = match => true;
         private readonly bool _mutable;
 
-        public PatternBuilder() : this(null) { }
+        public PatternBuilder()
+            : this(null) { }
 
-        public PatternBuilder(bool mutable) : this(null, mutable) { }
+        public PatternBuilder(bool mutable)
+            : this(null, mutable) { }
 
-        public PatternBuilder(string name) : this(name, false) { }
+        public PatternBuilder(string name)
+            : this(name, false) { }
 
         public PatternBuilder(string name, bool mutable)
         {

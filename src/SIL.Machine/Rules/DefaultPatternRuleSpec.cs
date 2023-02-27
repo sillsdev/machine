@@ -14,7 +14,8 @@ namespace SIL.Machine.Rules
         public DefaultPatternRuleSpec(
             Pattern<TData, TOffset> pattern,
             Func<PatternRule<TData, TOffset>, Match<TData, TOffset>, TData> func
-        ) : this(pattern, func, ann => true) { }
+        )
+            : this(pattern, func, ann => true) { }
 
         public DefaultPatternRuleSpec(
             Pattern<TData, TOffset> pattern,

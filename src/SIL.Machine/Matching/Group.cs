@@ -8,25 +8,31 @@ namespace SIL.Machine.Matching
 {
     public class Group<TData, TOffset>
         : PatternNode<TData, TOffset>,
-          ICloneable<Group<TData, TOffset>>,
-          IValueEquatable<Group<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            ICloneable<Group<TData, TOffset>>,
+            IValueEquatable<Group<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly string _name;
 
         public Group() { }
 
-        public Group(string name) : this(name, Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
+        public Group(string name)
+            : this(name, Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
 
-        public Group(IEnumerable<PatternNode<TData, TOffset>> nodes) : this(null, nodes) { }
+        public Group(IEnumerable<PatternNode<TData, TOffset>> nodes)
+            : this(null, nodes) { }
 
-        public Group(string name, IEnumerable<PatternNode<TData, TOffset>> nodes) : base(nodes)
+        public Group(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
+            : base(nodes)
         {
             _name = name;
         }
 
-        public Group(params PatternNode<TData, TOffset>[] nodes) : this(null, nodes) { }
+        public Group(params PatternNode<TData, TOffset>[] nodes)
+            : this(null, nodes) { }
 
-        public Group(string name, params PatternNode<TData, TOffset>[] nodes) : base(nodes)
+        public Group(string name, params PatternNode<TData, TOffset>[] nodes)
+            : base(nodes)
         {
             _name = name;
         }
@@ -35,7 +41,8 @@ namespace SIL.Machine.Matching
         /// Copy constructor.
         /// </summary>
         /// <param name="group">The nested pattern.</param>
-        protected Group(Group<TData, TOffset> group) : base(group)
+        protected Group(Group<TData, TOffset> group)
+            : base(group)
         {
             _name = group._name;
         }

@@ -7,6 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     public class InfiniteLoopException : Exception
     {
-        public InfiniteLoopException(string message) : base(message) { }
+        public InfiniteLoopException(string message)
+            : base(message) { }
     }
 }

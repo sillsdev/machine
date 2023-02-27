@@ -19,7 +19,8 @@ namespace SIL.Machine.Morphology
             AffixesOccurOnSyllableBoundaries = false;
         }
 
-        public PoorMansStemmer(Func<TSeq, IEnumerable<IEnumerable<TItem>>> syllablesSelector) : base(syllablesSelector)
+        public PoorMansStemmer(Func<TSeq, IEnumerable<IEnumerable<TItem>>> syllablesSelector)
+            : base(syllablesSelector)
         {
             Threshold = 5;
             WeightScores = true;

@@ -10,16 +10,17 @@ namespace SIL.Machine.Annotations
 {
     public class Shape
         : OrderedBidirList<ShapeNode>,
-          IAnnotatedData<ShapeNode>,
-          ICloneable<Shape>,
-          IFreezable,
-          IValueEquatable<Shape>
+            IAnnotatedData<ShapeNode>,
+            ICloneable<Shape>,
+            IFreezable,
+            IValueEquatable<Shape>
     {
         private readonly Func<bool, ShapeNode> _marginSelector;
         private readonly AnnotationList<ShapeNode> _annotations;
         private int _hashCode;
 
-        public Shape(Func<bool, ShapeNode> marginSelector) : this(marginSelector, new AnnotationList<ShapeNode>()) { }
+        public Shape(Func<bool, ShapeNode> marginSelector)
+            : this(marginSelector, new AnnotationList<ShapeNode>()) { }
 
         public Shape(Func<bool, ShapeNode> marginSelector, AnnotationList<ShapeNode> annotations)
             : base(EqualityComparer<ShapeNode>.Default, marginSelector)
@@ -32,7 +33,8 @@ namespace SIL.Machine.Annotations
             _annotations.Add(End.Annotation, false);
         }
 
-        protected Shape(Shape shape) : this(shape._marginSelector)
+        protected Shape(Shape shape)
+            : this(shape._marginSelector)
         {
             shape.CopyTo(this);
         }

@@ -10,23 +10,25 @@ namespace SIL.Machine.Annotations
 {
     public class AnnotationList<TOffset>
         : BidirList<Annotation<TOffset>>,
-          ICloneable<AnnotationList<TOffset>>,
-          IFreezable,
-          IValueEquatable<AnnotationList<TOffset>>
+            ICloneable<AnnotationList<TOffset>>,
+            IFreezable,
+            IValueEquatable<AnnotationList<TOffset>>
     {
         private int _currentID;
         private readonly Annotation<TOffset> _parent;
         private int _hashCode;
 
-        public AnnotationList() : base(new AnnotationComparer(), begin => new Annotation<TOffset>(Range<TOffset>.Null))
-        { }
+        public AnnotationList()
+            : base(new AnnotationComparer(), begin => new Annotation<TOffset>(Range<TOffset>.Null)) { }
 
-        protected AnnotationList(AnnotationList<TOffset> annList) : this()
+        protected AnnotationList(AnnotationList<TOffset> annList)
+            : this()
         {
             AddRange(annList.Select(ann => ann.Clone()));
         }
 
-        internal AnnotationList(Annotation<TOffset> parent) : this()
+        internal AnnotationList(Annotation<TOffset> parent)
+            : this()
         {
             _parent = parent;
         }

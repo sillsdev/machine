@@ -99,24 +99,24 @@ namespace SIL.Machine.SequenceAlignment
                         !ExpansionCompressionEnabled || j - 2 < 0
                             ? int.MinValue
                             : _sim[i - 1, j - 2]
-                              + _scorer.GetExpansionScore(_sequence1, Get1(i), _sequence2, Get2(j - 1), Get2(j));
+                                + _scorer.GetExpansionScore(_sequence1, Get1(i), _sequence2, Get2(j - 1), Get2(j));
                     int m5 =
                         !ExpansionCompressionEnabled || i - 2 < 0
                             ? int.MinValue
                             : _sim[i - 2, j - 1]
-                              + _scorer.GetCompressionScore(_sequence1, Get1(i - 1), Get1(i), _sequence2, Get2(j));
+                                + _scorer.GetCompressionScore(_sequence1, Get1(i - 1), Get1(i), _sequence2, Get2(j));
                     int m6 =
                         !TranspositionEnabled || i - 2 < 0 || j - 2 < 0
                             ? int.MinValue
                             : _sim[i - 2, j - 2]
-                              + _scorer.GetTranspositionScore(
-                                  _sequence1,
-                                  Get1(i - 1),
-                                  Get1(i),
-                                  _sequence2,
-                                  Get2(j - 1),
-                                  Get2(j)
-                              );
+                                + _scorer.GetTranspositionScore(
+                                    _sequence1,
+                                    Get1(i - 1),
+                                    Get1(i),
+                                    _sequence2,
+                                    Get2(j - 1),
+                                    Get2(j)
+                                );
 
                     if (Mode == AlignmentMode.Local)
                         _sim[i, j] = new[] { m1, m2, m3, m4, m5, m6, 0 }.Max();

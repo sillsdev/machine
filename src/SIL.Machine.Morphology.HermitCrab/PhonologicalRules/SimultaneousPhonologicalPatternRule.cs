@@ -13,7 +13,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         public SimultaneousPhonologicalPatternRule(
             IPhonologicalPatternRuleSpec ruleSpec,
             MatcherSettings<ShapeNode> matcherSettings
-        ) : base(ruleSpec, matcherSettings)
+        )
+            : base(ruleSpec, matcherSettings)
         {
             _ruleSpec = ruleSpec;
         }

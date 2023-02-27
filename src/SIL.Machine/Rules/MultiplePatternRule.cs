@@ -4,9 +4,11 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-    public class MultiplePatternRule<TData, TOffset> : PatternRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class MultiplePatternRule<TData, TOffset> : PatternRule<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
-        public MultiplePatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec) : base(ruleSpec) { }
+        public MultiplePatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec)
+            : base(ruleSpec) { }
 
         public MultiplePatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec, MatcherSettings<TOffset> matcherSettings)
             : base(ruleSpec, matcherSettings) { }

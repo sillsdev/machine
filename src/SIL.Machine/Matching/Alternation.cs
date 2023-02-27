@@ -8,14 +8,17 @@ namespace SIL.Machine.Matching
 {
     public class Alternation<TData, TOffset>
         : PatternNode<TData, TOffset>,
-          ICloneable<Alternation<TData, TOffset>>,
-          IValueEquatable<Alternation<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            ICloneable<Alternation<TData, TOffset>>,
+            IValueEquatable<Alternation<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         public Alternation() { }
 
-        public Alternation(IEnumerable<PatternNode<TData, TOffset>> nodes) : base(nodes) { }
+        public Alternation(IEnumerable<PatternNode<TData, TOffset>> nodes)
+            : base(nodes) { }
 
-        protected Alternation(Alternation<TData, TOffset> alternation) : base(alternation) { }
+        protected Alternation(Alternation<TData, TOffset> alternation)
+            : base(alternation) { }
 
         internal override State<TData, TOffset> GenerateNfa(
             Fst<TData, TOffset> fsa,

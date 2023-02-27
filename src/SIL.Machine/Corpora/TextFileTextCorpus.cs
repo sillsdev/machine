@@ -4,9 +4,11 @@ namespace SIL.Machine.Corpora
 {
     public class TextFileTextCorpus : DictionaryTextCorpus
     {
-        public TextFileTextCorpus(params string[] filePatterns) : this((IEnumerable<string>)filePatterns) { }
+        public TextFileTextCorpus(params string[] filePatterns)
+            : this((IEnumerable<string>)filePatterns) { }
 
-        public TextFileTextCorpus(IEnumerable<string> filePatterns) : base(GetTexts(filePatterns)) { }
+        public TextFileTextCorpus(IEnumerable<string> filePatterns)
+            : base(GetTexts(filePatterns)) { }
 
         private static IEnumerable<IText> GetTexts(IEnumerable<string> filePatterns)
         {

@@ -19,7 +19,8 @@ namespace SIL.Machine.FiniteState
     /// different results than the equivalent non-deterministic FST for the same input. If it is possible
     /// for the input to contain underspecified feature values, then a non-deterministic FST should be used.
     /// </summary>
-    public class Fst<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
+    public class Fst<TData, TOffset> : IFreezable
+        where TData : IAnnotatedData<TOffset>
     {
         private int _nextTag;
         private readonly Dictionary<string, int> _groups;
@@ -36,11 +37,14 @@ namespace SIL.Machine.FiniteState
         private State<TData, TOffset> _startState;
         private bool _ignoreVariables;
 
-        public Fst() : this(null, EqualityComparer<TOffset>.Default) { }
+        public Fst()
+            : this(null, EqualityComparer<TOffset>.Default) { }
 
-        public Fst(IEqualityComparer<TOffset> equalityComparer) : this(null, equalityComparer) { }
+        public Fst(IEqualityComparer<TOffset> equalityComparer)
+            : this(null, equalityComparer) { }
 
-        public Fst(IFstOperations<TData, TOffset> operations) : this(operations, EqualityComparer<TOffset>.Default) { }
+        public Fst(IFstOperations<TData, TOffset> operations)
+            : this(operations, EqualityComparer<TOffset>.Default) { }
 
         public Fst(IFstOperations<TData, TOffset> operations, IEqualityComparer<TOffset> offsetEqualityComparer)
         {
@@ -693,8 +697,8 @@ namespace SIL.Machine.FiniteState
                         targetStates
                             .SelectMany(s => s.NfaState.Arcs)
                             .Any(a => a.Input.IsEpsilon && a.Input.EnqueueCount > 0)
-                          ? 1
-                          : 0
+                            ? 1
+                            : 0
                     );
                 foreach (NfaStateInfo state in targetStates)
                 {
@@ -2001,8 +2005,8 @@ namespace SIL.Machine.FiniteState
                         s.Arcs.Add(
                             newArc.Item3,
                             newArc.Item4 == null
-                              ? Enumerable.Empty<Output<TData, TOffset>>()
-                              : newArc.Item4.ToEnumerable(),
+                                ? Enumerable.Empty<Output<TData, TOffset>>()
+                                : newArc.Item4.ToEnumerable(),
                             r
                         );
                     }
@@ -2028,10 +2032,10 @@ namespace SIL.Machine.FiniteState
                     state.Index,
                     state.Equals(StartState) ? "diamond" : "circle",
                     state.Equals(StartState)
-                      ? "green"
-                      : state.IsAccepting
-                          ? "red"
-                          : "black"
+                        ? "green"
+                        : state.IsAccepting
+                            ? "red"
+                            : "black"
                 );
                 if (state.IsAccepting)
                     writer.Write(", peripheries=\"2\"");

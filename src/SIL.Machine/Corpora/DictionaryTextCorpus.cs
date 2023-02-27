@@ -6,7 +6,8 @@ namespace SIL.Machine.Corpora
 {
     public class DictionaryTextCorpus : TextCorpusBase
     {
-        public DictionaryTextCorpus(params IText[] texts) : this((IEnumerable<IText>)texts) { }
+        public DictionaryTextCorpus(params IText[] texts)
+            : this((IEnumerable<IText>)texts) { }
 
         public DictionaryTextCorpus(IEnumerable<IText> texts)
         {

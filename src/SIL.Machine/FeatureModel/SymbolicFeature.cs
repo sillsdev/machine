@@ -11,7 +11,8 @@ namespace SIL.Machine.FeatureModel
         public SymbolicFeature(string id, params FeatureSymbol[] possibleSymbols)
             : this(id, (IEnumerable<FeatureSymbol>)possibleSymbols) { }
 
-        public SymbolicFeature(string id, IEnumerable<FeatureSymbol> possibleSymbols) : base(id)
+        public SymbolicFeature(string id, IEnumerable<FeatureSymbol> possibleSymbols)
+            : base(id)
         {
             _possibleSymbols = new PossibleSymbolCollection(possibleSymbols);
             int i = 0;

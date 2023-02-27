@@ -4,10 +4,11 @@ namespace SIL.Machine.Corpora
 {
     public class TextFileAlignmentCorpus : DictionaryAlignmentCorpus
     {
-        public TextFileAlignmentCorpus(params string[] filePatterns) : this((IEnumerable<string>)filePatterns) { }
+        public TextFileAlignmentCorpus(params string[] filePatterns)
+            : this((IEnumerable<string>)filePatterns) { }
 
-        public TextFileAlignmentCorpus(IEnumerable<string> filePatterns) : base(GetAlignmentCollections(filePatterns))
-        { }
+        public TextFileAlignmentCorpus(IEnumerable<string> filePatterns)
+            : base(GetAlignmentCollections(filePatterns)) { }
 
         private static IEnumerable<IAlignmentCollection> GetAlignmentCollections(IEnumerable<string> filePatterns)
         {

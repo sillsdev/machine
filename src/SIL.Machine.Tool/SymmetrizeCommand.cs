@@ -116,10 +116,12 @@ namespace SIL.Machine
             return 0;
         }
 
-        private IEnumerable<(WordAlignmentMatrix, WordAlignmentMatrix, IReadOnlyList<string>, IReadOnlyList<string>)> ParseGizaAlignments(
-            StreamReader directReader,
-            StreamReader inverseReader
-        )
+        private IEnumerable<(
+            WordAlignmentMatrix,
+            WordAlignmentMatrix,
+            IReadOnlyList<string>,
+            IReadOnlyList<string>
+        )> ParseGizaAlignments(StreamReader directReader, StreamReader inverseReader)
         {
             return ParseGizaAlignments(directReader)
                 .Zip(

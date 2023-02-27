@@ -11,12 +11,14 @@ namespace SIL.Machine.FeatureModel
         /// Initializes a new instance of the <see cref="FeatureSymbol"/> class.
         /// </summary>
         /// <param name="id">The id.</param>
-        public FeatureSymbol(string id) : base(id)
+        public FeatureSymbol(string id)
+            : base(id)
         {
             Index = -1;
         }
 
-        public FeatureSymbol(string id, string desc) : this(id)
+        public FeatureSymbol(string id, string desc)
+            : this(id)
         {
             Description = desc;
         }

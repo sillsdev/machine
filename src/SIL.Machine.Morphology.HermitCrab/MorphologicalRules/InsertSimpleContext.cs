@@ -17,7 +17,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public InsertSimpleContext(NaturalClass nc, IEnumerable<SymbolicFeatureValue> variables)
             : this(new SimpleContext(nc, variables)) { }
 
-        public InsertSimpleContext(SimpleContext simpleCtxt) : base(null)
+        public InsertSimpleContext(SimpleContext simpleCtxt)
+            : base(null)
         {
             _simpleCtxt = simpleCtxt;
         }

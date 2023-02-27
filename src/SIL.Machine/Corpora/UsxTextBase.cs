@@ -8,7 +8,8 @@ namespace SIL.Machine.Corpora
     {
         private readonly UsxVerseParser _parser;
 
-        protected UsxTextBase(string id, ScrVers versification) : base(id, versification)
+        protected UsxTextBase(string id, ScrVers versification)
+            : base(id, versification)
         {
             _parser = new UsxVerseParser();
         }

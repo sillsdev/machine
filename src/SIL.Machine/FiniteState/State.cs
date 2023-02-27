@@ -6,7 +6,8 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
-    public class State<TData, TOffset> : IFreezable where TData : IAnnotatedData<TOffset>
+    public class State<TData, TOffset> : IFreezable
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly int _index;
         private readonly ArcCollection<TData, TOffset> _arcs;
@@ -35,7 +36,8 @@ namespace SIL.Machine.FiniteState
             IEnumerable<AcceptInfo<TData, TOffset>> acceptInfos,
             IEnumerable<TagMapCommand> finishers,
             bool isLazy
-        ) : this(isFsa, index, true, acceptInfos, finishers, isLazy) { }
+        )
+            : this(isFsa, index, true, acceptInfos, finishers, isLazy) { }
 
         private State(
             bool isFsa,

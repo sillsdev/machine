@@ -159,7 +159,8 @@ namespace SIL.Machine.Translation
         {
             private readonly UnigramTruecaser _truecaser;
 
-            public Trainer(UnigramTruecaser truecaser, IEnumerable<TextRow> corpus) : base(corpus)
+            public Trainer(UnigramTruecaser truecaser, IEnumerable<TextRow> corpus)
+                : base(corpus)
             {
                 _truecaser = truecaser;
             }

@@ -8,7 +8,8 @@ namespace SIL.Machine.Corpora
     {
         private readonly TextRow[] _rows;
 
-        public MemoryText(string id) : this(id, Enumerable.Empty<TextRow>()) { }
+        public MemoryText(string id)
+            : this(id, Enumerable.Empty<TextRow>()) { }
 
         public MemoryText(string id, IEnumerable<TextRow> rows)
         {

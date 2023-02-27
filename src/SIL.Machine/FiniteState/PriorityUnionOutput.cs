@@ -6,9 +6,11 @@ namespace SIL.Machine.FiniteState
 {
     public class PriorityUnionOutput<TData, TOffset>
         : Output<TData, TOffset>,
-          IEquatable<PriorityUnionOutput<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            IEquatable<PriorityUnionOutput<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
-        internal PriorityUnionOutput(FeatureStruct fs) : base(fs) { }
+        internal PriorityUnionOutput(FeatureStruct fs)
+            : base(fs) { }
 
         public override Annotation<TOffset> UpdateOutput(
             TData data,

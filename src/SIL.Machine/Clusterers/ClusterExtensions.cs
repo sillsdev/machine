@@ -78,8 +78,8 @@ namespace SIL.Machine.Clusterers
             Cluster<T> firstCluster;
             GetMidpoint(tree, out midpointEdge, out pointOnEdge, out firstCluster);
             return pointOnEdge < midpointEdge.Length - pointOnEdge
-              ? firstCluster
-              : midpointEdge.GetOtherVertex(firstCluster);
+                ? firstCluster
+                : midpointEdge.GetOtherVertex(firstCluster);
         }
 
         public static IBidirectionalGraph<Cluster<T>, ClusterEdge<T>> ToRootedTree<T>(

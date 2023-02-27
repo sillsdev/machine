@@ -41,8 +41,8 @@ namespace SIL.Machine.Translation.Thot
             get
             {
                 return _isSource
-                  ? (int)Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
-                  : (int)Thot.swAlignModel_getTargetWordCount(_swAlignModelHandle);
+                    ? (int)Thot.swAlignModel_getSourceWordCount(_swAlignModelHandle)
+                    : (int)Thot.swAlignModel_getTargetWordCount(_swAlignModelHandle);
             }
         }
 

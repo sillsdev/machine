@@ -43,7 +43,8 @@ namespace SIL.Machine.DataStructures
             TNode cur,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             return cur.GetNext(dir, filter);
         }
@@ -53,7 +54,8 @@ namespace SIL.Machine.DataStructures
             TNode cur,
             Direction dir,
             Func<TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             return cur.GetNext(dir, filter);
         }
@@ -63,7 +65,8 @@ namespace SIL.Machine.DataStructures
             TNode cur,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             return cur.GetPrev(dir, filter);
         }
@@ -73,7 +76,8 @@ namespace SIL.Machine.DataStructures
             TNode cur,
             Direction dir,
             Func<TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             return cur.GetPrev(dir, filter);
         }
@@ -97,7 +101,8 @@ namespace SIL.Machine.DataStructures
             TNode first,
             TNode last,
             Direction dir
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             return first.GetNodes(last, dir);
         }
@@ -116,7 +121,8 @@ namespace SIL.Machine.DataStructures
             this IBidirListNode<TNode> node,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             var cur = (TNode)node;
             do
@@ -153,7 +159,8 @@ namespace SIL.Machine.DataStructures
             this IBidirListNode<TNode> node,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirListNode<TNode>
+        )
+            where TNode : class, IBidirListNode<TNode>
         {
             var cur = (TNode)node;
             do
@@ -231,7 +238,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> root,
             Action<TNode> action,
             Direction dir
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             DepthFirstTraverseNode(root, action, dir, false);
         }
@@ -241,7 +249,8 @@ namespace SIL.Machine.DataStructures
             Action<TNode> action,
             Direction dir,
             bool preorder
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             if (preorder)
                 action((TNode)node);
@@ -264,7 +273,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> root,
             Action<TNode> action,
             Direction dir
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             var queue = new Queue<TNode>();
             queue.Enqueue((TNode)root);
@@ -365,7 +375,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> node,
             Direction dir,
             Func<TNode, bool> filter
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             var cur = (TNode)node;
             do
@@ -385,7 +396,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> node,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             var cur = (TNode)node;
             do
@@ -430,7 +442,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> node,
             Direction dir,
             Func<TNode, bool> filter
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             var cur = (TNode)node;
             do
@@ -450,7 +463,8 @@ namespace SIL.Machine.DataStructures
             this IBidirTreeNode<TNode> node,
             Direction dir,
             Func<TNode, TNode, bool> filter
-        ) where TNode : class, IBidirTreeNode<TNode>
+        )
+            where TNode : class, IBidirTreeNode<TNode>
         {
             var cur = (TNode)node;
             do

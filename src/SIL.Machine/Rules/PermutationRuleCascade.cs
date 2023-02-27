@@ -6,19 +6,21 @@ namespace SIL.Machine.Rules
     public class PermutationRuleCascade<TData, TOffset> : RuleCascade<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules) : base(rules) { }
+        public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+            : base(rules) { }
 
         public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, comparer) { }
 
-        public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp) : base(rules, multiApp)
-        { }
+        public PermutationRuleCascade(IEnumerable<IRule<TData, TOffset>> rules, bool multiApp)
+            : base(rules, multiApp) { }
 
         public PermutationRuleCascade(
             IEnumerable<IRule<TData, TOffset>> rules,
             bool multiApp,
             IEqualityComparer<TData> comparer
-        ) : base(rules, multiApp, comparer) { }
+        )
+            : base(rules, multiApp, comparer) { }
 
         public override IEnumerable<TData> Apply(TData input)
         {

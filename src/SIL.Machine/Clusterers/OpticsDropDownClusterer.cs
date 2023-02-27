@@ -7,7 +7,8 @@ namespace SIL.Machine.Clusterers
 {
     public class OpticsDropDownClusterer<T> : OpticsRootedHierarchicalClusterer<T>
     {
-        public OpticsDropDownClusterer(Optics<T> optics) : base(optics) { }
+        public OpticsDropDownClusterer(Optics<T> optics)
+            : base(optics) { }
 
         public override IBidirectionalGraph<Cluster<T>, ClusterEdge<T>> GenerateClusters(
             IList<ClusterOrderEntry<T>> clusterOrder

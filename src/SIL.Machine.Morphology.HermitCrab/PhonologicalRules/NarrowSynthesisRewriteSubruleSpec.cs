@@ -16,7 +16,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             int targetCount,
             RewriteSubrule subrule,
             int index
-        ) : base(matcherSettings, isIterative, subrule, index)
+        )
+            : base(matcherSettings, isIterative, subrule, index)
         {
             _rhs = subrule.Rhs;
             _targetCount = targetCount;

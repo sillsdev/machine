@@ -6,9 +6,11 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-    public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class ParallelRuleBatch<TData, TOffset> : RuleBatch<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
-        public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules) : base(rules, false) { }
+        public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
+            : base(rules, false) { }
 
         public ParallelRuleBatch(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : base(rules, false, comparer) { }

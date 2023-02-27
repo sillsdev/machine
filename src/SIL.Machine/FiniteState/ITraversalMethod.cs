@@ -4,7 +4,8 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
 {
-    internal interface ITraversalMethod<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    internal interface ITraversalMethod<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         IList<Annotation<TOffset>> Annotations { get; }
         IEnumerable<FstResult<TData, TOffset>> Traverse(

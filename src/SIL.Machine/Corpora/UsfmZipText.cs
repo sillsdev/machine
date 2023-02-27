@@ -18,7 +18,8 @@ namespace SIL.Machine.Corpora
             string path,
             ScrVers versification = null,
             bool includeMarkers = false
-        ) : base(GetId(archiveFileName, path, encoding), stylesheet, encoding, versification, includeMarkers)
+        )
+            : base(GetId(archiveFileName, path, encoding), stylesheet, encoding, versification, includeMarkers)
         {
             _archiveFileName = archiveFileName;
             _path = path;

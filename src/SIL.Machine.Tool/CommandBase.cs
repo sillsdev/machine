@@ -33,7 +33,8 @@ namespace SIL.Machine
             Commands.Add(command);
         }
 
-        protected TSpec AddSpec<TSpec>(TSpec spec) where TSpec : ICommandSpec
+        protected TSpec AddSpec<TSpec>(TSpec spec)
+            where TSpec : ICommandSpec
         {
             spec.AddParameters(this);
             _specs.Add(spec);

@@ -9,11 +9,11 @@ namespace SIL.Machine.Annotations
 {
     public class ShapeNode
         : OrderedBidirListNode<ShapeNode>,
-          IComparable<ShapeNode>,
-          IComparable,
-          ICloneable<ShapeNode>,
-          IValueEquatable<ShapeNode>,
-          IFreezable
+            IComparable<ShapeNode>,
+            IComparable,
+            ICloneable<ShapeNode>,
+            IValueEquatable<ShapeNode>,
+            IFreezable
     {
         private readonly Annotation<ShapeNode> _ann;
         private int _tag;
@@ -24,7 +24,8 @@ namespace SIL.Machine.Annotations
             _tag = int.MinValue;
         }
 
-        protected ShapeNode(ShapeNode node) : this(node.Annotation.FeatureStruct.Clone())
+        protected ShapeNode(ShapeNode node)
+            : this(node.Annotation.FeatureStruct.Clone())
         {
             _ann.Optional = node.Annotation.Optional;
         }

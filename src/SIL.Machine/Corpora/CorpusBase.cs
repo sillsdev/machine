@@ -4,7 +4,8 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class CorpusBase<T> : ICorpus<T> where T : IRow
+    public abstract class CorpusBase<T> : ICorpus<T>
+        where T : IRow
     {
         public virtual bool MissingRowsAllowed => true;
 

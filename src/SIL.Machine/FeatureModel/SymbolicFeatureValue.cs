@@ -45,12 +45,14 @@ namespace SIL.Machine.FeatureModel
             Set(value.ToEnumerable());
         }
 
-        public SymbolicFeatureValue(SymbolicFeature feature, string varName, bool agree) : base(varName, agree)
+        public SymbolicFeatureValue(SymbolicFeature feature, string varName, bool agree)
+            : base(varName, agree)
         {
             _feature = feature;
         }
 
-        private SymbolicFeatureValue(SymbolicFeatureValue sfv) : base(sfv)
+        private SymbolicFeatureValue(SymbolicFeatureValue sfv)
+            : base(sfv)
         {
             _feature = sfv._feature;
             _first = sfv._first;
@@ -202,8 +204,8 @@ namespace SIL.Machine.FeatureModel
         public override SimpleFeatureValue Negation()
         {
             return IsVariable
-              ? new SymbolicFeatureValue(_feature, VariableName, !Agree)
-              : new SymbolicFeatureValue(_feature, (~_flags & _feature.Mask));
+                ? new SymbolicFeatureValue(_feature, VariableName, !Agree)
+                : new SymbolicFeatureValue(_feature, (~_flags & _feature.Mask));
         }
 
         public override bool ValueEquals(SimpleFeatureValue other)

@@ -6,7 +6,8 @@ namespace SIL.Machine.Matching.Fluent
 {
     public class GroupBuilder<TData, TOffset>
         : PatternNodeBuilder<TData, TOffset>,
-          IQuantifierGroupSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
+            IQuantifierGroupSyntax<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly string _name;
 

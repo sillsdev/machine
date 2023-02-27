@@ -11,8 +11,9 @@ namespace SIL.Machine.Matching
     /// </summary>
     public class Constraint<TData, TOffset>
         : PatternNode<TData, TOffset>,
-          IValueEquatable<Constraint<TData, TOffset>>,
-          ICloneable<Constraint<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            IValueEquatable<Constraint<TData, TOffset>>,
+            ICloneable<Constraint<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly FeatureStruct _fs;
 

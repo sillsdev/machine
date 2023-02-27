@@ -7,7 +7,8 @@ namespace SIL.Machine.Corpora
 {
     public class TextFileText : TextBase
     {
-        public TextFileText(string id, string fileName) : base(id, id)
+        public TextFileText(string id, string fileName)
+            : base(id, id)
         {
             FileName = fileName;
         }

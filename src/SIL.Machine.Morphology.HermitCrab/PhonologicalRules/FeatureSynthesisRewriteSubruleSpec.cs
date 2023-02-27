@@ -15,7 +15,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             bool isIterative,
             RewriteSubrule subrule,
             int index
-        ) : base(matcherSettings, isIterative, subrule, index)
+        )
+            : base(matcherSettings, isIterative, subrule, index)
         {
             _rhs = subrule.Rhs;
         }

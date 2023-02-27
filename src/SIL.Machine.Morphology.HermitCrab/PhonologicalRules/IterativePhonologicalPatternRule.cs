@@ -11,7 +11,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         public IterativePhonologicalPatternRule(
             IPhonologicalPatternRuleSpec ruleSpec,
             MatcherSettings<ShapeNode> matcherSettings
-        ) : base(ruleSpec, matcherSettings) { }
+        )
+            : base(ruleSpec, matcherSettings) { }
 
         public override IEnumerable<Word> Apply(Word input)
         {

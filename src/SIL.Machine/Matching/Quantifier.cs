@@ -12,8 +12,9 @@ namespace SIL.Machine.Matching
     /// </summary>
     public class Quantifier<TData, TOffset>
         : PatternNode<TData, TOffset>,
-          ICloneable<Quantifier<TData, TOffset>>,
-          IValueEquatable<Quantifier<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            ICloneable<Quantifier<TData, TOffset>>,
+            IValueEquatable<Quantifier<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         public const int Infinite = -1;
 
@@ -21,11 +22,14 @@ namespace SIL.Machine.Matching
         private int _maxOccur;
         private bool _greedy;
 
-        public Quantifier() : this(0, Infinite) { }
+        public Quantifier()
+            : this(0, Infinite) { }
 
-        public Quantifier(PatternNode<TData, TOffset> node) : this(0, Infinite, node) { }
+        public Quantifier(PatternNode<TData, TOffset> node)
+            : this(0, Infinite, node) { }
 
-        public Quantifier(int minOccur, int maxOccur) : this(minOccur, maxOccur, null) { }
+        public Quantifier(int minOccur, int maxOccur)
+            : this(minOccur, maxOccur, null) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Quantifier{TData, TOffset}"/> class.
@@ -42,7 +46,8 @@ namespace SIL.Machine.Matching
             _maxOccur = maxOccur;
         }
 
-        protected Quantifier(Quantifier<TData, TOffset> quantifier) : base(quantifier)
+        protected Quantifier(Quantifier<TData, TOffset> quantifier)
+            : base(quantifier)
         {
             _minOccur = quantifier._minOccur;
             _maxOccur = quantifier._maxOccur;

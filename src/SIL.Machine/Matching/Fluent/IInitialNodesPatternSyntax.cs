@@ -4,7 +4,8 @@ using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.Matching.Fluent
 {
-    public interface IInitialNodesPatternSyntax<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public interface IInitialNodesPatternSyntax<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         IQuantifierPatternSyntax<TData, TOffset> Group(
             string name,

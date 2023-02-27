@@ -40,7 +40,8 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// This class represents a morpheme co-occurrence rule. Morpheme co-occurrence rules are used
     /// to determine if a list of morphemes co-occur with a specific morpheme.
     /// </summary>
-    public abstract class MorphCoOccurrenceRule<T> : IEquatable<MorphCoOccurrenceRule<T>> where T : class
+    public abstract class MorphCoOccurrenceRule<T> : IEquatable<MorphCoOccurrenceRule<T>>
+        where T : class
     {
         private readonly ConstraintType _type;
         private readonly List<T> _others;

@@ -15,7 +15,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             bool isIterative,
             Pattern<Word, ShapeNode> lhs,
             IEnumerable<RewriteSubrule> subrules
-        ) : base(lhs.IsEmpty)
+        )
+            : base(lhs.IsEmpty)
         {
             Pattern.Acceptable = match => CheckTarget(match, lhs);
 

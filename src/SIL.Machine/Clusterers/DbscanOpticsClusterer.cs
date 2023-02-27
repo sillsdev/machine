@@ -6,7 +6,8 @@ namespace SIL.Machine.Clusterers
     {
         private readonly double _epsilon;
 
-        public DbscanOpticsClusterer(Optics<T> optics, double epsilon) : base(optics)
+        public DbscanOpticsClusterer(Optics<T> optics, double epsilon)
+            : base(optics)
         {
             _epsilon = epsilon;
         }

@@ -6,9 +6,11 @@ namespace SIL.Machine.Clusterers
     {
         private readonly double _length;
 
-        public ClusterEdge(Cluster<T> source, Cluster<T> target) : this(source, target, 0) { }
+        public ClusterEdge(Cluster<T> source, Cluster<T> target)
+            : this(source, target, 0) { }
 
-        public ClusterEdge(Cluster<T> source, Cluster<T> target, double length) : base(source, target)
+        public ClusterEdge(Cluster<T> source, Cluster<T> target, double length)
+            : base(source, target)
         {
             _length = length;
         }

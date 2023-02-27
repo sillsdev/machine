@@ -19,17 +19,15 @@ public class ClearMLNmtEngineRuntimeTests
         bool first = true;
         env.ClearMLService
             .GetTaskAsync(Arg.Any<string>(), "project1", Arg.Any<CancellationToken>())
-            .Returns(
-                x =>
+            .Returns(x =>
+            {
+                if (first)
                 {
-                    if (first)
-                    {
-                        first = false;
-                        return Task.FromResult<ClearMLTask?>(null);
-                    }
-                    return Task.FromResult<ClearMLTask?>(task);
+                    first = false;
+                    return Task.FromResult<ClearMLTask?>(null);
                 }
-            );
+                return Task.FromResult<ClearMLTask?>(task);
+            });
         env.ClearMLService
             .GetTaskAsync("task1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<ClearMLTask?>(task));

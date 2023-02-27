@@ -16,7 +16,8 @@ namespace SIL.Machine.Tokenization
         );
         private readonly HashSet<string> _abbreviations;
 
-        public LatinWordTokenizer() : this(Enumerable.Empty<string>()) { }
+        public LatinWordTokenizer()
+            : this(Enumerable.Empty<string>()) { }
 
         public LatinWordTokenizer(IEnumerable<string> abbreviations)
         {

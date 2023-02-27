@@ -33,7 +33,8 @@ namespace SIL.Machine.Translation.Thot
             ThotWordAlignmentModelType wordAlignmentModelType,
             IParallelTextCorpus corpus,
             string cfgFileName
-        ) : this(wordAlignmentModelType, corpus, ThotSmtParameters.Load(cfgFileName))
+        )
+            : this(wordAlignmentModelType, corpus, ThotSmtParameters.Load(cfgFileName))
         {
             ConfigFileName = cfgFileName;
         }

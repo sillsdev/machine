@@ -6,7 +6,8 @@ namespace SIL.Machine.FiniteState
     public class NullOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<NullOutput<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        internal NullOutput() : base(null) { }
+        internal NullOutput()
+            : base(null) { }
 
         public override Annotation<TOffset> UpdateOutput(
             TData data,

@@ -33,10 +33,8 @@ namespace SIL.Machine.Corpora
                         using (var tempFile = TempFile.CreateAndGetPathButDontMakeTheFile())
                         {
                             versificationEntry.ExtractToFile(tempFile.Path);
-                            var abbr = (string)doc.Root
-                                .Elements("identification")
-                                .Elements("abbreviation")
-                                .FirstOrDefault();
+                            var abbr = (string)
+                                doc.Root.Elements("identification").Elements("abbreviation").FirstOrDefault();
                             Versification = Scripture.Versification.Table.Implementation.Load(tempFile.Path, abbr);
                         }
                     }

@@ -117,7 +117,8 @@ namespace SIL.Machine.FeatureModel
             return true;
         }
 
-        protected static bool Dereference<T>(FeatureValue value, out T actualValue) where T : FeatureValue
+        protected static bool Dereference<T>(FeatureValue value, out T actualValue)
+            where T : FeatureValue
         {
             value = Dereference(value);
 
@@ -125,7 +126,8 @@ namespace SIL.Machine.FeatureModel
             return actualValue != null;
         }
 
-        protected static T Dereference<T>(T value) where T : FeatureValue
+        protected static T Dereference<T>(T value)
+            where T : FeatureValue
         {
             FeatureValue fv = value;
             while (fv.Forward != null)

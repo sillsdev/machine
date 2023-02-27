@@ -7,7 +7,8 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
-    internal abstract class TraversalInstance<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    internal abstract class TraversalInstance<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly Register<TOffset>[,] _registers;
         private readonly List<int> _priorities;

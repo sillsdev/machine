@@ -8,7 +8,8 @@ namespace SIL.Machine.FiniteState
     {
         private readonly HashSet<State<TData, TOffset>> _visited;
 
-        public NondeterministicFsaTraversalInstance(int registerCount) : base(registerCount, false)
+        public NondeterministicFsaTraversalInstance(int registerCount)
+            : base(registerCount, false)
         {
             _visited = new HashSet<State<TData, TOffset>>();
         }

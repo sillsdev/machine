@@ -8,7 +8,8 @@ namespace SIL.Machine.Corpora
     {
         private readonly AlignmentRow[] _rows;
 
-        public MemoryAlignmentCollection(string id) : this(id, Enumerable.Empty<AlignmentRow>()) { }
+        public MemoryAlignmentCollection(string id)
+            : this(id, Enumerable.Empty<AlignmentRow>()) { }
 
         public MemoryAlignmentCollection(string id, IEnumerable<AlignmentRow> rows)
         {

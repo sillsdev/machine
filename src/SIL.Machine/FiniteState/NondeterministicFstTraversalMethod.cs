@@ -20,7 +20,8 @@ namespace SIL.Machine.FiniteState
             bool startAnchor,
             bool endAnchor,
             bool useDefaults
-        ) : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+        )
+            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
 
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,

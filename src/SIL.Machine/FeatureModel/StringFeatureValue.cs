@@ -23,9 +23,11 @@ namespace SIL.Machine.FeatureModel
 
         private HashSet<string> _values;
 
-        public StringFeatureValue() : this(Enumerable.Empty<string>()) { }
+        public StringFeatureValue()
+            : this(Enumerable.Empty<string>()) { }
 
-        public StringFeatureValue(IEnumerable<string> values) : this(values, false) { }
+        public StringFeatureValue(IEnumerable<string> values)
+            : this(values, false) { }
 
         public StringFeatureValue(IEnumerable<string> values, bool not)
         {
@@ -38,12 +40,14 @@ namespace SIL.Machine.FeatureModel
             _values = new HashSet<string> { value };
         }
 
-        public StringFeatureValue(string varName, bool agree) : base(varName, agree)
+        public StringFeatureValue(string varName, bool agree)
+            : base(varName, agree)
         {
             _values = new HashSet<string>();
         }
 
-        protected StringFeatureValue(StringFeatureValue sfv) : base(sfv)
+        protected StringFeatureValue(StringFeatureValue sfv)
+            : base(sfv)
         {
             _values = new HashSet<string>(sfv._values);
             Not = sfv.Not;

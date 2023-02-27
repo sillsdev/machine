@@ -9,7 +9,8 @@ namespace SIL.Machine.Matching
     /// <summary>
     /// This class represents a match between a phonetic shape and a phonetic pattern.
     /// </summary>
-    public class Match<TData, TOffset> : GroupCapture<TOffset> where TData : IAnnotatedData<TOffset>
+    public class Match<TData, TOffset> : GroupCapture<TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly Matcher<TData, TOffset> _matcher;
         private readonly GroupCaptureCollection<TOffset> _groupCaptures;
@@ -37,7 +38,8 @@ namespace SIL.Machine.Matching
             IList<string> patternPath,
             VariableBindings varBindings,
             Annotation<TOffset> nextAnn
-        ) : base(Matcher<TData, TOffset>.EntireMatch, range)
+        )
+            : base(Matcher<TData, TOffset>.EntireMatch, range)
         {
             _matcher = matcher;
             _groupCaptures = new GroupCaptureCollection<TOffset>(groupCaptures);

@@ -156,13 +156,11 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddBackgroundJobServer(this IMachineBuilder builder, string[]? queues = null)
     {
-        builder.Services.AddHangfireServer(
-            o =>
-            {
-                if (queues is not null)
-                    o.Queues = queues;
-            }
-        );
+        builder.Services.AddHangfireServer(o =>
+        {
+            if (queues is not null)
+                o.Queues = queues;
+        });
         builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
         return builder;
     }

@@ -6,13 +6,14 @@ using SIL.Machine.Matching;
 
 namespace SIL.Machine.Rules
 {
-    public class PatternRule<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class PatternRule<TData, TOffset> : IRule<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly IPatternRuleSpec<TData, TOffset> _ruleSpec;
         private readonly Matcher<TData, TOffset> _matcher;
 
-        public PatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec) : this(ruleSpec, new MatcherSettings<TOffset>())
-        { }
+        public PatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec)
+            : this(ruleSpec, new MatcherSettings<TOffset>()) { }
 
         public PatternRule(IPatternRuleSpec<TData, TOffset> ruleSpec, MatcherSettings<TOffset> matcherSettings)
         {

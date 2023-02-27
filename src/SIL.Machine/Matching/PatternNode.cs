@@ -14,21 +14,25 @@ namespace SIL.Machine.Matching
     /// </summary>
     public abstract class PatternNode<TData, TOffset>
         : OrderedBidirTreeNode<PatternNode<TData, TOffset>>,
-          ICloneable<PatternNode<TData, TOffset>>,
-          IFreezable,
-          IValueEquatable<PatternNode<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            ICloneable<PatternNode<TData, TOffset>>,
+            IFreezable,
+            IValueEquatable<PatternNode<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         private int _hashCode;
 
-        protected PatternNode() : base(begin => new Margin()) { }
+        protected PatternNode()
+            : base(begin => new Margin()) { }
 
-        protected PatternNode(IEnumerable<PatternNode<TData, TOffset>> children) : this()
+        protected PatternNode(IEnumerable<PatternNode<TData, TOffset>> children)
+            : this()
         {
             foreach (PatternNode<TData, TOffset> child in children)
                 Children.Add(child);
         }
 
-        protected PatternNode(PatternNode<TData, TOffset> node) : this(node.Children.CloneItems())
+        protected PatternNode(PatternNode<TData, TOffset> node)
+            : this(node.Children.CloneItems())
         {
             Tag = node.Tag;
         }

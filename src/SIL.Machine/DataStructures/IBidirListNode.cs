@@ -1,6 +1,7 @@
 namespace SIL.Machine.DataStructures
 {
-    public interface IBidirListNode<TNode> where TNode : class, IBidirListNode<TNode>
+    public interface IBidirListNode<TNode>
+        where TNode : class, IBidirListNode<TNode>
     {
         IBidirList<TNode> List { get; }
 

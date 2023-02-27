@@ -15,7 +15,8 @@ namespace SIL.Machine.FiniteState
         VeryLow
     }
 
-    public class Arc<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class Arc<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly State<TData, TOffset> _source;
         private readonly int _tag = -1;
@@ -40,7 +41,8 @@ namespace SIL.Machine.FiniteState
             Input input,
             State<TData, TOffset> target,
             IEnumerable<TagMapCommand> cmds
-        ) : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target, cmds) { }
+        )
+            : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target, cmds) { }
 
         internal Arc(State<TData, TOffset> source, Input input, State<TData, TOffset> target)
             : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target) { }
@@ -50,7 +52,8 @@ namespace SIL.Machine.FiniteState
             Input input,
             IEnumerable<Output<TData, TOffset>> output,
             State<TData, TOffset> target
-        ) : this(source, input, output, target, Enumerable.Empty<TagMapCommand>()) { }
+        )
+            : this(source, input, output, target, Enumerable.Empty<TagMapCommand>()) { }
 
         internal Arc(
             State<TData, TOffset> source,

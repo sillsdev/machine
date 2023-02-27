@@ -101,13 +101,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var morphs = new List<Annotation<ShapeNode>>();
                 foreach (Annotation<ShapeNode> ann in Annotations)
                 {
-                    ann.PostorderTraverse(
-                        a =>
-                        {
-                            if (a.Type() == HCFeatureSystem.Morph)
-                                morphs.Add(a);
-                        }
-                    );
+                    ann.PostorderTraverse(a =>
+                    {
+                        if (a.Type() == HCFeatureSystem.Morph)
+                            morphs.Add(a);
+                    });
                 }
                 return morphs;
             }

@@ -40,13 +40,11 @@ public class SmtTransferEngineRuntimeTests
         await env.Runtime.InitNewAsync();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(
-                ct =>
-                {
-                    while (true)
-                        ct.ThrowIfCancellationRequested();
-                }
-            )
+            Arg.Do<CancellationToken>(ct =>
+            {
+                while (true)
+                    ct.ThrowIfCancellationRequested();
+            })
         );
         await env.Runtime.StartBuildAsync("build1");
         await env.WaitForBuildToStartAsync();
@@ -67,13 +65,11 @@ public class SmtTransferEngineRuntimeTests
         await env.Runtime.InitNewAsync();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(
-                ct =>
-                {
-                    while (true)
-                        ct.ThrowIfCancellationRequested();
-                }
-            )
+            Arg.Do<CancellationToken>(ct =>
+            {
+                while (true)
+                    ct.ThrowIfCancellationRequested();
+            })
         );
         await env.Runtime.StartBuildAsync("build1");
         await env.WaitForBuildToStartAsync();
@@ -336,13 +332,11 @@ public class SmtTransferEngineRuntimeTests
             var factory = Substitute.For<ITruecaserFactory>();
             Truecaser
                 .Truecase(Arg.Any<IReadOnlyList<string>>())
-                .Returns(
-                    x =>
-                    {
-                        var segment = x.Arg<IReadOnlyList<string>>();
-                        return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
-                    }
-                );
+                .Returns(x =>
+                {
+                    var segment = x.Arg<IReadOnlyList<string>>();
+                    return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
+                });
             factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
             factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
             return factory;

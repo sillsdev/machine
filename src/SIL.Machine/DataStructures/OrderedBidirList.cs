@@ -9,7 +9,8 @@ namespace SIL.Machine.DataStructures
     /// This is a bi-directional list. It is optimized for list traversal in either direction.
     /// </summary>
     /// <typeparam name="TNode">Item Type, must be the type of the class that the linked list handles.</typeparam>
-    public abstract class OrderedBidirList<TNode> : IOrderedBidirList<TNode> where TNode : OrderedBidirListNode<TNode>
+    public abstract class OrderedBidirList<TNode> : IOrderedBidirList<TNode>
+        where TNode : OrderedBidirListNode<TNode>
     {
         private readonly TNode _begin;
         private readonly TNode _end;

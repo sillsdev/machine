@@ -7,7 +7,8 @@ namespace SIL.Machine.Corpora
 {
     public class MultiKeyRef : IEquatable<MultiKeyRef>, IComparable<MultiKeyRef>, IComparable
     {
-        public MultiKeyRef(string textId, params object[] keys) : this(textId, (IEnumerable<object>)keys) { }
+        public MultiKeyRef(string textId, params object[] keys)
+            : this(textId, (IEnumerable<object>)keys) { }
 
         public MultiKeyRef(string textId, IEnumerable<object> keys)
         {

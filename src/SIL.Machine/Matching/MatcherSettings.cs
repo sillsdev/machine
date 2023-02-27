@@ -13,7 +13,7 @@ namespace SIL.Machine.Matching
 
     public sealed class MatcherSettings<TOffset>
         : Freezable<MatcherSettings<TOffset>>,
-          ICloneable<MatcherSettings<TOffset>>
+            ICloneable<MatcherSettings<TOffset>>
     {
         private Direction _dir;
         private Func<Annotation<TOffset>, bool> _filter;

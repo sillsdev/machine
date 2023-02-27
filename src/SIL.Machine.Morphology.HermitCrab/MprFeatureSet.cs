@@ -11,7 +11,8 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         public MprFeatureSet() { }
 
-        public MprFeatureSet(IEnumerable<MprFeature> mprFeats) : base(mprFeats) { }
+        public MprFeatureSet(IEnumerable<MprFeature> mprFeats)
+            : base(mprFeats) { }
 
         public IEnumerable<MprFeatureGroup> Groups
         {

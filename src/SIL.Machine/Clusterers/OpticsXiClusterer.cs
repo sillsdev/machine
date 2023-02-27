@@ -9,7 +9,8 @@ namespace SIL.Machine.Clusterers
     {
         private readonly double _ixi;
 
-        public OpticsXiClusterer(Optics<T> optics, double xi) : base(optics)
+        public OpticsXiClusterer(Optics<T> optics, double xi)
+            : base(optics)
         {
             _ixi = 1.0 - xi;
         }
@@ -145,8 +146,8 @@ namespace SIL.Machine.Clusterers
             if (unclassifed.Count > 0)
             {
                 Cluster<T> allCluster = double.IsPositiveInfinity(clusterOrder.Last().Reachability)
-                  ? new Cluster<T>(unclassifed, true)
-                  : new Cluster<T>(unclassifed);
+                    ? new Cluster<T>(unclassifed, true)
+                    : new Cluster<T>(unclassifed);
                 tree.AddVertex(allCluster);
                 foreach (Cluster<T> curCluster in curClusters)
                     tree.AddEdge(new ClusterEdge<T>(allCluster, curCluster));

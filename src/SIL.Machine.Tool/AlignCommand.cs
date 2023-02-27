@@ -80,8 +80,8 @@ namespace SIL.Machine
             if (!_quietOption.HasValue())
                 Out.Write("Loading model... ");
             int stepCount = _quietOption.HasValue()
-              ? 0
-              : Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(includeEmpty: false));
+                ? 0
+                : Math.Min(_corpusSpec.MaxCorpusCount, _corpusSpec.ParallelCorpus.Count(includeEmpty: false));
             int curStep = 0;
             using (IWordAlignmentModel alignmentModel = _modelSpec.CreateAlignmentModel(symHeuristic: symHeuristic))
             {

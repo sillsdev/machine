@@ -5,7 +5,8 @@ namespace SIL.Machine.Translation
 {
     public class TranslationSuggestion
     {
-        public TranslationSuggestion(TranslationResult result) : this(result, Enumerable.Empty<int>(), 0) { }
+        public TranslationSuggestion(TranslationResult result)
+            : this(result, Enumerable.Empty<int>(), 0) { }
 
         public TranslationSuggestion(TranslationResult result, IEnumerable<int> indices, double confidence)
         {

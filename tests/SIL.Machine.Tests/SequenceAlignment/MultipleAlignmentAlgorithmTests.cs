@@ -98,30 +98,20 @@ namespace SIL.Machine.SequenceAlignment
         public void AlignLessThanThreeSequences()
         {
             var scorer = new StringScorer();
-            Assert.Throws<ArgumentException>(
-                () =>
-                {
-                    var msa = new MultipleAlignmentAlgorithm<string, char>(
-                        scorer,
-                        Enumerable.Empty<string>(),
-                        GetChars
-                    );
-                }
-            );
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, Enumerable.Empty<string>(), GetChars);
+            });
 
-            Assert.Throws<ArgumentException>(
-                () =>
-                {
-                    var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "bar" }, GetChars);
-                }
-            );
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "bar" }, GetChars);
+            });
 
-            Assert.Throws<ArgumentException>(
-                () =>
-                {
-                    var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar" }, GetChars);
-                }
-            );
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar" }, GetChars);
+            });
         }
 
         [Test]

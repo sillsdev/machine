@@ -6,14 +6,17 @@ namespace SIL.Machine.DataStructures
 {
     public class PriorityQueue<TPriority, TItem> : PriorityQueue<PriorityQueueNode<TPriority, TItem>>
     {
-        public PriorityQueue() : this(10, Comparer<TPriority>.Default) { }
+        public PriorityQueue()
+            : this(10, Comparer<TPriority>.Default) { }
 
-        public PriorityQueue(int capacity) : this(capacity, Comparer<TPriority>.Default) { }
+        public PriorityQueue(int capacity)
+            : this(capacity, Comparer<TPriority>.Default) { }
 
-        public PriorityQueue(IComparer<TPriority> comparer) : base(10, new NodeComparer(comparer)) { }
+        public PriorityQueue(IComparer<TPriority> comparer)
+            : base(10, new NodeComparer(comparer)) { }
 
-        public PriorityQueue(int capacity, IComparer<TPriority> comparer) : base(capacity, new NodeComparer(comparer))
-        { }
+        public PriorityQueue(int capacity, IComparer<TPriority> comparer)
+            : base(capacity, new NodeComparer(comparer)) { }
 
         public void Enqueue(TPriority priority, TItem item)
         {
@@ -40,18 +43,22 @@ namespace SIL.Machine.DataStructures
     /// An implementation of a min-Priority Queue using a heap.  Has O(1) .Contains()!
     /// </summary>
     /// <typeparam name="T">The values in the queue.  Must extend the FastPriorityQueueNode class</typeparam>
-    public class PriorityQueue<T> : IEnumerable<T> where T : PriorityQueueNodeBase
+    public class PriorityQueue<T> : IEnumerable<T>
+        where T : PriorityQueueNodeBase
     {
         private int _numNodes;
         private T[] _nodes;
         private readonly IComparer<T> _comparer;
         private int _capacity;
 
-        public PriorityQueue() : this(10, Comparer<T>.Default) { }
+        public PriorityQueue()
+            : this(10, Comparer<T>.Default) { }
 
-        public PriorityQueue(int capacity) : this(capacity, Comparer<T>.Default) { }
+        public PriorityQueue(int capacity)
+            : this(capacity, Comparer<T>.Default) { }
 
-        public PriorityQueue(IComparer<T> comparer) : this(10, comparer) { }
+        public PriorityQueue(IComparer<T> comparer)
+            : this(10, comparer) { }
 
         public PriorityQueue(int capacity, IComparer<T> comparer)
         {

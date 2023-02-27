@@ -5,13 +5,15 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {
-    public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
         private readonly bool _multiApp;
         private readonly IEqualityComparer<TData> _comparer;
 
-        protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules) : this(rules, false) { }
+        protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
+            : this(rules, false) { }
 
         protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : this(rules, false, comparer) { }

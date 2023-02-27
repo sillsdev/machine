@@ -31,7 +31,8 @@ namespace SIL.Machine.FeatureModel
             throw new ArgumentException(string.Format("The feature '{0}' could not be found.", id), "id");
         }
 
-        public T GetFeature<T>(string id) where T : Feature
+        public T GetFeature<T>(string id)
+            where T : Feature
         {
             Feature feature;
             if (TryGetFeature(id, out feature))
@@ -45,7 +46,8 @@ namespace SIL.Machine.FeatureModel
             return _features.TryGetValue(id, out feature);
         }
 
-        public bool TryGetFeature<T>(string id, out T feature) where T : Feature
+        public bool TryGetFeature<T>(string id, out T feature)
+            where T : Feature
         {
             Feature f;
             if (TryGetFeature(id, out f))

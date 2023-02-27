@@ -6,7 +6,8 @@ namespace SIL.Machine.Annotations
 {
     internal abstract class RangeFactory<TOffset>
     {
-        protected RangeFactory() : this(false) { }
+        protected RangeFactory()
+            : this(false) { }
 
         protected RangeFactory(bool includeEndpoint)
             : this(includeEndpoint, Comparer<TOffset>.Default, EqualityComparer<TOffset>.Default) { }

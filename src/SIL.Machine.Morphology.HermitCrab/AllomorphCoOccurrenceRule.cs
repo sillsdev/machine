@@ -8,7 +8,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             ConstraintType type,
             IEnumerable<Allomorph> others,
             MorphCoOccurrenceAdjacency adjacency
-        ) : base(type, others, adjacency) { }
+        )
+            : base(type, others, adjacency) { }
 
         protected override Allomorph GetMorphObject(Allomorph morph)
         {

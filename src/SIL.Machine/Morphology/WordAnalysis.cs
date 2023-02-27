@@ -11,7 +11,8 @@ namespace SIL.Machine.Morphology
     /// </summary>
     public class WordAnalysis : IEquatable<WordAnalysis>
     {
-        public WordAnalysis() : this(Enumerable.Empty<IMorpheme>(), -1, null) { }
+        public WordAnalysis()
+            : this(Enumerable.Empty<IMorpheme>(), -1, null) { }
 
         public WordAnalysis(IEnumerable<IMorpheme> morphemes, int rootMorphemeIndex, string category)
         {

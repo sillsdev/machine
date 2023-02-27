@@ -8,7 +8,7 @@ namespace SIL.Machine.Morphology
 {
     public class PoorMansAffixIdentifier<TSeq, TItem>
         : PoorMansStemmingAlgorithmBase<TSeq, TItem>,
-          IAffixIdentifier<TSeq, TItem>
+            IAffixIdentifier<TSeq, TItem>
     {
         public PoorMansAffixIdentifier(Func<TSeq, IEnumerable<TItem>> itemsSelector)
             : this(seq => itemsSelector(seq).ToEnumerable())

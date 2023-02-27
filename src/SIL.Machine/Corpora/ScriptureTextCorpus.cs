@@ -28,12 +28,14 @@ namespace SIL.Machine.Corpora
             );
         }
 
-        public ScriptureTextCorpus(ScrVers versification, params IText[] texts) : base(texts)
+        public ScriptureTextCorpus(ScrVers versification, params IText[] texts)
+            : base(texts)
         {
             Versification = versification;
         }
 
-        public ScriptureTextCorpus(ScrVers versification, IEnumerable<IText> texts) : base(texts)
+        public ScriptureTextCorpus(ScrVers versification, IEnumerable<IText> texts)
+            : base(texts)
         {
             Versification = versification;
         }

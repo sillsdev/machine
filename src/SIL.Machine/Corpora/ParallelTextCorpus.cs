@@ -174,8 +174,8 @@ namespace SIL.Machine.Corpora
                         do
                         {
                             compare2 = alignmentEnumerator.MoveNext()
-                              ? RowRefComparer.Compare(srcEnumerator.Current.Ref, alignmentEnumerator.Current.Ref)
-                              : 1;
+                                ? RowRefComparer.Compare(srcEnumerator.Current.Ref, alignmentEnumerator.Current.Ref)
+                                : 1;
                         } while (compare2 < 0);
 
                         if (

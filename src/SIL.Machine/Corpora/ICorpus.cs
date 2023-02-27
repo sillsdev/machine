@@ -2,7 +2,8 @@
 
 namespace SIL.Machine.Corpora
 {
-    public interface ICorpus<T> : IEnumerable<T> where T : IRow
+    public interface ICorpus<T> : IEnumerable<T>
+        where T : IRow
     {
         bool MissingRowsAllowed { get; }
 

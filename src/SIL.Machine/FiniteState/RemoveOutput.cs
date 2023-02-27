@@ -6,7 +6,8 @@ namespace SIL.Machine.FiniteState
     public class RemoveOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<RemoveOutput<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        internal RemoveOutput() : base(null) { }
+        internal RemoveOutput()
+            : base(null) { }
 
         public override Annotation<TOffset> UpdateOutput(
             TData data,

@@ -10,8 +10,9 @@ namespace SIL.Machine.Matching
 {
     public class Pattern<TData, TOffset>
         : PatternNode<TData, TOffset>,
-          ICloneable<Pattern<TData, TOffset>>,
-          IValueEquatable<Pattern<TData, TOffset>> where TData : IAnnotatedData<TOffset>
+            ICloneable<Pattern<TData, TOffset>>,
+            IValueEquatable<Pattern<TData, TOffset>>
+        where TData : IAnnotatedData<TOffset>
     {
         public static IPatternSyntax<TData, TOffset> New()
         {
@@ -36,25 +37,32 @@ namespace SIL.Machine.Matching
         private readonly string _name;
         private Func<Match<TData, TOffset>, bool> _acceptable;
 
-        public Pattern() : this(Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
+        public Pattern()
+            : this(Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
 
-        public Pattern(IEnumerable<PatternNode<TData, TOffset>> nodes) : base(nodes) { }
+        public Pattern(IEnumerable<PatternNode<TData, TOffset>> nodes)
+            : base(nodes) { }
 
-        public Pattern(params PatternNode<TData, TOffset>[] nodes) : base(nodes) { }
+        public Pattern(params PatternNode<TData, TOffset>[] nodes)
+            : base(nodes) { }
 
-        public Pattern(string name) : this(name, Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
+        public Pattern(string name)
+            : this(name, Enumerable.Empty<PatternNode<TData, TOffset>>()) { }
 
-        public Pattern(string name, IEnumerable<PatternNode<TData, TOffset>> nodes) : base(nodes)
+        public Pattern(string name, IEnumerable<PatternNode<TData, TOffset>> nodes)
+            : base(nodes)
         {
             _name = name;
         }
 
-        public Pattern(string name, params PatternNode<TData, TOffset>[] nodes) : base(nodes)
+        public Pattern(string name, params PatternNode<TData, TOffset>[] nodes)
+            : base(nodes)
         {
             _name = name;
         }
 
-        protected Pattern(Pattern<TData, TOffset> pattern) : base(pattern)
+        protected Pattern(Pattern<TData, TOffset> pattern)
+            : base(pattern)
         {
             _name = pattern._name;
             Acceptable = pattern.Acceptable;

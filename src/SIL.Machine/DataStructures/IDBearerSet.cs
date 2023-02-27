@@ -5,7 +5,8 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.DataStructures
 {
-    public class IDBearerSet<T> : ISet<T>, IKeyedCollection<string, T> where T : IIDBearer
+    public class IDBearerSet<T> : ISet<T>, IKeyedCollection<string, T>
+        where T : IIDBearer
     {
         private readonly Dictionary<string, T> _idBearers;
 
@@ -14,7 +15,8 @@ namespace SIL.Machine.DataStructures
             _idBearers = new Dictionary<string, T>();
         }
 
-        public IDBearerSet(IEnumerable<T> items) : this()
+        public IDBearerSet(IEnumerable<T> items)
+            : this()
         {
             foreach (T item in items)
                 _idBearers[item.ID] = item;

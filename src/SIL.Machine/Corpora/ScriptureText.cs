@@ -5,7 +5,8 @@ namespace SIL.Machine.Corpora
 {
     public abstract class ScriptureText : TextBase
     {
-        protected ScriptureText(string id, ScrVers versification) : base(id, CorporaUtils.GetScriptureTextSortKey(id))
+        protected ScriptureText(string id, ScrVers versification)
+            : base(id, CorporaUtils.GetScriptureTextSortKey(id))
         {
             Versification = versification ?? ScrVers.English;
         }

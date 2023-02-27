@@ -117,7 +117,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Initializes a new instance of the <see cref="Trace"/> class.
         /// </summary>
-        internal Trace(TraceType type, IHCRule source) : base(begin => new Trace(TraceType.None, null))
+        internal Trace(TraceType type, IHCRule source)
+            : base(begin => new Trace(TraceType.None, null))
         {
             _type = type;
             _source = source;

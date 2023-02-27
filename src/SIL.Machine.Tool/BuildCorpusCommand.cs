@@ -81,48 +81,46 @@ namespace SIL.Machine
             int segmentCount = 0;
             using (
                 StreamWriter sourceOutputWriter = _sourceOutputOption.HasValue()
-                  ? ToolHelpers.CreateStreamWriter(_sourceOutputOption.Value())
-                  : null
+                    ? ToolHelpers.CreateStreamWriter(_sourceOutputOption.Value())
+                    : null
             )
             using (
                 StreamWriter targetOutputWriter = _targetOutputOption.HasValue()
-                  ? ToolHelpers.CreateStreamWriter(_targetOutputOption.Value())
-                  : null
+                    ? ToolHelpers.CreateStreamWriter(_targetOutputOption.Value())
+                    : null
             )
             using (
                 StreamWriter refOutputWriter = _refOutputOption.HasValue()
-                  ? ToolHelpers.CreateStreamWriter(_refOutputOption.Value())
-                  : null
+                    ? ToolHelpers.CreateStreamWriter(_refOutputOption.Value())
+                    : null
             )
             {
-                IParallelTextCorpus corpus = _corpusSpec.ParallelCorpus.Where(
-                    row =>
+                IParallelTextCorpus corpus = _corpusSpec.ParallelCorpus.Where(row =>
+                {
+                    if (!_includeEmptyOption.HasValue())
                     {
-                        if (!_includeEmptyOption.HasValue())
+                        if (_allSourceOption.HasValue() && _allTargetOption.HasValue())
                         {
-                            if (_allSourceOption.HasValue() && _allTargetOption.HasValue())
-                            {
-                                if (row.SourceSegment.Count == 0 && row.TargetSegment.Count == 0)
-                                    return false;
-                            }
-                            else if (_allSourceOption.HasValue())
-                            {
-                                if (row.SourceSegment.Count == 0)
-                                    return false;
-                            }
-                            else if (_allTargetOption.HasValue())
-                            {
-                                if (row.TargetSegment.Count == 0)
-                                    return false;
-                            }
-                            else if (row.IsEmpty)
-                            {
+                            if (row.SourceSegment.Count == 0 && row.TargetSegment.Count == 0)
                                 return false;
-                            }
                         }
-                        return true;
+                        else if (_allSourceOption.HasValue())
+                        {
+                            if (row.SourceSegment.Count == 0)
+                                return false;
+                        }
+                        else if (_allTargetOption.HasValue())
+                        {
+                            if (row.TargetSegment.Count == 0)
+                                return false;
+                        }
+                        else if (row.IsEmpty)
+                        {
+                            return false;
+                        }
                     }
-                );
+                    return true;
+                });
                 corpus = _preprocessSpec.Preprocess(corpus);
 
                 object curRef = null;

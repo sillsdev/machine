@@ -25,7 +25,8 @@ namespace SIL.Machine.Rules
             _pattern = new Pattern<TData, TOffset>();
         }
 
-        public BatchPatternRuleSpec(IEnumerable<IPatternRuleSpec<TData, TOffset>> ruleSpecs) : this()
+        public BatchPatternRuleSpec(IEnumerable<IPatternRuleSpec<TData, TOffset>> ruleSpecs)
+            : this()
         {
             foreach (IPatternRuleSpec<TData, TOffset> ruleSpec in ruleSpecs)
                 _ruleSpecs.Add(ruleSpec);

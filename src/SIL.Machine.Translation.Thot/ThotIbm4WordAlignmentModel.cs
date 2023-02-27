@@ -4,8 +4,8 @@
     {
         public ThotIbm4WordAlignmentModel() { }
 
-        public ThotIbm4WordAlignmentModel(string prefFileName, bool createNew = false) : base(prefFileName, createNew)
-        { }
+        public ThotIbm4WordAlignmentModel(string prefFileName, bool createNew = false)
+            : base(prefFileName, createNew) { }
 
         public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Ibm4;
     }

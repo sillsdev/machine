@@ -1,6 +1,7 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class TranslationEngineRuntimeFactory<T> : ITranslationEngineRuntimeFactory where T : ITranslationEngineRuntime
+public class TranslationEngineRuntimeFactory<T> : ITranslationEngineRuntimeFactory
+    where T : ITranslationEngineRuntime
 {
     private readonly IServiceProvider _serviceProvider;
 

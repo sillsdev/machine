@@ -9,8 +9,8 @@ namespace SIL.Machine.Translation.Thot
     {
         public ThotHmmWordAlignmentModel() { }
 
-        public ThotHmmWordAlignmentModel(string prefFileName, bool createNew = false) : base(prefFileName, createNew)
-        { }
+        public ThotHmmWordAlignmentModel(string prefFileName, bool createNew = false)
+            : base(prefFileName, createNew) { }
 
         public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Hmm;
 

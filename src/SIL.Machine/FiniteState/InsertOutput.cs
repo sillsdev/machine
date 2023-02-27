@@ -7,7 +7,8 @@ namespace SIL.Machine.FiniteState
     public class InsertOutput<TData, TOffset> : Output<TData, TOffset>, IEquatable<InsertOutput<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        internal InsertOutput(FeatureStruct fs) : base(fs) { }
+        internal InsertOutput(FeatureStruct fs)
+            : base(fs) { }
 
         public override Annotation<TOffset> UpdateOutput(
             TData data,

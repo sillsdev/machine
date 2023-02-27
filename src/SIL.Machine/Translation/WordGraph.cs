@@ -17,7 +17,8 @@ namespace SIL.Machine.Translation
         private readonly HashSet<int> _finalStates;
         private readonly Dictionary<int, StateInfo> _states;
 
-        public WordGraph() : this(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>()) { }
+        public WordGraph()
+            : this(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>()) { }
 
         public WordGraph(IEnumerable<WordGraphArc> arcs, IEnumerable<int> finalStates, double initialStateScore = 0)
         {
@@ -140,10 +141,10 @@ namespace SIL.Machine.Translation
                     i,
                     i == 0 ? "diamond" : "circle",
                     i == 0
-                      ? "green"
-                      : FinalStates.Contains(i)
-                          ? "red"
-                          : "black"
+                        ? "green"
+                        : FinalStates.Contains(i)
+                            ? "red"
+                            : "black"
                 );
                 if (FinalStates.Contains(i))
                     writer.Write(", peripheries=\"2\"");
@@ -528,7 +529,8 @@ namespace SIL.Machine.Translation
 
         private class DfaStateCollection : KeyedCollection<ISet<NfaState>, DfaState>
         {
-            public DfaStateCollection() : base(new SetEqualityComparer<NfaState>()) { }
+            public DfaStateCollection()
+                : base(new SetEqualityComparer<NfaState>()) { }
 
             public bool TryGetValue(ISet<NfaState> key, out DfaState item)
             {

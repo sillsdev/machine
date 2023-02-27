@@ -13,7 +13,8 @@ namespace SIL.Machine.FeatureModel
             _varBindings = new Dictionary<string, SimpleFeatureValue>();
         }
 
-        protected VariableBindings(VariableBindings varBindings) : this()
+        protected VariableBindings(VariableBindings varBindings)
+            : this()
         {
             foreach (KeyValuePair<string, SimpleFeatureValue> kvp in varBindings._varBindings)
                 _varBindings[kvp.Key] = kvp.Value.Clone();
@@ -55,7 +56,8 @@ namespace SIL.Machine.FeatureModel
             return _varBindings.TryGetValue(key, out value);
         }
 
-        public bool TryGetValue<T>(string variableName, out T value) where T : SimpleFeatureValue
+        public bool TryGetValue<T>(string variableName, out T value)
+            where T : SimpleFeatureValue
         {
             SimpleFeatureValue sfv;
             if (_varBindings.TryGetValue(variableName, out sfv))

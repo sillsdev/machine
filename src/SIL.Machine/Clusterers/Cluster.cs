@@ -8,9 +8,11 @@ namespace SIL.Machine.Clusterers
         private readonly ReadOnlySet<T> _dataObjects;
         private readonly bool _noise;
 
-        public Cluster(params T[] dataObjects) : this(dataObjects, false) { }
+        public Cluster(params T[] dataObjects)
+            : this(dataObjects, false) { }
 
-        public Cluster(IEnumerable<T> dataObjects) : this(dataObjects, false) { }
+        public Cluster(IEnumerable<T> dataObjects)
+            : this(dataObjects, false) { }
 
         public Cluster(IEnumerable<T> dataObjects, bool noise)
         {

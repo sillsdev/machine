@@ -29,7 +29,8 @@ namespace SIL.Machine.SequenceAlignment
                 normalizedScore,
                 (IEnumerable<
                     Tuple<TSeq, AlignmentCell<TItem>, IEnumerable<AlignmentCell<TItem>>, AlignmentCell<TItem>>
-                >)sequences
+                >)
+                    sequences
             ) { }
 
         public Alignment(

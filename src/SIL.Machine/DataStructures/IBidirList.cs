@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.DataStructures
 {
-    public interface IBidirList<TNode> : ICollection<TNode> where TNode : class, IBidirListNode<TNode>
+    public interface IBidirList<TNode> : ICollection<TNode>
+        where TNode : class, IBidirListNode<TNode>
     {
         TNode Begin { get; }
 

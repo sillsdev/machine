@@ -25,7 +25,8 @@ namespace SIL.Machine.Translation.Thot
             string targetFileName,
             string prefFileName,
             ThotWordAlignmentParameters parameters = null
-        ) : this(modelType, null, prefFileName, parameters)
+        )
+            : this(modelType, null, prefFileName, parameters)
         {
             _sourceFileName = sourceFileName;
             _targetFileName = targetFileName;

@@ -5,7 +5,8 @@ namespace SIL.Machine.DataStructures
 {
     public class SkipList<T> : BidirList<SkipListNode<T>>, ICollection<T>
     {
-        public SkipList() : this(Comparer<T>.Default) { }
+        public SkipList()
+            : this(Comparer<T>.Default) { }
 
         public SkipList(IComparer<T> comparer)
             : base(

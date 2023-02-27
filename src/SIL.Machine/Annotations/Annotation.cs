@@ -8,12 +8,12 @@ namespace SIL.Machine.Annotations
 {
     public class Annotation<TOffset>
         : BidirListNode<Annotation<TOffset>>,
-          IBidirTreeNode<Annotation<TOffset>>,
-          ICloneable<Annotation<TOffset>>,
-          IComparable<Annotation<TOffset>>,
-          IComparable,
-          IFreezable,
-          IValueEquatable<Annotation<TOffset>>
+            IBidirTreeNode<Annotation<TOffset>>,
+            ICloneable<Annotation<TOffset>>,
+            IComparable<Annotation<TOffset>>,
+            IComparable,
+            IFreezable,
+            IValueEquatable<Annotation<TOffset>>
     {
         private AnnotationList<TOffset> _children;
         private int _hashCode;
@@ -36,7 +36,8 @@ namespace SIL.Machine.Annotations
             Root = this;
         }
 
-        protected Annotation(Annotation<TOffset> ann) : this(ann.Range, ann.FeatureStruct.Clone())
+        protected Annotation(Annotation<TOffset> ann)
+            : this(ann.Range, ann.FeatureStruct.Clone())
         {
             Optional = ann.Optional;
             _data = ann._data;

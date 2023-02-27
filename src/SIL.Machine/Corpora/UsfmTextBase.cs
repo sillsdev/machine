@@ -18,7 +18,8 @@ namespace SIL.Machine.Corpora
             Encoding encoding,
             ScrVers versification,
             bool includeMarkers
-        ) : base(id, versification)
+        )
+            : base(id, versification)
         {
             _stylesheet = stylesheet;
             _encoding = encoding;

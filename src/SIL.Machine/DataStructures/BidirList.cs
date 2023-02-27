@@ -5,7 +5,8 @@ using System.Linq;
 
 namespace SIL.Machine.DataStructures
 {
-    public abstract class BidirList<TNode> : IBidirList<TNode> where TNode : BidirListNode<TNode>
+    public abstract class BidirList<TNode> : IBidirList<TNode>
+        where TNode : BidirListNode<TNode>
     {
         private readonly TNode _begin;
         private readonly TNode _end;

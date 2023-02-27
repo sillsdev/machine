@@ -5,13 +5,15 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {
-    public class RuleBatch<TData, TOffset> : IRule<TData, TOffset> where TData : IAnnotatedData<TOffset>
+    public class RuleBatch<TData, TOffset> : IRule<TData, TOffset>
+        where TData : IAnnotatedData<TOffset>
     {
         private readonly List<IRule<TData, TOffset>> _rules;
         private readonly bool _disjunctive;
         private readonly IEqualityComparer<TData> _comparer;
 
-        public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules) : this(rules, EqualityComparer<TData>.Default) { }
+        public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
+            : this(rules, EqualityComparer<TData>.Default) { }
 
         public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules, IEqualityComparer<TData> comparer)
             : this(rules, true, comparer) { }

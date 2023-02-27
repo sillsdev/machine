@@ -95,7 +95,8 @@ namespace SIL.Machine.Annotations
             End = end;
         }
 
-        public Range(Range<TOffset> range) : this(range.Start, range.End) { }
+        public Range(Range<TOffset> range)
+            : this(range.Start, range.End) { }
 
         public TOffset Start { get; }
 
