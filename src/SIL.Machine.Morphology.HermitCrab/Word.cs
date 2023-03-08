@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
 	public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, ICloneable<Word>
 	{
-		private readonly Dictionary<string, Allomorph> _allomorphs; 
+		private readonly Dictionary<string, Allomorph> _allomorphs;
 		private RootAllomorph _rootAllomorph;
 		private Shape _shape;
 		private readonly List<IMorphologicalRule> _mruleApps;
@@ -207,6 +207,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 				CheckFrozen();
 				_isPartial = value;
 			}
+		}
+
+		public IEnumerable<IMorphologicalRule> MorphologicalRules
+		{
+			get { return _mruleApps; }
 		}
 
 		internal bool IsAllMorphologicalRulesApplied
