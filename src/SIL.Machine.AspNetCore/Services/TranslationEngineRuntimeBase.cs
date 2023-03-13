@@ -4,16 +4,19 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
 {
     private readonly IBackgroundJobClient _jobClient;
     private readonly IDistributedReaderWriterLockFactory _lockFactory;
+    private readonly IPlatformService _platformService;
 
     protected TranslationEngineRuntimeBase(
         IBackgroundJobClient jobClient,
         IDistributedReaderWriterLockFactory lockFactory,
+        IPlatformService platformService,
         IRepository<TranslationEngine> engines,
         string engineId
     )
     {
         _jobClient = jobClient;
         _lockFactory = lockFactory;
+        _platformService = platformService;
         Lock = _lockFactory.Create(engineId);
         Engines = engines;
         EngineId = engineId;
@@ -122,7 +125,11 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
             e => e.EngineId == EngineId && e.BuildState == BuildState.Pending,
             u => u.Set(b => b.BuildState, BuildState.None).Set(e => e.IsCanceled, true)
         );
-        if (engine is null)
+        if (engine is not null)
+        {
+            await _platformService.BuildCanceledAsync(engine.BuildId!);
+        }
+        else
         {
             // Second, try to cancel a job that is already running
             engine = await Engines.UpdateAsync(
