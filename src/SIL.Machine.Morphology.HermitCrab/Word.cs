@@ -217,11 +217,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 CheckFrozen();
                 _isPartial = value;
             }
-		}
+        }
 
-		public IEnumerable<IMorphologicalRule> MorphologicalRules
-		{
-			get { return _mruleApps; }
+        public IEnumerable<IMorphologicalRule> MorphologicalRules
+        {
+            get { return _mruleApps; }
         }
 
         internal int MorphologicalRuleApplicationCount => _mruleAppCount;
