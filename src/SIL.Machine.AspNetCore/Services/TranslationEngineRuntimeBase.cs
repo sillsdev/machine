@@ -4,7 +4,6 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
 {
     private readonly IBackgroundJobClient _jobClient;
     private readonly IDistributedReaderWriterLockFactory _lockFactory;
-    private readonly IPlatformService _platformService;
 
     protected TranslationEngineRuntimeBase(
         IBackgroundJobClient jobClient,
@@ -16,7 +15,7 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
     {
         _jobClient = jobClient;
         _lockFactory = lockFactory;
-        _platformService = platformService;
+        PlatformService = platformService;
         Lock = _lockFactory.Create(engineId);
         Engines = engines;
         EngineId = engineId;
@@ -26,6 +25,7 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
     protected string EngineId { get; }
     protected IRepository<TranslationEngine> Engines { get; }
     protected IDistributedReaderWriterLock Lock { get; }
+    protected IPlatformService PlatformService { get; }
     protected DateTime LastUsedTime { get; set; }
 
     public virtual async Task InitNewAsync()
@@ -127,7 +127,7 @@ public abstract class TranslationEngineRuntimeBase<TJob> : AsyncDisposableBase, 
         );
         if (engine is not null)
         {
-            await _platformService.BuildCanceledAsync(engine.BuildId!);
+            await PlatformService.BuildCanceledAsync(engine.BuildId!);
         }
         else
         {

@@ -8,7 +8,6 @@ public class SmtTransferEngineRuntime : TranslationEngineRuntimeBase<SmtTransfer
             : base(serviceProvider, TranslationEngineType.SmtTransfer) { }
     }
 
-    private readonly IPlatformService _platformService;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
     private readonly ISmtModelFactory _smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory;
@@ -36,9 +35,8 @@ public class SmtTransferEngineRuntime : TranslationEngineRuntimeBase<SmtTransfer
         IDistributedReaderWriterLockFactory lockFactory,
         string engineId
     )
-        : base(jobClient, lockFactory, engines, engineId)
+        : base(jobClient, lockFactory, platformService, engines, engineId)
     {
-        _platformService = platformService;
         _trainSegmentPairs = trainSegmentPairs;
         _smtModelFactory = smtModelFactory;
         _transferEngineFactory = transferEngineFactory;
@@ -121,7 +119,7 @@ public class SmtTransferEngineRuntime : TranslationEngineRuntimeBase<SmtTransfer
             await CheckReloadAsync();
             await _hybridEngine.Value.TrainSegmentAsync(preprocSourceSegment, preprocTargetSegment);
             (await _truecaser).TrainSegment(tokenizedTargetSegment, sentenceStart);
-            await _platformService.IncrementTrainSizeAsync(EngineId);
+            await PlatformService.IncrementTrainSizeAsync(EngineId);
             TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == EngineId);
             if (engine is not null && engine.BuildState is BuildState.Active)
             {

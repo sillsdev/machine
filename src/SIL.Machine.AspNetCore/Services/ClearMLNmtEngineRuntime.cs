@@ -8,7 +8,6 @@ public class ClearMLNmtEngineRuntime : TranslationEngineRuntimeBase<ClearMLNmtEn
             : base(serviceProvider, TranslationEngineType.Nmt) { }
     }
 
-    private readonly IPlatformService _platformService;
     private readonly IClearMLService _clearMLService;
 
     public ClearMLNmtEngineRuntime(
@@ -19,9 +18,8 @@ public class ClearMLNmtEngineRuntime : TranslationEngineRuntimeBase<ClearMLNmtEn
         IRepository<TranslationEngine> engines,
         string engineId
     )
-        : base(jobClient, lockFactory, engines, engineId)
+        : base(jobClient, lockFactory, platformService, engines, engineId)
     {
-        _platformService = platformService;
         _clearMLService = clearMLService;
     }
 
@@ -31,7 +29,7 @@ public class ClearMLNmtEngineRuntime : TranslationEngineRuntimeBase<ClearMLNmtEn
 
         await base.InitNewAsync();
 
-        TranslationEngineInfo? engineInfo = await _platformService.GetTranslationEngineInfoAsync(EngineId);
+        TranslationEngineInfo? engineInfo = await PlatformService.GetTranslationEngineInfoAsync(EngineId);
         if (engineInfo is null)
             throw new InvalidOperationException("The host translation engine does not exist.");
         await _clearMLService.CreateProjectAsync(EngineId, engineInfo.Name);
