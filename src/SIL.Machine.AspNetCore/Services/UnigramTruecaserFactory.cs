@@ -2,9 +2,9 @@
 
 public class UnigramTruecaserFactory : ITruecaserFactory
 {
-    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
 
-    public UnigramTruecaserFactory(IOptionsMonitor<TranslationEngineOptions> engineOptions)
+    public UnigramTruecaserFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions)
     {
         _engineOptions = engineOptions;
     }

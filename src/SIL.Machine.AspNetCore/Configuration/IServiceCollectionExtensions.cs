@@ -2,13 +2,44 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? config = null)
+    public static IServiceCollection AddMachine(
+        this IServiceCollection services,
+        Action<IMachineConfigurator> configure,
+        IConfiguration? config = null
+    )
     {
-        services.AddSingleton<IClearMLService, ClearMLService>();
         services.AddSingleton<ISharedFileService, SharedFileService>();
-        services.AddSingleton<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
+        services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
+        services.AddSingleton<ICorpusService, CorpusService>();
+        services.AddStartupTask((sp, ct) => sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(ct));
 
-        var builder = new MachineBuilder(services, config).AddOptions();
-        return builder;
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+        var configurator = new MachineConfigurator(services, config);
+        if (config is null)
+        {
+            configurator.AddServiceOptions(o => { });
+            configurator.AddSharedFileOptions(o => { });
+            configurator.AddSmtTransferEngineOptions(o => { });
+            configurator.AddClearMLNmtEngineOptions(o => { });
+        }
+        else
+        {
+            configurator.AddServiceOptions(config.GetSection(ServiceOptions.Key));
+            configurator.AddSharedFileOptions(config.GetSection(SharedFileOptions.Key));
+            configurator.AddSmtTransferEngineOptions(config.GetSection(SmtTransferEngineOptions.Key));
+            configurator.AddClearMLNmtEngineOptions(config.GetSection(ClearMLNmtEngineOptions.Key));
+        }
+        configure(configurator);
+        return services;
+    }
+
+    public static IServiceCollection AddStartupTask(
+        this IServiceCollection services,
+        Func<IServiceProvider, CancellationToken, Task> startupTask
+    )
+    {
+        services.AddHostedService(sp => new StartupTask(sp, startupTask));
+        return services;
     }
 }

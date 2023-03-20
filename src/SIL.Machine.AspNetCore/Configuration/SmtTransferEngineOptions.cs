@@ -1,11 +1,10 @@
 ﻿namespace SIL.Machine.AspNetCore.Configuration;
 
-public class TranslationEngineOptions
+public class SmtTransferEngineOptions
 {
-    public const string Key = "TranslationEngine";
+    public const string Key = "SmtTransferEngine";
 
     public string EnginesDir { get; set; } = "translation_engines";
-    public string ParentModelsDir { get; set; } = "parents";
     public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);
     public TimeSpan InactiveEngineTimeout { get; set; } = TimeSpan.FromMinutes(10);
     public ISet<TranslationEngineType> Types { get; set; } =

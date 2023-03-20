@@ -1,8 +1,8 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-internal class MachineBuilder : IMachineBuilder
+internal class MachineConfigurator : IMachineConfigurator
 {
-    public MachineBuilder(IServiceCollection services, IConfiguration? configuration)
+    public MachineConfigurator(IServiceCollection services, IConfiguration? configuration)
     {
         Services = services;
         Configuration = configuration;

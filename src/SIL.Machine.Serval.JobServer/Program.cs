@@ -2,16 +2,18 @@ using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddMachine(builder.Configuration)
-    .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-    .AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
-    .AddBackgroundJobServer(builder.Configuration.GetSection("Job:Queues").Get<string[]?>())
-    .AddServalPlatformService(builder.Configuration.GetConnectionString("Serval"));
+builder.Services.AddMachine(
+    o =>
+    {
+        o.AddMongoDataAccess();
+        o.AddMongoBackgroundJobClient();
+        o.AddBackgroundJobServer();
+        o.AddServalPlatformService();
+    },
+    builder.Configuration
+);
 
 var app = builder.Build();
-
-app.UseMachine();
 
 app.UseHangfireDashboard();
 

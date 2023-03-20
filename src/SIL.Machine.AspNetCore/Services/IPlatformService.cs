@@ -1,23 +1,7 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public record TranslationEngineInfo(
-    string Type,
-    string Id,
-    string Name,
-    string SourceLanguageTag,
-    string TargetLanguageTag
-);
-
-public record CorpusInfo(string Id, bool Pretranslate, ITextCorpus? SourceCorpus, ITextCorpus? TargetCorpus);
-
-public record PretranslationInfo(string CorpusId, string TextId, List<string> Refs, string Translation);
-
 public interface IPlatformService
 {
-    Task<TranslationEngineInfo> GetTranslationEngineInfoAsync(
-        string engineId,
-        CancellationToken cancellationToken = default
-    );
     Task IncrementTrainSizeAsync(string engineId, int count = 1, CancellationToken cancellationToken = default);
 
     Task UpdateBuildStatusAsync(
@@ -37,12 +21,10 @@ public interface IPlatformService
     Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
 
-    IAsyncEnumerable<CorpusInfo> GetCorporaAsync(string engineId, CancellationToken cancellationToken = default);
-
     Task DeleteAllPretranslationsAsync(string engineId, CancellationToken cancellationToken = default);
     Task InsertPretranslationsAsync(
         string engineId,
-        IAsyncEnumerable<PretranslationInfo> pretranslations,
+        IAsyncEnumerable<Pretranslation> pretranslations,
         CancellationToken cancellationToken = default
     );
 }

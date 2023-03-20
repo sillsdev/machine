@@ -3,11 +3,11 @@
 public class ThotSmtModelFactory : ISmtModelFactory
 {
     private readonly IOptionsMonitor<ThotSmtModelOptions> _options;
-    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
 
     public ThotSmtModelFactory(
         IOptionsMonitor<ThotSmtModelOptions> options,
-        IOptionsMonitor<TranslationEngineOptions> engineOptions
+        IOptionsMonitor<SmtTransferEngineOptions> engineOptions
     )
     {
         _options = options;

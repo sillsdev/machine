@@ -1,15 +1,18 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services
-    .AddMachine(builder.Configuration)
-    .AddMongoDataAccess(builder.Configuration.GetConnectionString("Mongo"))
-    .AddMongoBackgroundJobClient(builder.Configuration.GetConnectionString("Hangfire"))
-    .AddServalTranslationService(builder.Configuration.GetConnectionString("Serval"));
+builder.Services.AddMachine(
+    o =>
+    {
+        o.AddMongoDataAccess();
+        o.AddMongoBackgroundJobClient();
+        o.AddServalTranslationEngineService();
+    },
+    builder.Configuration
+);
 
 var app = builder.Build();
 
-app.UseMachine();
-app.MapServalTranslationService();
+app.MapServalTranslationEngineService();
 
 app.Run();

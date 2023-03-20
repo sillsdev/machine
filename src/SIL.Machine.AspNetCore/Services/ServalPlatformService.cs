@@ -1,32 +1,19 @@
-﻿using Serval.Platform.BuildStatus.V1;
-using Serval.Platform.Metadata.V1;
-using Serval.Platform.Result.V1;
+﻿using Serval.Translation.V1;
 
 namespace SIL.Machine.AspNetCore.Services;
 
 public class ServalPlatformService : IPlatformService
 {
-    private readonly BuildStatusService.BuildStatusServiceClient _buildStatusServiceClient;
-    private readonly MetadataService.MetadataServiceClient _metadataServiceClient;
-    private readonly ResultService.ResultServiceClient _resultServiceClient;
-    private readonly IOptionsMonitor<ServalOptions> _options;
+    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client;
 
-    public ServalPlatformService(
-        BuildStatusService.BuildStatusServiceClient buildStatusServiceClient,
-        MetadataService.MetadataServiceClient metadataServiceClient,
-        ResultService.ResultServiceClient resultServiceClient,
-        IOptionsMonitor<ServalOptions> options
-    )
+    public ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client)
     {
-        _buildStatusServiceClient = buildStatusServiceClient;
-        _metadataServiceClient = metadataServiceClient;
-        _resultServiceClient = resultServiceClient;
-        _options = options;
+        _client = client;
     }
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _buildStatusServiceClient.BuildStartedAsync(
+        await _client.BuildStartedAsync(
             new BuildStartedRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
@@ -39,7 +26,7 @@ public class ServalPlatformService : IPlatformService
         CancellationToken cancellationToken = default
     )
     {
-        await _buildStatusServiceClient.BuildCompletedAsync(
+        await _client.BuildCompletedAsync(
             new BuildCompletedRequest
             {
                 BuildId = buildId,
@@ -52,7 +39,7 @@ public class ServalPlatformService : IPlatformService
 
     public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _buildStatusServiceClient.BuildCanceledAsync(
+        await _client.BuildCanceledAsync(
             new BuildCanceledRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
@@ -60,7 +47,7 @@ public class ServalPlatformService : IPlatformService
 
     public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
-        await _buildStatusServiceClient.BuildFaultedAsync(
+        await _client.BuildFaultedAsync(
             new BuildFaultedRequest { BuildId = buildId, Message = message },
             cancellationToken: cancellationToken
         );
@@ -68,7 +55,7 @@ public class ServalPlatformService : IPlatformService
 
     public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _buildStatusServiceClient.BuildRestartingAsync(
+        await _client.BuildRestartingAsync(
             new BuildRestartingRequest { BuildId = buildId },
             cancellationToken: cancellationToken
         );
@@ -86,46 +73,20 @@ public class ServalPlatformService : IPlatformService
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
 
-        await _buildStatusServiceClient.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
+        await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
     }
 
     public async Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default)
     {
-        await _buildStatusServiceClient.UpdateBuildStatusAsync(
+        await _client.UpdateBuildStatusAsync(
             new UpdateBuildStatusRequest { BuildId = buildId, Step = step },
             cancellationToken: cancellationToken
         );
     }
 
-    public async IAsyncEnumerable<CorpusInfo> GetCorporaAsync(
-        string engineId,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default
-    )
-    {
-        GetParallelTextCorporaResponse response = await _metadataServiceClient.GetParallelTextCorporaAsync(
-            new GetParallelTextCorporaRequest { EngineId = engineId },
-            cancellationToken: cancellationToken
-        );
-        foreach (Serval.Platform.Metadata.V1.ParallelTextCorpus corpus in response.Corpora)
-        {
-            ITextCorpus? sc = CreateTextCorpus(corpus.SourceCorpus);
-            ITextCorpus? tc = CreateTextCorpus(corpus.TargetCorpus);
-            yield return new(corpus.CorpusId, corpus.Pretranslate, sc, tc);
-        }
-    }
-
-    public async Task<string?> GetEngineName(string engineId, CancellationToken cancellationToken = default)
-    {
-        GetTranslationEngineResponse response = await _metadataServiceClient.GetTranslationEngineAsync(
-            new GetTranslationEngineRequest { EngineId = engineId },
-            cancellationToken: cancellationToken
-        );
-        return response.Name;
-    }
-
     public async Task DeleteAllPretranslationsAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        await _resultServiceClient.DeleteAllPretranslationsAsync(
+        await _client.DeleteAllPretranslationsAsync(
             new DeleteAllPretranslationsRequest { EngineId = engineId },
             cancellationToken: cancellationToken
         );
@@ -133,12 +94,12 @@ public class ServalPlatformService : IPlatformService
 
     public async Task InsertPretranslationsAsync(
         string engineId,
-        IAsyncEnumerable<PretranslationInfo> pretranslations,
+        IAsyncEnumerable<Pretranslation> pretranslations,
         CancellationToken cancellationToken = default
     )
     {
-        using var call = _resultServiceClient.InsertPretranslations(cancellationToken: cancellationToken);
-        await foreach (PretranslationInfo? pretranslation in pretranslations)
+        using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
+        await foreach (Pretranslation? pretranslation in pretranslations)
         {
             await call.RequestStream.WriteAsync(
                 new InsertPretranslationRequest
@@ -152,24 +113,7 @@ public class ServalPlatformService : IPlatformService
             );
         }
         await call.RequestStream.CompleteAsync();
-    }
-
-    public async Task<TranslationEngineInfo> GetTranslationEngineInfoAsync(
-        string engineId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        GetTranslationEngineResponse response = await _metadataServiceClient.GetTranslationEngineAsync(
-            new GetTranslationEngineRequest { EngineId = engineId },
-            cancellationToken: cancellationToken
-        );
-        return new(
-            response.EngineType,
-            response.EngineId,
-            response.Name,
-            response.SourceLanguageTag,
-            response.TargetLanguageTag
-        );
+        await call;
     }
 
     public async Task IncrementTrainSizeAsync(
@@ -178,35 +122,9 @@ public class ServalPlatformService : IPlatformService
         CancellationToken cancellationToken = default
     )
     {
-        await _metadataServiceClient.IncrementTranslationEngineCorpusSizeAsync(
+        await _client.IncrementTranslationEngineCorpusSizeAsync(
             new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count },
             cancellationToken: cancellationToken
         );
-    }
-
-    private ITextCorpus? CreateTextCorpus(Corpus corpus)
-    {
-        if (corpus.Files.Count == 0)
-            return null;
-
-        ITextCorpus? textCorpus = null;
-        switch (corpus.Format)
-        {
-            case FileFormat.Text:
-                textCorpus = new DictionaryTextCorpus(
-                    corpus.Files.Select(f => new TextFileText(f.TextId ?? f.Name, GetDataFilePath(f)))
-                );
-                break;
-
-            case FileFormat.Paratext:
-                textCorpus = new ParatextBackupTextCorpus(GetDataFilePath(corpus.Files[0]));
-                break;
-        }
-        return textCorpus;
-    }
-
-    private string GetDataFilePath(DataFile dataFile)
-    {
-        return Path.Combine(_options.CurrentValue.DataFilesDir, dataFile.Filename);
     }
 }

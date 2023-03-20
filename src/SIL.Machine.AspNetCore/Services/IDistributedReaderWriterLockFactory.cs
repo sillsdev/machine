@@ -2,7 +2,7 @@
 
 public interface IDistributedReaderWriterLockFactory
 {
-    Task InitAsync();
+    Task InitAsync(CancellationToken cancellationToken = default);
     IDistributedReaderWriterLock Create(string id);
     Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
 }

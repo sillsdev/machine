@@ -2,9 +2,9 @@
 
 public class TransferEngineFactory : ITransferEngineFactory
 {
-    private readonly IOptionsMonitor<TranslationEngineOptions> _engineOptions;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
 
-    public TransferEngineFactory(IOptionsMonitor<TranslationEngineOptions> engineOptions)
+    public TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions)
     {
         _engineOptions = engineOptions;
     }

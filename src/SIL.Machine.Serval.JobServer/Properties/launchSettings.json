@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "SIL.Machine.Serval.JobServer": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:9100"
+    }
+  }
+}

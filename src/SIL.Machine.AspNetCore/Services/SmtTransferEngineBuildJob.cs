@@ -8,6 +8,7 @@ public class SmtTransferEngineBuildJob
     private readonly IDistributedReaderWriterLockFactory _lockFactory;
     private readonly ITruecaserFactory _truecaserFactory;
     private readonly ISmtModelFactory _smtModelFactory;
+    private readonly ICorpusService _corpusService;
 
     private readonly ILogger<SmtTransferEngineBuildJob> _logger;
 
@@ -18,6 +19,7 @@ public class SmtTransferEngineBuildJob
         IDistributedReaderWriterLockFactory lockFactory,
         ITruecaserFactory truecaserFactory,
         ISmtModelFactory smtModelFactory,
+        ICorpusService corpusService,
         ILogger<SmtTransferEngineBuildJob> logger
     )
     {
@@ -27,12 +29,18 @@ public class SmtTransferEngineBuildJob
         _lockFactory = lockFactory;
         _truecaserFactory = truecaserFactory;
         _smtModelFactory = smtModelFactory;
+        _corpusService = corpusService;
         _logger = logger;
     }
 
     [Queue("smt_transfer")]
     [AutomaticRetry(Attempts = 0)]
-    public async Task RunAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    public async Task RunAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<Corpus> corpora,
+        CancellationToken cancellationToken
+    )
     {
         IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
 
@@ -60,13 +68,13 @@ public class SmtTransferEngineBuildJob
 
                 var targetCorpora = new List<ITextCorpus>();
                 var parallelCorpora = new List<IParallelTextCorpus>();
-                await foreach (CorpusInfo corpus in _platformService.GetCorporaAsync(engineId, cancellationToken))
+                foreach (Corpus corpus in corpora)
                 {
-                    if (corpus.TargetCorpus is not null)
-                        targetCorpora.Add(corpus.TargetCorpus);
+                    ITextCorpus sc = _corpusService.CreateTextCorpus(corpus.SourceFiles);
+                    ITextCorpus tc = _corpusService.CreateTextCorpus(corpus.TargetFiles);
 
-                    if (corpus.SourceCorpus is not null && corpus.TargetCorpus is not null)
-                        parallelCorpora.Add(corpus.SourceCorpus.AlignRows(corpus.TargetCorpus));
+                    targetCorpora.Add(tc);
+                    parallelCorpora.Add(sc.AlignRows(tc));
                 }
 
                 var tokenizer = new LatinWordTokenizer();

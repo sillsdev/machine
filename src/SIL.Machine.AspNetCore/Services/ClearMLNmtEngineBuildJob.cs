@@ -7,7 +7,8 @@ public class ClearMLNmtEngineBuildJob
     private readonly ILogger<ClearMLNmtEngineBuildJob> _logger;
     private readonly IClearMLService _clearMLService;
     private readonly ISharedFileService _sharedFileService;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
+    private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
+    private readonly ICorpusService _corpusService;
 
     public ClearMLNmtEngineBuildJob(
         IPlatformService platformService,
@@ -15,7 +16,8 @@ public class ClearMLNmtEngineBuildJob
         ILogger<ClearMLNmtEngineBuildJob> logger,
         IClearMLService clearMLService,
         ISharedFileService sharedFileService,
-        IOptionsMonitor<ClearMLOptions> options
+        IOptionsMonitor<ClearMLNmtEngineOptions> options,
+        ICorpusService corpusService
     )
     {
         _platformService = platformService;
@@ -24,21 +26,20 @@ public class ClearMLNmtEngineBuildJob
         _clearMLService = clearMLService;
         _sharedFileService = sharedFileService;
         _options = options;
+        _corpusService = corpusService;
     }
 
     [Queue("nmt")]
     [AutomaticRetry(Attempts = 0)]
-    public async Task RunAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    public async Task RunAsync(
+        string engineId,
+        string buildId,
+        IReadOnlyList<Corpus> corpora,
+        CancellationToken cancellationToken
+    )
     {
         string? clearMLProjectId = await _clearMLService.GetProjectIdAsync(engineId, cancellationToken);
         if (clearMLProjectId is null)
-            return;
-
-        TranslationEngineInfo? engineInfo = await _platformService.GetTranslationEngineInfoAsync(
-            engineId,
-            cancellationToken
-        );
-        if (engineInfo is null)
             return;
 
         try
@@ -52,9 +53,9 @@ public class ClearMLNmtEngineBuildJob
 
             int corpusSize;
             if (engine.BuildState is BuildState.Pending)
-                corpusSize = await WriteDataFilesAsync(engineId, buildId, cancellationToken);
+                corpusSize = await WriteDataFilesAsync(buildId, corpora, cancellationToken);
             else
-                corpusSize = await GetCorpusSizeAsync(engineId, cancellationToken);
+                corpusSize = GetCorpusSize(corpora);
 
             string clearMLTaskId;
             ClearMLTask? clearMLTask = await _clearMLService.GetTaskAsync(buildId, clearMLProjectId, cancellationToken);
@@ -64,8 +65,8 @@ public class ClearMLNmtEngineBuildJob
                     buildId,
                     clearMLProjectId,
                     engineId,
-                    engineInfo.SourceLanguageTag,
-                    engineInfo.TargetLanguageTag,
+                    engine.SourceLanguage,
+                    engine.TargetLanguage,
                     cancellationToken
                 );
                 await _clearMLService.EnqueueTaskAsync(clearMLTaskId, CancellationToken.None);
@@ -223,7 +224,11 @@ public class ClearMLNmtEngineBuildJob
         }
     }
 
-    private async Task<int> WriteDataFilesAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    private async Task<int> WriteDataFilesAsync(
+        string buildId,
+        IReadOnlyList<Corpus> corpora,
+        CancellationToken cancellationToken
+    )
     {
         await using var sourceTrainWriter = new StreamWriter(
             await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
@@ -233,12 +238,12 @@ public class ClearMLNmtEngineBuildJob
         );
 
         int corpusSize = 0;
-        async IAsyncEnumerable<PretranslationInfo> ProcessRowsAsync()
+        async IAsyncEnumerable<Pretranslation> ProcessRowsAsync()
         {
-            await foreach (CorpusInfo corpus in _platformService.GetCorporaAsync(engineId, cancellationToken))
+            foreach (Corpus corpus in corpora)
             {
-                ITextCorpus sourceCorpus = corpus.SourceCorpus ?? new DictionaryTextCorpus();
-                ITextCorpus targetCorpus = corpus.TargetCorpus ?? new DictionaryTextCorpus();
+                ITextCorpus sourceCorpus = _corpusService.CreateTextCorpus(corpus.SourceFiles);
+                ITextCorpus targetCorpus = _corpusService.CreateTextCorpus(corpus.TargetFiles);
 
                 IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(
                     targetCorpus,
@@ -252,12 +257,13 @@ public class ClearMLNmtEngineBuildJob
                     await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
                     if (corpus.Pretranslate && row.SourceSegment.Count > 0 && row.TargetSegment.Count == 0)
                     {
-                        yield return new(
-                            corpus.Id,
-                            row.TextId,
-                            row.TargetRefs.Select(r => r.ToString()!).ToList(),
-                            row.SourceText
-                        );
+                        yield return new Pretranslation
+                        {
+                            CorpusId = corpus.Id,
+                            TextId = row.TextId,
+                            Refs = row.TargetRefs.Select(r => r.ToString()!).ToList(),
+                            Translation = row.SourceText
+                        };
                     }
                     if (!row.IsEmpty)
                         corpusSize++;
@@ -279,15 +285,15 @@ public class ClearMLNmtEngineBuildJob
         return corpusSize;
     }
 
-    private async Task<int> GetCorpusSizeAsync(string engineId, CancellationToken cancellationToken = default)
+    private int GetCorpusSize(IReadOnlyList<Corpus> corpora)
     {
         int corpusSize = 0;
-        await foreach (CorpusInfo corpus in _platformService.GetCorporaAsync(engineId, cancellationToken))
+        foreach (Corpus corpus in corpora)
         {
-            if (corpus.SourceCorpus is null || corpus.TargetCorpus is null)
-                continue;
+            ITextCorpus sourceCorpus = _corpusService.CreateTextCorpus(corpus.SourceFiles);
+            ITextCorpus targetCorpus = _corpusService.CreateTextCorpus(corpus.TargetFiles);
 
-            IParallelTextCorpus parallelCorpus = corpus.SourceCorpus.AlignRows(corpus.TargetCorpus);
+            IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
 
             corpusSize += parallelCorpus.Count(includeEmpty: false);
         }
@@ -303,13 +309,13 @@ public class ClearMLNmtEngineBuildJob
             cancellationToken
         );
 
-        IAsyncEnumerable<PretranslationInfo> pretranslations = JsonSerializer
-            .DeserializeAsyncEnumerable<PretranslationInfo>(
+        IAsyncEnumerable<Pretranslation> pretranslations = JsonSerializer
+            .DeserializeAsyncEnumerable<Pretranslation>(
                 targetPretranslateStream,
                 new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
                 cancellationToken
             )
-            .OfType<PretranslationInfo>();
+            .OfType<Pretranslation>();
 
         await _platformService.InsertPretranslationsAsync(engineId, pretranslations, cancellationToken);
     }

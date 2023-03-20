@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
-public class ClearMLNmtEngineRuntimeTests
+public class ClearMLNmtEngineServiceTests
 {
     [Test]
     public async Task CancelBuildAsync()
@@ -31,12 +31,11 @@ public class ClearMLNmtEngineRuntimeTests
         env.ClearMLService
             .GetTaskAsync("task1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<ClearMLTask?>(task));
-        await env.Runtime.InitNewAsync();
-        await env.Runtime.StartBuildAsync("build1");
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
-        await env.Runtime.CancelBuildAsync();
+        await env.Service.CancelBuildAsync("engine1");
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.None));
@@ -50,19 +49,24 @@ public class ClearMLNmtEngineRuntimeTests
         private BackgroundJobServer _jobServer;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly ISharedFileService _sharedFileService;
-        private readonly IOptionsMonitor<ClearMLOptions> _options;
+        private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
 
         public TestEnvironment()
         {
             Engines = new MemoryRepository<TranslationEngine>();
-            Engines.Add(new TranslationEngine { Id = "engine1", EngineId = "engine1" });
-            EngineOptions = new TranslationEngineOptions();
+            Engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine1",
+                    EngineId = "engine1",
+                    SourceLanguage = "es",
+                    TargetLanguage = "en"
+                }
+            );
+            EngineOptions = new SmtTransferEngineOptions();
             _memoryStorage = new MemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
-            PlatformService
-                .GetTranslationEngineInfoAsync("engine1", Arg.Any<CancellationToken>())
-                .Returns(Task.FromResult(new TranslationEngineInfo("nmt", "engine1", "Engine 1", "es", "en")));
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -72,28 +76,29 @@ public class ClearMLNmtEngineRuntimeTests
                 new MemoryRepository<RWLock>()
             );
             _sharedFileService = new SharedFileService();
-            _options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            _options.CurrentValue.Returns(new ClearMLOptions { BuildPollingTimeout = TimeSpan.FromMilliseconds(50) });
+            _options = Substitute.For<IOptionsMonitor<ClearMLNmtEngineOptions>>();
+            _options.CurrentValue.Returns(
+                new ClearMLNmtEngineOptions { BuildPollingTimeout = TimeSpan.FromMilliseconds(50) }
+            );
             _jobServer = CreateJobServer();
-            Runtime = CreateRuntime();
+            Service = CreateService();
         }
 
-        public ClearMLNmtEngineRuntime Runtime { get; private set; }
+        public ClearMLNmtEngineService Service { get; private set; }
         public MemoryRepository<TranslationEngine> Engines { get; }
-        public TranslationEngineOptions EngineOptions { get; }
+        public SmtTransferEngineOptions EngineOptions { get; }
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
 
         public void StopServer()
         {
-            Runtime.Dispose();
             _jobServer.Dispose();
         }
 
         public void StartServer()
         {
             _jobServer = CreateJobServer();
-            Runtime = CreateRuntime();
+            Service = CreateService();
         }
 
         private BackgroundJobServer CreateJobServer()
@@ -107,15 +112,15 @@ public class ClearMLNmtEngineRuntimeTests
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
-        private ClearMLNmtEngineRuntime CreateRuntime()
+        private ClearMLNmtEngineService CreateService()
         {
-            return new ClearMLNmtEngineRuntime(
-                PlatformService,
-                ClearMLService,
+            return new ClearMLNmtEngineService(
                 _jobClient,
+                PlatformService,
                 _lockFactory,
+                new MemoryDataAccessContext(),
                 Engines,
-                "engine1"
+                ClearMLService
             );
         }
 
@@ -145,7 +150,6 @@ public class ClearMLNmtEngineRuntimeTests
 
         protected override void DisposeManagedResources()
         {
-            Runtime.Dispose();
             _jobServer.Dispose();
         }
 
@@ -168,7 +172,8 @@ public class ClearMLNmtEngineRuntimeTests
                         Substitute.For<ILogger<ClearMLNmtEngineBuildJob>>(),
                         _env.ClearMLService,
                         _env._sharedFileService,
-                        _env._options
+                        _env._options,
+                        Substitute.For<ICorpusService>()
                     );
                 }
                 return base.ActivateJob(jobType);

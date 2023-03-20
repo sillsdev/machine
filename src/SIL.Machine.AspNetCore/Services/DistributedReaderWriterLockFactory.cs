@@ -11,11 +11,11 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
         _locks = locks;
     }
 
-    public async Task InitAsync()
+    public async Task InitAsync(CancellationToken cancellationToken = default)
     {
-        await RemoveAllWaitersAsync();
-        await ReleaseAllWriterLocksAsync();
-        await ReleaseAllReaderLocksAsync();
+        await RemoveAllWaitersAsync(cancellationToken);
+        await ReleaseAllWriterLocksAsync(cancellationToken);
+        await ReleaseAllReaderLocksAsync(cancellationToken);
     }
 
     public IDistributedReaderWriterLock Create(string id)
@@ -29,39 +29,30 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
         return rwLock is not null;
     }
 
-    private async Task ReleaseAllWriterLocksAsync()
+    private async Task ReleaseAllWriterLocksAsync(CancellationToken cancellationToken)
     {
-        string hostId = _serviceOptions.ServiceId;
-        IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(
-            rwl => rwl.WriterLock != null && rwl.WriterLock.HostId == hostId
+        await _locks.UpdateAllAsync(
+            rwl => rwl.WriterLock != null && rwl.WriterLock.HostId == _serviceOptions.ServiceId,
+            u => u.Unset(rwl => rwl.WriterLock),
+            cancellationToken
         );
-        var tasks = new List<Task>();
-        foreach (RWLock rwLock in rwLocks)
-            tasks.Add(_locks.UpdateAsync(rwLock, u => u.Unset(rwl => rwl.WriterLock)));
-        await Task.WhenAll(tasks);
     }
 
-    private async Task ReleaseAllReaderLocksAsync()
+    private async Task ReleaseAllReaderLocksAsync(CancellationToken cancellationToken)
     {
-        string hostId = _serviceOptions.ServiceId;
-        IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.ReaderLocks.Any(l => l.HostId == hostId));
-        var tasks = new List<Task>();
-        foreach (RWLock rwLock in rwLocks)
-        {
-            tasks.Add(_locks.UpdateAsync(rwLock, u => u.RemoveAll(rwl => rwl.ReaderLocks, l => l.HostId == hostId)));
-        }
-        await Task.WhenAll(tasks);
+        await _locks.UpdateAllAsync(
+            rwl => rwl.ReaderLocks.Any(l => l.HostId == _serviceOptions.ServiceId),
+            u => u.RemoveAll(rwl => rwl.ReaderLocks, l => l.HostId == _serviceOptions.ServiceId),
+            cancellationToken
+        );
     }
 
-    private async Task RemoveAllWaitersAsync()
+    private async Task RemoveAllWaitersAsync(CancellationToken cancellationToken)
     {
-        string hostId = _serviceOptions.ServiceId;
-        IReadOnlyList<RWLock> rwLocks = await _locks.GetAllAsync(rwl => rwl.WriterQueue.Any(l => l.HostId == hostId));
-        var tasks = new List<Task>();
-        foreach (RWLock rwLock in rwLocks)
-        {
-            tasks.Add(_locks.UpdateAsync(rwLock, u => u.RemoveAll(rwl => rwl.WriterQueue, l => l.HostId == hostId)));
-        }
-        await Task.WhenAll(tasks);
+        await _locks.UpdateAllAsync(
+            rwl => rwl.WriterQueue.Any(l => l.HostId == _serviceOptions.ServiceId),
+            u => u.RemoveAll(rwl => rwl.WriterQueue, l => l.HostId == _serviceOptions.ServiceId),
+            cancellationToken
+        );
     }
 }

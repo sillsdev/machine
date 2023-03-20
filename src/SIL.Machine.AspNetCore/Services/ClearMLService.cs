@@ -3,7 +3,7 @@
 public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
+    private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -12,7 +12,7 @@ public class ClearMLService : IClearMLService
             Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    public ClearMLService(HttpClient httpClient, IOptionsMonitor<ClearMLOptions> options)
+    public ClearMLService(HttpClient httpClient, IOptionsMonitor<ClearMLNmtEngineOptions> options)
     {
         _httpClient = httpClient;
         _options = options;

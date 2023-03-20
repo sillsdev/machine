@@ -1,7 +1,7 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
-public class SmtTransferEngineRuntimeTests
+public class SmtTransferEngineServiceTests
 {
     [Test]
     public async Task StartBuildAsync()
@@ -9,10 +9,9 @@ public class SmtTransferEngineRuntimeTests
         using var env = new TestEnvironment();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(0));
-        await env.Runtime.InitNewAsync();
         // ensure that the SMT model was loaded before training
-        await env.Runtime.TranslateAsync(n: 1, "esto es una prueba.");
-        await env.Runtime.StartBuildAsync("build1");
+        await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
         await env.SmtBatchTrainer
             .Received()
@@ -27,7 +26,7 @@ public class SmtTransferEngineRuntimeTests
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // check if SMT model was reloaded upon first use after training
         env.SmtModel.ClearReceivedCalls();
-        await env.Runtime.TranslateAsync(n: 1, "esto es una prueba.");
+        await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
         env.SmtModel.Received().Dispose();
         await env.SmtModel.DidNotReceive().SaveAsync();
         await env.Truecaser.DidNotReceive().SaveAsync();
@@ -37,7 +36,6 @@ public class SmtTransferEngineRuntimeTests
     public async Task CancelBuildAsync()
     {
         using var env = new TestEnvironment();
-        await env.Runtime.InitNewAsync();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
             Arg.Do<CancellationToken>(ct =>
@@ -46,11 +44,11 @@ public class SmtTransferEngineRuntimeTests
                     ct.ThrowIfCancellationRequested();
             })
         );
-        await env.Runtime.StartBuildAsync("build1");
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
-        await env.Runtime.CancelBuildAsync();
+        await env.Service.CancelBuildAsync("engine1");
         await env.WaitForBuildToFinishAsync();
         await env.SmtBatchTrainer.DidNotReceive().SaveAsync();
         await env.TruecaserTrainer.DidNotReceive().SaveAsync();
@@ -62,7 +60,6 @@ public class SmtTransferEngineRuntimeTests
     public async Task StartBuildAsync_RestartUnfinishedBuild()
     {
         using var env = new TestEnvironment();
-        await env.Runtime.InitNewAsync();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
             Arg.Do<CancellationToken>(ct =>
@@ -71,7 +68,7 @@ public class SmtTransferEngineRuntimeTests
                     ct.ThrowIfCancellationRequested();
             })
         );
-        await env.Runtime.StartBuildAsync("build1");
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
@@ -90,40 +87,34 @@ public class SmtTransferEngineRuntimeTests
     public async Task CommitAsync_LoadedInactive()
     {
         using var env = new TestEnvironment();
-        env.EngineOptions.InactiveEngineTimeout = TimeSpan.Zero;
-        await env.Runtime.InitNewAsync();
-        await env.Runtime.TrainSegmentPairAsync("esto es una prueba.", "this is a test.", true);
+        await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
         await Task.Delay(10);
-        await env.Runtime.CommitAsync();
+        await env.CommitAsync(TimeSpan.Zero);
         await env.SmtModel.Received().SaveAsync();
         env.Truecaser
             .Received()
             .TrainSegment(Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
-        Assert.That(env.Runtime.IsLoaded, Is.False);
+        Assert.That(env.StateService.Get("engine1").IsLoaded, Is.False);
     }
 
     [Test]
     public async Task CommitAsync_LoadedActive()
     {
         using var env = new TestEnvironment();
-        env.EngineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
-        await env.Runtime.InitNewAsync();
-        await env.Runtime.TrainSegmentPairAsync("esto es una prueba.", "this is a test.", true);
-        await env.Runtime.CommitAsync();
+        await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
+        await env.CommitAsync(TimeSpan.FromHours(1));
         await env.SmtModel.Received().SaveAsync();
         env.Truecaser
             .Received()
             .TrainSegment(Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
-        Assert.That(env.Runtime.IsLoaded, Is.True);
+        Assert.That(env.StateService.Get("engine1").IsLoaded, Is.True);
     }
 
     [Test]
     public async Task TranslateAsync()
     {
         using var env = new TestEnvironment();
-        env.EngineOptions.InactiveEngineTimeout = TimeSpan.FromHours(1);
-        await env.Runtime.InitNewAsync();
-        (string translation, _) = (await env.Runtime.TranslateAsync(n: 1, "esto es una prueba."))[0];
+        (string translation, _) = (await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba."))[0];
         Assert.That(translation, Is.EqualTo("this is a TEST."));
     }
 
@@ -140,9 +131,16 @@ public class SmtTransferEngineRuntimeTests
         public TestEnvironment()
         {
             Engines = new MemoryRepository<TranslationEngine>();
-            Engines.Add(new TranslationEngine { Id = "engine1", EngineId = "engine1" });
+            Engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine1",
+                    EngineId = "engine1",
+                    SourceLanguage = "es",
+                    TargetLanguage = "en"
+                }
+            );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
-            EngineOptions = new TranslationEngineOptions();
             _memoryStorage = new MemoryStorage();
             _jobClient = new BackgroundJobClient(_memoryStorage);
             PlatformService = Substitute.For<IPlatformService>();
@@ -160,29 +158,36 @@ public class SmtTransferEngineRuntimeTests
                 new MemoryRepository<RWLock>()
             );
             _jobServer = CreateJobServer();
-            Runtime = CreateRuntime();
+            StateService = CreateStateService();
+            Service = CreateService();
         }
 
-        public SmtTransferEngineRuntime Runtime { get; private set; }
+        public SmtTransferEngineService Service { get; private set; }
+        public SmtTransferEngineStateService StateService { get; private set; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public MemoryRepository<TrainSegmentPair> TrainSegmentPairs { get; }
         public ITrainer SmtBatchTrainer { get; }
         public IInteractiveTranslationModel SmtModel { get; }
-        public TranslationEngineOptions EngineOptions { get; }
         public ITruecaser Truecaser { get; }
         public ITrainer TruecaserTrainer { get; }
         public IPlatformService PlatformService { get; }
 
+        public async Task CommitAsync(TimeSpan inactiveTimeout)
+        {
+            await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
+        }
+
         public void StopServer()
         {
-            Runtime.Dispose();
+            StateService.Dispose();
             _jobServer.Dispose();
         }
 
         public void StartServer()
         {
             _jobServer = CreateJobServer();
-            Runtime = CreateRuntime();
+            StateService = CreateStateService();
+            Service = CreateService();
         }
 
         private BackgroundJobServer CreateJobServer()
@@ -196,21 +201,21 @@ public class SmtTransferEngineRuntimeTests
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
         }
 
-        private SmtTransferEngineRuntime CreateRuntime()
+        private SmtTransferEngineStateService CreateStateService()
         {
-            var engineOptions = Substitute.For<IOptionsMonitor<TranslationEngineOptions>>();
-            engineOptions.CurrentValue.Returns(EngineOptions);
-            return new SmtTransferEngineRuntime(
-                engineOptions,
-                PlatformService,
-                Engines,
-                TrainSegmentPairs,
-                _smtModelFactory,
-                _transferEngineFactory,
-                _truecaserFactory,
+            return new SmtTransferEngineStateService(_smtModelFactory, _transferEngineFactory, _truecaserFactory);
+        }
+
+        private SmtTransferEngineService CreateService()
+        {
+            return new SmtTransferEngineService(
                 _jobClient,
                 _lockFactory,
-                "engine1"
+                PlatformService,
+                new MemoryDataAccessContext(),
+                Engines,
+                TrainSegmentPairs,
+                StateService
             );
         }
 
@@ -376,7 +381,7 @@ public class SmtTransferEngineRuntimeTests
 
         protected override void DisposeManagedResources()
         {
-            Runtime.Dispose();
+            StateService.Dispose();
             _jobServer.Dispose();
         }
 
@@ -400,6 +405,7 @@ public class SmtTransferEngineRuntimeTests
                         _env._lockFactory,
                         _env._truecaserFactory,
                         _env._smtModelFactory,
+                        Substitute.For<ICorpusService>(),
                         Substitute.For<ILogger<SmtTransferEngineBuildJob>>()
                     );
                 }

@@ -1,8 +1,8 @@
 ﻿namespace SIL.Machine.AspNetCore.Configuration;
 
-public class ClearMLOptions
+public class ClearMLNmtEngineOptions
 {
-    public const string Key = "ClearML";
+    public const string Key = "ClearMLNmtEngine";
 
     public string ApiServer { get; set; } = "http://localhost:8008";
     public string Queue { get; set; } = "default";
