@@ -256,6 +256,7 @@ public static class IMachineConfiguratorExtensions
             })
             .ConfigureChannel(o =>
             {
+                o.MaxRetryAttempts = null;
                 o.ServiceConfig = new ServiceConfig
                 {
                     MethodConfigs =
@@ -265,13 +266,24 @@ public static class IMachineConfiguratorExtensions
                             Names = { MethodName.Default },
                             RetryPolicy = new RetryPolicy
                             {
-                                MaxAttempts = 5,
+                                MaxAttempts = 10,
                                 InitialBackoff = TimeSpan.FromSeconds(1),
                                 MaxBackoff = TimeSpan.FromSeconds(5),
                                 BackoffMultiplier = 1.5,
                                 RetryableStatusCodes = { StatusCode.Unavailable }
                             }
-                        }
+                        },
+                        new MethodConfig
+                        {
+                            Names =
+                            {
+                                new MethodName
+                                {
+                                    Service = "serval.translation.v1.TranslationPlatformApi",
+                                    Method = "UpdateBuildStatus"
+                                }
+                            }
+                        },
                     }
                 };
             });
