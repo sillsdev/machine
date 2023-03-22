@@ -7,7 +7,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_NoLockAcquired()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -28,7 +29,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_ReaderLockAcquired()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -52,7 +54,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_WriterLockAcquiredAndNotReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -65,7 +68,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_WriterLockAcquiredAndReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -93,7 +97,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_WriterLockAcquiredAndExpired()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -119,7 +124,8 @@ public class DistributedReaderWriterLockTests
     public async Task ReaderLockAsync_Cancelled()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -149,7 +155,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_NoLockAcquired()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -170,7 +177,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_ReaderLockAcquiredAndNotReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -183,7 +191,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_ReaderLockAcquiredAndReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -211,7 +220,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_WriterLockAcquiredAndNeverReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -224,7 +234,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_WriterLockAcquiredAndReleased()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -252,7 +263,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_WriterLockTakesPriorityOverReaderLock()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -274,7 +286,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_FirstWriterLockHasPriority()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -296,7 +309,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_WriterLockAcquiredAndExpired()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 
@@ -322,7 +336,8 @@ public class DistributedReaderWriterLockTests
     public async Task WriterLockAsync_Cancelled()
     {
         var locks = new MemoryRepository<RWLock>();
-        var rwLock = new DistributedReaderWriterLock("host", locks, "test");
+        var idGenerator = new ObjectIdGenerator();
+        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
 
         Assert.That(locks.Contains("test"), Is.False);
 

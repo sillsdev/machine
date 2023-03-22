@@ -4,11 +4,17 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 {
     private readonly ServiceOptions _serviceOptions;
     private readonly IRepository<RWLock> _locks;
+    private readonly IIdGenerator _idGenerator;
 
-    public DistributedReaderWriterLockFactory(IOptions<ServiceOptions> serviceOptions, IRepository<RWLock> locks)
+    public DistributedReaderWriterLockFactory(
+        IOptions<ServiceOptions> serviceOptions,
+        IRepository<RWLock> locks,
+        IIdGenerator idGenerator
+    )
     {
         _serviceOptions = serviceOptions.Value;
         _locks = locks;
+        _idGenerator = idGenerator;
     }
 
     public async Task InitAsync(CancellationToken cancellationToken = default)
@@ -20,7 +26,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     public IDistributedReaderWriterLock Create(string id)
     {
-        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, id);
+        return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, _idGenerator, id);
     }
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)

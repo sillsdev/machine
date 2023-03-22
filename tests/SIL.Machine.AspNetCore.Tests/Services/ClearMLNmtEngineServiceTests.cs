@@ -73,7 +73,8 @@ public class ClearMLNmtEngineServiceTests
                 .Returns(Task.FromResult<string?>("project1"));
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new MemoryRepository<RWLock>()
+                new MemoryRepository<RWLock>(),
+                new ObjectIdGenerator()
             );
             _sharedFileService = new SharedFileService();
             _options = Substitute.For<IOptionsMonitor<ClearMLNmtEngineOptions>>();

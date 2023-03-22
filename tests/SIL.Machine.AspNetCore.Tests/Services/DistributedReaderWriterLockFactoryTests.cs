@@ -70,7 +70,11 @@ public class DistributedReaderWriterLockFactoryTests
         {
             Locks = new MemoryRepository<RWLock>();
             var serviceOptions = new ServiceOptions { ServiceId = "this_service" };
-            Factory = new DistributedReaderWriterLockFactory(new OptionsWrapper<ServiceOptions>(serviceOptions), Locks);
+            Factory = new DistributedReaderWriterLockFactory(
+                new OptionsWrapper<ServiceOptions>(serviceOptions),
+                Locks,
+                new ObjectIdGenerator()
+            );
         }
 
         public MemoryRepository<RWLock> Locks { get; }

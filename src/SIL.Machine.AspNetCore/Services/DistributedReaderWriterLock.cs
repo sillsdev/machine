@@ -4,12 +4,14 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
 {
     private readonly string _hostId;
     private readonly IRepository<RWLock> _locks;
+    private readonly IIdGenerator _idGenerator;
     private readonly string _id;
 
-    public DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, string id)
+    public DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
     {
         _hostId = hostId;
         _locks = locks;
+        _idGenerator = idGenerator;
         _id = id;
     }
 
@@ -18,7 +20,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
-        string lockId = ObjectId.GenerateNewId().ToString();
+        string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken))
         {
             using ISubscription<RWLock> sub = await _locks.SubscribeAsync(rwl => rwl.Id == _id, cancellationToken);
@@ -47,7 +49,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
-        string lockId = ObjectId.GenerateNewId().ToString();
+        string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
         {
             await _locks.UpdateAsync(

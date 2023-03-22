@@ -155,7 +155,8 @@ public class SmtTransferEngineServiceTests
             _truecaserFactory = CreateTruecaserFactory();
             _lockFactory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(new ServiceOptions { ServiceId = "host" }),
-                new MemoryRepository<RWLock>()
+                new MemoryRepository<RWLock>(),
+                new ObjectIdGenerator()
             );
             _jobServer = CreateJobServer();
             StateService = CreateStateService();
