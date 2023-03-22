@@ -249,9 +249,32 @@ public static class IMachineConfiguratorExtensions
     )
     {
         configurator.Services.AddScoped<IPlatformService, ServalPlatformService>();
-        configurator.Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(
-            o => o.Address = new Uri(connectionString ?? configurator.Configuration.GetConnectionString("Serval"))
-        );
+        configurator.Services
+            .AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
+            {
+                o.Address = new Uri(connectionString ?? configurator.Configuration.GetConnectionString("Serval"));
+            })
+            .ConfigureChannel(o =>
+            {
+                o.ServiceConfig = new ServiceConfig
+                {
+                    MethodConfigs =
+                    {
+                        new MethodConfig
+                        {
+                            Names = { MethodName.Default },
+                            RetryPolicy = new RetryPolicy
+                            {
+                                MaxAttempts = 5,
+                                InitialBackoff = TimeSpan.FromSeconds(1),
+                                MaxBackoff = TimeSpan.FromSeconds(5),
+                                BackoffMultiplier = 1.5,
+                                RetryableStatusCodes = { StatusCode.Unavailable }
+                            }
+                        }
+                    }
+                };
+            });
 
         return configurator;
     }

@@ -18,6 +18,7 @@ global using System.Xml;
 global using AutoMapper;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
+global using Grpc.Net.Client.Configuration;
 global using Hangfire;
 global using Hangfire.MemoryStorage;
 global using Hangfire.Mongo;
