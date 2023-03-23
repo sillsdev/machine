@@ -92,8 +92,8 @@ public class SmtTransferEngineBuildJob
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await smtModelTrainer.SaveAsync();
-                await truecaseTrainer.SaveAsync();
+                await smtModelTrainer.SaveAsync(CancellationToken.None);
+                await truecaseTrainer.SaveAsync(CancellationToken.None);
                 ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
                 IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
                     p => p.TranslationEngineRef == engine.Id,
@@ -105,7 +105,8 @@ public class SmtTransferEngineBuildJob
                     {
                         await smtModel.TrainSegmentAsync(
                             segmentPair.Source.Lowercase(),
-                            segmentPair.Target.Lowercase()
+                            segmentPair.Target.Lowercase(),
+                            cancellationToken: CancellationToken.None
                         );
                         truecaser.TrainSegment(segmentPair.Target, segmentPair.SentenceStart);
                     }
@@ -200,22 +201,5 @@ public class SmtTransferEngineBuildJob
             smtModelTrainer?.Dispose();
             truecaseTrainer?.Dispose();
         }
-    }
-
-    private static IParallelTextCorpus CreateParallelCorpus(
-        IReadOnlyDictionary<string, ITextCorpus> sourceCorpora,
-        IReadOnlyDictionary<string, ITextCorpus> targetCorpora
-    )
-    {
-        var parallelCorpora = new List<IParallelTextCorpus>();
-        foreach (KeyValuePair<string, ITextCorpus> kvp in sourceCorpora)
-        {
-            if (targetCorpora.TryGetValue(kvp.Key, out ITextCorpus? targetCorpus))
-            {
-                ITextCorpus sourceCorpus = kvp.Value;
-                parallelCorpora.Add(sourceCorpus.AlignRows(targetCorpus));
-            }
-        }
-        return parallelCorpora.Flatten();
     }
 }

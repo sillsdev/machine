@@ -69,7 +69,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     public virtual async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
-        await using (await @lock.WriterLockAsync())
+        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             await CancelBuildInternalAsync(engineId, cancellationToken);
         }
@@ -130,7 +130,10 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         // cancel the existing build before starting a new build
         string? curBuildId = await CancelBuildInternalAsync(engineId, cancellationToken);
         if (curBuildId is not null)
-            await WaitForBuildToFinishAsync(engineId, curBuildId, CancellationToken.None);
+        {
+            if (!await WaitForBuildToFinishAsync(engineId, curBuildId, CancellationToken.None))
+                throw new InvalidOperationException("Unable to cancel current build.");
+        }
 
         // Schedule the job to occur way in the future, just so we can get the job id.
         string jobId = _jobClient.Schedule(GetJobExpression(engineId, buildId, corpora), TimeSpan.FromDays(10000));
@@ -192,22 +195,27 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         return engine?.BuildId;
     }
 
-    protected async Task WaitForBuildToFinishAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    protected async Task<bool> WaitForBuildToFinishAsync(
+        string engineId,
+        string buildId,
+        CancellationToken cancellationToken
+    )
     {
         ISubscription<TranslationEngine> sub = await Engines.SubscribeAsync(
             e => e.EngineId == engineId && e.BuildId == buildId,
             cancellationToken
         );
         if (sub.Change.Entity is null)
-            return;
+            return true;
 
-        var timeout = DateTime.UtcNow + TimeSpan.FromSeconds(30);
+        var timeout = DateTime.UtcNow + TimeSpan.FromSeconds(20);
         while (DateTime.UtcNow < timeout)
         {
-            await sub.WaitForChangeAsync(TimeSpan.FromSeconds(5), cancellationToken);
+            await sub.WaitForChangeAsync(TimeSpan.FromSeconds(2), cancellationToken);
             TranslationEngine? engine = sub.Change.Entity;
             if (engine is null || engine.BuildState is BuildState.None)
-                return;
+                return true;
         }
+        return false;
     }
 }
