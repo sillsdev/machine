@@ -28,6 +28,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
 
     public virtual async Task CreateAsync(
         string engineId,
+        string? engineName,
         string sourceLanguage,
         string targetLanguage,
         CancellationToken cancellationToken = default

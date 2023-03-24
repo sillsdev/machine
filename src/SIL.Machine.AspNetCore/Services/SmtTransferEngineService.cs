@@ -30,12 +30,13 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
 
     public override async Task CreateAsync(
         string engineId,
+        string? engineName,
         string sourceLanguage,
         string targetLanguage,
         CancellationToken cancellationToken = default
     )
     {
-        await base.CreateAsync(engineId, sourceLanguage, targetLanguage, cancellationToken);
+        await base.CreateAsync(engineId, engineName, sourceLanguage, targetLanguage, cancellationToken);
 
         SmtTransferEngineState state = _stateService.Get(engineId);
         IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);

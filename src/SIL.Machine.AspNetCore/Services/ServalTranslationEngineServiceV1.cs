@@ -21,6 +21,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         await engineService.CreateAsync(
             request.EngineId,
+            request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
             context.CancellationToken
@@ -80,7 +81,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Corpus[] corpora = request.Corpora.Select(_mapper.Map<Corpus>).ToArray();
+        Models.Corpus[] corpora = request.Corpora.Select(_mapper.Map<Models.Corpus>).ToArray();
         await engineService.StartBuildAsync(request.EngineId, request.BuildId, corpora, context.CancellationToken);
         return Empty;
     }

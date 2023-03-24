@@ -31,8 +31,8 @@
 		<PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
 		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.14" />
-		<PackageReference Include="Serval.Grpc" Version="0.2.0" />
-		<PackageReference Include="SIL.DataAccess" Version="0.2.0" />
+		<PackageReference Include="Serval.Grpc" Version="0.3.0" />
+		<PackageReference Include="SIL.DataAccess" Version="0.3.0" />
 		<PackageReference Include="Stowage" Version="1.2.6" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>

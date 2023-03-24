@@ -207,7 +207,7 @@ public static class IMachineConfiguratorExtensions
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
                     init: c =>
-                        c.Indexes.CreateOrUpdate(
+                        c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TranslationEngine>(
                                 Builders<TranslationEngine>.IndexKeys.Ascending(p => p.EngineId)
                             )
@@ -215,15 +215,15 @@ public static class IMachineConfiguratorExtensions
                 );
                 o.AddRepository<RWLock>(
                     "locks",
-                    init: c =>
+                    init: async c =>
                     {
-                        c.Indexes.CreateOrUpdate(
+                        await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("writerLock._id"))
                         );
-                        c.Indexes.CreateOrUpdate(
+                        await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("readerLocks._id"))
                         );
-                        c.Indexes.CreateOrUpdate(
+                        await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("writerQueue._id"))
                         );
                     }
@@ -231,7 +231,7 @@ public static class IMachineConfiguratorExtensions
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
                     init: c =>
-                        c.Indexes.CreateOrUpdate(
+                        c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TrainSegmentPair>(
                                 Builders<TrainSegmentPair>.IndexKeys.Ascending(p => p.TranslationEngineRef)
                             )

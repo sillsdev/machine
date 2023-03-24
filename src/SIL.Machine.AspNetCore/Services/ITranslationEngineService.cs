@@ -6,6 +6,7 @@ public interface ITranslationEngineService
 
     Task CreateAsync(
         string engineId,
+        string? engineName,
         string sourceLanguage,
         string targetLanguage,
         CancellationToken cancellationToken = default

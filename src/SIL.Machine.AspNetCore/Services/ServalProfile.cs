@@ -28,8 +28,8 @@ public class ServalProfile : Profile
             .ForMember(dest => dest.SourceSegmentEnd, o => o.MapFrom(src => src.SourceSegmentRange.End))
             .ForMember(dest => dest.Sources, o => o.MapFrom(src => src.WordSources));
 
-        CreateMap<Serval.Translation.V1.ParallelCorpus, Corpus>();
-        CreateMap<Serval.Translation.V1.ParallelCorpusFile, CorpusFile>();
+        CreateMap<Serval.Translation.V1.Corpus, Corpus>();
+        CreateMap<Serval.Translation.V1.CorpusFile, CorpusFile>();
     }
 }
 

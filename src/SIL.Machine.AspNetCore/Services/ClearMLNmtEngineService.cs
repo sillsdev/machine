@@ -21,13 +21,14 @@ public class ClearMLNmtEngineService : TranslationEngineServiceBase<ClearMLNmtEn
 
     public override async Task CreateAsync(
         string engineId,
+        string? engineName,
         string sourceLanguage,
         string targetLanguage,
         CancellationToken cancellationToken = default
     )
     {
-        await base.CreateAsync(engineId, sourceLanguage, targetLanguage, cancellationToken);
-        await _clearMLService.CreateProjectAsync(engineId, cancellationToken: CancellationToken.None);
+        await base.CreateAsync(engineId, engineName, sourceLanguage, targetLanguage, cancellationToken);
+        await _clearMLService.CreateProjectAsync(engineId, engineName, cancellationToken: CancellationToken.None);
     }
 
     public override async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
