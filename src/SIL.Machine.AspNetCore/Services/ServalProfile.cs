@@ -10,6 +10,8 @@ public class ServalProfile : Profile
             .ConvertUsing(typeof(EnumerableToRepeatedFieldTypeConverter<,>));
         CreateMap<WordAlignmentMatrix, RepeatedField<Serval.Translation.V1.AlignedWordPair>>()
             .ConvertUsing<WordAlignmentConverter>();
+        CreateMap<TranslationSources, Serval.Translation.V1.TranslationSources>()
+            .ConvertUsing<TranslationSourcesConverter>();
         CreateMap<(string Translation, TranslationResult Result), Serval.Translation.V1.TranslationResult>()
             .ForMember(dest => dest.Translation, o => o.MapFrom(src => src.Translation))
             .ForMember(dest => dest.Tokens, o => o.MapFrom(src => src.Result.TargetSegment))
@@ -54,7 +56,7 @@ public class WordAlignmentConverter
 {
     public RepeatedField<Serval.Translation.V1.AlignedWordPair> Convert(
         WordAlignmentMatrix source,
-        RepeatedField<Serval.Translation.V1.AlignedWordPair> destination,
+        RepeatedField<Serval.Translation.V1.AlignedWordPair>? destination,
         ResolutionContext context
     )
     {
@@ -67,6 +69,34 @@ public class WordAlignmentConverter
                     destination.Add(new Serval.Translation.V1.AlignedWordPair { SourceIndex = i, TargetIndex = j });
             }
         }
+        return destination;
+    }
+}
+
+public class TranslationSourcesConverter : ITypeConverter<TranslationSources, Serval.Translation.V1.TranslationSources>
+{
+    public Serval.Translation.V1.TranslationSources Convert(
+        TranslationSources source,
+        Serval.Translation.V1.TranslationSources? destination,
+        ResolutionContext context
+    )
+    {
+        destination ??= new Serval.Translation.V1.TranslationSources();
+        destination.Values.Add(
+            Enum.GetValues<TranslationSources>()
+                .Where(s => s != TranslationSources.None && source.HasFlag(s))
+                .Select(
+                    s =>
+                        s switch
+                        {
+                            TranslationSources.Smt => Serval.Translation.V1.TranslationSource.Primary,
+                            TranslationSources.Nmt => Serval.Translation.V1.TranslationSource.Primary,
+                            TranslationSources.Transfer => Serval.Translation.V1.TranslationSource.Secondary,
+                            TranslationSources.Prefix => Serval.Translation.V1.TranslationSource.Human,
+                            _ => Serval.Translation.V1.TranslationSource.Primary
+                        }
+                )
+        );
         return destination;
     }
 }
