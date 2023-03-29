@@ -1,20 +1,14 @@
-using Hangfire;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMachine(
-    o =>
-    {
-        o.AddMongoDataAccess();
-        o.AddMongoBackgroundJobClient();
-        o.AddBackgroundJobServer();
-        o.AddServalPlatformService();
-    },
-    builder.Configuration
-);
+builder.Services
+    .AddMachine(builder.Configuration)
+    .AddMongoDataAccess()
+    .AddMongoBackgroundJobClient()
+    .AddBackgroundJobServer()
+    .AddServalPlatformService();
 
 var app = builder.Build();
 
-app.UseHangfireDashboard();
+app.MapHealthChecks("/health");
 
 app.Run();

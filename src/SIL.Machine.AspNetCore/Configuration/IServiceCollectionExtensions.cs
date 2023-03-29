@@ -2,11 +2,7 @@
 
 public static class IServiceCollectionExtensions
 {
-    public static IServiceCollection AddMachine(
-        this IServiceCollection services,
-        Action<IMachineConfigurator> configure,
-        IConfiguration? config = null
-    )
+    public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddSingleton<ISharedFileService, SharedFileService>();
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
@@ -15,23 +11,22 @@ public static class IServiceCollectionExtensions
 
         services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-        var configurator = new MachineConfigurator(services, config);
-        if (config is null)
+        var builder = new MachineBuilder(services, configuration);
+        if (configuration is null)
         {
-            configurator.AddServiceOptions(o => { });
-            configurator.AddSharedFileOptions(o => { });
-            configurator.AddSmtTransferEngineOptions(o => { });
-            configurator.AddClearMLNmtEngineOptions(o => { });
+            builder.AddServiceOptions(o => { });
+            builder.AddSharedFileOptions(o => { });
+            builder.AddSmtTransferEngineOptions(o => { });
+            builder.AddClearMLNmtEngineOptions(o => { });
         }
         else
         {
-            configurator.AddServiceOptions(config.GetSection(ServiceOptions.Key));
-            configurator.AddSharedFileOptions(config.GetSection(SharedFileOptions.Key));
-            configurator.AddSmtTransferEngineOptions(config.GetSection(SmtTransferEngineOptions.Key));
-            configurator.AddClearMLNmtEngineOptions(config.GetSection(ClearMLNmtEngineOptions.Key));
+            builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
+            builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
+            builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
+            builder.AddClearMLNmtEngineOptions(configuration.GetSection(ClearMLNmtEngineOptions.Key));
         }
-        configure(configurator);
-        return services;
+        return builder;
     }
 
     public static IServiceCollection AddStartupTask(

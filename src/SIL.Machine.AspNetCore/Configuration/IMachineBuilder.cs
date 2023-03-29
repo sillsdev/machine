@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Extensions.DependencyInjection;
 
-public interface IMachineConfigurator
+public interface IMachineBuilder
 {
     IServiceCollection Services { get; }
     IConfiguration? Configuration { get; }
