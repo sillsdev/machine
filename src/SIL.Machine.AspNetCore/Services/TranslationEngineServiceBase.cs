@@ -76,7 +76,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         }
     }
 
-    public virtual Task<IReadOnlyList<(string Translation, TranslationResult Result)>> TranslateAsync(
+    public virtual Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,

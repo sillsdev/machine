@@ -304,7 +304,7 @@ namespace SIL.Machine.Translation.Thot
         {
             private readonly ThotWordAlignmentModel _model;
 
-            public Trainer(ThotWordAlignmentModel model, IEnumerable<ParallelTextRow> corpus)
+            public Trainer(ThotWordAlignmentModel model, IParallelTextCorpus corpus)
                 : base(model.Type, corpus, model._prefFileName, model.Parameters)
             {
                 _model = model;

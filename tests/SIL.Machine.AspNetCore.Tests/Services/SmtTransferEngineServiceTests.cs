@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using SIL.Machine.Tokenization;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
 public class SmtTransferEngineServiceTests
@@ -91,9 +93,6 @@ public class SmtTransferEngineServiceTests
         await Task.Delay(10);
         await env.CommitAsync(TimeSpan.Zero);
         await env.SmtModel.Received().SaveAsync();
-        env.Truecaser
-            .Received()
-            .TrainSegment(Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
         Assert.That(env.StateService.Get("engine1").IsLoaded, Is.False);
     }
 
@@ -104,9 +103,6 @@ public class SmtTransferEngineServiceTests
         await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
         await env.CommitAsync(TimeSpan.FromHours(1));
         await env.SmtModel.Received().SaveAsync();
-        env.Truecaser
-            .Received()
-            .TrainSegment(Arg.Is<IReadOnlyList<string>>(x => x.SequenceEqual("this is a test .".Split())), true);
         Assert.That(env.StateService.Get("engine1").IsLoaded, Is.True);
     }
 
@@ -114,8 +110,8 @@ public class SmtTransferEngineServiceTests
     public async Task TranslateAsync()
     {
         using var env = new TestEnvironment();
-        (string translation, _) = (await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba."))[0];
-        Assert.That(translation, Is.EqualTo("this is a TEST."));
+        TranslationResult result = (await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba."))[0];
+        Assert.That(result.Translation, Is.EqualTo("this is a TEST."));
     }
 
     private class TestEnvironment : DisposableBase
@@ -225,8 +221,9 @@ public class SmtTransferEngineServiceTests
             var factory = Substitute.For<ISmtModelFactory>();
 
             var translationResult = new TranslationResult(
-                5,
-                "this is a test .".Split(),
+                "this is a TEST.",
+                "esto es una prueba .".Split(),
+                "this is a TEST .".Split(),
                 new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
                 new[]
                 {
@@ -247,13 +244,14 @@ public class SmtTransferEngineServiceTests
                 new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) }
             );
             SmtModel
-                .TranslateAsync(1, Arg.Any<IReadOnlyList<string>>())
+                .TranslateAsync(1, Arg.Any<string>())
                 .Returns(Task.FromResult<IReadOnlyList<TranslationResult>>(new[] { translationResult }));
             SmtModel
-                .GetWordGraphAsync(Arg.Any<IReadOnlyList<string>>())
+                .GetWordGraphAsync(Arg.Any<string>())
                 .Returns(
                     Task.FromResult(
                         new WordGraph(
+                            "esto es una prueba .".Split(),
                             new[]
                             {
                                 new WordGraphArc(
@@ -292,8 +290,21 @@ public class SmtTransferEngineServiceTests
                     )
                 );
 
-            factory.Create(Arg.Any<string>()).Returns(SmtModel);
-            factory.CreateTrainer(Arg.Any<string>(), Arg.Any<IParallelTextCorpus>()).Returns(SmtBatchTrainer);
+            factory
+                .Create(
+                    Arg.Any<string>(),
+                    Arg.Any<IRangeTokenizer<string, int, string>>(),
+                    Arg.Any<IDetokenizer<string, string>>(),
+                    Arg.Any<ITruecaser>()
+                )
+                .Returns(SmtModel);
+            factory
+                .CreateTrainer(
+                    Arg.Any<string>(),
+                    Arg.Any<IRangeTokenizer<string, int, string>>(),
+                    Arg.Any<IParallelTextCorpus>()
+                )
+                .Returns(SmtBatchTrainer);
             return factory;
         }
 
@@ -302,12 +313,13 @@ public class SmtTransferEngineServiceTests
             var factory = Substitute.For<ITransferEngineFactory>();
             var engine = Substitute.For<ITranslationEngine>();
             engine
-                .TranslateAsync(Arg.Any<IReadOnlyList<string>>())
+                .TranslateAsync(Arg.Any<string>())
                 .Returns(
                     Task.FromResult(
                         new TranslationResult(
-                            5,
-                            "this is a test .".Split(),
+                            "this is a TEST.",
+                            "esto es una prueba .".Split(),
+                            "this is a TEST .".Split(),
                             new[] { 1.0, 1.0, 1.0, 1.0, 1.0 },
                             new[]
                             {
@@ -329,22 +341,24 @@ public class SmtTransferEngineServiceTests
                         )
                     )
                 );
-            factory.Create(Arg.Any<string>()).Returns(engine);
+            factory
+                .Create(
+                    Arg.Any<string>(),
+                    Arg.Any<IRangeTokenizer<string, int, string>>(),
+                    Arg.Any<IDetokenizer<string, string>>(),
+                    Arg.Any<ITruecaser>()
+                )
+                .Returns(engine);
             return factory;
         }
 
         private ITruecaserFactory CreateTruecaserFactory()
         {
             var factory = Substitute.For<ITruecaserFactory>();
-            Truecaser
-                .Truecase(Arg.Any<IReadOnlyList<string>>())
-                .Returns(x =>
-                {
-                    var segment = x.Arg<IReadOnlyList<string>>();
-                    return segment.Select(t => t == "test" ? "TEST" : t).ToArray();
-                });
             factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
-            factory.CreateTrainer(Arg.Any<string>(), Arg.Any<ITextCorpus>()).Returns(TruecaserTrainer);
+            factory
+                .CreateTrainer(Arg.Any<string>(), Arg.Any<ITokenizer<string, int, string>>(), Arg.Any<ITextCorpus>())
+                .Returns(TruecaserTrainer);
             return factory;
         }
 

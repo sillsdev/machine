@@ -5,6 +5,8 @@ namespace SIL.Machine.Tokenization
 {
     public class WhitespaceTokenizer : StringTokenizer
     {
+        public static WhitespaceTokenizer Instance { get; } = new WhitespaceTokenizer();
+
         public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
         {
             int startIndex = -1;

@@ -39,7 +39,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        IEnumerable<(string, Translation.TranslationResult)> results = await engineService.TranslateAsync(
+        IEnumerable<Translation.TranslationResult> results = await engineService.TranslateAsync(
             request.EngineId,
             request.N,
             request.Segment,

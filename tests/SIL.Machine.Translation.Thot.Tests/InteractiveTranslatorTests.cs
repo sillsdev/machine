@@ -9,184 +9,160 @@ namespace SIL.Machine.Translation.Thot
         public async Task TargetSegment_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
         }
 
         [Test]
         public async Task SetPrefix_AddWord_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
+            translator.SetPrefix("i am ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am leaving".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i am leave today in the afternoon ."));
+            translator.SetPrefix("i am leaving ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i am leaving today in the afternoon ."));
         }
 
         [Test]
         public async Task SetPrefix_MissingWord_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "caminé a mi habitación .".Split());
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("caminé a mi habitación .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-            translator.SetPrefix("i walked".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("caminé to my room ."));
+            translator.SetPrefix("i walked ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i walked to my room ."));
         }
 
         [Test]
         public async Task SetPrefix_RemoveWord_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
+            translator.SetPrefix("i am ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-            translator.SetPrefix("i".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i am leave today in the afternoon ."));
+            translator.SetPrefix("i ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
         }
 
         [Test]
         public async Task ApproveAsync_TwoSegmentsUnknownWord_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "hablé con recepción .".Split());
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("hablé con recepción .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-            translator.SetPrefix("i talked".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("hablé with reception ."));
+            translator.SetPrefix("i talked ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
-            translator.SetPrefix("i talked with reception .".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i talked with reception ."));
+            translator.SetPrefix("i talked with reception .");
             await translator.ApproveAsync(false);
 
-            translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "hablé hasta cinco en punto .".Split());
+            translator = await factory.CreateAsync("hablé hasta cinco en punto .");
 
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i talked until five o ' clock .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i talked until five o ' clock ."));
         }
 
         [Test]
         public async Task TargetSegment_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
         }
 
         [Test]
         public async Task SetPrefix_AddWord_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
+            translator.SetPrefix("i am ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am leaving".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i am leave today in the afternoon ."));
+            translator.SetPrefix("i am leaving ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i am leaving today in the afternoon ."));
         }
 
         [Test]
         public async Task SetPrefix_MissingWord_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "caminé a mi habitación .".Split());
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("caminé a mi habitación .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("caminé to my room .".Split()));
-            translator.SetPrefix("i walked".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("caminé to my room ."));
+            translator.SetPrefix("i walked ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i walked to my room .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i walked to my room ."));
         }
 
         [Test]
         public async Task SetPrefix_RemoveWord_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(
-                ecm,
-                smtModel,
-                "me marcho hoy por la tarde .".Split()
-            );
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("me marcho hoy por la tarde .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
-            translator.SetPrefix("i am".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
+            translator.SetPrefix("i am ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leave today in the afternoon .".Split()));
-            translator.SetPrefix("i".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i am leave today in the afternoon ."));
+            translator.SetPrefix("i ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i leave today in the afternoon .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i leave today in the afternoon ."));
         }
 
         [Test]
         public async Task ApproveAsync_TwoSegmentsUnknownWord_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            var ecm = new ErrorCorrectionModel();
-            var translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "hablé con recepción .".Split());
+            var factory = new InteractiveTranslatorFactory(smtModel);
+            InteractiveTranslator translator = await factory.CreateAsync("hablé con recepción .");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-            translator.SetPrefix("i talked".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("hablé with reception ."));
+            translator.SetPrefix("i talked ");
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i talked with reception .".Split()));
-            translator.SetPrefix("i talked with reception .".Split(), true);
+            Assert.That(result.Translation, Is.EqualTo("i talked with reception ."));
+            translator.SetPrefix("i talked with reception .");
             await translator.ApproveAsync(false);
 
-            translator = await InteractiveTranslator.CreateAsync(ecm, smtModel, "hablé hasta cinco en punto .".Split());
+            translator = await factory.CreateAsync("hablé hasta cinco en punto .");
 
             result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("i talked until five o ' clock .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("i talked until five o ' clock ."));
         }
 
         private static ThotSmtModel CreateHmmModel()

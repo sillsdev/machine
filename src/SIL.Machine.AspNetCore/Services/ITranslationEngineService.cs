@@ -13,7 +13,7 @@ public interface ITranslationEngineService
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<(string Translation, TranslationResult Result)>> TranslateAsync(
+    Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,

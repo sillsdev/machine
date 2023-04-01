@@ -13,22 +13,25 @@ namespace SIL.Machine.Translation
             _engine = engine;
         }
 
-        public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
+        public void Estimate(WordGraph wordGraph)
         {
             WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
             foreach (WordGraphArc arc in wordGraph.Arcs)
             {
                 for (int k = 0; k < arc.Words.Count; k++)
-                    arc.WordConfidences[k] = wordGraphConfidences.GetConfidence(arc.Words[k]);
+                    arc.SetConfidence(k, wordGraphConfidences.GetConfidence(arc.Words[k]));
             }
         }
 
-        public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResultBuilder builder)
+        public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResult translationResult)
         {
             WordGraph wordGraph = _engine.GetWordGraph(sourceSegment);
             WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
-            for (int j = 0; j < builder.Words.Count; j++)
-                builder.SetConfidence(j, wordGraphConfidences.GetConfidence(builder.Words[j]));
+            for (int j = 0; j < translationResult.TargetTokens.Count; j++)
+                translationResult.SetConfidence(
+                    j,
+                    wordGraphConfidences.GetConfidence(translationResult.TargetTokens[j])
+                );
         }
 
         private WordGraphConfidences ComputeWordGraphConfidences(WordGraph wordGraph)

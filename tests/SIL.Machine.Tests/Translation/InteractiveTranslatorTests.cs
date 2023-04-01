@@ -1,6 +1,8 @@
-﻿using NSubstitute;
+﻿using System.Text;
+using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Translation
 {
@@ -14,10 +16,7 @@ namespace SIL.Machine.Translation
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(
-                string.Join(" ", result.TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
+            Assert.That(result.Translation, Is.EqualTo("In the beginning the Word already existía ."));
         }
 
         [Test]
@@ -25,13 +24,10 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", true);
+            translator.AppendToPrefix("In ");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(
-                string.Join(" ", result.TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
+            Assert.That(result.Translation, Is.EqualTo("In the beginning the Word already existía ."));
         }
 
         [Test]
@@ -39,14 +35,11 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", true);
-            translator.AppendToPrefix("t", false);
+            translator.AppendToPrefix("In ");
+            translator.AppendToPrefix("t");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(
-                string.Join(" ", result.TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
+            Assert.That(result.Translation, Is.EqualTo("In the beginning the Word already existía ."));
         }
 
         [Test]
@@ -54,14 +47,11 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", "the", "beginning");
-            translator.SetPrefix(new[] { "In", "the" }, true);
+            translator.AppendToPrefix("In the beginning ");
+            translator.SetPrefix("In the ");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(
-                string.Join(" ", result.TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
+            Assert.That(result.Translation, Is.EqualTo("In the beginning the Word already existía ."));
         }
 
         [Test]
@@ -69,14 +59,11 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", "the", "beginning");
-            translator.SetPrefix(new string[0], true);
+            translator.AppendToPrefix("In the beginning ");
+            translator.SetPrefix("");
 
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(
-                string.Join(" ", result.TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
+            Assert.That(result.Translation, Is.EqualTo("In the beginning the Word already existía ."));
         }
 
         [Test]
@@ -85,21 +72,26 @@ namespace SIL.Machine.Translation
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
-            Assert.That(translator.IsSourceSegmentValid, Is.True);
+            Assert.That(translator.IsSegmentValid, Is.True);
         }
 
         [Test]
         public async Task IsSourceSegmentValid_Invalid()
         {
             var env = new TestEnvironment();
-            string[] sourceSegment = Enumerable
-                .Repeat("word", TranslationConstants.MaxSegmentLength)
-                .Concat(new[] { "." })
-                .ToArray();
-            env.Engine.GetWordGraphAsync(SegmentEqual(sourceSegment)).Returns(Task.FromResult(new WordGraph()));
+            var sb = new StringBuilder();
+            for (int i = 0; i < TranslationConstants.MaxSegmentLength; i++)
+                sb.Append("word ");
+            sb.Append('.');
+            string sourceSegment = sb.ToString();
+            env.Engine
+                .GetWordGraphAsync(sourceSegment)
+                .Returns(
+                    Task.FromResult(new WordGraph(WhitespaceTokenizer.Instance.Tokenize(sourceSegment).ToArray()))
+                );
             InteractiveTranslator translator = await env.CreateTranslatorAsync(sourceSegment);
 
-            Assert.That(translator.IsSourceSegmentValid, Is.False);
+            Assert.That(translator.IsSegmentValid, Is.False);
         }
 
         [Test]
@@ -107,21 +99,19 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", "the", "beginning");
+            translator.AppendToPrefix("In the beginning ");
             await translator.ApproveAsync(alignedOnly: true);
 
-            await env.Engine
-                .Received()
-                .TrainSegmentAsync(SegmentEqual("En", "el", "principio"), SegmentEqual("In", "the", "beginning"));
+            await env.Engine.Received().TrainSegmentAsync("En el principio", "In the beginning");
 
-            translator.AppendToPrefix("the", "Word", "already", "existed", ".");
+            translator.AppendToPrefix("the Word already existed .");
             await translator.ApproveAsync(alignedOnly: true);
 
             await env.Engine
                 .Received()
                 .TrainSegmentAsync(
-                    SegmentEqual("En", "el", "principio", "la", "Palabra", "ya", "existía", "."),
-                    SegmentEqual("In", "the", "beginning", "the", "Word", "already", "existed", ".")
+                    "En el principio la Palabra ya existía .",
+                    "In the beginning the Word already existed ."
                 );
         }
 
@@ -130,15 +120,12 @@ namespace SIL.Machine.Translation
         {
             var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", "the", "beginning");
+            translator.AppendToPrefix("In the beginning ");
             await translator.ApproveAsync(alignedOnly: false);
 
             await env.Engine
                 .Received()
-                .TrainSegmentAsync(
-                    SegmentEqual("En", "el", "principio", "la", "Palabra", "ya", "existía", "."),
-                    SegmentEqual("In", "the", "beginning")
-                );
+                .TrainSegmentAsync("En el principio la Palabra ya existía .", "In the beginning");
         }
 
         [Test]
@@ -149,14 +136,8 @@ namespace SIL.Machine.Translation
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
 
             TranslationResult[] results = translator.GetCurrentResults().Take(2).ToArray();
-            Assert.That(
-                string.Join(" ", results[0].TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
-            Assert.That(
-                string.Join(" ", results[1].TargetSegment),
-                Is.EqualTo("In the start the Word already existía .")
-            );
+            Assert.That(results[0].Translation, Is.EqualTo("In the beginning the Word already existía ."));
+            Assert.That(results[1].Translation, Is.EqualTo("In the start the Word already existía ."));
         }
 
         [Test]
@@ -165,58 +146,31 @@ namespace SIL.Machine.Translation
             var env = new TestEnvironment();
             env.UseSimpleWordGraph();
             InteractiveTranslator translator = await env.CreateTranslatorAsync();
-            translator.AppendToPrefix("In", "the");
+            translator.AppendToPrefix("In the ");
 
             TranslationResult[] results = translator.GetCurrentResults().Take(2).ToArray();
-            Assert.That(
-                string.Join(" ", results[0].TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
-            Assert.That(
-                string.Join(" ", results[1].TargetSegment),
-                Is.EqualTo("In the start the Word already existía .")
-            );
+            Assert.That(results[0].Translation, Is.EqualTo("In the beginning the Word already existía ."));
+            Assert.That(results[1].Translation, Is.EqualTo("In the start the Word already existía ."));
 
             translator.AppendToPrefix("beginning");
 
             results = translator.GetCurrentResults().Take(2).ToArray();
-            Assert.That(
-                string.Join(" ", results[0].TargetSegment),
-                Is.EqualTo("In the beginning the Word already existía .")
-            );
-            Assert.That(
-                string.Join(" ", results[1].TargetSegment),
-                Is.EqualTo("In the beginning his Word already existía .")
-            );
-        }
-
-        private static IReadOnlyList<string> SegmentEqual(params string[] segment)
-        {
-            return Arg.Is<IReadOnlyList<string>>(s => s.SequenceEqual(segment));
+            Assert.That(results[0].Translation, Is.EqualTo("In the beginning the Word already existía ."));
+            Assert.That(results[1].Translation, Is.EqualTo("In the beginning his Word already existía ."));
         }
 
         private class TestEnvironment
         {
-            public static readonly string[] SourceSegment =
-            {
-                "En",
-                "el",
-                "principio",
-                "la",
-                "Palabra",
-                "ya",
-                "existía",
-                "."
-            };
+            public static readonly string SourceSegment = "En el principio la Palabra ya existía .";
 
-            private readonly ErrorCorrectionModel _ecm;
+            private readonly InteractiveTranslatorFactory _factory;
 
             public TestEnvironment()
             {
                 Engine = Substitute.For<IInteractiveTranslationEngine>();
-                _ecm = new ErrorCorrectionModel();
 
                 var wordGraph = new WordGraph(
+                    WhitespaceTokenizer.Instance.Tokenize(SourceSegment).ToArray(),
                     new[]
                     {
                         new WordGraphArc(
@@ -504,7 +458,9 @@ namespace SIL.Machine.Translation
                     -191.0998
                 );
 
-                Engine.GetWordGraphAsync(SegmentEqual(SourceSegment)).Returns(Task.FromResult(wordGraph));
+                Engine.GetWordGraphAsync(SourceSegment).Returns(Task.FromResult(wordGraph));
+
+                _factory = new InteractiveTranslatorFactory(Engine);
             }
 
             public IInteractiveTranslationEngine Engine { get; }
@@ -512,6 +468,7 @@ namespace SIL.Machine.Translation
             public void UseSimpleWordGraph()
             {
                 var wordGraph = new WordGraph(
+                    WhitespaceTokenizer.Instance.Tokenize(SourceSegment).ToArray(),
                     new[]
                     {
                         new WordGraphArc(
@@ -598,15 +555,15 @@ namespace SIL.Machine.Translation
                     new[] { 5 }
                 );
 
-                Engine.GetWordGraphAsync(SegmentEqual(SourceSegment)).Returns(Task.FromResult(wordGraph));
+                Engine.GetWordGraphAsync(SourceSegment).Returns(Task.FromResult(wordGraph));
             }
 
-            public Task<InteractiveTranslator> CreateTranslatorAsync(IReadOnlyList<string>? segment = null)
+            public Task<InteractiveTranslator> CreateTranslatorAsync(string? segment = null)
             {
                 if (segment is null)
                     segment = SourceSegment;
 
-                return InteractiveTranslator.CreateAsync(_ecm, Engine, segment);
+                return _factory.CreateAsync(segment);
             }
         }
     }

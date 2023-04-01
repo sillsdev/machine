@@ -5,6 +5,10 @@ public class SmtTransferEngineState : AsyncDisposableBase
     private readonly ISmtModelFactory _smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory;
     private readonly ITruecaserFactory _truecaserFactory;
+    private readonly AsyncLock _lock = new();
+
+    private IInteractiveTranslationModel? _smtModel;
+    private HybridTranslationEngine? _hybridEngine;
 
     public SmtTransferEngineState(
         ISmtModelFactory smtModelFactory,
@@ -17,22 +21,14 @@ public class SmtTransferEngineState : AsyncDisposableBase
         _transferEngineFactory = transferEngineFactory;
         _truecaserFactory = truecaserFactory;
         EngineId = engineId;
-        SmtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
-        TransferEngine = new Lazy<ITranslationEngine?>(CreateTransferEngine);
-        HybridEngine = new Lazy<HybridTranslationEngine>(CreateHybridEngine);
-        Truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
     }
 
     public string EngineId { get; }
-    public Lazy<IInteractiveTranslationModel> SmtModel { get; private set; }
-    public Lazy<ITranslationEngine?> TransferEngine { get; private set; }
-    public Lazy<HybridTranslationEngine> HybridEngine { get; private set; }
-    public AsyncLazy<ITruecaser> Truecaser { get; private set; }
+
     public bool IsUpdated { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
     public DateTime LastUsedTime { get; set; } = DateTime.UtcNow;
-
-    public bool IsLoaded => SmtModel.IsValueCreated;
+    public bool IsLoaded => _hybridEngine != null;
 
     public void InitNew()
     {
@@ -40,31 +36,30 @@ public class SmtTransferEngineState : AsyncDisposableBase
         _transferEngineFactory.InitNew(EngineId);
     }
 
-    public async Task UnloadAsync()
+    public async Task<HybridTranslationEngine> GetHybridEngineAsync(int buildRevision)
     {
-        if (!IsLoaded)
-            return;
-
-        await SaveModelAsync();
-
-        SmtModel.Value.Dispose();
-        TransferEngine.Value?.Dispose();
-
-        SmtModel = new Lazy<IInteractiveTranslationModel>(CreateSmtModel);
-        TransferEngine = new Lazy<ITranslationEngine?>(CreateTransferEngine);
-        HybridEngine = new Lazy<HybridTranslationEngine>(CreateHybridEngine);
-        Truecaser = new AsyncLazy<ITruecaser>(CreateTruecaserAsync);
-        CurrentBuildRevision = -1;
-    }
-
-    public async Task SaveModelAsync()
-    {
-        if (IsUpdated)
+        using (await _lock.LockAsync())
         {
-            await SmtModel.Value.SaveAsync();
-            ITruecaser truecaser = await Truecaser;
-            await truecaser.SaveAsync();
-            IsUpdated = false;
+            if (_hybridEngine is not null && CurrentBuildRevision != -1 && buildRevision != CurrentBuildRevision)
+            {
+                IsUpdated = false;
+                await UnloadAsync();
+            }
+
+            if (_hybridEngine is null)
+            {
+                var tokenizer = new LatinWordTokenizer();
+                var detokenizer = new LatinWordDetokenizer();
+                var truecaser = await _truecaserFactory.CreateAsync(EngineId);
+                _smtModel = _smtModelFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
+                var transferEngine = _transferEngineFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
+                _hybridEngine = new HybridTranslationEngine(_smtModel, transferEngine)
+                {
+                    TargetDetokenizer = detokenizer
+                };
+            }
+            CurrentBuildRevision = buildRevision;
+            return _hybridEngine;
         }
     }
 
@@ -76,26 +71,49 @@ public class SmtTransferEngineState : AsyncDisposableBase
         _truecaserFactory.Cleanup(EngineId);
     }
 
-    private IInteractiveTranslationModel CreateSmtModel()
+    public async Task CommitAsync(int buildRevision, TimeSpan inactiveTimeout)
     {
-        return _smtModelFactory.Create(EngineId);
+        if (_hybridEngine is null)
+            return;
+
+        if (CurrentBuildRevision == -1)
+            CurrentBuildRevision = buildRevision;
+        if (buildRevision != CurrentBuildRevision)
+        {
+            await UnloadAsync();
+            CurrentBuildRevision = buildRevision;
+        }
+        else if (DateTime.Now - LastUsedTime > inactiveTimeout)
+        {
+            await UnloadAsync();
+        }
+        else
+        {
+            await SaveModelAsync();
+        }
     }
 
-    private ITranslationEngine? CreateTransferEngine()
+    private async Task SaveModelAsync()
     {
-        return _transferEngineFactory.Create(EngineId);
+        if (_smtModel is not null && IsUpdated)
+        {
+            await _smtModel.SaveAsync();
+            IsUpdated = false;
+        }
     }
 
-    private HybridTranslationEngine CreateHybridEngine()
+    private async Task UnloadAsync()
     {
-        IInteractiveTranslationEngine interactiveEngine = SmtModel.Value;
-        ITranslationEngine? transferEngine = TransferEngine.Value;
-        return new HybridTranslationEngine(interactiveEngine, transferEngine);
-    }
+        if (_hybridEngine is null)
+            return;
 
-    private Task<ITruecaser> CreateTruecaserAsync()
-    {
-        return _truecaserFactory.CreateAsync(EngineId)!;
+        await SaveModelAsync();
+
+        _hybridEngine.Dispose();
+
+        _smtModel = null;
+        _hybridEngine = null;
+        CurrentBuildRevision = -1;
     }
 
     protected override async ValueTask DisposeAsyncCore()

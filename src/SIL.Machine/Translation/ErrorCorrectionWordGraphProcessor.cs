@@ -1,17 +1,18 @@
-﻿using SIL.Machine.DataStructures;
-using SIL.Machine.Statistics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.DataStructures;
+using SIL.Machine.Statistics;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Translation
 {
     public class ErrorCorrectionWordGraphProcessor
     {
-        private readonly IReadOnlyList<string> _sourceSegment;
         private readonly WordGraph _wordGraph;
         private readonly double[] _restScores;
         private readonly ErrorCorrectionModel _ecm;
+        private readonly IDetokenizer<string, string> _targetDetokenizer;
         private readonly List<EcmScoreInfo> _stateEcmScoreInfos;
         private readonly List<List<EcmScoreInfo>> _arcEcmScoreInfos;
         private readonly List<List<double>> _stateBestScores;
@@ -23,14 +24,14 @@ namespace SIL.Machine.Translation
 
         public ErrorCorrectionWordGraphProcessor(
             ErrorCorrectionModel ecm,
-            IReadOnlyList<string> sourceSegment,
+            IDetokenizer<string, string> targetDetokenizer,
             WordGraph wordGraph,
             double ecmWeight = 1,
             double wordGraphWeight = 1
         )
         {
             _ecm = ecm;
-            _sourceSegment = sourceSegment;
+            _targetDetokenizer = targetDetokenizer;
             _wordGraph = wordGraph;
             EcmWeight = ecmWeight;
             WordGraphWeight = wordGraphWeight;
@@ -158,16 +159,16 @@ namespace SIL.Machine.Translation
         public double EcmWeight { get; }
         public double WordGraphWeight { get; }
 
-        public void Correct(string[] prefix, bool isLastWordComplete)
+        public void Correct(IReadOnlyList<string> prefix, bool isLastWordComplete)
         {
             // get valid portion of the processed prefix vector
             int validProcPrefixCount = 0;
             for (int i = 0; i < _prevPrefix.Length; i++)
             {
-                if (i >= prefix.Length)
+                if (i >= prefix.Count)
                     break;
 
-                if (i == _prevPrefix.Length - 1 && i == prefix.Length - 1)
+                if (i == _prevPrefix.Length - 1 && i == prefix.Count - 1)
                 {
                     if (_prevPrefix[i] == prefix[i] && _prevIsLastWordComplete == isLastWordComplete)
                         validProcPrefixCount++;
@@ -204,7 +205,7 @@ namespace SIL.Machine.Translation
             }
 
             // get difference between prefix and valid portion of processed prefix
-            var prefixDiff = new string[prefix.Length - validProcPrefixCount];
+            var prefixDiff = new string[prefix.Count - validProcPrefixCount];
             for (int i = 0; i < prefixDiff.Length; i++)
                 prefixDiff[i] = prefix[validProcPrefixCount + i];
 
@@ -223,7 +224,7 @@ namespace SIL.Machine.Translation
             {
                 var builder = new TranslationResultBuilder();
                 BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
-                yield return builder.ToResult(_sourceSegment.Count);
+                yield return builder.ToResult(_targetDetokenizer, _wordGraph.SourceWords);
             }
         }
 
@@ -357,7 +358,7 @@ namespace SIL.Machine.Translation
 
         private bool IsArcPruned(WordGraphArc arc)
         {
-            return !arc.IsUnknown && arc.WordConfidences.Any(c => c < ConfidenceThreshold);
+            return !arc.IsUnknown && arc.Confidences.Any(c => c < ConfidenceThreshold);
         }
 
         private void BuildCorrectionFromHypothesis(
@@ -371,7 +372,7 @@ namespace SIL.Machine.Translation
             if (hypothesis.StartArcIndex == -1)
             {
                 AddBestUncorrectedPrefixState(builder, prefix.Length, hypothesis.StartState);
-                uncorrectedPrefixLen = builder.Words.Count;
+                uncorrectedPrefixLen = builder.TargetTokens.Count;
             }
             else
             {
@@ -382,7 +383,8 @@ namespace SIL.Machine.Translation
                     hypothesis.StartArcWordIndex
                 );
                 WordGraphArc firstArc = _wordGraph.Arcs[hypothesis.StartArcIndex];
-                uncorrectedPrefixLen = builder.Words.Count - (firstArc.Words.Count - hypothesis.StartArcWordIndex) + 1;
+                uncorrectedPrefixLen =
+                    builder.TargetTokens.Count - (firstArc.Words.Count - hypothesis.StartArcWordIndex) + 1;
             }
 
             int alignmentColsToAddCount = _ecm.CorrectPrefix(builder, uncorrectedPrefixLen, prefix, isLastWordComplete);
@@ -448,7 +450,7 @@ namespace SIL.Machine.Translation
         )
         {
             for (int i = 0; i < arc.Words.Count; i++)
-                builder.AppendWord(arc.Words[i], arc.WordSources[i], arc.WordConfidences[i]);
+                builder.AppendToken(arc.Words[i], arc.Sources[i], arc.Confidences[i]);
 
             WordAlignmentMatrix alignment = arc.Alignment;
             if (alignmentColsToAddCount > 0)

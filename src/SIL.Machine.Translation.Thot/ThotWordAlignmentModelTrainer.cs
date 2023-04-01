@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
@@ -13,7 +14,7 @@ namespace SIL.Machine.Translation.Thot
     public class ThotWordAlignmentModelTrainer : DisposableBase, ITrainer
     {
         private readonly string _prefFileName;
-        private readonly IEnumerable<ParallelTextRow> _parallelCorpus;
+        private readonly IParallelTextCorpus _parallelCorpus;
         private readonly string _sourceFileName;
         private readonly string _targetFileName;
         private readonly int _maxSegmentLength = int.MaxValue;
@@ -34,7 +35,7 @@ namespace SIL.Machine.Translation.Thot
 
         public ThotWordAlignmentModelTrainer(
             ThotWordAlignmentModelType modelType,
-            IEnumerable<ParallelTextRow> corpus,
+            IParallelTextCorpus corpus,
             string prefFileName,
             ThotWordAlignmentParameters parameters = null
         )
@@ -140,6 +141,9 @@ namespace SIL.Machine.Translation.Thot
         protected IntPtr Handle => _models.Count == 0 ? IntPtr.Zero : _models[_models.Count - 1].Handle;
         protected bool CloseOnDispose { get; set; } = true;
 
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public ITokenizer<string, int, string> TargetTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+
         public TrainStats Stats { get; } = new TrainStats();
 
         public int MaxCorpusCount { get; set; } = int.MaxValue;
@@ -159,7 +163,7 @@ namespace SIL.Machine.Translation.Thot
             {
                 int corpusCount = 0;
                 int index = 0;
-                foreach (ParallelTextRow row in _parallelCorpus)
+                foreach (ParallelTextRow row in _parallelCorpus.Tokenize(SourceTokenizer, TargetTokenizer))
                 {
                     AddSegmentPair(row);
 

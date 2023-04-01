@@ -22,6 +22,9 @@ namespace SIL.Machine.Corpora
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
         }
 
+        public bool IsSourceTokenized => SourceCorpus.IsTokenized;
+        public bool IsTargetTokenized => TargetCorpus.IsTokenized;
+
         public bool AllSourceRows { get; set; }
         public bool AllTargetRows { get; set; }
 

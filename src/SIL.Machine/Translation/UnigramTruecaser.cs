@@ -118,6 +118,19 @@ namespace SIL.Machine.Translation
             }
         }
 
+        public void Save()
+        {
+            using (var writer = new StreamWriter(_modelPath))
+            {
+                foreach (string lowerToken in _casing.Conditions)
+                {
+                    FrequencyDistribution<string> counts = _casing[lowerToken];
+                    string line = string.Join(" ", counts.ObservedSamples.Select(t => $"{t} {counts[t]}"));
+                    writer.Write($"{line}\n");
+                }
+            }
+        }
+
         public IReadOnlyList<string> Truecase(IReadOnlyList<string> segment)
         {
             var result = new string[segment.Count];
@@ -159,7 +172,7 @@ namespace SIL.Machine.Translation
         {
             private readonly UnigramTruecaser _truecaser;
 
-            public Trainer(UnigramTruecaser truecaser, IEnumerable<TextRow> corpus)
+            public Trainer(UnigramTruecaser truecaser, ITextCorpus corpus)
                 : base(corpus)
             {
                 _truecaser = truecaser;

@@ -530,7 +530,7 @@ namespace SIL.Machine.Translation.Thot
             IntPtr decoderHandle,
             Func<IntPtr, IntPtr, IntPtr> translateFunc,
             IReadOnlyList<string> sourceSegment,
-            Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult
+            Func<IReadOnlyList<string>, IntPtr, T> createResult
         )
         {
             IntPtr inputPtr = ConvertSegmentToNativeUtf8(sourceSegment);
@@ -538,7 +538,7 @@ namespace SIL.Machine.Translation.Thot
             try
             {
                 data = translateFunc(decoderHandle, inputPtr);
-                return DoCreateResult(sourceSegment, data, createResult);
+                return DoCreateResult(data, createResult);
             }
             finally
             {
@@ -553,7 +553,7 @@ namespace SIL.Machine.Translation.Thot
             Func<IntPtr, uint, IntPtr, IntPtr[], uint> translateFunc,
             int n,
             IReadOnlyList<string> sourceSegment,
-            Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult
+            Func<IReadOnlyList<string>, IntPtr, T> createResult
         )
         {
             IntPtr inputPtr = ConvertSegmentToNativeUtf8(sourceSegment);
@@ -561,10 +561,7 @@ namespace SIL.Machine.Translation.Thot
             try
             {
                 uint len = translateFunc(decoderHandle, (uint)n, inputPtr, results);
-                return results
-                    .Take((int)len)
-                    .Select(data => DoCreateResult(sourceSegment, data, createResult))
-                    .ToArray();
+                return results.Take((int)len).Select(data => DoCreateResult(data, createResult)).ToArray();
             }
             finally
             {
@@ -574,11 +571,7 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        private static T DoCreateResult<T>(
-            IReadOnlyList<string> sourceSegment,
-            IntPtr data,
-            Func<IReadOnlyList<string>, IReadOnlyList<string>, IntPtr, T> createResult
-        )
+        private static T DoCreateResult<T>(IntPtr data, Func<IReadOnlyList<string>, IntPtr, T> createResult)
         {
             IntPtr translationPtr = Marshal.AllocHGlobal(DefaultTranslationBufferLength);
             try
@@ -590,7 +583,7 @@ namespace SIL.Machine.Translation.Thot
                     len = tdata_getTarget(data, translationPtr, len);
                 }
                 IReadOnlyList<string> targetSegment = ConvertNativeUtf8ToSegment(translationPtr, len);
-                return createResult(sourceSegment, targetSegment, data);
+                return createResult(targetSegment, data);
             }
             finally
             {

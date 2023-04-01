@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using SIL.Machine.Annotations;
+using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
@@ -34,25 +36,76 @@ namespace SIL.Machine.Translation.Thot
             _decoderHandle = Thot.LoadDecoder(_smtModel.Handle, _smtModel.Parameters);
         }
 
-        public TranslationResult Translate(IReadOnlyList<string> segment)
+        public TranslationResult Translate(string segment)
         {
             CheckDisposed();
 
-            return Thot.DoTranslate(_decoderHandle, Thot.decoder_translate, segment, CreateResult);
+            return Translate(TokenizeSource(segment));
         }
 
-        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
+        public TranslationResult Translate(IReadOnlyList<string> sourceTokens)
         {
             CheckDisposed();
 
-            return Thot.DoTranslateNBest(_decoderHandle, Thot.decoder_translateNBest, n, segment, CreateResult);
+            IReadOnlyList<string> normalizedSourceTokens = NormalizeSource(sourceTokens);
+
+            return Thot.DoTranslate(
+                _decoderHandle,
+                Thot.decoder_translate,
+                normalizedSourceTokens,
+                (normalizedTargetTokens, data) =>
+                    CreateResult(
+                        sourceTokens,
+                        normalizedSourceTokens,
+                        DenormalizeTarget(normalizedTargetTokens),
+                        normalizedTargetTokens,
+                        data
+                    )
+            );
         }
 
-        public WordGraph GetWordGraph(IReadOnlyList<string> segment)
+        public IReadOnlyList<TranslationResult> Translate(int n, string segment)
         {
             CheckDisposed();
 
-            IntPtr nativeSentence = Thot.ConvertSegmentToNativeUtf8(segment);
+            return Translate(n, TokenizeSource(segment));
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> sourceTokens)
+        {
+            CheckDisposed();
+
+            IReadOnlyList<string> normalizedSourceTokens = NormalizeSource(sourceTokens);
+
+            return Thot.DoTranslateNBest(
+                _decoderHandle,
+                Thot.decoder_translateNBest,
+                n,
+                normalizedSourceTokens,
+                (normalizedTargetTokens, data) =>
+                    CreateResult(
+                        sourceTokens,
+                        normalizedSourceTokens,
+                        DenormalizeTarget(normalizedTargetTokens),
+                        normalizedTargetTokens,
+                        data
+                    )
+            );
+        }
+
+        public WordGraph GetWordGraph(string segment)
+        {
+            CheckDisposed();
+
+            return GetWordGraph(TokenizeSource(segment));
+        }
+
+        public WordGraph GetWordGraph(IReadOnlyList<string> sourceTokens)
+        {
+            CheckDisposed();
+
+            IReadOnlyList<string> normalizedSourceTokens = NormalizeSource(sourceTokens);
+            IntPtr nativeSentence = Thot.ConvertSegmentToNativeUtf8(normalizedSourceTokens);
             IntPtr wordGraph = IntPtr.Zero;
             IntPtr nativeWordGraphStr = IntPtr.Zero;
             try
@@ -64,7 +117,7 @@ namespace SIL.Machine.Translation.Thot
                 Thot.wg_getString(wordGraph, nativeWordGraphStr, len);
                 string wordGraphStr = Thot.ConvertNativeUtf8ToString(nativeWordGraphStr, len);
                 double initialStateScore = Thot.wg_getInitialStateScore(wordGraph);
-                return CreateWordGraph(segment, wordGraphStr, initialStateScore);
+                return CreateWordGraph(sourceTokens, normalizedSourceTokens, wordGraphStr, initialStateScore);
             }
             finally
             {
@@ -76,11 +129,23 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        private WordGraph CreateWordGraph(IReadOnlyList<string> segment, string wordGraphStr, double initialStateScore)
+        private WordGraph CreateWordGraph(
+            IReadOnlyList<string> sourceWords,
+            IReadOnlyList<string> normalizedSourceWords,
+            string wordGraphStr,
+            double initialStateScore
+        )
         {
             string[] lines = wordGraphStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (lines.Length == 0)
-                return new WordGraph(Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>(), initialStateScore);
+            {
+                return new WordGraph(
+                    sourceWords,
+                    Enumerable.Empty<WordGraphArc>(),
+                    Enumerable.Empty<int>(),
+                    initialStateScore
+                );
+            }
 
             int i = 0;
             if (lines[i].StartsWith("#"))
@@ -89,7 +154,7 @@ namespace SIL.Machine.Translation.Thot
             int[] finalStates = Split(lines[i]).Select(int.Parse).ToArray();
             i++;
 
-            string[] segmentArray = segment.ToArray();
+            string[] normalizedSourceWordsArray = normalizedSourceWords.ToArray();
             var arcs = new List<WordGraphArc>();
             for (; i < lines.Length; i++)
             {
@@ -118,9 +183,9 @@ namespace SIL.Machine.Translation.Thot
                 }
 
                 int trgPhraseLen = arcParts.Length - j;
-                var words = new string[trgPhraseLen];
+                var normalizedWords = new string[trgPhraseLen];
                 for (int k = 0; k < trgPhraseLen; k++)
-                    words[k] = Thot.UnescapeToken(arcParts[j + k]);
+                    normalizedWords[k] = Thot.UnescapeToken(arcParts[j + k]);
 
                 int srcPhraseLen = srcEndIndex - srcStartIndex + 1;
                 WordAlignmentMatrix waMatrix;
@@ -131,11 +196,11 @@ namespace SIL.Machine.Translation.Thot
                 else
                 {
                     var srcPhrase = new string[srcPhraseLen];
-                    Array.Copy(segmentArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, words);
+                    Array.Copy(normalizedSourceWordsArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
+                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, normalizedWords);
                 }
 
-                var sources = new TranslationSources[words.Length];
+                var sources = new TranslationSources[normalizedWords.Length];
                 for (int k = 0; k < sources.Length; k++)
                     sources[k] = isUnknown ? TranslationSources.None : TranslationSources.Smt;
                 arcs.Add(
@@ -143,7 +208,7 @@ namespace SIL.Machine.Translation.Thot
                         predStateIndex,
                         succStateIndex,
                         score,
-                        words,
+                        DenormalizeTarget(normalizedWords),
                         waMatrix,
                         Range<int>.Create(srcStartIndex, srcEndIndex + 1),
                         sources
@@ -151,8 +216,8 @@ namespace SIL.Machine.Translation.Thot
                 );
             }
 
-            var wordGraph = new WordGraph(arcs, finalStates, initialStateScore);
-            _confidenceEstimator.Estimate(segment, wordGraph);
+            var wordGraph = new WordGraph(sourceWords, arcs, finalStates, initialStateScore);
+            _confidenceEstimator.Estimate(wordGraph);
             return wordGraph;
         }
 
@@ -161,20 +226,30 @@ namespace SIL.Machine.Translation.Thot
             return line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
+        public TranslationResult GetBestPhraseAlignment(string sourceSegment, string targetSegment)
+        {
+            CheckDisposed();
+
+            return GetBestPhraseAlignment(TokenizeSource(sourceSegment), TokenizeTarget(targetSegment));
+        }
+
         public TranslationResult GetBestPhraseAlignment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment
+            IReadOnlyList<string> sourceTokens,
+            IReadOnlyList<string> targetTokens
         )
         {
             CheckDisposed();
 
-            IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(sourceSegment);
-            IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(targetSegment);
+            IReadOnlyList<string> normalizedSourceTokens = NormalizeSource(sourceTokens);
+            IReadOnlyList<string> normalizedTargetTokens = NormalizeTarget(targetTokens);
+
+            IntPtr nativeSourceSegment = Thot.ConvertSegmentToNativeUtf8(normalizedSourceTokens);
+            IntPtr nativeTargetSegment = Thot.ConvertSegmentToNativeUtf8(normalizedTargetTokens);
             IntPtr data = IntPtr.Zero;
             try
             {
                 data = Thot.decoder_getBestPhraseAlignment(_decoderHandle, nativeSourceSegment, nativeTargetSegment);
-                return CreateResult(sourceSegment, targetSegment, data);
+                return CreateResult(sourceTokens, normalizedSourceTokens, targetTokens, normalizedTargetTokens, data);
             }
             finally
             {
@@ -185,20 +260,33 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
+        public void TrainSegment(string sourceSegment, string targetSegment, bool sentenceStart = true)
+        {
+            CheckDisposed();
+
+            TrainSegment(TokenizeSource(sourceSegment), TokenizeTarget(targetSegment), sentenceStart);
+        }
+
         public void TrainSegment(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
+            IReadOnlyList<string> sourceTokens,
+            IReadOnlyList<string> targetTokens,
             bool sentenceStart = true
         )
         {
             CheckDisposed();
 
-            Thot.TrainSegmentPair(_decoderHandle, sourceSegment, targetSegment);
+            IReadOnlyList<string> normalizedTargetTokens = NormalizeTarget(targetTokens);
+
+            Thot.TrainSegmentPair(_decoderHandle, NormalizeSource(sourceTokens), normalizedTargetTokens);
+
+            _smtModel.Truecaser?.TrainSegment(targetTokens, sentenceStart);
         }
 
         private TranslationResult CreateResult(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
+            IReadOnlyList<string> sourceTokens,
+            IReadOnlyList<string> normalizedSourceTokens,
+            IReadOnlyList<string> targetTokens,
+            IReadOnlyList<string> normalizedTargetTokens,
             IntPtr dataPtr
         )
         {
@@ -207,7 +295,7 @@ namespace SIL.Machine.Translation.Thot
             uint phraseCount = Thot.tdata_getPhraseCount(dataPtr);
             IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
             IReadOnlyList<int> targetSegmentCuts = GetTargetSegmentCuts(dataPtr, phraseCount);
-            ISet<int> targetUnknownWords = GetTargetUnknownWords(dataPtr, targetSegment.Count);
+            ISet<int> targetUnknownWords = GetTargetUnknownWords(dataPtr, targetTokens.Count);
 
             int trgPhraseStartIndex = 0;
             for (int k = 0; k < phraseCount; k++)
@@ -218,8 +306,8 @@ namespace SIL.Machine.Translation.Thot
 
                 for (int j = trgPhraseStartIndex; j < targetCut; j++)
                 {
-                    string targetWord = targetSegment[j];
-                    builder.AppendWord(
+                    string targetWord = targetTokens[j];
+                    builder.AppendToken(
                         targetWord,
                         targetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt
                     );
@@ -236,19 +324,19 @@ namespace SIL.Machine.Translation.Thot
                 {
                     var srcPhrase = new string[srcPhraseLen];
                     for (int i = 0; i < srcPhraseLen; i++)
-                        srcPhrase[i] = sourceSegment[sourceStartIndex + i];
+                        srcPhrase[i] = normalizedSourceTokens[sourceStartIndex + i];
                     var trgPhrase = new string[trgPhraseLen];
                     for (int j = 0; j < trgPhraseLen; j++)
-                        trgPhrase[j] = targetSegment[trgPhraseStartIndex + j];
+                        trgPhrase[j] = normalizedTargetTokens[trgPhraseStartIndex + j];
                     waMatrix = _smtModel.WordAligner.Align(srcPhrase, trgPhrase);
                 }
                 builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
                 trgPhraseStartIndex += trgPhraseLen;
             }
 
-            _confidenceEstimator.Estimate(sourceSegment, builder);
-
-            return builder.ToResult(sourceSegment.Count);
+            TranslationResult result = builder.ToResult(_smtModel.TargetDetokenizer, sourceTokens);
+            _confidenceEstimator.Estimate(sourceTokens, result);
+            return result;
         }
 
         private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
@@ -321,6 +409,35 @@ namespace SIL.Machine.Translation.Thot
             {
                 Marshal.FreeHGlobal(nativeTargetUnknownWords);
             }
+        }
+
+        private IReadOnlyList<string> NormalizeSource(IReadOnlyList<string> sourceTokens)
+        {
+            if (_smtModel.LowercaseSource)
+                return sourceTokens.Lowercase();
+            return sourceTokens;
+        }
+
+        private IReadOnlyList<string> NormalizeTarget(IReadOnlyList<string> targetTokens)
+        {
+            if (_smtModel.LowercaseTarget)
+                return targetTokens.Lowercase();
+            return targetTokens;
+        }
+
+        private IReadOnlyList<string> TokenizeSource(string segment)
+        {
+            return _smtModel.SourceTokenizer.Tokenize(segment).ToArray();
+        }
+
+        private IReadOnlyList<string> TokenizeTarget(string segment)
+        {
+            return _smtModel.TargetTokenizer.Tokenize(segment).ToArray();
+        }
+
+        private IReadOnlyList<string> DenormalizeTarget(IReadOnlyList<string> targetTokens)
+        {
+            return _smtModel.Truecaser?.Truecase(targetTokens) ?? targetTokens;
         }
 
         protected override void DisposeUnmanagedResources()

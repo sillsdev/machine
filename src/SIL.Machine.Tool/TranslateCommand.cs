@@ -121,8 +121,8 @@ namespace SIL.Machine
                                 row.Segment,
                                 cancellationToken
                             );
-                            translations?.Add(translateResult.TargetSegment);
-                            string translation = refWordDetokenizer.Detokenize(translateResult.TargetSegment);
+                            translations?.Add(translateResult.TargetTokens);
+                            string translation = refWordDetokenizer.Detokenize(translateResult.TargetTokens);
                             writer.WriteLine(translation);
 
                             segmentCount++;

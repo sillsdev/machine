@@ -6,6 +6,15 @@ namespace SIL.Machine.Translation
 {
     public interface IInteractiveTranslationEngine : ITranslationEngine
     {
+        Task<WordGraph> GetWordGraphAsync(string segment, CancellationToken cancellationToken = default);
+
+        Task TrainSegmentAsync(
+            string sourceSegment,
+            string targetSegment,
+            bool sentenceStart = true,
+            CancellationToken cancellationToken = default
+        );
+
         Task<WordGraph> GetWordGraphAsync(IReadOnlyList<string> segment, CancellationToken cancellationToken = default);
 
         Task TrainSegmentAsync(
@@ -14,6 +23,10 @@ namespace SIL.Machine.Translation
             bool sentenceStart = true,
             CancellationToken cancellationToken = default
         );
+
+        WordGraph GetWordGraph(string segment);
+
+        void TrainSegment(string sourceSegment, string targetSegment, bool sentenceStart = true);
 
         WordGraph GetWordGraph(IReadOnlyList<string> segment);
 

@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using NSubstitute;
+﻿using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.Morphology;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -18,9 +16,9 @@ namespace SIL.Machine.Translation
             using var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync("caminé a mi habitación .");
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("walked to my room .".Split()));
-            Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.Transfer));
-            Assert.That(result.WordSources[2], Is.EqualTo(TranslationSources.Transfer));
+            Assert.That(result.Translation, Is.EqualTo("walked to my room ."));
+            Assert.That(result.Sources[0], Is.EqualTo(TranslationSources.Transfer));
+            Assert.That(result.Sources[2], Is.EqualTo(TranslationSources.Transfer));
         }
 
         [Test]
@@ -29,12 +27,14 @@ namespace SIL.Machine.Translation
             using var env = new TestEnvironment();
             InteractiveTranslator translator = await env.CreateTranslatorAsync("hablé con recepción .");
             TranslationResult result = translator.GetCurrentResults().First();
-            Assert.That(result.TargetSegment, Is.EqualTo("hablé with reception .".Split()));
-            Assert.That(result.WordSources[0], Is.EqualTo(TranslationSources.None));
+            Assert.That(result.Translation, Is.EqualTo("hablé with reception ."));
+            Assert.That(result.Sources[0], Is.EqualTo(TranslationSources.None));
         }
 
         private class TestEnvironment : DisposableBase
         {
+            private readonly InteractiveTranslatorFactory _factory;
+
             public TestEnvironment()
             {
                 var sourceAnalyzer = Substitute.For<IMorphologicalAnalyzer>();
@@ -86,8 +86,8 @@ namespace SIL.Machine.Translation
                     new[] { 0, 0.5, 0.5, 0.5 }
                 );
 
-                Ecm = new ErrorCorrectionModel();
                 Engine = new HybridTranslationEngine(smtEngine, transferEngine);
+                _factory = new InteractiveTranslatorFactory(Engine);
             }
 
             private static void AddTranslation(
@@ -97,14 +97,14 @@ namespace SIL.Machine.Translation
                 double[] confidences
             )
             {
-                string[] sourceSegmentArray = sourceSegment.Split();
-                string[] targetSegmentArray = targetSegment.Split();
+                string[] sourceTokens = WhitespaceTokenizer.Instance.Tokenize(sourceSegment).ToArray();
+                string[] targetSegmentArray = WhitespaceTokenizer.Instance.Tokenize(targetSegment).ToArray();
                 TranslationSources[] sources = new TranslationSources[confidences.Length];
                 for (int j = 0; j < sources.Length; j++)
                     sources[j] = confidences[j] <= 0 ? TranslationSources.None : TranslationSources.Smt;
 
                 var arcs = new List<WordGraphArc>();
-                for (int i = 0; i < sourceSegmentArray.Length; i++)
+                for (int i = 0; i < sourceTokens.Length; i++)
                 {
                     arcs.Add(
                         new WordGraphArc(
@@ -121,16 +121,15 @@ namespace SIL.Machine.Translation
                 }
 
                 engine
-                    .GetWordGraphAsync(Arg.Is<IReadOnlyList<string>>(ss => ss.SequenceEqual(sourceSegmentArray)))
-                    .Returns(Task.FromResult(new WordGraph(arcs, new int[] { sourceSegmentArray.Length })));
+                    .GetWordGraphAsync(sourceSegment)
+                    .Returns(Task.FromResult(new WordGraph(sourceTokens, arcs, new int[] { sourceTokens.Length })));
             }
 
             public HybridTranslationEngine Engine { get; }
-            public ErrorCorrectionModel Ecm { get; }
 
             public Task<InteractiveTranslator> CreateTranslatorAsync(string segment)
             {
-                return InteractiveTranslator.CreateAsync(Ecm, Engine, segment.Split());
+                return _factory.CreateAsync(segment);
             }
 
             protected override void DisposeManagedResources()

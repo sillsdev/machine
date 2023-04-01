@@ -22,7 +22,7 @@ namespace SIL.Machine.Tokenization
             var sb = new StringBuilder();
             for (int i = 0; i < tokenArray.Length; i++)
             {
-                sb.Append(tokenArray[i]);
+                sb.Append(TransformToken(tokenArray[i]));
 
                 bool appendSeparator = true;
                 if (i + 1 == ops.Length)
@@ -52,6 +52,11 @@ namespace SIL.Machine.Tokenization
         )
         {
             return " ";
+        }
+
+        protected virtual string TransformToken(string token)
+        {
+            return token;
         }
     }
 }

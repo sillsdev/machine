@@ -1,23 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Translation
 {
     public static class TranslationExtensions
     {
-        public static async Task<IReadOnlyList<string>> TranslateWordAsync(
-            this ITranslationEngine engine,
-            string sourceWord
-        )
-        {
-            TranslationResult result = await engine.TranslateAsync(new[] { sourceWord }).ConfigureAwait(false);
-            if (result.WordSources.Any(s => s == TranslationSources.None))
-                return new string[0];
-            return result.TargetSegment;
-        }
-
         public static IEnumerable<TranslationSuggestion> GetSuggestions(
             this ITranslationSuggester suggester,
             InteractiveTranslator translator
@@ -25,13 +14,16 @@ namespace SIL.Machine.Translation
         {
             return translator
                 .GetCurrentResults()
-                .Select(r => suggester.GetSuggestion(translator.Prefix.Count, translator.IsLastWordComplete, r));
+                .Select(
+                    r => suggester.GetSuggestion(translator.PrefixWordRanges.Count, translator.IsLastWordComplete, r)
+                );
         }
 
         public static IEnumerable<TranslationSuggestion> GetSuggestions(
             this ITranslationSuggester suggester,
             InteractiveTranslator translator,
-            ITruecaser truecaser
+            ITruecaser truecaser,
+            IDetokenizer<string, string> detokenizer = null
         )
         {
             return translator
@@ -39,9 +31,9 @@ namespace SIL.Machine.Translation
                 .Select(
                     r =>
                         suggester.GetSuggestion(
-                            translator.Prefix.Count,
+                            translator.PrefixWordRanges.Count,
                             translator.IsLastWordComplete,
-                            truecaser.Truecase(r)
+                            truecaser.Truecase(r, detokenizer)
                         )
                 );
         }
@@ -116,13 +108,21 @@ namespace SIL.Machine.Translation
             return char.ToUpperInvariant(sentence[0]) + sentence.Substring(1);
         }
 
-        public static TranslationResult Truecase(this ITruecaser truecaser, TranslationResult result)
+        public static TranslationResult Truecase(
+            this ITruecaser truecaser,
+            TranslationResult result,
+            IDetokenizer<string, string> detokenizer = null
+        )
         {
+            if (detokenizer == null)
+                detokenizer = WhitespaceDetokenizer.Instance;
+            IReadOnlyList<string> targetTokens = truecaser.Truecase(result.TargetTokens);
             return new TranslationResult(
-                result.SourceSegmentLength,
-                truecaser.Truecase(result.TargetSegment),
-                result.WordConfidences,
-                result.WordSources,
+                detokenizer.Detokenize(targetTokens),
+                result.SourceTokens,
+                targetTokens,
+                result.Confidences,
+                result.Sources,
                 result.Alignment,
                 result.Phrases
             );
@@ -141,12 +141,12 @@ namespace SIL.Machine.Translation
                         truecaser.Truecase(arc.Words),
                         arc.Alignment,
                         arc.SourceSegmentRange,
-                        arc.WordSources,
-                        arc.WordConfidences
+                        arc.Sources,
+                        arc.Confidences
                     )
                 );
             }
-            return new WordGraph(newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
+            return new WordGraph(wordGraph.SourceWords, newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
         }
 
         public static double GetAvgTranslationScore(

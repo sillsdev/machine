@@ -9,8 +9,8 @@ namespace SIL.Machine.Translation.Thot
         public async Task TranslateAsync_TargetSegment_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            TranslationResult result = await smtModel.TranslateAsync("voy a marcharme hoy por la tarde .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+            TranslationResult result = await smtModel.TranslateAsync("voy a marcharme hoy por la tarde .");
+            Assert.That(result.Translation, Is.EqualTo("i am leaving today in the afternoon ."));
         }
 
         [Test]
@@ -19,11 +19,11 @@ namespace SIL.Machine.Translation.Thot
             using ThotSmtModel smtModel = CreateHmmModel();
             IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(
                 3,
-                "voy a marcharme hoy por la tarde .".Split()
+                "voy a marcharme hoy por la tarde ."
             );
             Assert.That(
-                results.Select(tr => tr.TargetSegment),
-                Is.EqualTo(new[] { "i am leaving today in the afternoon .".Split() })
+                results.Select(tr => tr.Translation),
+                Is.EqualTo(new[] { "i am leaving today in the afternoon ." })
             );
         }
 
@@ -31,13 +31,10 @@ namespace SIL.Machine.Translation.Thot
         public async Task TranslateAsync_NBest_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(
-                2,
-                "hablé hasta cinco en punto .".Split()
-            );
+            IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(2, "hablé hasta cinco en punto .");
             Assert.That(
-                results.Select(tr => tr.TargetSegment),
-                Is.EqualTo(new[] { "hablé until five o ' clock .".Split(), "hablé until five o ' clock for".Split() })
+                results.Select(tr => tr.Translation),
+                Is.EqualTo(new[] { "hablé until five o ' clock .", "hablé until five o ' clock for" })
             );
         }
 
@@ -45,11 +42,11 @@ namespace SIL.Machine.Translation.Thot
         public async Task TrainSegmentAsync_Segment_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            TranslationResult result = await smtModel.TranslateAsync("esto es una prueba .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
-            await smtModel.TrainSegmentAsync("esto es una prueba .".Split(), "this is a test .".Split());
-            result = await smtModel.TranslateAsync("esto es una prueba .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+            TranslationResult result = await smtModel.TranslateAsync("esto es una prueba .");
+            Assert.That(result.Translation, Is.EqualTo("esto is a prueba ."));
+            await smtModel.TrainSegmentAsync("esto es una prueba .", "this is a test .");
+            result = await smtModel.TranslateAsync("esto es una prueba .");
+            Assert.That(result.Translation, Is.EqualTo("this is a test ."));
         }
 
         [Test]
@@ -57,17 +54,17 @@ namespace SIL.Machine.Translation.Thot
         {
             using ThotSmtModel smtModel = CreateHmmModel();
             TranslationResult result = await smtModel.GetBestPhraseAlignmentAsync(
-                "esto es una prueba .".Split(),
-                "this is a test .".Split()
+                "esto es una prueba .",
+                "this is a test ."
             );
-            Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("this is a test ."));
         }
 
         [Test]
         public async Task GetWordGraphAsync_EmptySegment_Hmm()
         {
             using ThotSmtModel smtModel = CreateHmmModel();
-            WordGraph wordGraph = await smtModel.GetWordGraphAsync(new string[0]);
+            WordGraph wordGraph = await smtModel.GetWordGraphAsync("");
             Assert.That(wordGraph.IsEmpty, Is.True);
         }
 
@@ -84,11 +81,9 @@ namespace SIL.Machine.Translation.Thot
             };
 
             using ThotSmtModel smtModel = CreateHmmModel();
-            IReadOnlyList<TranslationResult> results = await smtModel.TranslateBatchAsync(
-                batch.Select(s => s.Split()).ToArray()
-            );
+            IReadOnlyList<TranslationResult> results = await smtModel.TranslateBatchAsync(batch);
             Assert.That(
-                results.Select(tr => string.Join(" ", tr.TargetSegment)),
+                results.Select(tr => tr.Translation),
                 Is.EqualTo(
                     new[]
                     {
@@ -115,9 +110,9 @@ namespace SIL.Machine.Translation.Thot
             };
 
             using ThotSmtModel smtModel = CreateHmmModel();
-            IReadOnlyList<TranslationResult> results = smtModel.TranslateBatch(batch.Select(s => s.Split()).ToArray());
+            IReadOnlyList<TranslationResult> results = smtModel.TranslateBatch(batch);
             Assert.That(
-                results.Select(tr => string.Join(" ", tr.TargetSegment)),
+                results.Select(tr => tr.Translation),
                 Is.EqualTo(
                     new[]
                     {
@@ -135,8 +130,8 @@ namespace SIL.Machine.Translation.Thot
         public async Task TranslateAsync_TargetSegment_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            TranslationResult result = await smtModel.TranslateAsync("voy a marcharme hoy por la tarde .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("i am leaving today in the afternoon .".Split()));
+            TranslationResult result = await smtModel.TranslateAsync("voy a marcharme hoy por la tarde .");
+            Assert.That(result.Translation, Is.EqualTo("i am leaving today in the afternoon ."));
         }
 
         [Test]
@@ -145,11 +140,11 @@ namespace SIL.Machine.Translation.Thot
             using ThotSmtModel smtModel = CreateFastAlignModel();
             IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(
                 3,
-                "voy a marcharme hoy por la tarde .".Split()
+                "voy a marcharme hoy por la tarde ."
             );
             Assert.That(
-                results.Select(tr => tr.TargetSegment),
-                Is.EqualTo(new[] { "i am leaving today in the afternoon .".Split() })
+                results.Select(tr => tr.Translation),
+                Is.EqualTo(new[] { "i am leaving today in the afternoon ." })
             );
         }
 
@@ -157,15 +152,10 @@ namespace SIL.Machine.Translation.Thot
         public async Task TranslateAsync_NBest_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(
-                2,
-                "hablé hasta cinco en punto .".Split()
-            );
+            IEnumerable<TranslationResult> results = await smtModel.TranslateAsync(2, "hablé hasta cinco en punto .");
             Assert.That(
-                results.Select(tr => tr.TargetSegment),
-                Is.EqualTo(
-                    new[] { "hablé until five o ' clock .".Split(), "hablé until five o ' clock , please .".Split() }
-                )
+                results.Select(tr => tr.Translation),
+                Is.EqualTo(new[] { "hablé until five o ' clock .", "hablé until five o ' clock , please ." })
             );
         }
 
@@ -173,11 +163,11 @@ namespace SIL.Machine.Translation.Thot
         public async Task TrainSegmentAsync_Segment_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            TranslationResult result = await smtModel.TranslateAsync("esto es una prueba .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("esto is a prueba .".Split()));
-            await smtModel.TrainSegmentAsync("esto es una prueba .".Split(), "this is a test .".Split());
-            result = await smtModel.TranslateAsync("esto es una prueba .".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+            TranslationResult result = await smtModel.TranslateAsync("esto es una prueba .");
+            Assert.That(result.Translation, Is.EqualTo("esto is a prueba ."));
+            await smtModel.TrainSegmentAsync("esto es una prueba .", "this is a test .");
+            result = await smtModel.TranslateAsync("esto es una prueba .");
+            Assert.That(result.Translation, Is.EqualTo("this is a test ."));
         }
 
         [Test]
@@ -185,17 +175,17 @@ namespace SIL.Machine.Translation.Thot
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
             TranslationResult result = await smtModel.GetBestPhraseAlignmentAsync(
-                "esto es una prueba .".Split(),
-                "this is a test .".Split()
+                "esto es una prueba .",
+                "this is a test ."
             );
-            Assert.That(result.TargetSegment, Is.EqualTo("this is a test .".Split()));
+            Assert.That(result.Translation, Is.EqualTo("this is a test ."));
         }
 
         [Test]
         public async Task GetWordGraphAsync_EmptySegment_FastAlign()
         {
             using ThotSmtModel smtModel = CreateFastAlignModel();
-            WordGraph wordGraph = await smtModel.GetWordGraphAsync(new string[0]);
+            WordGraph wordGraph = await smtModel.GetWordGraphAsync("");
             Assert.That(wordGraph.IsEmpty, Is.True);
         }
 

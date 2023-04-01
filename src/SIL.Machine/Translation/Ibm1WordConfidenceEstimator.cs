@@ -1,7 +1,6 @@
-﻿using SIL.Machine.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using static SIL.Machine.Translation.TranslationResultBuilder;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -16,32 +15,36 @@ namespace SIL.Machine.Translation
 
         public bool PhraseOnly { get; set; } = true;
 
-        public void Estimate(IReadOnlyList<string> sourceSegment, WordGraph wordGraph)
+        public void Estimate(WordGraph wordGraph)
         {
-            var range = Range<int>.Create(0, sourceSegment.Count);
+            var range = Range<int>.Create(0, wordGraph.SourceWords.Count);
             foreach (WordGraphArc arc in wordGraph.Arcs)
             {
                 if (PhraseOnly)
                     range = arc.SourceSegmentRange;
 
                 for (int k = 0; k < arc.Words.Count; k++)
-                    arc.WordConfidences[k] = GetConfidence(sourceSegment, range, arc.Words[k]);
+                    arc.SetConfidence(k, GetConfidence(wordGraph.SourceWords, range, arc.Words[k]));
             }
         }
 
-        public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResultBuilder builder)
+        public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResult translationResult)
         {
-            var range = Range<int>.Create(0, sourceSegment.Count);
+            var range = Range<int>.Create(0, translationResult.SourceTokens.Count);
             int startIndex = 0;
-            foreach (PhraseInfo phrase in builder.Phrases)
+            foreach (Phrase phrase in translationResult.Phrases)
             {
                 if (PhraseOnly)
                     range = phrase.SourceSegmentRange;
 
-                for (int j = startIndex; j < phrase.TargetCut; j++)
+                for (int j = startIndex; j < phrase.TargetSegmentCut; j++)
                 {
-                    double confidence = GetConfidence(sourceSegment, range, builder.Words[j]);
-                    builder.SetConfidence(j, confidence);
+                    double confidence = GetConfidence(
+                        translationResult.SourceTokens,
+                        range,
+                        translationResult.TargetTokens[j]
+                    );
+                    translationResult.SetConfidence(j, confidence);
                 }
             }
         }

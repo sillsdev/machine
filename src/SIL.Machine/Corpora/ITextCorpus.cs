@@ -7,5 +7,7 @@ namespace SIL.Machine.Corpora
         IEnumerable<IText> Texts { get; }
 
         IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
+
+        bool IsTokenized { get; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
@@ -77,7 +76,7 @@ namespace SIL.Machine.Translation
                 )
             };
 
-            var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
+            var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
             WordGraph optimizedWordGraph = wordGraph.Optimize();
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(5));
@@ -169,7 +168,7 @@ namespace SIL.Machine.Translation
                 )
             };
 
-            var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
+            var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
             WordGraph optimizedWordGraph = wordGraph.Optimize();
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(7));
@@ -256,7 +255,7 @@ namespace SIL.Machine.Translation
                 )
             };
 
-            var wordGraph = new WordGraph(arcs, new[] { 1, 4, 5 }, -191.0998f);
+            var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 1, 4, 5 }, -191.0998f);
             WordGraph optimizedWordGraph = wordGraph.Optimize();
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(6));
@@ -367,7 +366,7 @@ namespace SIL.Machine.Translation
                 )
             };
 
-            var wordGraph = new WordGraph(arcs, new[] { 4, 5 }, -191.0998f);
+            var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
             WordGraph optimizedWordGraph = wordGraph.Optimize();
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(7));

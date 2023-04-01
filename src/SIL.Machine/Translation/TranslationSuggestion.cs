@@ -19,6 +19,6 @@ namespace SIL.Machine.Translation
         public IReadOnlyList<int> TargetWordIndices { get; }
         public double Confidence { get; }
 
-        public IEnumerable<string> TargetWords => TargetWordIndices.Select(i => Result.TargetSegment[i]);
+        public IEnumerable<string> TargetWords => TargetWordIndices.Select(i => Result.TargetTokens[i]);
     }
 }

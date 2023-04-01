@@ -12,6 +12,7 @@ using SIL.Machine.Corpora;
 using SIL.Machine.NgramModeling;
 using SIL.Machine.Optimization;
 using SIL.Machine.Statistics;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
@@ -71,6 +72,10 @@ namespace SIL.Machine.Translation.Thot
         public TrainStats Stats { get; } = new TrainStats();
         public int MaxCorpusCount { get; set; } = int.MaxValue;
         public int Seed { get; set; } = 31415;
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public ITokenizer<string, int, string> TargetTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public bool LowercaseSource { get; set; }
+        public bool LowercaseTarget { get; set; }
 
         public virtual async Task TrainAsync(
             IProgress<ProgressStatus> progress = null,
@@ -79,10 +84,16 @@ namespace SIL.Machine.Translation.Thot
         {
             var reporter = new ThotTrainProgressReporter(progress, cancellationToken);
 
-            (IParallelTextCorpus trainCorpus, IParallelTextCorpus testCorpus, int trainCount, int testCount) = _corpus
+            IParallelTextCorpus corpus = _corpus
                 .Where(IsSegmentValid)
                 .Take(MaxCorpusCount)
-                .Split(percent: 0.1, size: 1000, seed: Seed);
+                .Tokenize(SourceTokenizer, TargetTokenizer);
+            if (LowercaseSource)
+                corpus = corpus.LowercaseSource();
+            if (LowercaseTarget)
+                corpus = corpus.LowercaseTarget();
+            (IParallelTextCorpus trainCorpus, IParallelTextCorpus tuneCorpus, int trainCount, int testCount) =
+                corpus.Split(percent: 0.1, size: 1000, seed: Seed);
 
             Directory.CreateDirectory(_trainLMDir);
             string trainLMPrefix = Path.Combine(_trainLMDir, _lmFilePrefix);
@@ -103,7 +114,7 @@ namespace SIL.Machine.Translation.Thot
 
             var tuneSourceCorpus = new List<IReadOnlyList<string>>();
             var tuneTargetCorpus = new List<IReadOnlyList<string>>();
-            foreach (ParallelTextRow row in testCorpus)
+            foreach (ParallelTextRow row in tuneCorpus)
             {
                 tuneSourceCorpus.Add(row.SourceSegment);
                 tuneTargetCorpus.Add(row.TargetSegment);

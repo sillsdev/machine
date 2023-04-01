@@ -56,37 +56,57 @@ namespace SIL.Machine.Corpora
 
         #region ITextCorpus operations
 
-        public static ITextCorpus Tokenize(this ITextCorpus corpus, ITokenizer<string, int, string> tokenizer)
+        public static ITextCorpus Tokenize(
+            this ITextCorpus corpus,
+            ITokenizer<string, int, string> tokenizer,
+            bool force = false
+        )
         {
-            return corpus.Transform(row =>
-            {
-                row.Segment = tokenizer.Tokenize(row.Text).ToArray();
-                return row;
-            });
+            if (!force && corpus.IsTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    row.Segment = tokenizer.Tokenize(row.Text).ToArray();
+                    return row;
+                },
+                isTokenized: true
+            );
         }
 
-        public static ITextCorpus Tokenize<T>(this ITextCorpus corpus)
+        public static ITextCorpus Tokenize<T>(this ITextCorpus corpus, bool force = false)
             where T : ITokenizer<string, int, string>, new()
         {
             var tokenizer = new T();
-            return corpus.Tokenize(tokenizer);
+            return corpus.Tokenize(tokenizer, force);
         }
 
-        public static ITextCorpus Detokenize(this ITextCorpus corpus, IDetokenizer<string, string> detokenizer)
+        public static ITextCorpus Detokenize(
+            this ITextCorpus corpus,
+            IDetokenizer<string, string> detokenizer,
+            bool force = false
+        )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.Segment.Count > 1)
-                    row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
-                return row;
-            });
+            if (!force && !corpus.IsTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.Segment.Count > 1)
+                        row.Segment = new[] { detokenizer.Detokenize(row.Segment) };
+                    return row;
+                },
+                isTokenized: false
+            );
         }
 
-        public static ITextCorpus Detokenize<T>(this ITextCorpus corpus)
+        public static ITextCorpus Detokenize<T>(this ITextCorpus corpus, bool force = false)
             where T : IDetokenizer<string, string>, new()
         {
             var detokenizer = new T();
-            return corpus.Detokenize(detokenizer);
+            return corpus.Detokenize(detokenizer, force);
         }
 
         public static ITextCorpus Normalize(
@@ -166,14 +186,22 @@ namespace SIL.Machine.Corpora
             });
         }
 
-        public static ITextCorpus Transform(this ITextCorpus corpus, IRowProcessor<TextRow> processor)
+        public static ITextCorpus Transform(
+            this ITextCorpus corpus,
+            IRowProcessor<TextRow> processor,
+            bool? isTokenized = null
+        )
         {
-            return corpus.Transform(processor.Process);
+            return corpus.Transform(processor.Process, isTokenized);
         }
 
-        public static ITextCorpus Transform(this ITextCorpus corpus, Func<TextRow, TextRow> transform)
+        public static ITextCorpus Transform(
+            this ITextCorpus corpus,
+            Func<TextRow, TextRow> transform,
+            bool? isTokenized = null
+        )
         {
-            return new TransformTextCorpus(corpus, transform);
+            return new TransformTextCorpus(corpus, transform, isTokenized);
         }
 
         public static ITextCorpus FilterTexts(this ITextCorpus corpus, Func<IText, bool> predicate)
@@ -328,15 +356,18 @@ namespace SIL.Machine.Corpora
             private readonly ITextCorpus _corpus;
             private readonly Func<TextRow, TextRow> _transform;
 
-            public TransformTextCorpus(ITextCorpus corpus, Func<TextRow, TextRow> transform)
+            public TransformTextCorpus(ITextCorpus corpus, Func<TextRow, TextRow> transform, bool? isTokenized = null)
             {
                 _corpus = corpus;
                 _transform = transform;
+                IsTokenized = isTokenized ?? corpus.IsTokenized;
             }
 
             public override IEnumerable<IText> Texts => _corpus.Texts;
 
             public override bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+            public override bool IsTokenized { get; }
 
             public override int Count(bool includeEmpty = true)
             {
@@ -362,6 +393,8 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IText> Texts => _corpus.Texts;
 
+            public override bool IsTokenized => _corpus.IsTokenized;
+
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds).Where(_predicate);
@@ -380,6 +413,8 @@ namespace SIL.Machine.Corpora
             }
 
             public override IEnumerable<IText> Texts => _corpus.Texts.Where(_predicate);
+
+            public override bool IsTokenized => _corpus.IsTokenized;
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
@@ -400,6 +435,8 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IText> Texts => _corpus.Texts;
 
+            public override bool IsTokenized => _corpus.IsTokenized;
+
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds).Take(_count);
@@ -416,6 +453,8 @@ namespace SIL.Machine.Corpora
             }
 
             public override IEnumerable<IText> Texts => _corpora.SelectMany(corpus => corpus.Texts);
+
+            public override bool IsTokenized => _corpora.All(corpus => corpus.IsTokenized);
 
             public override bool MissingRowsAllowed => _corpora.Any(corpus => corpus.MissingRowsAllowed);
 
@@ -598,10 +637,11 @@ namespace SIL.Machine.Corpora
 
         public static IParallelTextCorpus Tokenize(
             this IParallelTextCorpus corpus,
-            ITokenizer<string, int, string> tokenizer
+            ITokenizer<string, int, string> tokenizer,
+            bool force = false
         )
         {
-            return corpus.Tokenize(tokenizer, tokenizer);
+            return corpus.Tokenize(tokenizer, tokenizer, force);
         }
 
         public static IParallelTextCorpus Tokenize<T>(this IParallelTextCorpus corpus)
@@ -614,146 +654,197 @@ namespace SIL.Machine.Corpora
         public static IParallelTextCorpus Tokenize(
             this IParallelTextCorpus corpus,
             ITokenizer<string, int, string> sourceTokenizer,
-            ITokenizer<string, int, string> targetTokenizer
+            ITokenizer<string, int, string> targetTokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.SourceSegment.Count > 0)
-                    row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
-                if (row.TargetSegment.Count > 0)
-                    row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
-                return row;
-            });
+            if (!force && corpus.IsSourceTokenized && corpus.IsTargetTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if ((force || !corpus.IsSourceTokenized) && row.SourceSegment.Count > 0)
+                        row.SourceSegment = sourceTokenizer.Tokenize(row.SourceText).ToArray();
+                    if ((force || !corpus.IsTargetTokenized) && row.TargetSegment.Count > 0)
+                        row.TargetSegment = targetTokenizer.Tokenize(row.TargetText).ToArray();
+                    return row;
+                },
+                isSourceTokenized: true,
+                isTargetTokenized: true
+            );
         }
 
-        public static IParallelTextCorpus Tokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus Tokenize<TSource, TTarget>(
+            this IParallelTextCorpus corpus,
+            bool force = false
+        )
             where TSource : ITokenizer<string, int, string>, new()
             where TTarget : ITokenizer<string, int, string>, new()
         {
             var sourceTokenizer = new TSource();
             var targetTokenizer = new TTarget();
-            return corpus.Tokenize(sourceTokenizer, targetTokenizer);
+            return corpus.Tokenize(sourceTokenizer, targetTokenizer, force);
         }
 
         public static IParallelTextCorpus TokenizeSource(
             this IParallelTextCorpus corpus,
-            ITokenizer<string, int, string> tokenizer
+            ITokenizer<string, int, string> tokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.SourceSegment.Count > 0)
-                    row.SourceSegment = tokenizer.Tokenize(row.SourceText).ToArray();
-                return row;
-            });
+            if (!force && corpus.IsSourceTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.SourceSegment.Count > 0)
+                        row.SourceSegment = tokenizer.Tokenize(row.SourceText).ToArray();
+                    return row;
+                },
+                isSourceTokenized: true
+            );
         }
 
-        public static IParallelTextCorpus TokenizeSource<T>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus TokenizeSource<T>(this IParallelTextCorpus corpus, bool force = false)
             where T : ITokenizer<string, int, string>, new()
         {
             var tokenizer = new T();
-            return corpus.TokenizeSource(tokenizer);
+            return corpus.TokenizeSource(tokenizer, force);
         }
 
         public static IParallelTextCorpus TokenizeTarget(
             this IParallelTextCorpus corpus,
-            ITokenizer<string, int, string> tokenizer
+            ITokenizer<string, int, string> tokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.TargetSegment.Count > 0)
-                    row.TargetSegment = tokenizer.Tokenize(row.TargetText).ToArray();
-                return row;
-            });
+            if (!force && corpus.IsTargetTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.TargetSegment.Count > 0)
+                        row.TargetSegment = tokenizer.Tokenize(row.TargetText).ToArray();
+                    return row;
+                },
+                isTargetTokenized: true
+            );
         }
 
-        public static IParallelTextCorpus TokenizeTarget<T>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus TokenizeTarget<T>(this IParallelTextCorpus corpus, bool force = false)
             where T : ITokenizer<string, int, string>, new()
         {
             var tokenizer = new T();
-            return corpus.TokenizeTarget(tokenizer);
+            return corpus.TokenizeTarget(tokenizer, force);
         }
 
         public static IParallelTextCorpus Detokenize(
             this IParallelTextCorpus corpus,
-            IDetokenizer<string, string> detokenizer
+            IDetokenizer<string, string> detokenizer,
+            bool force = false
         )
         {
-            return corpus.Detokenize(detokenizer, detokenizer);
+            return corpus.Detokenize(detokenizer, detokenizer, force);
         }
 
-        public static IParallelTextCorpus Detokenize<T>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus Detokenize<T>(this IParallelTextCorpus corpus, bool force = false)
             where T : IDetokenizer<string, string>, new()
         {
             var detokenizer = new T();
-            return corpus.Detokenize(detokenizer);
+            return corpus.Detokenize(detokenizer, force);
         }
 
         public static IParallelTextCorpus Detokenize(
             this IParallelTextCorpus corpus,
             IDetokenizer<string, string> sourceDetokenizer,
-            IDetokenizer<string, string> targetDetokenizer
+            IDetokenizer<string, string> targetDetokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.SourceSegment.Count > 1)
-                    row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
-                if (row.TargetSegment.Count > 1)
-                    row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
-                return row;
-            });
+            if (!force && !corpus.IsSourceTokenized && !corpus.IsTargetTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if ((force || corpus.IsSourceTokenized) && row.SourceSegment.Count > 1)
+                        row.SourceSegment = new[] { sourceDetokenizer.Detokenize(row.SourceSegment) };
+                    if ((force || corpus.IsTargetTokenized) && row.TargetSegment.Count > 1)
+                        row.TargetSegment = new[] { targetDetokenizer.Detokenize(row.TargetSegment) };
+                    return row;
+                },
+                isSourceTokenized: false,
+                isTargetTokenized: false
+            );
         }
 
-        public static IParallelTextCorpus Detokenize<TSource, TTarget>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus Detokenize<TSource, TTarget>(
+            this IParallelTextCorpus corpus,
+            bool force = false
+        )
             where TSource : IDetokenizer<string, string>, new()
             where TTarget : IDetokenizer<string, string>, new()
         {
             var sourceDetokenizer = new TSource();
             var targetDetokenizer = new TTarget();
-            return corpus.Detokenize(sourceDetokenizer, targetDetokenizer);
+            return corpus.Detokenize(sourceDetokenizer, targetDetokenizer, force);
         }
 
         public static IParallelTextCorpus DetokenizeSource(
             this IParallelTextCorpus corpus,
-            IDetokenizer<string, string> detokenizer
+            IDetokenizer<string, string> detokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.SourceSegment.Count > 1)
-                    row.SourceSegment = new[] { detokenizer.Detokenize(row.SourceSegment) };
-                return row;
-            });
+            if (!force && !corpus.IsSourceTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.SourceSegment.Count > 1)
+                        row.SourceSegment = new[] { detokenizer.Detokenize(row.SourceSegment) };
+                    return row;
+                },
+                isSourceTokenized: false
+            );
         }
 
-        public static IParallelTextCorpus DetokenizeSource<T>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus DetokenizeSource<T>(this IParallelTextCorpus corpus, bool force = false)
             where T : IDetokenizer<string, string>, new()
         {
             var detokenizer = new T();
-            return corpus.DetokenizeSource(detokenizer);
+            return corpus.DetokenizeSource(detokenizer, force);
         }
 
         public static IParallelTextCorpus DetokenizeTarget(
             this IParallelTextCorpus corpus,
-            IDetokenizer<string, string> detokenizer
+            IDetokenizer<string, string> detokenizer,
+            bool force = false
         )
         {
-            return corpus.Transform(row =>
-            {
-                if (row.TargetSegment.Count > 1)
-                    row.TargetSegment = new[] { detokenizer.Detokenize(row.TargetSegment) };
-                return row;
-            });
+            if (!force && !corpus.IsTargetTokenized)
+                return corpus;
+
+            return corpus.Transform(
+                row =>
+                {
+                    if (row.TargetSegment.Count > 1)
+                        row.TargetSegment = new[] { detokenizer.Detokenize(row.TargetSegment) };
+                    return row;
+                },
+                isTargetTokenized: false
+            );
         }
 
-        public static IParallelTextCorpus DetokenizeTarget<T>(this IParallelTextCorpus corpus)
+        public static IParallelTextCorpus DetokenizeTarget<T>(this IParallelTextCorpus corpus, bool force = false)
             where T : IDetokenizer<string, string>, new()
         {
             var detokenizer = new T();
-            return corpus.DetokenizeTarget(detokenizer);
+            return corpus.DetokenizeTarget(detokenizer, force);
         }
 
         public static IParallelTextCorpus Invert(this IParallelTextCorpus corpus)
@@ -824,6 +915,24 @@ namespace SIL.Machine.Corpora
             });
         }
 
+        public static IParallelTextCorpus LowercaseSource(this IParallelTextCorpus corpus)
+        {
+            return corpus.Transform(row =>
+            {
+                row.SourceSegment = row.SourceSegment.Lowercase();
+                return row;
+            });
+        }
+
+        public static IParallelTextCorpus LowercaseTarget(this IParallelTextCorpus corpus)
+        {
+            return corpus.Transform(row =>
+            {
+                row.TargetSegment = row.TargetSegment.Lowercase();
+                return row;
+            });
+        }
+
         public static IParallelTextCorpus Uppercase(this IParallelTextCorpus corpus)
         {
             return corpus.Transform(row =>
@@ -836,18 +945,22 @@ namespace SIL.Machine.Corpora
 
         public static IParallelTextCorpus Transform(
             this IParallelTextCorpus corpus,
-            IRowProcessor<ParallelTextRow> processor
+            IRowProcessor<ParallelTextRow> processor,
+            bool? isSourceTokenized = null,
+            bool? isTargetTokenized = null
         )
         {
-            return corpus.Transform(processor.Process);
+            return corpus.Transform(processor.Process, isSourceTokenized, isTargetTokenized);
         }
 
         public static IParallelTextCorpus Transform(
             this IParallelTextCorpus corpus,
-            Func<ParallelTextRow, ParallelTextRow> transform
+            Func<ParallelTextRow, ParallelTextRow> transform,
+            bool? isSourceTokenized = null,
+            bool? isTargetTokenized = null
         )
         {
-            return new TransformParallelTextCorpus(corpus, transform);
+            return new TransformParallelTextCorpus(corpus, transform, isSourceTokenized, isTargetTokenized);
         }
 
         public static IParallelTextCorpus WhereNonempty(this IParallelTextCorpus corpus)
@@ -922,14 +1035,22 @@ namespace SIL.Machine.Corpora
 
             public TransformParallelTextCorpus(
                 IParallelTextCorpus corpus,
-                Func<ParallelTextRow, ParallelTextRow> transform
+                Func<ParallelTextRow, ParallelTextRow> transform,
+                bool? isSourceTokenized = null,
+                bool? isTargetTokenized = null
             )
             {
                 _corpus = corpus;
                 _transform = transform;
+                IsSourceTokenized = isSourceTokenized ?? corpus.IsSourceTokenized;
+                IsTargetTokenized = isTargetTokenized ?? corpus.IsTargetTokenized;
             }
 
             public override bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
+
+            public override bool IsSourceTokenized { get; }
+
+            public override bool IsTargetTokenized { get; }
 
             public override int Count(bool includeEmpty = true)
             {
@@ -953,6 +1074,9 @@ namespace SIL.Machine.Corpora
                 _predicate = predicate;
             }
 
+            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
+            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
+
             public override IEnumerable<ParallelTextRow> GetRows()
             {
                 return _corpus.GetRows().Where(_predicate);
@@ -970,6 +1094,9 @@ namespace SIL.Machine.Corpora
                 _count = count;
             }
 
+            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
+            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
+
             public override IEnumerable<ParallelTextRow> GetRows()
             {
                 return _corpus.GetRows().Take(_count);
@@ -986,6 +1113,9 @@ namespace SIL.Machine.Corpora
             }
 
             public override bool MissingRowsAllowed => _corpora.Any(corpus => corpus.MissingRowsAllowed);
+
+            public override bool IsSourceTokenized => _corpora.All(corpus => corpus.IsSourceTokenized);
+            public override bool IsTargetTokenized => _corpora.All(corpus => corpus.IsTargetTokenized);
 
             public override int Count(bool includeEmpty = true)
             {
@@ -1015,16 +1145,21 @@ namespace SIL.Machine.Corpora
                 _batchSize = batchSize;
             }
 
+            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
+            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
+
             public override IEnumerable<ParallelTextRow> GetRows()
             {
                 foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
                 {
-                    IReadOnlyList<TranslationResult> translations = _translationEngine.TranslateBatch(
-                        batch.Select(r => r.SourceSegment).ToArray()
-                    );
+                    IReadOnlyList<TranslationResult> translations;
+                    if (IsSourceTokenized)
+                        translations = _translationEngine.TranslateBatch(batch.Select(r => r.SourceSegment).ToArray());
+                    else
+                        translations = _translationEngine.TranslateBatch(batch.Select(r => r.SourceText).ToArray());
                     foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
                     {
-                        row.TargetSegment = translation.TargetSegment;
+                        row.TargetSegment = translation.TargetTokens;
                         yield return row;
                     }
                 }
@@ -1043,6 +1178,9 @@ namespace SIL.Machine.Corpora
                 _aligner = aligner;
                 _batchSize = batchSize;
             }
+
+            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
+            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
             public override IEnumerable<ParallelTextRow> GetRows()
             {
