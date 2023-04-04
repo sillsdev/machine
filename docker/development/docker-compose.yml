@@ -2,7 +2,7 @@ version: "3"
 services:
   machine-server:
     hostname: machine-server
-    image: ghcr.io/sillsdev/machine:latest
+    image: machine:latest
     environment:
       - ASPNETCORE_Kestrel__Endpoints__Https__Url=http://*:8087
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
@@ -18,23 +18,33 @@ services:
     depends_on:
       - mongo
     volumes:
-      - "C:\\usr\\local\\engines:/var/lib/machine/engines"
-      - "C:\\usr\\local\\data:/var/lib/machine/corpora"
-    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.ApiServer.dll' ]
+      - "/var/lib/engine_server:/var/lib/machine"
+    entrypoint:
+      [
+        'dotnet',
+        '/app/engine_server/SIL.Machine.Serval.EngineServer.dll'
+      ]
   machine-job-server:
     hostname: machine-job-server
-    image: ghcr.io/sillsdev/machine:latest
+    image: machine:latest
     environment:
       - ASPNETCORE_ConnectionStrings__Hangfire=mongodb://mongo:27017/machine_jobs
       - ASPNETCORE_ConnectionStrings__Mongo=mongodb://mongo:27017/machine
+      - ASPNETCORE_ConnectionStrings__Serval=http://serval
       - ASPNETCORE_Logging__LogLevel__Default=Information
       - ASPNETCORE_Logging__LogLevel__Microsoft.AspNetCore=Warning
+      - ASPNETCORE_Kestrel__Endpoints__Http__Url=http://*:80
+      - ASPNETCORE_Kestrel__EndpointDefaults__Protocols=Http2
+      - ASPNETCORE_Kestrel__TranslationEngines__0=SmtTransfer
     depends_on:
       - mongo
     volumes:
-      - "C:\\usr\\local\\engines:/var/lib/machine/engines"
-      - "C:\\usr\\local\\data:/var/lib/machine/corpora"
-    entrypoint: [ 'dotnet', '/app/SIL.Machine.WebApi.JobServer.dll' ]
+      - "/var/lib/job_server:/var/lib/machine"
+    entrypoint:
+      [
+        'dotnet',
+        '/app/job_server/SIL.Machine.Serval.JobServer.dll'
+      ]
   mongo:
     hostname: mongo
     container_name: mongo
