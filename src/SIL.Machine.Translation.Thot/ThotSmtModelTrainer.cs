@@ -438,7 +438,12 @@ namespace SIL.Machine.Translation.Thot
             CancellationToken cancellationToken
         )
         {
-            var parameters = new ThotWordAlignmentParameters();
+            var parameters = new ThotWordAlignmentParameters
+            {
+                HmmP0 = 0.1,
+                HmmLexicalSmoothingFactor = 0.1,
+                HmmAlignmentSmoothingFactor = 0.3
+            };
             if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
             {
                 parameters.FastAlignIterationCount = (int)Parameters.LearningEMIters;
@@ -629,8 +634,8 @@ namespace SIL.Machine.Translation.Thot
                         progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
                     await smtModel.TrainSegmentAsync(tuneSourceCorpus[i], tuneTargetCorpus[i]).ConfigureAwait(false);
                 }
-                progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
                 await smtModel.SaveAsync().ConfigureAwait(false);
+                progress.Report(new ProgressStatus(tuneSourceCorpus.Count, tuneSourceCorpus.Count));
             }
         }
 
