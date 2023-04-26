@@ -411,7 +411,12 @@ namespace SIL.Machine.Translation.Thot
 		private void TrainWordAlignmentModel(string swmPrefix, ITokenProcessor sourcePreprocessor,
 			ITokenProcessor targetPreprocessor, ParallelTextCorpus corpus, IProgress<ProgressStatus> progress)
 		{
-			var parameters = new ThotWordAlignmentParameters();
+			var parameters = new ThotWordAlignmentParameters
+			{
+				HmmP0 = 0.1,
+				HmmLexicalSmoothingFactor = 0.1,
+				HmmAlignmentSmoothingFactor = 0.3
+			};
 			if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
 			{
 				parameters.FastAlignIterationCount = (int)Parameters.LearningEMIters;
@@ -573,6 +578,7 @@ namespace SIL.Machine.Translation.Thot
 					progress.Report(new ProgressStatus(i, tuneSourceCorpus.Count));
 					engine.TrainSegment(tuneSourceCorpus[i], tuneTargetCorpus[i]);
 				}
+				smtModel.Save();
 				progress.Report(new ProgressStatus(1.0));
 			}
 		}
