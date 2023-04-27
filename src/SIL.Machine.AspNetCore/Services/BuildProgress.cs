@@ -6,6 +6,10 @@ public class BuildProgress : IProgress<ProgressStatus>
     private readonly string _buildId;
     private ProgressStatus _prevStatus;
 
+    private DateTime lastReportTime = DateTime.Now;
+
+    private float throttleTimeSeconds = 1;
+
     public BuildProgress(IPlatformService platformService, string buildId)
     {
         _platformService = platformService;
@@ -17,6 +21,10 @@ public class BuildProgress : IProgress<ProgressStatus>
         if (_prevStatus.Equals(value))
             return;
 
+        if (DateTime.Now < lastReportTime.AddSeconds(throttleTimeSeconds))
+            return;
+
+        lastReportTime = DateTime.Now;
         _platformService.UpdateBuildStatusAsync(_buildId, value);
         _prevStatus = value;
     }
