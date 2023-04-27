@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
@@ -101,7 +99,8 @@ namespace SIL.Machine.Translation
                 phraseConfidence = Math.Min(phraseConfidence, confidence);
             }
             return new TranslationResult(
-                sourceLen,
+                target,
+                Enumerable.Repeat("word", sourceLen),
                 targetArray,
                 targetConfidences,
                 targetSources,

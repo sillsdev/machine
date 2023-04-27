@@ -116,11 +116,11 @@ namespace SIL.Machine
                         _corpusSpec.ParallelCorpus.Count(includeEmpty: false)
                     );
                     IParallelTextCorpus corpus = _preprocessSpec.Preprocess(_corpusSpec.ParallelCorpus.WhereNonempty());
-                    var ecm = new ErrorCorrectionModel();
+                    var translatorFactory = new InteractiveTranslatorFactory(smtModel);
                     progress?.Report(new ProgressStatus(segmentCount, corpusCount));
                     foreach (ParallelTextRow row in corpus)
                     {
-                        await TestSegmentAsync(ecm, smtModel, suggester, n, row, traceWriter, cancellationToken);
+                        await TestSegmentAsync(translatorFactory, suggester, n, row, traceWriter, cancellationToken);
                         segmentCount++;
                         progress?.Report(new ProgressStatus(segmentCount, corpusCount));
                         if (segmentCount == _corpusSpec.MaxCorpusCount)
@@ -167,8 +167,7 @@ namespace SIL.Machine
         }
 
         private async Task TestSegmentAsync(
-            ErrorCorrectionModel ecm,
-            IInteractiveTranslationEngine engine,
+            InteractiveTranslatorFactory translatorFactory,
             ITranslationSuggester suggester,
             int n,
             ParallelTextRow row,
@@ -183,10 +182,10 @@ namespace SIL.Machine
             string[][] prevSuggestionWords = null;
             bool isLastWordSuggestion = false;
             string suggestionResult = null;
-            var translator = await InteractiveTranslator.CreateAsync(ecm, engine, row.SourceSegment, cancellationToken);
-            while (translator.Prefix.Count < row.TargetSegment.Count || !translator.IsLastWordComplete)
+            InteractiveTranslator translator = await translatorFactory.CreateAsync(row.SourceText, cancellationToken);
+            while (translator.PrefixWordRanges.Count < row.TargetSegment.Count || !translator.IsLastWordComplete)
             {
-                int targetIndex = translator.Prefix.Count;
+                int targetIndex = translator.PrefixWordRanges.Count;
                 if (!translator.IsLastWordComplete)
                     targetIndex--;
 
@@ -196,7 +195,7 @@ namespace SIL.Machine
                 if (prevSuggestionWords == null || !SuggestionsAreEqual(prevSuggestionWords, suggestionWords))
                 {
                     WritePrefix(traceWriter, suggestionResult, translator.Prefix);
-                    WriteSuggestions(traceWriter, translator, suggestions);
+                    WriteSuggestions(traceWriter, suggestions);
                     suggestionResult = null;
                     if (suggestions.Any(s => s.TargetWordIndices.Count > 0))
                         _totalSuggestionCount++;
@@ -224,7 +223,9 @@ namespace SIL.Machine
 
                     if (accepted.Count > 0)
                     {
-                        translator.AppendToPrefix(accepted.Select(j => suggestion.Result.TargetSegment[j]));
+                        translator.AppendToPrefix(
+                            string.Join(" ", accepted.Select(j => suggestion.Result.TargetTokens[j]))
+                        );
                         isLastWordSuggestion = true;
                         _actionCount++;
                         _totalAcceptedSuggestionCount++;
@@ -267,16 +268,18 @@ namespace SIL.Machine
                         suggestionResult = null;
                     }
 
-                    int len = translator.IsLastWordComplete ? 0 : translator.Prefix[translator.Prefix.Count - 1].Length;
+                    int len = translator.IsLastWordComplete
+                        ? 0
+                        : translator.PrefixWordRanges[translator.PrefixWordRanges.Count - 1].Length;
                     string targetWord = row.TargetSegment[targetIndex];
                     if (len == targetWord.Length)
                     {
-                        translator.AppendToPrefix("", true);
+                        translator.AppendToPrefix(" ");
                     }
                     else
                     {
                         string c = targetWord.Substring(len, 1);
-                        translator.AppendToPrefix(c, false);
+                        translator.AppendToPrefix(c);
                     }
 
                     suggestionResult = suggestions.Any(s => s.TargetWordIndices.Count > 0) ? "REJECT" : "NONE";
@@ -294,20 +297,16 @@ namespace SIL.Machine
             traceWriter?.WriteLine();
         }
 
-        private void WritePrefix(StreamWriter traceWriter, string suggestionResult, IReadOnlyList<string> prefix)
+        private void WritePrefix(StreamWriter traceWriter, string suggestionResult, string prefix)
         {
             if (traceWriter == null || suggestionResult == null)
                 return;
 
             traceWriter.Write(("-" + suggestionResult).PadRight(14));
-            traceWriter.WriteLine(string.Join(" ", prefix));
+            traceWriter.WriteLine(prefix);
         }
 
-        private void WriteSuggestions(
-            StreamWriter traceWriter,
-            InteractiveTranslator translator,
-            IReadOnlyList<TranslationSuggestion> suggestions
-        )
+        private void WriteSuggestions(StreamWriter traceWriter, IReadOnlyList<TranslationSuggestion> suggestions)
         {
             if (traceWriter == null)
                 return;
@@ -317,7 +316,7 @@ namespace SIL.Machine
                 TranslationSuggestion suggestion = suggestions[k];
                 bool inSuggestion = false;
                 traceWriter.Write($"SUGGESTION {k + 1}  ");
-                for (int j = 0; j < suggestion.Result.TargetSegment.Count; j++)
+                for (int j = 0; j < suggestion.Result.TargetTokens.Count; j++)
                 {
                     if (suggestion.TargetWordIndices.Contains(j))
                     {
@@ -337,7 +336,7 @@ namespace SIL.Machine
                         traceWriter.Write(" ");
                     }
 
-                    traceWriter.Write(suggestion.Result.TargetSegment[j]);
+                    traceWriter.Write(suggestion.Result.TargetTokens[j]);
                 }
                 if (inSuggestion)
                     traceWriter.Write("]");

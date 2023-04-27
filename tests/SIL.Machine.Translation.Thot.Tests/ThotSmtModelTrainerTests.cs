@@ -17,20 +17,20 @@ namespace SIL.Machine.Translation.Thot
                         "text1",
                         new[]
                         {
-                            Row(1, "¿ le importaría darnos las llaves de la habitación , por favor ?"),
+                            Row(1, "¿ Le importaría darnos las llaves de la habitación , por favor ?"),
                             Row(
                                 2,
-                                "he hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y "
-                                    + "televisión a nombre de rosario cabedo ."
+                                "He hecho la reserva de una habitación tranquila doble con ||| teléfono ||| y "
+                                    + "televisión a nombre de Rosario Cabedo ."
                             ),
-                            Row(3, "¿ le importaría cambiarme a otra habitación más tranquila ?"),
-                            Row(4, "por favor , tengo reservada una habitación ."),
-                            Row(5, "me parece que existe un problema ."),
-                            Row(6, "¿ tiene habitaciones libres con televisión , aire acondicionado y caja fuerte ?"),
-                            Row(7, "¿ le importaría mostrarnos una habitación con televisión ?"),
-                            Row(8, "¿ tiene teléfono ?"),
-                            Row(9, "voy a marcharme el dos a las ocho de la noche ."),
-                            Row(10, "¿ cuánto cuesta una habitación individual por semana ?")
+                            Row(3, "¿ Le importaría cambiarme a otra habitación más tranquila ?"),
+                            Row(4, "Por favor , tengo reservada una habitación ."),
+                            Row(5, "Me parece que existe un problema ."),
+                            Row(6, "¿ Tiene habitaciones libres con televisión , aire acondicionado y caja fuerte ?"),
+                            Row(7, "¿ Le importaría mostrarnos una habitación con televisión ?"),
+                            Row(8, "¿ Tiene teléfono ?"),
+                            Row(9, "Voy a marcharme el dos a las ocho de la noche ."),
+                            Row(10, "¿ Cuánto cuesta una habitación individual por semana ?")
                         }
                     )
                 }
@@ -43,20 +43,20 @@ namespace SIL.Machine.Translation.Thot
                         "text1",
                         new[]
                         {
-                            Row(1, "would you mind giving us the keys to the room , please ?"),
+                            Row(1, "Would you mind giving us the keys to the room , please ?"),
                             Row(
                                 2,
-                                "i have made a reservation for a quiet , double room with a ||| telephone ||| and a tv "
-                                    + "for rosario cabedo ."
+                                "I have made a reservation for a quiet , double room with a ||| telephone ||| and a tv "
+                                    + "for Rosario Cabedo ."
                             ),
-                            Row(3, "would you mind moving me to a quieter room ?"),
-                            Row(4, "i have booked a room ."),
-                            Row(5, "i think that there is a problem ."),
-                            Row(6, "do you have any rooms with a tv , air conditioning and a safe available ?"),
-                            Row(7, "would you mind showing us a room with a tv ?"),
-                            Row(8, "does it have a telephone ?"),
-                            Row(9, "i am leaving on the second at eight in the evening ."),
-                            Row(10, "how much does a single room cost per week ?")
+                            Row(3, "Would you mind moving me to a quieter room ?"),
+                            Row(4, "I have booked a room ."),
+                            Row(5, "I think that there is a problem ."),
+                            Row(6, "Do you have any rooms with a tv , air conditioning and a safe available ?"),
+                            Row(7, "Would you mind showing us a room with a tv ?"),
+                            Row(8, "Does it have a telephone ?"),
+                            Row(9, "I am leaving on the second at eight in the evening ."),
+                            Row(10, "How much does a single room cost per week ?")
                         }
                     )
                 }
@@ -92,16 +92,26 @@ namespace SIL.Machine.Translation.Thot
                 LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
             };
 
-            using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters))
+            using (
+                var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters)
+                {
+                    LowercaseSource = true,
+                    LowercaseTarget = true
+                }
+            )
             {
                 await trainer.TrainAsync();
                 await trainer.SaveAsync();
                 parameters = trainer.Parameters;
             }
 
-            using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters);
-            TranslationResult result = await model.TranslateAsync("una habitación individual por semana".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("a single room cost per week".Split()));
+            using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters)
+            {
+                LowercaseSource = true,
+                LowercaseTarget = true
+            };
+            TranslationResult result = await model.TranslateAsync("Una habitación individual por semana");
+            Assert.That(result.Translation, Is.EqualTo("a single room cost per week"));
         }
 
         [Test]
@@ -120,21 +130,31 @@ namespace SIL.Machine.Translation.Thot
                 LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
             };
 
-            using (var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters))
+            using (
+                var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters)
+                {
+                    LowercaseSource = true,
+                    LowercaseTarget = true
+                }
+            )
             {
                 await trainer.TrainAsync();
                 await trainer.SaveAsync();
                 parameters = trainer.Parameters;
             }
 
-            using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters);
-            TranslationResult result = await model.TranslateAsync("una habitación individual por semana".Split());
-            Assert.That(result.TargetSegment, Is.EqualTo("una habitación individual por semana".Split()));
+            using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters)
+            {
+                LowercaseSource = true,
+                LowercaseTarget = true
+            };
+            TranslationResult result = await model.TranslateAsync("Una habitación individual por semana");
+            Assert.That(result.Translation, Is.EqualTo("una habitación individual por semana"));
         }
 
         private static TextRow Row(int rowRef, string text)
         {
-            return new TextRow("text1", rowRef) { Segment = text.Split() };
+            return new TextRow("text1", rowRef) { Segment = new[] { text } };
         }
 
         private static AlignmentRow Alignment(int rowRef, params AlignedWordPair[] pairs)

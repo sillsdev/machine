@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace SIL.Machine.Translation
 {
@@ -10,7 +9,7 @@ namespace SIL.Machine.Translation
         public void Truecase_Empty()
         {
             UnigramTruecaser truecaser = CreateTruecaser();
-            IReadOnlyList<string> result = truecaser.Truecase(new string[0]);
+            IReadOnlyList<string> result = truecaser.Truecase(Array.Empty<string>());
             Assert.That(result, Is.Empty);
         }
 

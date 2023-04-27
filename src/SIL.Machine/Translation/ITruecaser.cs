@@ -14,5 +14,6 @@ namespace SIL.Machine.Translation
         IReadOnlyList<string> Truecase(IReadOnlyList<string> segment);
 
         Task SaveAsync(CancellationToken cancellationToken = default);
+        void Save();
     }
 }

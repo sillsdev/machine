@@ -41,28 +41,9 @@ public class SmtTransferEngineStateService : AsyncDisposableBase
             IDistributedReaderWriterLock @lock = lockFactory.Create(state.EngineId);
             await using (await @lock.WriterLockAsync())
             {
-                if (!state.IsLoaded)
-                    return;
-
                 TranslationEngine? engine = await engines.GetAsync(e => e.EngineId == state.EngineId);
-                if (engine is null || engine.BuildState is BuildState.Active)
-                    return;
-
-                if (state.CurrentBuildRevision == -1)
-                    state.CurrentBuildRevision = engine.BuildRevision;
-                if (engine.BuildRevision != state.CurrentBuildRevision)
-                {
-                    await state.UnloadAsync();
-                    state.CurrentBuildRevision = engine.BuildRevision;
-                }
-                else if (DateTime.Now - state.LastUsedTime > inactiveTimeout)
-                {
-                    await state.UnloadAsync();
-                }
-                else
-                {
-                    await state.SaveModelAsync();
-                }
+                if (engine is not null && engine.BuildState is not BuildState.Active)
+                    await state.CommitAsync(engine.BuildRevision, inactiveTimeout);
             }
         }
     }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 using Tensorflow;
 using Tensorflow.NumPy;
@@ -63,12 +64,29 @@ namespace SIL.Machine.Translation.TensorFlow
         public int BatchSize { get; set; } = 32;
         public string PaddingToken { get; set; } = "<blank>";
 
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
+
+        public Task<TranslationResult> TranslateAsync(string segment, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
         public Task<TranslationResult> TranslateAsync(
             IReadOnlyList<string> segment,
             CancellationToken cancellationToken = default
         )
         {
             return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            string segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
         }
 
         public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
@@ -81,11 +99,28 @@ namespace SIL.Machine.Translation.TensorFlow
         }
 
         public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
             IReadOnlyList<IReadOnlyList<string>> segments,
             CancellationToken cancellationToken = default
         )
         {
             return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
         }
 
         public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
@@ -97,11 +132,25 @@ namespace SIL.Machine.Translation.TensorFlow
             return Task.FromResult(TranslateBatch(n, segments));
         }
 
+        public TranslationResult Translate(string segment)
+        {
+            CheckDisposed();
+
+            return Translate(1, segment)[0];
+        }
+
         public TranslationResult Translate(IReadOnlyList<string> segment)
         {
             CheckDisposed();
 
             return Translate(1, segment)[0];
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, string segment)
+        {
+            CheckDisposed();
+
+            return TranslateBatch(n, new[] { segment })[0];
         }
 
         public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
@@ -111,11 +160,25 @@ namespace SIL.Machine.Translation.TensorFlow
             return TranslateBatch(n, new[] { segment })[0];
         }
 
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return TranslateBatch(1, segments).Select(hypotheses => hypotheses[0]).ToArray();
+        }
+
         public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
 
             return TranslateBatch(1, segments).Select(hypotheses => hypotheses[0]).ToArray();
+        }
+
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(int n, IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return TranslateBatch(n, segments.Select(s => SourceTokenizer.Tokenize(s).ToArray()).ToArray());
         }
 
         public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(
@@ -126,7 +189,7 @@ namespace SIL.Machine.Translation.TensorFlow
             CheckDisposed();
 
             var results = new List<IReadOnlyList<TranslationResult>>();
-            foreach (var (inputTokens, inputLengths) in Batch(segments))
+            foreach (var (sourceTokenStrs, inputTokens, inputLengths) in Batch(segments))
             {
                 var curBatchSize = (int)inputTokens.dims[0];
                 NDArray refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
@@ -156,7 +219,7 @@ namespace SIL.Machine.Translation.TensorFlow
                         long end = start + outputLength;
                         var builder = new TranslationResultBuilder();
                         for (long k = start; k < end; k++)
-                            builder.AppendWord(outputTokenStrs[k], TranslationSources.Nmt);
+                            builder.AppendToken(outputTokenStrs[k], TranslationSources.Nmt);
 
                         NDArray alignment = alignments[i][j];
                         NDArray srcIndices = np.argmax(alignment[new Slice(stop: outputLength)], axis: -1);
@@ -168,7 +231,7 @@ namespace SIL.Machine.Translation.TensorFlow
                         );
                         builder.MarkPhrase(Range.Create(0, inputLength), waMatrix);
 
-                        hypotheses.Add(builder.ToResult(inputLength));
+                        hypotheses.Add(builder.ToResult(TargetDetokenizer, sourceTokenStrs[i]));
                     }
                     results.Add(hypotheses);
                 }
@@ -188,23 +251,25 @@ namespace SIL.Machine.Translation.TensorFlow
             return op.outputs[int.Parse(parts[1])];
         }
 
-        private IEnumerable<(NDArray, NDArray)> Batch(IEnumerable<IReadOnlyList<string>> segments)
+        private IEnumerable<(IReadOnlyList<IReadOnlyList<string>>, NDArray, NDArray)> Batch(
+            IEnumerable<IReadOnlyList<string>> segments
+        )
         {
             var batch = new List<IReadOnlyList<string>>();
             int maxLength = 0;
-            foreach (IReadOnlyList<string> segment in segments)
+            foreach (IReadOnlyList<string> tokens in segments)
             {
-                maxLength = Math.Max(maxLength, segment.Count);
-                batch.Add(segment);
+                maxLength = Math.Max(maxLength, tokens.Count);
+                batch.Add(tokens);
                 if (batch.Count == BatchSize)
                 {
-                    yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
-                    batch.Clear();
+                    yield return (batch, CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
+                    batch = new List<IReadOnlyList<string>>();
                     maxLength = 0;
                 }
             }
             if (batch.Count > 0)
-                yield return (CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
+                yield return (batch, CreateArray(batch, maxLength), np.array(batch.Select(s => s.Count).ToArray()));
         }
 
         private NDArray CreateArray(List<IReadOnlyList<string>> batch, int maxLength)

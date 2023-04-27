@@ -14,17 +14,40 @@ public class ThotSmtModelFactory : ISmtModelFactory
         _engineOptions = engineOptions;
     }
 
-    public IInteractiveTranslationModel Create(string engineId)
+    public IInteractiveTranslationModel Create(
+        string engineId,
+        IRangeTokenizer<string, int, string> tokenizer,
+        IDetokenizer<string, string> detokenizer,
+        ITruecaser truecaser
+    )
     {
         string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
-        var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName);
+        var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName)
+        {
+            SourceTokenizer = tokenizer,
+            TargetTokenizer = tokenizer,
+            TargetDetokenizer = detokenizer,
+            LowercaseSource = true,
+            LowercaseTarget = true,
+            Truecaser = truecaser
+        };
         return model;
     }
 
-    public ITrainer CreateTrainer(string engineId, IParallelTextCorpus corpus)
+    public ITrainer CreateTrainer(
+        string engineId,
+        IRangeTokenizer<string, int, string> tokenizer,
+        IParallelTextCorpus corpus
+    )
     {
         string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
-        return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName);
+        return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName)
+        {
+            SourceTokenizer = tokenizer,
+            TargetTokenizer = tokenizer,
+            LowercaseSource = true,
+            LowercaseTarget = true
+        };
     }
 
     public void InitNew(string engineId)

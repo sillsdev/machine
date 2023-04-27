@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation
                 // if the prefix ends with a partial word and it has been completed,
                 // then make sure it is included as a suggestion,
                 // otherwise, don't return any suggestions
-                if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
+                if ((result.Sources[startingJ - 1] & TranslationSources.Smt) != 0)
                     startingJ--;
                 else
                     return new TranslationSuggestion(result);
@@ -35,8 +35,8 @@ namespace SIL.Machine.Translation
                     bool hitBreakingWord = false;
                     for (int j = startingJ; j < phrase.TargetSegmentCut; j++)
                     {
-                        string word = result.TargetSegment[j];
-                        TranslationSources sources = result.WordSources[j];
+                        string word = result.TargetTokens[j];
+                        TranslationSources sources = result.Sources[j];
                         if (sources == TranslationSources.None || word.All(char.IsPunctuation))
                         {
                             hitBreakingWord = true;

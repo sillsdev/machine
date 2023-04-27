@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-    public class DictionaryTextCorpus : TextCorpusBase
+    public class DictionaryTextCorpus : CorpusBase<TextRow>, ITextCorpus
     {
         public DictionaryTextCorpus(params IText[] texts)
             : this((IEnumerable<IText>)texts) { }
@@ -14,13 +13,15 @@ namespace SIL.Machine.Corpora
             TextDictionary = texts.ToDictionary(t => t.Id);
         }
 
-        public override IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
+        public IEnumerable<IText> Texts => TextDictionary.Values.OrderBy(t => t.SortKey);
 
         protected Dictionary<string, IText> TextDictionary { get; }
 
         public IText this[string id] => TextDictionary[id];
 
         public override bool MissingRowsAllowed => Texts.Any(t => t.MissingRowsAllowed);
+
+        public bool IsTokenized { get; set; }
 
         public override int Count(bool includeEmpty = true)
         {
@@ -37,7 +38,12 @@ namespace SIL.Machine.Corpora
             TextDictionary[text.Id] = text;
         }
 
-        public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
+        public override IEnumerable<TextRow> GetRows()
+        {
+            return GetRows(null);
+        }
+
+        public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
         {
             var textIdSet = new HashSet<string>(textIds ?? TextDictionary.Keys);
             return Texts.Where(t => textIdSet.Contains(t.Id)).SelectMany(t => t.GetRows());

@@ -89,14 +89,14 @@ namespace SIL.Machine.Translation
             if (uncorrectedPrefixLen == 0)
             {
                 foreach (string w in prefix)
-                    builder.AppendWord(w, TranslationSources.Prefix);
+                    builder.AppendToken(w, TranslationSources.Prefix);
                 return prefix.Length;
             }
 
             IEnumerable<EditOperation> wordOps,
                 charOps;
             _segmentEditDistance.ComputePrefix(
-                builder.Words.Take(uncorrectedPrefixLen).ToArray(),
+                builder.TargetTokens.Take(uncorrectedPrefixLen).ToArray(),
                 prefix,
                 isLastWordComplete,
                 false,

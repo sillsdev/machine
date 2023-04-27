@@ -1,4 +1,5 @@
 ﻿using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,34 +8,34 @@ namespace SIL.Machine.Translation
 {
     public class TranslationResultBuilder
     {
-        private readonly List<string> _words;
+        private readonly List<string> _targetTokens;
         private readonly List<double> _confidences;
         private readonly List<TranslationSources> _sources;
         private readonly List<PhraseInfo> _phrases;
 
         public TranslationResultBuilder()
         {
-            _words = new List<string>();
+            _targetTokens = new List<string>();
             _confidences = new List<double>();
             _sources = new List<TranslationSources>();
             _phrases = new List<PhraseInfo>();
         }
 
-        public IReadOnlyList<string> Words => _words;
+        public IReadOnlyList<string> TargetTokens => _targetTokens;
         public IReadOnlyList<double> Confidences => _confidences;
         public IReadOnlyList<TranslationSources> Sources => _sources;
         public IReadOnlyList<PhraseInfo> Phrases => _phrases;
 
-        public void AppendWord(string word, TranslationSources source, double confidence = -1)
+        public void AppendToken(string token, TranslationSources source, double confidence = -1)
         {
-            _words.Add(word);
+            _targetTokens.Add(token);
             _sources.Add(source);
             _confidences.Add(confidence);
         }
 
         public void MarkPhrase(Range<int> sourceSegmentRange, WordAlignmentMatrix alignment)
         {
-            _phrases.Add(new PhraseInfo(sourceSegmentRange, _words.Count, alignment));
+            _phrases.Add(new PhraseInfo(sourceSegmentRange, _targetTokens.Count, alignment));
         }
 
         public void SetConfidence(int index, double confidence)
@@ -59,7 +60,7 @@ namespace SIL.Machine.Translation
                 switch (wordOp)
                 {
                     case EditOperation.Insert:
-                        _words.Insert(j, prefix[j]);
+                        _targetTokens.Insert(j, prefix[j]);
                         _sources.Insert(j, TranslationSources.Prefix);
                         _confidences.Insert(j, -1);
                         alignmentColsToCopy.Add(-1);
@@ -69,7 +70,7 @@ namespace SIL.Machine.Translation
                         break;
 
                     case EditOperation.Delete:
-                        _words.RemoveAt(j);
+                        _targetTokens.RemoveAt(j);
                         _sources.RemoveAt(j);
                         _confidences.RemoveAt(j);
                         i++;
@@ -100,9 +101,9 @@ namespace SIL.Machine.Translation
                     case EditOperation.Hit:
                     case EditOperation.Substitute:
                         if (wordOp == EditOperation.Substitute || j < prefix.Length - 1 || isLastWordComplete)
-                            _words[j] = prefix[j];
+                            _targetTokens[j] = prefix[j];
                         else
-                            _words[j] = CorrectWord(charOps, _words[j], prefix[j]);
+                            _targetTokens[j] = CorrectWord(charOps, _targetTokens[j], prefix[j]);
 
                         if (wordOp == EditOperation.Substitute)
                         {
@@ -129,7 +130,7 @@ namespace SIL.Machine.Translation
                 }
             }
 
-            while (j < Words.Count)
+            while (j < TargetTokens.Count)
             {
                 alignmentColsToCopy.Add(i);
 
@@ -201,10 +202,18 @@ namespace SIL.Machine.Translation
             return sb.ToString();
         }
 
-        public TranslationResult ToResult(int sourceSegmentLength)
+        public TranslationResult ToResult(
+            IDetokenizer<string, string> targetDetokenizer,
+            IReadOnlyList<string> sourceTokens
+        )
         {
-            var sources = new TranslationSources[Words.Count];
-            var alignment = new WordAlignmentMatrix(sourceSegmentLength, Words.Count);
+            return ToResult(targetDetokenizer.Detokenize(TargetTokens), sourceTokens);
+        }
+
+        public TranslationResult ToResult(string translation, IReadOnlyList<string> sourceTokens)
+        {
+            var sources = new TranslationSources[TargetTokens.Count];
+            var alignment = new WordAlignmentMatrix(sourceTokens.Count, TargetTokens.Count);
             var phrases = new List<Phrase>();
             int trgPhraseStartIndex = 0;
             foreach (PhraseInfo phraseInfo in _phrases)
@@ -230,7 +239,15 @@ namespace SIL.Machine.Translation
                 trgPhraseStartIndex = phraseInfo.TargetCut;
             }
 
-            return new TranslationResult(sourceSegmentLength, _words, _confidences, sources, alignment, phrases);
+            return new TranslationResult(
+                translation,
+                sourceTokens,
+                _targetTokens,
+                _confidences,
+                sources,
+                alignment,
+                phrases
+            );
         }
 
         public class PhraseInfo

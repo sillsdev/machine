@@ -1,126 +1,98 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
-using System.Threading.Tasks;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Translation
 {
     public class InteractiveTranslator
     {
-        public static async Task<InteractiveTranslator> CreateAsync(
-            ErrorCorrectionModel ecm,
-            IInteractiveTranslationEngine engine,
-            IReadOnlyList<string> segment,
-            CancellationToken cancellationToken = default
-        )
-        {
-            return new InteractiveTranslator(
-                ecm,
-                engine,
-                segment,
-                await engine.GetWordGraphAsync(segment, cancellationToken).ConfigureAwait(false)
-            );
-        }
-
         private readonly IInteractiveTranslationEngine _engine;
-        private readonly List<string> _prefix;
+        private readonly StringBuilder _prefix;
         private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
+        private readonly IRangeTokenizer<string, int, string> _targetTokenizer;
 
-        private InteractiveTranslator(
+        internal InteractiveTranslator(
+            string segment,
             ErrorCorrectionModel ecm,
             IInteractiveTranslationEngine engine,
-            IReadOnlyList<string> sourceSegment,
+            IRangeTokenizer<string, int, string> targetTokenizer,
+            IDetokenizer<string, string> targetDetokenizer,
             WordGraph wordGraph
         )
         {
+            Segment = segment;
+            SegmentWordRanges = Segment.GetRanges(wordGraph.SourceWords).ToArray();
             _engine = engine;
-            SourceSegment = sourceSegment;
-            _prefix = new List<string>();
+            _targetTokenizer = targetTokenizer;
+            PrefixWordRanges = Array.Empty<Range<int>>();
+            _prefix = new StringBuilder();
             IsLastWordComplete = true;
-            _wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, SourceSegment, wordGraph);
+            _wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, targetDetokenizer, wordGraph);
             Correct();
         }
 
-        public IReadOnlyList<string> SourceSegment { get; }
-
-        public IReadOnlyList<string> Prefix => _prefix;
-
+        public string Segment { get; }
+        public IReadOnlyList<Range<int>> SegmentWordRanges { get; }
+        public string Prefix => _prefix.ToString();
+        public IReadOnlyList<Range<int>> PrefixWordRanges { get; private set; }
         public bool IsLastWordComplete { get; private set; }
 
-        public bool IsSourceSegmentValid => SourceSegment.Count <= TranslationConstants.MaxSegmentLength;
+        public bool IsSegmentValid => SegmentWordRanges.Count <= TranslationConstants.MaxSegmentLength;
 
-        public void SetPrefix(IReadOnlyList<string> prefix, bool isLastWordComplete)
+        public void SetPrefix(string prefix)
         {
-            if (!_prefix.SequenceEqual(prefix) || IsLastWordComplete != isLastWordComplete)
+            if (_prefix.ToString() != prefix)
             {
                 _prefix.Clear();
-                _prefix.AddRange(prefix);
-                IsLastWordComplete = isLastWordComplete;
+                _prefix.Append(prefix);
                 Correct();
             }
         }
 
-        public void AppendToPrefix(string addition, bool isLastWordComplete)
+        public void AppendToPrefix(string addition)
         {
-            if (string.IsNullOrEmpty(addition) && IsLastWordComplete)
+            if (!string.IsNullOrEmpty(addition))
             {
-                throw new ArgumentException(
-                    "An empty string cannot be added to a prefix where the last word is complete.",
-                    nameof(addition)
-                );
-            }
-
-            if (!string.IsNullOrEmpty(addition) || isLastWordComplete != IsLastWordComplete)
-            {
-                if (IsLastWordComplete)
-                    _prefix.Add(addition);
-                else
-                    _prefix[_prefix.Count - 1] = _prefix[_prefix.Count - 1] + addition;
-                IsLastWordComplete = isLastWordComplete;
+                _prefix.Append(addition);
                 Correct();
             }
-        }
-
-        public void AppendToPrefix(params string[] words)
-        {
-            AppendToPrefix((IEnumerable<string>)words);
-        }
-
-        public void AppendToPrefix(IEnumerable<string> words)
-        {
-            bool updated = false;
-            foreach (string word in words)
-            {
-                if (IsLastWordComplete)
-                    _prefix.Add(word);
-                else
-                    _prefix[_prefix.Count - 1] = word;
-                IsLastWordComplete = true;
-                updated = true;
-            }
-            if (updated)
-                Correct();
         }
 
         public async Task ApproveAsync(bool alignedOnly, CancellationToken cancellationToken = default)
         {
-            if (!IsSourceSegmentValid || _prefix.Count > TranslationConstants.MaxSegmentLength)
+            if (!IsSegmentValid || PrefixWordRanges.Count > TranslationConstants.MaxSegmentLength)
                 return;
 
-            IReadOnlyList<string> sourceSegment = SourceSegment;
+            IReadOnlyList<Range<int>> segmentWordRanges = SegmentWordRanges;
             if (alignedOnly)
             {
                 TranslationResult bestResult = GetCurrentResults().FirstOrDefault();
                 if (bestResult == null)
                     return;
-                sourceSegment = GetAlignedSourceSegment(bestResult);
+                segmentWordRanges = GetAlignedSourceSegment(bestResult);
             }
 
-            if (sourceSegment.Count > 0)
+            if (segmentWordRanges.Count > 0)
+            {
+                string sourceSegment = Segment.Substring(
+                    segmentWordRanges.First().Start,
+                    segmentWordRanges.Last().End - segmentWordRanges.First().Start
+                );
+                string targetSegment = _prefix
+                    .ToString()
+                    .Substring(
+                        PrefixWordRanges.First().Start,
+                        PrefixWordRanges.Last().End - PrefixWordRanges.First().Start
+                    );
                 await _engine
-                    .TrainSegmentAsync(sourceSegment, _prefix, cancellationToken: cancellationToken)
+                    .TrainSegmentAsync(sourceSegment, targetSegment, cancellationToken: cancellationToken)
                     .ConfigureAwait(false);
+            }
         }
 
         public IEnumerable<TranslationResult> GetCurrentResults()
@@ -130,22 +102,28 @@ namespace SIL.Machine.Translation
 
         private void Correct()
         {
-            _wordGraphProcessor.Correct(_prefix.ToArray(), IsLastWordComplete);
+            string prefix = _prefix.ToString();
+            PrefixWordRanges = _targetTokenizer.TokenizeAsRanges(prefix).ToArray();
+            IsLastWordComplete =
+                PrefixWordRanges.Count == 0 || PrefixWordRanges[PrefixWordRanges.Count - 1].End < prefix.Length;
+            _wordGraphProcessor.Correct(prefix.Split(PrefixWordRanges), IsLastWordComplete);
         }
 
-        private IReadOnlyList<string> GetAlignedSourceSegment(TranslationResult result)
+        private IReadOnlyList<Range<int>> GetAlignedSourceSegment(TranslationResult result)
         {
             int sourceLength = 0;
             foreach (Phrase phrase in result.Phrases)
             {
-                if (phrase.TargetSegmentCut > _prefix.Count)
+                if (phrase.TargetSegmentCut > PrefixWordRanges.Count)
                     break;
 
                 if (phrase.SourceSegmentRange.End > sourceLength)
                     sourceLength = phrase.SourceSegmentRange.End;
             }
 
-            return sourceLength == SourceSegment.Count ? SourceSegment : SourceSegment.Take(sourceLength).ToArray();
+            return sourceLength == SegmentWordRanges.Count
+                ? SegmentWordRanges
+                : SegmentWordRanges.Take(sourceLength).ToArray();
         }
     }
 }

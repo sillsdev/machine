@@ -5,6 +5,7 @@ namespace SIL.Machine.Corpora
     public abstract class TextCorpusBase : CorpusBase<TextRow>, ITextCorpus
     {
         public abstract IEnumerable<IText> Texts { get; }
+        public abstract bool IsTokenized { get; }
 
         public override IEnumerable<TextRow> GetRows()
         {

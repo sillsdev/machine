@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
@@ -18,6 +19,7 @@ namespace SIL.Machine.Translation.Thot
         private readonly ThotWordAlignmentModel _inverseWordAlignmentModel;
         private readonly SymmetrizedWordAlignmentModel _symmetrizedWordAlignmentModel;
         private readonly ObjectPool<ThotSmtDecoder> _decoderPool;
+
         private IntPtr _handle;
         private IWordAligner _wordAligner;
 
@@ -64,6 +66,13 @@ namespace SIL.Machine.Translation.Thot
         }
         internal IntPtr Handle => _handle;
 
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public ITokenizer<string, int, string> TargetTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
+        public bool LowercaseSource { get; set; }
+        public bool LowercaseTarget { get; set; }
+        public ITruecaser Truecaser { get; set; }
+
         public ThotWordAlignmentModel DirectWordAlignmentModel
         {
             get
@@ -96,6 +105,20 @@ namespace SIL.Machine.Translation.Thot
 
         public ThotWordAlignmentModelType WordAlignmentModelType { get; }
 
+        public async Task<WordGraph> GetWordGraphAsync(string segment, CancellationToken cancellationToken = default)
+        {
+            CheckDisposed();
+
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                return item.Object.GetWordGraph(segment);
+            }
+        }
+
         public async Task<WordGraph> GetWordGraphAsync(
             IReadOnlyList<string> segment,
             CancellationToken cancellationToken = default
@@ -110,6 +133,25 @@ namespace SIL.Machine.Translation.Thot
             )
             {
                 return item.Object.GetWordGraph(segment);
+            }
+        }
+
+        public async Task TrainSegmentAsync(
+            string sourceSegment,
+            string targetSegment,
+            bool sentenceStart = true,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                item.Object.TrainSegment(sourceSegment, targetSegment, sentenceStart);
             }
         }
 
@@ -133,6 +175,23 @@ namespace SIL.Machine.Translation.Thot
         }
 
         public async Task<TranslationResult> TranslateAsync(
+            string segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                return item.Object.Translate(segment);
+            }
+        }
+
+        public async Task<TranslationResult> TranslateAsync(
             IReadOnlyList<string> segment,
             CancellationToken cancellationToken = default
         )
@@ -146,6 +205,24 @@ namespace SIL.Machine.Translation.Thot
             )
             {
                 return item.Object.Translate(segment);
+            }
+        }
+
+        public async Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            string segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                return item.Object.Translate(n, segment);
             }
         }
 
@@ -165,6 +242,36 @@ namespace SIL.Machine.Translation.Thot
             {
                 return item.Object.Translate(n, segment);
             }
+        }
+
+        public async Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            var transformBlock = new TransformBlock<string, TranslationResult>(
+                s => TranslateAsync(s, cancellationToken),
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = MaxDecoderPoolSize,
+                    CancellationToken = cancellationToken
+                }
+            );
+
+            var bufferBlock = new BufferBlock<TranslationResult>();
+            transformBlock.LinkTo(bufferBlock);
+
+            foreach (string segment in segments)
+                transformBlock.Post(segment);
+            transformBlock.Complete();
+
+            await transformBlock.Completion.ConfigureAwait(false);
+
+            bufferBlock.TryReceiveAll(out IList<TranslationResult> results);
+
+            return new ReadOnlyList<TranslationResult>(results);
         }
 
         public async Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
@@ -199,6 +306,37 @@ namespace SIL.Machine.Translation.Thot
 
         public async Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
             int n,
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            var transformBlock = new TransformBlock<string, IReadOnlyList<TranslationResult>>(
+                s => TranslateAsync(n, s, cancellationToken),
+                new ExecutionDataflowBlockOptions
+                {
+                    MaxDegreeOfParallelism = MaxDecoderPoolSize,
+                    CancellationToken = cancellationToken
+                }
+            );
+
+            var bufferBlock = new BufferBlock<IReadOnlyList<TranslationResult>>();
+            transformBlock.LinkTo(bufferBlock);
+
+            foreach (string segment in segments)
+                transformBlock.Post(segment);
+            transformBlock.Complete();
+
+            await transformBlock.Completion.ConfigureAwait(false);
+
+            bufferBlock.TryReceiveAll(out IList<IReadOnlyList<TranslationResult>> results);
+
+            return new ReadOnlyList<IReadOnlyList<TranslationResult>>(results);
+        }
+
+        public async Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
             IReadOnlyList<IReadOnlyList<string>> segments,
             CancellationToken cancellationToken = default
         )
@@ -229,6 +367,24 @@ namespace SIL.Machine.Translation.Thot
         }
 
         public async Task<TranslationResult> GetBestPhraseAlignmentAsync(
+            string sourceSegment,
+            string targetSegment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            using (
+                ObjectPoolItem<ThotSmtDecoder> item = await _decoderPool
+                    .GetAsync(cancellationToken)
+                    .ConfigureAwait(false)
+            )
+            {
+                return item.Object.GetBestPhraseAlignment(sourceSegment, targetSegment);
+            }
+        }
+
+        public async Task<TranslationResult> GetBestPhraseAlignmentAsync(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment,
             CancellationToken cancellationToken = default
@@ -246,6 +402,16 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
+        public WordGraph GetWordGraph(string segment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.GetWordGraph(segment);
+            }
+        }
+
         public WordGraph GetWordGraph(IReadOnlyList<string> segment)
         {
             CheckDisposed();
@@ -253,6 +419,16 @@ namespace SIL.Machine.Translation.Thot
             using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
             {
                 return item.Object.GetWordGraph(segment);
+            }
+        }
+
+        public void TrainSegment(string sourceSegment, string targetSegment, bool sentenceStart = true)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                item.Object.TrainSegment(sourceSegment, targetSegment, sentenceStart);
             }
         }
 
@@ -270,6 +446,16 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
+        public TranslationResult Translate(string segment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.Translate(segment);
+            }
+        }
+
         public TranslationResult Translate(IReadOnlyList<string> segment)
         {
             CheckDisposed();
@@ -277,6 +463,16 @@ namespace SIL.Machine.Translation.Thot
             using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
             {
                 return item.Object.Translate(segment);
+            }
+        }
+
+        public IReadOnlyList<TranslationResult> Translate(int n, string segment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.Translate(n, segment);
             }
         }
 
@@ -290,6 +486,18 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return segments
+                .AsParallel()
+                .AsOrdered()
+                .WithDegreeOfParallelism(MaxDecoderPoolSize)
+                .Select(s => Translate(s))
+                .ToArray();
+        }
+
         public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
         {
             CheckDisposed();
@@ -299,6 +507,18 @@ namespace SIL.Machine.Translation.Thot
                 .AsOrdered()
                 .WithDegreeOfParallelism(MaxDecoderPoolSize)
                 .Select(s => Translate(s))
+                .ToArray();
+        }
+
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(int n, IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return segments
+                .AsParallel()
+                .AsOrdered()
+                .WithDegreeOfParallelism(MaxDecoderPoolSize)
+                .Select(s => Translate(n, s))
                 .ToArray();
         }
 
@@ -317,6 +537,16 @@ namespace SIL.Machine.Translation.Thot
                 .ToArray();
         }
 
+        public TranslationResult GetBestPhraseAlignment(string sourceSegment, string targetSegment)
+        {
+            CheckDisposed();
+
+            using (ObjectPoolItem<ThotSmtDecoder> item = _decoderPool.Get())
+            {
+                return item.Object.GetBestPhraseAlignment(sourceSegment, targetSegment);
+            }
+        }
+
         public TranslationResult GetBestPhraseAlignment(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment
@@ -330,12 +560,13 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        public Task SaveAsync(CancellationToken cancellationToken = default)
+        public async Task SaveAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
 
-            Save();
-            return Task.CompletedTask;
+            Thot.smtModel_saveModels(_handle);
+            if (Truecaser != null)
+                await Truecaser.SaveAsync(cancellationToken);
         }
 
         public void Save()
@@ -343,15 +574,21 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             Thot.smtModel_saveModels(_handle);
+            Truecaser?.Save();
         }
 
         public ThotSmtModelTrainer CreateTrainer(IParallelTextCorpus corpus)
         {
             CheckDisposed();
 
-            return string.IsNullOrEmpty(ConfigFileName)
+            var trainer = string.IsNullOrEmpty(ConfigFileName)
                 ? new Trainer(this, corpus, Parameters)
                 : new Trainer(this, corpus, ConfigFileName);
+            trainer.SourceTokenizer = SourceTokenizer;
+            trainer.TargetTokenizer = TargetTokenizer;
+            trainer.LowercaseSource = LowercaseSource;
+            trainer.LowercaseTarget = LowercaseTarget;
+            return trainer;
         }
 
         ITrainer ITranslationModel.CreateTrainer(IParallelTextCorpus corpus)

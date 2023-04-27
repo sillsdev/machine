@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using NSubstitute;
+﻿using NSubstitute;
 using NUnit.Framework;
 using SIL.Machine.Morphology;
 using SIL.ObjectModel;
@@ -40,7 +39,8 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(await engine.TranslateWordAsync("habló"), Is.EqualTo("talked".Split(' ')));
+            TranslationResult result = await engine.TranslateAsync("habló");
+            Assert.That(result.Translation, Is.EqualTo("talked"));
         }
 
         [Test]
@@ -63,7 +63,8 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
+            TranslationResult result = await engine.TranslateAsync("habló");
+            Assert.That(result.Translation, Is.EqualTo("habló"));
         }
 
         [Test]
@@ -96,7 +97,8 @@ namespace SIL.Machine.Translation
             );
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
+            TranslationResult result = await engine.TranslateAsync("habló");
+            Assert.That(result.Translation, Is.EqualTo("habló"));
         }
 
         [Test]
@@ -120,7 +122,8 @@ namespace SIL.Machine.Translation
             targetGenerator.Morphemes.Returns(targetMorphemes);
             var transferer = new SimpleTransferer(new GlossMorphemeMapper(targetGenerator));
             var engine = new TransferEngine(sourceAnalyzer, transferer, targetGenerator);
-            Assert.That(await engine.TranslateWordAsync("habló"), Is.Empty);
+            TranslationResult result = await engine.TranslateAsync("habló");
+            Assert.That(result.Translation, Is.EqualTo("habló"));
         }
     }
 }

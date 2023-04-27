@@ -9,7 +9,12 @@ public class TransferEngineFactory : ITransferEngineFactory
         _engineOptions = engineOptions;
     }
 
-    public ITranslationEngine? Create(string engineId)
+    public ITranslationEngine? Create(
+        string engineId,
+        IRangeTokenizer<string, int, string> tokenizer,
+        IDetokenizer<string, string> detokenizer,
+        ITruecaser truecaser
+    )
     {
         string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
@@ -29,7 +34,13 @@ public class TransferEngineFactory : ITransferEngineFactory
                 srcMorpher,
                 new SimpleTransferer(new GlossMorphemeMapper(trgMorpher)),
                 trgMorpher
-            );
+            )
+            {
+                SourceTokenizer = tokenizer,
+                TargetDetokenizer = detokenizer,
+                LowercaseSource = true,
+                Truecaser = truecaser
+            };
         }
         return transferEngine;
     }

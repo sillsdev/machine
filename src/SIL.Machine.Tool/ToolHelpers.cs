@@ -91,7 +91,7 @@ namespace SIL.Machine
                     return new ZwspWordTokenizer();
 
                 case "whitespace":
-                    return new WhitespaceTokenizer();
+                    return WhitespaceTokenizer.Instance;
             }
 
             throw new ArgumentException("An invalid tokenizer type was specified.", nameof(type));
@@ -108,7 +108,7 @@ namespace SIL.Machine
                     return new ZwspWordDetokenizer();
 
                 case "whitespace":
-                    return new WhitespaceDetokenizer();
+                    return WhitespaceDetokenizer.Instance;
             }
 
             throw new ArgumentException("An invalid tokenizer type was specified.", nameof(type));

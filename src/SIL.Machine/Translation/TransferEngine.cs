@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -27,12 +28,31 @@ namespace SIL.Machine.Translation
             _targetGenerator = targetGenerator;
         }
 
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
+        public bool LowercaseSource { get; set; }
+        public ITruecaser Truecaser { get; set; }
+
+        public Task<TranslationResult> TranslateAsync(string segment, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(Translate(segment));
+        }
+
         public Task<TranslationResult> TranslateAsync(
             IReadOnlyList<string> segment,
             CancellationToken cancellationToken = default
         )
         {
             return Task.FromResult(Translate(segment));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+            int n,
+            string segment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(Translate(n, segment));
         }
 
         public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
@@ -45,11 +65,28 @@ namespace SIL.Machine.Translation
         }
 
         public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
             IReadOnlyList<IReadOnlyList<string>> segments,
             CancellationToken cancellationToken = default
         )
         {
             return Task.FromResult(TranslateBatch(segments));
+        }
+
+        public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
+            int n,
+            IReadOnlyList<string> segments,
+            CancellationToken cancellationToken = default
+        )
+        {
+            return Task.FromResult(TranslateBatch(n, segments));
         }
 
         public Task<IReadOnlyList<IReadOnlyList<TranslationResult>>> TranslateBatchAsync(
@@ -61,6 +98,13 @@ namespace SIL.Machine.Translation
             return Task.FromResult(TranslateBatch(n, segments));
         }
 
+        public TranslationResult Translate(string segment)
+        {
+            CheckDisposed();
+
+            return Translate(1, segment)[0];
+        }
+
         public TranslationResult Translate(IReadOnlyList<string> segment)
         {
             CheckDisposed();
@@ -68,11 +112,22 @@ namespace SIL.Machine.Translation
             return Translate(1, segment)[0];
         }
 
+        public IReadOnlyList<TranslationResult> Translate(int n, string segment)
+        {
+            CheckDisposed();
+
+            return Translate(n, SourceTokenizer.Tokenize(segment).ToArray());
+        }
+
         public IReadOnlyList<TranslationResult> Translate(int n, IReadOnlyList<string> segment)
         {
             CheckDisposed();
 
-            IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = segment.Select(
+            IReadOnlyList<string> normalizedSourceTokens = segment;
+            if (LowercaseSource)
+                normalizedSourceTokens = normalizedSourceTokens.Lowercase();
+
+            IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = normalizedSourceTokens.Select(
                 word => _sourceAnalyzer.AnalyzeWord(word)
             );
 
@@ -84,10 +139,10 @@ namespace SIL.Machine.Translation
                     IReadOnlyList<WordAnalysis> targetAnalyses = transferResult.TargetAnalyses;
                     WordAlignmentMatrix waMatrix = transferResult.WordAlignmentMatrix;
 
-                    var translation = new List<string>();
+                    var targetWords = new List<string>();
                     var confidences = new List<double>();
                     var sources = new List<TranslationSources>();
-                    var alignment = new WordAlignmentMatrix(segment.Count, targetAnalyses.Count);
+                    var alignment = new WordAlignmentMatrix(normalizedSourceTokens.Count, targetAnalyses.Count);
                     double confidence = double.MaxValue;
                     for (int j = 0; j < targetAnalyses.Count; j++)
                     {
@@ -119,23 +174,41 @@ namespace SIL.Machine.Translation
 
                         if (targetWord != null)
                         {
-                            translation.Add(targetWord);
+                            targetWords.Add(targetWord);
                             confidences.Add(wordConfidence);
                             sources.Add(source);
                             confidence = Math.Min(confidence, wordConfidence);
                         }
                     }
 
+                    IReadOnlyList<string> targetTokens = targetWords;
+                    if (Truecaser != null)
+                        targetTokens = Truecaser.Truecase(targetTokens);
                     return new TranslationResult(
-                        segment.Count,
-                        translation,
+                        TargetDetokenizer.Detokenize(targetTokens),
+                        segment,
+                        targetTokens,
                         confidences,
                         sources,
                         alignment,
-                        new[] { new Phrase(Range<int>.Create(0, segment.Count), translation.Count, confidence) }
+                        new[]
+                        {
+                            new Phrase(
+                                Range<int>.Create(0, normalizedSourceTokens.Count),
+                                targetWords.Count,
+                                confidence
+                            )
+                        }
                     );
                 })
                 .ToArray();
+        }
+
+        public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(segment)).ToArray();
         }
 
         public IReadOnlyList<TranslationResult> TranslateBatch(IReadOnlyList<IReadOnlyList<string>> segments)
@@ -143,6 +216,13 @@ namespace SIL.Machine.Translation
             CheckDisposed();
 
             return segments.AsParallel().AsOrdered().Select(segment => Translate(segment)).ToArray();
+        }
+
+        public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(int n, IReadOnlyList<string> segments)
+        {
+            CheckDisposed();
+
+            return segments.AsParallel().AsOrdered().Select(segment => Translate(n, segment)).ToArray();
         }
 
         public IReadOnlyList<IReadOnlyList<TranslationResult>> TranslateBatch(

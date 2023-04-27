@@ -14,9 +14,9 @@ public class ServalProfile : Profile
             .ConvertUsing<TranslationSourcesConverter>();
         CreateMap<(string Translation, TranslationResult Result), Serval.Translation.V1.TranslationResult>()
             .ForMember(dest => dest.Translation, o => o.MapFrom(src => src.Translation))
-            .ForMember(dest => dest.Tokens, o => o.MapFrom(src => src.Result.TargetSegment))
-            .ForMember(dest => dest.Confidences, o => o.MapFrom(src => src.Result.WordConfidences))
-            .ForMember(dest => dest.Sources, o => o.MapFrom(src => src.Result.WordSources))
+            .ForMember(dest => dest.Tokens, o => o.MapFrom(src => src.Result.TargetTokens))
+            .ForMember(dest => dest.Confidences, o => o.MapFrom(src => src.Result.Confidences))
+            .ForMember(dest => dest.Sources, o => o.MapFrom(src => src.Result.Sources))
             .ForMember(dest => dest.Alignment, o => o.MapFrom(src => src.Result.Alignment))
             .ForMember(dest => dest.Phrases, o => o.MapFrom(src => src.Result.Phrases));
         CreateMap<Phrase, Serval.Translation.V1.Phrase>()
@@ -25,10 +25,10 @@ public class ServalProfile : Profile
         CreateMap<WordGraph, Serval.Translation.V1.WordGraph>();
         CreateMap<WordGraphArc, Serval.Translation.V1.WordGraphArc>()
             .ForMember(dest => dest.Tokens, o => o.MapFrom(src => src.Words))
-            .ForMember(dest => dest.Confidences, o => o.MapFrom(src => src.WordConfidences))
+            .ForMember(dest => dest.Confidences, o => o.MapFrom(src => src.Confidences))
             .ForMember(dest => dest.SourceSegmentStart, o => o.MapFrom(src => src.SourceSegmentRange.Start))
             .ForMember(dest => dest.SourceSegmentEnd, o => o.MapFrom(src => src.SourceSegmentRange.End))
-            .ForMember(dest => dest.Sources, o => o.MapFrom(src => src.WordSources));
+            .ForMember(dest => dest.Sources, o => o.MapFrom(src => src.Sources));
 
         CreateMap<Serval.Translation.V1.Corpus, Corpus>();
         CreateMap<Serval.Translation.V1.CorpusFile, CorpusFile>();

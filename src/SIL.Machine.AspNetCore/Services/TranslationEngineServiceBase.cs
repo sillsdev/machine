@@ -76,7 +76,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         }
     }
 
-    public virtual Task<IReadOnlyList<(string Translation, TranslationResult Result)>> TranslateAsync(
+    public virtual Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -138,7 +138,6 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
 
         // Schedule the job to occur way in the future, just so we can get the job id.
         string jobId = _jobClient.Schedule(GetJobExpression(engineId, buildId, corpora), TimeSpan.FromDays(10000));
-        await DataAccessContext.BeginTransactionAsync(CancellationToken.None);
         try
         {
             await Engines.UpdateAsync(
@@ -155,11 +154,9 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         }
         catch
         {
-            await DataAccessContext.AbortTransactionAsync(CancellationToken.None);
             _jobClient.Delete(jobId);
             throw;
         }
-        await DataAccessContext.CommitTransactionAsync(CancellationToken.None);
     }
 
     protected async Task<string?> CancelBuildInternalAsync(string engineId, CancellationToken cancellationToken)

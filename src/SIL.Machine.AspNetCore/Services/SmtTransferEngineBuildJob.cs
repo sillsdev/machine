@@ -44,6 +44,8 @@ public class SmtTransferEngineBuildJob
     {
         IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
 
+        var tokenizer = new LatinWordTokenizer();
+        var detokenizer = new LatinWordDetokenizer();
         ITrainer? smtModelTrainer = null;
         ITrainer? truecaseTrainer = null;
         try
@@ -77,12 +79,11 @@ public class SmtTransferEngineBuildJob
                     parallelCorpora.Add(sc.AlignRows(tc));
                 }
 
-                var tokenizer = new LatinWordTokenizer();
-                IParallelTextCorpus parallelCorpus = parallelCorpora.Flatten().Tokenize(tokenizer).Lowercase();
-                ITextCorpus targetCorpus = targetCorpora.Flatten().Tokenize(tokenizer);
+                IParallelTextCorpus parallelCorpus = parallelCorpora.Flatten();
+                ITextCorpus targetCorpus = targetCorpora.Flatten();
 
-                smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, parallelCorpus);
-                truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, targetCorpus);
+                smtModelTrainer = _smtModelFactory.CreateTrainer(engineId, tokenizer, parallelCorpus);
+                truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, tokenizer, targetCorpus);
             }
 
             var progress = new BuildProgress(_platformService, buildId);
@@ -99,16 +100,22 @@ public class SmtTransferEngineBuildJob
                     p => p.TranslationEngineRef == engine.Id,
                     CancellationToken.None
                 );
-                using (IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId))
+                using (
+                    IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
+                        engineId,
+                        tokenizer,
+                        detokenizer,
+                        truecaser
+                    )
+                )
                 {
                     foreach (TrainSegmentPair segmentPair in segmentPairs)
                     {
                         await smtModel.TrainSegmentAsync(
-                            segmentPair.Source.Lowercase(),
-                            segmentPair.Target.Lowercase(),
+                            segmentPair.Source,
+                            segmentPair.Target,
                             cancellationToken: CancellationToken.None
                         );
-                        truecaser.TrainSegment(segmentPair.Target, segmentPair.SentenceStart);
                     }
                 }
 

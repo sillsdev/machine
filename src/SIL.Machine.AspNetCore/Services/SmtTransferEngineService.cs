@@ -5,9 +5,6 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService;
 
-    private readonly StringTokenizer _tokenizer;
-    private readonly StringDetokenizer _detokenizer;
-
     public SmtTransferEngineService(
         IBackgroundJobClient jobClient,
         IDistributedReaderWriterLockFactory lockFactory,
@@ -21,9 +18,6 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     {
         _trainSegmentPairs = trainSegmentPairs;
         _stateService = stateService;
-
-        _tokenizer = new LatinWordTokenizer();
-        _detokenizer = new LatinWordDetokenizer();
     }
 
     public override TranslationEngineType Type => TranslationEngineType.SmtTransfer;
@@ -65,33 +59,20 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         }
     }
 
-    public override async Task<IReadOnlyList<(string Translation, TranslationResult Result)>> TranslateAsync(
+    public override async Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
         CancellationToken cancellationToken = default
     )
     {
-        IReadOnlyList<string> preprocSegment = _tokenizer.Tokenize(segment).ToArray().Lowercase();
-
         SmtTransferEngineState state = _stateService.Get(engineId);
         IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
-            await CheckReloadAsync(state, cancellationToken);
-            ITruecaser truecaser = await state.Truecaser;
-            var results = new List<(string, TranslationResult)>();
-            foreach (
-                TranslationResult result in await state.HybridEngine.Value.TranslateAsync(
-                    n,
-                    preprocSegment,
-                    cancellationToken
-                )
-            )
-            {
-                TranslationResult truecasedResult = truecaser.Truecase(result);
-                results.Add((_detokenizer.Detokenize(truecasedResult.TargetSegment), truecasedResult));
-            }
+            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
+            IReadOnlyList<TranslationResult> results = await hybridEngine.TranslateAsync(n, segment, cancellationToken);
             state.LastUsedTime = DateTime.Now;
             return results;
         }
@@ -103,15 +84,13 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         CancellationToken cancellationToken = default
     )
     {
-        IReadOnlyList<string> preprocSegment = _tokenizer.Tokenize(segment).ToArray().Lowercase();
-
         SmtTransferEngineState state = _stateService.Get(engineId);
         IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
-            await CheckReloadAsync(state, cancellationToken);
-            WordGraph result = await state.HybridEngine.Value.GetWordGraphAsync(preprocSegment, cancellationToken);
-            result = (await state.Truecaser).Truecase(result);
+            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
+            WordGraph result = await hybridEngine.GetWordGraphAsync(segment, cancellationToken);
             state.LastUsedTime = DateTime.Now;
             return result;
         }
@@ -125,40 +104,30 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         CancellationToken cancellationToken = default
     )
     {
-        List<string> tokenizedSourceSegment = _tokenizer.Tokenize(sourceSegment).ToList();
-        IReadOnlyList<string> preprocSourceSegment = tokenizedSourceSegment.Lowercase();
-        List<string> tokenizedTargetSegment = _tokenizer.Tokenize(targetSegment).ToList();
-        IReadOnlyList<string> preprocTargetSegment = tokenizedTargetSegment.Lowercase();
-
         SmtTransferEngineState state = _stateService.Get(engineId);
         IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
-            await CheckReloadAsync(state, cancellationToken);
-            TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
-            if (engine is not null && engine.BuildState is BuildState.Active)
+            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+            if (engine.BuildState is BuildState.Active)
             {
                 await DataAccessContext.BeginTransactionAsync(cancellationToken);
                 await _trainSegmentPairs.InsertAsync(
                     new TrainSegmentPair
                     {
                         TranslationEngineRef = engine.Id,
-                        Source = tokenizedSourceSegment,
-                        Target = tokenizedTargetSegment,
+                        Source = sourceSegment,
+                        Target = targetSegment,
                         SentenceStart = sentenceStart
                     },
                     cancellationToken
                 );
             }
 
-            await state.HybridEngine.Value.TrainSegmentAsync(
-                preprocSourceSegment,
-                preprocTargetSegment,
-                cancellationToken: cancellationToken
-            );
-            (await state.Truecaser).TrainSegment(tokenizedTargetSegment, sentenceStart);
+            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
+            await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
             await PlatformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
-            if (engine is not null && engine.BuildState is BuildState.Active)
+            if (engine.BuildState is BuildState.Active)
                 await DataAccessContext.CommitTransactionAsync(CancellationToken.None);
             state.IsUpdated = true;
             state.LastUsedTime = DateTime.Now;
@@ -201,22 +170,11 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         return r => r.RunAsync(engineId, buildId, corpora, CancellationToken.None);
     }
 
-    private async Task CheckReloadAsync(SmtTransferEngineState state, CancellationToken cancellationToken)
+    private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
     {
-        if (!state.IsLoaded && state.CurrentBuildRevision != -1)
-            return;
-
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == state.EngineId, cancellationToken);
-        if (engine == null)
-            return;
-
-        if (state.CurrentBuildRevision == -1)
-            state.CurrentBuildRevision = engine.BuildRevision;
-        if (engine.BuildRevision != state.CurrentBuildRevision)
-        {
-            state.IsUpdated = false;
-            await state.UnloadAsync();
-            state.CurrentBuildRevision = engine.BuildRevision;
-        }
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new InvalidOperationException("");
+        return engine;
     }
 }

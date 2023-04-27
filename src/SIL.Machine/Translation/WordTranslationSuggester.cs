@@ -15,7 +15,7 @@ namespace SIL.Machine.Translation
                 // if the prefix ends with a partial word and it has been completed,
                 // then make sure it is included as a suggestion,
                 // otherwise, don't return any suggestions
-                if ((result.WordSources[startingJ - 1] & TranslationSources.Smt) != 0)
+                if ((result.Sources[startingJ - 1] & TranslationSources.Smt) != 0)
                     startingJ--;
                 else
                     return new TranslationSuggestion(result);
@@ -26,9 +26,9 @@ namespace SIL.Machine.Translation
             bool inPhrase = false;
             var indices = new List<int>();
             double minConfidence = -1;
-            while (j < result.TargetSegment.Count && (lookaheadCount > 0 || inPhrase))
+            while (j < result.TargetTokens.Count && (lookaheadCount > 0 || inPhrase))
             {
-                string word = result.TargetSegment[j];
+                string word = result.TargetTokens[j];
                 // stop suggesting at punctuation
                 if (word.Length > 0 && word.All(char.IsPunctuation))
                     break;
@@ -37,8 +37,8 @@ namespace SIL.Machine.Translation
                 // the word must either:
                 // - meet the confidence threshold
                 // - come from a transfer engine
-                double confidence = result.WordConfidences[j];
-                TranslationSources sources = result.WordSources[j];
+                double confidence = result.Confidences[j];
+                TranslationSources sources = result.Sources[j];
                 if (confidence >= ConfidenceThreshold || (sources & TranslationSources.Transfer) != 0)
                 {
                     indices.Add(j);
@@ -69,7 +69,7 @@ namespace SIL.Machine.Translation
             int lookaheadCount = 1;
             int i = -1,
                 j;
-            for (j = prefixCount; j < result.TargetSegment.Count; j++)
+            for (j = prefixCount; j < result.TargetTokens.Count; j++)
             {
                 int[] sourceIndices = result.Alignment.GetColumnAlignedIndices(j).ToArray();
                 if (sourceIndices.Length == 0)
@@ -88,7 +88,7 @@ namespace SIL.Machine.Translation
             }
             if (i == -1)
                 i = 0;
-            for (; i < result.SourceSegmentLength; i++)
+            for (; i < result.SourceTokens.Count; i++)
             {
                 if (!result.Alignment.IsRowAligned(i))
                     lookaheadCount++;

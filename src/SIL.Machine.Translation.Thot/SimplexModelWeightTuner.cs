@@ -108,7 +108,7 @@ namespace SIL.Machine.Translation.Thot
                                     decoderHandle,
                                     Thot.decoder_translate,
                                     segment,
-                                    (s, t, d) => t
+                                    (t, d) => t
                                 );
                             }
                         }

@@ -11,7 +11,7 @@ namespace SIL.Machine.Tokenization
             return Tokenize(data, Range<int>.Create(0, data.Length));
         }
 
-        public IEnumerable<string> Tokenize(string data, Range<int> range)
+        public virtual IEnumerable<string> Tokenize(string data, Range<int> range)
         {
             return TokenizeAsRanges(data, range).Select(r => data.Substring(r.Start, r.Length));
         }

@@ -239,15 +239,11 @@ namespace SIL.Machine.Translation.Thot
             }
         }
 
-        private static TranslationInfo CreateTranslationInfo(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
-            IntPtr data
-        )
+        private static TranslationInfo CreateTranslationInfo(IReadOnlyList<string> normalizedTargetTokens, IntPtr data)
         {
             var scoreComps = new double[8];
             Thot.tdata_getScoreComponents(data, scoreComps, (uint)scoreComps.Length);
-            return new TranslationInfo(scoreComps, targetSegment);
+            return new TranslationInfo(scoreComps, normalizedTargetTokens);
         }
 
         private static bool IsTuningConverged(IList<double> qualities)
