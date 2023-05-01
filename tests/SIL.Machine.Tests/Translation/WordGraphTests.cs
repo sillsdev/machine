@@ -81,10 +81,10 @@ namespace SIL.Machine.Translation
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(5));
             Assert.That(optimizedWordGraph.Arcs.Count, Is.EqualTo(4));
-            Assert.That(optimizedWordGraph.Arcs[0].Words, Is.EqualTo(new[] { "In" }));
-            Assert.That(optimizedWordGraph.Arcs[1].Words, Is.EqualTo(new[] { "the", "beginning" }));
-            Assert.That(optimizedWordGraph.Arcs[2].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[3].Words, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[0].TargetTokens, Is.EqualTo(new[] { "In" }));
+            Assert.That(optimizedWordGraph.Arcs[1].TargetTokens, Is.EqualTo(new[] { "the", "beginning" }));
+            Assert.That(optimizedWordGraph.Arcs[2].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[3].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
             Assert.That(optimizedWordGraph.FinalStates, Is.EquivalentTo(new[] { 3, 4 }));
             Assert.That(optimizedWordGraph.InitialStateScore, Is.EqualTo(-191.0998f));
         }
@@ -173,14 +173,14 @@ namespace SIL.Machine.Translation
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(7));
             Assert.That(optimizedWordGraph.Arcs.Count, Is.EqualTo(8));
-            Assert.That(optimizedWordGraph.Arcs[0].Words, Is.EqualTo(new[] { "In", "your" }));
-            Assert.That(optimizedWordGraph.Arcs[1].Words, Is.EqualTo(new[] { "beginning" }));
-            Assert.That(optimizedWordGraph.Arcs[2].Words, Is.EqualTo(new[] { "In" }));
-            Assert.That(optimizedWordGraph.Arcs[3].Words, Is.EqualTo(new[] { "the", "beginning" }));
-            Assert.That(optimizedWordGraph.Arcs[4].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[5].Words, Is.EqualTo(new[] { "the", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[6].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[7].Words, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[0].TargetTokens, Is.EqualTo(new[] { "In", "your" }));
+            Assert.That(optimizedWordGraph.Arcs[1].TargetTokens, Is.EqualTo(new[] { "beginning" }));
+            Assert.That(optimizedWordGraph.Arcs[2].TargetTokens, Is.EqualTo(new[] { "In" }));
+            Assert.That(optimizedWordGraph.Arcs[3].TargetTokens, Is.EqualTo(new[] { "the", "beginning" }));
+            Assert.That(optimizedWordGraph.Arcs[4].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[5].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[6].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[7].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
             Assert.That(optimizedWordGraph.FinalStates, Is.EquivalentTo(new[] { 5, 6 }));
             Assert.That(optimizedWordGraph.InitialStateScore, Is.EqualTo(-191.0998f));
         }
@@ -260,11 +260,11 @@ namespace SIL.Machine.Translation
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(6));
             Assert.That(optimizedWordGraph.Arcs.Count, Is.EqualTo(5));
-            Assert.That(optimizedWordGraph.Arcs[0].Words, Is.EqualTo(new[] { "In", "the" }));
-            Assert.That(optimizedWordGraph.Arcs[1].Words, Is.EqualTo(new[] { "In" }));
-            Assert.That(optimizedWordGraph.Arcs[2].Words, Is.EqualTo(new[] { "the", "beginning" }));
-            Assert.That(optimizedWordGraph.Arcs[3].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[4].Words, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[0].TargetTokens, Is.EqualTo(new[] { "In", "the" }));
+            Assert.That(optimizedWordGraph.Arcs[1].TargetTokens, Is.EqualTo(new[] { "In" }));
+            Assert.That(optimizedWordGraph.Arcs[2].TargetTokens, Is.EqualTo(new[] { "the", "beginning" }));
+            Assert.That(optimizedWordGraph.Arcs[3].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[4].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
             Assert.That(optimizedWordGraph.FinalStates, Is.EquivalentTo(new[] { 1, 4, 5 }));
             Assert.That(optimizedWordGraph.InitialStateScore, Is.EqualTo(-191.0998f));
         }
@@ -371,14 +371,14 @@ namespace SIL.Machine.Translation
 
             Assert.That(optimizedWordGraph.StateCount, Is.EqualTo(7));
             Assert.That(optimizedWordGraph.Arcs.Count, Is.EqualTo(8));
-            Assert.That(optimizedWordGraph.Arcs[0].Words, Is.EqualTo(new[] { "In" }));
-            Assert.That(optimizedWordGraph.Arcs[1].Words, Is.EqualTo(new[] { "the", "beginning" }));
-            Assert.That(optimizedWordGraph.Arcs[2].Words, Is.EqualTo(new[] { "In", "the" }));
-            Assert.That(optimizedWordGraph.Arcs[3].Words, Is.EqualTo(new[] { "end" }));
-            Assert.That(optimizedWordGraph.Arcs[4].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[5].Words, Is.EqualTo(new[] { "the", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[6].Words, Is.EqualTo(new[] { "his", "Word" }));
-            Assert.That(optimizedWordGraph.Arcs[7].Words, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[0].TargetTokens, Is.EqualTo(new[] { "In" }));
+            Assert.That(optimizedWordGraph.Arcs[1].TargetTokens, Is.EqualTo(new[] { "the", "beginning" }));
+            Assert.That(optimizedWordGraph.Arcs[2].TargetTokens, Is.EqualTo(new[] { "In", "the" }));
+            Assert.That(optimizedWordGraph.Arcs[3].TargetTokens, Is.EqualTo(new[] { "end" }));
+            Assert.That(optimizedWordGraph.Arcs[4].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[5].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[6].TargetTokens, Is.EqualTo(new[] { "his", "Word" }));
+            Assert.That(optimizedWordGraph.Arcs[7].TargetTokens, Is.EqualTo(new[] { "the", "Word" }));
             Assert.That(optimizedWordGraph.FinalStates, Is.EquivalentTo(new[] { 5, 6 }));
             Assert.That(optimizedWordGraph.InitialStateScore, Is.EqualTo(-191.0998f));
         }

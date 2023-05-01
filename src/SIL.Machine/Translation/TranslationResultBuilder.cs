@@ -1,8 +1,7 @@
-﻿using SIL.Machine.Annotations;
-using SIL.Machine.Tokenization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {

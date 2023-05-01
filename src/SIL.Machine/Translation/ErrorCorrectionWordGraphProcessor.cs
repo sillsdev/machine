@@ -77,7 +77,7 @@ namespace SIL.Machine.Translation
                 // init ecm score info for each word of arc
                 EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
                 var esis = new List<EcmScoreInfo>();
-                foreach (string word in arc.Words)
+                foreach (string word in arc.TargetTokens)
                 {
                     var esi = new EcmScoreInfo();
                     _ecm.SetupEsi(esi, prevEsi, word);
@@ -226,7 +226,7 @@ namespace SIL.Machine.Translation
                 BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
                 yield return builder.ToResult(
                     _targetDetokenizer.Detokenize(builder.TargetTokens),
-                    _wordGraph.SourceWords
+                    _wordGraph.SourceTokens
                 );
             }
         }
@@ -301,15 +301,15 @@ namespace SIL.Machine.Translation
                 // update ecm score info for each word of arc
                 EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
                 List<EcmScoreInfo> esis = _arcEcmScoreInfos[arcIndex];
-                while (esis.Count < arc.Words.Count)
+                while (esis.Count < arc.TargetTokens.Count)
                     esis.Add(new EcmScoreInfo());
-                for (int i = 0; i < arc.Words.Count; i++)
+                for (int i = 0; i < arc.TargetTokens.Count; i++)
                 {
                     EcmScoreInfo esi = esis[i];
                     _ecm.ExtendEsi(
                         esi,
                         prevEsi,
-                        arc.IsUnknown ? string.Empty : arc.Words[i],
+                        arc.IsUnknown ? string.Empty : arc.TargetTokens[i],
                         prefixDiff,
                         isLastWordComplete
                     );
@@ -333,7 +333,7 @@ namespace SIL.Machine.Translation
                 {
                     double wordGraphScore = _stateWordGraphScores[arc.PrevState] + arc.Score;
 
-                    for (int i = -1; i < arc.Words.Count - 1; i++)
+                    for (int i = -1; i < arc.TargetTokens.Count - 1; i++)
                     {
                         EcmScoreInfo esi =
                             i == -1 ? _stateEcmScoreInfos[arc.PrevState] : _arcEcmScoreInfos[arcIndex][i];
@@ -387,7 +387,7 @@ namespace SIL.Machine.Translation
                 );
                 WordGraphArc firstArc = _wordGraph.Arcs[hypothesis.StartArcIndex];
                 uncorrectedPrefixLen =
-                    builder.TargetTokens.Count - (firstArc.Words.Count - hypothesis.StartArcWordIndex) + 1;
+                    builder.TargetTokens.Count - (firstArc.TargetTokens.Count - hypothesis.StartArcWordIndex) + 1;
             }
 
             int alignmentColsToAddCount = _ecm.CorrectPrefix(builder, uncorrectedPrefixLen, prefix, isLastWordComplete);
@@ -410,7 +410,7 @@ namespace SIL.Machine.Translation
                 int arcIndex = _stateBestPrevArcs[curState][curProcPrefixPos];
                 WordGraphArc arc = _wordGraph.Arcs[arcIndex];
 
-                for (int i = arc.Words.Count - 1; i >= 0; i--)
+                for (int i = arc.TargetTokens.Count - 1; i >= 0; i--)
                 {
                     IReadOnlyList<int> predPrefixWords = _arcEcmScoreInfos[arcIndex][i].GetLastInsPrefixWordFromEsi();
                     curProcPrefixPos = predPrefixWords[curProcPrefixPos];
@@ -452,8 +452,8 @@ namespace SIL.Machine.Translation
             int alignmentColsToAddCount
         )
         {
-            for (int i = 0; i < arc.Words.Count; i++)
-                builder.AppendToken(arc.Words[i], arc.Sources[i], arc.Confidences[i]);
+            for (int i = 0; i < arc.TargetTokens.Count; i++)
+                builder.AppendToken(arc.TargetTokens[i], arc.Sources[i], arc.Confidences[i]);
 
             WordAlignmentMatrix alignment = arc.Alignment;
             if (alignmentColsToAddCount > 0)

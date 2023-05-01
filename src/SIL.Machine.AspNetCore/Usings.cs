@@ -15,7 +15,6 @@ global using System.Text.Json;
 global using System.Text.Json.Nodes;
 global using System.Web;
 global using System.Xml;
-global using AutoMapper;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
 global using Grpc.Net.Client.Configuration;

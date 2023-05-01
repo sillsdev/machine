@@ -9,8 +9,6 @@ public static class IServiceCollectionExtensions
         services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask((sp, ct) => sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(ct));
 
-        services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
         var builder = new MachineBuilder(services, configuration);
         if (configuration is null)
         {

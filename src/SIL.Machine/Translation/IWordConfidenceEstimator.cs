@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
     public interface IWordConfidenceEstimator
     {
-        void Estimate(WordGraph wordGraph);
-        void Estimate(IReadOnlyList<string> sourceSegment, TranslationResult translationResult);
+        double Estimate(Range<int> sourceSegmentRange, string targetWord);
     }
 }

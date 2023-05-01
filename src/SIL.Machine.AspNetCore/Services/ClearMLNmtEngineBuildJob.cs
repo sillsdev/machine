@@ -255,7 +255,11 @@ public class ClearMLNmtEngineBuildJob
                 {
                     await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                     await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                    if (corpus.Pretranslate && row.SourceSegment.Count > 0 && row.TargetSegment.Count == 0)
+                    if (
+                        (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
+                        && row.SourceSegment.Count > 0
+                        && row.TargetSegment.Count == 0
+                    )
                     {
                         yield return new Pretranslation
                         {

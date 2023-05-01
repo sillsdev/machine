@@ -21,13 +21,13 @@ namespace SIL.Machine.Translation
             : this(sourceWords, Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>()) { }
 
         public WordGraph(
-            IEnumerable<string> sourceWords,
+            IEnumerable<string> sourceTokens,
             IEnumerable<WordGraphArc> arcs,
             IEnumerable<int> finalStates,
             double initialStateScore = 0
         )
         {
-            SourceWords = sourceWords.ToArray();
+            SourceTokens = sourceTokens.ToArray();
             _states = new Dictionary<int, StateInfo>();
             var arcList = new List<WordGraphArc>();
             int maxState = -1;
@@ -49,7 +49,7 @@ namespace SIL.Machine.Translation
             InitialStateScore = initialStateScore;
         }
 
-        public IReadOnlyList<string> SourceWords { get; }
+        public IReadOnlyList<string> SourceTokens { get; }
         public double InitialStateScore { get; }
 
         public IReadOnlyList<WordGraphArc> Arcs { get; }
@@ -164,7 +164,7 @@ namespace SIL.Machine.Translation
                     "  {0} -> {1} [label=\"{2}",
                     arc.PrevState,
                     arc.NextState,
-                    string.Join(" ", arc.Words).Replace("\"", "\\\"")
+                    string.Join(" ", arc.TargetTokens).Replace("\"", "\\\"")
                 );
                 writer.WriteLine("\"];");
             }
@@ -195,8 +195,8 @@ namespace SIL.Machine.Translation
                 {
                     WordGraphArc arc = Arcs[arcIndex];
                     int nextWordIndex = nfaState.WordIndex + 1;
-                    DfaArc candidateArc = candidateArcs.GetOrCreate(arc.Words[nextWordIndex]);
-                    if (nextWordIndex == arc.Words.Count - 1)
+                    DfaArc candidateArc = candidateArcs.GetOrCreate(arc.TargetTokens[nextWordIndex]);
+                    if (nextWordIndex == arc.TargetTokens.Count - 1)
                     {
                         candidateArc.NfaStates.Add(new NfaState(arc.NextState));
 
@@ -270,7 +270,7 @@ namespace SIL.Machine.Translation
                                     curState,
                                     nextState,
                                     nfaArc.Score,
-                                    nfaArc.Words,
+                                    nfaArc.TargetTokens,
                                     nfaArc.Alignment,
                                     nfaArc.SourceSegmentRange,
                                     nfaArc.Sources,
@@ -285,7 +285,7 @@ namespace SIL.Machine.Translation
                 }
             }
 
-            return new WordGraph(SourceWords, dfaArcs, dfaFinalStates, InitialStateScore);
+            return new WordGraph(SourceTokens, dfaArcs, dfaFinalStates, InitialStateScore);
         }
 
         private IEnumerable<(int ArcIndex, NfaState State)> GetArcIndices(DfaState dfaState)

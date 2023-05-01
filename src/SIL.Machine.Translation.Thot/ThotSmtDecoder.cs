@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
-using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
@@ -13,17 +12,12 @@ namespace SIL.Machine.Translation.Thot
     public class ThotSmtDecoder : DisposableBase
     {
         private readonly ThotSmtModel _smtModel;
-        private readonly IWordConfidenceEstimator _confidenceEstimator;
         private IntPtr _decoderHandle;
 
         internal ThotSmtDecoder(ThotSmtModel smtModel)
         {
             _smtModel = smtModel;
             LoadHandle();
-            _confidenceEstimator = new Ibm1WordConfidenceEstimator(
-                _smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore
-            );
-            //_confidenceEstimator = new WppWordConfidenceEstimator(this);
         }
 
         internal void CloseHandle()
@@ -130,17 +124,22 @@ namespace SIL.Machine.Translation.Thot
         }
 
         private WordGraph CreateWordGraph(
-            IReadOnlyList<string> sourceWords,
-            IReadOnlyList<string> normalizedSourceWords,
+            IReadOnlyList<string> sourceTokens,
+            IReadOnlyList<string> normalizedSourceTokens,
             string wordGraphStr,
             double initialStateScore
         )
         {
+            var confidenceEstimator = new Ibm1WordConfidenceEstimator(
+                _smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore,
+                normalizedSourceTokens
+            );
+
             string[] lines = wordGraphStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (lines.Length == 0)
             {
                 return new WordGraph(
-                    sourceWords,
+                    sourceTokens,
                     Enumerable.Empty<WordGraphArc>(),
                     Enumerable.Empty<int>(),
                     initialStateScore
@@ -154,7 +153,7 @@ namespace SIL.Machine.Translation.Thot
             int[] finalStates = Split(lines[i]).Select(int.Parse).ToArray();
             i++;
 
-            string[] normalizedSourceWordsArray = normalizedSourceWords.ToArray();
+            string[] normalizedSourceTokensArray = normalizedSourceTokens.ToArray();
             var arcs = new List<WordGraphArc>();
             for (; i < lines.Length; i++)
             {
@@ -182,10 +181,15 @@ namespace SIL.Machine.Translation.Thot
                     }
                 }
 
+                var sourceSegmentRange = Range<int>.Create(srcStartIndex, srcEndIndex + 1);
                 int trgPhraseLen = arcParts.Length - j;
-                var normalizedWords = new string[trgPhraseLen];
+                var normalizedTokens = new string[trgPhraseLen];
+                var confidences = new double[trgPhraseLen];
                 for (int k = 0; k < trgPhraseLen; k++)
-                    normalizedWords[k] = Thot.UnescapeToken(arcParts[j + k]);
+                {
+                    normalizedTokens[k] = Thot.UnescapeToken(arcParts[j + k]);
+                    confidences[k] = confidenceEstimator.Estimate(sourceSegmentRange, normalizedTokens[k]);
+                }
 
                 int srcPhraseLen = srcEndIndex - srcStartIndex + 1;
                 WordAlignmentMatrix waMatrix;
@@ -196,11 +200,11 @@ namespace SIL.Machine.Translation.Thot
                 else
                 {
                     var srcPhrase = new string[srcPhraseLen];
-                    Array.Copy(normalizedSourceWordsArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
-                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, normalizedWords);
+                    Array.Copy(normalizedSourceTokensArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
+                    waMatrix = _smtModel.WordAligner.Align(srcPhrase, normalizedTokens);
                 }
 
-                var sources = new TranslationSources[normalizedWords.Length];
+                var sources = new TranslationSources[normalizedTokens.Length];
                 for (int k = 0; k < sources.Length; k++)
                     sources[k] = isUnknown ? TranslationSources.None : TranslationSources.Smt;
                 arcs.Add(
@@ -208,17 +212,15 @@ namespace SIL.Machine.Translation.Thot
                         predStateIndex,
                         succStateIndex,
                         score,
-                        DenormalizeTarget(normalizedWords),
+                        DenormalizeTarget(normalizedTokens),
                         waMatrix,
-                        Range<int>.Create(srcStartIndex, srcEndIndex + 1),
-                        sources
+                        sourceSegmentRange,
+                        sources,
+                        confidences
                     )
                 );
             }
-
-            var wordGraph = new WordGraph(sourceWords, arcs, finalStates, initialStateScore);
-            _confidenceEstimator.Estimate(wordGraph);
-            return wordGraph;
+            return new WordGraph(sourceTokens, arcs, finalStates, initialStateScore);
         }
 
         private static string[] Split(string line)
@@ -291,6 +293,10 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             var builder = new TranslationResultBuilder();
+            var confidenceEstimator = new Ibm1WordConfidenceEstimator(
+                _smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore,
+                normalizedSourceTokens
+            );
 
             uint phraseCount = Thot.tdata_getPhraseCount(dataPtr);
             IReadOnlyList<Tuple<int, int>> sourceSegmentation = GetSourceSegmentation(dataPtr, phraseCount);
@@ -304,11 +310,13 @@ namespace SIL.Machine.Translation.Thot
                 int sourceEndIndex = sourceSegmentation[k].Item2;
                 int targetCut = targetSegmentCuts[k];
 
+                var sourceSegmentRange = Range<int>.Create(sourceStartIndex, sourceEndIndex);
                 for (int j = trgPhraseStartIndex; j < targetCut; j++)
                 {
                     builder.AppendToken(
                         targetTokens[j],
-                        targetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt
+                        targetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt,
+                        confidenceEstimator.Estimate(sourceSegmentRange, normalizedTargetTokens[j])
                     );
                 }
 
@@ -329,13 +337,10 @@ namespace SIL.Machine.Translation.Thot
                         trgPhrase[j] = normalizedTargetTokens[trgPhraseStartIndex + j];
                     waMatrix = _smtModel.WordAligner.Align(srcPhrase, trgPhrase);
                 }
-                builder.MarkPhrase(Range<int>.Create(sourceStartIndex, sourceEndIndex), waMatrix);
+                builder.MarkPhrase(sourceSegmentRange, waMatrix);
                 trgPhraseStartIndex += trgPhraseLen;
             }
-
-            TranslationResult result = builder.ToResult(DetokenizeTarget(targetTokens), sourceTokens);
-            _confidenceEstimator.Estimate(sourceTokens, result);
-            return result;
+            return builder.ToResult(DetokenizeTarget(targetTokens), sourceTokens);
         }
 
         private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)

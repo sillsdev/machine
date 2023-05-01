@@ -138,7 +138,7 @@ namespace SIL.Machine.Translation
                         arc.PrevState,
                         arc.NextState,
                         arc.Score,
-                        truecaser.Truecase(arc.Words),
+                        truecaser.Truecase(arc.TargetTokens),
                         arc.Alignment,
                         arc.SourceSegmentRange,
                         arc.Sources,
@@ -146,7 +146,7 @@ namespace SIL.Machine.Translation
                     )
                 );
             }
-            return new WordGraph(wordGraph.SourceWords, newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
+            return new WordGraph(wordGraph.SourceTokens, newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
         }
 
         public static double GetAvgTranslationScore(

@@ -1,37 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using SIL.Machine.Annotations;
 using SIL.Machine.Statistics;
 
 namespace SIL.Machine.Translation
 {
     public class WppWordConfidenceEstimator : IWordConfidenceEstimator
     {
-        private readonly IInteractiveTranslationEngine _engine;
+        private readonly WordGraphConfidences _wordGraphConfidences;
 
-        public WppWordConfidenceEstimator(IInteractiveTranslationEngine engine)
+        public WppWordConfidenceEstimator(WordGraph wordGraph)
         {
-            _engine = engine;
+            _wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
         }
 
-        public void Estimate(WordGraph wordGraph)
+        public double Estimate(Range<int> sourceSegmentRange, string targetWord)
         {
-            WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
-            foreach (WordGraphArc arc in wordGraph.Arcs)
-            {
-                for (int k = 0; k < arc.Words.Count; k++)
-                    arc.SetConfidence(k, wordGraphConfidences.GetConfidence(arc.Words[k]));
-            }
-        }
-
-        public void Estimate(IReadOnlyList<string> sourceSegment, TranslationResult translationResult)
-        {
-            WordGraph wordGraph = _engine.GetWordGraph(sourceSegment);
-            WordGraphConfidences wordGraphConfidences = ComputeWordGraphConfidences(wordGraph);
-            for (int j = 0; j < translationResult.TargetTokens.Count; j++)
-                translationResult.SetConfidence(
-                    j,
-                    wordGraphConfidences.GetConfidence(translationResult.TargetTokens[j])
-                );
+            return _wordGraphConfidences.GetConfidence(targetWord);
         }
 
         private WordGraphConfidences ComputeWordGraphConfidences(WordGraph wordGraph)
@@ -77,11 +62,11 @@ namespace SIL.Machine.Translation
                         startIndex = forwardProbs[prevArcIndex].Index;
                     }
                 }
-                forwardProbs[i] = (LogSpace.Multiply(arc.Score, sum), startIndex + arc.Words.Count);
+                forwardProbs[i] = (LogSpace.Multiply(arc.Score, sum), startIndex + arc.TargetTokens.Count);
                 double prob = LogSpace.Multiply(forwardProbs[i].Prob, backwardProbs[i]);
-                for (int j = 0; j < arc.Words.Count; j++)
+                for (int j = 0; j < arc.TargetTokens.Count; j++)
                 {
-                    string word = arc.Words[j];
+                    string word = arc.TargetTokens[j];
                     if (!rawWpps.TryGetValue(word, out Dictionary<int, double> indexWpps))
                     {
                         indexWpps = new Dictionary<int, double>();
