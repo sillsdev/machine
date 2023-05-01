@@ -88,9 +88,11 @@ namespace SIL.Machine.Translation.Thot
                 .Where(IsSegmentValid)
                 .Take(MaxCorpusCount)
                 .Tokenize(SourceTokenizer, TargetTokenizer);
-            if (LowercaseSource)
+            if (LowercaseSource && LowercaseTarget)
+                corpus = corpus.Lowercase();
+            else if (LowercaseSource)
                 corpus = corpus.LowercaseSource();
-            if (LowercaseTarget)
+            else if (LowercaseTarget)
                 corpus = corpus.LowercaseTarget();
             (IParallelTextCorpus trainCorpus, IParallelTextCorpus tuneCorpus, int trainCount, int testCount) =
                 corpus.Split(percent: 0.1, size: 1000, seed: Seed);

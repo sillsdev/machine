@@ -306,9 +306,8 @@ namespace SIL.Machine.Translation.Thot
 
                 for (int j = trgPhraseStartIndex; j < targetCut; j++)
                 {
-                    string targetWord = targetTokens[j];
                     builder.AppendToken(
-                        targetWord,
+                        targetTokens[j],
                         targetUnknownWords.Contains(j) ? TranslationSources.None : TranslationSources.Smt
                     );
                 }
@@ -334,7 +333,7 @@ namespace SIL.Machine.Translation.Thot
                 trgPhraseStartIndex += trgPhraseLen;
             }
 
-            TranslationResult result = builder.ToResult(_smtModel.TargetDetokenizer, sourceTokens);
+            TranslationResult result = builder.ToResult(DetokenizeTarget(targetTokens), sourceTokens);
             _confidenceEstimator.Estimate(sourceTokens, result);
             return result;
         }
@@ -425,19 +424,24 @@ namespace SIL.Machine.Translation.Thot
             return targetTokens;
         }
 
-        private IReadOnlyList<string> TokenizeSource(string segment)
+        private IReadOnlyList<string> TokenizeSource(string sourceSegment)
         {
-            return _smtModel.SourceTokenizer.Tokenize(segment).ToArray();
+            return _smtModel.SourceTokenizer.Tokenize(sourceSegment).ToArray();
         }
 
-        private IReadOnlyList<string> TokenizeTarget(string segment)
+        private IReadOnlyList<string> TokenizeTarget(string targetSegment)
         {
-            return _smtModel.TargetTokenizer.Tokenize(segment).ToArray();
+            return _smtModel.TargetTokenizer.Tokenize(targetSegment).ToArray();
         }
 
-        private IReadOnlyList<string> DenormalizeTarget(IReadOnlyList<string> targetTokens)
+        private string DetokenizeTarget(IReadOnlyList<string> targetTokens)
         {
-            return _smtModel.Truecaser?.Truecase(targetTokens) ?? targetTokens;
+            return _smtModel.TargetDetokenizer.Detokenize(targetTokens);
+        }
+
+        private IReadOnlyList<string> DenormalizeTarget(IReadOnlyList<string> normalizedTargetTokens)
+        {
+            return _smtModel.Truecaser?.Truecase(normalizedTargetTokens) ?? normalizedTargetTokens;
         }
 
         protected override void DisposeUnmanagedResources()

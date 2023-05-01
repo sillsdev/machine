@@ -224,7 +224,10 @@ namespace SIL.Machine.Translation
             {
                 var builder = new TranslationResultBuilder();
                 BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
-                yield return builder.ToResult(_targetDetokenizer, _wordGraph.SourceWords);
+                yield return builder.ToResult(
+                    _targetDetokenizer.Detokenize(builder.TargetTokens),
+                    _wordGraph.SourceWords
+                );
             }
         }
 

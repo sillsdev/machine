@@ -17,17 +17,17 @@ namespace SIL.Machine.Translation
         private readonly HashSet<int> _finalStates;
         private readonly Dictionary<int, StateInfo> _states;
 
-        public WordGraph(IReadOnlyList<string> sourceWords)
+        public WordGraph(IEnumerable<string> sourceWords)
             : this(sourceWords, Enumerable.Empty<WordGraphArc>(), Enumerable.Empty<int>()) { }
 
         public WordGraph(
-            IReadOnlyList<string> sourceWords,
+            IEnumerable<string> sourceWords,
             IEnumerable<WordGraphArc> arcs,
             IEnumerable<int> finalStates,
             double initialStateScore = 0
         )
         {
-            SourceWords = sourceWords;
+            SourceWords = sourceWords.ToArray();
             _states = new Dictionary<int, StateInfo>();
             var arcList = new List<WordGraphArc>();
             int maxState = -1;

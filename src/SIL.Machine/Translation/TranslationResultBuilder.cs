@@ -202,14 +202,6 @@ namespace SIL.Machine.Translation
             return sb.ToString();
         }
 
-        public TranslationResult ToResult(
-            IDetokenizer<string, string> targetDetokenizer,
-            IReadOnlyList<string> sourceTokens
-        )
-        {
-            return ToResult(targetDetokenizer.Detokenize(TargetTokens), sourceTokens);
-        }
-
         public TranslationResult ToResult(string translation, IReadOnlyList<string> sourceTokens)
         {
             var sources = new TranslationSources[TargetTokens.Count];

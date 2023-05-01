@@ -231,7 +231,9 @@ namespace SIL.Machine.Translation.TensorFlow
                         );
                         builder.MarkPhrase(Range.Create(0, inputLength), waMatrix);
 
-                        hypotheses.Add(builder.ToResult(TargetDetokenizer, sourceTokenStrs[i]));
+                        hypotheses.Add(
+                            builder.ToResult(TargetDetokenizer.Detokenize(builder.TargetTokens), sourceTokenStrs[i])
+                        );
                     }
                     results.Add(hypotheses);
                 }
