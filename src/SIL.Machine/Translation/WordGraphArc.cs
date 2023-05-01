@@ -12,7 +12,7 @@ namespace SIL.Machine.Translation
             int prevState,
             int nextState,
             double score,
-            IEnumerable<string> words,
+            IEnumerable<string> targetTokens,
             WordAlignmentMatrix alignment,
             Range<int> sourceSegmentRange,
             IEnumerable<TranslationSources> sources,
@@ -22,12 +22,12 @@ namespace SIL.Machine.Translation
             PrevState = prevState;
             NextState = nextState;
             Score = score;
-            Words = words.ToArray();
+            TargetTokens = targetTokens.ToArray();
             Alignment = alignment;
             SourceSegmentRange = sourceSegmentRange;
             Sources = sources.ToArray();
             if (confidences == null)
-                _confidences = Enumerable.Repeat(-1.0, Words.Count).ToArray();
+                _confidences = Enumerable.Repeat(-1.0, TargetTokens.Count).ToArray();
             else
                 _confidences = confidences.ToArray();
         }
@@ -35,7 +35,7 @@ namespace SIL.Machine.Translation
         public int PrevState { get; }
         public int NextState { get; }
         public double Score { get; }
-        public IReadOnlyList<string> Words { get; }
+        public IReadOnlyList<string> TargetTokens { get; }
         public WordAlignmentMatrix Alignment { get; }
         public IReadOnlyList<double> Confidences => _confidences;
         public Range<int> SourceSegmentRange { get; }

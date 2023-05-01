@@ -356,7 +356,7 @@ namespace SIL.Machine.Corpora
             private readonly ITextCorpus _corpus;
             private readonly Func<TextRow, TextRow> _transform;
 
-            public TransformTextCorpus(ITextCorpus corpus, Func<TextRow, TextRow> transform, bool? isTokenized = null)
+            public TransformTextCorpus(ITextCorpus corpus, Func<TextRow, TextRow> transform, bool? isTokenized)
             {
                 _corpus = corpus;
                 _transform = transform;
@@ -1036,8 +1036,8 @@ namespace SIL.Machine.Corpora
             public TransformParallelTextCorpus(
                 IParallelTextCorpus corpus,
                 Func<ParallelTextRow, ParallelTextRow> transform,
-                bool? isSourceTokenized = null,
-                bool? isTargetTokenized = null
+                bool? isSourceTokenized,
+                bool? isTargetTokenized
             )
             {
                 _corpus = corpus;

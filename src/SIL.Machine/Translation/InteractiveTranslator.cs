@@ -26,7 +26,7 @@ namespace SIL.Machine.Translation
         )
         {
             Segment = segment;
-            SegmentWordRanges = Segment.GetRanges(wordGraph.SourceWords).ToArray();
+            SegmentWordRanges = Segment.GetRanges(wordGraph.SourceTokens).ToArray();
             _engine = engine;
             _targetTokenizer = targetTokenizer;
             PrefixWordRanges = Array.Empty<Range<int>>();

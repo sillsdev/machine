@@ -497,7 +497,7 @@ namespace SIL.Machine.Translation
         public WordGraph Merge(WordGraph wordGraph, TranslationResult result)
         {
             return new WordGraph(
-                wordGraph.SourceWords,
+                wordGraph.SourceTokens,
                 wordGraph.Arcs.Select(a => Merge(a, result)),
                 wordGraph.FinalStates,
                 wordGraph.InitialStateScore
@@ -510,13 +510,13 @@ namespace SIL.Machine.Translation
             var mergedConfidences = new List<double>();
             var mergedSources = new List<TranslationSources>();
             var mergedAlignment = new HashSet<Tuple<int, int>>();
-            for (int j = 0; j < arc.Words.Count; j++)
+            for (int j = 0; j < arc.TargetTokens.Count; j++)
             {
                 int[] sourceIndices = arc.Alignment.GetColumnAlignedIndices(j).ToArray();
                 if (sourceIndices.Length == 0)
                 {
                     // target word doesn't align with anything
-                    mergedWords.Add(arc.Words[j]);
+                    mergedWords.Add(arc.TargetTokens[j]);
                     mergedConfidences.Add(arc.Confidences[j]);
                     mergedSources.Add(arc.Sources[j]);
                 }
@@ -526,7 +526,7 @@ namespace SIL.Machine.Translation
                     if (arc.Confidences[j] >= InteractiveEngineThreshold)
                     {
                         // use target word of this result
-                        mergedWords.Add(arc.Words[j]);
+                        mergedWords.Add(arc.TargetTokens[j]);
                         mergedConfidences.Add(arc.Confidences[j]);
                         TranslationSources sources = arc.Sources[j];
                         foreach (int i in sourceIndices)
@@ -540,7 +540,7 @@ namespace SIL.Machine.Translation
                                 TranslationSources otherSources = result.Sources[jOther];
                                 if (
                                     otherSources != TranslationSources.None
-                                    && result.TargetTokens[jOther] == arc.Words[j]
+                                    && result.TargetTokens[jOther] == arc.TargetTokens[j]
                                 )
                                 {
                                     sources |= otherSources;
@@ -577,7 +577,7 @@ namespace SIL.Machine.Translation
                         if (!found)
                         {
                             // the other result had no translated words, so just use this result's target word
-                            mergedWords.Add(arc.Words[j]);
+                            mergedWords.Add(arc.TargetTokens[j]);
                             mergedConfidences.Add(arc.Confidences[j]);
                             mergedSources.Add(arc.Sources[j]);
                             foreach (int i in sourceIndices)

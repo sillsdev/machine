@@ -1,8 +1,7 @@
-﻿using SIL.Machine.Annotations;
-using SIL.Machine.Tokenization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {
@@ -200,14 +199,6 @@ namespace SIL.Machine.Translation
 
             sb.Append(word.Substring(i));
             return sb.ToString();
-        }
-
-        public TranslationResult ToResult(
-            IDetokenizer<string, string> targetDetokenizer,
-            IReadOnlyList<string> sourceTokens
-        )
-        {
-            return ToResult(targetDetokenizer.Detokenize(TargetTokens), sourceTokens);
         }
 
         public TranslationResult ToResult(string translation, IReadOnlyList<string> sourceTokens)
