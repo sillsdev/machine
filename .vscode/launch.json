@@ -4,7 +4,7 @@
         {
             "name": "Engine Docker",
             "type": "docker",
-            "containerName": "machine-server-cntr",
+            "containerName": "machine-engine-cntr",
             "request": "attach",
             "platform": "netCore",
             "processName": "SIL.Machine.Serval.EngineServer",
