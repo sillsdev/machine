@@ -217,9 +217,12 @@ namespace SIL.Machine.Translation.TensorFlow
                         int outputLength = outputLengths[i][j];
                         long start = (i * outputTokens.dims[1] * outputTokens.dims[2]) + (j * outputTokens.dims[2]);
                         long end = start + outputLength;
-                        var builder = new TranslationResultBuilder();
+                        var builder = new TranslationResultBuilder(sourceTokenStrs[i])
+                        {
+                            TargetDetokenizer = TargetDetokenizer
+                        };
                         for (long k = start; k < end; k++)
-                            builder.AppendToken(outputTokenStrs[k], TranslationSources.Nmt);
+                            builder.AppendToken(outputTokenStrs[k], TranslationSources.Nmt, 1);
 
                         NDArray alignment = alignments[i][j];
                         NDArray srcIndices = np.argmax(alignment[new Slice(stop: outputLength)], axis: -1);
@@ -231,9 +234,7 @@ namespace SIL.Machine.Translation.TensorFlow
                         );
                         builder.MarkPhrase(Range.Create(0, inputLength), waMatrix);
 
-                        hypotheses.Add(
-                            builder.ToResult(TargetDetokenizer.Detokenize(builder.TargetTokens), sourceTokenStrs[i])
-                        );
+                        hypotheses.Add(builder.ToResult());
                     }
                     results.Add(hypotheses);
                 }

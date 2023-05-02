@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation
     [TestFixture]
     public class ErrorCorrectionModelTests
     {
-        private readonly ErrorCorrectionModel _ecm = new ErrorCorrectionModel();
+        private readonly ErrorCorrectionModel _ecm = new();
 
         [Test]
         public void CorrectPrefix_EmptyUncorrectedPrefix_AppendsPrefix()
@@ -15,9 +15,9 @@ namespace SIL.Machine.Translation
 
             string[] prefix = "this is a test".Split();
             Assert.That(_ecm.CorrectPrefix(builder, builder.TargetTokens.Count, prefix, true), Is.EqualTo(4));
-            Assert.That(builder.Confidences.Count, Is.EqualTo(prefix.Length));
+            Assert.That(builder.Confidences, Has.Count.EqualTo(prefix.Length));
             Assert.That(builder.TargetTokens, Is.EqualTo(prefix));
-            Assert.That(builder.Phrases.Count, Is.EqualTo(0));
+            Assert.That(builder.Phrases, Is.Empty);
         }
 
         [Test]
@@ -27,9 +27,9 @@ namespace SIL.Machine.Translation
 
             string[] prefix = "this is a test".Split();
             Assert.That(_ecm.CorrectPrefix(ti, ti.TargetTokens.Count, prefix, true), Is.EqualTo(1));
-            Assert.That(ti.Confidences.Count, Is.EqualTo(prefix.Length));
+            Assert.That(ti.Confidences, Has.Count.EqualTo(prefix.Length));
             Assert.That(ti.TargetTokens, Is.EqualTo(prefix));
-            Assert.That(ti.Phrases.Count, Is.EqualTo(2));
+            Assert.That(ti.Phrases, Has.Count.EqualTo(2));
             Assert.That(ti.Phrases[0].TargetCut, Is.EqualTo(2));
             Assert.That(ti.Phrases[0].Alignment.ColumnCount, Is.EqualTo(2));
             Assert.That(ti.Phrases[1].TargetCut, Is.EqualTo(3));
@@ -158,7 +158,7 @@ namespace SIL.Machine.Translation
 
         private static TranslationResultBuilder CreateResultBuilder(string target, params int[] cuts)
         {
-            var builder = new TranslationResultBuilder();
+            var builder = new TranslationResultBuilder("esto es una prueba".Split());
             if (!string.IsNullOrEmpty(target))
             {
                 int i = 0;

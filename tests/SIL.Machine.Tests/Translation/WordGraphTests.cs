@@ -18,7 +18,8 @@ namespace SIL.Machine.Translation
                     new[] { "In", "the" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(0, 2),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     0,
@@ -27,7 +28,8 @@ namespace SIL.Machine.Translation
                     new[] { "In" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(0, 1),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     1,
@@ -36,7 +38,8 @@ namespace SIL.Machine.Translation
                     new[] { "beginning" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(2, 3),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     2,
@@ -45,7 +48,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "beginning" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(1, 3),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     2,
@@ -54,7 +58,8 @@ namespace SIL.Machine.Translation
                     new[] { "the" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(1, 2),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     3,
@@ -63,7 +68,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     3,
@@ -72,7 +78,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 )
             };
 
@@ -101,7 +108,8 @@ namespace SIL.Machine.Translation
                     new[] { "In", "your" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(0, 2),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     0,
@@ -110,7 +118,8 @@ namespace SIL.Machine.Translation
                     new[] { "In" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(0, 1),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     2,
@@ -119,7 +128,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "beginning" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(1, 3),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     3,
@@ -128,7 +138,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     3,
@@ -137,7 +148,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     1,
@@ -146,7 +158,8 @@ namespace SIL.Machine.Translation
                     new[] { "beginning" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(2, 3),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     6,
@@ -155,7 +168,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     6,
@@ -164,7 +178,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 )
             };
 
@@ -197,7 +212,8 @@ namespace SIL.Machine.Translation
                     new[] { "In", "the" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(0, 2),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     0,
@@ -206,7 +222,8 @@ namespace SIL.Machine.Translation
                     new[] { "In" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(0, 1),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     1,
@@ -215,7 +232,8 @@ namespace SIL.Machine.Translation
                     new[] { "beginning" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(2, 3),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     2,
@@ -224,7 +242,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "beginning" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(1, 3),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     2,
@@ -233,7 +252,8 @@ namespace SIL.Machine.Translation
                     new[] { "the" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(1, 2),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     3,
@@ -242,7 +262,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     3,
@@ -251,7 +272,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 )
             };
 
@@ -281,7 +303,8 @@ namespace SIL.Machine.Translation
                     new[] { "In", "the" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(0, 2),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     0,
@@ -290,7 +313,8 @@ namespace SIL.Machine.Translation
                     new[] { "In" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(0, 1),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     1,
@@ -299,7 +323,8 @@ namespace SIL.Machine.Translation
                     new[] { "beginning" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(2, 3),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     2,
@@ -308,7 +333,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "beginning" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(1, 3),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     2,
@@ -317,7 +343,8 @@ namespace SIL.Machine.Translation
                     new[] { "the" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(1, 2),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     3,
@@ -326,7 +353,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     3,
@@ -335,7 +363,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     1,
@@ -344,7 +373,8 @@ namespace SIL.Machine.Translation
                     new[] { "end" },
                     new WordAlignmentMatrix(1, 1) { [0, 0] = true },
                     Range<int>.Create(2, 3),
-                    GetSources(1, false)
+                    GetSources(1, false),
+                    Enumerable.Repeat(1.0, 1)
                 ),
                 new WordGraphArc(
                     6,
@@ -353,7 +383,8 @@ namespace SIL.Machine.Translation
                     new[] { "his", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 ),
                 new WordGraphArc(
                     6,
@@ -362,7 +393,8 @@ namespace SIL.Machine.Translation
                     new[] { "the", "Word" },
                     new WordAlignmentMatrix(2, 2) { [0, 0] = true, [1, 1] = true },
                     Range<int>.Create(3, 5),
-                    GetSources(2, false)
+                    GetSources(2, false),
+                    Enumerable.Repeat(1.0, 2)
                 )
             };
 

@@ -89,7 +89,7 @@ namespace SIL.Machine.Translation
             if (uncorrectedPrefixLen == 0)
             {
                 foreach (string w in prefix)
-                    builder.AppendToken(w, TranslationSources.Prefix);
+                    builder.AppendToken(w, TranslationSources.Prefix, -1);
                 return prefix.Length;
             }
 

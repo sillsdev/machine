@@ -9,7 +9,16 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_Punctuation_EndsAtPunctuation()
         {
-            TranslationResult result = CreateResult(5, 0, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 5,
+                prefixLen: 0,
+                "this is a test .",
+                0.5,
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
         }
@@ -17,7 +26,16 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_UntranslatedWord_EndsAtUntranslatedWord()
         {
-            TranslationResult result = CreateResult(5, 0, "this is a test .", 0.5, 0.5, 0, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 5,
+                prefixLen: 0,
+                "this is a test .",
+                0.5,
+                0.5,
+                0,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1 }));
         }
@@ -25,7 +43,16 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_PrefixCompletedWord_IncludesCompletedWord()
         {
-            TranslationResult result = CreateResult(5, 1, "this is a test .", 0.5, 0.5, 0.5, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 5,
+                prefixLen: 1,
+                "this is a test .",
+                0.5,
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(1, false, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
         }
@@ -33,7 +60,17 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_PrefixPartialWord_NoSuggestions()
         {
-            TranslationResult result = CreateResult(5, 1, "te this is a test .", -1, 0.5, 0.5, 0.5, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 5,
+                prefixLen: 1,
+                "te this is a test .",
+                -1,
+                0.5,
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(1, false, result).TargetWordIndices, Is.Empty);
         }
@@ -41,7 +78,16 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_InsertedWord_SkipsInsertedWord()
         {
-            TranslationResult result = CreateResult(4, 0, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 4,
+                prefixLen: 0,
+                "this is a test .",
+                -1,
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 1, 2, 3 }));
         }
@@ -49,7 +95,17 @@ namespace SIL.Machine.Translation
         [Test]
         public void GetSuggestion_DeletedWord_IgnoresDeletedWord()
         {
-            TranslationResult result = CreateResult(6, 0, "this is a test .", -1, 0.5, 0.5, 0.5, 0.5, 0.5);
+            TranslationResult result = CreateResult(
+                sourceLen: 6,
+                prefixLen: 0,
+                "this is a test .",
+                -1,
+                0.5,
+                0.5,
+                0.5,
+                0.5,
+                0.5
+            );
             var suggester = new WordTranslationSuggester() { ConfidenceThreshold = 0.2 };
             Assert.That(suggester.GetSuggestion(0, true, result).TargetWordIndices, Is.EqualTo(new[] { 0, 1, 2, 3 }));
         }
@@ -67,7 +123,6 @@ namespace SIL.Machine.Translation
             var alignment = new WordAlignmentMatrix(sourceLen, targetArray.Length);
             int i = 0,
                 j = 0;
-            double phraseConfidence = double.MaxValue;
             foreach (double confidence in confidences)
             {
                 if (j < prefixLen)
@@ -95,8 +150,6 @@ namespace SIL.Machine.Translation
                 {
                     throw new ArgumentException("A confidence was incorrectly set below 0.", nameof(confidences));
                 }
-
-                phraseConfidence = Math.Min(phraseConfidence, confidence);
             }
             return new TranslationResult(
                 target,
@@ -105,7 +158,7 @@ namespace SIL.Machine.Translation
                 targetConfidences,
                 targetSources,
                 alignment,
-                new[] { new Phrase(Range<int>.Create(0, sourceLen), targetArray.Length, phraseConfidence) }
+                new[] { new Phrase(Range<int>.Create(0, sourceLen), targetArray.Length) }
             );
         }
     }

@@ -292,7 +292,10 @@ namespace SIL.Machine.Translation.Thot
             IntPtr dataPtr
         )
         {
-            var builder = new TranslationResultBuilder();
+            var builder = new TranslationResultBuilder(sourceTokens)
+            {
+                TargetDetokenizer = _smtModel.TargetDetokenizer
+            };
             var confidenceEstimator = new Ibm1WordConfidenceEstimator(
                 _smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore,
                 normalizedSourceTokens
@@ -340,7 +343,7 @@ namespace SIL.Machine.Translation.Thot
                 builder.MarkPhrase(sourceSegmentRange, waMatrix);
                 trgPhraseStartIndex += trgPhraseLen;
             }
-            return builder.ToResult(DetokenizeTarget(targetTokens), sourceTokens);
+            return builder.ToResult();
         }
 
         private IReadOnlyList<Tuple<int, int>> GetSourceSegmentation(IntPtr data, uint phraseCount)
@@ -437,11 +440,6 @@ namespace SIL.Machine.Translation.Thot
         private IReadOnlyList<string> TokenizeTarget(string targetSegment)
         {
             return _smtModel.TargetTokenizer.Tokenize(targetSegment).ToArray();
-        }
-
-        private string DetokenizeTarget(IReadOnlyList<string> targetTokens)
-        {
-            return _smtModel.TargetDetokenizer.Detokenize(targetTokens);
         }
 
         private IReadOnlyList<string> DenormalizeTarget(IReadOnlyList<string> normalizedTargetTokens)

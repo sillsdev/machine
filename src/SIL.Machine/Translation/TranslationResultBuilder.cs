@@ -1,31 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using SIL.Machine.Annotations;
+using SIL.Machine.Tokenization;
 
 namespace SIL.Machine.Translation
 {
     public class TranslationResultBuilder
     {
+        private readonly IReadOnlyList<string> _sourceTokens;
         private readonly List<string> _targetTokens;
         private readonly List<double> _confidences;
         private readonly List<TranslationSources> _sources;
         private readonly List<PhraseInfo> _phrases;
 
-        public TranslationResultBuilder()
+        public TranslationResultBuilder(IReadOnlyList<string> sourceTokens)
         {
+            _sourceTokens = sourceTokens;
             _targetTokens = new List<string>();
             _confidences = new List<double>();
             _sources = new List<TranslationSources>();
             _phrases = new List<PhraseInfo>();
         }
 
+        public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
+
         public IReadOnlyList<string> TargetTokens => _targetTokens;
         public IReadOnlyList<double> Confidences => _confidences;
         public IReadOnlyList<TranslationSources> Sources => _sources;
         public IReadOnlyList<PhraseInfo> Phrases => _phrases;
 
-        public void AppendToken(string token, TranslationSources source, double confidence = -1)
+        public void AppendToken(string token, TranslationSources source, double confidence)
         {
             _targetTokens.Add(token);
             _sources.Add(source);
@@ -201,15 +205,14 @@ namespace SIL.Machine.Translation
             return sb.ToString();
         }
 
-        public TranslationResult ToResult(string translation, IReadOnlyList<string> sourceTokens)
+        public TranslationResult ToResult(string translation = null)
         {
             var sources = new TranslationSources[TargetTokens.Count];
-            var alignment = new WordAlignmentMatrix(sourceTokens.Count, TargetTokens.Count);
+            var alignment = new WordAlignmentMatrix(_sourceTokens.Count, TargetTokens.Count);
             var phrases = new List<Phrase>();
             int trgPhraseStartIndex = 0;
             foreach (PhraseInfo phraseInfo in _phrases)
             {
-                double confidence = double.MaxValue;
                 for (int j = trgPhraseStartIndex; j < phraseInfo.TargetCut; j++)
                 {
                     for (int i = phraseInfo.SourceSegmentRange.Start; i < phraseInfo.SourceSegmentRange.End; i++)
@@ -223,16 +226,15 @@ namespace SIL.Machine.Translation
                     }
 
                     sources[j] = _sources[j];
-                    confidence = Math.Min(confidence, _confidences[j]);
                 }
 
-                phrases.Add(new Phrase(phraseInfo.SourceSegmentRange, phraseInfo.TargetCut, confidence));
+                phrases.Add(new Phrase(phraseInfo.SourceSegmentRange, phraseInfo.TargetCut));
                 trgPhraseStartIndex = phraseInfo.TargetCut;
             }
 
             return new TranslationResult(
-                translation,
-                sourceTokens,
+                translation ?? TargetDetokenizer.Detokenize(TargetTokens),
+                _sourceTokens,
                 _targetTokens,
                 _confidences,
                 sources,

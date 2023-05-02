@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SIL.Machine.Translation
@@ -25,27 +26,44 @@ namespace SIL.Machine.Translation
             while (k < result.Phrases.Count && result.Phrases[k].TargetSegmentCut <= startingJ)
                 k++;
 
-            double minConfidence = -1;
+            double suggestionConfidence = -1;
             var indices = new List<int>();
             for (; k < result.Phrases.Count; k++)
             {
                 Phrase phrase = result.Phrases[k];
-                if (phrase.Confidence >= ConfidenceThreshold)
+                bool hitBreakingWord = false;
+                double phraseConfidence = -1;
+                double endingJ = startingJ;
+                for (int j = startingJ; j < phrase.TargetSegmentCut; j++)
                 {
-                    bool hitBreakingWord = false;
-                    for (int j = startingJ; j < phrase.TargetSegmentCut; j++)
+                    string word = result.TargetTokens[j];
+                    TranslationSources sources = result.Sources[j];
+                    if (sources == TranslationSources.None || word.All(char.IsPunctuation))
                     {
-                        string word = result.TargetTokens[j];
-                        TranslationSources sources = result.Sources[j];
-                        if (sources == TranslationSources.None || word.All(char.IsPunctuation))
-                        {
-                            hitBreakingWord = true;
-                            break;
-                        }
-                        indices.Add(j);
+                        hitBreakingWord = true;
+                        break;
                     }
-                    if (minConfidence < 0 || phrase.Confidence < minConfidence)
-                        minConfidence = phrase.Confidence;
+
+                    phraseConfidence = Math.Min(
+                        phraseConfidence < 0 ? double.MaxValue : phraseConfidence,
+                        result.Confidences[j]
+                    );
+                    if (phraseConfidence < ConfidenceThreshold)
+                        break;
+
+                    endingJ = j;
+                }
+
+                if (phraseConfidence >= ConfidenceThreshold)
+                {
+                    suggestionConfidence = Math.Min(
+                        suggestionConfidence < 0 ? double.MaxValue : suggestionConfidence,
+                        phraseConfidence
+                    );
+
+                    for (int j = startingJ; j <= endingJ; j++)
+                        indices.Add(j);
+
                     startingJ = phrase.TargetSegmentCut;
                     if (hitBreakingWord)
                         break;
@@ -56,7 +74,7 @@ namespace SIL.Machine.Translation
                 }
             }
 
-            return new TranslationSuggestion(result, indices, minConfidence < 0 ? 0 : minConfidence);
+            return new TranslationSuggestion(result, indices, suggestionConfidence < 0 ? 0 : suggestionConfidence);
         }
     }
 }
