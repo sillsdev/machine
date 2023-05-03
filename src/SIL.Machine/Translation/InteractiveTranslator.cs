@@ -33,8 +33,11 @@ namespace SIL.Machine.Translation
             _prefix = new StringBuilder();
             IsLastWordComplete = true;
             _wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, targetDetokenizer, wordGraph);
+            TargetDetokenizer = targetDetokenizer;
             Correct();
         }
+
+        public IDetokenizer<string, string> TargetDetokenizer { get; }
 
         public string Segment { get; }
         public IReadOnlyList<Range<int>> SegmentWordRanges { get; }

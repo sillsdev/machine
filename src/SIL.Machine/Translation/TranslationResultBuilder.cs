@@ -7,7 +7,6 @@ namespace SIL.Machine.Translation
 {
     public class TranslationResultBuilder
     {
-        private readonly IReadOnlyList<string> _sourceTokens;
         private readonly List<string> _targetTokens;
         private readonly List<double> _confidences;
         private readonly List<TranslationSources> _sources;
@@ -15,12 +14,14 @@ namespace SIL.Machine.Translation
 
         public TranslationResultBuilder(IReadOnlyList<string> sourceTokens)
         {
-            _sourceTokens = sourceTokens;
+            SourceTokens = sourceTokens;
             _targetTokens = new List<string>();
             _confidences = new List<double>();
             _sources = new List<TranslationSources>();
             _phrases = new List<PhraseInfo>();
         }
+
+        public IReadOnlyList<string> SourceTokens { get; }
 
         public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
 
@@ -205,10 +206,18 @@ namespace SIL.Machine.Translation
             return sb.ToString();
         }
 
+        public void Reset()
+        {
+            _targetTokens.Clear();
+            _confidences.Clear();
+            _sources.Clear();
+            _phrases.Clear();
+        }
+
         public TranslationResult ToResult(string translation = null)
         {
             var sources = new TranslationSources[TargetTokens.Count];
-            var alignment = new WordAlignmentMatrix(_sourceTokens.Count, TargetTokens.Count);
+            var alignment = new WordAlignmentMatrix(SourceTokens.Count, _targetTokens.Count);
             var phrases = new List<Phrase>();
             int trgPhraseStartIndex = 0;
             foreach (PhraseInfo phraseInfo in _phrases)
@@ -234,7 +243,7 @@ namespace SIL.Machine.Translation
 
             return new TranslationResult(
                 translation ?? TargetDetokenizer.Detokenize(TargetTokens),
-                _sourceTokens,
+                SourceTokens,
                 _targetTokens,
                 _confidences,
                 sources,

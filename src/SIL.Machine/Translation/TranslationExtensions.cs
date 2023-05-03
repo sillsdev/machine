@@ -7,35 +7,33 @@ namespace SIL.Machine.Translation
 {
     public static class TranslationExtensions
     {
-        public static IEnumerable<TranslationSuggestion> GetSuggestions(
+        public static IReadOnlyList<TranslationSuggestion> GetSuggestions(
             this ITranslationSuggester suggester,
+            int n,
             InteractiveTranslator translator
         )
         {
-            return translator
-                .GetCurrentResults()
-                .Select(
-                    r => suggester.GetSuggestion(translator.PrefixWordRanges.Count, translator.IsLastWordComplete, r)
-                );
+            return suggester.GetSuggestions(
+                n,
+                translator.PrefixWordRanges.Count,
+                translator.IsLastWordComplete,
+                translator.GetCurrentResults()
+            );
         }
 
-        public static IEnumerable<TranslationSuggestion> GetSuggestions(
+        public static IReadOnlyList<TranslationSuggestion> GetSuggestions(
             this ITranslationSuggester suggester,
+            int n,
             InteractiveTranslator translator,
-            ITruecaser truecaser,
-            IDetokenizer<string, string> detokenizer = null
+            ITruecaser truecaser
         )
         {
-            return translator
-                .GetCurrentResults()
-                .Select(
-                    r =>
-                        suggester.GetSuggestion(
-                            translator.PrefixWordRanges.Count,
-                            translator.IsLastWordComplete,
-                            truecaser.Truecase(r, detokenizer)
-                        )
-                );
+            return suggester.GetSuggestions(
+                n,
+                translator.PrefixWordRanges.Count,
+                translator.IsLastWordComplete,
+                translator.GetCurrentResults().Select(r => truecaser.Truecase(r, translator.TargetDetokenizer))
+            );
         }
 
         public static Dictionary<string, Dictionary<string, double>> GetTranslationTable(
