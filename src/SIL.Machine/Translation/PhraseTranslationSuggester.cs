@@ -94,9 +94,10 @@ namespace SIL.Machine.Translation
                 {
                     if (suggestion.TargetWordIndices.Count >= newSuggestion.TargetWordIndices.Count)
                     {
+                        string[] newSuggestionWords = newSuggestion.TargetWords.ToArray();
                         if (table == null)
-                            table = ComputeKmpTable(newSuggestion);
-                        if (IsSubsequence(table, newSuggestion, suggestion))
+                            table = ComputeKmpTable(newSuggestionWords);
+                        if (IsSubsequence(table, newSuggestionWords, suggestion.TargetWords.ToArray()))
                         {
                             duplicate = true;
                             break;
@@ -116,27 +117,24 @@ namespace SIL.Machine.Translation
 
         private static bool IsSubsequence(
             int[] table,
-            TranslationSuggestion newSuggestion,
-            TranslationSuggestion suggestion
+            IReadOnlyList<string> newSuggestion,
+            IReadOnlyList<string> suggestion
         )
         {
             int j = 0;
             int i = 0;
-            while (i < suggestion.TargetWordIndices.Count)
+            while (i < suggestion.Count)
             {
-                if (newSuggestion.TargetWordIndices[j] == suggestion.TargetWordIndices[i])
+                if (newSuggestion[j] == suggestion[i])
                 {
                     j++;
                     i++;
                 }
-                if (j == newSuggestion.TargetWordIndices.Count)
+                if (j == newSuggestion.Count)
                 {
                     return true;
                 }
-                else if (
-                    i < suggestion.TargetWordIndices.Count
-                    && newSuggestion.TargetWordIndices[j] != suggestion.TargetWordIndices[i]
-                )
+                else if (i < suggestion.Count && newSuggestion[j] != suggestion[i])
                 {
                     if (j != 0)
                         j = table[j - 1];
@@ -147,16 +145,16 @@ namespace SIL.Machine.Translation
             return false;
         }
 
-        private static int[] ComputeKmpTable(TranslationSuggestion newSuggestion)
+        private static int[] ComputeKmpTable(IReadOnlyList<string> newSuggestion)
         {
-            var table = new int[newSuggestion.TargetWordIndices.Count];
+            var table = new int[newSuggestion.Count];
             int len = 0;
             int i = 1;
             table[0] = 0;
 
-            while (i < newSuggestion.TargetWordIndices.Count)
+            while (i < newSuggestion.Count)
             {
-                if (newSuggestion.TargetWordIndices[i] == newSuggestion.TargetWordIndices[len])
+                if (newSuggestion[i] == newSuggestion[len])
                 {
                     len++;
                     table[i] = len;

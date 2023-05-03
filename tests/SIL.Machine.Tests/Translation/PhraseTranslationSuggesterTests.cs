@@ -152,6 +152,176 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
+    public void GetSuggestion_Multiple()
+    {
+        var results = new List<TranslationResult>();
+        var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
+        builder.AppendToken("this", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 3, setValues: new[] { (0, 0), (1, 1), (2, 2) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        builder.Reset();
+        builder.AppendToken("that", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 3, setValues: new[] { (0, 0), (1, 1), (2, 2) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        builder.Reset();
+        builder.AppendToken("other", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 3, setValues: new[] { (0, 0), (1, 1), (2, 2) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        var suggester = new PhraseTranslationSuggester { ConfidenceThreshold = 0.2 };
+        IReadOnlyList<TranslationSuggestion> suggestions = suggester.GetSuggestions(
+            n: 2,
+            prefixCount: 0,
+            isLastWordComplete: true,
+            results
+        );
+        Assert.That(suggestions, Has.Count.EqualTo(2));
+        Assert.That(suggestions[0].TargetWords, Is.EqualTo(new[] { "this", "is", "a", "test" }));
+        Assert.That(suggestions[1].TargetWords, Is.EqualTo(new[] { "that", "is", "a", "test" }));
+    }
+
+    [Test]
+    public void GetSuggestion_Duplicate()
+    {
+        var results = new List<TranslationResult>();
+        var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", ".", "segunda", "frase" });
+        builder.AppendToken("this", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 3, setValues: new[] { (0, 0), (1, 1), (2, 2) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        builder.AppendToken("second", TranslationSources.Smt, 0.1);
+        builder.AppendToken("sentence", TranslationSources.Smt, 0.1);
+        builder.MarkPhrase(
+            Range<int>.Create(5, 7),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        builder.Reset();
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 2, setValues: new[] { (1, 0), (2, 1) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        builder.AppendToken("second", TranslationSources.Smt, 0.1);
+        builder.AppendToken("sentence", TranslationSources.Smt, 0.1);
+        builder.MarkPhrase(
+            Range<int>.Create(5, 7),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        var suggester = new PhraseTranslationSuggester { ConfidenceThreshold = 0.2 };
+        IReadOnlyList<TranslationSuggestion> suggestions = suggester.GetSuggestions(
+            n: 2,
+            prefixCount: 0,
+            isLastWordComplete: true,
+            results
+        );
+        Assert.That(suggestions, Has.Count.EqualTo(1));
+        Assert.That(suggestions[0].TargetWords, Is.EqualTo(new[] { "this", "is", "a", "test" }));
+    }
+
+    [Test]
+    public void GetSuggestion_StartsWithPunctuation()
+    {
+        var results = new List<TranslationResult>();
+        var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
+        builder.AppendToken(",", TranslationSources.Smt, 0.5);
+        builder.AppendToken("this", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 4, setValues: new[] { (0, 1), (1, 2), (2, 3) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        builder.Reset();
+        builder.AppendToken("this", TranslationSources.Smt, 0.5);
+        builder.AppendToken("is", TranslationSources.Smt, 0.5);
+        builder.AppendToken("a", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(0, 3),
+            new WordAlignmentMatrix(rowCount: 3, columnCount: 3, setValues: new[] { (0, 0), (1, 1), (2, 2) })
+        );
+        builder.AppendToken("test", TranslationSources.Smt, 0.5);
+        builder.AppendToken(".", TranslationSources.Smt, 0.5);
+        builder.MarkPhrase(
+            Range<int>.Create(3, 5),
+            new WordAlignmentMatrix(rowCount: 2, columnCount: 2, setValues: new[] { (0, 0), (1, 1) })
+        );
+        results.Add(builder.ToResult());
+
+        var suggester = new PhraseTranslationSuggester { ConfidenceThreshold = 0.2 };
+        IReadOnlyList<TranslationSuggestion> suggestions = suggester.GetSuggestions(
+            n: 2,
+            prefixCount: 0,
+            isLastWordComplete: true,
+            results
+        );
+        Assert.That(suggestions, Has.Count.EqualTo(1));
+        Assert.That(suggestions[0].TargetWords, Is.EqualTo(new[] { "this", "is", "a", "test" }));
+    }
+
+    [Test]
     public void GetSuggestion_BelowThreshold()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
