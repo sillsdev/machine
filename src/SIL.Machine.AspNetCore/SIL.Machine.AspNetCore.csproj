@@ -28,11 +28,11 @@
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="6.0.2" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.52.0" />
-		<PackageReference Include="HangFire" Version="1.7.33" />
+		<PackageReference Include="HangFire" Version="1.8.0" />
 		<PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
-		<PackageReference Include="Hangfire.Mongo" Version="1.9.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.14" />
-		<PackageReference Include="Serval.Grpc" Version="0.6.0" />
+		<PackageReference Include="Hangfire.Mongo" Version="1.9.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="6.0.16" />
+		<PackageReference Include="Serval.Grpc" Version="0.7.0" />
 		<PackageReference Include="SIL.DataAccess" Version="0.3.0" />
 		<PackageReference Include="Stowage" Version="1.2.6" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
