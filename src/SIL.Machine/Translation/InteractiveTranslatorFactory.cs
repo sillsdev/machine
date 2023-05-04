@@ -19,16 +19,18 @@ namespace SIL.Machine.Translation
 
         public async Task<InteractiveTranslator> CreateAsync(
             string segment,
+            bool sentenceStart = true,
             CancellationToken cancellationToken = default
         )
         {
             return new InteractiveTranslator(
-                segment,
                 ErrorCorrectionModel,
                 Engine,
                 TargetTokenizer,
                 TargetDetokenizer,
-                await Engine.GetWordGraphAsync(segment, cancellationToken).ConfigureAwait(false)
+                segment,
+                await Engine.GetWordGraphAsync(segment, cancellationToken).ConfigureAwait(false),
+                sentenceStart
             );
         }
     }
