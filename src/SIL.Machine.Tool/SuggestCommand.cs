@@ -190,7 +190,7 @@ namespace SIL.Machine
                     targetIndex--;
 
                 bool match = false;
-                TranslationSuggestion[] suggestions = suggester.GetSuggestions(translator).Take(n).ToArray();
+                IReadOnlyList<TranslationSuggestion> suggestions = suggester.GetSuggestions(n, translator);
                 string[][] suggestionWords = suggestions.Select(s => s.TargetWords.ToArray()).ToArray();
                 if (prevSuggestionWords == null || !SuggestionsAreEqual(prevSuggestionWords, suggestionWords))
                 {
@@ -200,7 +200,7 @@ namespace SIL.Machine
                     if (suggestions.Any(s => s.TargetWordIndices.Count > 0))
                         _totalSuggestionCount++;
                 }
-                for (int k = 0; k < suggestions.Length; k++)
+                for (int k = 0; k < suggestions.Count; k++)
                 {
                     TranslationSuggestion suggestion = suggestions[k];
                     var accepted = new List<int>();

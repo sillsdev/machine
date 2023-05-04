@@ -186,8 +186,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         {
             SourceSegmentStart = source.SourceSegmentRange.Start,
             SourceSegmentEnd = source.SourceSegmentRange.End,
-            TargetSegmentCut = source.TargetSegmentCut,
-            Confidence = source.Confidence
+            TargetSegmentCut = source.TargetSegmentCut
         };
     }
 

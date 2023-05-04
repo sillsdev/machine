@@ -6,8 +6,6 @@ namespace SIL.Machine.Translation
 {
     public class TranslationResult
     {
-        private readonly double[] _confidences;
-
         public TranslationResult(
             string translation,
             IEnumerable<string> sourceTokens,
@@ -21,7 +19,7 @@ namespace SIL.Machine.Translation
             Translation = translation;
             SourceTokens = sourceTokens.ToArray();
             TargetTokens = targetTokens.ToArray();
-            _confidences = confidences.ToArray();
+            Confidences = confidences.ToArray();
             if (Confidences.Count != TargetTokens.Count)
             {
                 throw new ArgumentException(
@@ -59,14 +57,9 @@ namespace SIL.Machine.Translation
         public string Translation { get; }
         public IReadOnlyList<string> SourceTokens { get; }
         public IReadOnlyList<string> TargetTokens { get; }
-        public IReadOnlyList<double> Confidences => _confidences;
+        public IReadOnlyList<double> Confidences { get; }
         public IReadOnlyList<TranslationSources> Sources { get; }
         public WordAlignmentMatrix Alignment { get; }
         public IReadOnlyList<Phrase> Phrases { get; }
-
-        internal void SetConfidence(int i, double score)
-        {
-            _confidences[i] = score;
-        }
     }
 }

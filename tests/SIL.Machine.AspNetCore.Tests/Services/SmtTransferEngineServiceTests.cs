@@ -241,7 +241,7 @@ public class SmtTransferEngineServiceTests
                     [3, 3] = true,
                     [4, 4] = true
                 },
-                new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) }
+                new[] { new Phrase(Range<int>.Create(0, 5), 5) }
             );
             SmtModel
                 .TranslateAsync(1, Arg.Any<string>())
@@ -337,7 +337,7 @@ public class SmtTransferEngineServiceTests
                                 [3, 3] = true,
                                 [4, 4] = true
                             },
-                            new[] { new Phrase(Range<int>.Create(0, 5), 5, 1.0) }
+                            new[] { new Phrase(Range<int>.Create(0, 5), 5) }
                         )
                     )
                 );

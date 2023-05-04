@@ -222,12 +222,12 @@ namespace SIL.Machine.Translation
 
             foreach (Hypothesis hypothesis in Search(queue))
             {
-                var builder = new TranslationResultBuilder();
+                var builder = new TranslationResultBuilder(_wordGraph.SourceTokens)
+                {
+                    TargetDetokenizer = _targetDetokenizer
+                };
                 BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
-                yield return builder.ToResult(
-                    _targetDetokenizer.Detokenize(builder.TargetTokens),
-                    _wordGraph.SourceTokens
-                );
+                yield return builder.ToResult();
             }
         }
 

@@ -143,7 +143,6 @@ namespace SIL.Machine.Translation
                     var confidences = new List<double>();
                     var sources = new List<TranslationSources>();
                     var alignment = new WordAlignmentMatrix(normalizedSourceTokens.Count, targetAnalyses.Count);
-                    double confidence = double.MaxValue;
                     for (int j = 0; j < targetAnalyses.Count; j++)
                     {
                         int[] sourceIndices = Enumerable
@@ -177,7 +176,6 @@ namespace SIL.Machine.Translation
                             targetWords.Add(targetWord);
                             confidences.Add(wordConfidence);
                             sources.Add(source);
-                            confidence = Math.Min(confidence, wordConfidence);
                         }
                     }
 
@@ -191,14 +189,7 @@ namespace SIL.Machine.Translation
                         confidences,
                         sources,
                         alignment,
-                        new[]
-                        {
-                            new Phrase(
-                                Range<int>.Create(0, normalizedSourceTokens.Count),
-                                targetWords.Count,
-                                confidence
-                            )
-                        }
+                        new[] { new Phrase(Range<int>.Create(0, normalizedSourceTokens.Count), targetWords.Count) }
                     );
                 })
                 .ToArray();

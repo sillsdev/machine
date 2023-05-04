@@ -15,14 +15,16 @@ namespace SIL.Machine.Translation
         private readonly StringBuilder _prefix;
         private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
         private readonly IRangeTokenizer<string, int, string> _targetTokenizer;
+        private readonly bool _sentenceStart;
 
         internal InteractiveTranslator(
-            string segment,
             ErrorCorrectionModel ecm,
             IInteractiveTranslationEngine engine,
             IRangeTokenizer<string, int, string> targetTokenizer,
             IDetokenizer<string, string> targetDetokenizer,
-            WordGraph wordGraph
+            string segment,
+            WordGraph wordGraph,
+            bool sentenceStart
         )
         {
             Segment = segment;
@@ -33,8 +35,12 @@ namespace SIL.Machine.Translation
             _prefix = new StringBuilder();
             IsLastWordComplete = true;
             _wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, targetDetokenizer, wordGraph);
+            TargetDetokenizer = targetDetokenizer;
+            _sentenceStart = sentenceStart;
             Correct();
         }
+
+        public IDetokenizer<string, string> TargetDetokenizer { get; }
 
         public string Segment { get; }
         public IReadOnlyList<Range<int>> SegmentWordRanges { get; }
@@ -90,7 +96,7 @@ namespace SIL.Machine.Translation
                         PrefixWordRanges.Last().End - PrefixWordRanges.First().Start
                     );
                 await _engine
-                    .TrainSegmentAsync(sourceSegment, targetSegment, cancellationToken: cancellationToken)
+                    .TrainSegmentAsync(sourceSegment, targetSegment, _sentenceStart, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
