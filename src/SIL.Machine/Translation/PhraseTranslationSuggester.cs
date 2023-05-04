@@ -89,12 +89,14 @@ namespace SIL.Machine.Translation
 
                 var newSuggestion = new TranslationSuggestion(result, indices, suggestionConfidence);
                 bool duplicate = false;
+                string[] newSuggestionWords = null;
                 int[] table = null;
                 foreach (TranslationSuggestion suggestion in suggestions)
                 {
                     if (suggestion.TargetWordIndices.Count >= newSuggestion.TargetWordIndices.Count)
                     {
-                        string[] newSuggestionWords = newSuggestion.TargetWords.ToArray();
+                        if (newSuggestionWords == null)
+                            newSuggestionWords = newSuggestion.TargetWords.ToArray();
                         if (table == null)
                             table = ComputeKmpTable(newSuggestionWords);
                         if (IsSubsequence(table, newSuggestionWords, suggestion.TargetWords.ToArray()))
@@ -160,17 +162,14 @@ namespace SIL.Machine.Translation
                     table[i] = len;
                     i++;
                 }
+                else if (len != 0)
+                {
+                    len = table[len - 1];
+                }
                 else
                 {
-                    if (len != 0)
-                    {
-                        len = table[len - 1];
-                    }
-                    else
-                    {
-                        table[i] = len;
-                        i++;
-                    }
+                    table[i] = len;
+                    i++;
                 }
             }
             return table;
