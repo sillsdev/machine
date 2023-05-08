@@ -4,6 +4,7 @@ public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
+    private readonly ILogger<ClearMLService> _logger;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -12,10 +13,19 @@ public class ClearMLService : IClearMLService
             Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    public ClearMLService(HttpClient httpClient, IOptionsMonitor<ClearMLNmtEngineOptions> options)
+    private string authorizationToken = "";
+
+    private bool isAuthenticated = false;
+
+    public ClearMLService(
+        HttpClient httpClient,
+        IOptionsMonitor<ClearMLNmtEngineOptions> options,
+        ILogger<ClearMLService> logger
+    )
     {
         _httpClient = httpClient;
         _options = options;
+        _logger = logger;
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -204,16 +214,42 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
+        await AuthorizeAsync();
         var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/{service}.{action}")
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("Authorization", $"Bearer {authorizationToken}");
+        HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
+        string result = await response.Content.ReadAsStringAsync();
+        return (JsonObject?)JsonNode.Parse(result);
+    }
+
+    private async Task AuthorizeAsync(CancellationToken cancellationToken = default)
+    {
+        if (isAuthenticated)
+            return;
+
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
+        {
+            Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
         var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
         var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        string result = await response.Content.ReadAsStringAsync();
-        return (JsonObject?)JsonNode.Parse(result);
+        isAuthenticated = false;
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            string result = await response.Content.ReadAsStringAsync();
+            authorizationToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
+            isAuthenticated = true;
+        }
+        else
+        {
+            _logger.LogInformation("Error authenticating with ClearML using access key and secret key.");
+        }
+        return;
     }
 
     private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy
