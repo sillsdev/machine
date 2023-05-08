@@ -31,7 +31,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        RWLock? rwLock = await _locks.DeleteAsync(id, cancellationToken);
+        RWLock? rwLock = await _locks.DeleteAsync(e => (string)e.Id == id, cancellationToken);
         return rwLock is not null;
     }
 
