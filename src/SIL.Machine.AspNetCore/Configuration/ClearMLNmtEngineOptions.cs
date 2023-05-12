@@ -10,5 +10,7 @@ public class ClearMLNmtEngineOptions
     public string SecretKey { get; set; } = "";
     public TimeSpan BuildPollingTimeout { get; set; } = TimeSpan.FromSeconds(2);
     public int MaxStep { get; set; } = 500_000;
+    public bool SaveModel { get; set; } = true;
     public string RootProject { get; set; } = "Machine";
+    public string DockerImage { get; set; } = "";
 }

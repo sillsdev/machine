@@ -62,7 +62,12 @@ public class ClearMLService : IClearMLService
 
     public async Task<bool> DeleteProjectAsync(string id, CancellationToken cancellationToken = default)
     {
-        var body = new JsonObject { ["project"] = id, ["delete_contents"] = true };
+        var body = new JsonObject
+        {
+            ["project"] = id,
+            ["delete_contents"] = true,
+            ["force"] = true // needed if there are tasks already in that project.
+        };
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
         var deleted = (int?)result?["data"]?["deleted"];
         if (deleted is null)
@@ -86,7 +91,8 @@ public class ClearMLService : IClearMLService
             + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{sourceLanguageTag}',\n"
             + $"    'trg_lang': '{targetLanguageTag}',\n"
-            + $"    'max_step': {_options.CurrentValue.MaxStep}\n"
+            + $"    'max_step': {_options.CurrentValue.MaxStep},\n"
+            + $"    'save_model': {_options.CurrentValue.SaveModel}\n"
             + "}\n"
             + "run(args)\n";
 
@@ -95,11 +101,7 @@ public class ClearMLService : IClearMLService
             ["name"] = buildId,
             ["project"] = projectId,
             ["script"] = new JsonObject { ["diff"] = script },
-            ["container"] = new JsonObject
-            {
-                ["image"] = "ghcr.io/sillsdev/machine.py:latest",
-                ["arguments"] = "--pull always"
-            },
+            ["container"] = new JsonObject { ["image"] = _options.CurrentValue.DockerImage, },
             ["type"] = "training"
         };
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
