@@ -13,9 +13,8 @@ public class ClearMLService : IClearMLService
             Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    private string authorizationToken = "";
-
-    private bool isAuthenticated = false;
+    private string _authToken = "";
+    private const int _authRefreshPeriod = 36_000; // 1 hour
 
     public ClearMLService(
         HttpClient httpClient,
@@ -26,6 +25,10 @@ public class ClearMLService : IClearMLService
         _httpClient = httpClient;
         _options = options;
         _logger = logger;
+        // wait for the first auth token before calling anything else.
+        AuthorizeAsync(expiration_sec: _authRefreshPeriod).Wait();
+        // start timer for auto-refresh of auth token
+        InitRefreshAuthorizationTimer().ConfigureAwait(false);
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -91,8 +94,7 @@ public class ClearMLService : IClearMLService
             + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{sourceLanguageTag}',\n"
             + $"    'trg_lang': '{targetLanguageTag}',\n"
-            + $"    'max_step': {_options.CurrentValue.MaxStep},\n"
-            + $"    'save_model': {_options.CurrentValue.SaveModel}\n"
+            + $"    'max_step': {_options.CurrentValue.MaxStep}\n"
             + "}\n"
             + "run(args)\n";
 
@@ -216,23 +218,32 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        await AuthorizeAsync();
         var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/{service}.{action}")
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        request.Headers.Add("Authorization", $"Bearer {authorizationToken}");
+        request.Headers.Add("Authorization", $"Bearer {_authToken}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync();
         return (JsonObject?)JsonNode.Parse(result);
     }
 
-    private async Task AuthorizeAsync(CancellationToken cancellationToken = default)
+    private async Task InitRefreshAuthorizationTimer()
     {
-        if (isAuthenticated)
-            return;
+        // refresh the timer 5 seconds before the token becomes invalid
+        var timer = new PeriodicTimer(TimeSpan.FromSeconds(_authRefreshPeriod - 5));
 
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
+        // refresh the token continually
+        while (await timer.WaitForNextTickAsync())
+            await AuthorizeAsync(expiration_sec: _authRefreshPeriod);
+    }
+
+    private async Task AuthorizeAsync(int expiration_sec, CancellationToken cancellationToken = default)
+    {
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"{_options.CurrentValue.ApiServer}/auth.login?expiration_sec={expiration_sec}"
+        )
         {
             Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
@@ -240,16 +251,15 @@ public class ClearMLService : IClearMLService
         var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        isAuthenticated = false;
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             string result = await response.Content.ReadAsStringAsync();
-            authorizationToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
-            isAuthenticated = true;
+            _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
+            _logger.LogInformation("Refreshed ClearML token");
         }
         else
         {
-            _logger.LogInformation("Error authenticating with ClearML using access key and secret key.");
+            _logger.LogWarning($"Error authenticating with ClearML using access key and secret key.  \n{response}");
         }
         return;
     }
