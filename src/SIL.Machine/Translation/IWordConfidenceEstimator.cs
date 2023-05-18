@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SIL.Machine.Annotations;
+﻿using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {

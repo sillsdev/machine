@@ -70,13 +70,15 @@ public class ClearMLService : IClearMLService
     )
     {
         string script =
-            "from machine.webapi.clearml_nmt_engine_build_job import run\n"
+            "from machine.jobs.build_nmt_engine import run\n"
             + "args = {\n"
+            + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
             + $"    'engine_id': '{engineId}',\n"
             + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{sourceLanguageTag}',\n"
             + $"    'trg_lang': '{targetLanguageTag}',\n"
-            + $"    'max_step': {_options.CurrentValue.MaxStep}\n"
+            + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
+            + $"    'clearml': True\n"
             + "}\n"
             + "run(args)\n";
 
