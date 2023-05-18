@@ -182,7 +182,10 @@ namespace SIL.Machine
             string[][] prevSuggestionWords = null;
             bool isLastWordSuggestion = false;
             string suggestionResult = null;
-            InteractiveTranslator translator = await translatorFactory.CreateAsync(row.SourceText, cancellationToken);
+            InteractiveTranslator translator = await translatorFactory.CreateAsync(
+                row.SourceText,
+                cancellationToken: cancellationToken
+            );
             while (translator.PrefixWordRanges.Count < row.TargetSegment.Count || !translator.IsLastWordComplete)
             {
                 int targetIndex = translator.PrefixWordRanges.Count;
