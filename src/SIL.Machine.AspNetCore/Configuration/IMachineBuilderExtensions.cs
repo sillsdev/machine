@@ -100,6 +100,14 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddClearMLService(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
+
+        //workaround register satisfying the interface and as a hosted service.
+        builder.Services.AddSingleton<ClearMLAuthenticationService>();
+        builder.Services.AddSingleton<IClearMLAuthenticationService>(
+            p => p.GetRequiredService<ClearMLAuthenticationService>()
+        );
+        builder.Services.AddSingleton<IHostedService>(p => p.GetRequiredService<ClearMLAuthenticationService>());
+
         return builder;
     }
 
