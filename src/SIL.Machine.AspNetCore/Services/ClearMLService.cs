@@ -26,6 +26,7 @@ public class ClearMLService : IClearMLService
         _options = options;
         _logger = logger;
         _clearMLAuthService = clearMLAuthService;
+        Sldr.Initialize();
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -90,8 +91,8 @@ public class ClearMLService : IClearMLService
             + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
             + $"    'engine_id': '{engineId}',\n"
             + $"    'build_id': '{buildId}',\n"
-            + $"    'src_lang': '{sourceLanguageTag}',\n"
-            + $"    'trg_lang': '{targetLanguageTag}',\n"
+            + $"    'src_lang': '{ConvertLanguageTag(sourceLanguageTag)}',\n"
+            + $"    'trg_lang': '{ConvertLanguageTag(targetLanguageTag)}',\n"
             + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
             + $"    'clearml': True\n"
             + "}\n"
@@ -223,8 +224,25 @@ public class ClearMLService : IClearMLService
         };
         request.Headers.Add("Authorization", $"Bearer {_clearMLAuthService.GetAuthToken()}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        string result = await response.Content.ReadAsStringAsync();
+        string result = await response.Content.ReadAsStringAsync(cancellationToken);
         return (JsonObject?)JsonNode.Parse(result);
+    }
+
+    private static string ConvertLanguageTag(string languageTag)
+    {
+        if (
+            !IetfLanguageTag.TryGetSubtags(
+                languageTag,
+                out LanguageSubtag languageSubtag,
+                out ScriptSubtag scriptSubtag,
+                out _,
+                out _
+            )
+        )
+            return languageTag;
+
+        // Convert to NLLB language codes
+        return $"{languageSubtag.Iso3Code}_{scriptSubtag.Code}";
     }
 
     private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy

@@ -6,6 +6,7 @@ global using NSubstitute;
 global using NSubstitute.ClearExtensions;
 global using NSubstitute.ReceivedExtensions;
 global using NUnit.Framework;
+global using RichardSzalay.MockHttp;
 global using SIL.DataAccess;
 global using SIL.Machine.Annotations;
 global using SIL.Machine.AspNetCore.Configuration;
