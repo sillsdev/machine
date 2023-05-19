@@ -5,10 +5,12 @@ public class ClearMLAuthenticationService : IClearMLAuthenticationService
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
     private readonly ILogger<ClearMLAuthenticationService> _logger;
-    private int _refreshPeriod = 3600; // 1 hour
-    private PeriodicTimer? _periodicTimer = null;
-    private CancellationTokenSource _ctSource = new CancellationTokenSource();
-    private int executionCount = 0;
+
+    // technically, the token should be good for 30 days, but let's refresh each hour
+    // to know well ahead of time if something is wrong.
+    private const int _refreshPeriod = 3600;
+    private readonly CancellationTokenSource _ctSource = new CancellationTokenSource();
+    private int _consecutiveFailureCount = 0;
     private string _authToken = "";
 
     public ClearMLAuthenticationService(
@@ -29,26 +31,28 @@ public class ClearMLAuthenticationService : IClearMLAuthenticationService
 
     public Task StartAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("ClearML Authentication Token Refresh service running.");
+        var cancellationToken = _ctSource.Token;
 
-        InitRefreshAuthorizationTimer();
+        // call once during init to ensure that the auth token is populated
+        AuthorizeAsync(cancellationToken).Wait();
+
+        _logger.LogInformation("ClearML Authentication Token Refresh service running - and has initial token.");
+
+        Task.Run(() => InitRefreshAuthorizationTimer(cancellationToken));
 
         return Task.CompletedTask;
     }
 
-    private async void InitRefreshAuthorizationTimer()
+    private async Task InitRefreshAuthorizationTimer(CancellationToken cancellationToken)
     {
-        var token = _ctSource.Token;
-
-        // call once during init so that it is populated
-        await AuthorizeAsync(expiration_sec: _refreshPeriod * 2 + 10, cancellationToken: token);
-
-        // Let the auth time be twice as long, just in case it fails once.
-        _periodicTimer = new PeriodicTimer(TimeSpan.FromSeconds(_refreshPeriod));
         try
         {
-            while (await _periodicTimer.WaitForNextTickAsync(cancellationToken: token))
-                await AuthorizeAsync(expiration_sec: _refreshPeriod * 2 + 10, cancellationToken: token);
+            cancellationToken.ThrowIfCancellationRequested();
+            while (true)
+            {
+                await AuthorizeAsync(cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(_refreshPeriod), cancellationToken);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -56,14 +60,9 @@ public class ClearMLAuthenticationService : IClearMLAuthenticationService
         }
     }
 
-    private async Task AuthorizeAsync(int expiration_sec, CancellationToken cancellationToken)
+    private async Task AuthorizeAsync(CancellationToken cancellationToken)
     {
-        var count = Interlocked.Increment(ref executionCount);
-
-        var request = new HttpRequestMessage(
-            HttpMethod.Post,
-            $"{_options.CurrentValue.ApiServer}/auth.login?expiration_sec={_refreshPeriod * 2 + 10}"
-        )
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
         {
             Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
@@ -75,27 +74,21 @@ public class ClearMLAuthenticationService : IClearMLAuthenticationService
         {
             string result = await response.Content.ReadAsStringAsync();
             _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
-            _logger.LogInformation("ClearML Authentication Token Refresh Successful. Count: {Count}", count);
+            _consecutiveFailureCount = 0;
+            _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
         }
         else
         {
+            _consecutiveFailureCount += 1;
             _logger.LogWarning(
-                $"ClearML Authentication Token Refresh Unsuccessful. Count: {count}\nError response {response}"
+                $"ClearML Authentication Token Refresh Unsuccessful {_consecutiveFailureCount} consecutive times.\nError response: {response}"
             );
         }
     }
 
     public Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("ClearML Authentication Token Refresh is stopping.");
-
         _ctSource.Cancel();
-
         return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        _periodicTimer?.Dispose();
     }
 }
