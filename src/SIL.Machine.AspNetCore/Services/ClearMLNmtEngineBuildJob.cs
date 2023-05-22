@@ -152,10 +152,13 @@ public class ClearMLNmtEngineBuildJob
                 cancellationToken: CancellationToken.None
             );
 
+            if (!metrics.TryGetValue("bleu", out double confidence))
+                confidence = 0;
+
             await _platformService.BuildCompletedAsync(
                 buildId,
                 corpusSize,
-                Math.Round(metrics["bleu"], 2, MidpointRounding.AwayFromZero),
+                Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
                 CancellationToken.None
             );
             _logger.LogInformation("Build completed in {0}s ({1})", clearMLTask.ActiveDuration, buildId);
