@@ -22,6 +22,7 @@ public class SharedFileService : ISharedFileService
             {
                 case "file":
                     _fileStorage = Files.Of.LocalDisk(_baseUri.LocalPath);
+                    Directory.CreateDirectory(_baseUri.LocalPath);
                     break;
                 case "s3":
                     _fileStorage = new S3FileStorage(

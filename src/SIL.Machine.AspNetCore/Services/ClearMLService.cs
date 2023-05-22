@@ -4,6 +4,7 @@ public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
+    private readonly ILogger<ClearMLService> _logger;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -12,10 +13,19 @@ public class ClearMLService : IClearMLService
             Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    public ClearMLService(HttpClient httpClient, IOptionsMonitor<ClearMLNmtEngineOptions> options)
+    private IClearMLAuthenticationService _clearMLAuthService;
+
+    public ClearMLService(
+        HttpClient httpClient,
+        IOptionsMonitor<ClearMLNmtEngineOptions> options,
+        ILogger<ClearMLService> logger,
+        IClearMLAuthenticationService clearMLAuthService
+    )
     {
         _httpClient = httpClient;
         _options = options;
+        _logger = logger;
+        _clearMLAuthService = clearMLAuthService;
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -52,7 +62,12 @@ public class ClearMLService : IClearMLService
 
     public async Task<bool> DeleteProjectAsync(string id, CancellationToken cancellationToken = default)
     {
-        var body = new JsonObject { ["project"] = id, ["delete_contents"] = true };
+        var body = new JsonObject
+        {
+            ["project"] = id,
+            ["delete_contents"] = true,
+            ["force"] = true // needed if there are tasks already in that project.
+        };
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
         var deleted = (int?)result?["data"]?["deleted"];
         if (deleted is null)
@@ -87,11 +102,7 @@ public class ClearMLService : IClearMLService
             ["name"] = buildId,
             ["project"] = projectId,
             ["script"] = new JsonObject { ["diff"] = script },
-            ["container"] = new JsonObject
-            {
-                ["image"] = "ghcr.io/sillsdev/machine.py:latest",
-                ["arguments"] = "--pull always"
-            },
+            ["container"] = new JsonObject { ["image"] = _options.CurrentValue.DockerImage, },
             ["type"] = "training"
         };
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
@@ -210,9 +221,7 @@ public class ClearMLService : IClearMLService
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
-        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
-        request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
+        request.Headers.Add("Authorization", $"Bearer {_clearMLAuthService.GetAuthToken()}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync();
         return (JsonObject?)JsonNode.Parse(result);

@@ -1,4 +1,0 @@
-externalHost: machine-api.vcap.me
-enableTls: false
-namespace: default
-localVolume: true
