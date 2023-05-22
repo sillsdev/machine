@@ -101,12 +101,9 @@ public static class IMachineBuilderExtensions
     {
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
 
-        //workaround register satisfying the interface and as a hosted service.
-        builder.Services.AddSingleton<ClearMLAuthenticationService>();
-        builder.Services.AddSingleton<IClearMLAuthenticationService>(
-            p => p.GetRequiredService<ClearMLAuthenticationService>()
-        );
-        builder.Services.AddSingleton<IHostedService>(p => p.GetRequiredService<ClearMLAuthenticationService>());
+        // workaround register satisfying the interface and as a hosted service.
+        builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
+        builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
 
         return builder;
     }
