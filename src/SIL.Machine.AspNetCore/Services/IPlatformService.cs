@@ -21,7 +21,6 @@ public interface IPlatformService
     Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default);
     Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default);
 
-    Task DeleteAllPretranslationsAsync(string engineId, CancellationToken cancellationToken = default);
     Task InsertPretranslationsAsync(
         string engineId,
         IAsyncEnumerable<Pretranslation> pretranslations,

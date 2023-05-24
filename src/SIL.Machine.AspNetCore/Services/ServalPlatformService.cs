@@ -84,14 +84,6 @@ public class ServalPlatformService : IPlatformService
         );
     }
 
-    public async Task DeleteAllPretranslationsAsync(string engineId, CancellationToken cancellationToken = default)
-    {
-        await _client.DeleteAllPretranslationsAsync(
-            new DeleteAllPretranslationsRequest { EngineId = engineId },
-            cancellationToken: cancellationToken
-        );
-    }
-
     public async Task InsertPretranslationsAsync(
         string engineId,
         IAsyncEnumerable<Pretranslation> pretranslations,
