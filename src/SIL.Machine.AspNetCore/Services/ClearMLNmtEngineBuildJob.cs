@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using SIL.Machine.AspNetCore.Models;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLNmtEngineBuildJob
 {
@@ -172,6 +174,7 @@ public class ClearMLNmtEngineBuildJob
             );
             if (engine is null || engine.IsCanceled)
             {
+                // This is an actual cancellation triggered by an API call.
                 ClearMLTask? task = await _clearMLService.GetTaskAsync(
                     buildId,
                     clearMLProjectId,
@@ -182,7 +185,6 @@ public class ClearMLNmtEngineBuildJob
 
                 await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
 
-                // This is an actual cancellation triggered by an API call.
                 bool buildStarted = await _engines.ExistsAsync(
                     e => e.EngineId == engineId && e.BuildId == buildId && e.BuildState == BuildState.Active,
                     CancellationToken.None
@@ -203,6 +205,12 @@ public class ClearMLNmtEngineBuildJob
                     await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
                     _logger.LogInformation("Build canceled ({0})", buildId);
                 }
+            }
+            else if (engine is not null)
+            {
+                // the build was canceled, because of a server shutdown
+                // switch state back to pending
+                await _platformService.BuildRestartingAsync(buildId, CancellationToken.None);
             }
 
             throw;
@@ -308,8 +316,6 @@ public class ClearMLNmtEngineBuildJob
 
     private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
     {
-        await _platformService.DeleteAllPretranslationsAsync(engineId, cancellationToken);
-
         await using var targetPretranslateStream = await _sharedFileService.OpenReadAsync(
             $"builds/{buildId}/pretranslate.trg.json",
             cancellationToken
