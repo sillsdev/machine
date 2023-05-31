@@ -123,7 +123,12 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
                 );
                 u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
             }
-            RWLock? rwLock = await _locks.UpdateAsync(filter, Update, upsert: true, cancellationToken);
+            RWLock? rwLock = await _locks.UpdateAsync(
+                filter,
+                Update,
+                upsert: true,
+                cancellationToken: cancellationToken
+            );
             return rwLock is not null;
         }
         catch (DuplicateKeyException)
@@ -158,7 +163,12 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
                 );
             }
 
-            RWLock? rwLock = await _locks.UpdateAsync(filter, Update, upsert: true, cancellationToken);
+            RWLock? rwLock = await _locks.UpdateAsync(
+                filter,
+                Update,
+                upsert: true,
+                cancellationToken: cancellationToken
+            );
             return rwLock is not null;
         }
         catch (DuplicateKeyException)
