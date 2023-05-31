@@ -17,4 +17,12 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
 	</ItemGroup>
+
+    <!-- Include icu.net.dll.config - which is only available after the package is built -->
+    <ItemGroup>
+      <ResolvedFileToPublish Include=".\bin\Release\**\icu.net.dll.config">
+        <RelativePath>icu.net.dll.config</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
 </Project>
