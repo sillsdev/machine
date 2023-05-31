@@ -11,6 +11,10 @@
 	</Target>
 
 	<ItemGroup>
+	  <PackageReference Include="icu.net" Version="2.9.0" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
 	</ItemGroup>
 </Project>
