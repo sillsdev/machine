@@ -36,7 +36,14 @@ public class ClearMLServiceTests
             authService
         );
 
-        string projectId = await service.CreateTaskAsync("build1", "project1", "engine1", "es", "en");
+        string projectId = await service.CreateTaskAsync(
+            "build1",
+            "project1",
+            "engine1",
+            "es",
+            "en",
+            "s3://aqua-ml-data"
+        );
         Assert.That(projectId, Is.EqualTo("projectId"));
         mockHttp.VerifyNoOutstandingExpectation();
     }

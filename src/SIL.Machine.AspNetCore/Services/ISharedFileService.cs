@@ -2,7 +2,9 @@
 
 public interface ISharedFileService
 {
-    Uri GetUri(string path);
+    Uri GetBaseUri();
+
+    Uri GetResolvedUri(string path);
 
     Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default);
 

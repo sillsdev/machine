@@ -26,7 +26,7 @@ public class SharedFileService : ISharedFileService
                     break;
                 case "s3":
                     _fileStorage = new S3FileStorage(
-                        new Uri($"https://{_baseUri.Host}.s3.amazonaws.com"),
+                        new Uri($"https://{_baseUri.Host}.s3.amazonaws.com{_baseUri.AbsolutePath}"),
                         new S3AuthHandler(
                             options.Value.S3AccessKeyId,
                             options.Value.S3SecretAccessKey,
@@ -41,7 +41,12 @@ public class SharedFileService : ISharedFileService
         }
     }
 
-    public Uri GetUri(string path)
+    public Uri GetBaseUri()
+    {
+        return GetResolvedUri("");
+    }
+
+    public Uri GetResolvedUri(string path)
     {
         if (_baseUri is null)
             return new Uri($"memory://{path}");
