@@ -69,6 +69,7 @@ public class ClearMLNmtEngineBuildJob
                     engineId,
                     engine.SourceLanguage,
                     engine.TargetLanguage,
+                    _sharedFileService.GetBaseUri().ToString(),
                     cancellationToken
                 );
                 await _clearMLService.EnqueueTaskAsync(clearMLTaskId, CancellationToken.None);

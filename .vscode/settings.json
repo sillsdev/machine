@@ -7,4 +7,5 @@
     "editor.defaultFormatter": "csharpier.csharpier-vscode"
   },
   "csharpier.enableDebugLogs": true,
+  "cmake.configureOnOpen": false,
 }

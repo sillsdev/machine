@@ -16,6 +16,7 @@ public interface IClearMLService
         string engineId,
         string sourceLanguageTag,
         string targetLanguageTag,
+        string sharedFileUri,
         CancellationToken cancellationToken = default
     );
     Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default);
