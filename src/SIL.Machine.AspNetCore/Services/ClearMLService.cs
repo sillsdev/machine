@@ -82,6 +82,7 @@ public class ClearMLService : IClearMLService
         string engineId,
         string sourceLanguageTag,
         string targetLanguageTag,
+        string sharedFileUri,
         CancellationToken cancellationToken = default
     )
     {
@@ -94,6 +95,7 @@ public class ClearMLService : IClearMLService
             + $"    'src_lang': '{ConvertLanguageTag(sourceLanguageTag)}',\n"
             + $"    'trg_lang': '{ConvertLanguageTag(targetLanguageTag)}',\n"
             + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
+            + $"    'shared_file_uri': '{sharedFileUri}',\n"
             + $"    'clearml': True\n"
             + "}\n"
             + "run(args)\n";

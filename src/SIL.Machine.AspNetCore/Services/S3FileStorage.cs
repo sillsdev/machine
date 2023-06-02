@@ -9,6 +9,12 @@ public class S3FileStorage : DisposableBase, IFileStorage
         _http = new HttpClient(authHandler) { BaseAddress = endpoint };
     }
 
+    private string NormalizeWithBasePath(IOPath path, bool appendTrailingSlash = false)
+    {
+        return _http.BaseAddress!.AbsolutePath
+            + IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: appendTrailingSlash);
+    }
+
     public async Task<bool> Exists(IOPath path, CancellationToken cancellationToken = default)
     {
         using Stream? s = await OpenRead(path, cancellationToken);
@@ -25,7 +31,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
             throw new ArgumentException("path needs to be a folder", nameof(path));
 
         string? delimiter = recurse ? null : "/";
-        string? prefix = IOPath.IsRoot(path) ? null : path?.NLWTS;
+        string? prefix = IOPath.IsRoot(path) ? null : NormalizeWithBasePath(path!, appendTrailingSlash: true);
 
         // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
         string uri = "/?list-type=2";
@@ -56,7 +62,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
 
         // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
         HttpResponseMessage response = await _http.SendAsync(
-            new HttpRequestMessage(HttpMethod.Get, $"/{IOPath.Normalize(path, true)}"),
+            new HttpRequestMessage(HttpMethod.Get, NormalizeWithBasePath(path)),
             cancellationToken
         );
 
@@ -73,10 +79,10 @@ public class S3FileStorage : DisposableBase, IFileStorage
         if (path is null)
             throw new ArgumentNullException(nameof(path));
 
-        string npath = IOPath.Normalize(path, true);
+        string npath = NormalizeWithBasePath(path);
 
         // initiate upload and get upload ID
-        var request = new HttpRequestMessage(HttpMethod.Post, $"/{npath}?uploads");
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{npath}?uploads");
         HttpResponseMessage response = await _http.SendAsync(request, cancellationToken);
         response.EnsureSuccessStatusCode();
         string xml = await response.Content.ReadAsStringAsync(cancellationToken); // this contains UploadId
@@ -158,7 +164,10 @@ public class S3FileStorage : DisposableBase, IFileStorage
 
         // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
         (
-            await _http.SendAsync(new HttpRequestMessage(HttpMethod.Delete, path.NLS), cancellationToken)
+            await _http.SendAsync(
+                new HttpRequestMessage(HttpMethod.Delete, NormalizeWithBasePath(path)),
+                cancellationToken
+            )
         ).EnsureSuccessStatusCode();
     }
 
@@ -236,7 +245,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         int count
     )
     {
-        return new HttpRequestMessage(HttpMethod.Put, $"/{key}?partNumber={partNumber}&uploadId={uploadId}")
+        return new HttpRequestMessage(HttpMethod.Put, $"{key}?partNumber={partNumber}&uploadId={uploadId}")
         {
             Content = new ByteArrayContent(buffer, 0, count)
         };
@@ -249,7 +258,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         IEnumerable<string> partTags
     )
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"/{key}?uploadId={uploadId}");
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{key}?uploadId={uploadId}");
 
         var sb = new StringBuilder(
             @"<?xml version=""1.0"" encoding=""UTF-8""?><CompleteMultipartUpload xmlns=""http://s3.amazonaws.com/doc/2006-03-01/"">"
