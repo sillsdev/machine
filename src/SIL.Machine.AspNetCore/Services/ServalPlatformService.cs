@@ -99,6 +99,7 @@ public class ServalPlatformService : IPlatformService
                     EngineId = engineId,
                     CorpusId = pretranslation.CorpusId,
                     TextId = pretranslation.TextId,
+                    Refs = { pretranslation.Refs },
                     Translation = pretranslation.Translation
                 },
                 cancellationToken
