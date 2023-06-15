@@ -8,4 +8,5 @@
   },
   "csharpier.enableDebugLogs": true,
   "cmake.configureOnOpen": false,
+  "notebook.formatOnSave.enabled": true
 }

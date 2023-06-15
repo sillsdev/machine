@@ -15,7 +15,6 @@ namespace SIL.Machine.Translation
         private readonly StringBuilder _prefix;
         private readonly ErrorCorrectionWordGraphProcessor _wordGraphProcessor;
         private readonly IRangeTokenizer<string, int, string> _targetTokenizer;
-        private readonly bool _sentenceStart;
 
         internal InteractiveTranslator(
             ErrorCorrectionModel ecm,
@@ -36,7 +35,7 @@ namespace SIL.Machine.Translation
             IsLastWordComplete = true;
             _wordGraphProcessor = new ErrorCorrectionWordGraphProcessor(ecm, targetDetokenizer, wordGraph);
             TargetDetokenizer = targetDetokenizer;
-            _sentenceStart = sentenceStart;
+            SentenceStart = sentenceStart;
             Correct();
         }
 
@@ -47,6 +46,7 @@ namespace SIL.Machine.Translation
         public string Prefix => _prefix.ToString();
         public IReadOnlyList<Range<int>> PrefixWordRanges { get; private set; }
         public bool IsLastWordComplete { get; private set; }
+        public bool SentenceStart { get; }
 
         public bool IsSegmentValid => SegmentWordRanges.Count <= TranslationConstants.MaxSegmentLength;
 
@@ -96,7 +96,7 @@ namespace SIL.Machine.Translation
                         PrefixWordRanges.Last().End - PrefixWordRanges.First().Start
                     );
                 await _engine
-                    .TrainSegmentAsync(sourceSegment, targetSegment, _sentenceStart, cancellationToken)
+                    .TrainSegmentAsync(sourceSegment, targetSegment, SentenceStart, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
