@@ -1,6 +1,4 @@
-﻿using SIL.Machine.AspNetCore.Models;
-
-namespace SIL.Machine.AspNetCore.Services;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLNmtEngineBuildJob
 {

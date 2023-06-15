@@ -1,28 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aa9e7440-5a04-4de6-ba51-bab9ef4a62e1</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>aa9e7440-5a04-4de6-ba51-bab9ef4a62e1</UserSecretsId>
+	</PropertyGroup>
 
 	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="icu.net" Version="2.9.0" />
+		<PackageReference Include="icu.net" Version="2.9.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
+		<ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
 	</ItemGroup>
 
-    <!-- Include icu.net.dll.config - which is only available after the package is built -->
-    <ItemGroup>
-      <ResolvedFileToPublish Include=".\bin\Release\net6.0\icu.net.dll.config">
-        <RelativePath>icu.net.dll.config</RelativePath>
-      </ResolvedFileToPublish>
-    </ItemGroup>
+	<!-- Include icu.net.dll.config - which is only available after the package is built -->
+	<ItemGroup>
+		<ResolvedFileToPublish Include=".\bin\Release\net6.0\icu.net.dll.config">
+			<RelativePath>icu.net.dll.config</RelativePath>
+		</ResolvedFileToPublish>
+	</ItemGroup>
 
 </Project>

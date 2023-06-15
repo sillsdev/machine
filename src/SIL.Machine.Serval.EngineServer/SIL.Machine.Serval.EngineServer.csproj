@@ -8,18 +8,18 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="icu.net" Version="2.9.0" />
+		<PackageReference Include="icu.net" Version="2.9.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj" />
 	</ItemGroup>
 
-    <!-- Include icu.net.dll.config - which is only available after the package is built -->
-    <ItemGroup>
-      <ResolvedFileToPublish Include=".\bin\Release\net6.0\icu.net.dll.config">
-        <RelativePath>icu.net.dll.config</RelativePath>
-      </ResolvedFileToPublish>
-    </ItemGroup>
+	<!-- Include icu.net.dll.config - which is only available after the package is built -->
+	<ItemGroup>
+		<ResolvedFileToPublish Include=".\bin\Release\net6.0\icu.net.dll.config">
+			<RelativePath>icu.net.dll.config</RelativePath>
+		</ResolvedFileToPublish>
+	</ItemGroup>
 
 </Project>
