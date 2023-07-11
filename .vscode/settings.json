@@ -8,5 +8,9 @@
   },
   "csharpier.enableDebugLogs": true,
   "cmake.configureOnOpen": false,
-  "notebook.formatOnSave.enabled": true
+  "notebook.formatOnSave.enabled": true,
+  "cSpell.words": [
+    "Bson",
+    "Nito"
+  ]
 }

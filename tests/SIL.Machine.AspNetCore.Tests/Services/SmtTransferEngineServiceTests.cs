@@ -21,8 +21,8 @@ public class SmtTransferEngineServiceTests
         await env.TruecaserTrainer
             .Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
-        await env.SmtBatchTrainer.Received().SaveAsync();
-        await env.TruecaserTrainer.Received().SaveAsync();
+        await env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
+        await env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.None));
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
@@ -67,7 +67,10 @@ public class SmtTransferEngineServiceTests
             Arg.Do<CancellationToken>(ct =>
             {
                 while (true)
+                {
                     ct.ThrowIfCancellationRequested();
+                    Thread.Sleep(100);
+                }
             })
         );
         await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
