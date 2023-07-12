@@ -26,7 +26,7 @@ public class ClearMLNmtEngineServiceTests
         };
         bool first = true;
         env.ClearMLService
-            .GetTaskAsync(Arg.Any<string>(), "project1", Arg.Any<CancellationToken>())
+            .GetTaskByNameAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(x =>
             {
                 if (first)
@@ -37,7 +37,7 @@ public class ClearMLNmtEngineServiceTests
                 return Task.FromResult<ClearMLTask?>(task);
             });
         env.ClearMLService
-            .GetTaskAsync("task1", Arg.Any<CancellationToken>())
+            .GetTaskByIdAsync("task1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<ClearMLTask?>(task));
         await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();

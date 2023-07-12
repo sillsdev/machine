@@ -50,13 +50,11 @@ public class SmtTransferEngineBuildJob
         ITrainer? truecaseTrainer = null;
         try
         {
-            CancellationTokenSource cts = new();
-            SubscribeForCancellationAsync(cts, engineId, buildId);
-            CancellationTokenSource combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(
-                externalCancellationToken,
-                cts.Token
+            var combinedCancellationToken = new SubscribeForCancellation(_engines).GetCombinedCancellationToken(
+                engineId,
+                buildId,
+                externalCancellationToken
             );
-            var combinedCancellationToken = combinedCancellationSource.Token;
 
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
@@ -224,29 +222,6 @@ public class SmtTransferEngineBuildJob
         {
             smtModelTrainer?.Dispose();
             truecaseTrainer?.Dispose();
-        }
-    }
-
-    private async void SubscribeForCancellationAsync(CancellationTokenSource cts, string engineId, string buildId)
-    {
-        var cancellationToken = cts.Token;
-        ISubscription<TranslationEngine> sub = await _engines.SubscribeAsync(
-            e => e.EngineId == engineId && e.BuildId == buildId
-        );
-        if (sub.Change.Entity is null)
-            return;
-        while (true)
-        {
-            await sub.WaitForChangeAsync(TimeSpan.FromSeconds(10), cancellationToken);
-            TranslationEngine? engine = sub.Change.Entity;
-            if (engine is null || engine.IsCanceled)
-            {
-                cts.Cancel();
-                return;
-            }
-            if (cancellationToken.IsCancellationRequested)
-                return;
-            Thread.Sleep(500);
         }
     }
 }
