@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AspNetCore.HealthChecks.Aws.S3" Version="6.0.2" />
 		<PackageReference Include="icu.net" Version="2.9.0" />
 	</ItemGroup>
 
