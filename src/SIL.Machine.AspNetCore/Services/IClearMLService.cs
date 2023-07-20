@@ -28,4 +28,8 @@ public interface IClearMLService
         string id,
         CancellationToken cancellationToken = default
     );
+
+    Task<bool> PingAsync(CancellationToken cancellationToken = default);
+
+    Task<bool> AvailableWorkersExist(CancellationToken cancellationToken = default);
 }
