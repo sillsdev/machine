@@ -1,4 +1,3 @@
-// Currently not hooked-up - for some reason, it would not run/log when I attempted to attach it. I will be revisiting this soon.
 public class S3HealthCheck : IHealthCheck
 {
     private readonly ISharedFileService _sharedFileService;
@@ -17,8 +16,7 @@ public class S3HealthCheck : IHealthCheck
     {
         try
         {
-            await _sharedFileService.ExistsAsync(".");
-            _logger.LogInformation("The S3 bucket is available");
+            await _sharedFileService.Ls("/models/");
             return HealthCheckResult.Healthy("The S3 bucket is available");
         }
         catch (Exception e)

@@ -9,6 +9,6 @@ builder.Services
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health"); //I don't think this really does anything
 
 app.Run();
