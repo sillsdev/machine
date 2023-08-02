@@ -16,6 +16,8 @@ public enum ClearMLTaskStatus
 
 public class ClearMLTask
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = default!;
     public string Name { get; set; } = default!;
     public ClearMLProject Project { get; set; } = default!;

@@ -35,30 +35,36 @@ public class ClearMLNmtEngineBuildJob
         string engineId,
         string buildId,
         IReadOnlyList<Corpus> corpora,
-        CancellationToken cancellationToken
+        CancellationToken externalCancellationToken
     )
     {
-        string? clearMLProjectId = await _clearMLService.GetProjectIdAsync(engineId, cancellationToken);
+        string? clearMLProjectId = await _clearMLService.GetProjectIdAsync(engineId, externalCancellationToken);
         if (clearMLProjectId is null)
             return;
 
         try
         {
+            var combinedCancellationToken = new SubscribeForCancellation(_engines).GetCombinedCancellationToken(
+                engineId,
+                buildId,
+                externalCancellationToken
+            );
+
             TranslationEngine? engine = await _engines.GetAsync(
                 e => e.EngineId == engineId && e.BuildId == buildId,
-                cancellationToken: cancellationToken
+                cancellationToken: combinedCancellationToken
             );
             if (engine is null || engine.IsCanceled)
                 throw new OperationCanceledException();
 
             int corpusSize;
             if (engine.BuildState is BuildState.Pending)
-                corpusSize = await WriteDataFilesAsync(buildId, corpora, cancellationToken);
+                corpusSize = await WriteDataFilesAsync(buildId, corpora, combinedCancellationToken);
             else
                 corpusSize = GetCorpusSize(corpora);
 
             string clearMLTaskId;
-            ClearMLTask? clearMLTask = await _clearMLService.GetTaskAsync(buildId, clearMLProjectId, cancellationToken);
+            ClearMLTask? clearMLTask = await _clearMLService.GetTaskByNameAsync(buildId, combinedCancellationToken);
             if (clearMLTask is null)
             {
                 clearMLTaskId = await _clearMLService.CreateTaskAsync(
@@ -68,7 +74,7 @@ public class ClearMLNmtEngineBuildJob
                     engine.SourceLanguage,
                     engine.TargetLanguage,
                     _sharedFileService.GetBaseUri().ToString(),
-                    cancellationToken
+                    combinedCancellationToken
                 );
                 await _clearMLService.EnqueueTaskAsync(clearMLTaskId, CancellationToken.None);
             }
@@ -80,9 +86,9 @@ public class ClearMLNmtEngineBuildJob
             int lastIteration = 0;
             while (true)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                combinedCancellationToken.ThrowIfCancellationRequested();
 
-                clearMLTask = await _clearMLService.GetTaskAsync(clearMLTaskId, cancellationToken);
+                clearMLTask = await _clearMLService.GetTaskByIdAsync(clearMLTaskId, combinedCancellationToken);
                 if (clearMLTask is null)
                     throw new InvalidOperationException("The ClearML task does not exist.");
 
@@ -98,7 +104,7 @@ public class ClearMLNmtEngineBuildJob
                     engine = await _engines.UpdateAsync(
                         e => e.EngineId == engineId && e.BuildId == buildId && !e.IsCanceled,
                         u => u.Set(e => e.BuildState, BuildState.Active),
-                        cancellationToken: cancellationToken
+                        cancellationToken: combinedCancellationToken
                     );
                     if (engine is null)
                         throw new OperationCanceledException();
@@ -129,11 +135,11 @@ public class ClearMLNmtEngineBuildJob
                 }
                 if (clearMLTask.Status is ClearMLTaskStatus.Completed)
                     break;
-                await Task.Delay(_options.CurrentValue.BuildPollingTimeout, cancellationToken);
+                await Task.Delay(_options.CurrentValue.BuildPollingTimeout, combinedCancellationToken);
             }
 
             // The ClearML task has successfully completed, so insert the generated pretranslations into the database.
-            await InsertPretranslationsAsync(engineId, buildId, cancellationToken);
+            await InsertPretranslationsAsync(engineId, buildId, combinedCancellationToken);
 
             IReadOnlyDictionary<string, double> metrics = await _clearMLService.GetTaskMetricsAsync(
                 clearMLTaskId,
@@ -174,11 +180,7 @@ public class ClearMLNmtEngineBuildJob
             if (engine is null || engine.IsCanceled)
             {
                 // This is an actual cancellation triggered by an API call.
-                ClearMLTask? task = await _clearMLService.GetTaskAsync(
-                    buildId,
-                    clearMLProjectId,
-                    CancellationToken.None
-                );
+                ClearMLTask? task = await _clearMLService.GetTaskByNameAsync(buildId, CancellationToken.None);
                 if (task is not null)
                     await _clearMLService.StopTaskAsync(task.Id, CancellationToken.None);
 

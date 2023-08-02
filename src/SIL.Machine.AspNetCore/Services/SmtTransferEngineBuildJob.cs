@@ -39,7 +39,7 @@ public class SmtTransferEngineBuildJob
         string engineId,
         string buildId,
         IReadOnlyList<Corpus> corpora,
-        CancellationToken cancellationToken
+        CancellationToken externalCancellationToken
     )
     {
         IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
@@ -50,23 +50,34 @@ public class SmtTransferEngineBuildJob
         ITrainer? truecaseTrainer = null;
         try
         {
+            var combinedCancellationToken = new SubscribeForCancellation(_engines).GetCombinedCancellationToken(
+                engineId,
+                buildId,
+                externalCancellationToken
+            );
+
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
-            await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
+            await using (await rwLock.WriterLockAsync(cancellationToken: combinedCancellationToken))
             {
                 engine = await _engines.UpdateAsync(
                     e => e.EngineId == engineId && e.BuildId == buildId && !e.IsCanceled,
                     u => u.Set(e => e.BuildState, BuildState.Active),
-                    cancellationToken: CancellationToken.None
+                    cancellationToken: combinedCancellationToken
                 );
                 if (engine is null)
                     throw new OperationCanceledException();
 
-                await _platformService.BuildStartedAsync(buildId, cancellationToken);
+                await _platformService.BuildStartedAsync(buildId, combinedCancellationToken);
                 _logger.LogInformation("Build started ({0})", buildId);
                 stopwatch.Start();
 
-                await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+                await _trainSegmentPairs.DeleteAllAsync(
+                    p => p.TranslationEngineRef == engineId,
+                    combinedCancellationToken
+                );
+
+                combinedCancellationToken.ThrowIfCancellationRequested();
 
                 var targetCorpora = new List<ITextCorpus>();
                 var parallelCorpora = new List<IParallelTextCorpus>();
@@ -86,19 +97,22 @@ public class SmtTransferEngineBuildJob
                 truecaseTrainer = _truecaserFactory.CreateTrainer(engineId, tokenizer, targetCorpus);
             }
 
+            combinedCancellationToken.ThrowIfCancellationRequested();
+
             var progress = new BuildProgress(_platformService, buildId);
-            await smtModelTrainer.TrainAsync(progress, cancellationToken);
-            await truecaseTrainer.TrainAsync(cancellationToken: cancellationToken);
+            await smtModelTrainer.TrainAsync(progress, combinedCancellationToken);
+            await truecaseTrainer.TrainAsync(cancellationToken: combinedCancellationToken);
             int trainSegmentPairCount;
-            await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
+            await using (await rwLock.WriterLockAsync(cancellationToken: combinedCancellationToken))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                await smtModelTrainer.SaveAsync(CancellationToken.None);
-                await truecaseTrainer.SaveAsync(CancellationToken.None);
+                combinedCancellationToken.ThrowIfCancellationRequested();
+                await smtModelTrainer.SaveAsync(combinedCancellationToken);
+                await truecaseTrainer.SaveAsync(combinedCancellationToken);
+                combinedCancellationToken.ThrowIfCancellationRequested();
                 ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
                 IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
-                    p => p.TranslationEngineRef == engine.Id,
-                    CancellationToken.None
+                    p => p.TranslationEngineRef == engine!.Id,
+                    combinedCancellationToken
                 );
                 using (
                     IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
@@ -114,8 +128,9 @@ public class SmtTransferEngineBuildJob
                         await smtModel.TrainSegmentAsync(
                             segmentPair.Source,
                             segmentPair.Target,
-                            cancellationToken: CancellationToken.None
+                            cancellationToken: combinedCancellationToken
                         );
+                        combinedCancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 

@@ -145,20 +145,12 @@ public class ClearMLService : IClearMLService
         return updated == 1;
     }
 
-    public Task<ClearMLTask?> GetTaskAsync(string name, string projectId, CancellationToken cancellationToken = default)
+    public Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return GetTaskAsync(
-            new JsonObject
-            {
-                ["id"] = new JsonArray(),
-                ["name"] = name,
-                ["project"] = new JsonArray(projectId)
-            },
-            cancellationToken
-        );
+        return GetTaskAsync(new JsonObject { ["name"] = name }, cancellationToken);
     }
 
-    public Task<ClearMLTask?> GetTaskAsync(string id, CancellationToken cancellationToken = default)
+    public Task<ClearMLTask?> GetTaskByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return GetTaskAsync(new JsonObject { ["id"] = id }, cancellationToken);
     }
@@ -206,7 +198,7 @@ public class ClearMLService : IClearMLService
             "status_reason",
             "active_duration"
         );
-        JsonObject? result = await CallAsync("tasks", "get_by_id_ex", body, cancellationToken);
+        JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
         if (tasks is null || tasks.Count == 0)
             return null;
