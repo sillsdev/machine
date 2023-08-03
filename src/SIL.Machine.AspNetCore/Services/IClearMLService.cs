@@ -31,5 +31,5 @@ public interface IClearMLService
 
     Task<bool> PingAsync(CancellationToken cancellationToken = default);
 
-    Task<bool> AvailableWorkersExist(CancellationToken cancellationToken = default);
+    Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default);
 }
