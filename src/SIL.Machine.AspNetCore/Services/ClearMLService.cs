@@ -195,6 +195,63 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
+    public async Task<ProgressStatus?> GetStatusAsync(
+        string buildId,
+        int corpusSize = 0,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ClearMLTask? task = await GetTaskAsync(buildId, cancellationToken);
+        if (task is null)
+            return null;
+        string taskId = task.Id;
+        JsonObject? result = await CallAsync(
+            "queues",
+            "get_all",
+            // Uses python regex syntax to only match exact queue name. See https://clear.ml/docs/latest/docs/references/api/queues#post-queuesget_all
+            new JsonObject { ["name"] = $"^{_options.CurrentValue.Queue}$" },
+            cancellationToken
+        );
+        JsonNode? queuesNode = result?["data"]?["queues"];
+        if (queuesNode is null)
+            return null;
+        JsonArray queues = (JsonArray)queuesNode;
+        JsonNode? target_queue = queues[0];
+        if (target_queue is null)
+            return null;
+        JsonNode? entriesNode = target_queue["entries"];
+        if (entriesNode is null)
+            return null;
+        JsonArray entries = (JsonArray)entriesNode;
+        int numTasksAheadInQueue = 0;
+        foreach (var entry in entries)
+        {
+            if ((string?)entry?["task"] == taskId)
+                break;
+            numTasksAheadInQueue++;
+        }
+        float startUpTimeMinutes = 10f;
+        float cleanUpTimeMinutes = 12f;
+        float averageIterationsPerSecond = 1.2f; //TODO use env var
+        float averageNumIterations = 20_000f;
+        float estimatedTrainTimeMinutes = (
+            startUpTimeMinutes + averageIterationsPerSecond * averageNumIterations / 60f + cleanUpTimeMinutes
+        );
+
+        float averageSegmentsPerSecond = 2.8f; //TODO use env var
+        float estimatedInferenceTimeMinutes = averageSegmentsPerSecond * corpusSize / 60f;
+
+        float fudgeFactor = 1.1f; //Overestimate 10%
+        float estimatedTimeToCompletionMinutes =
+            (estimatedTrainTimeMinutes + estimatedInferenceTimeMinutes) * fudgeFactor;
+        ProgressStatus status = new ProgressStatus(
+            -1,
+            null,
+            $"Estimated time to completion: {estimatedTimeToCompletionMinutes} minutes"
+        );
+        return status;
+    }
+
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
     {
         body["only_fields"] = new JsonArray(

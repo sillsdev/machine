@@ -108,7 +108,18 @@ public class ClearMLNmtEngineBuildJob
 
                 switch (clearMLTask.Status)
                 {
+                    case ClearMLTaskStatus.Queued:
                     case ClearMLTaskStatus.InProgress:
+
+                        ProgressStatus? status = await _clearMLService.GetStatusAsync(
+                            buildId,
+                            corpusSize,
+                            cancellationToken
+                        );
+                        if (status is not null)
+                            await _platformService.UpdateBuildStatusAsync(buildId, (ProgressStatus)status!);
+                        lastIteration = clearMLTask.LastIteration;
+                        break;
                     case ClearMLTaskStatus.Completed:
                         if (lastIteration != clearMLTask.LastIteration)
                         {

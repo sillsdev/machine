@@ -28,4 +28,9 @@ public interface IClearMLService
         string id,
         CancellationToken cancellationToken = default
     );
+    Task<ProgressStatus?> GetStatusAsync(
+        string buildId,
+        int corpusSize = 0,
+        CancellationToken cancellationToken = default
+    );
 }
