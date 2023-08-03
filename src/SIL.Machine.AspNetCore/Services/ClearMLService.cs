@@ -193,7 +193,7 @@ public class ClearMLService : IClearMLService
         return result is not null;
     }
 
-    public async Task<bool> AvailableWorkersExist(CancellationToken cancellationToken = default)
+    public async Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default)
     {
         JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
         JsonNode? workers_node = result?["data"]?["workers"];
@@ -204,11 +204,11 @@ public class ClearMLService : IClearMLService
         {
             JsonNode? queues_node = worker?["queues"];
             if (queues_node is null)
-                return false;
+                continue;
             JsonArray queues = (JsonArray)queues_node;
             foreach (var queue in queues)
             {
-                if ((string?)queue?["name"] == "production")
+                if ((string?)queue?["name"] == _options.CurrentValue.Queue)
                     return true;
             }
         }
