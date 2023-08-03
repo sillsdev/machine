@@ -156,7 +156,6 @@ public static class IMachineBuilderExtensions
                     break;
                 case TranslationEngineType.Nmt:
                     builder.AddClearMLService();
-                    // builder.Services.AddHealthChecks().AddCheck<S3HealthCheck>(name: "S3Bucket");
                     queues.Add("nmt");
                     break;
             }

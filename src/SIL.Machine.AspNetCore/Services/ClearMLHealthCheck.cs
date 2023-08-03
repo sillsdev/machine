@@ -19,7 +19,7 @@ public class ClearMLHealthCheck : IHealthCheck
             bool success = await _clearMLService.PingAsync();
             if (!success)
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
-            bool workersAvailable = await _clearMLService.AvailableWorkersExist();
+            bool workersAvailable = await _clearMLService.WorkersAreAssignedToQueue();
             if (!workersAvailable)
                 return HealthCheckResult.Unhealthy("No ClearML agents are available");
             return HealthCheckResult.Healthy("ClearML is available");
