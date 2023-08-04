@@ -195,11 +195,7 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
-    public async Task<ProgressStatus?> GetStatusAsync(
-        string buildId,
-        int corpusSize = 0,
-        CancellationToken cancellationToken = default
-    )
+    public async Task<ProgressStatus?> GetStatusAsync(string buildId, CancellationToken cancellationToken = default)
     {
         ClearMLTask? task = await GetTaskAsync(buildId, cancellationToken);
         if (task is null)
@@ -230,24 +226,10 @@ public class ClearMLService : IClearMLService
                 break;
             numTasksAheadInQueue++;
         }
-        float startUpTimeMinutes = 10f;
-        float cleanUpTimeMinutes = 12f;
-        float averageIterationsPerSecond = 1.2f; //TODO use env var
-        float averageNumIterations = 20_000f;
-        float estimatedTrainTimeMinutes = (
-            startUpTimeMinutes + averageIterationsPerSecond * averageNumIterations / 60f + cleanUpTimeMinutes
-        );
-
-        float averageSegmentsPerSecond = 2.8f; //TODO use env var
-        float estimatedInferenceTimeMinutes = averageSegmentsPerSecond * corpusSize / 60f;
-
-        float fudgeFactor = 1.1f; //Overestimate 10%
-        float estimatedTimeToCompletionMinutes =
-            (estimatedTrainTimeMinutes + estimatedInferenceTimeMinutes) * fudgeFactor;
         ProgressStatus status = new ProgressStatus(
-            -1,
-            null,
-            $"Estimated time to completion: {estimatedTimeToCompletionMinutes} minutes"
+            task.LastIteration,
+            (float)task.LastIteration / (float)_options.CurrentValue.MaxSteps,
+            $"Number of tasks ahead in queue: {numTasksAheadInQueue}"
         );
         return status;
     }
