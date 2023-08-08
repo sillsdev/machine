@@ -26,12 +26,11 @@ public class SharedFileService : ISharedFileService
                     break;
                 case "s3":
                     _fileStorage = new S3FileStorage(
-                        new Uri($"https://{_baseUri.Host}.s3.amazonaws.com{_baseUri.AbsolutePath}"),
-                        new S3AuthHandler(
-                            options.Value.S3AccessKeyId,
-                            options.Value.S3SecretAccessKey,
-                            options.Value.S3Region
-                        )
+                        _baseUri.Host,
+                        _baseUri.AbsolutePath,
+                        options.Value.S3AccessKeyId,
+                        options.Value.S3SecretAccessKey,
+                        options.Value.S3Region
                     );
                     _supportFolderDelete = false;
                     break;

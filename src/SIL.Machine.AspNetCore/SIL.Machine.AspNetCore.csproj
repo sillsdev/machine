@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="6.0.2" />
+		<PackageReference Include="AWSSDK.S3" Version="3.7.201.7" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.52.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.52.0" />
 		<PackageReference Include="HangFire" Version="1.8.0" />
