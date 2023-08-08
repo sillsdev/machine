@@ -1,24 +1,42 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+namespace SIL.Machine.AspNetCore.Services;
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 public class S3FileStorage : DisposableBase, IFileStorage
 {
-    private readonly HttpClient _http;
+    private readonly AmazonS3Client _client;
+    private readonly string _bucketName;
+    private readonly string _directory;
 
-    public S3FileStorage(Uri endpoint, DelegatingHandler authHandler)
+    public S3FileStorage(string bucketName, string directory, string accessKeyId, string secretAccessKey, string region)
     {
-        _http = new HttpClient(authHandler) { BaseAddress = endpoint };
-    }
-
-    private string NormalizeWithBasePath(IOPath path, bool appendTrailingSlash = false)
-    {
-        return _http.BaseAddress!.AbsolutePath
-            + IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: appendTrailingSlash);
+        _client = new AmazonS3Client(
+            accessKeyId,
+            secretAccessKey,
+            new AmazonS3Config //Best retry configuration?
+            {
+                RetryMode = Amazon.Runtime.RequestRetryMode.Standard,
+                MaxErrorRetry = 3,
+                RegionEndpoint = RegionEndpoint.GetBySystemName(region)
+            }
+        );
+        _bucketName = bucketName;
+        _directory = directory;
     }
 
     public async Task<bool> Exists(IOPath path, CancellationToken cancellationToken = default)
     {
-        using Stream? s = await OpenRead(path, cancellationToken);
-        return s != null;
+        var request = new ListObjectsV2Request
+        {
+            BucketName = _bucketName,
+            Prefix = _directory,
+            MaxKeys = 1
+        };
+
+        var response = await _client.ListObjectsV2Async(request, cancellationToken);
+
+        return response.S3Objects.Any();
     }
 
     public async Task<IReadOnlyCollection<IOEntry>> Ls(
@@ -28,67 +46,53 @@ public class S3FileStorage : DisposableBase, IFileStorage
     )
     {
         if (path != null && !path.IsFolder)
-            throw new ArgumentException("path needs to be a folder", nameof(path));
+            throw new ArgumentException("Path must be a folder", nameof(path));
 
-        string? delimiter = recurse ? null : "/";
-        string? prefix = IOPath.IsRoot(path) ? null : NormalizeWithBasePath(path!, appendTrailingSlash: true);
+        var request = new ListObjectsV2Request
+        {
+            BucketName = _bucketName,
+            Prefix =
+                _directory
+                + (
+                    IOPath.IsRoot(path)
+                        ? string.Empty
+                        : IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: true)
+                ),
+            MaxKeys = 1
+        };
 
-        // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
-        string uri = "/?list-type=2";
-        if (delimiter != null)
-            uri += "&delimiter=" + delimiter;
-        if (prefix != null)
-            uri += "&prefix=" + prefix;
-
-        HttpResponseMessage response = await _http.SendAsync(
-            new HttpRequestMessage(HttpMethod.Get, uri),
-            cancellationToken
-        );
-        response.EnsureSuccessStatusCode();
-        string xml = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        List<IOEntry> result = ParseListObjectV2Response(xml, out _).ToList();
-
-        if (recurse)
-            AssumeImplicitFolders(path, result);
-
-        return result;
+        var response = await _client.ListObjectsV2Async(request, cancellationToken);
+        var result = new List<IOEntry>();
+        foreach (var s3obj in response.S3Objects)
+        {
+            var entry = new IOEntry(s3obj.Key) { LastModificationTime = s3obj.LastModified, Size = s3obj.Size };
+            entry.TryAddProperties("ETag", s3obj.ETag, "StorageClass", s3obj.StorageClass);
+        }
+        return (IReadOnlyCollection<IOEntry>)result;
     }
 
     public async Task<Stream?> OpenRead(IOPath path, CancellationToken cancellationToken = default)
     {
-        if (path is null)
-            throw new ArgumentNullException(nameof(path));
-
-        // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
-        HttpResponseMessage response = await _http.SendAsync(
-            new HttpRequestMessage(HttpMethod.Get, NormalizeWithBasePath(path)),
-            cancellationToken
-        );
-
-        if (response.StatusCode == HttpStatusCode.NotFound)
-            return null;
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsStreamAsync(cancellationToken);
+        var objectId = IOPath.IsRoot(path)
+            ? string.Empty
+            : IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: true);
+        GetObjectRequest request = new() { BucketName = _bucketName, Key = objectId };
+        GetObjectResponse response = await _client.GetObjectAsync(request, cancellationToken);
+        return response.ResponseStream;
     }
 
     public async Task<Stream> OpenWrite(IOPath path, CancellationToken cancellationToken = default)
     {
-        if (path is null)
-            throw new ArgumentNullException(nameof(path));
-
-        string npath = NormalizeWithBasePath(path);
-
-        // initiate upload and get upload ID
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{npath}?uploads");
-        HttpResponseMessage response = await _http.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
-        string xml = await response.Content.ReadAsStringAsync(cancellationToken); // this contains UploadId
-        string uploadId = ParseInitiateMultipartUploadResponse(xml);
-
-        return new BufferedStream(new S3WriteStream(this, npath, uploadId), 1024 * 1024 * 5);
+        Console.WriteLine("PATH ||| " + path.ToString());
+        var objectId = IOPath.IsRoot(path)
+            ? string.Empty
+            : IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: true);
+        InitiateMultipartUploadRequest request = new() { BucketName = _bucketName, Key = objectId };
+        InitiateMultipartUploadResponse response = await _client.InitiateMultipartUploadAsync(request);
+        return new BufferedStream(
+            new S3WriteStream(_client, objectId, _bucketName, response.UploadId),
+            1024 * 1024 * 5
+        );
     }
 
     public async Task<T?> ReadAsJson<T>(IOPath path, CancellationToken cancellationToken = default)
@@ -115,7 +119,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         if (!path.IsFile)
             throw new ArgumentException($"{nameof(path)} needs to be a file", nameof(path));
 
-        Stream? src = await OpenRead(path, cancellationToken).ConfigureAwait(false);
+        using Stream? src = await OpenRead(path, cancellationToken).ConfigureAwait(false);
         if (src == null)
             return null;
 
@@ -161,14 +165,16 @@ public class S3FileStorage : DisposableBase, IFileStorage
     {
         if (path is null)
             throw new ArgumentNullException(nameof(path));
+        var objectId = IOPath.IsRoot(path)
+            ? string.Empty
+            : IOPath.Normalize(path, removeLeadingSlash: true, appendTrailingSlash: true);
 
-        // call https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
-        (
-            await _http.SendAsync(
-                new HttpRequestMessage(HttpMethod.Delete, NormalizeWithBasePath(path)),
-                cancellationToken
-            )
-        ).EnsureSuccessStatusCode();
+        DeleteObjectRequest request = new() { BucketName = _bucketName, Key = objectId };
+        DeleteObjectResponse response = await _client.DeleteObjectAsync(request, cancellationToken);
+        if (!response.HttpStatusCode.Equals(HttpStatusCode.OK))
+            new HttpRequestException(
+                $"Received status code {response.HttpStatusCode} when attempting to delete {path}"
+            );
     }
 
     public async Task WriteAsJson(IOPath path, object value, CancellationToken cancellationToken = default)
@@ -201,204 +207,6 @@ public class S3FileStorage : DisposableBase, IFileStorage
         using Stream ws = await OpenWrite(path, cancellationToken);
         Stream rs = new MemoryStream((encoding ?? Encoding.UTF8).GetBytes(contents));
         await rs.CopyToAsync(ws, cancellationToken);
-    }
-
-    public string UploadPart(string key, string uploadId, int partNumber, byte[] buffer, int count)
-    {
-        HttpResponseMessage response = _http.Send(CreateUploadPartRequest(key, uploadId, partNumber, buffer, count));
-        response.EnsureSuccessStatusCode();
-        return response.Headers.GetValues("ETag").First();
-    }
-
-    public async Task<string> UploadPartAsync(string key, string uploadId, int partNumber, byte[] buffer, int count)
-    {
-        HttpResponseMessage response = await _http.SendAsync(
-            CreateUploadPartRequest(key, uploadId, partNumber, buffer, count)
-        );
-        response.EnsureSuccessStatusCode();
-        return response.Headers.GetValues("ETag").First();
-    }
-
-    public void CompleteMultipartUpload(string key, string uploadId, IEnumerable<string> partTags)
-    {
-        HttpResponseMessage msg = _http.Send(CreateCompleteMultipartUploadRequest(key, uploadId, partTags));
-        if (!msg.IsSuccessStatusCode)
-        {
-            string body = msg.Content.ReadAsStringAsync().Result;
-            Console.WriteLine(body);
-        }
-    }
-
-    public async Task CompleteMultipartUploadAsync(string key, string uploadId, IEnumerable<string> partTags)
-    {
-        (
-            await _http.SendAsync(CreateCompleteMultipartUploadRequest(key, uploadId, partTags))
-        ).EnsureSuccessStatusCode();
-    }
-
-    // https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
-    private HttpRequestMessage CreateUploadPartRequest(
-        string key,
-        string uploadId,
-        int partNumber,
-        byte[] buffer,
-        int count
-    )
-    {
-        return new HttpRequestMessage(HttpMethod.Put, $"{key}?partNumber={partNumber}&uploadId={uploadId}")
-        {
-            Content = new ByteArrayContent(buffer, 0, count)
-        };
-    }
-
-    //https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
-    private HttpRequestMessage CreateCompleteMultipartUploadRequest(
-        string key,
-        string uploadId,
-        IEnumerable<string> partTags
-    )
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{key}?uploadId={uploadId}");
-
-        var sb = new StringBuilder(
-            @"<?xml version=""1.0"" encoding=""UTF-8""?><CompleteMultipartUpload xmlns=""http://s3.amazonaws.com/doc/2006-03-01/"">"
-        );
-        int partId = 1;
-        foreach (string eTag in partTags)
-        {
-            sb.Append("<Part><ETag>")
-                .Append(eTag)
-                .Append("</ETag><PartNumber>")
-                .Append(partId++)
-                .Append("</PartNumber></Part>");
-        }
-        sb.Append("</CompleteMultipartUpload>");
-        request.Content = new StringContent(sb.ToString());
-        return request;
-    }
-
-    /// <summary>
-    /// Parses out XML response. See specs at https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
-    /// </summary>
-    /// <param name="xml"></param>
-    /// <param name="continuationToken"></param>
-    /// <returns></returns>
-    private static IReadOnlyCollection<IOEntry> ParseListObjectV2Response(string xml, out string? continuationToken)
-    {
-        continuationToken = null;
-        var result = new List<IOEntry>();
-        using (var sr = new StringReader(xml))
-        {
-            using var xr = XmlReader.Create(sr);
-            string? en = null;
-
-            while (xr.Read())
-            {
-                if (xr.NodeType == XmlNodeType.Element)
-                {
-                    switch (xr.Name)
-                    {
-                        case "Contents":
-                            string? key = null;
-                            string? lastMod = null;
-                            string? eTag = null;
-                            string? size = null;
-                            string? storageClass = null;
-                            // read all the elements in this
-                            while (xr.Read() && !(xr.NodeType == XmlNodeType.EndElement && xr.Name == "Contents"))
-                            {
-                                if (xr.NodeType == XmlNodeType.Element)
-                                    en = xr.Name;
-                                else if (xr.NodeType == XmlNodeType.Text)
-                                {
-                                    switch (en)
-                                    {
-                                        case "Key":
-                                            key = xr.Value;
-                                            break;
-                                        case "LastModified":
-                                            lastMod = xr.Value;
-                                            break;
-                                        case "ETag":
-                                            eTag = xr.Value;
-                                            break;
-                                        case "Size":
-                                            size = xr.Value;
-                                            break;
-                                        case "StorageClass":
-                                            storageClass = xr.Value;
-                                            break;
-                                    }
-                                }
-                            }
-
-                            if (key != null && lastMod != null && size != null)
-                            {
-                                var entry = new IOEntry(key)
-                                {
-                                    LastModificationTime = DateTimeOffset.Parse(lastMod),
-                                    Size = int.Parse(size)
-                                };
-                                entry.TryAddProperties("ETag", eTag, "StorageClass", storageClass);
-                                result.Add(entry);
-                            }
-
-                            break;
-                        case "CommonPrefixes":
-                            while (xr.Read() && !(xr.NodeType == XmlNodeType.EndElement && xr.Name == "CommonPrefixes"))
-                            {
-                                // <Prefix>foldername/</Prefix>
-                                if (xr.NodeType == XmlNodeType.Element)
-                                    en = xr.Name;
-                                else if (xr.NodeType == XmlNodeType.Text)
-                                {
-                                    if (en == "Prefix")
-                                    {
-                                        result.Add(new IOEntry(xr.Value));
-                                    }
-                                }
-                            }
-                            break;
-                        case "NextContinuationToken":
-                            throw new NotImplementedException();
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private static string ParseInitiateMultipartUploadResponse(string xml)
-    {
-        using var sr = new StringReader(xml);
-        using var xr = XmlReader.Create(sr);
-        while (xr.Read())
-        {
-            if (xr.NodeType == XmlNodeType.Element && xr.Name == "UploadId")
-            {
-                xr.Read();
-                return xr.Value;
-            }
-        }
-
-        throw new Exception("Invalid initiate multipart upload response.");
-    }
-
-    private static void AssumeImplicitFolders(string absoluteRoot, List<IOEntry> entries)
-    {
-        absoluteRoot = IOPath.Normalize(absoluteRoot);
-
-        List<IOEntry> implicitFolders = entries
-            .Select(b => b.Path.Full)
-            .Select(p => p.Substring(absoluteRoot.Length))
-            .Select(p => IOPath.GetParent(p))
-            .Where(p => !IOPath.IsRoot(p))
-            .Distinct()
-            .Select(p => new IOEntry(p + "/"))
-            .ToList();
-
-        entries.InsertRange(0, implicitFolders);
     }
 
     private async Task RenFile(IOPath oldPath, IOPath newPath, CancellationToken cancellationToken = default)

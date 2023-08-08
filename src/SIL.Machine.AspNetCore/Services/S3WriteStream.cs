@@ -1,17 +1,23 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+using Amazon.S3;
+using Amazon.S3.Model;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public class S3WriteStream : Stream
 {
-    private readonly S3FileStorage _parent;
+    private readonly AmazonS3Client _client;
     private readonly string _key;
     private readonly string _uploadId;
-    private readonly List<string> _partTags = new List<string>();
+
+    private readonly string _bucketName;
+    private readonly List<UploadPartResponse> uploadResponses = new List<UploadPartResponse>();
     private long _length;
 
-    public S3WriteStream(S3FileStorage parent, string key, string uploadId)
+    public S3WriteStream(AmazonS3Client client, string key, string bucketName, string uploadId)
     {
-        _parent = parent;
+        _client = client;
         _key = key;
+        _bucketName = bucketName;
         _uploadId = uploadId;
     }
 
@@ -41,32 +47,96 @@ public class S3WriteStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        int partNumber = _partTags.Count + 1;
-        string eTag = _parent.UploadPart(_key, _uploadId, partNumber, buffer, count);
-        _partTags.Add(eTag);
-        _length += count;
+        try
+        {
+            int partNumber = uploadResponses.Count + 1;
+            UploadPartRequest request = new UploadPartRequest
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId,
+                PartNumber = partNumber,
+                FilePosition = _length
+            };
+            _length += count;
+            uploadResponses.Add(_client.UploadPartAsync(request).Result);
+            // Logging?
+            // request.StreamTransferProgress += new EventHandler<Amazon.Runtime.StreamTransferProgressArgs>(
+            //     (sender, e) => {
+
+            //     }
+            // );
+        }
+        catch (Exception)
+        {
+            Abort();
+        }
     }
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        int partNumber = _partTags.Count + 1;
-        string eTag = await _parent.UploadPartAsync(_key, _uploadId, partNumber, buffer, count);
-        _partTags.Add(eTag);
-        _length += count;
+        try
+        {
+            int partNumber = uploadResponses.Count + 1;
+            UploadPartRequest request = new UploadPartRequest
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId,
+                PartNumber = partNumber,
+                FilePosition = _length
+            };
+            _length += count;
+            uploadResponses.Add(await _client.UploadPartAsync(request));
+            // Logging?
+            // request.StreamTransferProgress += new EventHandler<Amazon.Runtime.StreamTransferProgressArgs>(
+            //     (sender, e) => {
+
+            //     }
+            // );
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("KEY ||| " + _key);
+            await Abort();
+        }
     }
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
-            _parent.CompleteMultipartUpload(_key, _uploadId, _partTags);
         base.Dispose(disposing);
     }
 
     public async override ValueTask DisposeAsync()
     {
-        await _parent.CompleteMultipartUploadAsync(_key, _uploadId, _partTags);
+        try
+        {
+            CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId
+            };
+            request.AddPartETags(uploadResponses);
+            await _client.CompleteMultipartUploadAsync(request);
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+        }
+        catch (Exception)
+        {
+            await Abort();
+        }
+    }
 
-        Dispose(disposing: false);
-        GC.SuppressFinalize(this);
+    private async Task Abort()
+    {
+        // Logging?
+        AbortMultipartUploadRequest abortMPURequest = new AbortMultipartUploadRequest
+        {
+            BucketName = _bucketName,
+            Key = _key,
+            UploadId = _uploadId
+        };
+        await _client.AbortMultipartUploadAsync(abortMPURequest);
     }
 }
