@@ -195,12 +195,11 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
-    public async Task<ProgressStatus?> GetStatusAsync(string buildId, CancellationToken cancellationToken = default)
+    public async Task<ProgressStatus?> GetStatusAsync(string taskId, CancellationToken cancellationToken = default)
     {
-        ClearMLTask? task = await GetTaskAsync(buildId, cancellationToken);
+        ClearMLTask? task = await GetTaskAsync(taskId, cancellationToken);
         if (task is null)
             return null;
-        string taskId = task.Id;
         JsonObject? result = await CallAsync(
             "queues",
             "get_all",
@@ -226,11 +225,12 @@ public class ClearMLService : IClearMLService
                 break;
             numTasksAheadInQueue++;
         }
-        ProgressStatus status = new ProgressStatus(
-            task.LastIteration,
-            (float)task.LastIteration / (float)_options.CurrentValue.MaxSteps,
-            $"Number of tasks ahead in queue: {numTasksAheadInQueue}"
-        );
+        ProgressStatus status =
+            new(
+                task.LastIteration,
+                ((float)task.LastIteration / (float)_options.CurrentValue.MaxSteps) * 90, //90% at 100% of training
+                $"Number of tasks ahead in queue: {numTasksAheadInQueue}"
+            );
         return status;
     }
 

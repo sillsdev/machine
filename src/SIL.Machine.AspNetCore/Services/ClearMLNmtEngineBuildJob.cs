@@ -110,10 +110,11 @@ public class ClearMLNmtEngineBuildJob
                 {
                     case ClearMLTaskStatus.Queued:
                     case ClearMLTaskStatus.InProgress:
-
-                        ProgressStatus? status = await _clearMLService.GetStatusAsync(buildId, cancellationToken);
+                        ProgressStatus? status = await _clearMLService.GetStatusAsync(clearMLTaskId, cancellationToken);
                         if (status is not null)
+                        {
                             await _platformService.UpdateBuildStatusAsync(buildId, (ProgressStatus)status!);
+                        }
                         lastIteration = clearMLTask.LastIteration;
                         break;
                     case ClearMLTaskStatus.Completed:
