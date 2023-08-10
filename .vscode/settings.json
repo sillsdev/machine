@@ -12,5 +12,6 @@
   "cSpell.words": [
     "Bson",
     "Nito"
-  ]
+  ],
+  "dotnet.defaultSolution": "Machine.sln"
 }
