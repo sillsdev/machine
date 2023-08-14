@@ -22,8 +22,8 @@ public class S3HealthCheck : IHealthCheck
         catch (Exception e)
         {
             if (
-                e is HttpRequestException
-                && ((HttpRequestException)e).StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized
+                e is HttpRequestException httpRequestException
+                && httpRequestException.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.Unauthorized
             )
             {
                 _logger.LogError(
