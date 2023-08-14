@@ -225,23 +225,22 @@ public class ClearMLNmtEngineBuildJob
             catch (HttpRequestException)
             {
                 _logger.LogError("Unable to access S3 bucket. Likely, the AWS credentials are invalid.");
+                throw;
             }
-            finally
-            {
-                await _engines.UpdateAsync(
-                    e => e.EngineId == engineId && e.BuildId == buildId,
-                    u =>
-                        u.Set(e => e.BuildState, BuildState.None)
-                            .Set(e => e.IsCanceled, false)
-                            .Unset(e => e.JobId)
-                            .Unset(e => e.BuildId),
-                    cancellationToken: CancellationToken.None
-                );
 
-                await _platformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
-                _logger.LogError(0, e, "Build faulted ({0})", buildId);
-                throw e;
-            }
+            await _engines.UpdateAsync(
+                e => e.EngineId == engineId && e.BuildId == buildId,
+                u =>
+                    u.Set(e => e.BuildState, BuildState.None)
+                        .Set(e => e.IsCanceled, false)
+                        .Unset(e => e.JobId)
+                        .Unset(e => e.BuildId),
+                cancellationToken: CancellationToken.None
+            );
+
+            await _platformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
+            _logger.LogError(0, e, "Build faulted ({0})", buildId);
+            throw;
         }
     }
 
