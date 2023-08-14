@@ -9,9 +9,6 @@ builder.Services
     .AddMongoBackgroundJobClient()
     .AddServalTranslationEngineService();
 
-builder.Services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
-builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();
