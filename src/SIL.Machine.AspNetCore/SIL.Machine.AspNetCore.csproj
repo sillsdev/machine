@@ -36,7 +36,6 @@
 		<PackageReference Include="Serval.Grpc" Version="0.8.0" />
 		<PackageReference Include="SIL.DataAccess" Version="0.3.3" />
 		<PackageReference Include="SIL.WritingSystems" Version="12.0.1" />
-		<PackageReference Include="Stowage" Version="1.2.6" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
 

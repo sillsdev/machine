@@ -1,6 +1,3 @@
-using Amazon.S3;
-using Amazon.S3.Model;
-
 namespace SIL.Machine.AspNetCore.Services;
 
 public class S3WriteStream : Stream
@@ -10,7 +7,7 @@ public class S3WriteStream : Stream
     private readonly string _uploadId;
 
     private readonly string _bucketName;
-    private readonly List<UploadPartResponse> uploadResponses = new List<UploadPartResponse>();
+    private readonly List<UploadPartResponse> uploadResponses = new();
     private long _length;
 
     public S3WriteStream(AmazonS3Client client, string key, string bucketName, string uploadId)
@@ -50,14 +47,15 @@ public class S3WriteStream : Stream
         try
         {
             int partNumber = uploadResponses.Count + 1;
-            UploadPartRequest request = new UploadPartRequest
-            {
-                BucketName = _bucketName,
-                Key = _key,
-                UploadId = _uploadId,
-                PartNumber = partNumber,
-                FilePosition = _length
-            };
+            UploadPartRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId,
+                    PartNumber = partNumber,
+                    FilePosition = _length
+                };
             _length += count;
             uploadResponses.Add(_client.UploadPartAsync(request).Result);
             // Logging?
@@ -69,7 +67,7 @@ public class S3WriteStream : Stream
         }
         catch (Exception)
         {
-            Abort();
+            Abort().Wait(10_000);
         }
     }
 
@@ -78,14 +76,15 @@ public class S3WriteStream : Stream
         try
         {
             int partNumber = uploadResponses.Count + 1;
-            UploadPartRequest request = new UploadPartRequest
-            {
-                BucketName = _bucketName,
-                Key = _key,
-                UploadId = _uploadId,
-                PartNumber = partNumber,
-                FilePosition = _length
-            };
+            UploadPartRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId,
+                    PartNumber = partNumber,
+                    FilePosition = _length
+                };
             _length += count;
             uploadResponses.Add(await _client.UploadPartAsync(request));
             // Logging?
@@ -97,7 +96,6 @@ public class S3WriteStream : Stream
         }
         catch (Exception)
         {
-            Console.WriteLine("KEY ||| " + _key);
             await Abort();
         }
     }
@@ -111,12 +109,13 @@ public class S3WriteStream : Stream
     {
         try
         {
-            CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest
-            {
-                BucketName = _bucketName,
-                Key = _key,
-                UploadId = _uploadId
-            };
+            CompleteMultipartUploadRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId
+                };
             request.AddPartETags(uploadResponses);
             await _client.CompleteMultipartUploadAsync(request);
             Dispose(disposing: false);
@@ -131,12 +130,13 @@ public class S3WriteStream : Stream
     private async Task Abort()
     {
         // Logging?
-        AbortMultipartUploadRequest abortMPURequest = new AbortMultipartUploadRequest
-        {
-            BucketName = _bucketName,
-            Key = _key,
-            UploadId = _uploadId
-        };
+        AbortMultipartUploadRequest abortMPURequest =
+            new()
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId
+            };
         await _client.AbortMultipartUploadAsync(abortMPURequest);
     }
 }
