@@ -105,8 +105,15 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
     {
         if (_lockChecked == false)
         {
-            if (!await _locks.ExistsAsync(e => e.Id == _id, CancellationToken.None))
+            try
+            {
                 await _locks.InsertAsync(new RWLock { Id = _id }, CancellationToken.None);
+            }
+            catch (DuplicateKeyException)
+            {
+                // the lock is already made - no new one needs to be made
+                // This is done instead of checking if it exists first to prevent race conditions.
+            }
             _lockChecked = true;
         }
     }
