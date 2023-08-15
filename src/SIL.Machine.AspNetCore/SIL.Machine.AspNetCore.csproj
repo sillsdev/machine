@@ -36,7 +36,6 @@
 		<PackageReference Include="Serval.Grpc" Version="0.8.0" Condition="!Exists('..\..\..\serval\src\Serval.Grpc\Serval.Grpc.csproj')" />
 		<PackageReference Include="SIL.DataAccess" Version="0.4.0" Condition="!Exists('..\..\..\serval\src\SIL.DataAccess\SIL.DataAccess.csproj')" />
 		<PackageReference Include="SIL.WritingSystems" Version="12.0.1" />
-		<PackageReference Include="Stowage" Version="1.2.6" />
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
 

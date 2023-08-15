@@ -3,14 +3,14 @@
 public class SharedFileService : ISharedFileService
 {
     private readonly Uri? _baseUri;
-    private readonly IFileStorage _fileStorage;
+    private readonly FileStorage _fileStorage;
     private readonly bool _supportFolderDelete = true;
 
     public SharedFileService(IOptions<SharedFileOptions>? options = null)
     {
         if (options?.Value.Uri is null)
         {
-            _fileStorage = Files.Of.InternalMemory();
+            _fileStorage = new InMemoryStorage();
         }
         else
         {
@@ -21,7 +21,7 @@ public class SharedFileService : ISharedFileService
             switch (_baseUri.Scheme)
             {
                 case "file":
-                    _fileStorage = Files.Of.LocalDisk(_baseUri.LocalPath);
+                    _fileStorage = new LocalStorage(_baseUri.LocalPath);
                     Directory.CreateDirectory(_baseUri.LocalPath);
                     break;
                 case "s3":
@@ -66,9 +66,9 @@ public class SharedFileService : ISharedFileService
     {
         if (!_supportFolderDelete && path.EndsWith("/"))
         {
-            IReadOnlyCollection<IOEntry> files = await _fileStorage.Ls(path, recurse: true, cancellationToken);
-            foreach (IOEntry file in files)
-                await _fileStorage.Rm(file.Path, cancellationToken: cancellationToken);
+            IReadOnlyCollection<string> files = await _fileStorage.Ls(path, recurse: true, cancellationToken);
+            foreach (string file in files)
+                await _fileStorage.Rm(file, cancellationToken: cancellationToken);
         }
         else
         {
