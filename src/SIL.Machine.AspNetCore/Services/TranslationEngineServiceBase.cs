@@ -199,7 +199,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         CancellationToken cancellationToken
     )
     {
-        ISubscription<TranslationEngine> sub = await Engines.SubscribeAsync(
+        using ISubscription<TranslationEngine> sub = await Engines.SubscribeAsync(
             e => e.EngineId == engineId && e.BuildId == buildId,
             cancellationToken
         );

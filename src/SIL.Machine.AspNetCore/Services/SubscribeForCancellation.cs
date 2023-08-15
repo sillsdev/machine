@@ -27,7 +27,7 @@ public class SubscribeForCancellation
     private async void SubscribeForCancellationAsync(CancellationTokenSource cts, string engineId, string buildId)
     {
         var cancellationToken = cts.Token;
-        ISubscription<TranslationEngine> sub = await _engines.SubscribeAsync(
+        using ISubscription<TranslationEngine> sub = await _engines.SubscribeAsync(
             e => e.EngineId == engineId && e.BuildId == buildId
         );
         if (sub.Change.Entity is null)
@@ -36,7 +36,7 @@ public class SubscribeForCancellation
         {
             await sub.WaitForChangeAsync(TimeSpan.FromSeconds(10), cancellationToken);
             TranslationEngine? engine = sub.Change.Entity;
-            if (engine is null || engine.IsCanceled)
+            if (engine is null || engine.IsCanceled || engine.BuildState == BuildState.None)
             {
                 cts.Cancel();
                 return;
