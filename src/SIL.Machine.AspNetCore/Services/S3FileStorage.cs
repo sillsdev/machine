@@ -23,6 +23,8 @@ public class S3FileStorage : FileStorage
         _basePath = basePath.EndsWith("/") ? basePath.Remove(basePath.Length - 1, 1) : basePath;
     }
 
+    public override void Dispose() { }
+
     public override async Task<bool> Exists(string path, CancellationToken cancellationToken = default)
     {
         var request = new ListObjectsV2Request

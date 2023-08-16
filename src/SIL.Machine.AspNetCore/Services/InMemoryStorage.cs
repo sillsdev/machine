@@ -1,8 +1,10 @@
+using Newtonsoft.Json.Serialization;
+
 namespace SIL.Machine.AspNetCore.Services;
 
 public class InMemoryStorage : FileStorage
 {
-    private class Entry : Stream
+    public class Entry : Stream
     {
         public MemoryStream MemoryStream;
         public string Path;
@@ -43,8 +45,6 @@ public class InMemoryStorage : FileStorage
                 _parent._memoryStreams[Path] = new Entry(this);
         }
 
-        public bool IsDirectory() => Path.EndsWith("/");
-
         public override void Flush()
         {
             MemoryStream.Flush();
@@ -71,22 +71,22 @@ public class InMemoryStorage : FileStorage
         }
     }
 
-    private readonly ConcurrentDictionary<string, Entry> _memoryStreams;
+    public ConcurrentDictionary<string, Entry> _memoryStreams;
 
     public InMemoryStorage()
     {
         _memoryStreams = new();
     }
 
-    public override Task<bool> Exists(string path, CancellationToken cancellationToken)
+    public override Task<bool> Exists(string path, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_memoryStreams.TryGetValue(path, out _));
+        return Task.FromResult(_memoryStreams.TryGetValue(Normalize(path), out _));
     }
 
     public override Task<IReadOnlyCollection<string>> Ls(
         string? path,
-        bool recurse,
-        CancellationToken cancellationToken
+        bool recurse = false,
+        CancellationToken cancellationToken = default
     )
     {
         if (recurse)
@@ -95,6 +95,7 @@ public class InMemoryStorage : FileStorage
                     _memoryStreams
                         .Where(kvPair => kvPair.Key.StartsWith(Normalize(path, true, true)))
                         .Select(kvPair => kvPair.Key)
+                        .ToList()
             );
         return Task.FromResult(
             (IReadOnlyCollection<string>)
@@ -105,32 +106,42 @@ public class InMemoryStorage : FileStorage
                             && !kvPair.Key.Remove(0, Normalize(path, true, true).Length).Contains("/")
                     )
                     .Select(kvPair => kvPair.Key)
+                    .ToList()
         );
     }
 
-    public override Task<Stream> OpenRead(string path, CancellationToken cancellationToken)
+    public override Task<Stream> OpenRead(string path, CancellationToken cancellationToken = default)
     {
         if (!_memoryStreams.TryGetValue(Normalize(path), out Entry? ret))
             throw new FileNotFoundException($"Unable to find file {path}");
+        ret.Position = 0;
         return Task.FromResult<Stream>(ret);
     }
 
-    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken)
+    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<Stream>(new Entry(Normalize(path), this));
     }
 
-    public override async Task Rm(string path, bool recurse, CancellationToken cancellationToken)
+    public override async Task Rm(string path, bool recurse, CancellationToken cancellationToken = default)
     {
-        if (path.EndsWith("/"))
+        if (_memoryStreams.ContainsKey(Normalize(path)))
         {
-            IEnumerable<string> filesToRemove = await Ls(path, recurse, cancellationToken);
-            foreach (string filePath in filesToRemove)
-                _memoryStreams.Remove(filePath, out _);
+            _memoryStreams.Remove(Normalize(path), out _);
         }
         else
         {
-            _memoryStreams.Remove(Normalize(path), out _);
+            IEnumerable<string> filesToRemove = await Ls(path, recurse, cancellationToken);
+            foreach (string filePath in filesToRemove)
+                _memoryStreams.Remove(Normalize(filePath), out _);
+        }
+    }
+
+    public override void Dispose()
+    {
+        foreach (Entry stream in _memoryStreams.Select(kvPair => kvPair.Value))
+        {
+            stream.Dispose();
         }
     }
 }
