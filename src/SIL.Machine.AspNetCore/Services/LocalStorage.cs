@@ -7,20 +7,61 @@ public class LocalStorage : FileStorage
     public LocalStorage(string basePath)
     {
         _basePath = basePath.EndsWith("/") ? basePath.Remove(basePath.Length - 1, 1) : basePath;
+        Random r = new Random(Guid.NewGuid().GetHashCode());
+        while (Directory.Exists(_basePath + "/"))
+        {
+            _basePath += r.Next();
+        }
+        Directory.CreateDirectory(_basePath + "/");
     }
 
-    public override Task<bool> Exists(string path, CancellationToken cancellationToken)
+    public override void Dispose()
+    {
+        DeleteRecursive();
+        Directory.Delete(_basePath + "/");
+    }
+
+    private void DeleteRecursive(string? path = null)
+    {
+        path ??= _basePath + "/";
+        foreach (var subDir in Directory.GetDirectories(path))
+        {
+            DeleteRecursive(subDir);
+            Directory.Delete(subDir);
+        }
+        foreach (var subPath in Directory.GetFiles(path))
+        {
+            File.Delete(subPath);
+        }
+    }
+
+    public override Task<bool> Exists(string path, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(File.Exists(_basePath + Normalize(path)));
     }
 
-    public override Task<IReadOnlyCollection<string>> Ls(
-        string? path,
-        bool recurse,
-        CancellationToken cancellationToken
+    public override async Task<IReadOnlyCollection<string>> Ls(
+        string path = "",
+        bool recurse = false,
+        CancellationToken cancellationToken = default
     )
     {
-        return Task.FromResult((IReadOnlyCollection<string>)Directory.GetFiles(_basePath + Normalize(path)).ToList());
+        if (path.Contains(_basePath))
+            path = path.Replace(_basePath, "");
+        if (recurse)
+        {
+            List<string> files = Directory.GetFiles(_basePath + Normalize(path)).ToList();
+            foreach (var subDir in Directory.GetDirectories(_basePath + Normalize(path)))
+            {
+                var subFiles = await Ls(subDir, recurse: true);
+                foreach (var file in subFiles)
+                    files.Add(file);
+            }
+            return files;
+        }
+        if (Directory.Exists(_basePath + Normalize(path)))
+            return Directory.GetFiles(_basePath + Normalize(path));
+        return new List<string>();
     }
 
     public override Task<Stream> OpenRead(string path, CancellationToken cancellationToken)
@@ -31,24 +72,45 @@ public class LocalStorage : FileStorage
         return Task.FromResult(ret);
     }
 
-    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken)
+    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult((Stream)File.OpenWrite(_basePath + Normalize(path)));
+        Stream s;
+        try
+        {
+            s = File.OpenWrite(_basePath + Normalize(path));
+        }
+        catch (IOException)
+        {
+            string accumulator = _basePath;
+            List<string> segments = path.Split("/").ToList();
+            foreach (string segment in segments.Take(segments.Count() - 1))
+            {
+                accumulator += Normalize(segment);
+                if (!Directory.Exists(accumulator))
+                {
+                    Directory.CreateDirectory(accumulator);
+                }
+            }
+            s = File.OpenWrite(_basePath + Normalize(path));
+        }
+        return Task.FromResult(s);
     }
 
-    public override Task Rm(string path, bool recurse, CancellationToken cancellationToken)
+    public async override Task Rm(string path, bool recurse, CancellationToken cancellationToken = default)
     {
-        if (!path.EndsWith("/"))
+        if (path.Contains(_basePath))
+            path = path.Replace(_basePath, "");
+
+        if (File.Exists(_basePath + Normalize(path)))
         {
             File.Delete(_basePath + Normalize(path));
         }
         else
         {
-            foreach (string filePath in Ls(path, recurse, cancellationToken).Result)
+            foreach (string filePath in await Ls(path, recurse, cancellationToken))
             {
-                Rm(filePath, false, cancellationToken);
+                await Rm(filePath, false, cancellationToken);
             }
         }
-        return Task.CompletedTask;
     }
 }

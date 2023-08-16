@@ -1,11 +1,12 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-public abstract class FileStorage
+public abstract class FileStorage : IDisposable
 {
+    public abstract void Dispose();
     public abstract Task<bool> Exists(string path, CancellationToken cancellationToken = default);
 
     public abstract Task<IReadOnlyCollection<string>> Ls(
-        string? path = null,
+        string path,
         bool recurse = false,
         CancellationToken cancellationToken = default
     );
