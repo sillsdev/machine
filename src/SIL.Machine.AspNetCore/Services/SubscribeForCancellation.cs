@@ -36,12 +36,12 @@ public class SubscribeForCancellation
         {
             await sub.WaitForChangeAsync(TimeSpan.FromSeconds(10), cancellationToken);
             TranslationEngine? engine = sub.Change.Entity;
-            if (engine is null || engine.IsCanceled || engine.BuildState == BuildState.None)
+            if (engine is null || engine.IsCanceled)
             {
                 cts.Cancel();
                 return;
             }
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested || engine.BuildState == BuildState.None)
                 return;
             Thread.Sleep(500);
         }
