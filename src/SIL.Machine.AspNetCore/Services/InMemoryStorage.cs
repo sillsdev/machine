@@ -6,8 +6,9 @@ public class InMemoryStorage : FileStorage
 {
     public class Entry : Stream
     {
-        public MemoryStream MemoryStream;
-        public string Path;
+        public MemoryStream MemoryStream { get; }
+        public string Path { get; }
+
         private readonly InMemoryStorage _parent;
 
         public override bool CanRead => MemoryStream.CanRead;

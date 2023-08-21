@@ -58,12 +58,6 @@ public class S3WriteStream : Stream
                 };
             _length += count;
             uploadResponses.Add(_client.UploadPartAsync(request).Result);
-            // Logging?
-            // request.StreamTransferProgress += new EventHandler<Amazon.Runtime.StreamTransferProgressArgs>(
-            //     (sender, e) => {
-
-            //     }
-            // );
         }
         catch (Exception)
         {
@@ -87,12 +81,6 @@ public class S3WriteStream : Stream
                 };
             _length += count;
             uploadResponses.Add(await _client.UploadPartAsync(request));
-            // Logging?
-            // request.StreamTransferProgress += new EventHandler<Amazon.Runtime.StreamTransferProgressArgs>(
-            //     (sender, e) => {
-
-            //     }
-            // );
         }
         catch (Exception)
         {
