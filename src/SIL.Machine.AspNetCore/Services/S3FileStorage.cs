@@ -11,7 +11,7 @@ public class S3FileStorage : FileStorage
         _client = new AmazonS3Client(
             accessKeyId,
             secretAccessKey,
-            new AmazonS3Config //Best retry configuration?
+            new AmazonS3Config
             {
                 RetryMode = Amazon.Runtime.RequestRetryMode.Standard,
                 MaxErrorRetry = 3,
@@ -34,7 +34,7 @@ public class S3FileStorage : FileStorage
             MaxKeys = 1
         };
 
-        var response = await _client.ListObjectsV2Async(request, cancellationToken);
+        ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
 
         return response.S3Objects.Any();
     }
@@ -46,7 +46,7 @@ public class S3FileStorage : FileStorage
     )
     {
         if (path != null && !path.EndsWith("/"))
-            throw new ArgumentException("Path must be a folder", nameof(path));
+            throw new ArgumentException("Path must be a folder (ending with '/')", nameof(path));
 
         var request = new ListObjectsV2Request
         {
@@ -56,13 +56,13 @@ public class S3FileStorage : FileStorage
             Delimiter = recurse ? "" : "/"
         };
 
-        var response = await _client.ListObjectsV2Async(request, cancellationToken);
+        ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
         return response.S3Objects.Select(s3Obj => s3Obj.Key).ToList();
     }
 
     public override async Task<Stream> OpenRead(string path, CancellationToken cancellationToken = default)
     {
-        var objectId = _basePath + Normalize(path);
+        string objectId = _basePath + Normalize(path);
         GetObjectRequest request = new() { BucketName = _bucketName, Key = objectId };
         GetObjectResponse response = await _client.GetObjectAsync(request, cancellationToken);
         if (response.HttpStatusCode != HttpStatusCode.OK)
@@ -72,7 +72,7 @@ public class S3FileStorage : FileStorage
 
     public override async Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
     {
-        var objectId = _basePath + Normalize(path);
+        string objectId = _basePath + Normalize(path);
         InitiateMultipartUploadRequest request = new() { BucketName = _bucketName, Key = objectId };
         InitiateMultipartUploadResponse response = await _client.InitiateMultipartUploadAsync(request);
         return new BufferedStream(
@@ -85,7 +85,7 @@ public class S3FileStorage : FileStorage
     {
         if (path is null)
             throw new ArgumentNullException(nameof(path));
-        var objectId = _basePath + Normalize(path);
+        string objectId = _basePath + Normalize(path);
         DeleteObjectRequest request = new() { BucketName = _bucketName, Key = objectId };
         DeleteObjectResponse response = await _client.DeleteObjectAsync(request, cancellationToken);
         if (!response.HttpStatusCode.Equals(HttpStatusCode.OK))

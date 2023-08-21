@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using SIL.Machine.Corpora;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {

@@ -1,6 +1,9 @@
 ﻿using SIL.ObjectModel;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace SIL.Machine.Translation.Thot
+namespace SIL.Machine.Utils
 {
     public class TempDirectory : DisposableBase
     {
