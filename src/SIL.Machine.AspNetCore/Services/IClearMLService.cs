@@ -28,5 +28,10 @@ public interface IClearMLService
         string id,
         CancellationToken cancellationToken = default
     );
-    Task<ProgressStatus?> GetStatusAsync(string buildId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>?> GetTasksAheadInQueueAsync(
+        string buildId,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<float> GetInferencePercentCompleteAsync(string id, CancellationToken cancellationToken = default);
 }

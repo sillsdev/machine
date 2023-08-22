@@ -77,6 +77,19 @@ public class ClearMLNmtEngineBuildJob
                 clearMLTaskId = clearMLTask.Id;
             }
 
+            IReadOnlyList<string>? previousClearMLTasks = await _clearMLService.GetTasksAheadInQueueAsync(
+                clearMLTaskId,
+                cancellationToken
+            );
+            IReadOnlyList<string?>? localBuildsAheadAtStart = (await _engines.GetAllAsync())
+                .Where(e => e.BuildState is BuildState.Pending or BuildState.Active)
+                .Select(e => e.Id)
+                .ToList();
+
+            int numberOfTasksAheadInQueue = previousClearMLTasks?.Union(localBuildsAheadAtStart).Count() ?? 0;
+
+            ProgressStatus previousStatus = new();
+
             int lastIteration = 0;
             while (true)
             {
@@ -109,18 +122,48 @@ public class ClearMLNmtEngineBuildJob
                 switch (clearMLTask.Status)
                 {
                     case ClearMLTaskStatus.Queued:
-                    case ClearMLTaskStatus.InProgress:
-                        ProgressStatus? status = await _clearMLService.GetStatusAsync(clearMLTaskId, cancellationToken);
-                        if (status is not null)
+                        IReadOnlyList<string>? currentClearMLTasks = await _clearMLService.GetTasksAheadInQueueAsync(
+                            clearMLTaskId,
+                            cancellationToken
+                        );
+                        if (currentClearMLTasks is not null && previousClearMLTasks is not null)
                         {
-                            await _platformService.UpdateBuildStatusAsync(buildId, (ProgressStatus)status!);
+                            IEnumerable<string>? newTasks = currentClearMLTasks?.Except(previousClearMLTasks);
+                            numberOfTasksAheadInQueue +=
+                                newTasks?.Select(taskName => !localBuildsAheadAtStart?.Contains(taskName)).Count() ?? 0;
+                            IEnumerable<string>? finishedTasks = previousClearMLTasks?.Except(currentClearMLTasks!);
+                            numberOfTasksAheadInQueue -= finishedTasks?.Count() ?? 0;
+                        }
+                        previousClearMLTasks = currentClearMLTasks;
+                        goto case ClearMLTaskStatus.InProgress;
+                    case ClearMLTaskStatus.InProgress:
+                        float inferencePercentComplete = 0.0f;
+                        if (clearMLTask.Status is ClearMLTaskStatus.InProgress)
+                        {
+                            numberOfTasksAheadInQueue = 0;
+                            inferencePercentComplete = await _clearMLService.GetInferencePercentCompleteAsync(
+                                clearMLTaskId
+                            );
+                        }
+                        ProgressStatus currentStatus =
+                            new(
+                                clearMLTask.LastIteration,
+                                (clearMLTask.LastIteration / (float)_options.CurrentValue.MaxSteps) * 90.0
+                                    + (inferencePercentComplete / 100.0f) * 10.0,
+                                $"Number of tasks ahead in queue: {numberOfTasksAheadInQueue}"
+                            );
+                        if (!previousStatus.Equals(currentStatus))
+                        {
+                            await _platformService.UpdateBuildStatusAsync(buildId, currentStatus);
+                            previousStatus = currentStatus;
                         }
                         lastIteration = clearMLTask.LastIteration;
                         break;
                     case ClearMLTaskStatus.Completed:
+                        currentStatus = new(clearMLTask.LastIteration, 100.0, "Number of tasks ahead in queue: 0");
                         if (lastIteration != clearMLTask.LastIteration)
                         {
-                            await _platformService.UpdateBuildStatusAsync(buildId, clearMLTask.LastIteration);
+                            await _platformService.UpdateBuildStatusAsync(buildId, currentStatus);
                             lastIteration = clearMLTask.LastIteration;
                         }
                         break;

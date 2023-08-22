@@ -195,14 +195,47 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
-    public async Task<ProgressStatus?> GetStatusAsync(string taskId, CancellationToken cancellationToken = default)
+    private async Task<string?> GetMetricAsync(
+        string taskId,
+        string metricName,
+        string variantName,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var body = new JsonObject { ["id"] = taskId };
+        JsonObject? result = await CallAsync("tasks", "get_by_id_ex", body, cancellationToken);
+        var tasks = (JsonArray?)result?["data"]?["tasks"];
+        if (tasks is null || tasks.Count == 0)
+            return null;
+        JsonObject task = (JsonObject)tasks[0]!;
+        string metricNameHash,
+            variantNameHash;
+        using (var md5 = MD5.Create())
+        {
+            metricNameHash = Convert.ToHexString(md5.ComputeHash(Encoding.ASCII.GetBytes(metricName))).ToLower();
+            variantNameHash = Convert.ToHexString(md5.ComputeHash(Encoding.ASCII.GetBytes(variantName))).ToLower();
+        }
+        return (string?)task?["last_metrics"]?[metricNameHash]?[variantNameHash];
+    }
+
+    public async Task<float> GetInferencePercentCompleteAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return float.Parse(
+            await GetMetricAsync(id, "inference_percent_complete", "inference_percent_complete") ?? "0.0"
+        );
+    }
+
+    public async Task<IReadOnlyList<string>?> GetTasksAheadInQueueAsync(
+        string taskId,
+        CancellationToken cancellationToken = default
+    )
     {
         ClearMLTask? task = await GetTaskAsync(taskId, cancellationToken);
         if (task is null)
             return null;
         JsonObject? result = await CallAsync(
             "queues",
-            "get_all",
+            "get_all_ex",
             // Uses python regex syntax to only match exact queue name. See https://clear.ml/docs/latest/docs/references/api/queues#post-queuesget_all
             new JsonObject { ["name"] = $"^{_options.CurrentValue.Queue}$" },
             cancellationToken
@@ -218,20 +251,20 @@ public class ClearMLService : IClearMLService
         if (entriesNode is null)
             return null;
         JsonArray entries = (JsonArray)entriesNode;
-        int numTasksAheadInQueue = 0;
-        foreach (var entry in entries)
+        List<string> tasksAheadInQueue = new();
+        foreach (JsonNode? entry in entries)
         {
-            if ((string?)entry?["task"] == taskId)
+            JsonNode? task_node = entry?["task"];
+            if (task_node is null)
+                return null;
+            string? id = (string?)task_node["id"];
+            string? name = (string?)task_node["name"];
+            if (id == taskId)
                 break;
-            numTasksAheadInQueue++;
+            if (name is not null)
+                tasksAheadInQueue.Add(name);
         }
-        ProgressStatus status =
-            new(
-                task.LastIteration,
-                ((float)task.LastIteration / (float)_options.CurrentValue.MaxSteps) * 90, //90% at 100% of training
-                $"Number of tasks ahead in queue: {numTasksAheadInQueue}"
-            );
-        return status;
+        return tasksAheadInQueue;
     }
 
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
