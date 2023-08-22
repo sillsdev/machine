@@ -14,7 +14,7 @@ public interface ISharedFileService
 
     Task DeleteAsync(string path, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyCollection<IOEntry>> Ls(
+    Task<IReadOnlyCollection<string>> Ls(
         string path,
         bool recurse = false,
         CancellationToken cancellationToken = default
