@@ -81,12 +81,12 @@ public class SharedFileService : ISharedFileService
         return _fileStorage.Exists(path, cancellationToken);
     }
 
-    public Task<IReadOnlyCollection<IOEntry>> Ls(
+    public Task<IReadOnlyCollection<string>> Ls(
         string path,
         bool recurse = false,
         CancellationToken cancellationToken = default
     )
     {
-        return _fileStorage.Ls(new IOPath(path), recurse, cancellationToken);
+        return _fileStorage.Ls(path, recurse, cancellationToken);
     }
 }
