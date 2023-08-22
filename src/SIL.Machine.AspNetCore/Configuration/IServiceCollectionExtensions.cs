@@ -5,6 +5,7 @@ public static class IServiceCollectionExtensions
     public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddSingleton<ISharedFileService, SharedFileService>();
+        services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask((sp, ct) => sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(ct));

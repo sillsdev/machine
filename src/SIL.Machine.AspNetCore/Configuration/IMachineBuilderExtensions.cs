@@ -1,4 +1,5 @@
-﻿using Serval.Translation.V1;
+﻿using Microsoft.AspNetCore.Http;
+using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -100,6 +101,7 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddClearMLService(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
+        builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 
         // workaround register satisfying the interface and as a hosted service.
         builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();

@@ -22,10 +22,14 @@ public interface IClearMLService
     Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> DequeueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> StopTaskAsync(string id, CancellationToken cancellationToken = default);
-    Task<ClearMLTask?> GetTaskAsync(string name, string projectId, CancellationToken cancellationToken = default);
-    Task<ClearMLTask?> GetTaskAsync(string id, CancellationToken cancellationToken = default);
+    Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task<ClearMLTask?> GetTaskByIdAsync(string id, CancellationToken cancellationToken = default);
     Task<IReadOnlyDictionary<string, double>> GetTaskMetricsAsync(
         string id,
         CancellationToken cancellationToken = default
     );
+
+    Task<bool> PingAsync(CancellationToken cancellationToken = default);
+
+    Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default);
 }

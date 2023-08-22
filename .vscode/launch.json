@@ -27,6 +27,7 @@
     "compounds": [
         {
             "name": "DockerComb",
+            "justMyCode": false,
             "configurations": [
                 "Engine Docker",
                 "Job Docker"

@@ -3,8 +3,8 @@
 public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFactory
 {
     private readonly ServiceOptions _serviceOptions;
-    private readonly IRepository<RWLock> _locks;
     private readonly IIdGenerator _idGenerator;
+    private readonly IRepository<RWLock> _locks;
 
     public DistributedReaderWriterLockFactory(
         IOptions<ServiceOptions> serviceOptions,
@@ -31,7 +31,7 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
 
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        RWLock? rwLock = await _locks.DeleteAsync(id, cancellationToken);
+        RWLock? rwLock = await _locks.DeleteAsync(rwl => rwl.Id == id, cancellationToken);
         return rwLock is not null;
     }
 

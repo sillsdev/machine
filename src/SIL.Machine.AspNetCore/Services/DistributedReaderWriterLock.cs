@@ -7,12 +7,15 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
     private readonly IIdGenerator _idGenerator;
     private readonly string _id;
 
+    private bool _lockChecked;
+
     public DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
     {
         _hostId = hostId;
         _locks = locks;
         _idGenerator = idGenerator;
         _id = id;
+        _lockChecked = false;
     }
 
     public async Task<IAsyncDisposable> ReaderLockAsync(
@@ -20,6 +23,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
+        await createLockIfNotExist();
         string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken))
         {
@@ -49,6 +53,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
+        await createLockIfNotExist();
         string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
         {
@@ -96,45 +101,43 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         return new WriterLockReleaser(this, lockId);
     }
 
+    private async Task createLockIfNotExist()
+    {
+        if (_lockChecked == false)
+        {
+            if (!await _locks.ExistsAsync(e => e.Id == _id, CancellationToken.None))
+                await _locks.InsertAsync(new RWLock { Id = _id }, CancellationToken.None);
+            _lockChecked = true;
+        }
+    }
+
     private async Task<bool> TryAcquireWriterLock(
         string lockId,
         TimeSpan? lifetime,
         CancellationToken cancellationToken
     )
     {
-        try
+        var now = DateTime.UtcNow;
+        Expression<Func<RWLock, bool>> filter = rwl =>
+            rwl.Id == _id
+            && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
+            && !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now)
+            && (!rwl.WriterQueue.Any() || rwl.WriterQueue[0].Id == lockId);
+        void Update(IUpdateBuilder<RWLock> u)
         {
-            var now = DateTime.UtcNow;
-            Expression<Func<RWLock, bool>> filter = rwl =>
-                rwl.Id == _id
-                && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
-                && !rwl.ReaderLocks.Any(l => l.ExpiresAt == null || l.ExpiresAt > now)
-                && (!rwl.WriterQueue.Any() || rwl.WriterQueue[0].Id == lockId);
-            void Update(IUpdateBuilder<RWLock> u)
-            {
-                u.Set(
-                    rwl => rwl.WriterLock,
-                    new Lock
-                    {
-                        Id = lockId,
-                        ExpiresAt = lifetime is null ? null : now + lifetime,
-                        HostId = _hostId
-                    }
-                );
-                u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
-            }
-            RWLock? rwLock = await _locks.UpdateAsync(
-                filter,
-                Update,
-                upsert: true,
-                cancellationToken: cancellationToken
+            u.Set(
+                rwl => rwl.WriterLock,
+                new Lock
+                {
+                    Id = lockId,
+                    ExpiresAt = lifetime is null ? null : now + lifetime,
+                    HostId = _hostId
+                }
             );
-            return rwLock is not null;
+            u.RemoveAll(rwl => rwl.WriterQueue, l => l.Id == lockId);
         }
-        catch (DuplicateKeyException)
-        {
-            return false;
-        }
+        RWLock? rwLock = await _locks.UpdateAsync(filter, Update, cancellationToken: cancellationToken);
+        return rwLock is not null;
     }
 
     private async Task<bool> TryAcquireReaderLock(
@@ -143,38 +146,26 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken
     )
     {
-        try
+        var now = DateTime.UtcNow;
+        Expression<Func<RWLock, bool>> filter = rwl =>
+            rwl.Id == _id
+            && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
+            && !rwl.WriterQueue.Any();
+        void Update(IUpdateBuilder<RWLock> u)
         {
-            var now = DateTime.UtcNow;
-            Expression<Func<RWLock, bool>> filter = rwl =>
-                rwl.Id == _id
-                && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
-                && !rwl.WriterQueue.Any();
-            void Update(IUpdateBuilder<RWLock> u)
-            {
-                u.Add(
-                    rwl => rwl.ReaderLocks,
-                    new Lock
-                    {
-                        Id = lockId,
-                        ExpiresAt = lifetime is null ? null : now + lifetime,
-                        HostId = _hostId
-                    }
-                );
-            }
-
-            RWLock? rwLock = await _locks.UpdateAsync(
-                filter,
-                Update,
-                upsert: true,
-                cancellationToken: cancellationToken
+            u.Add(
+                rwl => rwl.ReaderLocks,
+                new Lock
+                {
+                    Id = lockId,
+                    ExpiresAt = lifetime is null ? null : now + lifetime,
+                    HostId = _hostId
+                }
             );
-            return rwLock is not null;
         }
-        catch (DuplicateKeyException)
-        {
-            return false;
-        }
+
+        RWLock? rwLock = await _locks.UpdateAsync(filter, Update, cancellationToken: cancellationToken);
+        return rwLock is not null;
     }
 
     private class WriterLockReleaser : AsyncDisposableBase

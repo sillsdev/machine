@@ -145,20 +145,12 @@ public class ClearMLService : IClearMLService
         return updated == 1;
     }
 
-    public Task<ClearMLTask?> GetTaskAsync(string name, string projectId, CancellationToken cancellationToken = default)
+    public Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return GetTaskAsync(
-            new JsonObject
-            {
-                ["id"] = new JsonArray(),
-                ["name"] = name,
-                ["project"] = new JsonArray(projectId)
-            },
-            cancellationToken
-        );
+        return GetTaskAsync(new JsonObject { ["name"] = name }, cancellationToken);
     }
 
-    public Task<ClearMLTask?> GetTaskAsync(string id, CancellationToken cancellationToken = default)
+    public Task<ClearMLTask?> GetTaskByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return GetTaskAsync(new JsonObject { ["id"] = id }, cancellationToken);
     }
@@ -195,6 +187,34 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
+    public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
+    {
+        JsonObject? result = await CallAsync("debug", "ping", new JsonObject(), cancellationToken);
+        return result is not null;
+    }
+
+    public async Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default)
+    {
+        JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
+        JsonNode? workers_node = result?["data"]?["workers"];
+        if (workers_node is null)
+            return false;
+        JsonArray workers = (JsonArray)workers_node;
+        foreach (var worker in workers)
+        {
+            JsonNode? queues_node = worker?["queues"];
+            if (queues_node is null)
+                continue;
+            JsonArray queues = (JsonArray)queues_node;
+            foreach (var queue in queues)
+            {
+                if ((string?)queue?["name"] == _options.CurrentValue.Queue)
+                    return true;
+            }
+        }
+        return false;
+    }
+
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
     {
         body["only_fields"] = new JsonArray(
@@ -206,7 +226,7 @@ public class ClearMLService : IClearMLService
             "status_reason",
             "active_duration"
         );
-        JsonObject? result = await CallAsync("tasks", "get_by_id_ex", body, cancellationToken);
+        JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
         if (tasks is null || tasks.Count == 0)
             return null;
