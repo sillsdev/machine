@@ -1,6 +1,7 @@
 global using Amazon;
 global using Amazon.S3;
 global using Amazon.S3.Model;
+global using Amazon.S3.Transfer;
 global using System.Collections;
 global using System.Collections.Concurrent;
 global using System.Collections.Specialized;

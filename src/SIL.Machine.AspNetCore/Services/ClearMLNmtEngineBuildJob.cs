@@ -278,6 +278,7 @@ public class ClearMLNmtEngineBuildJob
                     if (
                         (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
                         && row.SourceSegment.Count > 0
+                        && row.TargetSegment.Count == 0
                     )
                     {
                         yield return new Pretranslation

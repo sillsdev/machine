@@ -4,18 +4,15 @@ public class S3WriteStream : Stream
 {
     private readonly AmazonS3Client _client;
     private readonly string _key;
-    private readonly string _uploadId;
-
     private readonly string _bucketName;
-    private readonly List<UploadPartResponse> uploadResponses = new();
     private long _length;
 
-    public S3WriteStream(AmazonS3Client client, string key, string bucketName, string uploadId)
+    public S3WriteStream(AmazonS3Client client, string key, string bucketName)
     {
         _client = client;
         _key = key;
         _bucketName = bucketName;
-        _uploadId = uploadId;
+        _length = 0;
     }
 
     public override bool CanRead => false;
@@ -44,48 +41,30 @@ public class S3WriteStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        try
+        using Stream inputStream = new MemoryStream(buffer, offset, count);
+        using var transferUtility = new TransferUtility(_client);
+        var uploadRequest = new TransferUtilityUploadRequest
         {
-            int partNumber = uploadResponses.Count + 1;
-            UploadPartRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId,
-                    PartNumber = partNumber,
-                    FilePosition = _length
-                };
-            _length += count;
-            uploadResponses.Add(_client.UploadPartAsync(request).Result);
-        }
-        catch (Exception)
-        {
-            Abort().Wait(10_000);
-        }
+            BucketName = _bucketName,
+            InputStream = inputStream,
+            Key = _key,
+            PartSize = count
+        };
+        transferUtility.Upload(uploadRequest);
     }
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        try
+        using Stream inputStream = new MemoryStream(buffer, offset, count);
+        using var transferUtility = new TransferUtility(_client);
+        var uploadRequest = new TransferUtilityUploadRequest
         {
-            int partNumber = uploadResponses.Count + 1;
-            UploadPartRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId,
-                    PartNumber = partNumber,
-                    FilePosition = _length
-                };
-            _length += count;
-            uploadResponses.Add(await _client.UploadPartAsync(request));
-        }
-        catch (Exception)
-        {
-            await Abort();
-        }
+            BucketName = _bucketName,
+            InputStream = inputStream,
+            Key = _key,
+            PartSize = count
+        };
+        await transferUtility.UploadAsync(uploadRequest);
     }
 
     protected override void Dispose(bool disposing)
@@ -93,38 +72,10 @@ public class S3WriteStream : Stream
         base.Dispose(disposing);
     }
 
-    public async override ValueTask DisposeAsync()
+    public override ValueTask DisposeAsync()
     {
-        try
-        {
-            CompleteMultipartUploadRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId
-                };
-            request.AddPartETags(uploadResponses);
-            await _client.CompleteMultipartUploadAsync(request);
-            Dispose(disposing: false);
-            GC.SuppressFinalize(this);
-        }
-        catch (Exception)
-        {
-            await Abort();
-        }
-    }
-
-    private async Task Abort()
-    {
-        // Logging?
-        AbortMultipartUploadRequest abortMPURequest =
-            new()
-            {
-                BucketName = _bucketName,
-                Key = _key,
-                UploadId = _uploadId
-            };
-        await _client.AbortMultipartUploadAsync(abortMPURequest);
+        Dispose(disposing: false);
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
     }
 }
