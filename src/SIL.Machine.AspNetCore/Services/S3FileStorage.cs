@@ -20,7 +20,9 @@ public class S3FileStorage : FileStorage
         );
 
         _bucketName = bucketName;
+        //Ultimately, object keys can neither begin nor end with slashes; this is what broke the earlier low-level implementation
         _basePath = basePath.EndsWith("/") ? basePath.Remove(basePath.Length - 1, 1) : basePath;
+        _basePath = _basePath.StartsWith("/") ? _basePath.Remove(0, 1) : _basePath;
     }
 
     public override void Dispose() { }
@@ -70,14 +72,11 @@ public class S3FileStorage : FileStorage
         return response.ResponseStream;
     }
 
-    public override async Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
+    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
     {
         string objectId = _basePath + Normalize(path);
-        InitiateMultipartUploadRequest request = new() { BucketName = _bucketName, Key = objectId };
-        InitiateMultipartUploadResponse response = await _client.InitiateMultipartUploadAsync(request);
-        return new BufferedStream(
-            new S3WriteStream(_client, objectId, _bucketName, response.UploadId),
-            1024 * 1024 * 5
+        return Task.FromResult<Stream>(
+            new BufferedStream(new S3WriteStream(_client, objectId, _bucketName), 1024 * 1024 * 100)
         );
     }
 
