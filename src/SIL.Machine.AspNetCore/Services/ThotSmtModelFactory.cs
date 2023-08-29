@@ -63,12 +63,8 @@ public class ThotSmtModelFactory : ISmtModelFactory
         string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
             return;
-        string lmDir = Path.Combine(engineDir, "lm");
-        if (Directory.Exists(lmDir))
-            Directory.Delete(lmDir, true);
-        string tmDir = Path.Combine(engineDir, "tm");
-        if (Directory.Exists(tmDir))
-            Directory.Delete(tmDir, true);
+        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "lm"));
+        DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "tm"));
         string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
         if (File.Exists(smtConfigFileName))
             File.Delete(smtConfigFileName);

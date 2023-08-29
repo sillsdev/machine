@@ -661,7 +661,7 @@ namespace SIL.Machine.Translation.Thot
 
         protected override void DisposeManagedResources()
         {
-            Directory.Delete(_tempDir, true);
+            DirectoryHelper.DeleteDirectoryRobust(_tempDir);
         }
 
         private static ParallelTextRow EscapeTokens(ParallelTextRow row)

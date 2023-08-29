@@ -17,22 +17,7 @@ public class LocalStorage : FileStorage
 
     public override void Dispose()
     {
-        DeleteRecursive();
-        Directory.Delete(_basePath + "/");
-    }
-
-    private void DeleteRecursive(string? path = null)
-    {
-        path ??= _basePath + "/";
-        foreach (var subDir in Directory.GetDirectories(path))
-        {
-            DeleteRecursive(subDir);
-            Directory.Delete(subDir);
-        }
-        foreach (var subPath in Directory.GetFiles(path))
-        {
-            File.Delete(subPath);
-        }
+        DirectoryHelper.DeleteDirectoryRobust(_basePath + "/");
     }
 
     public override Task<bool> Exists(string path, CancellationToken cancellationToken = default)
