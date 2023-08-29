@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Tokenization.SentencePiece
 {
@@ -16,8 +17,7 @@ namespace SIL.Machine.Tokenization.SentencePiece
         public void CreateModel()
         {
             _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            if (Directory.Exists(_tempDir))
-                Directory.Delete(_tempDir, recursive: true);
+            DirectoryHelper.DeleteDirectoryRobust(_tempDir);
             Directory.CreateDirectory(_tempDir);
             var trainer = new SentencePieceTrainer { VocabSize = 100 };
             trainer.Train(TestFilename, Path.Combine(_tempDir, "sp"));
@@ -26,8 +26,7 @@ namespace SIL.Machine.Tokenization.SentencePiece
         [OneTimeTearDown]
         public void DeleteModel()
         {
-            if (Directory.Exists(_tempDir))
-                Directory.Delete(_tempDir, recursive: true);
+            DirectoryHelper.DeleteDirectoryRobust(_tempDir);
         }
 
         [Test]

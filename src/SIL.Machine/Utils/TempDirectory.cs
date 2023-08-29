@@ -10,7 +10,7 @@ namespace SIL.Machine.Utils
         public TempDirectory(string name)
         {
             Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), name);
-            DeleteFolderThatMayBeInUse();
+            DirectoryHelper.DeleteDirectoryRobust(Path);
             Directory.CreateDirectory(Path);
         }
 
@@ -18,34 +18,7 @@ namespace SIL.Machine.Utils
 
         protected override void DisposeManagedResources()
         {
-            DeleteFolderThatMayBeInUse();
-        }
-
-        private void DeleteFolderThatMayBeInUse()
-        {
-            if (Directory.Exists(Path))
-            {
-                try
-                {
-                    Directory.Delete(Path, true);
-                }
-                catch (Exception)
-                {
-                    try
-                    {
-                        //maybe we can at least clear it out a bit
-                        string[] files = Directory.GetFiles(Path, "*.*", SearchOption.AllDirectories);
-                        foreach (string s in files)
-                        {
-                            File.Delete(s);
-                        }
-                        //sleep and try again (seems to work)
-                        Task.Delay(1000).Wait();
-                        Directory.Delete(Path, true);
-                    }
-                    catch (Exception) { }
-                }
-            }
+            DirectoryHelper.DeleteDirectoryRobust(Path);
         }
     }
 }
