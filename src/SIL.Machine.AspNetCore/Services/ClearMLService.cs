@@ -195,7 +195,7 @@ public class ClearMLService : IClearMLService
         return results;
     }
 
-    private async Task<string?> GetMetricAsync(
+    private async Task<string?> GetTaskMetricAsync(
         string taskId,
         string metricName,
         string variantName,
@@ -208,6 +208,9 @@ public class ClearMLService : IClearMLService
         if (tasks is null || tasks.Count == 0)
             return null;
         JsonObject task = (JsonObject)tasks[0]!;
+        //ClearML represents metrics and values of a hash (using MD5) map of an array of
+        //hash(metric_name) each with a subarray of hash(variant_name) each with a metric
+        //object containing the value.
         string metricNameHash,
             variantNameHash;
         using (var md5 = MD5.Create())
@@ -215,56 +218,14 @@ public class ClearMLService : IClearMLService
             metricNameHash = Convert.ToHexString(md5.ComputeHash(Encoding.ASCII.GetBytes(metricName))).ToLower();
             variantNameHash = Convert.ToHexString(md5.ComputeHash(Encoding.ASCII.GetBytes(variantName))).ToLower();
         }
-        return (string?)task?["last_metrics"]?[metricNameHash]?[variantNameHash];
+        return (string?)task?["last_metrics"]?[metricNameHash]?[variantNameHash]?["value"];
     }
 
     public async Task<float> GetInferencePercentCompleteAsync(string id, CancellationToken cancellationToken = default)
     {
         return float.Parse(
-            await GetMetricAsync(id, "inference_percent_complete", "inference_percent_complete") ?? "0.0"
+            await GetTaskMetricAsync(id, "inference_percent_complete", "inference_percent_complete") ?? "0.0"
         );
-    }
-
-    public async Task<IReadOnlyList<string>?> GetTasksAheadInQueueAsync(
-        string taskId,
-        CancellationToken cancellationToken = default
-    )
-    {
-        ClearMLTask? task = await GetTaskAsync(taskId, cancellationToken);
-        if (task is null)
-            return null;
-        JsonObject? result = await CallAsync(
-            "queues",
-            "get_all_ex",
-            // Uses python regex syntax to only match exact queue name. See https://clear.ml/docs/latest/docs/references/api/queues#post-queuesget_all
-            new JsonObject { ["name"] = $"^{_options.CurrentValue.Queue}$" },
-            cancellationToken
-        );
-        JsonNode? queuesNode = result?["data"]?["queues"];
-        if (queuesNode is null)
-            return null;
-        JsonArray queues = (JsonArray)queuesNode;
-        JsonNode? target_queue = queues[0];
-        if (target_queue is null)
-            return null;
-        JsonNode? entriesNode = target_queue["entries"];
-        if (entriesNode is null)
-            return null;
-        JsonArray entries = (JsonArray)entriesNode;
-        List<string> tasksAheadInQueue = new();
-        foreach (JsonNode? entry in entries)
-        {
-            JsonNode? task_node = entry?["task"];
-            if (task_node is null)
-                return null;
-            string? id = (string?)task_node["id"];
-            string? name = (string?)task_node["name"];
-            if (id == taskId)
-                break;
-            if (name is not null)
-                tasksAheadInQueue.Add(name);
-        }
-        return tasksAheadInQueue;
     }
 
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
