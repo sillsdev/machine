@@ -67,11 +67,6 @@ public class S3WriteStream : Stream
         await transferUtility.UploadAsync(uploadRequest);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-    }
-
     public override ValueTask DisposeAsync()
     {
         Dispose(disposing: false);
