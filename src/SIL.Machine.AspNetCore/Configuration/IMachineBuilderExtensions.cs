@@ -116,10 +116,12 @@ public static class IMachineBuilderExtensions
     )
     {
         builder.Services.AddHangfire(
-            c =>
-                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            (provider, configuration) =>
+                configuration
+                    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                     .UseSimpleAssemblyNameTypeSerializer()
                     .UseRecommendedSerializerSettings()
+                    .UseFilter(provider.GetRequiredService<AutomaticRetryAttribute>())
                     .UseMongoStorage(
                         connectionString ?? builder.Configuration.GetConnectionString("Hangfire"),
                         new MongoStorageOptions
