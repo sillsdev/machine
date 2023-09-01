@@ -107,6 +107,12 @@ public static class IMachineBuilderExtensions
         builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
         builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
 
+        builder.Services
+            .AddHttpClient<IClearMLAuthenticationService, ClearMLAuthenticationService>()
+            .AddTransientHttpErrorPolicy(
+                b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            );
+
         return builder;
     }
 

@@ -23,16 +23,19 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         _logger = logger;
     }
 
-    public string GetAuthToken()
+    public async Task<string> GetAuthToken(CancellationToken cancellationToken = default)
     {
+        if (_authToken is "")
+        {
+            //Should only happen once, so no different in cost than previous solution
+            _logger.LogInformation("Token was empty; refreshing");
+            await AuthorizeAsync(cancellationToken);
+        }
         return _authToken;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        // call once during init to ensure that the auth token is populated
-        await AuthorizeAsync(cancellationToken);
-
         await base.StartAsync(cancellationToken);
     }
 
@@ -61,22 +64,8 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            string result = await response.Content.ReadAsStringAsync(cancellationToken);
-            _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
-            _consecutiveFailureCount = 0;
-            _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
-        }
-        else
-        {
-            _consecutiveFailureCount += 1;
-            _logger.LogWarning(
-                "ClearML Authentication Token Refresh Unsuccessful {consecutiveFailureCount} consecutive times. "
-                    + "Error response: {response}",
-                _consecutiveFailureCount,
-                response
-            );
-        }
+        string result = await response.Content.ReadAsStringAsync(cancellationToken);
+        _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
+        _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }
 }

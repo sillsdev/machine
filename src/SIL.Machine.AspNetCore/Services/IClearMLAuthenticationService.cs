@@ -2,5 +2,5 @@
 
 public interface IClearMLAuthenticationService : IHostedService
 {
-    public string GetAuthToken();
+    public Task<string> GetAuthToken(CancellationToken cancellationToken = default);
 }
