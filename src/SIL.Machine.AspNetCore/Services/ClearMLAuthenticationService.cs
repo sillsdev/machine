@@ -5,11 +5,11 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
     private readonly ILogger<ClearMLAuthenticationService> _logger;
+    private readonly AsyncLock _lock = new();
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
     private const int RefreshPeriod = 3600;
-    private int _consecutiveFailureCount = 0;
     private string _authToken = "";
 
     public ClearMLAuthenticationService(
@@ -23,17 +23,18 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         _logger = logger;
     }
 
-    public string GetAuthToken()
+    public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {
+        using (await _lock.LockAsync())
+        {
+            if (_authToken is "")
+            {
+                //Should only happen once, so no different in cost than previous solution
+                _logger.LogInformation("Token was empty; refreshing");
+                await AuthorizeAsync(cancellationToken);
+            }
+        }
         return _authToken;
-    }
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        // call once during init to ensure that the auth token is populated
-        await AuthorizeAsync(cancellationToken);
-
-        await base.StartAsync(cancellationToken);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,7 +45,8 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(RefreshPeriod), stoppingToken);
-                await AuthorizeAsync(stoppingToken);
+                using (await _lock.LockAsync())
+                    await AuthorizeAsync(stoppingToken);
             }
         }
         catch (TaskCanceledException) { }
@@ -61,22 +63,8 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        if (response.StatusCode == HttpStatusCode.OK)
-        {
-            string result = await response.Content.ReadAsStringAsync(cancellationToken);
-            _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
-            _consecutiveFailureCount = 0;
-            _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
-        }
-        else
-        {
-            _consecutiveFailureCount += 1;
-            _logger.LogWarning(
-                "ClearML Authentication Token Refresh Unsuccessful {consecutiveFailureCount} consecutive times. "
-                    + "Error response: {response}",
-                _consecutiveFailureCount,
-                response
-            );
-        }
+        string result = await response.Content.ReadAsStringAsync(cancellationToken);
+        _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
+        _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }
 }

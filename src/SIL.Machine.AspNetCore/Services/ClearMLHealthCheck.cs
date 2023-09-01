@@ -1,12 +1,10 @@
 public class ClearMLHealthCheck : IHealthCheck
 {
     private readonly IClearMLService _clearMLService;
-    private readonly ILogger _logger;
 
-    public ClearMLHealthCheck(IClearMLService clearMLService, ILoggerFactory loggerFactory)
+    public ClearMLHealthCheck(IClearMLService clearMLService)
     {
         _clearMLService = clearMLService;
-        _logger = loggerFactory.CreateLogger<S3HealthCheck>();
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -26,12 +24,7 @@ public class ClearMLHealthCheck : IHealthCheck
         }
         catch (Exception e)
         {
-            _logger.LogError(
-                "ClearML is not available. The following exception occurred while pinging ClearML " + e.Message
-            );
-            return HealthCheckResult.Unhealthy(
-                "ClearML is not available. The following exception occurred while pinging ClearML " + e.Message
-            );
+            return HealthCheckResult.Unhealthy(exception: e);
         }
     }
 }

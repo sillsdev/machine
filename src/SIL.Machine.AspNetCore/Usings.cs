@@ -31,6 +31,7 @@ global using Microsoft.Extensions.Options;
 global using MongoDB.Driver;
 global using MongoDB.Driver.Linq;
 global using Nito.AsyncEx;
+global using Polly;
 global using SIL.DataAccess;
 global using SIL.Machine.AspNetCore.Configuration;
 global using SIL.Machine.AspNetCore.Models;
