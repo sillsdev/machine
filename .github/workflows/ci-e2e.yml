@@ -31,20 +31,11 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Get Machine
+      - name: Get Serval
         run: dotnet build && cd .. && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build
 
-      - name: Restore dotnet tools
-        run: dotnet tool restore
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --no-restore
-
       - name: Start containers
-        run: docker compose -f "docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run: docker compose -f "../serval/docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
@@ -53,7 +44,7 @@ jobs:
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+        run: cd ../serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
 
       - name: Debug network (Post test)
         if: ${{ failure() }}
@@ -61,4 +52,4 @@ jobs:
 
       - name: Stop containers
         if: ${{ success() || failure() }}
-        run: docker compose down
+        run: docker compose -f "../serval/docker-compose.yml" down
