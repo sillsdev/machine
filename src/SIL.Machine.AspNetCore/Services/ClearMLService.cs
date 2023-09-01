@@ -244,7 +244,7 @@ public class ClearMLService : IClearMLService
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        request.Headers.Add("Authorization", $"Bearer {_clearMLAuthService.GetAuthToken()}");
+        request.Headers.Add("Authorization", $"Bearer {await _clearMLAuthService.GetAuthTokenAsync()}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         return (JsonObject?)JsonNode.Parse(result);
