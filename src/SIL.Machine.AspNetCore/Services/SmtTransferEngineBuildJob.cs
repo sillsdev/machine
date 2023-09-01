@@ -97,13 +97,12 @@ public class SmtTransferEngineBuildJob
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await smtModelTrainer.SaveAsync(cancellationToken);
-                await truecaseTrainer.SaveAsync(cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
+                await smtModelTrainer.SaveAsync(CancellationToken.None);
+                await truecaseTrainer.SaveAsync(CancellationToken.None);
                 ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
                 IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
                     p => p.TranslationEngineRef == engine!.Id,
-                    cancellationToken
+                    CancellationToken.None
                 );
                 using (
                     IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
@@ -119,9 +118,8 @@ public class SmtTransferEngineBuildJob
                         await smtModel.TrainSegmentAsync(
                             segmentPair.Source,
                             segmentPair.Target,
-                            cancellationToken: cancellationToken
+                            cancellationToken: CancellationToken.None
                         );
-                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
 
