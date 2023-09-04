@@ -33,7 +33,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         await base.CreateAsync(engineId, engineName, sourceLanguage, targetLanguage, cancellationToken);
 
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, CancellationToken.None);
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
             state.InitNew();
@@ -45,7 +45,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         await base.DeleteAsync(engineId, cancellationToken);
         if (_stateService.TryRemove(engineId, out SmtTransferEngineState? state))
         {
-            IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+            IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, CancellationToken.None);
             await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
             {
                 // ensure that there is no build running before unloading
@@ -67,7 +67,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     )
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
@@ -85,7 +85,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     )
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
@@ -105,7 +105,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     )
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
@@ -142,7 +142,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     )
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             await StartBuildInternalAsync(engineId, buildId, corpora, cancellationToken);
@@ -153,7 +153,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     public override async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
         SmtTransferEngineState state = _stateService.Get(engineId);
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             await CancelBuildInternalAsync(engineId, cancellationToken);

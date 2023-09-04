@@ -60,7 +60,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         CancellationToken cancellationToken = default
     )
     {
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             await StartBuildInternalAsync(engineId, buildId, corpora, cancellationToken);
@@ -69,7 +69,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
 
     public virtual async Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        IDistributedReaderWriterLock @lock = LockFactory.Create(engineId);
+        IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             await CancelBuildInternalAsync(engineId, cancellationToken);

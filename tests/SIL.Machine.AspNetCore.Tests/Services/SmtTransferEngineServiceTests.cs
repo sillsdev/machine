@@ -62,17 +62,18 @@ public class SmtTransferEngineServiceTests
     public async Task StartBuildAsync_RestartUnfinishedBuild()
     {
         using var env = new TestEnvironment();
-        await env.SmtBatchTrainer.TrainAsync(
-            Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(ct =>
+
+        env.SmtBatchTrainer
+            .WhenForAnyArgs(t => t.TrainAsync(null, default))
+            .Do(ci =>
             {
+                CancellationToken ct = ci.ArgAt<CancellationToken>(1);
                 while (true)
                 {
                     ct.ThrowIfCancellationRequested();
                     Thread.Sleep(100);
                 }
-            })
-        );
+            });
         await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");

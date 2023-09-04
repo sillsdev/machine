@@ -3,6 +3,6 @@
 public interface IDistributedReaderWriterLockFactory
 {
     Task InitAsync(CancellationToken cancellationToken = default);
-    IDistributedReaderWriterLock Create(string id);
+    Task<IDistributedReaderWriterLock> CreateAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default);
 }

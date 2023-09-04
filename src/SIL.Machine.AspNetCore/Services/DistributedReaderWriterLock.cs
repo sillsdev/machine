@@ -7,15 +7,12 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
     private readonly IIdGenerator _idGenerator;
     private readonly string _id;
 
-    private bool _lockChecked;
-
     public DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
     {
         _hostId = hostId;
         _locks = locks;
         _idGenerator = idGenerator;
         _id = id;
-        _lockChecked = false;
     }
 
     public async Task<IAsyncDisposable> ReaderLockAsync(
@@ -23,7 +20,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
-        await createLockIfNotExist();
         string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireReaderLock(lockId, lifetime, cancellationToken))
         {
@@ -53,7 +49,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken = default
     )
     {
-        await createLockIfNotExist();
         string lockId = _idGenerator.GenerateId();
         if (!await TryAcquireWriterLock(lockId, lifetime, cancellationToken))
         {
@@ -99,23 +94,6 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
             }
         }
         return new WriterLockReleaser(this, lockId);
-    }
-
-    private async Task createLockIfNotExist()
-    {
-        if (_lockChecked == false)
-        {
-            try
-            {
-                await _locks.InsertAsync(new RWLock { Id = _id }, CancellationToken.None);
-            }
-            catch (DuplicateKeyException)
-            {
-                // the lock is already made - no new one needs to be made
-                // This is done instead of checking if it exists first to prevent race conditions.
-            }
-            _lockChecked = true;
-        }
     }
 
     private async Task<bool> TryAcquireWriterLock(

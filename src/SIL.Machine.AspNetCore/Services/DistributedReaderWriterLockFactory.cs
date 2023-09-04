@@ -24,8 +24,20 @@ public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFa
         await ReleaseAllReaderLocksAsync(cancellationToken);
     }
 
-    public IDistributedReaderWriterLock Create(string id)
+    public async Task<IDistributedReaderWriterLock> CreateAsync(
+        string id,
+        CancellationToken cancellationToken = default
+    )
     {
+        try
+        {
+            await _locks.InsertAsync(new RWLock { Id = id }, cancellationToken);
+        }
+        catch (DuplicateKeyException)
+        {
+            // the lock is already made - no new one needs to be made
+            // This is done instead of checking if it exists first to prevent race conditions.
+        }
         return new DistributedReaderWriterLock(_serviceOptions.ServiceId, _locks, _idGenerator, id);
     }
 
