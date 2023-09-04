@@ -2,8 +2,6 @@
 
 public class Corpus
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; } = default!;
     public string SourceLanguage { get; set; } = default!;
     public string TargetLanguage { get; set; } = default!;
