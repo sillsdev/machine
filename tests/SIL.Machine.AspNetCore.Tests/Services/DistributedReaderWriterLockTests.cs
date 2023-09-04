@@ -6,58 +6,61 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task ReaderLockAsync_NoLockAcquired()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         RWLock entity;
         await using (await rwLock.ReaderLockAsync())
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.True);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task ReaderLockAsync_ReaderLockAcquired()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         RWLock entity;
         await using (await rwLock.ReaderLockAsync())
         {
             await using (await rwLock.ReaderLockAsync())
             {
-                entity = locks.Get("test");
-                Assert.That(entity.IsAvailableForReading(), Is.True);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
+                entity = env.Locks.Get("test");
+                Assert.Multiple(() =>
+                {
+                    Assert.That(entity.IsAvailableForReading(), Is.True);
+                    Assert.That(entity.IsAvailableForWriting(), Is.False);
+                });
             }
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndNotReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.WriterLockAsync();
         var task = rwLock.ReaderLockAsync();
@@ -67,11 +70,8 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task;
         await using (await rwLock.WriterLockAsync())
@@ -83,24 +83,27 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await task)
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.True);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task ReaderLockAsync_WriterLockAcquiredAndExpired()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         RWLock entity;
         await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
@@ -109,25 +112,28 @@ public class DistributedReaderWriterLockTests
             await Task.Delay(500);
             await using (await task)
             {
-                entity = locks.Get("test");
-                Assert.That(entity.IsAvailableForReading(), Is.True);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
+                entity = env.Locks.Get("test");
+                Assert.Multiple(() =>
+                {
+                    Assert.That(entity.IsAvailableForReading(), Is.True);
+                    Assert.That(entity.IsAvailableForWriting(), Is.False);
+                });
             }
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task ReaderLockAsync_Cancelled()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task;
         await using (await rwLock.WriterLockAsync())
@@ -141,46 +147,52 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await rwLock.ReaderLockAsync())
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.True);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.True);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task WriterLockAsync_NoLockAcquired()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         RWLock entity;
         await using (await rwLock.WriterLockAsync())
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.False);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.False);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task WriterLockAsync_ReaderLockAcquiredAndNotReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.ReaderLockAsync();
         var task = rwLock.WriterLockAsync();
@@ -190,11 +202,8 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task WriterLockAsync_ReaderLockAcquiredAndReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task;
         await using (await rwLock.ReaderLockAsync())
@@ -206,24 +215,27 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await task)
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.False);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.False);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndNeverReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.WriterLockAsync();
         var task = rwLock.WriterLockAsync();
@@ -233,11 +245,8 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndReleased()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task;
         await using (await rwLock.WriterLockAsync())
@@ -249,24 +258,27 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await task)
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.False);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.False);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task WriterLockAsync_WriterLockTakesPriorityOverReaderLock()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> writeTask,
             readTask;
@@ -285,11 +297,8 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task WriterLockAsync_FirstWriterLockHasPriority()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task1,
             task2;
@@ -308,11 +317,8 @@ public class DistributedReaderWriterLockTests
     [Test]
     public async Task WriterLockAsync_WriterLockAcquiredAndExpired()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         RWLock entity;
         await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
@@ -321,25 +327,28 @@ public class DistributedReaderWriterLockTests
             await Task.Delay(500);
             await using (await task)
             {
-                entity = locks.Get("test");
-                Assert.That(entity.IsAvailableForReading(), Is.False);
-                Assert.That(entity.IsAvailableForWriting(), Is.False);
+                entity = env.Locks.Get("test");
+                Assert.Multiple(() =>
+                {
+                    Assert.That(entity.IsAvailableForReading(), Is.False);
+                    Assert.That(entity.IsAvailableForWriting(), Is.False);
+                });
             }
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
     [Test]
     public async Task WriterLockAsync_Cancelled()
     {
-        var locks = new MemoryRepository<RWLock>();
-        var idGenerator = new ObjectIdGenerator();
-        var rwLock = new DistributedReaderWriterLock("host", locks, idGenerator, "test");
-
-        Assert.That(locks.Contains("test"), Is.False);
+        var env = new TestEnvironment();
+        IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         Task<IAsyncDisposable> task;
         await using (await rwLock.WriterLockAsync())
@@ -353,17 +362,23 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await rwLock.WriterLockAsync())
         {
-            entity = locks.Get("test");
-            Assert.That(entity.IsAvailableForReading(), Is.False);
-            Assert.That(entity.IsAvailableForWriting(), Is.False);
+            entity = env.Locks.Get("test");
+            Assert.Multiple(() =>
+            {
+                Assert.That(entity.IsAvailableForReading(), Is.False);
+                Assert.That(entity.IsAvailableForWriting(), Is.False);
+            });
         }
 
-        entity = locks.Get("test");
-        Assert.That(entity.IsAvailableForReading(), Is.True);
-        Assert.That(entity.IsAvailableForWriting(), Is.True);
+        entity = env.Locks.Get("test");
+        Assert.Multiple(() =>
+        {
+            Assert.That(entity.IsAvailableForReading(), Is.True);
+            Assert.That(entity.IsAvailableForWriting(), Is.True);
+        });
     }
 
-    public static async Task AssertNeverCompletesAsync(Task task, int timeout = 100)
+    private static async Task AssertNeverCompletesAsync(Task task, int timeout = 100)
     {
         if (task.IsCompleted)
             Assert.Fail("Task completed unexpectedly.");
@@ -371,5 +386,20 @@ public class DistributedReaderWriterLockTests
         if (completedTask == task)
             Assert.Fail("Task completed unexpectedly.");
         var _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
+    }
+
+    private class TestEnvironment
+    {
+        public TestEnvironment()
+        {
+            Locks = new MemoryRepository<RWLock>();
+            var idGenerator = new ObjectIdGenerator();
+            var options = Substitute.For<IOptions<ServiceOptions>>();
+            options.Value.Returns(new ServiceOptions { ServiceId = "host" });
+            Factory = new DistributedReaderWriterLockFactory(options, Locks, idGenerator);
+        }
+
+        public DistributedReaderWriterLockFactory Factory { get; }
+        public MemoryRepository<RWLock> Locks { get; }
     }
 }

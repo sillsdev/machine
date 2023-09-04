@@ -42,7 +42,7 @@ public class SmtTransferEngineBuildJob
         CancellationToken cancellationToken
     )
     {
-        IDistributedReaderWriterLock rwLock = _lockFactory.Create(engineId);
+        IDistributedReaderWriterLock rwLock = await _lockFactory.CreateAsync(engineId, cancellationToken);
 
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();

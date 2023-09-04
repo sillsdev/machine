@@ -38,7 +38,7 @@ public class SmtTransferEngineStateService : AsyncDisposableBase
     {
         foreach (SmtTransferEngineState state in _engineStates.Values)
         {
-            IDistributedReaderWriterLock @lock = lockFactory.Create(state.EngineId);
+            IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId);
             await using (await @lock.WriterLockAsync())
             {
                 TranslationEngine? engine = await engines.GetAsync(e => e.EngineId == state.EngineId);
