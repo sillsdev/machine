@@ -144,7 +144,7 @@ public static class IMachineBuilderExtensions
     )
     {
         engineTypes ??=
-            builder.Configuration.GetValue<TranslationEngineType[]?>("TranslationEngines")
+            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? new[] { TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt };
         var queues = new List<string>();
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
@@ -286,7 +286,7 @@ public static class IMachineBuilderExtensions
         builder.Services.AddGrpc(options => options.Interceptors.Add<UnimplementedInterceptor>());
         builder.AddServalPlatformService(connectionString ?? builder.Configuration.GetConnectionString("Serval"));
         engineTypes ??=
-            builder.Configuration.GetValue<TranslationEngineType[]?>("TranslationEngines")
+            builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? new[] { TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt };
         foreach (TranslationEngineType engineType in engineTypes.Distinct())
         {
