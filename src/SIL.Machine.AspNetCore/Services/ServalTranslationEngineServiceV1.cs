@@ -77,7 +77,14 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         Models.Corpus[] corpora = request.Corpora.Select(Map).ToArray();
-        await engineService.StartBuildAsync(request.EngineId, request.BuildId, corpora, context.CancellationToken);
+        try
+        {
+            await engineService.StartBuildAsync(request.EngineId, request.BuildId, corpora, context.CancellationToken);
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
         return Empty;
     }
 
