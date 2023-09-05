@@ -122,19 +122,12 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         // If there is a pending job, then no need to start a new one.
         if (
             await Engines.ExistsAsync(
-                e => e.EngineId == engineId && e.BuildState == BuildState.Pending,
+                e =>
+                    e.EngineId == engineId && (e.BuildState == BuildState.Pending || e.BuildState == BuildState.Active),
                 cancellationToken
             )
         )
-            return;
-
-        // cancel the existing build before starting a new build
-        string? curBuildId = await CancelBuildInternalAsync(engineId, cancellationToken);
-        if (curBuildId is not null)
-        {
-            if (!await WaitForBuildToFinishAsync(engineId, curBuildId, CancellationToken.None))
-                throw new InvalidOperationException("Unable to cancel current build.");
-        }
+            throw new InvalidOperationException("Engine is already building or pending.");
 
         // Schedule the job to occur way in the future, just so we can get the job id.
         string jobId = _jobClient.Schedule(GetJobExpression(engineId, buildId, corpora), TimeSpan.FromDays(10000));
