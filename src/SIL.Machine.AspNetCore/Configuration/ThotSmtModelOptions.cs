@@ -2,7 +2,7 @@
 
 public class ThotSmtModelOptions
 {
-    public const string ThotSmtModel = "ThotSmtModel";
+    public const string Key = "ThotSmtModel";
 
     public ThotSmtModelOptions()
     {

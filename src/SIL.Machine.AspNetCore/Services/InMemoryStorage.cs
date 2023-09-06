@@ -1,6 +1,8 @@
+using static SIL.Machine.AspNetCore.Utils.SharedFileUtils;
+
 namespace SIL.Machine.AspNetCore.Services;
 
-public class InMemoryStorage : FileStorage
+public class InMemoryStorage : DisposableBase, IFileStorage
 {
     public class Entry : Stream
     {
@@ -39,9 +41,7 @@ public class InMemoryStorage : FileStorage
 
         protected override void Dispose(bool disposing)
         {
-            bool alreadyExisted = !_parent._memoryStreams.TryAdd(Path, new Entry(this));
-            if (alreadyExisted)
-                _parent._memoryStreams[Path] = new Entry(this);
+            _parent._memoryStreams[Path] = new Entry(this);
         }
 
         public override void Flush()
@@ -70,46 +70,33 @@ public class InMemoryStorage : FileStorage
         }
     }
 
-    public ConcurrentDictionary<string, Entry> _memoryStreams;
+    private readonly ConcurrentDictionary<string, Entry> _memoryStreams = new();
 
-    public InMemoryStorage()
-    {
-        _memoryStreams = new();
-    }
-
-    public override Task<bool> Exists(string path, CancellationToken cancellationToken = default)
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_memoryStreams.TryGetValue(Normalize(path), out _));
     }
 
-    public override Task<IReadOnlyCollection<string>> Ls(
+    public Task<IReadOnlyCollection<string>> ListFilesAsync(
         string? path,
         bool recurse = false,
         CancellationToken cancellationToken = default
     )
     {
+        path = string.IsNullOrEmpty(path) ? "" : Normalize(path, includeTrailingSlash: true);
         if (recurse)
-            return Task.FromResult(
-                (IReadOnlyCollection<string>)
-                    _memoryStreams
-                        .Where(kvPair => kvPair.Key.StartsWith(Normalize(path, true, true)))
-                        .Select(kvPair => kvPair.Key)
-                        .ToList()
+        {
+            return Task.FromResult<IReadOnlyCollection<string>>(
+                _memoryStreams.Keys.Where(p => p.StartsWith(path)).ToList()
             );
-        return Task.FromResult(
-            (IReadOnlyCollection<string>)
-                _memoryStreams
-                    .Where(
-                        kvPair =>
-                            kvPair.Key.StartsWith(Normalize(path, true, true))
-                            && !kvPair.Key.Remove(0, Normalize(path, true, true).Length).Contains("/")
-                    )
-                    .Select(kvPair => kvPair.Key)
-                    .ToList()
+        }
+
+        return Task.FromResult<IReadOnlyCollection<string>>(
+            _memoryStreams.Keys.Where(p => p.StartsWith(path) && !p[path.Length..].Contains('/')).ToList()
         );
     }
 
-    public override Task<Stream> OpenRead(string path, CancellationToken cancellationToken = default)
+    public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         if (!_memoryStreams.TryGetValue(Normalize(path), out Entry? ret))
             throw new FileNotFoundException($"Unable to find file {path}");
@@ -117,12 +104,12 @@ public class InMemoryStorage : FileStorage
         return Task.FromResult<Stream>(ret);
     }
 
-    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
+    public Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default)
     {
         return Task.FromResult<Stream>(new Entry(Normalize(path), this));
     }
 
-    public override async Task Rm(string path, bool recurse, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string path, bool recurse, CancellationToken cancellationToken = default)
     {
         if (_memoryStreams.ContainsKey(Normalize(path)))
         {
@@ -130,17 +117,16 @@ public class InMemoryStorage : FileStorage
         }
         else
         {
-            IEnumerable<string> filesToRemove = await Ls(path, recurse, cancellationToken);
+            IEnumerable<string> filesToRemove = await ListFilesAsync(path, recurse, cancellationToken);
             foreach (string filePath in filesToRemove)
                 _memoryStreams.Remove(Normalize(filePath), out _);
         }
     }
 
-    public override void Dispose()
+    protected override void DisposeManagedResources()
     {
-        foreach (Entry stream in _memoryStreams.Select(kvPair => kvPair.Value))
-        {
+        foreach (Entry stream in _memoryStreams.Values)
             stream.Dispose();
-        }
+        _memoryStreams.Clear();
     }
 }
