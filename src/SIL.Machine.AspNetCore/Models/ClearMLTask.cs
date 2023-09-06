@@ -24,4 +24,5 @@ public class ClearMLTask
     public string StatusMessage { get; set; } = default!;
     public int LastIteration { get; set; }
     public int ActiveDuration { get; set; }
+    public Dictionary<string, Dictionary<string, ClearMLMetricsEvent>> LastMetrics { get; set; } = default!;
 }

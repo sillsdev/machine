@@ -3,7 +3,7 @@
 public class SharedFileService : ISharedFileService
 {
     private readonly Uri? _baseUri;
-    private readonly FileStorage _fileStorage;
+    private readonly IFileStorage _fileStorage;
     private readonly bool _supportFolderDelete = true;
     private readonly ILoggerFactory _loggerFactory;
 
@@ -25,7 +25,6 @@ public class SharedFileService : ISharedFileService
             {
                 case "file":
                     _fileStorage = new LocalStorage(_baseUri.LocalPath);
-                    Directory.CreateDirectory(_baseUri.LocalPath);
                     break;
                 case "s3":
                     _fileStorage = new S3FileStorage(
@@ -58,39 +57,34 @@ public class SharedFileService : ISharedFileService
 
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
-        return _fileStorage.OpenRead(path, cancellationToken);
+        return _fileStorage.OpenReadAsync(path, cancellationToken);
     }
 
     public Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default)
     {
-        return _fileStorage.OpenWrite(path, cancellationToken);
+        return _fileStorage.OpenWriteAsync(path, cancellationToken);
     }
 
     public async Task DeleteAsync(string path, CancellationToken cancellationToken = default)
     {
         if (!_supportFolderDelete && path.EndsWith("/"))
         {
-            IReadOnlyCollection<string> files = await _fileStorage.Ls(path, recurse: true, cancellationToken);
+            IReadOnlyCollection<string> files = await _fileStorage.ListFilesAsync(
+                path,
+                recurse: true,
+                cancellationToken
+            );
             foreach (string file in files)
-                await _fileStorage.Rm(file, cancellationToken: cancellationToken);
+                await _fileStorage.DeleteAsync(file, cancellationToken: cancellationToken);
         }
         else
         {
-            await _fileStorage.Rm(path, recurse: true, cancellationToken: cancellationToken);
+            await _fileStorage.DeleteAsync(path, recurse: true, cancellationToken: cancellationToken);
         }
     }
 
     public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
     {
-        return _fileStorage.Exists(path, cancellationToken);
-    }
-
-    public Task<IReadOnlyCollection<string>> Ls(
-        string path,
-        bool recurse = false,
-        CancellationToken cancellationToken = default
-    )
-    {
-        return _fileStorage.Ls(path, recurse, cancellationToken);
+        return _fileStorage.ExistsAsync(path, cancellationToken);
     }
 }
