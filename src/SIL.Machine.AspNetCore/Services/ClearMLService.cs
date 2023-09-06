@@ -3,8 +3,7 @@
 public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
-    private readonly ILogger<ClearMLService> _logger;
+    private readonly IOptionsMonitor<ClearMLOptions> _options;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -13,21 +12,17 @@ public class ClearMLService : IClearMLService
             Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    private IClearMLAuthenticationService _clearMLAuthService;
+    private readonly IClearMLAuthenticationService _clearMLAuthService;
 
     public ClearMLService(
         HttpClient httpClient,
-        IOptionsMonitor<ClearMLNmtEngineOptions> options,
-        ILogger<ClearMLService> logger,
+        IOptionsMonitor<ClearMLOptions> options,
         IClearMLAuthenticationService clearMLAuthService
     )
     {
         _httpClient = httpClient;
         _options = options;
-        _logger = logger;
         _clearMLAuthService = clearMLAuthService;
-        if (!Sldr.IsInitialized)
-            Sldr.Initialize();
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -80,27 +75,10 @@ public class ClearMLService : IClearMLService
     public async Task<string> CreateTaskAsync(
         string buildId,
         string projectId,
-        string engineId,
-        string sourceLanguageTag,
-        string targetLanguageTag,
-        string sharedFileUri,
+        string script,
         CancellationToken cancellationToken = default
     )
     {
-        string script =
-            "from machine.jobs.build_nmt_engine import run\n"
-            + "args = {\n"
-            + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
-            + $"    'engine_id': '{engineId}',\n"
-            + $"    'build_id': '{buildId}',\n"
-            + $"    'src_lang': '{ConvertLanguageTag(sourceLanguageTag)}',\n"
-            + $"    'trg_lang': '{ConvertLanguageTag(targetLanguageTag)}',\n"
-            + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
-            + $"    'shared_file_uri': '{sharedFileUri}',\n"
-            + $"    'clearml': True,\n"
-            + "}\n"
-            + "run(args)\n";
-
         var body = new JsonObject
         {
             ["name"] = buildId,
@@ -114,6 +92,16 @@ public class ClearMLService : IClearMLService
         if (taskId is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return taskId;
+    }
+
+    public async Task<bool> DeleteTaskAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var body = new JsonObject { ["task"] = id };
+        JsonObject? result = await CallAsync("tasks", "delete", body, cancellationToken);
+        var deleted = (bool?)result?["data"]?["deleted"];
+        if (deleted is null)
+            throw new InvalidOperationException("Malformed response from ClearML server.");
+        return deleted.Value;
     }
 
     public async Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default)
@@ -146,49 +134,26 @@ public class ClearMLService : IClearMLService
         return updated == 1;
     }
 
-    public Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return GetTaskAsync(new JsonObject { ["name"] = name }, cancellationToken);
+        IReadOnlyList<ClearMLTask> tasks = await GetTasksAsync(new JsonObject { ["name"] = name }, cancellationToken);
+        if (tasks.Count == 0)
+            return null;
+        return tasks[0];
     }
 
-    public Task<ClearMLTask?> GetTaskByIdAsync(string id, CancellationToken cancellationToken = default)
-    {
-        return GetTaskAsync(new JsonObject { ["id"] = id }, cancellationToken);
-    }
-
-    public async Task<IReadOnlyDictionary<string, double>> GetTaskMetricsAsync(
-        string id,
+    public Task<IReadOnlyList<ClearMLTask>> GetTasksByIdAsync(
+        IEnumerable<string> ids,
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["task"] = id };
-        JsonObject? result = await CallAsync("events", "get_task_latest_scalar_values", body, cancellationToken);
-        var metrics = (JsonArray?)result?["data"]?["metrics"];
-        if (metrics is null)
-            throw new InvalidOperationException("Malformed response from ClearML server.");
-        var performanceMetrics = (JsonObject?)metrics.FirstOrDefault(m => (string?)m?["name"] == "metrics");
-        var results = new Dictionary<string, double>();
-        if (performanceMetrics is null)
-            return results;
-        var variants = (JsonArray?)performanceMetrics?["variants"];
-        if (variants is null)
-            return results;
-        foreach (JsonObject? variant in variants)
-        {
-            if (variant is null)
-                continue;
-            var name = (string?)variant?["name"];
-            if (name is null)
-                continue;
-            var value = (double?)variant?["last_value"];
-            if (value is null)
-                continue;
-            results[name] = value.Value;
-        }
-        return results;
+        return GetTasksAsync(new JsonObject { ["id"] = JsonValue.Create(ids.ToArray()) }, cancellationToken);
     }
 
-    private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
+    private async Task<IReadOnlyList<ClearMLTask>> GetTasksAsync(
+        JsonObject body,
+        CancellationToken cancellationToken = default
+    )
     {
         body["only_fields"] = new JsonArray(
             "id",
@@ -197,13 +162,13 @@ public class ClearMLService : IClearMLService
             "project",
             "last_iteration",
             "status_reason",
-            "active_duration"
+            "active_duration",
+            "last_metrics"
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
-        if (tasks is null || tasks.Count == 0)
-            return null;
-        return tasks[0].Deserialize<ClearMLTask>(JsonSerializerOptions);
+        return tasks?.Select(t => t.Deserialize<ClearMLTask>(JsonSerializerOptions)!).ToArray()
+            ?? Array.Empty<ClearMLTask>();
     }
 
     private async Task<JsonObject?> CallAsync(
@@ -221,23 +186,6 @@ public class ClearMLService : IClearMLService
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         return (JsonObject?)JsonNode.Parse(result);
-    }
-
-    private static string ConvertLanguageTag(string languageTag)
-    {
-        if (
-            !IetfLanguageTag.TryGetSubtags(
-                languageTag,
-                out LanguageSubtag languageSubtag,
-                out ScriptSubtag scriptSubtag,
-                out _,
-                out _
-            )
-        )
-            return languageTag;
-
-        // Convert to NLLB language codes
-        return $"{languageSubtag.Iso3Code}_{scriptSubtag.Code}";
     }
 
     private class SnakeCaseJsonNamingPolicy : JsonNamingPolicy

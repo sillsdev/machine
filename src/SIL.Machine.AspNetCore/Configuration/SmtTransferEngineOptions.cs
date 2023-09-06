@@ -7,6 +7,4 @@ public class SmtTransferEngineOptions
     public string EnginesDir { get; set; } = "translation_engines";
     public TimeSpan EngineCommitFrequency { get; set; } = TimeSpan.FromMinutes(5);
     public TimeSpan InactiveEngineTimeout { get; set; } = TimeSpan.FromMinutes(10);
-    public ISet<TranslationEngineType> Types { get; set; } =
-        new HashSet<TranslationEngineType> { TranslationEngineType.Nmt, TranslationEngineType.SmtTransfer };
 }

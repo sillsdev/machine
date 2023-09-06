@@ -1,13 +1,13 @@
 public class ClearMLHealthCheck : IHealthCheck
 {
     private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
+    private readonly IOptionsMonitor<ClearMLOptions> _options;
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
 
     public ClearMLHealthCheck(
         IClearMLAuthenticationService clearMLAuthenticationService,
         HttpClient httpClient,
-        IOptionsMonitor<ClearMLNmtEngineOptions> options
+        IOptionsMonitor<ClearMLOptions> options
     )
     {
         _httpClient = httpClient;

@@ -4,9 +4,13 @@ public static class IServiceCollectionExtensions
 {
     public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? configuration = null)
     {
+        if (!Sldr.IsInitialized)
+            Sldr.Initialize();
+
         services.AddSingleton<ISharedFileService, SharedFileService>();
         services.AddSingleton<S3HealthCheck>();
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
+
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddSingleton<ICorpusService, CorpusService>();
         services.AddStartupTask((sp, ct) => sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(ct));
@@ -17,14 +21,14 @@ public static class IServiceCollectionExtensions
             builder.AddServiceOptions(o => { });
             builder.AddSharedFileOptions(o => { });
             builder.AddSmtTransferEngineOptions(o => { });
-            builder.AddClearMLNmtEngineOptions(o => { });
+            builder.AddClearMLOptions(o => { });
         }
         else
         {
             builder.AddServiceOptions(configuration.GetSection(ServiceOptions.Key));
             builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
             builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
-            builder.AddClearMLNmtEngineOptions(configuration.GetSection(ClearMLNmtEngineOptions.Key));
+            builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
         }
         return builder;
     }
