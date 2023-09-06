@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Serval.Translation.V1;
+﻿using Serval.Translation.V1;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -35,18 +34,18 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddClearMLNmtEngineOptions(
+    public static IMachineBuilder AddClearMLOptions(
         this IMachineBuilder builder,
-        Action<ClearMLNmtEngineOptions> configureOptions
+        Action<ClearMLOptions> configureOptions
     )
     {
         builder.Services.Configure(configureOptions);
         return builder;
     }
 
-    public static IMachineBuilder AddClearMLNmtEngineOptions(this IMachineBuilder builder, IConfiguration config)
+    public static IMachineBuilder AddClearMLOptions(this IMachineBuilder builder, IConfiguration config)
     {
-        builder.Services.Configure<ClearMLNmtEngineOptions>(config);
+        builder.Services.Configure<ClearMLOptions>(config);
         return builder;
     }
 
@@ -67,8 +66,10 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
-        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
-        return builder;
+        if (builder.Configuration is null)
+            return builder.AddThotSmtModel(o => { });
+        else
+            return builder.AddThotSmtModel(builder.Configuration.GetSection(ThotSmtModelOptions.Key));
     }
 
     public static IMachineBuilder AddThotSmtModel(
@@ -77,13 +78,15 @@ public static class IMachineBuilderExtensions
     )
     {
         builder.Services.Configure(configureOptions);
-        return builder.AddThotSmtModel();
+        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+        return builder;
     }
 
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<ThotSmtModelOptions>(config);
-        return builder.AddThotSmtModel();
+        builder.Services.AddSingleton<ISmtModelFactory, ThotSmtModelFactory>();
+        return builder;
     }
 
     public static IMachineBuilder AddTransferEngine(this IMachineBuilder builder)
@@ -98,7 +101,7 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddClearMLService(this IMachineBuilder builder)
+    private static IMachineBuilder AddClearMLBuildJobRunner(this IMachineBuilder builder)
     {
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
         //Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
@@ -111,20 +114,33 @@ public static class IMachineBuilderExtensions
         // workaround register satisfying the interface and as a hosted service.
         builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
         builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
-        //Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
+        // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
         builder.Services
             .AddHttpClient<IClearMLAuthenticationService, ClearMLAuthenticationService>()
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
 
-        builder.Services.AddSingleton<S3HealthCheck>();
+        builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
+        builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
+        builder.Services.AddHostedService<ClearMLMonitorService>();
+
         builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 
         return builder;
     }
 
-    public static IMachineBuilder AddMongoBackgroundJobClient(
+    private static IMachineBuilder AddHangfireBuildJobRunner(this IMachineBuilder builder)
+    {
+        builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
+
+        builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
+        builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
+
+        return builder;
+    }
+
+    public static IMachineBuilder AddMongoHangfireJobClient(
         this IMachineBuilder builder,
         string? connectionString = null
     )
@@ -147,12 +163,13 @@ public static class IMachineBuilderExtensions
                             CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
                         }
                     )
+                    .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
         return builder;
     }
 
-    public static IMachineBuilder AddBackgroundJobServer(
+    public static IMachineBuilder AddHangfireJobServer(
         this IMachineBuilder builder,
         IEnumerable<TranslationEngineType>? engineTypes = null
     )
@@ -170,7 +187,6 @@ public static class IMachineBuilderExtensions
                     queues.Add("smt_transfer");
                     break;
                 case TranslationEngineType.Nmt:
-                    builder.AddClearMLService();
                     queues.Add("nmt");
                     break;
             }
@@ -205,28 +221,24 @@ public static class IMachineBuilderExtensions
             {
                 o.AddRepository<TranslationEngine>(
                     "translation_engines",
-                    init: c =>
-                        c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>.IndexKeys.Ascending(p => p.EngineId)
-                            )
-                        )
-                );
-                o.AddRepository<RWLock>(
-                    "locks",
+                    mapSetup: m => m.SetIgnoreExtraElements(true),
                     init: async c =>
                     {
                         await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("writerLock._id"))
+                            new CreateIndexModel<TranslationEngine>(
+                                Builders<TranslationEngine>.IndexKeys
+                                    .Ascending(e => e.EngineId)
+                                    .Ascending("currentBuild._id")
+                            )
                         );
                         await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("readerLocks._id"))
-                        );
-                        await c.Indexes.CreateOrUpdateAsync(
-                            new CreateIndexModel<RWLock>(Builders<RWLock>.IndexKeys.Ascending("writerQueue._id"))
+                            new CreateIndexModel<TranslationEngine>(
+                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.JobRunner)
+                            )
                         );
                     }
                 );
+                o.AddRepository<RWLock>("locks");
                 o.AddRepository<TrainSegmentPair>(
                     "train_segment_pairs",
                     init: c =>
@@ -313,13 +325,58 @@ public static class IMachineBuilderExtensions
                     builder.Services.AddScoped<ITranslationEngineService, SmtTransferEngineService>();
                     break;
                 case TranslationEngineType.Nmt:
-                    builder.AddClearMLService();
-                    builder.Services.AddScoped<ITranslationEngineService, ClearMLNmtEngineService>();
+                    builder.Services.AddScoped<ITranslationEngineService, NmtEngineService>();
                     break;
             }
         }
         builder.Services.AddGrpcHealthChecks();
 
+        return builder;
+    }
+
+    public static IMachineBuilder AddBuildJobService(
+        this IMachineBuilder builder,
+        Action<BuildJobOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        var options = new BuildJobOptions();
+        configureOptions(options);
+        return builder.AddBuildJobService(options);
+    }
+
+    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<BuildJobOptions>(config);
+        var options = config.Get<BuildJobOptions>();
+        return builder.AddBuildJobService(options);
+    }
+
+    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
+    {
+        if (builder.Configuration is null)
+            builder.AddBuildJobService(o => { });
+        else
+            builder.AddBuildJobService(builder.Configuration.GetSection(BuildJobOptions.Key));
+        return builder;
+    }
+
+    private static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, BuildJobOptions options)
+    {
+        builder.Services.AddScoped<IBuildJobService, BuildJobService>();
+
+        foreach (BuildJobRunner runnerType in options.Runners.Values.Distinct())
+        {
+            switch (runnerType)
+            {
+                case BuildJobRunner.ClearML:
+                    builder.AddClearMLBuildJobRunner();
+                    break;
+                case BuildJobRunner.Hangfire:
+                    builder.AddHangfireBuildJobRunner();
+                    break;
+            }
+        }
         return builder;
     }
 }

@@ -13,19 +13,16 @@ public interface IClearMLService
     Task<string> CreateTaskAsync(
         string buildId,
         string projectId,
-        string engineId,
-        string sourceLanguageTag,
-        string targetLanguageTag,
-        string sharedFileUri,
+        string script,
         CancellationToken cancellationToken = default
     );
+    Task<bool> DeleteTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> DequeueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> StopTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default);
-    Task<ClearMLTask?> GetTaskByIdAsync(string id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyDictionary<string, double>> GetTaskMetricsAsync(
-        string id,
+    Task<IReadOnlyList<ClearMLTask>> GetTasksByIdAsync(
+        IEnumerable<string> ids,
         CancellationToken cancellationToken = default
     );
 }
