@@ -10,7 +10,6 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
     private const int RefreshPeriod = 3600;
-    private int _consecutiveFailureCount = 0;
     private string _authToken = "";
 
     public ClearMLAuthenticationService(
