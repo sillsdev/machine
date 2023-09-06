@@ -28,7 +28,7 @@ public class ClearMLServiceTests
             }
         );
         var authService = Substitute.For<IClearMLAuthenticationService>();
-        authService.GetAuthTokenAsync().Returns("accessToken");
+        authService.GetAuthTokenAsync().Returns(Task.FromResult("accessToken"));
         var service = new ClearMLService(
             mockHttp.ToHttpClient(),
             options,

@@ -37,11 +37,6 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         return _authToken;
     }
 
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        await base.StartAsync(cancellationToken);
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("ClearML Authentication Token Refresh service running - and has initial token.");
@@ -50,7 +45,8 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromSeconds(RefreshPeriod), stoppingToken);
-                await AuthorizeAsync(stoppingToken);
+                using (await _lock.LockAsync())
+                    await AuthorizeAsync(stoppingToken);
             }
         }
         catch (TaskCanceledException) { }

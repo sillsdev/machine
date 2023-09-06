@@ -1,12 +1,10 @@
 public class ClearMLHealthCheck : IHealthCheck
 {
     private readonly IClearMLService _clearMLService;
-    private readonly ILogger _logger;
 
-    public ClearMLHealthCheck(IClearMLService clearMLService, ILoggerFactory loggerFactory)
+    public ClearMLHealthCheck(IClearMLService clearMLService)
     {
         _clearMLService = clearMLService;
-        _logger = loggerFactory.CreateLogger<ClearMLHealthCheck>();
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -26,7 +24,6 @@ public class ClearMLHealthCheck : IHealthCheck
         }
         catch (Exception e)
         {
-            _logger.LogError(e, null);
             return HealthCheckResult.Unhealthy(exception: e);
         }
     }
