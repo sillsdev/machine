@@ -26,7 +26,7 @@ public class ClearMLHealthCheck : IHealthCheck
         }
         catch (Exception e)
         {
-            _logger.LogError(0, exception: e, null);
+            _logger.LogError(e, null);
             return HealthCheckResult.Unhealthy(exception: e);
         }
     }

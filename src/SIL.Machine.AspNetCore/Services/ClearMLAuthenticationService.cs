@@ -5,6 +5,7 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
     private readonly ILogger<ClearMLAuthenticationService> _logger;
+    private readonly AsyncLock _lock = new();
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
@@ -25,11 +26,14 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
 
     public async Task<string> GetAuthToken(CancellationToken cancellationToken = default)
     {
-        if (_authToken is "")
+        using (await _lock.LockAsync())
         {
-            //Should only happen once, so no different in cost than previous solution
-            _logger.LogInformation("Token was empty; refreshing");
-            await AuthorizeAsync(cancellationToken);
+            if (_authToken is "")
+            {
+                //Should only happen once, so no different in cost than previous solution
+                _logger.LogInformation("Token was empty; refreshing");
+                await AuthorizeAsync(cancellationToken);
+            }
         }
         return _authToken;
     }
