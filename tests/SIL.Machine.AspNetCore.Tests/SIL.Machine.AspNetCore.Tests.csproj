@@ -9,11 +9,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Hangfire.InMemory" Version="0.5.1" />
 		<PackageReference Include="coverlet.collector" Version="6.0.0">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		  <PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
 		<PackageReference Include="NSubstitute" Version="5.0.0" />
 		<PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.16">

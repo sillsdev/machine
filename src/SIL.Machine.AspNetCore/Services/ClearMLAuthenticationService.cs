@@ -1,22 +1,24 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthenticationService
+public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticationService
 {
     private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
+    private readonly IOptionsMonitor<ClearMLOptions> _options;
     private readonly ILogger<ClearMLAuthenticationService> _logger;
     private readonly AsyncLock _lock = new();
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
-    private const int RefreshPeriod = 3600;
+    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromSeconds(3600);
     private string _authToken = "";
 
     public ClearMLAuthenticationService(
+        IServiceProvider services,
         HttpClient httpClient,
-        IOptionsMonitor<ClearMLNmtEngineOptions> options,
+        IOptionsMonitor<ClearMLOptions> options,
         ILogger<ClearMLAuthenticationService> logger
     )
+        : base("ClearML authentication service", services, RefreshPeriod, logger)
     {
         _httpClient = httpClient;
         _options = options;
@@ -25,7 +27,7 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {
-        using (await _lock.LockAsync())
+        using (await _lock.LockAsync(cancellationToken))
         {
             if (_authToken is "")
             {
@@ -37,20 +39,17 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         return _authToken;
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("ClearML Authentication Token Refresh service running - and has initial token.");
         try
         {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(RefreshPeriod), stoppingToken);
-                using (await _lock.LockAsync())
-                    await AuthorizeAsync(stoppingToken);
-            }
+            using (await _lock.LockAsync(cancellationToken))
+                await AuthorizeAsync(cancellationToken);
         }
-        catch (TaskCanceledException) { }
-        _logger.LogInformation("ClearML Authentication Token Refresh service successfully stopped");
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
+        }
     }
 
     private async Task AuthorizeAsync(CancellationToken cancellationToken)
