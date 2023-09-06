@@ -26,18 +26,8 @@ public class ClearMLHealthCheck : IHealthCheck
         }
         catch (Exception e)
         {
-            _logger.LogError(
-                "ClearML is not available. The following exception occurred while pinging ClearML: "
-                    + e.Message
-                    + " "
-                    + e.StackTrace
-            );
-            return HealthCheckResult.Unhealthy(
-                "ClearML is not available. The following exception occurred while pinging ClearML: "
-                    + e.Message
-                    + " "
-                    + e.StackTrace
-            );
+            _logger.LogError(0, exception: e, null);
+            return HealthCheckResult.Unhealthy(exception: e);
         }
     }
 }
