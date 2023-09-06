@@ -24,7 +24,7 @@ public class ClearMLAuthenticationService : BackgroundService, IClearMLAuthentic
         _logger = logger;
     }
 
-    public async Task<string> GetAuthToken(CancellationToken cancellationToken = default)
+    public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {
         using (await _lock.LockAsync())
         {
