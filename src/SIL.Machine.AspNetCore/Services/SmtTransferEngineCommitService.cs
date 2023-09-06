@@ -1,45 +1,50 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferEngineCommitService : DisposableBase, IHostedService
+public class SmtTransferEngineCommitService : RecurrentTask
 {
-    private readonly IServiceProvider _services;
     private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
     private readonly SmtTransferEngineStateService _stateService;
-    private readonly AsyncTimer _commitTimer;
+    private readonly ILogger<SmtTransferEngineCommitService> _logger;
 
     public SmtTransferEngineCommitService(
         IServiceProvider services,
         IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
-        SmtTransferEngineStateService stateService
+        SmtTransferEngineStateService stateService,
+        ILogger<SmtTransferEngineCommitService> logger
     )
+        : base(services, engineOptions.CurrentValue.EngineCommitFrequency)
     {
-        _services = services;
         _engineOptions = engineOptions;
         _stateService = stateService;
-        _commitTimer = new AsyncTimer(EngineCommitAsync);
+        _logger = logger;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override void Started()
     {
-        _commitTimer.Start(_engineOptions.CurrentValue.EngineCommitFrequency);
-        return Task.CompletedTask;
+        _logger.LogInformation("SMT transfer engine commit service started.");
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    protected override void Stopped()
     {
-        await _commitTimer.StopAsync();
+        _logger.LogInformation("SMT transfer engine commit service stopped.");
     }
 
-    private async Task EngineCommitAsync()
+    protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
-        using IServiceScope scope = _services.CreateScope();
-        var engines = scope.ServiceProvider.GetRequiredService<IRepository<TranslationEngine>>();
-        var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
-        await _stateService.CommitAsync(lockFactory, engines, _engineOptions.CurrentValue.InactiveEngineTimeout);
-    }
-
-    protected override void DisposeManagedResources()
-    {
-        _commitTimer.Dispose();
+        try
+        {
+            var engines = scope.ServiceProvider.GetRequiredService<IRepository<TranslationEngine>>();
+            var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
+            await _stateService.CommitAsync(
+                lockFactory,
+                engines,
+                _engineOptions.CurrentValue.InactiveEngineTimeout,
+                cancellationToken
+            );
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error occurred while committing SMT transfer engines.");
+        }
     }
 }

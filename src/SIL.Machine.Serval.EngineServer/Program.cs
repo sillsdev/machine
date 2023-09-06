@@ -7,8 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddMachine(builder.Configuration)
     .AddMongoDataAccess()
-    .AddMongoBackgroundJobClient()
-    .AddServalTranslationEngineService();
+    .AddMongoHangfireJobClient()
+    .AddServalTranslationEngineService()
+    .AddBuildJobService();
 if (builder.Environment.IsDevelopment())
     builder.Services
         .AddOpenTelemetry()
