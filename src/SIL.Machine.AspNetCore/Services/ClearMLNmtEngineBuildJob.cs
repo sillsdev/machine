@@ -212,14 +212,17 @@ public class ClearMLNmtEngineBuildJob
         }
         catch (Exception e)
         {
+            _logger.LogError(0, e, $"Build faulted ({buildId}) because of exception {e.GetType().Name}:{e.Message}.");
+
             try
             {
                 await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
             }
-            catch (HttpRequestException)
+            catch (Exception e2)
             {
-                _logger.LogError("Unable to access S3 bucket. Likely, the AWS credentials are invalid.");
-                throw;
+                _logger.LogError(
+                    $"Unable to access S3 bucket to delete clearml job {buildId} because it threw the exception {e2.GetType().Name}:{e2.Message}."
+                );
             }
 
             await _engines.UpdateAsync(
@@ -233,7 +236,6 @@ public class ClearMLNmtEngineBuildJob
             );
 
             await _platformService.BuildFaultedAsync(buildId, e.Message, CancellationToken.None);
-            _logger.LogError(0, e, "Build faulted ({0})", buildId);
             throw;
         }
     }
