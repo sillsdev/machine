@@ -1,100 +1,67 @@
+using static SIL.Machine.AspNetCore.Utils.SharedFileUtils;
+
 namespace SIL.Machine.AspNetCore.Services;
 
-public class LocalStorage : FileStorage
+public class LocalStorage : DisposableBase, IFileStorage
 {
-    private readonly string _basePath;
+    private readonly Uri _basePath;
 
     public LocalStorage(string basePath)
     {
-        _basePath = basePath.EndsWith("/") ? basePath.Remove(basePath.Length - 1, 1) : basePath;
-        Random r = new Random(Guid.NewGuid().GetHashCode());
-        while (Directory.Exists(_basePath + "/"))
-        {
-            _basePath += r.Next();
-        }
-        Directory.CreateDirectory(_basePath + "/");
+        _basePath = new Uri(basePath);
+        if (!_basePath.AbsoluteUri.EndsWith("/"))
+            _basePath = new Uri(_basePath.AbsoluteUri + "/");
     }
 
-    public override void Dispose()
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
     {
-        DirectoryHelper.DeleteDirectoryRobust(_basePath + "/");
+        Uri pathUri = new(_basePath, Normalize(path));
+        return Task.FromResult(File.Exists(pathUri.LocalPath));
     }
 
-    public override Task<bool> Exists(string path, CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(File.Exists(_basePath + Normalize(path)));
-    }
-
-    public override async Task<IReadOnlyCollection<string>> Ls(
+    public Task<IReadOnlyCollection<string>> ListFilesAsync(
         string path = "",
         bool recurse = false,
         CancellationToken cancellationToken = default
     )
     {
-        if (path.Contains(_basePath))
-            path = path.Replace(_basePath, "");
-        if (recurse)
-        {
-            List<string> files = Directory.GetFiles(_basePath + Normalize(path)).ToList();
-            foreach (var subDir in Directory.GetDirectories(_basePath + Normalize(path)))
-            {
-                var subFiles = await Ls(subDir, recurse: true);
-                foreach (var file in subFiles)
-                    files.Add(file);
-            }
-            return files;
-        }
-        if (Directory.Exists(_basePath + Normalize(path)))
-            return Directory.GetFiles(_basePath + Normalize(path));
-        return new List<string>();
+        Uri pathUri = new(_basePath, Normalize(path));
+        string[] files = Directory.GetFiles(
+            pathUri.LocalPath,
+            "*",
+            new EnumerationOptions { RecurseSubdirectories = recurse }
+        );
+        return Task.FromResult<IReadOnlyCollection<string>>(
+            files.Select(f => _basePath.MakeRelativeUri(new Uri(f)).ToString()).ToArray()
+        );
     }
 
-    public override Task<Stream> OpenRead(string path, CancellationToken cancellationToken)
+    public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
-        Stream? ret = File.OpenRead(_basePath + Normalize(path));
-        if (ret is null)
-            throw new FileNotFoundException($"Unable to locate file {_basePath + Normalize(path)}");
-        return Task.FromResult(ret);
+        Uri pathUri = new(_basePath, Normalize(path));
+        return Task.FromResult<Stream>(File.OpenRead(pathUri.LocalPath));
     }
 
-    public override Task<Stream> OpenWrite(string path, CancellationToken cancellationToken = default)
+    public Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default)
     {
-        Stream s;
-        try
-        {
-            s = File.OpenWrite(_basePath + Normalize(path));
-        }
-        catch (IOException)
-        {
-            string accumulator = _basePath;
-            List<string> segments = path.Split("/").ToList();
-            foreach (string segment in segments.Take(segments.Count() - 1))
-            {
-                accumulator += Normalize(segment);
-                if (!Directory.Exists(accumulator))
-                {
-                    Directory.CreateDirectory(accumulator);
-                }
-            }
-            s = File.OpenWrite(_basePath + Normalize(path));
-        }
-        return Task.FromResult(s);
+        Uri pathUri = new(_basePath, Normalize(path));
+        Directory.CreateDirectory(Path.GetDirectoryName(pathUri.LocalPath)!);
+        return Task.FromResult<Stream>(File.OpenWrite(pathUri.LocalPath));
     }
 
-    public async override Task Rm(string path, bool recurse, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(string path, bool recurse, CancellationToken cancellationToken = default)
     {
-        if (path.Contains(_basePath))
-            path = path.Replace(_basePath, "");
+        Uri pathUri = new(_basePath, Normalize(path));
 
-        if (File.Exists(_basePath + Normalize(path)))
+        if (File.Exists(pathUri.LocalPath))
         {
-            File.Delete(_basePath + Normalize(path));
+            File.Delete(pathUri.LocalPath);
         }
-        else
+        else if (Directory.Exists(pathUri.LocalPath))
         {
-            foreach (string filePath in await Ls(path, recurse, cancellationToken))
+            foreach (string filePath in await ListFilesAsync(path, recurse, cancellationToken))
             {
-                await Rm(filePath, false, cancellationToken);
+                await DeleteAsync(filePath, false, cancellationToken);
             }
         }
     }

@@ -5,9 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddMachine(builder.Configuration)
     .AddMongoDataAccess()
-    .AddMongoBackgroundJobClient()
-    .AddBackgroundJobServer()
-    .AddServalPlatformService();
+    .AddMongoHangfireJobClient()
+    .AddHangfireJobServer()
+    .AddServalPlatformService()
+    .AddBuildJobService();
 if (builder.Environment.IsDevelopment())
     builder.Services
         .AddOpenTelemetry()

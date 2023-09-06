@@ -33,17 +33,26 @@ public class SmtTransferEngineStateService : AsyncDisposableBase
     public async Task CommitAsync(
         IDistributedReaderWriterLockFactory lockFactory,
         IRepository<TranslationEngine> engines,
-        TimeSpan inactiveTimeout
+        TimeSpan inactiveTimeout,
+        CancellationToken cancellationToken = default
     )
     {
         foreach (SmtTransferEngineState state in _engineStates.Values)
         {
-            IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId);
-            await using (await @lock.WriterLockAsync())
+            IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(state.EngineId, cancellationToken);
+            await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                TranslationEngine? engine = await engines.GetAsync(e => e.EngineId == state.EngineId);
-                if (engine is not null && engine.BuildState is not BuildState.Active)
-                    await state.CommitAsync(engine.BuildRevision, inactiveTimeout);
+                TranslationEngine? engine = await engines.GetAsync(
+                    e => e.EngineId == state.EngineId,
+                    cancellationToken
+                );
+                if (
+                    engine is not null
+                    && (engine.CurrentBuild is null || engine.CurrentBuild.JobState is BuildJobState.Pending)
+                )
+                {
+                    await state.CommitAsync(engine.BuildRevision, inactiveTimeout, cancellationToken);
+                }
             }
         }
     }

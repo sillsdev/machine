@@ -71,7 +71,11 @@ public class SmtTransferEngineState : AsyncDisposableBase
         _truecaserFactory.Cleanup(EngineId);
     }
 
-    public async Task CommitAsync(int buildRevision, TimeSpan inactiveTimeout)
+    public async Task CommitAsync(
+        int buildRevision,
+        TimeSpan inactiveTimeout,
+        CancellationToken cancellationToken = default
+    )
     {
         if (_hybridEngine is null)
             return;
@@ -80,34 +84,34 @@ public class SmtTransferEngineState : AsyncDisposableBase
             CurrentBuildRevision = buildRevision;
         if (buildRevision != CurrentBuildRevision)
         {
-            await UnloadAsync();
+            await UnloadAsync(cancellationToken);
             CurrentBuildRevision = buildRevision;
         }
         else if (DateTime.Now - LastUsedTime > inactiveTimeout)
         {
-            await UnloadAsync();
+            await UnloadAsync(cancellationToken);
         }
         else
         {
-            await SaveModelAsync();
+            await SaveModelAsync(cancellationToken);
         }
     }
 
-    private async Task SaveModelAsync()
+    private async Task SaveModelAsync(CancellationToken cancellationToken = default)
     {
         if (_smtModel is not null && IsUpdated)
         {
-            await _smtModel.SaveAsync();
+            await _smtModel.SaveAsync(cancellationToken);
             IsUpdated = false;
         }
     }
 
-    private async Task UnloadAsync()
+    private async Task UnloadAsync(CancellationToken cancellationToken = default)
     {
         if (_hybridEngine is null)
             return;
 
-        await SaveModelAsync();
+        await SaveModelAsync(cancellationToken);
 
         _hybridEngine.Dispose();
 

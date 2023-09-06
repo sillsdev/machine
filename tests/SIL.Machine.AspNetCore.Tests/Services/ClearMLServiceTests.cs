@@ -3,7 +3,7 @@
 [TestFixture]
 public class ClearMLServiceTests
 {
-    private const string ApiServier = "https://clearml.com";
+    private const string ApiServer = "https://clearml.com";
     private const string AccessKey = "accessKey";
     private const string SecretKey = "secretKey";
 
@@ -12,38 +12,40 @@ public class ClearMLServiceTests
     {
         var mockHttp = new MockHttpMessageHandler();
         mockHttp
-            .Expect(HttpMethod.Post, $"{ApiServier}/tasks.create")
+            .Expect(HttpMethod.Post, $"{ApiServer}/tasks.create")
             .WithHeaders("Authorization", $"Bearer accessToken")
             .WithPartialContent("\\u0027src_lang\\u0027: \\u0027spa_Latn\\u0027")
             .WithPartialContent("\\u0027trg_lang\\u0027: \\u0027eng_Latn\\u0027")
             .Respond("application/json", "{ \"data\": { \"id\": \"projectId\" } }");
 
-        var options = Substitute.For<IOptionsMonitor<ClearMLNmtEngineOptions>>();
+        var options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
         options.CurrentValue.Returns(
-            new ClearMLNmtEngineOptions
+            new ClearMLOptions
             {
-                ApiServer = ApiServier,
+                ApiServer = ApiServer,
                 AccessKey = AccessKey,
                 SecretKey = SecretKey
             }
         );
         var authService = Substitute.For<IClearMLAuthenticationService>();
         authService.GetAuthTokenAsync().Returns(Task.FromResult("accessToken"));
-        var service = new ClearMLService(
-            mockHttp.ToHttpClient(),
-            options,
-            Substitute.For<ILogger<ClearMLService>>(),
-            authService
-        );
+        var service = new ClearMLService(mockHttp.ToHttpClient(), options, authService);
 
-        string projectId = await service.CreateTaskAsync(
-            "build1",
-            "project1",
-            "engine1",
-            "es",
-            "en",
-            "s3://aqua-ml-data"
-        );
+        string script =
+            "from machine.jobs.build_nmt_engine import run\n"
+            + "args = {\n"
+            + "    'model_type': 'huggingface',\n"
+            + "    'engine_id': 'engine1',\n"
+            + "    'build_id': 'build1',\n"
+            + "    'src_lang': 'spa_Latn',\n"
+            + "    'trg_lang': 'eng_Latn',\n"
+            + "    'max_steps': 20000,\n"
+            + "    'shared_file_uri': 's3://aqua-ml-data',\n"
+            + "    'clearml': True\n"
+            + "}\n"
+            + "run(args)\n";
+
+        string projectId = await service.CreateTaskAsync("build1", "project1", script);
         Assert.That(projectId, Is.EqualTo("projectId"));
         mockHttp.VerifyNoOutstandingExpectation();
     }
