@@ -9,13 +9,21 @@ public class S3WriteStream : Stream
     private readonly List<UploadPartResponse> _uploadResponses;
     private readonly ILogger<S3WriteStream> _logger;
 
-    public S3WriteStream(AmazonS3Client client, string key, string bucketName, string uploadId)
+    public const int FiveMB = 5 * 1024 * 1024;
+
+    public S3WriteStream(
+        AmazonS3Client client,
+        string key,
+        string bucketName,
+        string uploadId,
+        ILoggerFactory loggerFactory
+    )
     {
         _client = client;
         _key = key;
         _bucketName = bucketName;
         _uploadId = uploadId;
-        _logger = new LoggerFactory().CreateLogger<S3WriteStream>();
+        _logger = loggerFactory.CreateLogger<S3WriteStream>();
         _uploadResponses = new List<UploadPartResponse>();
     }
 
@@ -59,7 +67,7 @@ public class S3WriteStream : Stream
                     UploadId = _uploadId,
                     PartNumber = partNumber,
                     InputStream = ms,
-                    PartSize = 5 * 1024 * 1024
+                    PartSize = FiveMB
                 };
             request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
                 (_, e) =>
@@ -76,7 +84,8 @@ public class S3WriteStream : Stream
         }
         catch (Exception e)
         {
-            await Abort(e);
+            await AbortAsync(e);
+            throw;
         }
     }
 
@@ -106,7 +115,8 @@ public class S3WriteStream : Stream
             }
             catch (Exception e)
             {
-                Abort(e).WaitAndUnwrapException();
+                AbortAsync(e).WaitAndUnwrapException();
+                throw;
             }
         }
         base.Dispose(disposing);
@@ -134,11 +144,11 @@ public class S3WriteStream : Stream
         }
         catch (Exception e)
         {
-            await Abort(e);
+            await AbortAsync(e);
         }
     }
 
-    private async Task Abort(Exception e)
+    private async Task AbortAsync(Exception e)
     {
         _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
         AbortMultipartUploadRequest abortMPURequest =

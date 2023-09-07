@@ -5,15 +5,23 @@ public class S3FileStorage : FileStorage
     private readonly AmazonS3Client _client;
     private readonly string _bucketName;
     private readonly string _basePath;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public S3FileStorage(string bucketName, string basePath, string accessKeyId, string secretAccessKey, string region)
+    public S3FileStorage(
+        string bucketName,
+        string basePath,
+        string accessKeyId,
+        string secretAccessKey,
+        string region,
+        ILoggerFactory loggerFactory
+    )
     {
         _client = new AmazonS3Client(
             accessKeyId,
             secretAccessKey,
             new AmazonS3Config
             {
-                RetryMode = Amazon.Runtime.RequestRetryMode.Standard,
+                RetryMode = RequestRetryMode.Standard,
                 MaxErrorRetry = 3,
                 RegionEndpoint = RegionEndpoint.GetBySystemName(region)
             }
@@ -23,6 +31,7 @@ public class S3FileStorage : FileStorage
         //Ultimately, object keys can neither begin nor end with slashes; this is what broke the earlier low-level implementation
         _basePath = basePath.EndsWith("/") ? basePath.Remove(basePath.Length - 1, 1) : basePath;
         _basePath = _basePath.StartsWith("/") ? _basePath.Remove(0, 1) : _basePath;
+        _loggerFactory = loggerFactory;
     }
 
     public override void Dispose() { }
@@ -78,8 +87,8 @@ public class S3FileStorage : FileStorage
         InitiateMultipartUploadRequest request = new() { BucketName = _bucketName, Key = objectId };
         InitiateMultipartUploadResponse response = await _client.InitiateMultipartUploadAsync(request);
         return new BufferedStream(
-            new S3WriteStream(_client, objectId, _bucketName, response.UploadId),
-            1024 * 1024 * 5
+            new S3WriteStream(_client, objectId, _bucketName, response.UploadId, _loggerFactory),
+            S3WriteStream.FiveMB
         );
     }
 
