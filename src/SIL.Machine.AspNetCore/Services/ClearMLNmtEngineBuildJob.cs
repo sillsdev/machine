@@ -147,9 +147,7 @@ public class ClearMLNmtEngineBuildJob
             }
             catch (AmazonS3Exception e)
             {
-                _logger.LogError(
-                    $"Could not delete build ({buildId}) because of exception {e.GetType().Name}:{e.Message}.  Check S3 bucket key permissions.  Finishing up build anyway."
-                );
+                _logger.LogError(e, $"Could not delete build ({buildId}).  Finishing up build anyway.");
             }
 
             await _engines.UpdateAsync(
