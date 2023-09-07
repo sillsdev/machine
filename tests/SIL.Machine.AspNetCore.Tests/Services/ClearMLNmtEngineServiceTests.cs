@@ -84,7 +84,7 @@ public class ClearMLNmtEngineServiceTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            _sharedFileService = new SharedFileService();
+            _sharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             _options = Substitute.For<IOptionsMonitor<ClearMLNmtEngineOptions>>();
             _options.CurrentValue.Returns(
                 new ClearMLNmtEngineOptions { BuildPollingTimeout = TimeSpan.FromMilliseconds(50) }

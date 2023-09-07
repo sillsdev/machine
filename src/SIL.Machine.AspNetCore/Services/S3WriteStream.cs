@@ -4,15 +4,27 @@ public class S3WriteStream : Stream
 {
     private readonly AmazonS3Client _client;
     private readonly string _key;
+    private readonly string _uploadId;
     private readonly string _bucketName;
-    private long _length;
+    private readonly List<UploadPartResponse> _uploadResponses;
+    private readonly ILogger<S3WriteStream> _logger;
 
-    public S3WriteStream(AmazonS3Client client, string key, string bucketName)
+    public const int MaxPartSize = 5 * 1024 * 1024;
+
+    public S3WriteStream(
+        AmazonS3Client client,
+        string key,
+        string bucketName,
+        string uploadId,
+        ILoggerFactory loggerFactory
+    )
     {
         _client = client;
         _key = key;
         _bucketName = bucketName;
-        _length = 0;
+        _uploadId = uploadId;
+        _logger = loggerFactory.CreateLogger<S3WriteStream>();
+        _uploadResponses = new List<UploadPartResponse>();
     }
 
     public override bool CanRead => false;
@@ -21,7 +33,7 @@ public class S3WriteStream : Stream
 
     public override bool CanWrite => true;
 
-    public override long Length => _length;
+    public override long Length => 0;
 
     public override long Position
     {
@@ -39,38 +51,113 @@ public class S3WriteStream : Stream
 
     public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    public override void Write(byte[] buffer, int offset, int count)
-    {
-        using Stream inputStream = new MemoryStream(buffer, offset, count);
-        using var transferUtility = new TransferUtility(_client);
-        var uploadRequest = new TransferUtilityUploadRequest
-        {
-            BucketName = _bucketName,
-            InputStream = inputStream,
-            Key = _key,
-            PartSize = count
-        };
-        transferUtility.Upload(uploadRequest);
-    }
+    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        using Stream inputStream = new MemoryStream(buffer, offset, count);
-        using var transferUtility = new TransferUtility(_client);
-        var uploadRequest = new TransferUtilityUploadRequest
+        try
         {
-            BucketName = _bucketName,
-            InputStream = inputStream,
-            Key = _key,
-            PartSize = count
-        };
-        await transferUtility.UploadAsync(uploadRequest);
+            using MemoryStream ms = new(buffer, offset, count);
+            int partNumber = _uploadResponses.Count + 1;
+            UploadPartRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId,
+                    PartNumber = partNumber,
+                    InputStream = ms,
+                    PartSize = MaxPartSize
+                };
+            request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
+                (_, e) =>
+                {
+                    _logger.LogDebug($"Transferred {e.TransferredBytes}/{e.TotalBytes}");
+                }
+            );
+            UploadPartResponse response = await _client.UploadPartAsync(request);
+            if (response.HttpStatusCode != HttpStatusCode.OK)
+                throw new HttpRequestException(
+                    $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                );
+            _uploadResponses.Add(response);
+        }
+        catch (Exception e)
+        {
+            await AbortAsync(e);
+            throw;
+        }
     }
 
-    public override ValueTask DisposeAsync()
+    protected override void Dispose(bool disposing)
     {
-        Dispose(disposing: false);
-        GC.SuppressFinalize(this);
-        return ValueTask.CompletedTask;
+        if (disposing)
+        {
+            try
+            {
+                CompleteMultipartUploadRequest request =
+                    new()
+                    {
+                        BucketName = _bucketName,
+                        Key = _key,
+                        UploadId = _uploadId
+                    };
+                request.AddPartETags(_uploadResponses);
+                CompleteMultipartUploadResponse response = _client
+                    .CompleteMultipartUploadAsync(request)
+                    .WaitAndUnwrapException();
+                Dispose(disposing: false);
+                GC.SuppressFinalize(this);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
+                    throw new HttpRequestException(
+                        $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                    );
+            }
+            catch (Exception e)
+            {
+                AbortAsync(e).WaitAndUnwrapException();
+                throw;
+            }
+        }
+        base.Dispose(disposing);
+    }
+
+    public async override ValueTask DisposeAsync()
+    {
+        try
+        {
+            CompleteMultipartUploadRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    UploadId = _uploadId
+                };
+            request.AddPartETags(_uploadResponses);
+            CompleteMultipartUploadResponse response = await _client.CompleteMultipartUploadAsync(request);
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+            if (response.HttpStatusCode != HttpStatusCode.OK)
+                throw new HttpRequestException(
+                    $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                );
+        }
+        catch (Exception e)
+        {
+            await AbortAsync(e);
+        }
+    }
+
+    private async Task AbortAsync(Exception e)
+    {
+        _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
+        AbortMultipartUploadRequest abortMPURequest =
+            new()
+            {
+                BucketName = _bucketName,
+                Key = _key,
+                UploadId = _uploadId
+            };
+        await _client.AbortMultipartUploadAsync(abortMPURequest);
     }
 }
