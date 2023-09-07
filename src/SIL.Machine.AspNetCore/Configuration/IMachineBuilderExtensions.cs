@@ -256,7 +256,7 @@ public static class IMachineBuilderExtensions
                         new MethodConfig
                         {
                             Names = { MethodName.Default },
-                            RetryPolicy = new RetryPolicy
+                            RetryPolicy = new Grpc.Net.Client.Configuration.RetryPolicy
                             {
                                 MaxAttempts = 10,
                                 InitialBackoff = TimeSpan.FromSeconds(1),

@@ -5,9 +5,12 @@ public class SharedFileService : ISharedFileService
     private readonly Uri? _baseUri;
     private readonly FileStorage _fileStorage;
     private readonly bool _supportFolderDelete = true;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public SharedFileService(IOptions<SharedFileOptions>? options = null)
+    public SharedFileService(ILoggerFactory loggerFactory, IOptions<SharedFileOptions>? options = null)
     {
+        _loggerFactory = loggerFactory;
+
         if (options?.Value.Uri is null)
         {
             _fileStorage = new InMemoryStorage();
@@ -30,7 +33,8 @@ public class SharedFileService : ISharedFileService
                         _baseUri.AbsolutePath,
                         options.Value.S3AccessKeyId,
                         options.Value.S3SecretAccessKey,
-                        options.Value.S3Region
+                        options.Value.S3Region,
+                        _loggerFactory
                     );
                     _supportFolderDelete = false;
                     break;
