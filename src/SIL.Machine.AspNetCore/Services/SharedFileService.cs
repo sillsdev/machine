@@ -1,6 +1,4 @@
-﻿using SIL.Reporting;
-
-namespace SIL.Machine.AspNetCore.Services;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
 public class SharedFileService : ISharedFileService
 {

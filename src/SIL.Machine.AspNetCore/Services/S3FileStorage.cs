@@ -88,7 +88,7 @@ public class S3FileStorage : FileStorage
         InitiateMultipartUploadResponse response = await _client.InitiateMultipartUploadAsync(request);
         return new BufferedStream(
             new S3WriteStream(_client, objectId, _bucketName, response.UploadId, _loggerFactory),
-            S3WriteStream.FiveMB
+            S3WriteStream.MaxPartSize
         );
     }
 

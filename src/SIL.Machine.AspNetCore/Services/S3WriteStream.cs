@@ -9,7 +9,7 @@ public class S3WriteStream : Stream
     private readonly List<UploadPartResponse> _uploadResponses;
     private readonly ILogger<S3WriteStream> _logger;
 
-    public const int FiveMB = 5 * 1024 * 1024;
+    public const int MaxPartSize = 5 * 1024 * 1024;
 
     public S3WriteStream(
         AmazonS3Client client,
@@ -67,7 +67,7 @@ public class S3WriteStream : Stream
                     UploadId = _uploadId,
                     PartNumber = partNumber,
                     InputStream = ms,
-                    PartSize = FiveMB
+                    PartSize = MaxPartSize
                 };
             request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
                 (_, e) =>
