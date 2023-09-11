@@ -222,7 +222,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
         if (engine.BuildState != BuildState.None || engine.BuildRevision == 0) //TranslationEngine.Revision - I don't see it used anywhere
-            throw new RpcException(new Status(StatusCode.FailedPrecondition, "The engine must be built first"));
+            throw new RpcException(new Status(StatusCode.Aborted, "The engine must be built first"));
         return engine;
     }
 }
