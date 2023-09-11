@@ -209,4 +209,20 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         }
         return false;
     }
+
+    protected async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
+    {
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new InvalidOperationException("");
+        return engine;
+    }
+
+    protected async Task<TranslationEngine> GetBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
+    {
+        TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+        if (engine.BuildState != BuildState.None || engine.BuildRevision == 0) //TranslationEngine.Revision - I don't see it used anywhere
+            throw new RpcException(new Status(StatusCode.FailedPrecondition, "The engine must be built first"));
+        return engine;
+    }
 }
