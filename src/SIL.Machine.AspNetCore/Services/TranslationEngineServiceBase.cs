@@ -221,8 +221,9 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     protected async Task<TranslationEngine> GetBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
-        if (engine.BuildState != BuildState.None || engine.BuildRevision == 0) //TranslationEngine.Revision - I don't see it used anywhere
-            throw new RpcException(new Status(StatusCode.Aborted, "The engine must be built first"));
+        if (engine.BuildState != BuildState.None || engine.BuildRevision == 0)
+            throw new EngineNotBuiltException("The engine must be built first");
+        // throw new RpcException(new Status(StatusCode.Aborted, "The engine must be built first"));
         return engine;
     }
 }
