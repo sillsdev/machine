@@ -10,7 +10,7 @@ public class SmtTransferEngineServiceTests
     {
         using var env = new TestEnvironment();
         TranslationEngine engine = env.Engines.Get("engine1");
-        Assert.That(engine.BuildRevision, Is.EqualTo(0));
+        Assert.That(engine.BuildRevision, Is.EqualTo(1)); //For testing purposes BuildRevision is set to 1 (i.e., an already built engine)
         // ensure that the SMT model was loaded before training
         await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
         await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
@@ -137,7 +137,9 @@ public class SmtTransferEngineServiceTests
                     Id = "engine1",
                     EngineId = "engine1",
                     SourceLanguage = "es",
-                    TargetLanguage = "en"
+                    TargetLanguage = "en",
+                    BuildRevision = 1,
+                    BuildState = BuildState.None,
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();
