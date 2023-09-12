@@ -2,9 +2,8 @@ name: "CI Build: E2E tests"
 
 on:
   push:
-    branches: ["run_e2etests_on_release_#100"]
-  release:
-    types: [published]
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
