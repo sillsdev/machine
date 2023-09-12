@@ -25,7 +25,7 @@ public class SmtTransferEngineServiceTests
         await env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.None));
-        Assert.That(engine.BuildRevision, Is.EqualTo(1));
+        Assert.That(engine.BuildRevision, Is.EqualTo(2)); //For testing purposes BuildRevision was initially set to 1 (i.e., an already built engine), so now it ought to be 2
         // check if SMT model was reloaded upon first use after training
         env.SmtModel.ClearReceivedCalls();
         await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
