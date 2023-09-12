@@ -214,7 +214,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     {
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
-            throw new InvalidOperationException("");
+            throw new InvalidOperationException($"Engine with id {engineId} does not exist");
         return engine;
     }
 
@@ -223,7 +223,6 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
         if (engine.BuildState != BuildState.None || engine.BuildRevision == 0)
             throw new EngineNotBuiltException("The engine must be built first");
-        // throw new RpcException(new Status(StatusCode.Aborted, "The engine must be built first"));
         return engine;
     }
 }
