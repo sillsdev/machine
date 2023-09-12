@@ -3,7 +3,7 @@ name: "CI Build: E2E tests"
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'docker_*'
   workflow_dispatch:
 
 jobs:
