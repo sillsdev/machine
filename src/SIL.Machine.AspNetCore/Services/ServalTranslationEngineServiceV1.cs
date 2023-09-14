@@ -37,12 +37,21 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        IEnumerable<Translation.TranslationResult> results = await engineService.TranslateAsync(
-            request.EngineId,
-            request.N,
-            request.Segment,
-            context.CancellationToken
-        );
+        IEnumerable<Translation.TranslationResult> results;
+        try
+        {
+            results = await engineService.TranslateAsync(
+                request.EngineId,
+                request.N,
+                request.Segment,
+                context.CancellationToken
+            );
+        }
+        catch (EngineNotBuiltException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
+
         return new TranslateResponse { Results = { results.Select(Map) } };
     }
 
@@ -52,11 +61,19 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Translation.WordGraph wordGraph = await engineService.GetWordGraphAsync(
-            request.EngineId,
-            request.Segment,
-            context.CancellationToken
-        );
+        Translation.WordGraph wordGraph;
+        try
+        {
+            wordGraph = await engineService.GetWordGraphAsync(
+                request.EngineId,
+                request.Segment,
+                context.CancellationToken
+            );
+        }
+        catch (EngineNotBuiltException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
         return new GetWordGraphResponse { WordGraph = Map(wordGraph) };
     }
 

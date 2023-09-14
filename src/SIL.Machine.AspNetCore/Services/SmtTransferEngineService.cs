@@ -70,7 +70,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
-            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+            TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
             HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
             IReadOnlyList<TranslationResult> results = await hybridEngine.TranslateAsync(n, segment, cancellationToken);
             state.LastUsedTime = DateTime.Now;
@@ -88,7 +88,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.ReaderLockAsync(cancellationToken: cancellationToken))
         {
-            TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+            TranslationEngine engine = await GetBuiltEngineAsync(engineId, cancellationToken);
             HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
             WordGraph result = await hybridEngine.GetWordGraphAsync(segment, cancellationToken);
             state.LastUsedTime = DateTime.Now;
@@ -169,13 +169,5 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
         return r => r.RunAsync(engineId, buildId, corpora, CancellationToken.None);
-    }
-
-    private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
-    {
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
-        if (engine is null)
-            throw new InvalidOperationException("");
-        return engine;
     }
 }
