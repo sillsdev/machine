@@ -38,18 +38,20 @@ public class SmtTransferEngineBuildJob
     public async Task RunAsync(
         string engineId,
         string buildId,
+        string buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )
     {
         IDistributedReaderWriterLock rwLock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
         ITrainer? smtModelTrainer = null;
         ITrainer? truecaseTrainer = null;
         try
         {
+            JsonObject? buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions); //Use/fields TBD
+
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))

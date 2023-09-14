@@ -170,6 +170,6 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     )
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
-        return r => r.RunAsync(engineId, buildId, corpora, CancellationToken.None); //Not passing build options to SMT yet; is there a need?
+        return r => r.RunAsync(engineId, buildId, buildOptions, corpora, CancellationToken.None);
     }
 }
