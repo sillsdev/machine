@@ -15,6 +15,7 @@ public class ClearMLNmtEngineServiceTests
                 "es",
                 "en",
                 "memory:///",
+                "{}",
                 Arg.Any<CancellationToken>()
             )
             .Returns(Task.FromResult("task1"));
@@ -39,7 +40,7 @@ public class ClearMLNmtEngineServiceTests
         env.ClearMLService
             .GetTaskByIdAsync("task1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<ClearMLTask?>(task));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));

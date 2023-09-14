@@ -42,7 +42,8 @@ public class ClearMLServiceTests
             "engine1",
             "es",
             "en",
-            "s3://aqua-ml-data"
+            "s3://aqua-ml-data",
+            "{}"
         );
         Assert.That(projectId, Is.EqualTo("projectId"));
         mockHttp.VerifyNoOutstandingExpectation();

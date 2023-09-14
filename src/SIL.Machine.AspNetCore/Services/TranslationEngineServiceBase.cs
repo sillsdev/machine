@@ -56,6 +56,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     public virtual async Task StartBuildAsync(
         string engineId,
         string buildId,
+        string buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -63,7 +64,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
-            await StartBuildInternalAsync(engineId, buildId, corpora, cancellationToken);
+            await StartBuildInternalAsync(engineId, buildId, buildOptions, corpora, cancellationToken);
         }
     }
 
@@ -109,12 +110,14 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     protected abstract Expression<Func<TJob, Task>> GetJobExpression(
         string engineId,
         string buildId,
+        string buildOptions,
         IReadOnlyList<Corpus> corpora
     );
 
     protected async Task StartBuildInternalAsync(
         string engineId,
         string buildId,
+        string buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )
@@ -130,7 +133,10 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
             throw new InvalidOperationException("Engine is already building or pending.");
 
         // Schedule the job to occur way in the future, just so we can get the job id.
-        string jobId = _jobClient.Schedule(GetJobExpression(engineId, buildId, corpora), TimeSpan.FromDays(10000));
+        string jobId = _jobClient.Schedule(
+            GetJobExpression(engineId, buildId, buildOptions, corpora),
+            TimeSpan.FromDays(10000)
+        );
         try
         {
             await Engines.UpdateAsync(
