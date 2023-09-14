@@ -1,0 +1,54 @@
+name: "CI Build: E2E tests"
+
+on:
+  push:
+    tags:
+      - 'docker_*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      SERVAL_CLIENT_ID: ${{ secrets.SERVAL_CLIENT_ID }}
+      SERVAL_CLIENT_SECRET: ${{ secrets.SERVAL_CLIENT_SECRET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ClearML_AccessKey: ${{ secrets.CLEARML_ACCESSKEY }}
+      ClearML_SecretKey: ${{ secrets.CLEARML_SECRETKEY }}
+      SERVAL_HOST_URL: http://localhost
+      SERVAL_AUTH_URL: https://sil-appbuilder.auth0.com
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Get Serval
+        run: dotnet build && cd .. && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build
+
+      - name: Start containers
+        run: docker compose -f "../serval/docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+
+      - name: Debug network
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+
+      - name: Pre-Test
+        run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
+
+      - name: Test
+        run: cd ../serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+
+      - name: Debug network (Post test)
+        if: ${{ failure() }}
+        run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
+
+      - name: Stop containers
+        if: ${{ success() || failure() }}
+        run: docker compose -f "../serval/docker-compose.yml" down
