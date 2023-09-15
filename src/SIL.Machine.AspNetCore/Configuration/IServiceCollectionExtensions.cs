@@ -5,6 +5,10 @@ public static class IServiceCollectionExtensions
     public static IMachineBuilder AddMachine(this IServiceCollection services, IConfiguration? configuration = null)
     {
         services.AddSingleton<ISharedFileService, SharedFileService>();
+        services.Configure<HealthCheckPublisherOptions>(options =>
+        {
+            options.Period = TimeSpan.FromSeconds(240);
+        });
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddSingleton<ICorpusService, CorpusService>();
