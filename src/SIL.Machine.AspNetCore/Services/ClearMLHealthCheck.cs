@@ -2,8 +2,6 @@ public class ClearMLHealthCheck : IHealthCheck
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
-    private string _authToken;
-    private readonly AsyncLock _lock;
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
 
     public ClearMLHealthCheck(
@@ -14,8 +12,6 @@ public class ClearMLHealthCheck : IHealthCheck
     {
         _httpClient = httpClient;
         _options = options;
-        _authToken = "";
-        _lock = new AsyncLock();
         _clearMLAuthenticationService = clearMLAuthenticationService;
     }
 
@@ -26,9 +22,6 @@ public class ClearMLHealthCheck : IHealthCheck
     {
         try
         {
-            using (await _lock.LockAsync())
-                if (_authToken == "")
-                    _authToken = await _clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken);
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
@@ -52,7 +45,10 @@ public class ClearMLHealthCheck : IHealthCheck
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        request.Headers.Add("Authorization", $"Bearer {_authToken}");
+        request.Headers.Add(
+            "Authorization",
+            $"Bearer {await _clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken)}"
+        );
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         return (JsonObject?)JsonNode.Parse(result);
