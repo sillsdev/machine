@@ -4,13 +4,19 @@ public class ClearMLHealthCheck : IHealthCheck
     private readonly IOptionsMonitor<ClearMLNmtEngineOptions> _options;
     private string _authToken;
     private readonly AsyncLock _lock;
+    private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
 
-    public ClearMLHealthCheck(HttpClient httpClient, IOptionsMonitor<ClearMLNmtEngineOptions> options)
+    public ClearMLHealthCheck(
+        IClearMLAuthenticationService clearMLAuthenticationService,
+        HttpClient httpClient,
+        IOptionsMonitor<ClearMLNmtEngineOptions> options
+    )
     {
         _httpClient = httpClient;
         _options = options;
         _authToken = "";
         _lock = new AsyncLock();
+        _clearMLAuthenticationService = clearMLAuthenticationService;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -22,7 +28,7 @@ public class ClearMLHealthCheck : IHealthCheck
         {
             using (await _lock.LockAsync())
                 if (_authToken == "")
-                    _authToken = await GetAuthTokenAsync(cancellationToken);
+                    _authToken = await _clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken);
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
@@ -33,20 +39,6 @@ public class ClearMLHealthCheck : IHealthCheck
         {
             return HealthCheckResult.Unhealthy(exception: e);
         }
-    }
-
-    private async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken)
-    {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
-        {
-            Content = new StringContent("{}", Encoding.UTF8, "application/json")
-        };
-        var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
-        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
-        request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
-        HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
-        string result = await response.Content.ReadAsStringAsync(cancellationToken);
-        return (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
     }
 
     private async Task<JsonObject?> CallAsync(
