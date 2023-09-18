@@ -19,12 +19,7 @@ public class S3FileStorage : FileStorage
         _client = new AmazonS3Client(
             accessKeyId,
             secretAccessKey,
-            new AmazonS3Config
-            {
-                RetryMode = RequestRetryMode.Standard,
-                MaxErrorRetry = 3,
-                RegionEndpoint = RegionEndpoint.GetBySystemName(region)
-            }
+            new AmazonS3Config { RegionEndpoint = RegionEndpoint.GetBySystemName(region) }
         );
 
         _bucketName = bucketName;
