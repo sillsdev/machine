@@ -20,7 +20,6 @@ public class S3HealthCheck : IHealthCheck
     {
         try
         {
-            _logger.LogInformation($"{DateTime.Now}");
             await _sharedFileService.Ls("/models/");
             return HealthCheckResult.Healthy("The S3 bucket is available");
         }
