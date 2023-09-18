@@ -26,7 +26,8 @@ public class ClearMLService : IClearMLService
         _options = options;
         _logger = logger;
         _clearMLAuthService = clearMLAuthService;
-        Sldr.Initialize();
+        if (!Sldr.IsInitialized)
+            Sldr.Initialize();
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
