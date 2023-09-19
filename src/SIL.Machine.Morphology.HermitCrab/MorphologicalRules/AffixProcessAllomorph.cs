@@ -86,7 +86,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 			if (!base.IsWordValid(morpher, word))
 				return false;
 
-			if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
+			if (!RequiredSyntacticFeatureStruct.Subsumes(word.SyntacticFeatureStruct))
 			{
 				if (morpher.TraceManager.IsTracing)
 					morpher.TraceManager.Failed(morpher.Language, word, FailureReason.RequiredSyntacticFeatureStruct, this, RequiredSyntacticFeatureStruct);
