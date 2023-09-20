@@ -1,4 +1,5 @@
 using Hangfire;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,15 @@ builder.Services
     .AddMongoDataAccess()
     .AddMongoBackgroundJobClient()
     .AddServalTranslationEngineService();
+
+builder.Services
+    .AddOpenTelemetry()
+    .WithTracing(builder =>
+    {
+        builder.AddAspNetCoreInstrumentation().AddConsoleExporter();
+        builder.AddHttpClientInstrumentation().AddConsoleExporter();
+        builder.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources").AddConsoleExporter();
+    });
 
 var app = builder.Build();
 
