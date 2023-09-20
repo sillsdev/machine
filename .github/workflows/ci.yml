@@ -23,8 +23,14 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore -c Release
-      - name: Test
+
+      - name: Test (Windows)
+        if: matrix.os == 'windows-latest'
         run: dotnet test --no-build --verbosity normal -c Release --filter TestCategory!=Integration
+
+      - name: Test (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test --no-build --verbosity normal -c Release --filter TestCategory!=Integration --framework netcoreapp3.1
 
   create_package:
     name: Create NuGet package
