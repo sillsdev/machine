@@ -13,9 +13,12 @@ builder.Services
     .AddOpenTelemetry()
     .WithTracing(builder =>
     {
-        builder.AddAspNetCoreInstrumentation().AddConsoleExporter();
-        builder.AddHttpClientInstrumentation().AddConsoleExporter();
-        builder.AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources").AddConsoleExporter();
+        builder
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddGrpcClientInstrumentation()
+            .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+            .AddConsoleExporter();
     });
 
 var app = builder.Build();
