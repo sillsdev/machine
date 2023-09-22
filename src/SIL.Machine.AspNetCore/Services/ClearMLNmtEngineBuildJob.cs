@@ -125,7 +125,9 @@ public class ClearMLNmtEngineBuildJob
                         );
                         throw new OperationCanceledException();
                     case ClearMLTaskStatus.Failed:
-                        throw new InvalidOperationException(clearMLTask.StatusReason);
+                        throw new InvalidOperationException(
+                            $"{clearMLTask.StatusReason} : {clearMLTask.StatusMessage}"
+                        );
                 }
                 if (clearMLTask.Status is ClearMLTaskStatus.Completed)
                     break;

@@ -21,6 +21,18 @@ if (builder.Environment.IsDevelopment())
                 .AddConsoleExporter();
         });
 
+builder.Services
+    .AddOpenTelemetry()
+    .WithTracing(builder =>
+    {
+        builder
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddGrpcClientInstrumentation()
+            .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+            .AddConsoleExporter();
+    });
+
 var app = builder.Build();
 
 app.MapHealthChecks("/health");
