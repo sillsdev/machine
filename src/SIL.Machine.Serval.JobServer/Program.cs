@@ -8,18 +8,18 @@ builder.Services
     .AddMongoBackgroundJobClient()
     .AddBackgroundJobServer()
     .AddServalPlatformService();
-
-builder.Services
-    .AddOpenTelemetry()
-    .WithTracing(builder =>
-    {
-        builder
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddGrpcClientInstrumentation()
-            .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
-            .AddConsoleExporter();
-    });
+if (builder.Environment.IsDevelopment())
+    builder.Services
+        .AddOpenTelemetry()
+        .WithTracing(builder =>
+        {
+            builder
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddGrpcClientInstrumentation()
+                .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+                .AddConsoleExporter();
+        });
 
 var app = builder.Build();
 
