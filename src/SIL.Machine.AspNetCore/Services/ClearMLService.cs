@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using Newtonsoft.Json.Linq;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLService : IClearMLService
 {
@@ -87,18 +89,22 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
+        if (buildOptions == "")
+            buildOptions = "{}";
+        JObject buildOptionsJson = JObject.Parse(buildOptions);
+        buildOptionsJson.Add("model_type", _options.CurrentValue.ModelType);
+        buildOptionsJson.Add("max_steps", _options.CurrentValue.MaxSteps);
+        buildOptions = buildOptionsJson.ToString();
         string script =
             "from machine.jobs.build_nmt_engine import run\n"
             + "args = {\n"
-            + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
             + $"    'engine_id': '{engineId}',\n"
             + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{ConvertLanguageTag(sourceLanguageTag)}',\n"
             + $"    'trg_lang': '{ConvertLanguageTag(targetLanguageTag)}',\n"
-            + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
             + $"    'shared_file_uri': '{sharedFileUri}',\n"
             + $"    'clearml': True,\n"
-            + $"    'build_options': '{buildOptions}'\n"
+            + $"    'build_options': {buildOptions}\n"
             + "}\n"
             + "run(args)\n";
 
