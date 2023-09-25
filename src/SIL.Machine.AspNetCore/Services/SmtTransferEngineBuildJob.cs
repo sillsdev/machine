@@ -50,8 +50,22 @@ public class SmtTransferEngineBuildJob
         ITrainer? truecaseTrainer = null;
         try
         {
+            if (buildOptions == "")
+            {
+                buildOptions = "{}";
+            }
+            _logger.LogInformation($"Build options: {buildOptions}");
             JsonObject? buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions); //Use/fields TBD
-
+            bool useStrictParsing = false;
+            try
+            {
+                useStrictParsing = bool.Parse((string?)buildOptionsObject?["useStrictParsing"] ?? "false");
+            }
+            catch (FormatException)
+            {
+                _logger.LogInformation($"Parsing of {buildOptions} failed");
+            }
+            _logger.LogInformation($"Strict parsing: {useStrictParsing}");
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))
@@ -77,10 +91,11 @@ public class SmtTransferEngineBuildJob
                 foreach (Corpus corpus in corpora)
                 {
                     ITextCorpus sc = _corpusService.CreateTextCorpus(corpus.SourceFiles);
+
                     ITextCorpus tc = _corpusService.CreateTextCorpus(corpus.TargetFiles);
 
                     targetCorpora.Add(tc);
-                    parallelCorpora.Add(sc.AlignRows(tc));
+                    parallelCorpora.Add(sc.AlignRows(tc, useStrictParsing: useStrictParsing));
                 }
 
                 IParallelTextCorpus parallelCorpus = parallelCorpora.Flatten();

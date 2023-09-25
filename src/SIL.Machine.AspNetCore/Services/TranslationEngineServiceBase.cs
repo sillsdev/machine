@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using Serval.Translation.V1;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineService
 {
@@ -57,7 +59,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         string engineId,
         string buildId,
         string buildOptions,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<Models.Corpus> corpora,
         CancellationToken cancellationToken = default
     )
     {
@@ -77,7 +79,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         }
     }
 
-    public virtual Task<IReadOnlyList<TranslationResult>> TranslateAsync(
+    public virtual Task<IReadOnlyList<Translation.TranslationResult>> TranslateAsync(
         string engineId,
         int n,
         string segment,
@@ -87,7 +89,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         throw new NotSupportedException();
     }
 
-    public virtual Task<WordGraph> GetWordGraphAsync(
+    public virtual Task<Translation.WordGraph> GetWordGraphAsync(
         string engineId,
         string segment,
         CancellationToken cancellationToken = default
@@ -111,14 +113,14 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
         string engineId,
         string buildId,
         string buildOptions,
-        IReadOnlyList<Corpus> corpora
+        IReadOnlyList<Models.Corpus> corpora
     );
 
     protected async Task StartBuildInternalAsync(
         string engineId,
         string buildId,
         string buildOptions,
-        IReadOnlyList<Corpus> corpora,
+        IReadOnlyList<Models.Corpus> corpora,
         CancellationToken cancellationToken
     )
     {

@@ -13,13 +13,15 @@ namespace SIL.Machine.Corpora
             ITextCorpus sourceCorpus,
             ITextCorpus targetCorpus,
             IAlignmentCorpus alignmentCorpus = null,
-            IComparer<object> rowRefComparer = null
+            IComparer<object> rowRefComparer = null,
+            bool useStrictParsing = false
         )
         {
             SourceCorpus = sourceCorpus;
             TargetCorpus = targetCorpus;
             AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
+            UseStrictParsing = useStrictParsing;
         }
 
         public bool IsSourceTokenized => SourceCorpus.IsTokenized;
@@ -27,6 +29,8 @@ namespace SIL.Machine.Corpora
 
         public bool AllSourceRows { get; set; }
         public bool AllTargetRows { get; set; }
+
+        public bool UseStrictParsing { get; set; }
 
         public ITextCorpus SourceCorpus { get; }
         public ITextCorpus TargetCorpus { get; }
@@ -94,7 +98,20 @@ namespace SIL.Machine.Corpora
                 bool trgCompleted = !trgEnumerator.MoveNext();
                 while (!srcCompleted && !trgCompleted)
                 {
-                    int compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref, trgEnumerator.Current.Ref);
+                    int compare1 = 0;
+                    if (UseStrictParsing)
+                    {
+                        try
+                        {
+                            compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref, trgEnumerator.Current.Ref);
+                        }
+                        catch (ArgumentException)
+                        {
+                            throw new FormatException(
+                                $"Invalid format in {srcEnumerator.Current.TextId} and {trgEnumerator.Current.TextId}. Mismatched key formats \"{srcEnumerator.Current.Ref}\" and \"{trgEnumerator.Current.Ref}\". There may be an extraneous tab, missing ref, or inconsistent use of user-defined refs. If you'd like to ignore format errors, disable strict parsing."
+                            );
+                        }
+                    }
                     if (compare1 < 0)
                     {
                         if (!AllTargetRows && srcEnumerator.Current.IsInRange)
@@ -378,9 +395,20 @@ namespace SIL.Machine.Corpora
 
         private bool CheckSameRefRows(List<TextRow> sameRefRows, TextRow otherRow)
         {
-            if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
-                sameRefRows.Clear();
-
+            try
+            {
+                if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
+                    sameRefRows.Clear();
+            }
+            catch (ArgumentException)
+            {
+                if (UseStrictParsing)
+                {
+                    throw new FormatException(
+                        $"Invalid format in {sameRefRows[0].TextId} and {otherRow.TextId}. Mismatched key formats \"{sameRefRows[0].Ref}\" and \"{otherRow.Ref}\". There may be an extraneous tab, missing ref, or inconsistent use of user-defined refs. If you'd like to ignore format errors, disable strict parsing."
+                    );
+                }
+            }
             return sameRefRows.Count > 0;
         }
 

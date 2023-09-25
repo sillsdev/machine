@@ -235,10 +235,11 @@ namespace SIL.Machine.Corpora
             IAlignmentCorpus alignmentCorpus = null,
             bool allSourceRows = false,
             bool allTargetRows = false,
-            IComparer<object> rowRefComparer = null
+            IComparer<object> rowRefComparer = null,
+            bool useStrictParsing = false
         )
         {
-            return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus, rowRefComparer)
+            return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus, rowRefComparer, useStrictParsing)
             {
                 AllSourceRows = allSourceRows,
                 AllTargetRows = allTargetRows
