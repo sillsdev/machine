@@ -13,7 +13,7 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.BuildRevision, Is.EqualTo(1)); //For testing purposes BuildRevision is set to 1 (i.e., an already built engine)
         // ensure that the SMT model was loaded before training
         await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
         await env.SmtBatchTrainer
             .Received()
@@ -46,7 +46,7 @@ public class SmtTransferEngineServiceTests
                     ct.ThrowIfCancellationRequested();
             })
         );
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
@@ -74,7 +74,7 @@ public class SmtTransferEngineServiceTests
                     Thread.Sleep(100);
                 }
             });
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildState, Is.EqualTo(BuildState.Active));
