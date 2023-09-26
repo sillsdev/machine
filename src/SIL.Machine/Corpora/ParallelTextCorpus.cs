@@ -13,8 +13,7 @@ namespace SIL.Machine.Corpora
             ITextCorpus sourceCorpus,
             ITextCorpus targetCorpus,
             IAlignmentCorpus alignmentCorpus = null,
-            IComparer<object> rowRefComparer = null,
-            bool useStrictParsing = false
+            IComparer<object> rowRefComparer = null
         )
         {
             SourceCorpus = sourceCorpus;
@@ -96,6 +95,17 @@ namespace SIL.Machine.Corpora
                 while (!srcCompleted && !trgCompleted)
                 {
                     int compare1 = 0;
+                    try
+                    {
+                        compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref, trgEnumerator.Current.Ref);
+                    }
+                    catch (ArgumentException)
+                    {
+                        throw new CorpusAlignmentException(
+                            srcEnumerator.Current.Ref.ToString(),
+                            trgEnumerator.Current.Ref.ToString()
+                        );
+                    }
                     if (compare1 < 0)
                     {
                         if (!AllTargetRows && srcEnumerator.Current.IsInRange)
