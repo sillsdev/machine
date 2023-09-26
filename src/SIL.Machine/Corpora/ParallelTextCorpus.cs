@@ -94,7 +94,18 @@ namespace SIL.Machine.Corpora
                 bool trgCompleted = !trgEnumerator.MoveNext();
                 while (!srcCompleted && !trgCompleted)
                 {
-                    int compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref, trgEnumerator.Current.Ref);
+                    int compare1 = 0;
+                    try
+                    {
+                        compare1 = RowRefComparer.Compare(srcEnumerator.Current.Ref, trgEnumerator.Current.Ref);
+                    }
+                    catch (ArgumentException)
+                    {
+                        throw new CorpusAlignmentException(
+                            srcEnumerator.Current.Ref.ToString(),
+                            trgEnumerator.Current.Ref.ToString()
+                        );
+                    }
                     if (compare1 < 0)
                     {
                         if (!AllTargetRows && srcEnumerator.Current.IsInRange)
@@ -176,9 +187,19 @@ namespace SIL.Machine.Corpora
                         int compare2;
                         do
                         {
-                            compare2 = alignmentEnumerator.MoveNext()
-                                ? RowRefComparer.Compare(srcEnumerator.Current.Ref, alignmentEnumerator.Current.Ref)
-                                : 1;
+                            try
+                            {
+                                compare2 = alignmentEnumerator.MoveNext()
+                                    ? RowRefComparer.Compare(srcEnumerator.Current.Ref, alignmentEnumerator.Current.Ref)
+                                    : 1;
+                            }
+                            catch (ArgumentException)
+                            {
+                                throw new CorpusAlignmentException(
+                                    srcEnumerator.Current.Ref.ToString(),
+                                    trgEnumerator.Current.Ref.ToString()
+                                );
+                            }
                         } while (compare2 < 0);
 
                         if (
@@ -378,9 +399,15 @@ namespace SIL.Machine.Corpora
 
         private bool CheckSameRefRows(List<TextRow> sameRefRows, TextRow otherRow)
         {
-            if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
-                sameRefRows.Clear();
-
+            try
+            {
+                if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
+                    sameRefRows.Clear();
+            }
+            catch (ArgumentException)
+            {
+                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
+            }
             return sameRefRows.Count > 0;
         }
 

@@ -43,7 +43,6 @@ public class SmtTransferEngineBuildJob
     )
     {
         IDistributedReaderWriterLock rwLock = await _lockFactory.CreateAsync(engineId, cancellationToken);
-
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
         ITrainer? smtModelTrainer = null;
