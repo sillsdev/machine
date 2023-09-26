@@ -42,11 +42,10 @@ public class ClearMLNmtEngineService : TranslationEngineServiceBase<ClearMLNmtEn
     protected override Expression<Func<ClearMLNmtEngineBuildJob, Task>> GetJobExpression(
         string engineId,
         string buildId,
-        string buildOptions,
         IReadOnlyList<Corpus> corpora
     )
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
-        return r => r.RunAsync(engineId, buildId, buildOptions, corpora, CancellationToken.None);
+        return r => r.RunAsync(engineId, buildId, corpora, CancellationToken.None);
     }
 }

@@ -137,7 +137,6 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     public override async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -146,7 +145,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
         IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
-            await StartBuildInternalAsync(engineId, buildId, buildOptions, corpora, cancellationToken);
+            await StartBuildInternalAsync(engineId, buildId, corpora, cancellationToken);
             state.LastUsedTime = DateTime.UtcNow;
         }
     }
@@ -165,11 +164,10 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     protected override Expression<Func<SmtTransferEngineBuildJob, Task>> GetJobExpression(
         string engineId,
         string buildId,
-        string buildOptions,
         IReadOnlyList<Corpus> corpora
     )
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
-        return r => r.RunAsync(engineId, buildId, buildOptions, corpora, CancellationToken.None);
+        return r => r.RunAsync(engineId, buildId, corpora, CancellationToken.None);
     }
 }

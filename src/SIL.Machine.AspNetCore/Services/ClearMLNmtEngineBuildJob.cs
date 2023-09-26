@@ -34,7 +34,6 @@ public class ClearMLNmtEngineBuildJob
     public async Task RunAsync(
         string engineId,
         string buildId,
-        string buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )
@@ -69,7 +68,6 @@ public class ClearMLNmtEngineBuildJob
                     engine.SourceLanguage,
                     engine.TargetLanguage,
                     _sharedFileService.GetBaseUri().ToString(),
-                    buildOptions,
                     cancellationToken
                 );
                 await _clearMLService.EnqueueTaskAsync(clearMLTaskId, CancellationToken.None);
