@@ -291,7 +291,9 @@ public class ClearMLNmtEngineBuildJob
                         {
                             CorpusId = corpus.Id,
                             TextId = row.TextId,
-                            Refs = row.TargetRefs.Select(r => r.ToString()!).ToList(),
+                            Refs = row.TargetRefs.Any()
+                                ? row.TargetRefs.Select(r => r.ToString()!).ToList()
+                                : row.SourceRefs.Select(r => r.ToString()!).ToList(),
                             Translation = row.SourceText
                         };
                     }
