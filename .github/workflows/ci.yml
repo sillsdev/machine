@@ -62,7 +62,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -c Release
       - name: Test
-        run: dotnet test --no-build --verbosity normal -c Release
+        run: dotnet test --verbosity normal --collect:"Xplat Code Coverage"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
