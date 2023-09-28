@@ -30,6 +30,7 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using MongoDB.Driver;
 global using MongoDB.Driver.Linq;
+global using Newtonsoft.Json.Linq;
 global using Nito.AsyncEx;
 global using Nito.AsyncEx.Synchronous;
 global using Polly;
