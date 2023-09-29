@@ -100,7 +100,7 @@ public class ClearMLService : IClearMLService
             + $"    'build_id': '{buildId}',\n"
             + $"    'src_lang': '{ConvertLanguageTag(sourceLanguageTag)}',\n"
             + $"    'trg_lang': '{ConvertLanguageTag(targetLanguageTag)}',\n"
-            + $"    'model_type': {_options.CurrentValue.ModelType},\n"
+            + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
             + $"    'shared_file_uri': '{sharedFileUri}',\n"
             + $"    'clearml': True,\n"
             + $"    'build_options': {buildOptions}\n"
