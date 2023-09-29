@@ -287,11 +287,35 @@ public class ClearMLNmtEngineBuildJob
                         && row.TargetSegment.Count == 0
                     )
                     {
+                        IReadOnlyList<object> refs;
+                        if (row.TargetRefs.Count == 0)
+                        {
+                            if (sourceCorpus is ScriptureTextCorpus sstc && targetCorpus is ScriptureTextCorpus tstc)
+                            {
+                                refs = row.SourceRefs
+                                    .Cast<VerseRef>()
+                                    .Select(srcRef =>
+                                    {
+                                        var trgRef = srcRef.Clone();
+                                        trgRef.ChangeVersification(tstc.Versification);
+                                        return (object)trgRef;
+                                    })
+                                    .ToList();
+                            }
+                            else
+                            {
+                                refs = row.SourceRefs;
+                            }
+                        }
+                        else
+                        {
+                            refs = row.TargetRefs;
+                        }
                         yield return new Pretranslation
                         {
                             CorpusId = corpus.Id,
                             TextId = row.TextId,
-                            Refs = row.TargetRefs.Select(r => r.ToString()!).ToList(),
+                            Refs = refs.Select(r => r.ToString()!).ToList(),
                             Translation = row.SourceText
                         };
                     }

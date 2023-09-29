@@ -46,3 +46,4 @@ global using SIL.Machine.Translation.Thot;
 global using SIL.Machine.Utils;
 global using SIL.ObjectModel;
 global using SIL.WritingSystems;
+global using SIL.Scripture;
