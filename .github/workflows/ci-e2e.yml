@@ -10,7 +10,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
 
     env:
       SERVAL_CLIENT_ID: ${{ secrets.SERVAL_CLIENT_ID }}
