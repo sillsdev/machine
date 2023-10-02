@@ -25,7 +25,9 @@ public class ClearMLHealthCheck : IHealthCheck
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
-                return HealthCheckResult.Unhealthy("No ClearML agents are available");
+                return HealthCheckResult.Unhealthy(
+                    $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
+                );
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
@@ -65,7 +67,7 @@ public class ClearMLHealthCheck : IHealthCheck
         JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
         JsonNode? workers_node = result?["data"]?["workers"];
         if (workers_node is null)
-            return false;
+            throw new InvalidOperationException("Malformed response from ClearML server.");
         JsonArray workers = (JsonArray)workers_node;
         foreach (var worker in workers)
         {
