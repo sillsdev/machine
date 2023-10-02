@@ -89,10 +89,6 @@ public class ClearMLService : IClearMLService
     {
         if (buildOptions == "")
             buildOptions = "{}";
-        JObject buildOptionsJson = JObject.Parse(buildOptions);
-        if (!buildOptionsJson.ContainsKey("max_steps"))
-            buildOptionsJson.Add("max_steps", _options.CurrentValue.MaxSteps);
-        buildOptions = buildOptionsJson.ToString();
         string script =
             "from machine.jobs.build_nmt_engine import run\n"
             + "args = {\n"
