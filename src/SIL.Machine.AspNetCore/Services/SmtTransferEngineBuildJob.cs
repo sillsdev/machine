@@ -50,7 +50,7 @@ public class SmtTransferEngineBuildJob
         ITrainer? truecaseTrainer = null;
         try
         {
-            JsonObject? buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions); //Use/fields TBD
+            // JsonObject? buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions); //Use/fields TBD
 
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
