@@ -26,7 +26,8 @@ public class ClearMLService : IClearMLService
         _options = options;
         _logger = logger;
         _clearMLAuthService = clearMLAuthService;
-        Sldr.Initialize();
+        if (!Sldr.IsInitialized)
+            Sldr.Initialize();
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -188,34 +189,6 @@ public class ClearMLService : IClearMLService
             results[name] = value.Value;
         }
         return results;
-    }
-
-    public async Task<bool> PingAsync(CancellationToken cancellationToken = default)
-    {
-        JsonObject? result = await CallAsync("debug", "ping", new JsonObject(), cancellationToken);
-        return result is not null;
-    }
-
-    public async Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default)
-    {
-        JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
-        JsonNode? workers_node = result?["data"]?["workers"];
-        if (workers_node is null)
-            return false;
-        JsonArray workers = (JsonArray)workers_node;
-        foreach (var worker in workers)
-        {
-            JsonNode? queues_node = worker?["queues"];
-            if (queues_node is null)
-                continue;
-            JsonArray queues = (JsonArray)queues_node;
-            foreach (var queue in queues)
-            {
-                if ((string?)queue?["name"] == _options.CurrentValue.Queue)
-                    return true;
-            }
-        }
-        return false;
     }
 
     private async Task<ClearMLTask?> GetTaskAsync(JsonObject body, CancellationToken cancellationToken = default)
