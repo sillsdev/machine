@@ -100,7 +100,7 @@ public class ClearMLService : IClearMLService
             + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
             + $"    'shared_file_uri': '{sharedFileUri}',\n"
             + $"    'clearml': True,\n"
-            + $"    'build_options': {buildOptions}\n"
+            + $"    'build_options': '''{buildOptions}'''\n"
             + "}\n"
             + "run(args)\n";
 
