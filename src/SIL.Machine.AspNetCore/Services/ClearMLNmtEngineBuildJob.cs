@@ -34,7 +34,7 @@ public class ClearMLNmtEngineBuildJob
     public async Task RunAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )

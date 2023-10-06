@@ -99,7 +99,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
             await engineService.StartBuildAsync(
                 request.EngineId,
                 request.BuildId,
-                request.Options,
+                request.HasOptions ? request.Options : null,
                 corpora,
                 context.CancellationToken
             );

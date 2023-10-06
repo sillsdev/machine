@@ -84,12 +84,12 @@ public class ClearMLService : IClearMLService
         string sourceLanguageTag,
         string targetLanguageTag,
         string sharedFileUri,
-        string buildOptions,
+        string? buildOptions,
         CancellationToken cancellationToken = default
     )
     {
-        if (buildOptions == "")
-            buildOptions = "{}";
+        if (buildOptions is null)
+            buildOptions = "";
         string script =
             "from machine.jobs.build_nmt_engine import run\n"
             + "args = {\n"

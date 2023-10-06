@@ -33,7 +33,7 @@ public interface ITranslationEngineService
     Task StartBuildAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     );

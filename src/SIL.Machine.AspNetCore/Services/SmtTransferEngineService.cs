@@ -137,7 +137,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     public override async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -165,7 +165,7 @@ public class SmtTransferEngineService : TranslationEngineServiceBase<SmtTransfer
     protected override Expression<Func<SmtTransferEngineBuildJob, Task>> GetJobExpression(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora
     )
     {

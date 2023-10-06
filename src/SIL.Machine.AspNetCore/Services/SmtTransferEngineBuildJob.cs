@@ -38,7 +38,7 @@ public class SmtTransferEngineBuildJob
     public async Task RunAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )
@@ -50,8 +50,6 @@ public class SmtTransferEngineBuildJob
         ITrainer? truecaseTrainer = null;
         try
         {
-            // JsonObject? buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions); //Use/fields TBD
-
             var stopwatch = new Stopwatch();
             TranslationEngine? engine;
             await using (await rwLock.WriterLockAsync(cancellationToken: cancellationToken))

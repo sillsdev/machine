@@ -56,7 +56,7 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     public virtual async Task StartBuildAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -110,14 +110,14 @@ public abstract class TranslationEngineServiceBase<TJob> : ITranslationEngineSer
     protected abstract Expression<Func<TJob, Task>> GetJobExpression(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora
     );
 
     protected async Task StartBuildInternalAsync(
         string engineId,
         string buildId,
-        string buildOptions,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken
     )
