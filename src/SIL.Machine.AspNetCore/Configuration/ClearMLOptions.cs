@@ -13,5 +13,6 @@ public class ClearMLOptions
     public string ModelType { get; set; } = "huggingface";
     public int MaxSteps { get; set; } = 20_000;
     public string RootProject { get; set; } = "Machine";
+    public string Project { get; set; } = "dev";
     public string DockerImage { get; set; } = "";
 }
