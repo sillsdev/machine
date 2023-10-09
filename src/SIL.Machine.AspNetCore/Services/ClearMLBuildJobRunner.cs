@@ -40,7 +40,7 @@ public class ClearMLBuildJobRunner : IBuildJobRunner
     {
         string? projectId = await _clearMLService.GetProjectIdAsync(engineId, cancellationToken);
         if (projectId is null)
-            throw new InvalidOperationException("The project does not exist.");
+            projectId = await _clearMLService.CreateProjectAsync(engineId, cancellationToken: cancellationToken);
 
         ClearMLTask? task = await _clearMLService.GetTaskByNameAsync(buildId, cancellationToken);
         if (task is not null)

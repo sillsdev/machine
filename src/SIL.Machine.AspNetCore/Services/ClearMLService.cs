@@ -29,7 +29,7 @@ public class ClearMLService : IClearMLService
     {
         var body = new JsonObject
         {
-            ["name"] = $"{_options.CurrentValue.RootProject}/{name}",
+            ["name"] = $"{_options.CurrentValue.RootProject}/{_options.CurrentValue.Project}/{name}",
             ["only_fields"] = new JsonArray("id")
         };
         JsonObject? result = await CallAsync("projects", "get_all", body, cancellationToken);
@@ -47,7 +47,10 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["name"] = $"{_options.CurrentValue.RootProject}/{name}" };
+        var body = new JsonObject
+        {
+            ["name"] = $"{_options.CurrentValue.RootProject}/{_options.CurrentValue.Project}/{name}"
+        };
         if (description != null)
             body["description"] = description;
         JsonObject? result = await CallAsync("projects", "create", body, cancellationToken);
