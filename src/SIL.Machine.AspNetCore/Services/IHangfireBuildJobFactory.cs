@@ -4,5 +4,5 @@ public interface IHangfireBuildJobFactory
 {
     TranslationEngineType EngineType { get; }
 
-    Job CreateJob(string engineId, string buildId, string stage, object? data);
+    Job CreateJob(string engineId, string buildId, string stage, object? data, string? buildOptions);
 }

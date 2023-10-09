@@ -11,9 +11,14 @@ public abstract class HangfireBuildJob : HangfireBuildJob<object?>
     )
         : base(platformService, engines, lockFactory, buildJobService, logger) { }
 
-    public virtual Task RunAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    public virtual Task RunAsync(
+        string engineId,
+        string buildId,
+        string? buildOptions,
+        CancellationToken cancellationToken
+    )
     {
-        return RunAsync(engineId, buildId, null, cancellationToken);
+        return RunAsync(engineId, buildId, null, buildOptions, cancellationToken);
     }
 }
 
@@ -40,7 +45,13 @@ public abstract class HangfireBuildJob<T>
     protected IBuildJobService BuildJobService { get; }
     protected ILogger<HangfireBuildJob<T>> Logger { get; }
 
-    public virtual async Task RunAsync(string engineId, string buildId, T data, CancellationToken cancellationToken)
+    public virtual async Task RunAsync(
+        string engineId,
+        string buildId,
+        T data,
+        string? buildOptions,
+        CancellationToken cancellationToken
+    )
     {
         IDistributedReaderWriterLock @lock = await LockFactory.CreateAsync(engineId, cancellationToken);
         JobCompletionStatus completionStatus = JobCompletionStatus.Completed;
@@ -56,7 +67,7 @@ public abstract class HangfireBuildJob<T>
                 }
             }
 
-            await DoWorkAsync(engineId, buildId, data, @lock, cancellationToken);
+            await DoWorkAsync(engineId, buildId, data, buildOptions, @lock, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -134,6 +145,7 @@ public abstract class HangfireBuildJob<T>
         string engineId,
         string buildId,
         T data,
+        string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     );

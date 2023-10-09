@@ -41,6 +41,7 @@ public class ClearMLServiceTests
             + "    'trg_lang': 'eng_Latn',\n"
             + "    'max_steps': 20000,\n"
             + "    'shared_file_uri': 's3://aqua-ml-data',\n"
+            + "    'buildOptions': '',\n"
             + "    'clearml': True\n"
             + "}\n"
             + "run(args)\n";

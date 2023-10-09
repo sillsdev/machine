@@ -107,6 +107,7 @@ public class ClearMLMonitorService : RecurrentTask
                                 engine.CurrentBuild.BuildId,
                                 (int)GetMetric(task, SummaryMetric, CorpusSizeVariant),
                                 GetMetric(task, EvalMetric, BleuVariant),
+                                engine.CurrentBuild.Options,
                                 cancellationToken
                             );
                             if (canceling)
@@ -181,6 +182,7 @@ public class ClearMLMonitorService : RecurrentTask
         string buildId,
         int corpusSize,
         double confidence,
+        string? buildOptions,
         CancellationToken cancellationToken
     )
     {
@@ -196,6 +198,7 @@ public class ClearMLMonitorService : RecurrentTask
                     buildId,
                     NmtBuildStages.Postprocess,
                     (corpusSize, confidence),
+                    buildOptions,
                     cancellationToken
                 );
             }

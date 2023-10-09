@@ -13,6 +13,7 @@ public interface IBuildJobRunner
         string buildId,
         string stage,
         object? data = null,
+        string? buildOptions = null,
         CancellationToken cancellationToken = default
     );
 

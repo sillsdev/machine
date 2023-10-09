@@ -21,4 +21,5 @@ public class Build
     public string JobId { get; set; } = default!;
     public BuildJobRunner JobRunner { get; set; }
     public string Stage { get; set; } = default!;
+    public string? Options { get; set; } = default;
 }
