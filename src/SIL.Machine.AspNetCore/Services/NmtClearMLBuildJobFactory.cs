@@ -42,7 +42,7 @@ public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
                 + $"    'src_lang': '{ConvertLanguageTag(engine.SourceLanguage)}',\n"
                 + $"    'trg_lang': '{ConvertLanguageTag(engine.TargetLanguage)}',\n"
                 + $"    'shared_file_uri': '{_sharedFileService.GetBaseUri()}',\n"
-                + $"    'buildOptions': '''{buildOptions}''',\n"
+                + $"    'build_options': '''{buildOptions}''',\n"
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";
