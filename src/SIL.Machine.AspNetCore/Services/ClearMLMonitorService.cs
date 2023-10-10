@@ -33,6 +33,8 @@ public class ClearMLMonitorService : RecurrentTask
         _logger = logger;
     }
 
+    public int GetQueueDepth() => _curBuildStatus.Count;
+
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         try

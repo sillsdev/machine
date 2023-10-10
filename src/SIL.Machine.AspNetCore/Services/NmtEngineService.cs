@@ -14,13 +14,15 @@ public class NmtEngineService : ITranslationEngineService
     private readonly IDataAccessContext _dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines;
     private readonly IBuildJobService _buildJobService;
+    private readonly ClearMLMonitorService _clearMLMonitorService;
 
     public NmtEngineService(
         IPlatformService platformService,
         IDistributedReaderWriterLockFactory lockFactory,
         IDataAccessContext dataAccessContext,
         IRepository<TranslationEngine> engines,
-        IBuildJobService buildJobService
+        IBuildJobService buildJobService,
+        ClearMLMonitorService clearMLMonitorService
     )
     {
         _lockFactory = lockFactory;
@@ -28,6 +30,7 @@ public class NmtEngineService : ITranslationEngineService
         _dataAccessContext = dataAccessContext;
         _engines = engines;
         _buildJobService = buildJobService;
+        _clearMLMonitorService = clearMLMonitorService;
     }
 
     public TranslationEngineType Type => TranslationEngineType.Nmt;
@@ -139,6 +142,11 @@ public class NmtEngineService : ITranslationEngineService
     )
     {
         throw new NotSupportedException();
+    }
+
+    public Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_clearMLMonitorService.GetQueueDepth());
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

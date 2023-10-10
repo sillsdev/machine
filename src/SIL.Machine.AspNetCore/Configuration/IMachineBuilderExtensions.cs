@@ -124,6 +124,7 @@ public static class IMachineBuilderExtensions
         builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
         builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
         builder.Services.AddHostedService<ClearMLMonitorService>();
+        builder.Services.AddSingleton<ClearMLMonitorService>();
 
         builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 

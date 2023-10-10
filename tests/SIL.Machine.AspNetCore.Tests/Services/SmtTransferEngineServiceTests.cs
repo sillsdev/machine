@@ -317,7 +317,14 @@ public class SmtTransferEngineServiceTests
                 Engines,
                 TrainSegmentPairs,
                 StateService,
-                _buildJobService
+                _buildJobService,
+                new ClearMLMonitorService(
+                    Substitute.For<IServiceProvider>(),
+                    Substitute.For<IClearMLService>(),
+                    Substitute.For<ISharedFileService>(),
+                    Substitute.For<IOptions<ClearMLOptions>>(),
+                    Substitute.For<ILogger<ClearMLMonitorService>>()
+                )
             );
         }
 
