@@ -14,7 +14,6 @@ public class SmtTransferEngineService : ITranslationEngineService
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService;
     private readonly IBuildJobService _buildJobService;
-    private readonly ClearMLMonitorService _clearMLMonitorService;
 
     public SmtTransferEngineService(
         IDistributedReaderWriterLockFactory lockFactory,
@@ -23,8 +22,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         IRepository<TranslationEngine> engines,
         IRepository<TrainSegmentPair> trainSegmentPairs,
         SmtTransferEngineStateService stateService,
-        IBuildJobService buildJobService,
-        ClearMLMonitorService clearMLMonitorService
+        IBuildJobService buildJobService
     )
     {
         _lockFactory = lockFactory;
@@ -34,7 +32,6 @@ public class SmtTransferEngineService : ITranslationEngineService
         _trainSegmentPairs = trainSegmentPairs;
         _stateService = stateService;
         _buildJobService = buildJobService;
-        _clearMLMonitorService = clearMLMonitorService;
     }
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
@@ -205,9 +202,11 @@ public class SmtTransferEngineService : ITranslationEngineService
         }
     }
 
-    public Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default)
+    public async Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.GetQueueDepth());
+        return (await _buildJobService.GetBuildingEnginesAsync(BuildJobRunner.Hangfire))
+            .Where(e => e.CurrentBuild!.JobState == BuildJobState.Pending)
+            .Count();
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

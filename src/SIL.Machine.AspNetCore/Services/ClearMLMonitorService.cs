@@ -12,6 +12,7 @@ public class ClearMLMonitorService : RecurrentTask
     private readonly ISharedFileService _sharedFileService;
     private readonly ILogger<ClearMLMonitorService> _logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
+    private SortedList<DateTime, string> _curQueuedTasks = new SortedList<DateTime, string>();
 
     public ClearMLMonitorService(
         IServiceProvider services,
@@ -33,7 +34,9 @@ public class ClearMLMonitorService : RecurrentTask
         _logger = logger;
     }
 
-    public int GetQueueDepth() => _curBuildStatus.Count;
+    public int GetQueueDepth() => _curQueuedTasks.Count;
+
+    private int GetNumAheadInQueue(string clearMLTaskId) => _curQueuedTasks.IndexOfValue(clearMLTaskId);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
@@ -54,12 +57,39 @@ public class ClearMLMonitorService : RecurrentTask
                 )
             ).ToDictionary(t => t.Id);
 
+            foreach (
+                ClearMLTask task in tasks.Values.Where(
+                    t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created
+                )
+            )
+            {
+                //Name is buildId
+                _curQueuedTasks.TryAdd(task.Created, task.Name);
+            }
+
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             foreach (TranslationEngine engine in trainingEngines)
             {
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
                     continue;
+
+                if (
+                    engine.CurrentBuild.JobState is BuildJobState.Pending
+                    && task.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created
+                )
+                {
+                    await UpdateTrainJobStatus(
+                        platformService,
+                        engine.CurrentBuild.BuildId,
+                        new ProgressStatus(
+                            0,
+                            0.0,
+                            $"Number of jobs ahead in queue: {GetNumAheadInQueue(engine.CurrentBuild.BuildId)}"
+                        ),
+                        cancellationToken
+                    );
+                }
 
                 if (engine.CurrentBuild.Stage == NmtBuildStages.Train)
                 {
@@ -173,6 +203,12 @@ public class ClearMLMonitorService : RecurrentTask
                 return false;
         }
         await platformService.BuildStartedAsync(buildId, CancellationToken.None);
+        try
+        {
+            _curQueuedTasks.RemoveAt(_curQueuedTasks.IndexOfValue(buildId));
+        }
+        catch (ArgumentOutOfRangeException) { }
+        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), cancellationToken);
         _logger.LogInformation("Build started ({0})", buildId);
         return true;
     }
