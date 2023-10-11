@@ -82,6 +82,7 @@ public class NmtEngineService : ITranslationEngineService
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -100,6 +101,7 @@ public class NmtEngineService : ITranslationEngineService
                 buildId,
                 NmtBuildStages.Preprocess,
                 corpora,
+                buildOptions,
                 cancellationToken
             );
         }

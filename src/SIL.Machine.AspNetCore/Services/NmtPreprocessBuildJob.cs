@@ -24,6 +24,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string engineId,
         string buildId,
         IReadOnlyList<Corpus> data,
+        string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
@@ -38,6 +39,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 engineId,
                 buildId,
                 NmtBuildStages.Train,
+                buildOptions: buildOptions,
                 cancellationToken: cancellationToken
             );
             if (canceling)

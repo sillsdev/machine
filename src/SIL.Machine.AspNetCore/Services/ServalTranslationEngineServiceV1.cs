@@ -96,7 +96,13 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         Models.Corpus[] corpora = request.Corpora.Select(Map).ToArray();
         try
         {
-            await engineService.StartBuildAsync(request.EngineId, request.BuildId, corpora, context.CancellationToken);
+            await engineService.StartBuildAsync(
+                request.EngineId,
+                request.BuildId,
+                request.HasOptions ? request.Options : null,
+                corpora,
+                context.CancellationToken
+            );
         }
         catch (InvalidOperationException e)
         {

@@ -167,6 +167,7 @@ public class SmtTransferEngineService : ITranslationEngineService
     public async Task StartBuildAsync(
         string engineId,
         string buildId,
+        string? buildOptions,
         IReadOnlyList<Corpus> corpora,
         CancellationToken cancellationToken = default
     )
@@ -185,6 +186,7 @@ public class SmtTransferEngineService : ITranslationEngineService
                 buildId,
                 SmtTransferBuildStages.Train,
                 corpora,
+                buildOptions,
                 cancellationToken
             );
             SmtTransferEngineState state = _stateService.Get(engineId);

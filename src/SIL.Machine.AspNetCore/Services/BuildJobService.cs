@@ -82,6 +82,7 @@ public class BuildJobService : IBuildJobService
         string buildId,
         string stage,
         object? data = null,
+        string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -98,7 +99,15 @@ public class BuildJobService : IBuildJobService
         }
 
         IBuildJobRunner runner = _runnersByJobType[jobType];
-        string jobId = await runner.CreateJobAsync(engineType, engineId, buildId, stage, data, cancellationToken);
+        string jobId = await runner.CreateJobAsync(
+            engineType,
+            engineId,
+            buildId,
+            stage,
+            data,
+            buildOptions,
+            cancellationToken
+        );
         try
         {
             await _engines.UpdateAsync(
@@ -112,7 +121,8 @@ public class BuildJobService : IBuildJobService
                             JobId = jobId,
                             JobRunner = runner.Type,
                             Stage = stage,
-                            JobState = BuildJobState.Pending
+                            JobState = BuildJobState.Pending,
+                            Options = buildOptions
                         }
                     ),
                 cancellationToken: cancellationToken

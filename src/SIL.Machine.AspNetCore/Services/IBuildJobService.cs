@@ -35,6 +35,7 @@ public interface IBuildJobService
         string buildId,
         string stage,
         object? data = default,
+        string? buildOptions = default,
         CancellationToken cancellationToken = default
     );
 

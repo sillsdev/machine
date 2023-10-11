@@ -9,7 +9,7 @@ public class NmtEngineServiceTests
         using var env = new TestEnvironment();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Null);
@@ -35,7 +35,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -66,7 +66,7 @@ public class NmtEngineServiceTests
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);

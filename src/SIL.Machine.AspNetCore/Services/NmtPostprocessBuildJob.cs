@@ -21,6 +21,7 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
         string engineId,
         string buildId,
         (int, double) data,
+        string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )

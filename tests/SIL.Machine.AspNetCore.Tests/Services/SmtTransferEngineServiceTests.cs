@@ -24,7 +24,7 @@ public class SmtTransferEngineServiceTests
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the SMT model was loaded before training
         await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
         await env.SmtBatchTrainer
             .Received()
@@ -60,7 +60,7 @@ public class SmtTransferEngineServiceTests
                 }
             })
         );
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -89,7 +89,7 @@ public class SmtTransferEngineServiceTests
                 }
             })
         );
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -122,7 +122,7 @@ public class SmtTransferEngineServiceTests
                 }
             })
         );
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);
@@ -151,7 +151,7 @@ public class SmtTransferEngineServiceTests
                 }
             })
         );
-        await env.Service.StartBuildAsync("engine1", "build1", Array.Empty<Corpus>());
+        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToStartAsync();
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Not.Null);

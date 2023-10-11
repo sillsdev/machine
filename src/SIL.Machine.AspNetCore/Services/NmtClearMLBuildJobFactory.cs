@@ -24,6 +24,7 @@ public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
         string buildId,
         string stage,
         object? data = null,
+        string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -40,8 +41,8 @@ public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
                 + $"    'build_id': '{buildId}',\n"
                 + $"    'src_lang': '{ConvertLanguageTag(engine.SourceLanguage)}',\n"
                 + $"    'trg_lang': '{ConvertLanguageTag(engine.TargetLanguage)}',\n"
-                + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
                 + $"    'shared_file_uri': '{_sharedFileService.GetBaseUri()}',\n"
+                + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";
