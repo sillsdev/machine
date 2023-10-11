@@ -47,7 +47,10 @@ public class ClearMLHealthCheck : IHealthCheck
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };
-        request.Headers.Add("Authorization", $"Bearer {await _clearMLAuthenticationService.GetAuthTokenAsync()}");
+        request.Headers.Add(
+            "Authorization",
+            $"Bearer {await _clearMLAuthenticationService.GetAuthTokenAsync(cancellationToken)}"
+        );
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         return (JsonObject?)JsonNode.Parse(result);
