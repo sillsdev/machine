@@ -26,6 +26,7 @@ public class NmtTrainBuildJob : HangfireBuildJob
         string engineId,
         string buildId,
         object? data,
+        string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )
@@ -65,8 +66,8 @@ public class NmtTrainBuildJob : HangfireBuildJob
                         + $"    'build_id': '{buildId}',\n"
                         + $"    'src_lang': '{ConvertLanguageTag(engine.SourceLanguage)}',\n"
                         + $"    'trg_lang': '{ConvertLanguageTag(engine.TargetLanguage)}',\n"
-                        + $"    'max_steps': {_options.CurrentValue.MaxSteps},\n"
                         + $"    'shared_file_uri': '{_sharedFileService.GetBaseUri()}',\n"
+                        + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
                         + $"    'clearml': False\n"
                         + "}\n"
                         + "run(args)\n"

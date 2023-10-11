@@ -35,6 +35,7 @@ public class ClearMLBuildJobRunner : IBuildJobRunner
         string buildId,
         string stage,
         object? data = null,
+        string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -47,7 +48,14 @@ public class ClearMLBuildJobRunner : IBuildJobRunner
             return task.Id;
 
         IClearMLBuildJobFactory buildJobFactory = _buildJobFactories[engineType];
-        string script = await buildJobFactory.CreateJobScriptAsync(engineId, buildId, stage, data, cancellationToken);
+        string script = await buildJobFactory.CreateJobScriptAsync(
+            engineId,
+            buildId,
+            stage,
+            data,
+            buildOptions,
+            cancellationToken
+        );
         return await _clearMLService.CreateTaskAsync(buildId, projectId, script, cancellationToken);
     }
 

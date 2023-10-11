@@ -41,6 +41,7 @@ public class SmtTransferBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         string engineId,
         string buildId,
         IReadOnlyList<Corpus> data,
+        string? buildOptions,
         IDistributedReaderWriterLock @lock,
         CancellationToken cancellationToken
     )

@@ -2,20 +2,32 @@
 
 public class HangfireBuildJobRunner : IBuildJobRunner
 {
-    public static Job CreateJob<TJob, TData>(string engineId, string buildId, string queue, object? data)
+    public static Job CreateJob<TJob, TData>(
+        string engineId,
+        string buildId,
+        string queue,
+        object? data,
+        string? buildOptions
+    )
         where TJob : HangfireBuildJob<TData>
     {
         if (data is null)
             throw new ArgumentNullException(nameof(data));
         // Token "None" is used here because hangfire injects the proper cancellation token
-        return Job.FromExpression<TJob>(j => j.RunAsync(engineId, buildId, (TData)data, CancellationToken.None), queue);
+        return Job.FromExpression<TJob>(
+            j => j.RunAsync(engineId, buildId, (TData)data, buildOptions, CancellationToken.None),
+            queue
+        );
     }
 
-    public static Job CreateJob<TJob>(string engineId, string buildId, string queue)
+    public static Job CreateJob<TJob>(string engineId, string buildId, string queue, string? buildOptions)
         where TJob : HangfireBuildJob
     {
         // Token "None" is used here because hangfire injects the proper cancellation token
-        return Job.FromExpression<TJob>(j => j.RunAsync(engineId, buildId, CancellationToken.None), queue);
+        return Job.FromExpression<TJob>(
+            j => j.RunAsync(engineId, buildId, buildOptions, CancellationToken.None),
+            queue
+        );
     }
 
     private readonly IBackgroundJobClient _jobClient;
@@ -48,11 +60,12 @@ public class HangfireBuildJobRunner : IBuildJobRunner
         string buildId,
         string stage,
         object? data = null,
+        string? buildOptions = null,
         CancellationToken cancellationToken = default
     )
     {
         IHangfireBuildJobFactory buildJobFactory = _buildJobFactories[engineType];
-        Job job = buildJobFactory.CreateJob(engineId, buildId, stage, data);
+        Job job = buildJobFactory.CreateJob(engineId, buildId, stage, data, buildOptions);
         return Task.FromResult(_jobClient.Create(job, new ScheduledState(TimeSpan.FromDays(10000))));
     }
 
