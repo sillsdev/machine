@@ -118,13 +118,12 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         return Empty;
     }
 
-    public override async Task<GetQueueDepthResponse> GetQueueDepth(
-        GetQueueDepthRequest request,
-        ServerCallContext context
-    )
+    public override Task<GetQueueDepthResponse> GetQueueDepth(GetQueueDepthRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        return new GetQueueDepthResponse { Depth = await engineService.GetQueueDepthAsync(context.CancellationToken) };
+        return Task.FromResult(
+            new GetQueueDepthResponse { Depth = engineService.GetQueueDepth(context.CancellationToken) }
+        );
     }
 
     private ITranslationEngineService GetEngineService(string engineTypeStr)

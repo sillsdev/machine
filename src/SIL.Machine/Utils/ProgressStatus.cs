@@ -7,20 +7,25 @@ namespace SIL.Machine.Utils
         public ProgressStatus(int step, int stepCount, string message = null)
             : this(step, stepCount == 0 ? 1.0 : (double)step / stepCount, message) { }
 
-        public ProgressStatus(int step, double? percentCompleted = null, string message = null)
+        public ProgressStatus(int step, double? percentCompleted = null, string message = null, int? queueDepth = null)
         {
             Step = step;
             PercentCompleted = percentCompleted;
             Message = message;
+            QueueDepth = queueDepth;
         }
 
         public int Step { get; }
         public double? PercentCompleted { get; }
         public string Message { get; }
+        public int? QueueDepth { get; }
 
         public bool Equals(ProgressStatus other)
         {
-            return Step == other.Step && PercentCompleted == other.PercentCompleted && Message == other.Message;
+            return Step == other.Step
+                && PercentCompleted == other.PercentCompleted
+                && Message == other.Message
+                && QueueDepth == other.QueueDepth;
         }
 
         public override bool Equals(object obj)
@@ -34,6 +39,7 @@ namespace SIL.Machine.Utils
             code = code * 31 + Step.GetHashCode();
             code = code * 31 + (PercentCompleted?.GetHashCode() ?? 0);
             code = code * 31 + (Message?.GetHashCode() ?? 0);
+            code = code * 31 + (QueueDepth?.GetHashCode() ?? 0);
             return code;
         }
     }

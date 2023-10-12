@@ -12,7 +12,8 @@ public class ClearMLMonitorService : RecurrentTask
     private readonly ISharedFileService _sharedFileService;
     private readonly ILogger<ClearMLMonitorService> _logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
-    private SortedList<DateTime, string> _curQueuedTasks = new SortedList<DateTime, string>();
+
+    public int QueueDepth { get; private set; }
 
     public ClearMLMonitorService(
         IServiceProvider services,
@@ -34,10 +35,6 @@ public class ClearMLMonitorService : RecurrentTask
         _logger = logger;
     }
 
-    public int GetQueueDepth() => _curQueuedTasks.Count;
-
-    private int GetNumAheadInQueue(string clearMLTaskId) => _curQueuedTasks.IndexOfValue(clearMLTaskId);
-
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         try
@@ -57,15 +54,13 @@ public class ClearMLMonitorService : RecurrentTask
                 )
             ).ToDictionary(t => t.Id);
 
-            foreach (
-                ClearMLTask task in tasks.Values.Where(
-                    t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created
-                )
-            )
-            {
-                //Name is buildId
-                _curQueuedTasks.TryAdd(task.Created, task.Name);
-            }
+            Dictionary<string, int> queuePositions = tasks.Values
+                .Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
+                .OrderBy(t => t.Created)
+                .Select((t, i) => (Position: i, Task: t))
+                .ToDictionary(e => e.Task.Name, e => e.Position);
+
+            QueueDepth = queuePositions.Count;
 
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
@@ -85,7 +80,8 @@ public class ClearMLMonitorService : RecurrentTask
                         new ProgressStatus(
                             0,
                             0.0,
-                            $"Number of jobs ahead in queue: {GetNumAheadInQueue(engine.CurrentBuild.BuildId)}"
+                            //CurrentBuild.BuildId should always equal the corresponding task.Name
+                            queueDepth: queuePositions[engine.CurrentBuild.BuildId]
                         ),
                         cancellationToken
                     );
@@ -203,11 +199,7 @@ public class ClearMLMonitorService : RecurrentTask
                 return false;
         }
         await platformService.BuildStartedAsync(buildId, CancellationToken.None);
-        try
-        {
-            _curQueuedTasks.RemoveAt(_curQueuedTasks.IndexOfValue(buildId));
-        }
-        catch (ArgumentOutOfRangeException) { }
+
         await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), cancellationToken);
         _logger.LogInformation("Build started ({0})", buildId);
         return true;

@@ -72,6 +72,8 @@ public class ServalPlatformService : IPlatformService
             request.PercentCompleted = progressStatus.PercentCompleted.Value;
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
+        if (progressStatus.QueueDepth is not null)
+            request.QueueDepth = progressStatus.QueueDepth.Value;
 
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
     }

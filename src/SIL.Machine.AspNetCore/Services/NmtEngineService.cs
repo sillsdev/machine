@@ -146,9 +146,9 @@ public class NmtEngineService : ITranslationEngineService
         throw new NotSupportedException();
     }
 
-    public Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default)
+    public int GetQueueDepth(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.GetQueueDepth());
+        return _clearMLMonitorService.QueueDepth;
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
