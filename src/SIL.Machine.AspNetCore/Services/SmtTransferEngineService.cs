@@ -205,9 +205,9 @@ public class SmtTransferEngineService : ITranslationEngineService
         }
     }
 
-    public int GetQueueDepth(CancellationToken cancellationToken = default)
+    public Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default)
     {
-        return Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer"));
+        return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

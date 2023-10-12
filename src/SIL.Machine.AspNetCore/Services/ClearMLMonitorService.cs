@@ -77,12 +77,9 @@ public class ClearMLMonitorService : RecurrentTask
                     await UpdateTrainJobStatus(
                         platformService,
                         engine.CurrentBuild.BuildId,
-                        new ProgressStatus(
-                            0,
-                            0.0,
-                            //CurrentBuild.BuildId should always equal the corresponding task.Name
-                            queueDepth: queuePositions[engine.CurrentBuild.BuildId]
-                        ),
+                        new ProgressStatus(0, 0.0),
+                        //CurrentBuild.BuildId should always equal the corresponding task.Name
+                        queuePositions[engine.CurrentBuild.BuildId],
                         cancellationToken
                     );
                 }
@@ -117,6 +114,7 @@ public class ClearMLMonitorService : RecurrentTask
                                 platformService,
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration),
+                                0,
                                 cancellationToken
                             );
                             break;
@@ -126,6 +124,7 @@ public class ClearMLMonitorService : RecurrentTask
                                 platformService,
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration),
+                                0,
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -200,7 +199,7 @@ public class ClearMLMonitorService : RecurrentTask
         }
         await platformService.BuildStartedAsync(buildId, CancellationToken.None);
 
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), cancellationToken);
+        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
         _logger.LogInformation("Build started ({0})", buildId);
         return true;
     }
@@ -320,7 +319,8 @@ public class ClearMLMonitorService : RecurrentTask
         IPlatformService platformService,
         string buildId,
         ProgressStatus progressStatus,
-        CancellationToken cancellationToken
+        int? queueDepth = null,
+        CancellationToken cancellationToken = default
     )
     {
         if (
@@ -330,7 +330,7 @@ public class ClearMLMonitorService : RecurrentTask
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
         _curBuildStatus[buildId] = progressStatus;
     }
 
