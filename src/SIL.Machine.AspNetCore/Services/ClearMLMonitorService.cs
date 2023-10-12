@@ -13,7 +13,7 @@ public class ClearMLMonitorService : RecurrentTask
     private readonly ILogger<ClearMLMonitorService> _logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    public int QueueDepth { get; private set; }
+    public int QueueSize { get; private set; }
 
     public ClearMLMonitorService(
         IServiceProvider services,
@@ -60,7 +60,7 @@ public class ClearMLMonitorService : RecurrentTask
                 .Select((t, i) => (Position: i, Task: t))
                 .ToDictionary(e => e.Task.Name, e => e.Position);
 
-            QueueDepth = queuePositions.Count;
+            QueueSize = queuePositions.Count;
 
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
@@ -77,7 +77,7 @@ public class ClearMLMonitorService : RecurrentTask
                     await UpdateTrainJobStatus(
                         platformService,
                         engine.CurrentBuild.BuildId,
-                        new ProgressStatus(0, 0.0),
+                        new ProgressStatus(step: 0, percentCompleted: 0.0),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
                         queuePositions[engine.CurrentBuild.BuildId],
                         cancellationToken

@@ -40,5 +40,5 @@ public interface ITranslationEngineService
 
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<int> GetQueueDepthAsync(CancellationToken cancellationToken = default);
+    Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
 }

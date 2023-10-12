@@ -124,7 +124,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        return new GetQueueSizeResponse { Size = await engineService.GetQueueDepthAsync(context.CancellationToken) };
+        return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
     }
 
     private ITranslationEngineService GetEngineService(string engineTypeStr)
