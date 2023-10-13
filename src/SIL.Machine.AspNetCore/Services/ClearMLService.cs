@@ -165,6 +165,8 @@ public class ClearMLService : IClearMLService
             "project",
             "last_iteration",
             "status_reason",
+            "status_message",
+            "created",
             "active_duration",
             "last_metrics"
         );

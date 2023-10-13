@@ -118,6 +118,15 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         return Empty;
     }
 
+    public override async Task<GetQueueSizeResponse> GetQueueSize(
+        GetQueueSizeRequest request,
+        ServerCallContext context
+    )
+    {
+        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
+    }
+
     private ITranslationEngineService GetEngineService(string engineTypeStr)
     {
         if (_engineServices.TryGetValue(GetEngineType(engineTypeStr), out ITranslationEngineService? service))

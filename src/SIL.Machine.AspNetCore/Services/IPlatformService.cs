@@ -7,6 +7,7 @@ public interface IPlatformService
     Task UpdateBuildStatusAsync(
         string buildId,
         ProgressStatus progressStatus,
+        int? queueDepth = null,
         CancellationToken cancellationToken = default
     );
     Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default);

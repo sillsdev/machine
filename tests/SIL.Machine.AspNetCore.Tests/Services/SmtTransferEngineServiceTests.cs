@@ -317,7 +317,8 @@ public class SmtTransferEngineServiceTests
                 Engines,
                 TrainSegmentPairs,
                 StateService,
-                _buildJobService
+                _buildJobService,
+                _memoryStorage
             );
         }
 

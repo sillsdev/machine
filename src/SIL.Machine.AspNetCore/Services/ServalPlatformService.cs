@@ -64,6 +64,7 @@ public class ServalPlatformService : IPlatformService
     public async Task UpdateBuildStatusAsync(
         string buildId,
         ProgressStatus progressStatus,
+        int? queueDepth = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -72,6 +73,8 @@ public class ServalPlatformService : IPlatformService
             request.PercentCompleted = progressStatus.PercentCompleted.Value;
         if (progressStatus.Message is not null)
             request.Message = progressStatus.Message;
+        if (queueDepth is not null)
+            request.QueueDepth = queueDepth.Value;
 
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
     }
