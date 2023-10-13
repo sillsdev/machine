@@ -135,11 +135,21 @@ public class NmtEngineServiceTests
                 Engines,
                 new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
             );
+            var clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
+            clearMLOptionsMonitor.Value.Returns(new ClearMLOptions());
+            ClearMLMonitorService = new ClearMLMonitorService(
+                Substitute.For<IServiceProvider>(),
+                ClearMLService,
+                SharedFileService,
+                clearMLOptionsMonitor,
+                Substitute.For<ILogger<ClearMLMonitorService>>()
+            );
             _jobServer = CreateJobServer();
             Service = CreateService();
         }
 
         public NmtEngineService Service { get; private set; }
+        public ClearMLMonitorService ClearMLMonitorService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
@@ -177,7 +187,8 @@ public class NmtEngineServiceTests
                 _lockFactory,
                 new MemoryDataAccessContext(),
                 Engines,
-                BuildJobService
+                BuildJobService,
+                ClearMLMonitorService
             );
         }
 

@@ -14,6 +14,8 @@ public class ClearMLMonitorService : RecurrentTask
     private readonly ILogger<ClearMLMonitorService> _logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
+    public int QueueSize { get; private set; }
+
     public ClearMLMonitorService(
         IServiceProvider services,
         IClearMLService clearMLService,
@@ -53,12 +55,35 @@ public class ClearMLMonitorService : RecurrentTask
                 )
             ).ToDictionary(t => t.Id);
 
+            Dictionary<string, int> queuePositions = tasks.Values
+                .Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
+                .OrderBy(t => t.Created)
+                .Select((t, i) => (Position: i, Task: t))
+                .ToDictionary(e => e.Task.Name, e => e.Position);
+
+            QueueSize = queuePositions.Count;
+
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             foreach (TranslationEngine engine in trainingEngines)
             {
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
                     continue;
+
+                if (
+                    engine.CurrentBuild.JobState is BuildJobState.Pending
+                    && task.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created
+                )
+                {
+                    await UpdateTrainJobStatus(
+                        platformService,
+                        engine.CurrentBuild.BuildId,
+                        new ProgressStatus(step: 0, percentCompleted: 0.0),
+                        //CurrentBuild.BuildId should always equal the corresponding task.Name
+                        queuePositions[engine.CurrentBuild.BuildId],
+                        cancellationToken
+                    );
+                }
 
                 if (engine.CurrentBuild.Stage == NmtBuildStages.Train)
                 {
@@ -93,6 +118,7 @@ public class ClearMLMonitorService : RecurrentTask
                                     task.LastIteration,
                                     percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
                                 ),
+                                0,
                                 cancellationToken
                             );
                             break;
@@ -102,6 +128,7 @@ public class ClearMLMonitorService : RecurrentTask
                                 platformService,
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(task.LastIteration, percentCompleted: 1.0),
+                                0,
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -175,6 +202,8 @@ public class ClearMLMonitorService : RecurrentTask
                 return false;
         }
         await platformService.BuildStartedAsync(buildId, CancellationToken.None);
+
+        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
         _logger.LogInformation("Build started ({0})", buildId);
         return true;
     }
@@ -294,7 +323,8 @@ public class ClearMLMonitorService : RecurrentTask
         IPlatformService platformService,
         string buildId,
         ProgressStatus progressStatus,
-        CancellationToken cancellationToken
+        int? queueDepth = null,
+        CancellationToken cancellationToken = default
     )
     {
         if (
@@ -304,7 +334,7 @@ public class ClearMLMonitorService : RecurrentTask
         {
             return;
         }
-        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, cancellationToken);
+        await platformService.UpdateBuildStatusAsync(buildId, progressStatus, queueDepth, cancellationToken);
         _curBuildStatus[buildId] = progressStatus;
     }
 

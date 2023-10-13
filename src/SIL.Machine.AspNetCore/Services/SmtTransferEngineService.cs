@@ -14,6 +14,7 @@ public class SmtTransferEngineService : ITranslationEngineService
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService;
     private readonly IBuildJobService _buildJobService;
+    private readonly JobStorage _jobStorage;
 
     public SmtTransferEngineService(
         IDistributedReaderWriterLockFactory lockFactory,
@@ -22,7 +23,8 @@ public class SmtTransferEngineService : ITranslationEngineService
         IRepository<TranslationEngine> engines,
         IRepository<TrainSegmentPair> trainSegmentPairs,
         SmtTransferEngineStateService stateService,
-        IBuildJobService buildJobService
+        IBuildJobService buildJobService,
+        JobStorage jobStorage
     )
     {
         _lockFactory = lockFactory;
@@ -32,6 +34,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         _trainSegmentPairs = trainSegmentPairs;
         _stateService = stateService;
         _buildJobService = buildJobService;
+        _jobStorage = jobStorage;
     }
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
@@ -200,6 +203,11 @@ public class SmtTransferEngineService : ITranslationEngineService
             SmtTransferEngineState state = _stateService.Get(engineId);
             state.LastUsedTime = DateTime.UtcNow;
         }
+    }
+
+    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
