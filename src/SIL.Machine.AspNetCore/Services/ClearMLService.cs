@@ -4,6 +4,7 @@ public class ClearMLService : IClearMLService
 {
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLOptions> _options;
+    private readonly IHostEnvironment _env;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
@@ -17,12 +18,14 @@ public class ClearMLService : IClearMLService
     public ClearMLService(
         HttpClient httpClient,
         IOptionsMonitor<ClearMLOptions> options,
-        IClearMLAuthenticationService clearMLAuthService
+        IClearMLAuthenticationService clearMLAuthService,
+        IHostEnvironment env
     )
     {
         _httpClient = httpClient;
         _options = options;
         _clearMLAuthService = clearMLAuthService;
+        _env = env;
     }
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
@@ -82,12 +85,17 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
+        var snakeCaseEnvironment = JsonNamingPolicy.ConvertName(_env.EnvironmentName);
         var body = new JsonObject
         {
             ["name"] = buildId,
             ["project"] = projectId,
             ["script"] = new JsonObject { ["diff"] = script },
-            ["container"] = new JsonObject { ["image"] = _options.CurrentValue.DockerImage, },
+            ["container"] = new JsonObject
+            {
+                ["image"] = _options.CurrentValue.DockerImage,
+                ["arguments"] = "--env ENV_FOR_DYNACONF=" + snakeCaseEnvironment,
+            },
             ["type"] = "training"
         };
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
