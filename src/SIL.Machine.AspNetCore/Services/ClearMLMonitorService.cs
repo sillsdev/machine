@@ -7,6 +7,7 @@ public class ClearMLMonitorService : RecurrentTask
 
     private static readonly string SummaryMetric = CreateMD5("Summary");
     private static readonly string CorpusSizeVariant = CreateMD5("corpus_size");
+    private static readonly string ProgressVariant = CreateMD5("progress");
 
     private readonly IClearMLService _clearMLService;
     private readonly ISharedFileService _sharedFileService;
@@ -88,7 +89,10 @@ public class ClearMLMonitorService : RecurrentTask
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration),
+                                new ProgressStatus(
+                                    task.LastIteration,
+                                    percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
+                                ),
                                 cancellationToken
                             );
                             break;
@@ -97,7 +101,7 @@ public class ClearMLMonitorService : RecurrentTask
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration),
+                                new ProgressStatus(task.LastIteration, percentCompleted: 1.0),
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -322,6 +326,6 @@ public class ClearMLMonitorService : RecurrentTask
         byte[] inputBytes = Encoding.UTF8.GetBytes(input);
         byte[] hashBytes = md5.ComputeHash(inputBytes);
 
-        return Convert.ToHexString(hashBytes);
+        return Convert.ToHexString(hashBytes).ToLower();
     }
 }
