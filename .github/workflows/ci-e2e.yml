@@ -34,7 +34,7 @@ jobs:
         run: dotnet build && cd .. && mkdir tmp && cd tmp && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build && cd ../.. && tree -L 4
 
       - name: Start containers
-        run: export MACHINE_TESTING_DIR="../../machine" && docker compose -f "../tmp/serval/docker-compose.yaml" up -d && sleep 20 #separate repos; allow time for mongo to start up properly
+        run: export MACHINE_TESTING_DIR="../../machine" && docker compose -f "../tmp/serval/docker-compose.yml" up -d && sleep 20 #separate repos; allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
