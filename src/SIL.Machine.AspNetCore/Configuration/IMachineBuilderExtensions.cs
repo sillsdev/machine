@@ -103,23 +103,23 @@ public static class IMachineBuilderExtensions
 
     private static IMachineBuilder AddClearMLBuildJobRunner(this IMachineBuilder builder)
     {
-        builder.Services.AddSingleton<IClearMLService, ClearMLService>();
         //Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
         builder.Services
             .AddHttpClient<ClearMLService>()
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
+        builder.Services.AddSingleton<IClearMLService, ClearMLService>();
 
-        // workaround register satisfying the interface and as a hosted service.
-        builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
         // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
         builder.Services
             .AddHttpClient<IClearMLAuthenticationService, ClearMLAuthenticationService>()
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
+        // workaround register satisfying the interface and as a hosted service.
+        builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
+        builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
 
         builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
         builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
