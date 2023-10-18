@@ -16,13 +16,13 @@ public class ClearMLService : IClearMLService
     private readonly IClearMLAuthenticationService _clearMLAuthService;
 
     public ClearMLService(
-        HttpClient httpClient,
+        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ClearMLOptions> options,
         IClearMLAuthenticationService clearMLAuthService,
         IHostEnvironment env
     )
     {
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("ClearML");
         _options = options;
         _clearMLAuthService = clearMLAuthService;
         _env = env;
@@ -191,7 +191,7 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/{service}.{action}")
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{service}.{action}")
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };

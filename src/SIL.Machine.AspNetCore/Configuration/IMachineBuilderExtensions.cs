@@ -101,32 +101,38 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    private static IMachineBuilder AddClearMLBuildJobRunner(this IMachineBuilder builder)
+    public static IMachineBuilder AddClearMLService(this IMachineBuilder builder, string? connectionString = null)
     {
-        builder.Services.AddSingleton<IClearMLService, ClearMLService>();
-        //Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
+        connectionString ??= builder.Configuration.GetConnectionString("ClearML");
         builder.Services
-            .AddHttpClient<ClearMLService>()
+            .AddHttpClient("ClearML")
+            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString))
+            // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
+
+        builder.Services.AddSingleton<IClearMLService, ClearMLService>();
 
         // workaround register satisfying the interface and as a hosted service.
         builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
         builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
-        // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
-        builder.Services
-            .AddHttpClient<IClearMLAuthenticationService, ClearMLAuthenticationService>()
-            .AddTransientHttpErrorPolicy(
-                b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
-            );
 
+        builder.Services
+            .AddHttpClient("ClearML-NoRetry")
+            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString));
+
+        builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
+
+        return builder;
+    }
+
+    private static IMachineBuilder AddClearMLBuildJobRunner(this IMachineBuilder builder)
+    {
         builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
         builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
         builder.Services.AddSingleton<ClearMLMonitorService>();
         builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
-
-        builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 
         return builder;
     }

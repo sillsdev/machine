@@ -14,13 +14,13 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
 
     public ClearMLAuthenticationService(
         IServiceProvider services,
-        HttpClient httpClient,
+        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ClearMLOptions> options,
         ILogger<ClearMLAuthenticationService> logger
     )
         : base("ClearML authentication service", services, RefreshPeriod, logger)
     {
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("ClearML");
         _options = options;
         _logger = logger;
     }
@@ -54,7 +54,7 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
 
     private async Task AuthorizeAsync(CancellationToken cancellationToken)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/auth.login")
+        var request = new HttpRequestMessage(HttpMethod.Post, "auth.login")
         {
             Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };

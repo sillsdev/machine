@@ -8,7 +8,8 @@ builder.Services
     .AddMongoHangfireJobClient()
     .AddHangfireJobServer()
     .AddServalPlatformService()
-    .AddBuildJobService();
+    .AddBuildJobService()
+    .AddClearMLService();
 if (builder.Environment.IsDevelopment())
     builder.Services
         .AddOpenTelemetry()
