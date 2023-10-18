@@ -6,11 +6,11 @@ public class ClearMLHealthCheck : IHealthCheck
 
     public ClearMLHealthCheck(
         IClearMLAuthenticationService clearMLAuthenticationService,
-        HttpClient httpClient,
+        IHttpClientFactory httpClientFactory,
         IOptionsMonitor<ClearMLOptions> options
     )
     {
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
         _options = options;
         _clearMLAuthenticationService = clearMLAuthenticationService;
     }
@@ -43,7 +43,7 @@ public class ClearMLHealthCheck : IHealthCheck
         CancellationToken cancellationToken = default
     )
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{_options.CurrentValue.ApiServer}/{service}.{action}")
+        var request = new HttpRequestMessage(HttpMethod.Post, $"{service}.{action}")
         {
             Content = new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
         };

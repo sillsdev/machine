@@ -9,7 +9,8 @@ builder.Services
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
-    .AddBuildJobService();
+    .AddBuildJobService()
+    .AddClearMLService();
 if (builder.Environment.IsDevelopment())
     builder.Services
         .AddOpenTelemetry()

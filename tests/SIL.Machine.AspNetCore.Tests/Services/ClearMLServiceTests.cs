@@ -17,20 +17,17 @@ public class ClearMLServiceTests
             .WithPartialContent("\\u0027src_lang\\u0027: \\u0027spa_Latn\\u0027")
             .WithPartialContent("\\u0027trg_lang\\u0027: \\u0027eng_Latn\\u0027")
             .Respond("application/json", "{ \"data\": { \"id\": \"projectId\" } }");
+        HttpClient httpClient = mockHttp.ToHttpClient();
+        httpClient.BaseAddress = new Uri(ApiServer);
 
         var options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-        options.CurrentValue.Returns(
-            new ClearMLOptions
-            {
-                ApiServer = ApiServer,
-                AccessKey = AccessKey,
-                SecretKey = SecretKey
-            }
-        );
+        options.CurrentValue.Returns(new ClearMLOptions { AccessKey = AccessKey, SecretKey = SecretKey });
         var authService = Substitute.For<IClearMLAuthenticationService>();
         authService.GetAuthTokenAsync().Returns(Task.FromResult("accessToken"));
         var env = new HostingEnvironment { EnvironmentName = Environments.Development };
-        var service = new ClearMLService(mockHttp.ToHttpClient(), options, authService, env);
+        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        httpClientFactory.CreateClient("ClearML").Returns(httpClient);
+        var service = new ClearMLService(httpClientFactory, options, authService, env);
 
         string script =
             "from machine.jobs.build_nmt_engine import run\n"
