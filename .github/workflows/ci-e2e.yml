@@ -31,7 +31,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Get Serval
-        run: dotnet build && cd .. && mkdir tmp && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build
+        run: dotnet build && cd .. && mkdir tmp && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build && cd .. & cd serval
 
       - name: Start containers
         run: export MACHINE_TESTING_DIR="../../machine" && docker compose up -d && sleep 20 #separate repos; allow time for mongo to start up properly
