@@ -31,10 +31,10 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Get Serval
-        run: dotnet build && cd .. && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build
+        run: dotnet build && cd .. && mkdir tmp && cd tmp && git clone https://github.com/sillsdev/serval.git && cd serval && dotnet build && cd ../.. && tree -L 4
 
       - name: Start containers
-        run: docker compose -f "../serval/docker-compose.yml" up -d && sleep 20 #allow time for mongo to start up properly
+        run: export MACHINE_TESTING_DIR="../../machine" && docker compose -f "../tmp/serval/docker-compose.yml" up -d && sleep 20 #separate repos; allow time for mongo to start up properly
 
       - name: Debug network
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
@@ -43,7 +43,7 @@ jobs:
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
       - name: Test
-        run: cd ../serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+        run: cd ../tmp/serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
 
       - name: Debug network (Post test)
         if: ${{ failure() }}
@@ -51,4 +51,4 @@ jobs:
 
       - name: Stop containers
         if: ${{ success() || failure() }}
-        run: docker compose -f "../serval/docker-compose.yml" down
+        run: docker compose -f "../tmp/serval/docker-compose.yml" down
