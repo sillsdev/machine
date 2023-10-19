@@ -177,7 +177,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         {
             // If there is a pending/running build, then no need to start a new one.
             if (await _buildJobService.IsEngineBuilding(engineId, cancellationToken))
-                throw new InvalidOperationException("The engine has already started a build.");
+                throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
                 BuildJobType.Cpu,
