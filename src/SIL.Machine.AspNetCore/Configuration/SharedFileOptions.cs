@@ -8,4 +8,5 @@ public class SharedFileOptions
     public string S3AccessKeyId { get; set; } = "";
     public string S3SecretAccessKey { get; set; } = "";
     public string S3Region { get; set; } = "us-east-1";
+    public bool DeleteFilesOnCompletion { get; set; } = true;
 }

@@ -23,7 +23,6 @@ global using Hangfire.Mongo;
 global using Hangfire.Mongo.Migration.Strategies;
 global using Hangfire.Mongo.Migration.Strategies.Backup;
 global using Hangfire.States;
-global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Routing;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
