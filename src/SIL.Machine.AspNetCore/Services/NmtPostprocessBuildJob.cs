@@ -3,6 +3,7 @@
 public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
 {
     private readonly ISharedFileService _sharedFileService;
+    private readonly IWebHostEnvironment _env;
 
     public NmtPostprocessBuildJob(
         IPlatformService platformService,
@@ -10,11 +11,13 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
         IDistributedReaderWriterLockFactory lockFactory,
         IBuildJobService buildJobService,
         ILogger<NmtPostprocessBuildJob> logger,
-        ISharedFileService sharedFileService
+        ISharedFileService sharedFileService,
+        IWebHostEnvironment env
     )
         : base(platformService, engines, lockFactory, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
+        _env = env;
     }
 
     protected override async Task DoWorkAsync(
@@ -58,7 +61,8 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
 
         try
         {
-            await _sharedFileService.DeleteAsync($"builds/{buildId}/");
+            if (_env.IsProduction())
+                await _sharedFileService.DeleteAsync($"builds/{buildId}/");
         }
         catch (Exception e)
         {
