@@ -15,8 +15,6 @@ namespace SIL.Machine.Corpora
 
         public string FileName { get; }
 
-        public override bool MissingRowsAllowed => false;
-
         public override int Count(bool includeEmpty = true)
         {
             using (var reader = new StreamReader(FileName))
@@ -25,8 +23,18 @@ namespace SIL.Machine.Corpora
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (includeEmpty || line.Trim().Length > 0)
+                    if (includeEmpty)
+                    {
                         count++;
+                    }
+                    else if (line.Length > 0)
+                    {
+                        string[] columns = line.Split('\t');
+                        if (columns.Length > 1)
+                            line = columns[1];
+                        if (line.Trim().Length > 0)
+                            count++;
+                    }
                 }
                 return count;
             }

@@ -17,8 +17,6 @@ namespace SIL.Machine.Corpora
 
         public string SortKey { get; }
 
-        public virtual bool MissingRowsAllowed => true;
-
         public virtual int Count(bool includeEmpty = true)
         {
             return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);

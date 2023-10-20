@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace SIL.Machine.Corpora
 {
@@ -44,7 +43,7 @@ namespace SIL.Machine.Corpora
             var corpus = new TextFileTextCorpus(CorporaTestHelpers.TextTestProjectPath);
             IText text = corpus["Test3"];
             TextRow[] rows = text.GetRows().ToArray();
-            Assert.That(rows.Length, Is.EqualTo(3));
+            Assert.That(rows.Length, Is.EqualTo(4));
 
             Assert.That(rows[0].Ref, Is.EqualTo(new MultiKeyRef("Test3", 1)));
             Assert.That(rows[0].Text, Is.EqualTo("Line one."));
@@ -63,6 +62,36 @@ namespace SIL.Machine.Corpora
             IText text = corpus["Test2"];
             TextRow[] rows = text.GetRows().ToArray();
             Assert.That(rows, Is.Empty);
+        }
+
+        [Test]
+        public void Count_NonEmptyText_Refs()
+        {
+            var corpus = new TextFileTextCorpus(CorporaTestHelpers.TextTestProjectPath);
+            IText text = corpus["Test1"];
+
+            Assert.That(text.Count(includeEmpty: true), Is.EqualTo(5));
+            Assert.That(text.Count(includeEmpty: false), Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Count_NonEmptyText_NoRefs()
+        {
+            var corpus = new TextFileTextCorpus(CorporaTestHelpers.TextTestProjectPath);
+            IText text = corpus["Test3"];
+
+            Assert.That(text.Count(includeEmpty: true), Is.EqualTo(4));
+            Assert.That(text.Count(includeEmpty: false), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Count_EmptyText()
+        {
+            var corpus = new TextFileTextCorpus(CorporaTestHelpers.TextTestProjectPath);
+            IText text = corpus["Test2"];
+
+            Assert.That(text.Count(includeEmpty: true), Is.EqualTo(0));
+            Assert.That(text.Count(includeEmpty: false), Is.EqualTo(0));
         }
     }
 }
