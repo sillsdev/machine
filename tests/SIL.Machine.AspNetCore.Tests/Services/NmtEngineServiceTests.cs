@@ -273,8 +273,7 @@ public class NmtEngineServiceTests
                         _env._lockFactory,
                         _env.BuildJobService,
                         Substitute.For<ILogger<NmtPostprocessBuildJob>>(),
-                        _env.SharedFileService,
-                        new SharedFileOptions()
+                        _env.SharedFileService
                     );
                 }
                 return base.ActivateJob(jobType);

@@ -3,7 +3,6 @@
 public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
 {
     private readonly ISharedFileService _sharedFileService;
-    private readonly SharedFileOptions _sharedFileOptions;
 
     public NmtPostprocessBuildJob(
         IPlatformService platformService,
@@ -11,13 +10,11 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
         IDistributedReaderWriterLockFactory lockFactory,
         IBuildJobService buildJobService,
         ILogger<NmtPostprocessBuildJob> logger,
-        ISharedFileService sharedFileService,
-        SharedFileOptions sharedFileOptions
+        ISharedFileService sharedFileService
     )
         : base(platformService, engines, lockFactory, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
-        _sharedFileOptions = sharedFileOptions;
     }
 
     protected override async Task DoWorkAsync(
@@ -61,7 +58,7 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
 
         try
         {
-            if (_sharedFileOptions.DeleteFilesOnCompletion)
+            if (completionStatus is not JobCompletionStatus.Faulted)
                 await _sharedFileService.DeleteAsync($"builds/{buildId}/");
         }
         catch (Exception e)
