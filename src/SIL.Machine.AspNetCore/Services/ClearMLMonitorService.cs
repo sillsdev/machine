@@ -269,14 +269,6 @@ public class ClearMLMonitorService : RecurrentTask
         }
         finally
         {
-            try
-            {
-                await _sharedFileService.DeleteAsync($"builds/{buildId}/", CancellationToken.None);
-            }
-            catch (Exception e)
-            {
-                _logger.LogWarning(e, "Unable to to delete job data for build {0}.", buildId);
-            }
             _curBuildStatus.Remove(buildId);
         }
     }

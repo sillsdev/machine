@@ -58,7 +58,8 @@ public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
 
         try
         {
-            await _sharedFileService.DeleteAsync($"builds/{buildId}/");
+            if (completionStatus is not JobCompletionStatus.Faulted)
+                await _sharedFileService.DeleteAsync($"builds/{buildId}/");
         }
         catch (Exception e)
         {

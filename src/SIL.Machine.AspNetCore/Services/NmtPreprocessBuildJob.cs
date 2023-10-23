@@ -144,7 +144,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         JobCompletionStatus completionStatus
     )
     {
-        if (completionStatus is JobCompletionStatus.Faulted or JobCompletionStatus.Canceled)
+        if (completionStatus is JobCompletionStatus.Canceled)
         {
             try
             {
