@@ -19,8 +19,6 @@ namespace SIL.Machine.Corpora
 
         public string SortKey => Id;
 
-        public bool MissingRowsAllowed => false;
-
         public int Count(bool includeEmpty = true)
         {
             using (var reader = new StreamReader(_fileName))
@@ -29,8 +27,18 @@ namespace SIL.Machine.Corpora
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    if (includeEmpty || line.Trim().Length > 0)
+                    if (includeEmpty)
+                    {
                         count++;
+                    }
+                    else if (line.Length > 0)
+                    {
+                        int index = line.IndexOf("\t");
+                        if (index >= 0)
+                            line = line.Substring(index + 1);
+                        if (line.Trim().Length > 0)
+                            count++;
+                    }
                 }
                 return count;
             }

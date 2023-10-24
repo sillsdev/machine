@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -996,6 +992,81 @@ namespace SIL.Machine.Corpora
                 rows[3].TargetSegment,
                 Is.EqualTo("target chapter one, verse four . target chapter one, verse five .".Split())
             );
+        }
+
+        [Test]
+        public void Count_NoRows()
+        {
+            var sourceCorpus = new DictionaryTextCorpus();
+            var targetCorpus = new DictionaryTextCorpus();
+            var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+
+            Assert.That(parallelCorpus.Count(includeEmpty: true), Is.EqualTo(0));
+            Assert.That(parallelCorpus.Count(includeEmpty: false), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Count_MissingRow()
+        {
+            var sourceCorpus = new DictionaryTextCorpus(
+                new MemoryText(
+                    "text1",
+                    new[] { TextRow("text1", 1, "source segment 1 ."), TextRow("text1", 2, "source segment 2 .") }
+                )
+            );
+            var targetCorpus = new DictionaryTextCorpus(
+                new MemoryText(
+                    "text1",
+                    new[]
+                    {
+                        TextRow("text1", 1, "target segment 1 ."),
+                        TextRow("text1", 2, "target segment 2 ."),
+                        TextRow("text1", 3, "target segment 3 .")
+                    }
+                )
+            );
+
+            var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+
+            Assert.That(parallelCorpus.Count(includeEmpty: true), Is.EqualTo(2));
+            Assert.That(parallelCorpus.Count(includeEmpty: false), Is.EqualTo(2));
+
+            parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllTargetRows = true };
+
+            Assert.That(parallelCorpus.Count(includeEmpty: true), Is.EqualTo(3));
+            Assert.That(parallelCorpus.Count(includeEmpty: false), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Count_EmptyRow()
+        {
+            var sourceCorpus = new DictionaryTextCorpus(
+                new MemoryText(
+                    "text1",
+                    new[]
+                    {
+                        TextRow("text1", 1, "source segment 1 ."),
+                        TextRow("text1", 2, "source segment 2 ."),
+                        TextRow("text1", 3, "source segment 3 .")
+                    }
+                )
+            );
+            var targetCorpus = new DictionaryTextCorpus(
+                new MemoryText(
+                    "text1",
+                    new[]
+                    {
+                        TextRow("text1", 1, "target segment 1 ."),
+                        TextRow("text1", 2),
+                        TextRow("text1", 3, "target segment 3 .")
+                    }
+                )
+            );
+
+            var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+
+            Assert.That(parallelCorpus.Count(includeEmpty: true), Is.EqualTo(3));
+            Assert.That(parallelCorpus.Count(includeEmpty: false), Is.EqualTo(2));
         }
 
         private static TextRow TextRow(

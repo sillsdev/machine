@@ -33,26 +33,9 @@ namespace SIL.Machine.Corpora
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
 
-        public bool MissingRowsAllowed
-        {
-            get
-            {
-                if (SourceCorpus.MissingRowsAllowed || TargetCorpus.MissingRowsAllowed)
-                    return true;
-
-                var sourceTextIds = new HashSet<string>(SourceCorpus.Texts.Select(t => t.Id));
-                var targetTextIds = new HashSet<string>(TargetCorpus.Texts.Select(t => t.Id));
-                return !sourceTextIds.SetEquals(targetTextIds);
-            }
-        }
-
         public int Count(bool includeEmpty = true)
         {
-            if (MissingRowsAllowed)
-                return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
-            if (includeEmpty)
-                return SourceCorpus.Count(includeEmpty);
-            return Math.Min(SourceCorpus.Count(includeEmpty), TargetCorpus.Count(includeEmpty));
+            return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
         }
 
         public IEnumerator<ParallelTextRow> GetEnumerator()

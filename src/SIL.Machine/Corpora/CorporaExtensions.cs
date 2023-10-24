@@ -365,8 +365,6 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IText> Texts => _corpus.Texts;
 
-            public override bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
-
             public override bool IsTokenized { get; }
 
             public override int Count(bool includeEmpty = true)
@@ -456,8 +454,6 @@ namespace SIL.Machine.Corpora
 
             public override bool IsTokenized => _corpora.All(corpus => corpus.IsTokenized);
 
-            public override bool MissingRowsAllowed => _corpora.Any(corpus => corpus.MissingRowsAllowed);
-
             public override int Count(bool includeEmpty = true)
             {
                 return _corpora.Sum(corpus => corpus.Count(includeEmpty));
@@ -531,8 +527,6 @@ namespace SIL.Machine.Corpora
             }
 
             public override IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
-
-            public override bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
 
             public override int Count(bool includeEmpty = true)
             {
@@ -617,8 +611,6 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IAlignmentCollection> AlignmentCollections =>
                 _corpora.SelectMany(corpus => corpus.AlignmentCollections);
-
-            public override bool MissingRowsAllowed => _corpora.Any(corpus => corpus.MissingRowsAllowed);
 
             public override int Count(bool includeEmpty = true)
             {
@@ -1046,8 +1038,6 @@ namespace SIL.Machine.Corpora
                 IsTargetTokenized = isTargetTokenized ?? corpus.IsTargetTokenized;
             }
 
-            public override bool MissingRowsAllowed => _corpus.MissingRowsAllowed;
-
             public override bool IsSourceTokenized { get; }
 
             public override bool IsTargetTokenized { get; }
@@ -1111,8 +1101,6 @@ namespace SIL.Machine.Corpora
             {
                 _corpora = corpora;
             }
-
-            public override bool MissingRowsAllowed => _corpora.Any(corpus => corpus.MissingRowsAllowed);
 
             public override bool IsSourceTokenized => _corpora.All(corpus => corpus.IsSourceTokenized);
             public override bool IsTargetTokenized => _corpora.All(corpus => corpus.IsTargetTokenized);

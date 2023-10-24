@@ -19,8 +19,6 @@ namespace SIL.Machine.Corpora
 
         public IText this[string id] => TextDictionary[id];
 
-        public override bool MissingRowsAllowed => Texts.Any(t => t.MissingRowsAllowed);
-
         public bool IsTokenized { get; set; }
 
         public override int Count(bool includeEmpty = true)

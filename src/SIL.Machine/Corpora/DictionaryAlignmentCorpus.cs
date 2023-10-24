@@ -19,8 +19,6 @@ namespace SIL.Machine.Corpora
         public override IEnumerable<IAlignmentCollection> AlignmentCollections =>
             _alignmentCollections.Values.OrderBy(ac => ac.SortKey);
 
-        public override bool MissingRowsAllowed => AlignmentCollections.Any(t => t.MissingRowsAllowed);
-
         public override int Count(bool includeEmpty = true)
         {
             return AlignmentCollections.Sum(t => t.Count(includeEmpty));
