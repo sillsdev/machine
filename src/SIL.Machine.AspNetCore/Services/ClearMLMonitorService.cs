@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLMonitorService : RecurrentTask
 {
@@ -53,7 +55,9 @@ public class ClearMLMonitorService : RecurrentTask
                     trainingEngines.Select(e => e.CurrentBuild!.JobId),
                     cancellationToken
                 )
-            ).ToDictionary(t => t.Id);
+            )
+                .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
+                .ToDictionary(t => t.Id);
 
             Dictionary<string, int> queuePositions = tasks.Values
                 .Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
