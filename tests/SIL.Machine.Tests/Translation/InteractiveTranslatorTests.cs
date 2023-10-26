@@ -170,7 +170,7 @@ namespace SIL.Machine.Translation
                 Engine = Substitute.For<IInteractiveTranslationEngine>();
 
                 var wordGraph = new WordGraph(
-                    WhitespaceTokenizer.Instance.Tokenize(SourceSegment).ToArray(),
+                    WhitespaceTokenizer.Instance.Tokenize(SourceSegment),
                     new[]
                     {
                         new WordGraphArc(

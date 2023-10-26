@@ -7,7 +7,7 @@ namespace SIL.Machine.Translation;
 public class PhraseTranslationSuggesterTests
 {
     [Test]
-    public void GetSuggestion_Punctuation()
+    public void GetSuggestions_Punctuation()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("this", TranslationSources.Smt, 0.5);
@@ -35,7 +35,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_UntranslatedWord()
+    public void GetSuggestions_UntranslatedWord()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("this", TranslationSources.Smt, 0.5);
@@ -67,7 +67,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_PrefixIncompleteWord()
+    public void GetSuggestions_PrefixIncompleteWord()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("this", TranslationSources.Smt | TranslationSources.Prefix, 0.5);
@@ -95,7 +95,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_PrefixCompleteWord()
+    public void GetSuggestions_PrefixCompleteWord()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("this", TranslationSources.Smt | TranslationSources.Prefix, 0.5);
@@ -123,7 +123,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_PrefixPartialWord()
+    public void GetSuggestions_PrefixPartialWord()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("te", TranslationSources.Prefix, -1);
@@ -152,7 +152,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_Multiple()
+    public void GetSuggestions_Multiple()
     {
         var results = new List<TranslationResult>();
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
@@ -216,7 +216,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_Duplicate()
+    public void GetSuggestions_Duplicate()
     {
         var results = new List<TranslationResult>();
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", ".", "segunda", "frase" });
@@ -274,7 +274,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_StartsWithPunctuation()
+    public void GetSuggestions_StartsWithPunctuation()
     {
         var results = new List<TranslationResult>();
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
@@ -322,7 +322,7 @@ public class PhraseTranslationSuggesterTests
     }
 
     [Test]
-    public void GetSuggestion_BelowThreshold()
+    public void GetSuggestions_BelowThreshold()
     {
         var builder = new TranslationResultBuilder(new[] { "esto", "es", "una", "prueba", "." });
         builder.AppendToken("this", TranslationSources.Smt, 0.5);
