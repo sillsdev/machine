@@ -7,20 +7,16 @@ public class LanguageTagService : ILanguageTagService
 
     private readonly Dictionary<string, string> _defaultScripts;
 
-    private readonly Dictionary<string, string> _threeToTwo;
-
-    private readonly Regex _langTagPattern;
+    private static readonly Regex _langTagPattern = new Regex(
+        "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
+        RegexOptions.ExplicitCapture
+    );
 
     public LanguageTagService()
     {
         // initialise SLDR language tags to retrieve latest langtags.json file
         Sldr.InitializeLanguageTags();
         _defaultScripts = InitializeDefaultScripts();
-        _threeToTwo = InitializeThreeToTwo();
-        _langTagPattern = new Regex(
-            "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
-            RegexOptions.ExplicitCapture
-        );
     }
 
     private Dictionary<string, string> InitializeDefaultScripts()
@@ -60,57 +56,43 @@ public class LanguageTagService : ILanguageTagService
         return tempDefaultScripts;
     }
 
-    private Dictionary<string, string> InitializeThreeToTwo()
-    {
-        var temp3to2 = new Dictionary<string, string>();
-        foreach (LanguageSubtag l in StandardSubtags.RegisteredLanguages)
-        {
-            if (l.Iso3Code.Length > 0)
-            {
-                temp3to2[l.Iso3Code] = l.Code;
-            }
-        }
-        return temp3to2;
-    }
-
     public string ConvertToFlores200Code(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
         Match langTagMatch = _langTagPattern.Match(languageTag);
         if (!langTagMatch.Success)
             return languageTag;
-        string parsed_language = langTagMatch.Groups["language"].Value;
-        string language_subtag = parsed_language;
-        string iso639_3_code = parsed_language;
+        string parsedLanguage = langTagMatch.Groups["language"].Value;
+        string languageSubtag = parsedLanguage;
+        string iso639_3Code = parsedLanguage;
 
         // Best attempt to convert language to a registered ISO 639-3 code
         // Uses https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry for mapping
 
         // If they gave us the ISO code, revert it to the 2 character code
-        if (_threeToTwo.ContainsKey(language_subtag))
-            language_subtag = _threeToTwo[language_subtag];
+        if (StandardSubtags.TryGetLanguageFromIso3Code(languageSubtag, out LanguageSubtag tempSubtag))
+            languageSubtag = tempSubtag.Code;
 
         // There are a few extra conversions not in SIL Writing Systems that we need to handle
-        if (StandardLanguages.ContainsKey(language_subtag))
-            language_subtag = StandardLanguages[language_subtag];
+        if (StandardLanguages.TryGetValue(languageSubtag, out string? tempName))
+            languageSubtag = tempName;
 
-        if (StandardSubtags.RegisteredLanguages.Contains(language_subtag))
-            iso639_3_code = StandardSubtags.RegisteredLanguages[language_subtag].Iso3Code;
+        if (StandardSubtags.RegisteredLanguages.TryGet(languageSubtag, out LanguageSubtag? languageSubtagObj))
+            iso639_3Code = languageSubtagObj.Iso3Code;
 
         // Use default script unless there is one parsed out of the language tag
         Group scriptGroup = langTagMatch.Groups["script"];
         string? script = null;
-        if (_defaultScripts.ContainsKey(language_subtag))
-            script = _defaultScripts[language_subtag];
-
-        if (_defaultScripts.ContainsKey(languageTag))
-            script = _defaultScripts[languageTag];
 
         if (scriptGroup.Success)
             script = scriptGroup.Value;
+        else if (_defaultScripts.TryGetValue(languageTag, out string? tempScript2))
+            script = tempScript2;
+        else if (_defaultScripts.TryGetValue(languageSubtag, out string? tempScript))
+            script = tempScript;
 
         if (script is not null)
-            return $"{iso639_3_code}_{script}";
+            return $"{iso639_3Code}_{script}";
         else
             return languageTag;
     }

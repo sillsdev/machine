@@ -90,7 +90,7 @@ public class LanguageTagServiceTests
     }
 
     [Test]
-    public void ConvertToFlores200Code_English()
+    public void ConvertToFlores200Code_HandleISO639_3_InsteadOfISO639_1()
     {
         string code = _languageTagService.ConvertToFlores200Code("eng");
         Assert.That(code, Is.EqualTo("eng_Latn"));
