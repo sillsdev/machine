@@ -311,7 +311,7 @@ namespace SIL.Machine.Translation
             ComputePrevScores(state, out prevScores, out stateBestPredArcs);
 
             double bestFinalStateScore = LogSpace.Zero;
-            int bestFinalState = 0;
+            int bestFinalState = InitialState;
             foreach (int finalState in _finalStates)
             {
                 double score = prevScores[finalState];

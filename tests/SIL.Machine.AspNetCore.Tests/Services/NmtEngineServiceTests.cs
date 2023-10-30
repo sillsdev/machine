@@ -129,7 +129,15 @@ public class NmtEngineServiceTests
                     new HangfireBuildJobRunner(_jobClient, new[] { new NmtHangfireBuildJobFactory() }),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[] { new NmtClearMLBuildJobFactory(SharedFileService, Engines, clearMLOptions) }
+                        new[]
+                        {
+                            new NmtClearMLBuildJobFactory(
+                                SharedFileService,
+                                Substitute.For<ILanguageTagService>(),
+                                Engines,
+                                clearMLOptions
+                            )
+                        }
                     )
                 },
                 Engines,

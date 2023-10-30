@@ -405,7 +405,7 @@ namespace SIL.Machine.Translation
 
             int curState = state;
             int curProcPrefixPos = procPrefixPos;
-            while (curState != 0)
+            while (curState != WordGraph.InitialState)
             {
                 int arcIndex = _stateBestPrevArcs[curState][curProcPrefixPos];
                 WordGraphArc arc = _wordGraph.Arcs[arcIndex];
