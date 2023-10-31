@@ -7,7 +7,7 @@ public class LanguageTagService : ILanguageTagService
 
     private readonly Dictionary<string, string> _defaultScripts;
 
-    private static readonly Regex _langTagPattern = new Regex(
+    private static readonly Regex LangTagPattern = new Regex(
         "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
         RegexOptions.ExplicitCapture
     );
@@ -15,12 +15,12 @@ public class LanguageTagService : ILanguageTagService
     public LanguageTagService()
     {
         // initialise SLDR language tags to retrieve latest langtags.json file
-        Sldr.InitializeLanguageTags();
         _defaultScripts = InitializeDefaultScripts();
     }
 
-    private Dictionary<string, string> InitializeDefaultScripts()
+    private static Dictionary<string, string> InitializeDefaultScripts()
     {
+        Sldr.InitializeLanguageTags();
         var cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
         using var stream = new FileStream(cachedAllTagsPath, FileMode.Open);
 
@@ -59,7 +59,7 @@ public class LanguageTagService : ILanguageTagService
     public string ConvertToFlores200Code(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
-        Match langTagMatch = _langTagPattern.Match(languageTag);
+        Match langTagMatch = LangTagPattern.Match(languageTag);
         if (!langTagMatch.Success)
             return languageTag;
         string parsedLanguage = langTagMatch.Groups["language"].Value;
