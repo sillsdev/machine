@@ -47,7 +47,12 @@ jobs:
         run: sudo mkdir -p /var/lib/serval && sudo chmod 777 /var/lib/serval
 
       - name: Test
+        if: steps.find_matching_branch.outcome != 'success'
         run: cd ../tmp/serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
+
+      - name: Test
+        if: steps.find_matching_branch.outcome == 'success'
+        run: cd ../serval && dotnet test --no-build --verbosity normal --filter "TestCategory!=slow&TestCategory=E2E"
 
       - name: Debug network (Post test)
         if: ${{ failure() }}
