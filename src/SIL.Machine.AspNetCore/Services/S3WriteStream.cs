@@ -93,30 +93,49 @@ public class S3WriteStream : Stream
     {
         if (disposing)
         {
-            try
+            if (_uploadResponses.Count == 0)
             {
-                CompleteMultipartUploadRequest request =
+                AbortAsync().WaitAndUnwrapException();
+                PutObjectRequest request =
                     new()
                     {
                         BucketName = _bucketName,
                         Key = _key,
-                        UploadId = _uploadId
+                        ContentBody = ""
                     };
-                request.AddPartETags(_uploadResponses);
-                CompleteMultipartUploadResponse response = _client
-                    .CompleteMultipartUploadAsync(request)
-                    .WaitAndUnwrapException();
-                Dispose(disposing: false);
-                GC.SuppressFinalize(this);
+                PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
                 if (response.HttpStatusCode != HttpStatusCode.OK)
                     throw new HttpRequestException(
-                        $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                        $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
             }
-            catch (Exception e)
+            else
             {
-                AbortAsync(e).WaitAndUnwrapException();
-                throw;
+                try
+                {
+                    CompleteMultipartUploadRequest request =
+                        new()
+                        {
+                            BucketName = _bucketName,
+                            Key = _key,
+                            UploadId = _uploadId
+                        };
+                    request.AddPartETags(_uploadResponses);
+                    CompleteMultipartUploadResponse response = _client
+                        .CompleteMultipartUploadAsync(request)
+                        .WaitAndUnwrapException();
+                    Dispose(disposing: false);
+                    GC.SuppressFinalize(this);
+                    if (response.HttpStatusCode != HttpStatusCode.OK)
+                        throw new HttpRequestException(
+                            $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                        );
+                }
+                catch (Exception e)
+                {
+                    AbortAsync(e).WaitAndUnwrapException();
+                    throw;
+                }
             }
         }
         base.Dispose(disposing);
@@ -124,6 +143,23 @@ public class S3WriteStream : Stream
 
     public async override ValueTask DisposeAsync()
     {
+        if (_uploadResponses.Count == 0)
+        {
+            await AbortAsync();
+            PutObjectRequest request =
+                new()
+                {
+                    BucketName = _bucketName,
+                    Key = _key,
+                    ContentBody = ""
+                };
+            PutObjectResponse response = await _client.PutObjectAsync(request);
+            if (response.HttpStatusCode != HttpStatusCode.OK)
+                throw new HttpRequestException(
+                    $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                );
+            return;
+        }
         try
         {
             CompleteMultipartUploadRequest request =
@@ -148,9 +184,10 @@ public class S3WriteStream : Stream
         }
     }
 
-    private async Task AbortAsync(Exception e)
+    private async Task AbortAsync(Exception? e = null)
     {
-        _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
+        if (e is not null)
+            _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
         AbortMultipartUploadRequest abortMPURequest =
             new()
             {
