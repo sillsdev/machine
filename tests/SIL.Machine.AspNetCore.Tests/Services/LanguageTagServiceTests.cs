@@ -88,4 +88,18 @@ public class LanguageTagServiceTests
         string code = _languageTagService.ConvertToFlores200Code("arb");
         Assert.That(code, Is.EqualTo("arb_Arab"));
     }
+
+    [Test]
+    public void ConvertToFlores200Code_HandleISO639_3_InsteadOfISO639_1()
+    {
+        string code = _languageTagService.ConvertToFlores200Code("eng");
+        Assert.That(code, Is.EqualTo("eng_Latn"));
+    }
+
+    [Test]
+    public void ConvertToFlores200Code_DashToUnderscore()
+    {
+        string code = _languageTagService.ConvertToFlores200Code("eng-Latn");
+        Assert.That(code, Is.EqualTo("eng_Latn"));
+    }
 }
