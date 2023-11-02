@@ -55,37 +55,40 @@ public class S3WriteStream : Stream
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        try
+        if (count > 0)
         {
-            using MemoryStream ms = new(buffer, offset, count);
-            int partNumber = _uploadResponses.Count + 1;
-            UploadPartRequest request =
-                new()
-                {
-                    BucketName = _bucketName,
-                    Key = _key,
-                    UploadId = _uploadId,
-                    PartNumber = partNumber,
-                    InputStream = ms,
-                    PartSize = MaxPartSize
-                };
-            request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
-                (_, e) =>
-                {
-                    _logger.LogDebug($"Transferred {e.TransferredBytes}/{e.TotalBytes}");
-                }
-            );
-            UploadPartResponse response = await _client.UploadPartAsync(request);
-            if (response.HttpStatusCode != HttpStatusCode.OK)
-                throw new HttpRequestException(
-                    $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+            try
+            {
+                using MemoryStream ms = new(buffer, offset, count);
+                int partNumber = _uploadResponses.Count + 1;
+                UploadPartRequest request =
+                    new()
+                    {
+                        BucketName = _bucketName,
+                        Key = _key,
+                        UploadId = _uploadId,
+                        PartNumber = partNumber,
+                        InputStream = ms,
+                        PartSize = MaxPartSize
+                    };
+                request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
+                    (_, e) =>
+                    {
+                        _logger.LogDebug($"Transferred {e.TransferredBytes}/{e.TotalBytes}");
+                    }
                 );
-            _uploadResponses.Add(response);
-        }
-        catch (Exception e)
-        {
-            await AbortAsync(e);
-            throw;
+                UploadPartResponse response = await _client.UploadPartAsync(request);
+                if (response.HttpStatusCode != HttpStatusCode.OK)
+                    throw new HttpRequestException(
+                        $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
+                    );
+                _uploadResponses.Add(response);
+            }
+            catch (Exception e)
+            {
+                await AbortAsync(e);
+                throw;
+            }
         }
     }
 
