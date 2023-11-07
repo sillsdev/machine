@@ -236,7 +236,9 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
             Id = source.Id,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
+            TrainOnAll = source.TrainOnAll,
             PretranslateAll = source.PretranslateAll,
+            TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
             PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
             TargetFiles = source.TargetFiles.Select(Map).ToList()
