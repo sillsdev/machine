@@ -76,8 +76,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
                 foreach (ParallelTextRow row in parallelCorpus)
                 {
-                    await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
-                    await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                    if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId))
+                    {
+                        await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
+                        await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                    }
                     if (
                         (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
                         && row.SourceSegment.Count > 0
