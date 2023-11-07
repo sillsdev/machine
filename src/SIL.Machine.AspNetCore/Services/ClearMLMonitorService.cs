@@ -84,7 +84,7 @@ public class ClearMLMonitorService : RecurrentTask
                         engine.CurrentBuild.BuildId,
                         new ProgressStatus(step: 0, percentCompleted: 0.0),
                         //CurrentBuild.BuildId should always equal the corresponding task.Name
-                        queuePositions[engine.CurrentBuild.BuildId],
+                        queuePositions[engine.CurrentBuild.BuildId] + 1,
                         cancellationToken
                     );
                 }
