@@ -32,15 +32,19 @@ public class ClearMLHealthCheck : IHealthCheck
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
                 );
-            _numConsecutiveFailures = 0;
+            using (await _lock.LockAsync())
+                _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
         {
-            _numConsecutiveFailures++;
-            return _numConsecutiveFailures > 3
-                ? HealthCheckResult.Unhealthy(exception: e)
-                : HealthCheckResult.Degraded(exception: e);
+            using (await _lock.LockAsync())
+            {
+                _numConsecutiveFailures++;
+                return _numConsecutiveFailures > 3
+                    ? HealthCheckResult.Unhealthy(exception: e)
+                    : HealthCheckResult.Degraded(exception: e);
+            }
         }
     }
 
