@@ -316,7 +316,11 @@ public static class IMachineBuilderExtensions
         IEnumerable<TranslationEngineType>? engineTypes = null
     )
     {
-        builder.Services.AddGrpc(options => options.Interceptors.Add<UnimplementedInterceptor>());
+        builder.Services.AddGrpc(options =>
+        {
+            options.Interceptors.Add<CancellationInterceptor>();
+            options.Interceptors.Add<UnimplementedInterceptor>();
+        });
         builder.AddServalPlatformService(connectionString ?? builder.Configuration.GetConnectionString("Serval"));
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
