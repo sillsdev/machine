@@ -23,7 +23,7 @@ public class CancellationInterceptor : Interceptor
         {
             if (ex is OperationCanceledException)
             {
-                _logger.LogInformation(exception: ex, message: null);
+                _logger.LogInformation("An operation was canceled.");
                 return null;
             }
             else
