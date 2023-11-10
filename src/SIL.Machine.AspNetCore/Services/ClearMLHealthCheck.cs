@@ -3,6 +3,8 @@ public class ClearMLHealthCheck : IHealthCheck
     private readonly HttpClient _httpClient;
     private readonly IOptionsMonitor<ClearMLOptions> _options;
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
+    private int _numConsecutiveFailures;
+    private readonly AsyncLock _lock;
 
     public ClearMLHealthCheck(
         IClearMLAuthenticationService clearMLAuthenticationService,
@@ -13,6 +15,8 @@ public class ClearMLHealthCheck : IHealthCheck
         _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
         _options = options;
         _clearMLAuthenticationService = clearMLAuthenticationService;
+        _numConsecutiveFailures = 0;
+        _lock = new AsyncLock();
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(
@@ -28,11 +32,19 @@ public class ClearMLHealthCheck : IHealthCheck
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
                 );
+            using (await _lock.LockAsync())
+                _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
         {
-            return HealthCheckResult.Unhealthy(exception: e);
+            using (await _lock.LockAsync())
+            {
+                _numConsecutiveFailures++;
+                return _numConsecutiveFailures > 3
+                    ? HealthCheckResult.Unhealthy(exception: e)
+                    : HealthCheckResult.Degraded(exception: e);
+            }
         }
     }
 
