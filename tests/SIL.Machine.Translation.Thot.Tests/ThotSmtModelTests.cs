@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -187,6 +188,45 @@ namespace SIL.Machine.Translation.Thot
             using ThotSmtModel smtModel = CreateFastAlignModel();
             WordGraph wordGraph = await smtModel.GetWordGraphAsync("");
             Assert.That(wordGraph.IsEmpty, Is.True);
+        }
+
+        [Test]
+        public void Constructor_ModelDoesNotExist()
+        {
+            Assert.Throws<FileNotFoundException>(
+                () =>
+                    new ThotSmtModel(
+                        ThotWordAlignmentModelType.Hmm,
+                        new ThotSmtParameters
+                        {
+                            TranslationModelFileNamePrefix = "does-not-exist",
+                            LanguageModelFileNamePrefix = "does-not-exist"
+                        }
+                    )
+            );
+        }
+
+        [Test]
+        public void Constructor_ModelCorrupted()
+        {
+            using var tempDir = new TempDirectory("ThotSmtModelTests");
+            string tmDir = Path.Combine(tempDir.Path, "tm");
+            Directory.CreateDirectory(tmDir);
+            File.WriteAllText(Path.Combine(tmDir, "src_trg.ttable"), "corrupted");
+            string lmDir = Path.Combine(tempDir.Path, "lm");
+            Directory.CreateDirectory(lmDir);
+            File.WriteAllText(Path.Combine(lmDir, "trg.lm"), "corrupted");
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                    new ThotSmtModel(
+                        ThotWordAlignmentModelType.Hmm,
+                        new ThotSmtParameters
+                        {
+                            TranslationModelFileNamePrefix = Path.Combine(tmDir, "src_trg"),
+                            LanguageModelFileNamePrefix = Path.Combine(lmDir, "trg.lm")
+                        }
+                    )
+            );
         }
 
         private static ThotSmtModel CreateHmmModel()
