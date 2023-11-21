@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using SIL.Machine.Corpora;
 using SIL.Machine.Tokenization;

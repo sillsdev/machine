@@ -613,8 +613,10 @@ namespace SIL.Machine.Translation.Thot
         public static IntPtr LoadSmtModel(ThotWordAlignmentModelType alignmentModelType, ThotSmtParameters parameters)
         {
             IntPtr handle = smtModel_create(GetAlignmentModelType(alignmentModelType, incremental: true));
-            smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix);
-            smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix);
+            if (!smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix))
+                throw new InvalidOperationException("Unable to load translation model.");
+            if (!smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix))
+                throw new InvalidOperationException("Unable to load language model.");
             smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
             smtModel_setW(handle, parameters.ModelW);
             smtModel_setA(handle, parameters.ModelA);
@@ -650,7 +652,10 @@ namespace SIL.Machine.Translation.Thot
 
         public static IntPtr OpenAlignmentModel(ThotWordAlignmentModelType type, string prefFileName)
         {
-            return swAlignModel_open(GetAlignmentModelType(type, incremental: false), prefFileName);
+            IntPtr handle = swAlignModel_open(GetAlignmentModelType(type, incremental: false), prefFileName);
+            if (handle == IntPtr.Zero)
+                throw new InvalidOperationException("Unable to load word alignment model.");
+            return handle;
         }
 
         public static AlignmentModelType GetAlignmentModelType(ThotWordAlignmentModelType type, bool incremental)

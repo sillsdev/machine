@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot
 {
@@ -164,6 +165,15 @@ namespace SIL.Machine.Translation.Thot
             WordAlignmentMatrix alignment = model.Align(sourceSegment, targetSegment);
             double score = model.GetAvgTranslationScore(sourceSegment, targetSegment, alignment);
             Assert.That(score, Is.EqualTo(0.36).Within(0.01));
+        }
+
+        [Test]
+        public void Constructor_ModelCorrupted()
+        {
+            using var tempDir = new TempDirectory("ThotFastAlignWordAlignmentModelTests");
+            string modelPrefix = Path.Combine(tempDir.Path, "src_trg_invswm");
+            File.WriteAllText(modelPrefix + ".src", "corrupted");
+            Assert.Throws<InvalidOperationException>(() => new ThotFastAlignWordAlignmentModel(modelPrefix));
         }
     }
 }

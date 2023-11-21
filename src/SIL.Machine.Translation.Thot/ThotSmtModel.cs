@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +32,12 @@ namespace SIL.Machine.Translation.Thot
 
         public ThotSmtModel(ThotWordAlignmentModelType wordAlignmentModelType, ThotSmtParameters parameters)
         {
+            if (!File.Exists(parameters.TranslationModelFileNamePrefix + ".ttable"))
+                throw new FileNotFoundException("The translation model could not be found.");
+
+            if (!File.Exists(parameters.LanguageModelFileNamePrefix))
+                throw new FileNotFoundException("The language model could not be found.");
+
             _decoderPool = new ObjectPool<ThotSmtDecoder>(MaxDecoderPoolSize, () => new ThotSmtDecoder(this));
 
             Parameters = parameters;
@@ -605,7 +612,8 @@ namespace SIL.Machine.Translation.Thot
 
         protected override void DisposeUnmanagedResources()
         {
-            Thot.smtModel_close(_handle);
+            if (_handle != IntPtr.Zero)
+                Thot.smtModel_close(_handle);
         }
 
         private double GetWordAlignmentScore(
