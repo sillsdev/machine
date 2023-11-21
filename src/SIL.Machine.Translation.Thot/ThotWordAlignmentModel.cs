@@ -96,8 +96,8 @@ namespace SIL.Machine.Translation.Thot
             if (!File.Exists(prefFileName + ".src"))
                 throw new FileNotFoundException("The word alignment model configuration could not be found.");
 
-            _prefFileName = prefFileName;
             SetHandle(Thot.OpenAlignmentModel(Type, _prefFileName));
+            _prefFileName = prefFileName;
         }
 
         public Task LoadAsync(string prefFileName)
@@ -111,8 +111,8 @@ namespace SIL.Machine.Translation.Thot
             if (_owned)
                 throw new InvalidOperationException("The word alignment model is owned by an SMT model.");
 
-            _prefFileName = prefFileName;
             SetHandle(Thot.CreateAlignmentModel(Type));
+            _prefFileName = prefFileName;
         }
 
         public ITrainer CreateTrainer(IParallelTextCorpus corpus)
