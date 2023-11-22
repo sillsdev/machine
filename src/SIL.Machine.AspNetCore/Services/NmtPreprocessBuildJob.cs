@@ -122,6 +122,35 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     if (!row.IsEmpty)
                         corpusSize++;
                 }
+                if (
+                    corpus.SourceFiles.Count() == 1
+                    && corpus.SourceFiles.First().Format == FileFormat.Paratext
+                    && corpus.TargetFiles.Count() == 1
+                    && corpus.TargetFiles.First().Format == FileFormat.Paratext
+                )
+                {
+                    try
+                    {
+                        ITextCorpus keyTermsSourceCorpus = new ParatextKeyTermsCorpus(
+                            corpus.SourceFiles.First().Location
+                        );
+                        ITextCorpus keyTermsTargetCorpus = new ParatextKeyTermsCorpus(
+                            corpus.TargetFiles.First().Location
+                        );
+                        IParallelTextCorpus parallelKeyTermsCorpus = keyTermsSourceCorpus.AlignRows(
+                            keyTermsTargetCorpus
+                        );
+                        foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                        {
+                            await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
+                            await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+                        //No key terms file - not an error
+                    }
+                }
             }
         }
 
