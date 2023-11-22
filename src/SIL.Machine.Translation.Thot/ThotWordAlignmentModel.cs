@@ -96,7 +96,7 @@ namespace SIL.Machine.Translation.Thot
             if (!File.Exists(prefFileName + ".src"))
                 throw new FileNotFoundException("The word alignment model configuration could not be found.");
 
-            SetHandle(Thot.OpenAlignmentModel(Type, _prefFileName));
+            SetHandle(Thot.OpenAlignmentModel(Type, prefFileName));
             _prefFileName = prefFileName;
         }
 
