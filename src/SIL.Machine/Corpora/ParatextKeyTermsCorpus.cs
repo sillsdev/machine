@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
-    class ParatextKeyTermsCorpus : DictionaryTextCorpus
+    public class ParatextKeyTermsCorpus : DictionaryTextCorpus
     {
         public ParatextKeyTermsCorpus(string projectDir)
         {
