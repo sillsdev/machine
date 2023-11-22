@@ -24,7 +24,7 @@ public class CancellationInterceptor : Interceptor
             if (ex is OperationCanceledException)
             {
                 _logger.LogInformation("An operation was canceled.");
-                return null;
+                throw new RpcException(new Status(StatusCode.Cancelled, "An operation was canceled."));
             }
             else
             {
