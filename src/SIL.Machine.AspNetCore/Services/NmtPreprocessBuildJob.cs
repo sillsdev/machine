@@ -29,7 +29,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         CancellationToken cancellationToken
     )
     {
-        await WriteDataFilesAsync(buildId, data, cancellationToken);
+        await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
@@ -50,9 +50,15 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     private async Task<int> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<Corpus> corpora,
+        string? buildOptions,
         CancellationToken cancellationToken
     )
     {
+        JsonObject? buildOptionsObject = null;
+        if (buildOptions is not null)
+        {
+            buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
+        }
         await using var sourceTrainWriter = new StreamWriter(
             await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
         );
@@ -123,7 +129,10 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         corpusSize++;
                 }
                 if (
-                    corpus.SourceFiles.Count() == 1
+                    buildOptionsObject is not null
+                    && buildOptionsObject["use_key_terms"] is not null
+                    && buildOptionsObject["use_key_terms"]!.ToString() == "true"
+                    && corpus.SourceFiles.Count() == 1
                     && corpus.SourceFiles.First().Format == FileFormat.Paratext
                     && corpus.TargetFiles.Count() == 1
                     && corpus.TargetFiles.First().Format == FileFormat.Paratext
@@ -131,19 +140,25 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 {
                     try
                     {
-                        ITextCorpus keyTermsSourceCorpus = new ParatextKeyTermsCorpus(
+                        ParatextKeyTermsCorpus keyTermsSourceCorpus = new ParatextKeyTermsCorpus(
                             corpus.SourceFiles.First().Location
                         );
-                        ITextCorpus keyTermsTargetCorpus = new ParatextKeyTermsCorpus(
+                        ParatextKeyTermsCorpus keyTermsTargetCorpus = new ParatextKeyTermsCorpus(
                             corpus.TargetFiles.First().Location
                         );
-                        IParallelTextCorpus parallelKeyTermsCorpus = keyTermsSourceCorpus.AlignRows(
-                            keyTermsTargetCorpus
-                        );
-                        foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                        if (
+                            keyTermsSourceCorpus.BiblicalTermsType == keyTermsTargetCorpus.BiblicalTermsType
+                            && keyTermsSourceCorpus.BiblicalTermsType is not null
+                        )
                         {
-                            await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
-                            await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                            IParallelTextCorpus parallelKeyTermsCorpus = keyTermsSourceCorpus.AlignRows(
+                                keyTermsTargetCorpus
+                            );
+                            foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                            {
+                                await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
+                                await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                            }
                         }
                     }
                     catch (ArgumentException)
