@@ -612,28 +612,38 @@ namespace SIL.Machine.Translation.Thot
 
         public static IntPtr LoadSmtModel(ThotWordAlignmentModelType alignmentModelType, ThotSmtParameters parameters)
         {
-            IntPtr handle = smtModel_create(GetAlignmentModelType(alignmentModelType, incremental: true));
-            if (!smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix))
-                throw new InvalidOperationException("Unable to load translation model.");
-            if (!smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix))
-                throw new InvalidOperationException("Unable to load language model.");
-            smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
-            smtModel_setW(handle, parameters.ModelW);
-            smtModel_setA(handle, parameters.ModelA);
-            smtModel_setE(handle, parameters.ModelE);
-            smtModel_setHeuristic(handle, (uint)parameters.ModelHeuristic);
-            smtModel_setOnlineTrainingParameters(
-                handle,
-                (uint)parameters.LearningAlgorithm,
-                (uint)parameters.LearningRatePolicy,
-                parameters.LearningStepSize,
-                parameters.LearningEMIters,
-                parameters.LearningE,
-                parameters.LearningR
-            );
-            if (parameters.ModelWeights != null)
-                smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint)parameters.ModelWeights.Count);
-            return handle;
+            IntPtr handle = IntPtr.Zero;
+            try
+            {
+                handle = smtModel_create(GetAlignmentModelType(alignmentModelType, incremental: true));
+                if (!smtModel_loadTranslationModel(handle, parameters.TranslationModelFileNamePrefix))
+                    throw new InvalidOperationException("Unable to load translation model.");
+                if (!smtModel_loadLanguageModel(handle, parameters.LanguageModelFileNamePrefix))
+                    throw new InvalidOperationException("Unable to load language model.");
+                smtModel_setNonMonotonicity(handle, parameters.ModelNonMonotonicity);
+                smtModel_setW(handle, parameters.ModelW);
+                smtModel_setA(handle, parameters.ModelA);
+                smtModel_setE(handle, parameters.ModelE);
+                smtModel_setHeuristic(handle, (uint)parameters.ModelHeuristic);
+                smtModel_setOnlineTrainingParameters(
+                    handle,
+                    (uint)parameters.LearningAlgorithm,
+                    (uint)parameters.LearningRatePolicy,
+                    parameters.LearningStepSize,
+                    parameters.LearningEMIters,
+                    parameters.LearningE,
+                    parameters.LearningR
+                );
+                if (parameters.ModelWeights != null)
+                    smtModel_setWeights(handle, parameters.ModelWeights.ToArray(), (uint)parameters.ModelWeights.Count);
+                return handle;
+            }
+            catch
+            {
+                if (handle != IntPtr.Zero)
+                    smtModel_close(handle);
+                throw;
+            }
         }
 
         public static IntPtr LoadDecoder(IntPtr smtModelHandle, ThotSmtParameters parameters)
