@@ -53,12 +53,38 @@ public class SmtTransferBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         cancellationToken.ThrowIfCancellationRequested();
 
+        JsonObject? buildOptionsObject = null;
+        if (buildOptions is not null)
+        {
+            buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
+        }
+
         var targetCorpora = new List<ITextCorpus>();
         var parallelCorpora = new List<IParallelTextCorpus>();
         foreach (Corpus corpus in data)
         {
             ITextCorpus sc = _corpusService.CreateTextCorpus(corpus.SourceFiles);
             ITextCorpus tc = _corpusService.CreateTextCorpus(corpus.TargetFiles);
+
+            if (
+                buildOptionsObject is not null
+                && buildOptionsObject["use_key_terms"] is not null
+                && buildOptionsObject["use_key_terms"]!.ToString() == "true"
+            )
+            {
+                ParatextKeyTermsCorpus? sourceKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(corpus.SourceFiles);
+                ParatextKeyTermsCorpus? targetKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(corpus.TargetFiles);
+
+                if (
+                    sourceKeyTermsCorpus is not null
+                    && targetKeyTermsCorpus is not null
+                    && sourceKeyTermsCorpus.BiblicalTermsType == targetKeyTermsCorpus.BiblicalTermsType
+                )
+                {
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceKeyTermsCorpus.AlignRows(targetKeyTermsCorpus);
+                    parallelCorpora.Add(parallelKeyTermsCorpus);
+                }
+            }
 
             targetCorpora.Add(tc);
             parallelCorpora.Add(sc.AlignRows(tc));

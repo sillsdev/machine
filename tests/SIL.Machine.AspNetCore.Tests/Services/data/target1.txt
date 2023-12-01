@@ -1,0 +1,5 @@
+s_1	Ejemplo
+s_2	
+s_3	Otro ejemplo más
+s_4	
+s_5	

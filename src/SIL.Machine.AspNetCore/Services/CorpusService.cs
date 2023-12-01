@@ -19,4 +19,21 @@ public class CorpusService : ICorpusService
         }
         return new DictionaryTextCorpus(texts);
     }
+
+    public ParatextKeyTermsCorpus? CreateKeyTermsCorpus(IReadOnlyList<CorpusFile> files)
+    {
+        ParatextKeyTermsCorpus? paratextKeyTermsCorpus = null;
+        if (files.Count == 1 && files[0].Format == FileFormat.Paratext)
+        {
+            try
+            {
+                paratextKeyTermsCorpus = new ParatextKeyTermsCorpus(files[0].Location);
+            }
+            catch
+            {
+                //No BiblicalTerms.xml - not an error
+            }
+        }
+        return paratextKeyTermsCorpus;
+    }
 }
