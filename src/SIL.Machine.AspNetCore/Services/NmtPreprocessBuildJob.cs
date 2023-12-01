@@ -80,7 +80,36 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     allTargetRows: true
                 );
 
-                foreach (ParallelTextRow row in parallelCorpus)
+                IEnumerable<ParallelTextRow> parallelRows = parallelCorpus.GetRows();
+
+                if (
+                    buildOptionsObject is not null
+                    && buildOptionsObject["use_key_terms"] is not null
+                    && buildOptionsObject["use_key_terms"]!.ToString() == "true"
+                )
+                {
+                    ParatextKeyTermsCorpus? sourceKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(
+                        corpus.SourceFiles
+                    );
+                    ParatextKeyTermsCorpus? targetKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(
+                        corpus.TargetFiles
+                    );
+
+                    if (
+                        sourceKeyTermsCorpus is not null
+                        && targetKeyTermsCorpus is not null
+                        && sourceKeyTermsCorpus.BiblicalTermsType == targetKeyTermsCorpus.BiblicalTermsType
+                    )
+                    {
+                        IParallelTextCorpus parallelKeyTermsCorpus = sourceKeyTermsCorpus.AlignRows(
+                            targetKeyTermsCorpus
+                        );
+                        corpus.TrainOnTextIds.Add(parallelKeyTermsCorpus.Select(r => r.TextId).Distinct().First()); //Should only be one textId
+                        parallelRows = parallelRows.Concat(parallelKeyTermsCorpus.GetRows());
+                    }
+                }
+
+                foreach (ParallelTextRow row in parallelRows)
                 {
                     if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId))
                     {
@@ -127,44 +156,6 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     }
                     if (!row.IsEmpty)
                         corpusSize++;
-                }
-                if (
-                    buildOptionsObject is not null
-                    && buildOptionsObject["use_key_terms"] is not null
-                    && buildOptionsObject["use_key_terms"]!.ToString() == "true"
-                    && corpus.SourceFiles.Count() == 1
-                    && corpus.SourceFiles.First().Format == FileFormat.Paratext
-                    && corpus.TargetFiles.Count() == 1
-                    && corpus.TargetFiles.First().Format == FileFormat.Paratext
-                )
-                {
-                    try
-                    {
-                        ParatextKeyTermsCorpus keyTermsSourceCorpus = new ParatextKeyTermsCorpus(
-                            corpus.SourceFiles.First().Location
-                        );
-                        ParatextKeyTermsCorpus keyTermsTargetCorpus = new ParatextKeyTermsCorpus(
-                            corpus.TargetFiles.First().Location
-                        );
-                        if (
-                            keyTermsSourceCorpus.BiblicalTermsType == keyTermsTargetCorpus.BiblicalTermsType
-                            && keyTermsSourceCorpus.BiblicalTermsType is not null
-                        )
-                        {
-                            IParallelTextCorpus parallelKeyTermsCorpus = keyTermsSourceCorpus.AlignRows(
-                                keyTermsTargetCorpus
-                            );
-                            foreach (ParallelTextRow row in parallelKeyTermsCorpus)
-                            {
-                                await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
-                                await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                            }
-                        }
-                    }
-                    catch (ArgumentException)
-                    {
-                        //No key terms file - not an error
-                    }
                 }
             }
         }
