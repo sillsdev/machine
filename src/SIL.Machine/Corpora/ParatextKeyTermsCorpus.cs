@@ -10,21 +10,19 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextKeyTermsCorpus : DictionaryTextCorpus
     {
-        public string BiblicalTermsType { get; set; }
-
-        public ParatextKeyTermsCorpus(string projectDir)
+        public ParatextKeyTermsCorpus(string fileName)
         {
             List<TextRow> rows = new List<TextRow>();
-            using (var archive = ZipFile.OpenRead(projectDir))
+            using (var archive = ZipFile.OpenRead(fileName))
             {
                 ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
                 if (termsFileEntry is null)
-                {
-                    throw new ArgumentException(
-                        $"The project directory does not contain a term renderings file",
-                        nameof(projectDir)
-                    );
-                }
+                    return;
+
+                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry("ProjectBiblicalTerms.xml");
+                if (biblicalTermsFileEntry is null)
+                    return;
+
                 ZipArchiveEntry settingsEntry = archive.GetEntry("Settings.xml");
                 if (settingsEntry == null)
                     settingsEntry = archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".ssf"));
@@ -32,7 +30,7 @@ namespace SIL.Machine.Corpora
                 {
                     throw new ArgumentException(
                         "The project backup does not contain a settings file.",
-                        nameof(projectDir)
+                        nameof(fileName)
                     );
                 }
                 XDocument settingsDoc;
@@ -40,47 +38,66 @@ namespace SIL.Machine.Corpora
                 {
                     settingsDoc = XDocument.Load(stream);
                 }
-                BiblicalTermsType = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
-                XDocument termsDoc;
+                string textId = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
+
+                XDocument termRenderingsDoc;
                 using (var keyTermsFile = termsFileEntry.Open())
                 {
-                    termsDoc = XDocument.Load(keyTermsFile);
+                    termRenderingsDoc = XDocument.Load(keyTermsFile);
                 }
-                IEnumerable<XElement> termsElements = termsDoc
+
+                XDocument biblicalTermsDoc;
+                using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                {
+                    biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                }
+
+                IEnumerable<XElement> termsElements = termRenderingsDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering");
                 foreach (XElement element in termsElements)
                 {
                     string id = element.Attribute("Id").Value;
+                    if (
+                        (
+                            biblicalTermsDoc
+                                .Descendants()
+                                .Where(n => (n.Name.LocalName == "Term") && (n.Attribute("Id").Value == id))
+                                .First()
+                                .Element("Category")
+                                ?.Value ?? ""
+                        ) != "PN"
+                    )
+                        continue;
                     id = id.Replace("\n", "&#xA");
-                    string gloss = element.Element("Renderings").Value;
-                    IReadOnlyList<string> glosses = GetGlosses(gloss);
-                    rows.Add(new TextRow("KeyTerms", id) { Segment = glosses });
+                    string rendering = element.Element("Renderings").Value;
+                    IReadOnlyList<string> glosses = GetRenderings(rendering);
+                    rows.Add(new TextRow(textId, id) { Segment = glosses });
                 }
-                IText text = new MemoryText("KeyTerms", rows);
+                IText text = new MemoryText(textId, rows);
                 AddText(text);
             }
         }
 
-        public static IReadOnlyList<string> GetGlosses(string gloss)
+        public static IReadOnlyList<string> GetRenderings(string rendering)
         {
             //If entire term rednering is surrounded in square brackets, remove them
             Regex rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
-            Match match = rx.Match(gloss);
+            Match match = rx.Match(rendering);
             if (match.Success)
-                gloss = match.Groups[0].Value;
-            gloss = gloss.Replace("?", "");
-            gloss = gloss.Replace("*", "");
-            gloss = gloss.Replace("/", " ");
-            gloss = gloss.Trim();
-            gloss = StripParens(gloss);
-            gloss = StripParens(gloss, left: '[', right: ']');
+                rendering = match.Groups[0].Value;
+            rendering = rendering.Replace("?", "");
+            rendering = rendering.Replace("*", "");
+            rendering = rendering.Replace("/", " ");
+            rendering = rendering.Trim();
+            rendering = StripParens(rendering);
+            rendering = StripParens(rendering, left: '[', right: ']');
             Regex rx2 = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
-            foreach (Match m in rx2.Matches(gloss))
+            foreach (Match m in rx2.Matches(rendering))
             {
-                gloss.Replace(m.Value, "");
+                rendering.Replace(m.Value, "");
             }
-            IEnumerable<string> glosses = Regex.Split(gloss, @"\|\|");
+            IEnumerable<string> glosses = Regex.Split(rendering, @"\|\|");
             glosses = glosses.Select(g => g.Trim()).Where(s => s != "").Distinct().ToList();
             return (IReadOnlyList<string>)glosses;
         }

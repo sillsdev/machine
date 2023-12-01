@@ -2,6 +2,5 @@
 
 public interface ICorpusService
 {
-    ITextCorpus CreateTextCorpus(IReadOnlyList<CorpusFile> files);
-    ParatextKeyTermsCorpus? CreateKeyTermsCorpus(IReadOnlyList<CorpusFile> files);
+    IDictionary<CorpusType, ITextCorpus> CreateTextCorpus(IReadOnlyList<CorpusFile> files);
 }
