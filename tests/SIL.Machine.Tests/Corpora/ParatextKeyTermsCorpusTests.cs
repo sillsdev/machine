@@ -11,7 +11,6 @@ namespace SIL.Machine.Corpora
         public void TestGetKeyTerms()
         {
             using var env = new TestEnvironment();
-            Assert.That(env.Corpus.BiblicalTermsType, Is.EqualTo("Major::BiblicalTerms.xml"));
             IList<TextRow> rows = env.Corpus.GetRows().ToList();
             Assert.That(rows.Count, Is.EqualTo(1));
             Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abba"));
@@ -39,7 +38,7 @@ namespace SIL.Machine.Corpora
         [TestCase("Abba (note)", new string[] { "Abba" })]
         public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
         {
-            Assert.That(ParatextKeyTermsCorpus.GetGlosses(glossString), Is.EqualTo(expectedOutput));
+            Assert.That(ParatextKeyTermsCorpus.GetRenderings(glossString), Is.EqualTo(expectedOutput));
         }
 
         private class TestEnvironment : DisposableBase
