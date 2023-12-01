@@ -129,7 +129,7 @@ namespace SIL.Machine.Translation
         {
             if (sourceLength == 1)
                 return 0.1;
-            return (double)Math.Abs(i1 - i2) / (sourceLength - 1);
+            return Math.Min(1.0, (double)Math.Abs(i1 - i2) / (sourceLength - 1));
         }
 
         private double ComputeAlignmentScore(double probability, double distanceScore)
