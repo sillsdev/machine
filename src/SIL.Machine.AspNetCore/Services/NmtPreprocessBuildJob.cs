@@ -71,45 +71,37 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         {
             foreach (Corpus corpus in corpora)
             {
-                ITextCorpus sourceCorpus = _corpusService.CreateTextCorpus(corpus.SourceFiles);
-                ITextCorpus targetCorpus = _corpusService.CreateTextCorpus(corpus.TargetFiles);
+                IDictionary<CorpusType, ITextCorpus> sourceCorpora = _corpusService.CreateTextCorpus(
+                    corpus.SourceFiles
+                );
+                IDictionary<CorpusType, ITextCorpus> targetCorpora = _corpusService.CreateTextCorpus(
+                    corpus.TargetFiles
+                );
 
-                IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(
-                    targetCorpus,
+                var parallelCorpora = new List<IParallelTextCorpus>();
+
+                IParallelTextCorpus parallelTextCorpus = sourceCorpora[CorpusType.Text].AlignRows(
+                    targetCorpora[CorpusType.Text],
                     allSourceRows: true,
                     allTargetRows: true
                 );
-
-                IEnumerable<ParallelTextRow> parallelRows = parallelCorpus.GetRows();
-
+                parallelCorpora.Add(parallelTextCorpus);
                 if (
                     buildOptionsObject is not null
                     && buildOptionsObject["use_key_terms"] is not null
-                    && buildOptionsObject["use_key_terms"]!.ToString() == "true"
+                    && (bool)buildOptionsObject["use_key_terms"]!
+                    && sourceCorpora[CorpusType.Term] is not null
+                    && targetCorpora[CorpusType.Term] is not null
                 )
                 {
-                    ParatextKeyTermsCorpus? sourceKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(
-                        corpus.SourceFiles
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term].AlignRows(
+                        targetCorpora[CorpusType.Term]
                     );
-                    ParatextKeyTermsCorpus? targetKeyTermsCorpus = _corpusService.CreateKeyTermsCorpus(
-                        corpus.TargetFiles
-                    );
-
-                    if (
-                        sourceKeyTermsCorpus is not null
-                        && targetKeyTermsCorpus is not null
-                        && sourceKeyTermsCorpus.BiblicalTermsType == targetKeyTermsCorpus.BiblicalTermsType
-                    )
-                    {
-                        IParallelTextCorpus parallelKeyTermsCorpus = sourceKeyTermsCorpus.AlignRows(
-                            targetKeyTermsCorpus
-                        );
-                        corpus.TrainOnTextIds.Add(parallelKeyTermsCorpus.Select(r => r.TextId).Distinct().First()); //Should only be one textId
-                        parallelRows = parallelRows.Concat(parallelKeyTermsCorpus.GetRows());
-                    }
+                    corpus.TrainOnTextIds.Add(parallelKeyTermsCorpus.Select(r => r.TextId).Distinct().First()); //Should only be one textId
+                    parallelCorpora.Add(parallelKeyTermsCorpus);
                 }
 
-                foreach (ParallelTextRow row in parallelRows)
+                foreach (ParallelTextRow row in parallelCorpora.Flatten())
                 {
                     if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId))
                     {
@@ -125,7 +117,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         IReadOnlyList<object> refs;
                         if (row.TargetRefs.Count == 0)
                         {
-                            if (targetCorpus is ScriptureTextCorpus tstc)
+                            if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus tstc)
                             {
                                 refs = row.SourceRefs
                                     .Cast<VerseRef>()
