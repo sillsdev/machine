@@ -98,7 +98,9 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term].AlignRows(
                         targetCorpora[CorpusType.Term]
                     );
-                    corpus.TrainOnTextIds.Add(parallelKeyTermsCorpus.Select(r => r.TextId).Distinct().First()); //Should only be one textId
+                    IEnumerable<string> keyTermsTextIds = parallelKeyTermsCorpus.Select(r => r.TextId).Distinct();
+                    if (keyTermsTextIds.Count() == 1)
+                        corpus.TrainOnTextIds.Add(keyTermsTextIds.First()); //Should only be one textId for key terms
                     parallelCorpora.Add(parallelKeyTermsCorpus);
                 }
 
