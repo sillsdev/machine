@@ -87,9 +87,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 );
                 parallelCorpora.Add(parallelTextCorpus);
                 if (
-                    buildOptionsObject is not null
-                    && buildOptionsObject["use_key_terms"] is not null
-                    && (bool)buildOptionsObject["use_key_terms"]!
+                    (
+                        buildOptionsObject is null
+                        || buildOptionsObject["use_key_terms"] is null
+                        || (bool)buildOptionsObject["use_key_terms"]!
+                    )
                     && sourceCorpora[CorpusType.Term] is not null
                     && targetCorpora[CorpusType.Term] is not null
                 )
