@@ -71,8 +71,8 @@ namespace SIL.Machine.Corpora
                         continue;
                     id = id.Replace("\n", "&#xA");
                     string rendering = element.Element("Renderings").Value;
-                    IReadOnlyList<string> glosses = GetRenderings(rendering);
-                    rows.Add(new TextRow(textId, id) { Segment = glosses });
+                    IReadOnlyList<string> renderings = GetRenderings(rendering);
+                    rows.Add(new TextRow(textId, id) { Segment = renderings });
                 }
                 IText text = new MemoryText(textId, rows);
                 AddText(text);
