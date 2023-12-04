@@ -1,10 +1,20 @@
-using System.Text.Json.Nodes;
-
 namespace SIL.Machine.AspNetCore.Services
 {
     [TestFixture]
     public class NmtPreprocessBuildJobTests
     {
+        [SetUp]
+        public void SetUp()
+        {
+            ZipFile.CreateFromDirectory("../../../Services/data/paratext", $"{Path.GetTempPath()}/Project.zip");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            File.Delete($"{Path.GetTempPath()}/Project.zip");
+        }
+
         [Test]
         [TestCase(false, false, null, null, 0, 0)]
         [TestCase(false, true, null, null, 5, 0)]
@@ -52,6 +62,65 @@ namespace SIL.Machine.AspNetCore.Services
             };
             var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
             await env.BuildJob.RunAsync("engine1", "build1", corpora, null, default);
+            using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    //Split yields one more segment that there are new lines; thus, the "- 1"
+                    Assert.That(reader.ReadToEnd().Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain));
+                }
+            }
+            using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
+                    Assert.NotNull(pretranslationJsonObject);
+                    Assert.That(pretranslationJsonObject!.ToList().Count, Is.EqualTo(numEntriesWrittenToPretranslate));
+                }
+            }
+        }
+
+        [Test]
+        [TestCase(null, 1, 0)]
+        [TestCase("{\"use_key_terms\":false}", 0, 0)]
+        public async Task BuildJobTest_Paratext(
+            string? buildOptions,
+            int numLinesWrittenToTrain,
+            int numEntriesWrittenToPretranslate
+        )
+        {
+            using var env = new TestEnvironment();
+            var corpus1 = new Corpus
+            {
+                Id = "corpusId1",
+                SourceLanguage = "es",
+                TargetLanguage = "en",
+                PretranslateAll = false,
+                TrainOnAll = false,
+                PretranslateTextIds = new HashSet<string>(),
+                TrainOnTextIds = new HashSet<string>(),
+                SourceFiles = new List<CorpusFile>
+                {
+                    new CorpusFile
+                    {
+                        TextId = "textId1",
+                        Format = FileFormat.Paratext,
+                        Location = Path.Combine(Path.GetTempPath(), "Project.zip")
+                    }
+                },
+                TargetFiles = new List<CorpusFile>
+                {
+                    new CorpusFile
+                    {
+                        TextId = "textId1",
+                        Format = FileFormat.Paratext,
+                        Location = Path.Combine(Path.GetTempPath(), "Project.zip")
+                    }
+                }
+            };
+            var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
+            await env.BuildJob.RunAsync("engine1", "build1", corpora, buildOptions, default);
             using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
             {
                 using (var reader = new StreamReader(stream))
