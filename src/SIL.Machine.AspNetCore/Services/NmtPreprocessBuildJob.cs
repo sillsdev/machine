@@ -92,7 +92,9 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         || buildOptionsObject["use_key_terms"] is null
                         || (bool)buildOptionsObject["use_key_terms"]!
                     )
+                    && sourceCorpora.ContainsKey(CorpusType.Term)
                     && sourceCorpora[CorpusType.Term] is not null
+                    && targetCorpora.ContainsKey(CorpusType.Term)
                     && targetCorpora[CorpusType.Term] is not null
                 )
                 {
