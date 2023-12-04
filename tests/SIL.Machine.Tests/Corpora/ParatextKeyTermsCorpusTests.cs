@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Xml.Linq;
 using NUnit.Framework;
 using SIL.ObjectModel;
@@ -25,7 +26,7 @@ namespace SIL.Machine.Corpora
         public void TestStripParens(string testString, string expectedOutput, char left = '(', char right = ')')
         {
             Assert.That(
-                ParatextKeyTermsCorpus.StripParens(testString, left: left, right: right),
+                ParatextBackupTermsCorpus.StripParens(testString, left: left, right: right),
                 Is.EqualTo(expectedOutput)
             );
         }
@@ -38,7 +39,7 @@ namespace SIL.Machine.Corpora
         [TestCase("Abba (note)", new string[] { "Abba" })]
         public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
         {
-            Assert.That(ParatextKeyTermsCorpus.GetRenderings(glossString), Is.EqualTo(expectedOutput));
+            Assert.That(ParatextBackupTermsCorpus.GetRenderings(glossString), Is.EqualTo(expectedOutput));
         }
 
         private class TestEnvironment : DisposableBase
@@ -48,10 +49,10 @@ namespace SIL.Machine.Corpora
             public TestEnvironment()
             {
                 _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-                Corpus = new ParatextKeyTermsCorpus(_backupPath);
+                Corpus = new ParatextBackupTermsCorpus(_backupPath);
             }
 
-            public ParatextKeyTermsCorpus Corpus { get; }
+            public ParatextBackupTermsCorpus Corpus { get; }
 
             protected override void DisposeManagedResources()
             {
