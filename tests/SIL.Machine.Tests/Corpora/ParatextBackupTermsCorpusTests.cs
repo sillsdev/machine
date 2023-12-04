@@ -49,7 +49,7 @@ namespace SIL.Machine.Corpora
             public TestEnvironment()
             {
                 _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-                Corpus = new ParatextBackupTermsCorpus(_backupPath);
+                Corpus = new ParatextBackupTermsCorpus(_backupPath, new string[] { "PN" });
             }
 
             public ParatextBackupTermsCorpus Corpus { get; }
