@@ -6,13 +6,16 @@ namespace SIL.Machine.AspNetCore.Services
         [SetUp]
         public void SetUp()
         {
-            ZipFile.CreateFromDirectory("../../../Services/data/paratext", $"{Path.GetTempPath()}/Project.zip");
+            ZipFile.CreateFromDirectory(
+                Path.Combine("..", "..", "..", "Services", "data", "paratext"),
+                Path.Combine(Path.GetTempPath(), "Project.zip")
+            );
         }
 
         [TearDown]
         public void TearDown()
         {
-            File.Delete($"{Path.GetTempPath()}/Project.zip");
+            File.Delete(Path.Combine(Path.GetTempPath(), "Project.zip"));
         }
 
         [Test]
@@ -47,7 +50,7 @@ namespace SIL.Machine.AspNetCore.Services
                     {
                         TextId = "textId1",
                         Format = FileFormat.Text,
-                        Location = "../../../Services/data/source1.txt"
+                        Location = Path.Combine("..", "..", "..", "Services", "data", "source1.txt")
                     }
                 },
                 TargetFiles = new List<CorpusFile>
@@ -56,7 +59,7 @@ namespace SIL.Machine.AspNetCore.Services
                     {
                         TextId = "textId1",
                         Format = FileFormat.Text,
-                        Location = "../../../Services/data/target1.txt"
+                        Location = Path.Combine("..", "..", "..", "Services", "data", "target1.txt")
                     }
                 }
             };

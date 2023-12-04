@@ -11,7 +11,9 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTermsCorpus : DictionaryTextCorpus
     {
-        public ParatextBackupTermsCorpus(string fileName)
+        private static List<string> PREDEFINED_TERMS_LIST_TYPES = new List<string>() { "Major", "All", "SilNt", "Pt6" };
+
+        public ParatextBackupTermsCorpus(string fileName, IEnumerable<string> termCategories)
         {
             List<TextRow> rows = new List<TextRow>();
             using (var archive = ZipFile.OpenRead(fileName))
@@ -37,32 +39,31 @@ namespace SIL.Machine.Corpora
                 }
                 string textId = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
 
-                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry("ProjectBiblicalTerms.xml");
-
                 XDocument termRenderingsDoc;
                 using (var keyTermsFile = termsFileEntry.Open())
                 {
                     termRenderingsDoc = XDocument.Load(keyTermsFile);
                 }
 
+                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry(textId.Split(':').Last());
+
                 XDocument biblicalTermsDoc;
-                if (biblicalTermsFileEntry != null)
+                if (PREDEFINED_TERMS_LIST_TYPES.Contains(textId.Split(':').First()))
                 {
-                    using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                    using (
+                        var keyTermsFile = Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("SIL.Machine.Corpora." + textId.Split(':').Last())
+                    )
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                     }
                 }
                 else
                 {
-                    using (
-                        var keyTermsFile = Assembly
-                            .GetExecutingAssembly()
-                            .GetManifestResourceStream("SIL.Machine.Corpora." + Regex.Split(textId, "::").Last())
-                    )
+                    using (var keyTermsFile = biblicalTermsFileEntry.Open())
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                        throw new Exception((keyTermsFile == null).ToString());
                     }
                 }
 
@@ -74,14 +75,17 @@ namespace SIL.Machine.Corpora
                     string id = element.Attribute("Id").Value;
                     if (
                         (
-                            biblicalTermsDoc
-                                .Descendants()
-                                .Where(n => (n.Name.LocalName == "Term") && (n.Attribute("Id").Value == id))
-                                .DefaultIfEmpty(new XElement("Empty"))
-                                .First()
-                                .Element("Category")
-                                ?.Value ?? ""
-                        ) != "PN"
+                            termCategories.Count() > 0
+                            && !termCategories.Contains(
+                                biblicalTermsDoc
+                                    .Descendants()
+                                    .Where(n => (n.Name.LocalName == "Term") && (n.Attribute("Id").Value == id))
+                                    .DefaultIfEmpty(new XElement("Empty"))
+                                    .First()
+                                    .Element("Category")
+                                    ?.Value ?? ""
+                            )
+                        )
                     )
                         continue;
                     id = id.Replace("\n", "&#xA");
