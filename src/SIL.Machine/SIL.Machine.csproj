@@ -10,11 +10,19 @@
 	<ItemGroup>
 		<None Remove="Corpora\usfm.sty" />
 		<None Remove="Corpora\usfm_sb.sty" />
+		<None Remove="Corpora\AllBiblicalTerms.xml" />
+		<None Remove="Corpora\BiblicalTerms.xml" />
+		<None Remove="Corpora\BiblicalTermsP6NT.xml" />
+		<None Remove="Corpora\BiblicalTermsSILNT.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="Corpora\usfm.sty" />
 		<EmbeddedResource Include="Corpora\usfm_sb.sty" />
+		<EmbeddedResource Include="Corpora\AllBiblicalTerms.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTerms.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsP6NT.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsSILNT.xml" />
 	</ItemGroup>
 
 	<ItemGroup>

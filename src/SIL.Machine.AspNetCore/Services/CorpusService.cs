@@ -14,7 +14,7 @@ public class CorpusService : ICorpusService
         if (files.Count == 1 && files[0].Format == FileFormat.Paratext)
         {
             corpora[CorpusType.Text] = new ParatextBackupTextCorpus(files[0].Location);
-            corpora[CorpusType.Term] = new ParatextKeyTermsCorpus(files[0].Location);
+            corpora[CorpusType.Term] = new ParatextBackupTermsCorpus(files[0].Location);
         }
         else
         {

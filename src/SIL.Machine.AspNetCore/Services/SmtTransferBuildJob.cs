@@ -67,13 +67,8 @@ public class SmtTransferBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             IDictionary<CorpusType, ITextCorpus> tcs = _corpusService.CreateTextCorpus(corpus.TargetFiles);
 
             if (
-                (
-                    buildOptionsObject is null
-                    || buildOptionsObject["use_key_terms"] is null
-                    || (bool)buildOptionsObject["use_key_terms"]!
-                )
-                && scs[CorpusType.Term] is not null
-                && tcs[CorpusType.Term] is not null
+                (bool?)buildOptionsObject?["use_key_terms"]
+                ?? true && scs[CorpusType.Term] is not null && tcs[CorpusType.Term] is not null
             )
             {
                 IParallelTextCorpus parallelKeyTermsCorpus = scs[CorpusType.Term].AlignRows(scs[CorpusType.Term]);
