@@ -48,6 +48,7 @@ namespace SIL.Machine.Corpora
                 ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry(textId.Split(':').Last());
 
                 XDocument biblicalTermsDoc;
+                IDictionary<string, string> termIdToCategoryDictionary;
                 if (PREDEFINED_TERMS_LIST_TYPES.Contains(textId.Split(':').First()))
                 {
                     using (
@@ -57,13 +58,31 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                        termIdToCategoryDictionary = biblicalTermsDoc
+                            .Descendants()
+                            .Where(n => n.Name.LocalName == "Term")
+                            .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
                     }
                 }
                 else
                 {
-                    using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                    if (
+                        textId.Split(':').First() == "Project"
+                        && textId.Split(':')[1] == settingsDoc.Root.Element("Name").Value
+                    )
                     {
-                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                        using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                        {
+                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                            termIdToCategoryDictionary = biblicalTermsDoc
+                                .Descendants()
+                                .Where(n => n.Name.LocalName == "Term")
+                                .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
+                        }
+                    }
+                    else
+                    {
+                        termIdToCategoryDictionary = new Dictionary<string, string>();
                     }
                 }
 
@@ -71,22 +90,17 @@ namespace SIL.Machine.Corpora
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering");
 
-                IDictionary<string, string> termIdToCategoryDictionary = biblicalTermsDoc
-                    .Descendants()
-                    .Where(n => n.Name.LocalName == "Term")
-                    .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
-
                 foreach (XElement element in termsElements)
                 {
                     string id = element.Attribute("Id").Value;
+                    string category = "";
                     if (
-                        (
-                            termCategories.Count() > 0
-                            && termIdToCategoryDictionary.ContainsKey(id)
-                            && !termCategories.Contains(termIdToCategoryDictionary[id])
-                        )
+                        (termCategories.Count() > 0 && !termIdToCategoryDictionary.TryGetValue(id, out category))
+                        || (termCategories.Count() > 0 && !termCategories.Contains(category))
                     )
+                    {
                         continue;
+                    }
                     id = id.Replace("\n", "&#xA");
                     string rendering = element.Element("Renderings").Value;
                     IReadOnlyList<string> renderings = GetRenderings(rendering);
