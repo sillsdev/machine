@@ -19,7 +19,7 @@
   <FileNameBookNameForm>41MAT</FileNameBookNameForm>
   <FileNamePrePart />
   <FileNamePostPart>Tes.SFM</FileNamePostPart>
-  <BiblicalTermsListSetting>Major::BiblicalTerms.xml</BiblicalTermsListSetting>
+  <BiblicalTermsListSetting>Project:Tes:ProjectBiblicalTerms.xml</BiblicalTermsListSetting>
   <MatchBasedOnStems>F</MatchBasedOnStems>
   <AllowReadAccess>F</AllowReadAccess>
   <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
