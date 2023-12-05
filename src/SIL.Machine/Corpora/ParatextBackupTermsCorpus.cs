@@ -70,21 +70,20 @@ namespace SIL.Machine.Corpora
                 IEnumerable<XElement> termsElements = termRenderingsDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering");
+
+                IDictionary<string, string> termIdToCategoryDictionary = biblicalTermsDoc
+                    .Descendants()
+                    .Where(n => n.Name.LocalName == "Term")
+                    .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
+
                 foreach (XElement element in termsElements)
                 {
                     string id = element.Attribute("Id").Value;
                     if (
                         (
                             termCategories.Count() > 0
-                            && !termCategories.Contains(
-                                biblicalTermsDoc
-                                    .Descendants()
-                                    .Where(n => (n.Name.LocalName == "Term") && (n.Attribute("Id").Value == id))
-                                    .DefaultIfEmpty(new XElement("Empty"))
-                                    .First()
-                                    .Element("Category")
-                                    ?.Value ?? ""
-                            )
+                            && termIdToCategoryDictionary.ContainsKey(id)
+                            && !termCategories.Contains(termIdToCategoryDictionary[id])
                         )
                     )
                         continue;
