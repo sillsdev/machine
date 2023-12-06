@@ -58,32 +58,23 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                        termIdToCategoryDictionary = biblicalTermsDoc
-                            .Descendants()
-                            .Where(n => n.Name.LocalName == "Term")
-                            .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
+                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                    }
+                }
+                else if (
+                    textId.Split(':').First() == "Project"
+                    && textId.Split(':')[1] == settingsDoc.Root.Element("Name").Value
+                )
+                {
+                    using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                    {
+                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
                     }
                 }
                 else
                 {
-                    if (
-                        textId.Split(':').First() == "Project"
-                        && textId.Split(':')[1] == settingsDoc.Root.Element("Name").Value
-                    )
-                    {
-                        using (var keyTermsFile = biblicalTermsFileEntry.Open())
-                        {
-                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                            termIdToCategoryDictionary = biblicalTermsDoc
-                                .Descendants()
-                                .Where(n => n.Name.LocalName == "Term")
-                                .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
-                        }
-                    }
-                    else
-                    {
-                        termIdToCategoryDictionary = new Dictionary<string, string>();
-                    }
+                    termIdToCategoryDictionary = new Dictionary<string, string>();
                 }
 
                 IEnumerable<XElement> termsElements = termRenderingsDoc
@@ -168,6 +159,14 @@ namespace SIL.Machine.Corpora
                 }
             }
             return termString;
+        }
+
+        private static IDictionary<string, string> GetCategoryPerId(XDocument biblicalTermsDocument)
+        {
+            return biblicalTermsDocument
+                .Descendants()
+                .Where(n => n.Name.LocalName == "Term")
+                .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
         }
     }
 }
