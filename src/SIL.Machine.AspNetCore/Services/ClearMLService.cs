@@ -10,7 +10,7 @@ public class ClearMLService : IClearMLService
         new()
         {
             PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy) }
+            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService;
