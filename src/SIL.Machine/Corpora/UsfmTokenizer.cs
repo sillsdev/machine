@@ -2,19 +2,40 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SIL.Machine.Corpora
 {
+    public enum RtlReferenceOrder
+    {
+        NotSet,
+        BookChapterVerse,
+        BookVerseChapter
+    }
+
     public class UsfmTokenizer
     {
         private const char ZeroWidthSpace = '\u200B';
 
-        private readonly UsfmStylesheet _stylesheet;
+        private static readonly Regex RtlVerseRegex = new Regex(
+            @"[\u200E\u200F]*(\d+\w?)[\u200E\u200F]*([\p{P}\p{S}])[\u200E\u200F]*(?=\d)",
+            RegexOptions.Compiled
+        );
 
-        public UsfmTokenizer(UsfmStylesheet stylesheet)
+        public UsfmTokenizer(
+            string stylesheetFileName = "usfm.sty",
+            RtlReferenceOrder rtlReferenceOrder = RtlReferenceOrder.NotSet
+        )
+            : this(new UsfmStylesheet(stylesheetFileName), rtlReferenceOrder) { }
+
+        public UsfmTokenizer(UsfmStylesheet stylesheet, RtlReferenceOrder rtlReferenceOrder = RtlReferenceOrder.NotSet)
         {
-            _stylesheet = stylesheet;
+            Stylesheet = stylesheet ?? new UsfmStylesheet("usfm.sty");
+            RtlReferenceOrder = rtlReferenceOrder;
         }
+
+        public UsfmStylesheet Stylesheet { get; }
+        public RtlReferenceOrder RtlReferenceOrder { get; }
 
         public IReadOnlyList<UsfmToken> Tokenize(string usfm, bool preserveWhitespace = false)
         {
@@ -112,7 +133,7 @@ namespace SIL.Machine.Corpora
                 }
 
                 // Lookup marker
-                UsfmTag tag = _stylesheet.GetTag(marker.TrimStart('+'));
+                UsfmTag tag = Stylesheet.GetTag(marker.TrimStart('+'));
 
                 // If starts with a plus and is not a character style or an end style, it is an unknown tag
                 if (
@@ -121,7 +142,7 @@ namespace SIL.Machine.Corpora
                     && tag.StyleType != UsfmStyleType.End
                 )
                 {
-                    tag = _stylesheet.GetTag(marker);
+                    tag = Stylesheet.GetTag(marker);
                 }
 
                 string endMarker = tag.StyleType != UsfmStyleType.Milestone ? marker + "*" : tag.EndMarker;
@@ -276,6 +297,109 @@ namespace SIL.Machine.Corpora
             return tokens;
         }
 
+        public string Detokenize(IEnumerable<UsfmToken> tokens, bool tokensHaveWhitespace = false)
+        {
+            UsfmToken prevToken = null;
+            var usfm = new StringBuilder();
+            foreach (UsfmToken token in tokens)
+            {
+                string tokenUsfm = "";
+                switch (token.Type)
+                {
+                    case UsfmTokenType.Book:
+                    case UsfmTokenType.Chapter:
+                    case UsfmTokenType.Paragraph:
+                        // Strip space from end of string before CR/LF
+                        if (usfm.Length > 0)
+                        {
+                            if (
+                                usfm[usfm.Length - 1] == ' ' && (prevToken != null && prevToken.ToUsfm().Trim() != "")
+                                || !tokensHaveWhitespace
+                            )
+                            {
+                                usfm.Length--;
+                            }
+                            if (!tokensHaveWhitespace)
+                                usfm.Append("\r\n");
+                        }
+                        tokenUsfm = token.ToUsfm();
+                        break;
+                    case UsfmTokenType.Verse:
+                        // Add newline if after anything other than [ or (
+                        if (usfm.Length > 0 && usfm[usfm.Length - 1] != '[' && usfm[usfm.Length - 1] != '(')
+                        {
+                            if (
+                                usfm[usfm.Length - 1] == ' ' && (prevToken != null && prevToken.ToUsfm().Trim() != "")
+                                || !tokensHaveWhitespace
+                            )
+                            {
+                                usfm.Length--;
+                            }
+                            if (!tokensHaveWhitespace)
+                                usfm.Append("\r\n");
+                        }
+
+                        tokenUsfm = tokensHaveWhitespace ? token.ToUsfm().Trim() : token.ToUsfm();
+
+                        if (RtlReferenceOrder != RtlReferenceOrder.NotSet)
+                        {
+                            string directionMarker =
+                                RtlReferenceOrder == RtlReferenceOrder.BookVerseChapter ? "\u200e" : "\u200f";
+                            tokenUsfm = RtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
+                        }
+                        break;
+                    case UsfmTokenType.Text:
+                        // Ensure spaces are preserved
+                        tokenUsfm = token.ToUsfm();
+                        if (tokensHaveWhitespace && usfm.Length > 0 && usfm[usfm.Length - 1] == ' ')
+                        {
+                            if (
+                                (
+                                    tokenUsfm.Length > 0
+                                    && tokenUsfm[0] == ' '
+                                    && prevToken != null
+                                    && prevToken.ToUsfm().Trim() != ""
+                                ) || tokenUsfm.StartsWith("\r\n")
+                            )
+                            {
+                                usfm.Length--;
+                            }
+                            else
+                            {
+                                tokenUsfm = tokenUsfm.TrimStart(' ');
+                            }
+                        }
+                        break;
+                    default:
+                        tokenUsfm = token.ToUsfm();
+                        break;
+                }
+
+                usfm.Append(tokenUsfm);
+                prevToken = token;
+            }
+
+            // Make sure begins without space or CR/LF
+            if (usfm.Length > 0 && usfm[0] == ' ')
+                usfm.Remove(0, 1);
+            if (usfm.Length > 0 && usfm[0] == '\r')
+                usfm.Remove(0, 2);
+
+            // Make sure ends without space and with a CR/LF
+            if (usfm.Length > 0 && usfm[usfm.Length - 1] == ' ')
+                usfm.Length--;
+            if (usfm.Length > 0 && usfm[usfm.Length - 1] != '\n')
+                usfm.Append("\r\n");
+            if (
+                usfm.Length > 3
+                && usfm[usfm.Length - 3] == ' '
+                && usfm[usfm.Length - 2] == '\r'
+                && usfm[usfm.Length - 1] == '\n'
+            )
+                usfm.Remove(usfm.Length - 3, 1);
+            return usfm.ToString();
+        }
+
         /// <summary>
         /// Gets the next word in the usfm and advances the index past it
         /// </summary>
@@ -361,7 +485,7 @@ namespace SIL.Machine.Corpora
             if (matchingToken == null)
                 return null;
 
-            UsfmTag matchingTag = _stylesheet.GetTag(matchingToken.NestlessMarker);
+            UsfmTag matchingTag = Stylesheet.GetTag(matchingToken.NestlessMarker);
             if (
                 matchingTag.StyleType != UsfmStyleType.Character
                 && matchingTag.StyleType != UsfmStyleType.Milestone
