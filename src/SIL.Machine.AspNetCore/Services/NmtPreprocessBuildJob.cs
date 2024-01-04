@@ -1,9 +1,13 @@
-﻿namespace SIL.Machine.AspNetCore.Services;
+﻿using Google.Protobuf;
+using MongoDB.Bson.IO;
+
+namespace SIL.Machine.AspNetCore.Services;
 
 public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
+    private readonly JsonObject _buildPreprocessSummary;
 
     public NmtPreprocessBuildJob(
         IPlatformService platformService,
@@ -18,6 +22,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;
+        _buildPreprocessSummary = new JsonObject();
     }
 
     protected override async Task DoWorkAsync(
@@ -29,7 +34,16 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         CancellationToken cancellationToken
     )
     {
+        _buildPreprocessSummary.Add("event", "build_preprocess");
+        _buildPreprocessSummary.Add("type", "nmt");
+        _buildPreprocessSummary.Add("engine_id", engineId);
+        _buildPreprocessSummary.Add("build_id", buildId);
+        _buildPreprocessSummary.Add("build_options", JsonNode.Parse(buildOptions!));
+        _buildPreprocessSummary.Add("corpora", JsonNode.Parse(JsonSerializer.Serialize(data)));
+
         await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
+
+        Logger.LogInformation(_buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
@@ -67,6 +81,8 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         );
 
         int corpusSize = 0;
+        var numTrainRows = 0;
+        var numPretranslateRows = 0;
         async IAsyncEnumerable<Pretranslation> ProcessRowsAsync()
         {
             foreach (Corpus corpus in corpora)
@@ -106,6 +122,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                        numTrainRows += 1;
                     }
                     if (
                         (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
@@ -137,6 +154,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         {
                             refs = row.TargetRefs;
                         }
+                        numPretranslateRows += 1;
                         yield return new Pretranslation
                         {
                             CorpusId = corpus.Id,
@@ -162,6 +180,10 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
             cancellationToken: cancellationToken
         );
+
+        _buildPreprocessSummary.Add("num_train_rows", numTrainRows);
+        _buildPreprocessSummary.Add("num_pretranslate_rows", numPretranslateRows);
+
         return corpusSize;
     }
 
