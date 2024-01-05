@@ -38,7 +38,14 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         _buildPreprocessSummary.Add("type", "nmt");
         _buildPreprocessSummary.Add("engine_id", engineId);
         _buildPreprocessSummary.Add("build_id", buildId);
-        _buildPreprocessSummary.Add("build_options", JsonNode.Parse(buildOptions!));
+        try
+        {
+            _buildPreprocessSummary.Add("build_options", JsonNode.Parse(buildOptions!));
+        }
+        catch (Exception)
+        {
+            _buildPreprocessSummary.Add("build_options", "Build options failed parsing: " + (buildOptions ?? "null"));
+        }
         _buildPreprocessSummary.Add("corpora", JsonNode.Parse(JsonSerializer.Serialize(data)));
 
         await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
