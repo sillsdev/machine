@@ -7,7 +7,6 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
-    private readonly JsonObject _buildPreprocessSummary;
 
     public NmtPreprocessBuildJob(
         IPlatformService platformService,
@@ -22,7 +21,6 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;
-        _buildPreprocessSummary = new JsonObject();
     }
 
     protected override async Task DoWorkAsync(
@@ -34,23 +32,16 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         CancellationToken cancellationToken
     )
     {
-        _buildPreprocessSummary.Add("event", "build_preprocess");
-        _buildPreprocessSummary.Add("type", "nmt");
-        _buildPreprocessSummary.Add("engine_id", engineId);
-        _buildPreprocessSummary.Add("build_id", buildId);
-        try
-        {
-            _buildPreprocessSummary.Add("build_options", JsonNode.Parse(buildOptions!));
-        }
-        catch (Exception)
-        {
-            _buildPreprocessSummary.Add("build_options", "Build options failed parsing: " + (buildOptions ?? "null"));
-        }
-        _buildPreprocessSummary.Add("corpora", JsonNode.Parse(JsonSerializer.Serialize(data)));
+        IDictionary<string, int> counts = await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
 
-        await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
-
-        Logger.LogInformation(_buildPreprocessSummary.ToJsonString());
+        // Log summary of build data
+        JsonObject _buildPreprocessSummary =
+            new() { { "event", "build_preprocess" }, { "engine_id", engineId }, { "build_id", buildId } };
+        foreach (KeyValuePair<string, int> kvp in counts)
+        {
+            _buildPreprocessSummary.Add(kvp.Key, kvp.Value);
+        }
+        Logger.LogInformation("{summary}", _buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
@@ -68,7 +59,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private async Task<int> WriteDataFilesAsync(
+    private async Task<IDictionary<string, int>> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<Corpus> corpora,
         string? buildOptions,
@@ -87,9 +78,10 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken)
         );
 
-        int corpusSize = 0;
-        var numTrainRows = 0;
-        var numPretranslateRows = 0;
+        Dictionary<string, int> counts = new();
+        counts["CorpusSize"] = 0;
+        counts["NumTrainRows"] = 0;
+        counts["NumPretranslateRows"] = 0;
         async IAsyncEnumerable<Pretranslation> ProcessRowsAsync()
         {
             foreach (Corpus corpus in corpora)
@@ -129,7 +121,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                        numTrainRows += 1;
+                        counts["NumTrainRows"] += 1;
                     }
                     if (
                         (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
@@ -161,7 +153,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         {
                             refs = row.TargetRefs;
                         }
-                        numPretranslateRows += 1;
+                        counts["NumPretranslateRows"] += 1;
                         yield return new Pretranslation
                         {
                             CorpusId = corpus.Id,
@@ -171,7 +163,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         };
                     }
                     if (!row.IsEmpty)
-                        corpusSize++;
+                        counts["CorpusSize"]++;
                 }
             }
         }
@@ -188,10 +180,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             cancellationToken: cancellationToken
         );
 
-        _buildPreprocessSummary.Add("num_train_rows", numTrainRows);
-        _buildPreprocessSummary.Add("num_pretranslate_rows", numPretranslateRows);
-
-        return corpusSize;
+        return counts;
     }
 
     protected override async Task CleanupAsync(
