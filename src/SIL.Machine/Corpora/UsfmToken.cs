@@ -172,7 +172,7 @@ namespace SIL.Machine.Corpora
 
                 if (!string.IsNullOrEmpty(Data))
                 {
-                    if (Marker.Length > 0)
+                    if (!addSpaces && (Marker.Length == 0 || Marker[Marker.Length - 1] != '*'))
                         totalLength++;
                     totalLength += Data.Length;
                     if (addSpaces)
@@ -225,7 +225,7 @@ namespace SIL.Machine.Corpora
 
                 if (!string.IsNullOrEmpty(Data))
                 {
-                    if (Marker.Length > 0)
+                    if (!addSpaces && (Marker.Length == 0 || Marker[Marker.Length - 1] != '*'))
                         sb.Append(' ');
                     sb.Append(Data);
                     if (addSpaces)
@@ -236,11 +236,13 @@ namespace SIL.Machine.Corpora
                 {
                     string attributes = ToAttributeString();
                     if (attributes != "")
+                    {
                         sb.Append(attributes);
+                    }
                     else
                     {
                         // remove space that was put after marker - not needed when there are no attributes.
-                        sb.Length -= 1;
+                        sb.Length--;
                     }
                     sb.Append(@"\*");
                 }

@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
         {
             string usfm = ReadUsfm();
             var rowCollector = new TextRowCollector(this);
-            UsfmParser.Parse(_stylesheet, usfm, rowCollector, Versification, preserveWhitespace: _includeMarkers);
+            UsfmParser.Parse(usfm, rowCollector, _stylesheet, Versification, preserveWhitespace: _includeMarkers);
             return rowCollector.Rows;
         }
 
