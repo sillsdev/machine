@@ -218,7 +218,8 @@ namespace SIL.Machine.AspNetCore.Services
                     Logger,
                     BuildJobService,
                     SharedFileService,
-                    CorpusService
+                    CorpusService,
+                    new LanguageTagService()
                 );
             }
         }

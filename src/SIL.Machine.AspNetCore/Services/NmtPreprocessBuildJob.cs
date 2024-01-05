@@ -7,6 +7,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
+    private readonly ILanguageTagService _languageTagService;
 
     public NmtPreprocessBuildJob(
         IPlatformService platformService,
@@ -15,12 +16,14 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         ILogger<NmtPreprocessBuildJob> logger,
         IBuildJobService buildJobService,
         ISharedFileService sharedFileService,
-        ICorpusService corpusService
+        ICorpusService corpusService,
+        ILanguageTagService languageTagService
     )
         : base(platformService, engines, lockFactory, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;
+        _languageTagService = languageTagService;
     }
 
     protected override async Task DoWorkAsync(
@@ -36,11 +39,22 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         // Log summary of build data
         JsonObject _buildPreprocessSummary =
-            new() { { "event", "build_preprocess" }, { "engine_id", engineId }, { "build_id", buildId } };
+            new() { { "Event", "BuildPreprocess" }, { "EngineId", engineId }, { "BuildId", buildId } };
         foreach (KeyValuePair<string, int> kvp in counts)
         {
             _buildPreprocessSummary.Add(kvp.Key, kvp.Value);
         }
+        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
+        _buildPreprocessSummary.Add(
+            "SourceLanguageResolved",
+            _languageTagService.ConvertToFlores200Code(engine.SourceLanguage)
+        );
+        _buildPreprocessSummary.Add(
+            "TargetLanguageResolved",
+            _languageTagService.ConvertToFlores200Code(engine.TargetLanguage)
+        );
         Logger.LogInformation("{summary}", _buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))

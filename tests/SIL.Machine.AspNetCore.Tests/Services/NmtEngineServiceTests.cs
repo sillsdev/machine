@@ -270,7 +270,8 @@ public class NmtEngineServiceTests
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
-                        Substitute.For<ICorpusService>()
+                        Substitute.For<ICorpusService>(),
+                        new LanguageTagService()
                     );
                 }
                 if (jobType == typeof(NmtPostprocessBuildJob))
