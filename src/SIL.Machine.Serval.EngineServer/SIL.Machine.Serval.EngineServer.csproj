@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>34e222a9-ef76-48f9-869e-338547f9bd25</UserSecretsId>
@@ -23,7 +23,7 @@
 
 	<!-- Include icu.net.dll.config - which is only available after the package is built -->
 	<ItemGroup>
-		<ResolvedFileToPublish Include=".\bin\Release\net6.0\icu.net.dll.config">
+		<ResolvedFileToPublish Include=".\bin\Release\net8.0\icu.net.dll.config">
 			<RelativePath>icu.net.dll.config</RelativePath>
 		</ResolvedFileToPublish>
 	</ItemGroup>

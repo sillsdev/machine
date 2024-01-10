@@ -103,10 +103,10 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddClearMLService(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("ClearML");
+        connectionString ??= builder.Configuration!.GetConnectionString("ClearML");
         builder.Services
             .AddHttpClient("ClearML")
-            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString))
+            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
             // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
             .AddTransientHttpErrorPolicy(
                 b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
@@ -120,8 +120,9 @@ public static class IMachineBuilderExtensions
 
         builder.Services
             .AddHttpClient("ClearML-NoRetry")
-            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString));
+            .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!));
         builder.Services.AddSingleton<ClearMLHealthCheck>();
+
         builder.Services.AddHealthChecks().AddCheck<ClearMLHealthCheck>("ClearML Health Check");
 
         return builder;
@@ -158,7 +159,7 @@ public static class IMachineBuilderExtensions
                     .UseSimpleAssemblyNameTypeSerializer()
                     .UseRecommendedSerializerSettings()
                     .UseMongoStorage(
-                        connectionString ?? builder.Configuration.GetConnectionString("Hangfire"),
+                        connectionString ?? builder.Configuration!.GetConnectionString("Hangfire"),
                         new MongoStorageOptions
                         {
                             MigrationOptions = new MongoMigrationOptions
@@ -220,9 +221,9 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddMongoDataAccess(this IMachineBuilder builder, string? connectionString = null)
     {
-        connectionString ??= builder.Configuration.GetConnectionString("Mongo");
+        connectionString ??= builder.Configuration!.GetConnectionString("Mongo");
         builder.Services.AddMongoDataAccess(
-            connectionString,
+            connectionString!,
             "SIL.Machine.AspNetCore.Models",
             o =>
             {
@@ -257,7 +258,7 @@ public static class IMachineBuilderExtensions
                 );
             }
         );
-        builder.Services.AddHealthChecks().AddMongoDb(connectionString, name: "Mongo");
+        builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
 
         return builder;
     }
@@ -271,7 +272,7 @@ public static class IMachineBuilderExtensions
         builder.Services
             .AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
-                o.Address = new Uri(connectionString ?? builder.Configuration.GetConnectionString("Serval"));
+                o.Address = new Uri(connectionString ?? builder.Configuration!.GetConnectionString("Serval")!);
             })
             .ConfigureChannel(o =>
             {
@@ -321,7 +322,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
-        builder.AddServalPlatformService(connectionString ?? builder.Configuration.GetConnectionString("Serval"));
+        builder.AddServalPlatformService(connectionString ?? builder.Configuration!.GetConnectionString("Serval"));
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? new[] { TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt };
@@ -340,7 +341,6 @@ public static class IMachineBuilderExtensions
                     break;
             }
         }
-        builder.Services.AddGrpcHealthChecks();
 
         return builder;
     }
@@ -359,7 +359,7 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<BuildJobOptions>(config);
-        var options = config.Get<BuildJobOptions>();
+        var options = config.Get<BuildJobOptions>()!;
         return builder.AddBuildJobService(options);
     }
 
@@ -368,7 +368,24 @@ public static class IMachineBuilderExtensions
         if (builder.Configuration is null)
             builder.AddBuildJobService(o => { });
         else
+        {
             builder.AddBuildJobService(builder.Configuration.GetSection(BuildJobOptions.Key));
+
+            string EnginesDir = builder.Configuration
+                .GetSection(SmtTransferEngineOptions.Key)!
+                .GetValue<string>("EnginesDir")!;
+
+            string driveLetter = Path.GetPathRoot(EnginesDir)![..1];
+            // add health check for disk storage capacity
+            builder.Services
+                .AddHealthChecks()
+                .AddDiskStorageHealthCheck(
+                    x => x.AddDrive(driveLetter, 2_000_000),
+                    "SMT Engine Storage Capacity",
+                    HealthStatus.Degraded
+                );
+        }
+
         return builder;
     }
 
