@@ -380,7 +380,7 @@ public static class IMachineBuilderExtensions
             builder.Services
                 .AddHealthChecks()
                 .AddDiskStorageHealthCheck(
-                    x => x.AddDrive(driveLetter, 2_000_000),
+                    x => x.AddDrive(driveLetter, 1_000), // 1GB
                     "SMT Engine Storage Capacity",
                     HealthStatus.Degraded
                 );
