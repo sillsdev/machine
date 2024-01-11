@@ -10,7 +10,7 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
     private static readonly TimeSpan RefreshPeriod = TimeSpan.FromSeconds(3600);
-    private string _authToken = "";
+    private string? _authToken = "";
 
     public ClearMLAuthenticationService(
         IServiceProvider services,
@@ -29,14 +29,14 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
     {
         using (await _lock.LockAsync(cancellationToken))
         {
-            if (_authToken is "")
+            if (_authToken is null || _authToken is "")
             {
                 //Should only happen once, so no different in cost than previous solution
                 _logger.LogInformation("Token was empty; refreshing");
                 await AuthorizeAsync(cancellationToken);
             }
         }
-        return _authToken;
+        return _authToken ?? throw new Exception("ClearML authentication token not found in response.");
     }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
@@ -49,6 +49,9 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
         catch (Exception e)
         {
             _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
+            if (_authToken is null || _authToken is "")
+                // The ClearML token never was set.  We can't continue without it.
+                throw;
         }
     }
 
@@ -64,6 +67,8 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
+        if (_authToken is null || _authToken is "")
+            throw new Exception($"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}");
         _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }
 }
