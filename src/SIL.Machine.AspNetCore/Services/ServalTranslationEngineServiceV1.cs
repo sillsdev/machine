@@ -136,7 +136,7 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
     {
         HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
-        HealthCheckResponse healthCheckResponse = WriteHealthCheckResponse.Generate(healthReport);
+        HealthCheckResponse healthCheckResponse = WriteGrpcHealthCheckResponse.Generate(healthReport);
         return healthCheckResponse;
     }
 
