@@ -272,8 +272,12 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalPlatformService(this IMachineBuilder builder, string connectionString)
+    public static IMachineBuilder AddServalPlatformService(this IMachineBuilder builder, string? connectionString = null)
     {
+        connectionString ??= builder.Configuration?.GetConnectionString("Serval");
+        if (connectionString is null)
+            throw new InvalidOperationException("Serval connection string is required");
+
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
         builder.Services
             .AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
@@ -328,9 +332,6 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
-        connectionString ??= builder.Configuration?.GetConnectionString("Serval");
-        if (connectionString is null)
-            throw new InvalidOperationException("Serval connection string is required");
         builder.AddServalPlatformService(connectionString);
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
