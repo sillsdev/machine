@@ -369,8 +369,9 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, IConfiguration config)
     {
         builder.Services.Configure<BuildJobOptions>(config);
-        var options = config.Get<BuildJobOptions>() ?? throw new InvalidOperationException("BuildJobOPtions are required");
-        return builder.AddBuildJobService(options);
+        var buildJobOptions = new BuildJobOptions();
+        config.GetSection(BuildJobOptions.Key).Bind(buildJobOptions);
+        return builder.AddBuildJobService(buildJobOptions);
     }
 
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
@@ -381,11 +382,9 @@ public static class IMachineBuilderExtensions
         {
             builder.AddBuildJobService(builder.Configuration.GetSection(BuildJobOptions.Key));
 
-            string EnginesDir = builder.Configuration
-                .GetSection(SmtTransferEngineOptions.Key)!
-                .GetValue<string>("EnginesDir") ?? throw new InvalidOperationException("EnginesDir is required");
-
-            string driveLetter = Path.GetPathRoot(EnginesDir)![..1];
+            var smtTransferEngineOptions = new SmtTransferEngineOptions();
+            builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
+            string driveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)![..1];
             // add health check for disk storage capacity
             builder.Services
                 .AddHealthChecks()
