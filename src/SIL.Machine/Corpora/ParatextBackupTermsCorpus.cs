@@ -2,16 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTermsCorpus : DictionaryTextCorpus
     {
-        private static List<string> PREDEFINED_TERMS_LIST_TYPES = new List<string>() { "Major", "All", "SilNt", "Pt6" };
+        private static readonly List<string> PredefinedTermsListTypes = new List<string>()
+        {
+            "Major",
+            "All",
+            "SilNt",
+            "Pt6"
+        };
 
         public ParatextBackupTermsCorpus(string fileName, IEnumerable<string> termCategories)
         {
@@ -22,39 +28,25 @@ namespace SIL.Machine.Corpora
                 if (termsFileEntry is null)
                     return;
 
-                ZipArchiveEntry settingsEntry = archive.GetEntry("Settings.xml");
-                if (settingsEntry == null)
-                    settingsEntry = archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(".ssf"));
-                if (settingsEntry == null)
-                {
-                    throw new ArgumentException(
-                        "The project backup does not contain a settings file.",
-                        nameof(fileName)
-                    );
-                }
-                XDocument settingsDoc;
-                using (Stream stream = settingsEntry.Open())
-                {
-                    settingsDoc = XDocument.Load(stream);
-                }
-                string textId = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
+                var settingsParser = new ZipParatextProjectSettingsParser(archive);
+                ParatextProjectSettings settings = settingsParser.Parse();
 
                 XDocument termRenderingsDoc;
-                using (var keyTermsFile = termsFileEntry.Open())
+                using (Stream keyTermsFile = termsFileEntry.Open())
                 {
                     termRenderingsDoc = XDocument.Load(keyTermsFile);
                 }
 
-                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry(textId.Split(':').Last());
+                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry(settings.BiblicalTermsFileName);
 
                 XDocument biblicalTermsDoc;
                 IDictionary<string, string> termIdToCategoryDictionary;
-                if (PREDEFINED_TERMS_LIST_TYPES.Contains(textId.Split(':').First()))
+                if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
                 {
                     using (
-                        var keyTermsFile = Assembly
+                        Stream keyTermsFile = Assembly
                             .GetExecutingAssembly()
-                            .GetManifestResourceStream("SIL.Machine.Corpora." + textId.Split(':').Last())
+                            .GetManifestResourceStream("SIL.Machine.Corpora." + settings.BiblicalTermsFileName)
                     )
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
@@ -62,11 +54,10 @@ namespace SIL.Machine.Corpora
                     }
                 }
                 else if (
-                    textId.Split(':').First() == "Project"
-                    && textId.Split(':')[1] == settingsDoc.Root.Element("Name").Value
+                    settings.BiblicalTermsListType == "Project" && settings.BiblicalTermsProjectName == settings.Name
                 )
                 {
-                    using (var keyTermsFile = biblicalTermsFileEntry.Open())
+                    using (Stream keyTermsFile = biblicalTermsFileEntry.Open())
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -81,6 +72,8 @@ namespace SIL.Machine.Corpora
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering");
 
+                string textId =
+                    $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
                 foreach (XElement element in termsElements)
                 {
                     string id = element.Attribute("Id").Value;
