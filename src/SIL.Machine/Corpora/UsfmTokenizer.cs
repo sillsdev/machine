@@ -313,8 +313,8 @@ namespace SIL.Machine.Corpora
                         if (usfm.Length > 0)
                         {
                             if (
-                                usfm[usfm.Length - 1] == ' ' && (prevToken != null && prevToken.ToUsfm().Trim() != "")
-                                || !tokensHaveWhitespace
+                                usfm[usfm.Length - 1] == ' '
+                                && ((prevToken != null && prevToken.ToUsfm().Trim() != "") || !tokensHaveWhitespace)
                             )
                             {
                                 usfm.Length--;
@@ -329,8 +329,8 @@ namespace SIL.Machine.Corpora
                         if (usfm.Length > 0 && usfm[usfm.Length - 1] != '[' && usfm[usfm.Length - 1] != '(')
                         {
                             if (
-                                usfm[usfm.Length - 1] == ' ' && (prevToken != null && prevToken.ToUsfm().Trim() != "")
-                                || !tokensHaveWhitespace
+                                usfm[usfm.Length - 1] == ' '
+                                && ((prevToken != null && prevToken.ToUsfm().Trim() != "") || !tokensHaveWhitespace)
                             )
                             {
                                 usfm.Length--;

@@ -8,7 +8,7 @@
 \li1
 \v 2 \bd C\bd*hapter one,
 \li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
-\v 3 Chapter one,
+\v 3 Chapter one \w*,
 \li2 verse three.
 \v 4 Chapter one, 
 \li2 verse four,
@@ -18,7 +18,11 @@
 \s1 Chapter Two
 \p
 \v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
-\v 2-3 Chapter two, verse \fm ∆\fm*two.
+\v 2-3 Chapter two, // verse \fm ∆\fm*two.
+\esb
+\ms This is a sidebar
+\p Here is some sidebar content.
+\esbe
 \v 3-4a Chapter two, verse \w three|lemma\w*.
 \v 4b Chapter two, verse four.
 \p
@@ -26,15 +30,15 @@
 \v 6 Bad verse.
 \v 5 Chapter two, verse five \rq (MAT 3:1)\rq*.
 \v 7a Chapter two, verse seven A,
-\s Section header
+\s Section header \ts-s\*
 \p
 \v 7b verse seven B.
 \p
-\v 8 This is a list:
+\v 8 This is a list: \ts-e\*
 \b
 \tr \tc1
 \v 9 Chapter\tcr2 2\tc3 verse\tcr4 9
 \tr \tc1-2
-\v 10 \tc3-4 Chapter 2 verse 10
+\v 10 \tc3-4 \qt-s |Jesus\*Chapter 2 verse 10\qt-e\*
 \v 11-12
 \restore restore information

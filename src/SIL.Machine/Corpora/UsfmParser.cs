@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
         public static void Parse(
             string usfm,
             IUsfmParserHandler handler,
-            UsfmStylesheet stylesheet = null,
+            UsfmStylesheet stylesheet,
             ScrVers versification = null,
             bool preserveWhitespace = false
         )
@@ -46,12 +46,6 @@ namespace SIL.Machine.Corpora
 
         private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Number of tokens to skip over because have been processed in advance
-        /// (i.e. for figures which are three tokens, or links, or chapter/verse alternates)
-        /// </summary>
-        private int _skip = 0;
-
         public UsfmParser(
             IReadOnlyList<UsfmToken> tokens,
             IUsfmParserHandler handler = null,
@@ -63,8 +57,8 @@ namespace SIL.Machine.Corpora
 
         public UsfmParser(
             IReadOnlyList<UsfmToken> tokens,
-            IUsfmParserHandler handler = null,
-            UsfmStylesheet stylesheet = null,
+            IUsfmParserHandler handler,
+            UsfmStylesheet stylesheet,
             ScrVers versification = null,
             bool tokensPreserveWhitespace = false
         )
@@ -89,8 +83,8 @@ namespace SIL.Machine.Corpora
 
         public UsfmParser(
             string usfm,
-            IUsfmParserHandler handler = null,
-            UsfmStylesheet stylesheet = null,
+            IUsfmParserHandler handler,
+            UsfmStylesheet stylesheet,
             ScrVers versification = null,
             bool tokensPreserveWhitespace = false
         )
@@ -164,9 +158,9 @@ namespace SIL.Machine.Corpora
 
             // Skip over tokens that are to be skipped, ensuring that
             // SpecialToken state is true.
-            if (_skip > 0)
+            if (State.SpecialTokenCount > 0)
             {
-                _skip--;
+                State.SpecialTokenCount--;
                 State.SpecialToken = true;
                 return true;
             }
@@ -327,26 +321,26 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         altChapter = State.Tokens[State.Index + 2].Text.Trim();
-                        _skip += 3;
+                        State.SpecialTokenCount += 3;
 
                         // Skip blank space after if present
                         if (
-                            State.Index + _skip < State.Tokens.Count - 1
-                            && State.Tokens[State.Index + _skip + 1].Text != null
-                            && State.Tokens[State.Index + _skip + 1].Text.Trim().Length == 0
+                            State.Index + State.SpecialTokenCount < State.Tokens.Count - 1
+                            && State.Tokens[State.Index + State.SpecialTokenCount + 1].Text != null
+                            && State.Tokens[State.Index + State.SpecialTokenCount + 1].Text.Trim().Length == 0
                         )
-                            _skip++;
+                            State.SpecialTokenCount++;
                     }
 
                     // Get publishable chapter number
                     if (
-                        State.Index + _skip < State.Tokens.Count - 2
-                        && State.Tokens[State.Index + _skip + 1].Marker == "cp"
-                        && State.Tokens[State.Index + _skip + 2].Text != null
+                        State.Index + State.SpecialTokenCount < State.Tokens.Count - 2
+                        && State.Tokens[State.Index + State.SpecialTokenCount + 1].Marker == "cp"
+                        && State.Tokens[State.Index + State.SpecialTokenCount + 2].Text != null
                     )
                     {
-                        pubChapter = State.Tokens[State.Index + _skip + 2].Text.Trim();
-                        _skip += 2;
+                        pubChapter = State.Tokens[State.Index + State.SpecialTokenCount + 2].Text.Trim();
+                        State.SpecialTokenCount += 2;
                     }
 
                     // Chapter
@@ -373,18 +367,18 @@ namespace SIL.Machine.Corpora
                     {
                         // Get alternate verse number
                         altVerse = State.Tokens[State.Index + 2].Text.Trim();
-                        _skip += 3;
+                        State.SpecialTokenCount += 3;
                     }
                     if (
-                        State.Index + _skip < State.Tokens.Count - 3
-                        && State.Tokens[State.Index + _skip + 1].Marker == "vp"
-                        && State.Tokens[State.Index + _skip + 2].Text != null
-                        && State.Tokens[State.Index + _skip + 3].Marker == "vp*"
+                        State.Index + State.SpecialTokenCount < State.Tokens.Count - 3
+                        && State.Tokens[State.Index + State.SpecialTokenCount + 1].Marker == "vp"
+                        && State.Tokens[State.Index + State.SpecialTokenCount + 2].Text != null
+                        && State.Tokens[State.Index + State.SpecialTokenCount + 3].Marker == "vp*"
                     )
                     {
                         // Get publishable verse number
-                        pubVerse = State.Tokens[State.Index + _skip + 2].Text.Trim();
-                        _skip += 3;
+                        pubVerse = State.Tokens[State.Index + State.SpecialTokenCount + 2].Text.Trim();
+                        State.SpecialTokenCount += 3;
                     }
 
                     // Verse
@@ -432,7 +426,7 @@ namespace SIL.Machine.Corpora
                         {
                             // Get category
                             sidebarCategory = State.Tokens[State.Index + 2].Text.Trim();
-                            _skip += 3;
+                            State.SpecialTokenCount += 3;
                         }
 
                         if (Handler != null)
@@ -486,7 +480,7 @@ namespace SIL.Machine.Corpora
 
                         ParseDisplayAndTarget(out string display, out string target);
 
-                        _skip += 2;
+                        State.SpecialTokenCount += 2;
 
                         if (Handler != null)
                             Handler.Ref(State, token.Marker, display, target);
@@ -528,7 +522,7 @@ namespace SIL.Machine.Corpora
                     {
                         // Get category
                         noteCategory = State.Tokens[State.Index + 2].Text.Trim();
-                        _skip += 3;
+                        State.SpecialTokenCount += 3;
                     }
 
                     State.Push(new UsfmParserElement(UsfmElementType.Note, token.Marker));
