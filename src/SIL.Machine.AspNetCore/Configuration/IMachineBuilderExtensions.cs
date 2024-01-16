@@ -384,7 +384,9 @@ public static class IMachineBuilderExtensions
 
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
             builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
-            string driveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)![..1];
+            string? driveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
+            if(driveLetter is null)
+                throw new InvalidOperationException("SMT Engine directory is required");
             // add health check for disk storage capacity
             builder.Services
                 .AddHealthChecks()

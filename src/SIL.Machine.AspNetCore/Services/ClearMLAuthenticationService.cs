@@ -1,42 +1,34 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticationService
+public class ClearMLAuthenticationService(
+    IServiceProvider services,
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options,
+    ILogger<ClearMLAuthenticationService> logger
+    ) : RecurrentTask("ClearML authentication service", services, RefreshPeriod, logger), IClearMLAuthenticationService
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly ILogger<ClearMLAuthenticationService> _logger;
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly ILogger<ClearMLAuthenticationService> _logger = logger;
     private readonly AsyncLock _lock = new();
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
     private static readonly TimeSpan RefreshPeriod = TimeSpan.FromSeconds(3600);
-    private string? _authToken = "";
-
-    public ClearMLAuthenticationService(
-        IServiceProvider services,
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options,
-        ILogger<ClearMLAuthenticationService> logger
-    )
-        : base("ClearML authentication service", services, RefreshPeriod, logger)
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML");
-        _options = options;
-        _logger = logger;
-    }
+    private string _authToken = "";
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {
         using (await _lock.LockAsync(cancellationToken))
         {
-            if (_authToken is null || _authToken is "")
+            if (_authToken is "")
             {
                 //Should only happen once, so no different in cost than previous solution
                 _logger.LogInformation("Token was empty; refreshing");
                 await AuthorizeAsync(cancellationToken);
             }
         }
-        return _authToken ?? throw new Exception("ClearML authentication token not found in response.");
+        return _authToken;
     }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
@@ -48,10 +40,14 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
-            if (_authToken is null || _authToken is "")
+            if (_authToken is ""){
+                _logger.LogError(e, "Error occurred while aquiring ClearML authentication token for the first time.");
                 // The ClearML token never was set.  We can't continue without it.
                 throw;
+            }
+            else
+                _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
+
         }
     }
 
@@ -66,9 +62,10 @@ public class ClearMLAuthenticationService : RecurrentTask, IClearMLAuthenticatio
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
-        _authToken = (string)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"]!;
-        if (_authToken is null || _authToken is "")
+        string? refreshedToken = (string?)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"];
+        if (refreshedToken is null || refreshedToken is "")
             throw new Exception($"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}");
+        _authToken = refreshedToken;
         _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }
 }
