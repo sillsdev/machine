@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<RootNamespace>SIL.Machine</RootNamespace>
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>machine</ToolCommandName>

@@ -9,9 +9,15 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
 
     private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices;
 
-    public ServalTranslationEngineServiceV1(IEnumerable<ITranslationEngineService> engineServices)
+    private readonly HealthCheckService _healthCheckService;
+
+    public ServalTranslationEngineServiceV1(
+        IEnumerable<ITranslationEngineService> engineServices,
+        HealthCheckService healthCheckService
+    )
     {
         _engineServices = engineServices.ToDictionary(es => es.Type);
+        _healthCheckService = healthCheckService;
     }
 
     public override async Task<Empty> Create(CreateRequest request, ServerCallContext context)
@@ -125,6 +131,13 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
+    }
+
+    public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
+    {
+        HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
+        HealthCheckResponse healthCheckResponse = WriteGrpcHealthCheckResponse.Generate(healthReport);
+        return healthCheckResponse;
     }
 
     private ITranslationEngineService GetEngineService(string engineTypeStr)

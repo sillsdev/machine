@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Description>An ASP.NET Core web API middleware for the Machine library.</Description>
 		<NoWarn>1591</NoWarn>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -26,6 +26,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="6.0.2" />
+		<PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.2" />
 		<PackageReference Include="AWSSDK.S3" Version="3.7.205.8" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.57.0" />

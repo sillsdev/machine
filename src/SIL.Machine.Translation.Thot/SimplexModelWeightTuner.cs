@@ -44,7 +44,6 @@ namespace SIL.Machine.Translation.Thot
                 }
                 return quality;
             }
-            ;
             progress.Report(new ProgressStatus(0, MaxProgressFunctionEvaluations));
             var simplex = new NelderMeadSimplex(ConvergenceTolerance, MaxFunctionEvaluations, 1.0);
             MinimizationResult result = simplex.FindMinimum(

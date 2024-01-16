@@ -29,7 +29,6 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.MapServalTranslationEngineService();
-app.MapGrpcHealthChecksService();
 app.MapHangfireDashboard();
 
 app.Run();

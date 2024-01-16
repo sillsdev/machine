@@ -25,6 +25,4 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.MapHealthChecks("/health");
-
 app.Run();
