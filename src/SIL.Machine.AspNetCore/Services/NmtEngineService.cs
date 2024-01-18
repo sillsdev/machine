@@ -146,7 +146,7 @@ public class NmtEngineService : ITranslationEngineService
         throw new NotSupportedException();
     }
 
-    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
+    public Task<int> GetQueueSizeAsync(string? queueName = null, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_clearMLMonitorService.QueueSize);
     }

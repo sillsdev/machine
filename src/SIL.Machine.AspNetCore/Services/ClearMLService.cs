@@ -146,10 +146,11 @@ public class ClearMLService : IClearMLService
     }
 
     public async Task<IReadOnlyList<ClearMLTask>> GetTasksForCurrentQueueAsync(
+        string? queueName = null,
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["name"] = _options.CurrentValue.Queue };
+        var body = new JsonObject { ["name"] = queueName ?? _options.CurrentValue.Queue };
         JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
         IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();

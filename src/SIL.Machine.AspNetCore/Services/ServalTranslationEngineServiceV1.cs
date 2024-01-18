@@ -130,7 +130,10 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
+        return new GetQueueSizeResponse
+        {
+            Size = await engineService.GetQueueSizeAsync(request.queueName, context.CancellationToken)
+        };
     }
 
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
