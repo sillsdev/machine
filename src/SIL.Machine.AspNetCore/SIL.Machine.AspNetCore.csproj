@@ -47,6 +47,7 @@
 		<ProjectReference Include="..\SIL.Machine\SIL.Machine.csproj" />
 		<ProjectReference Include="..\..\..\serval\src\Serval.Grpc\Serval.Grpc.csproj" Condition="Exists('..\..\..\serval\src\Serval.Grpc\Serval.Grpc.csproj')" />
 		<ProjectReference Include="..\..\..\serval\src\SIL.DataAccess\SIL.DataAccess.csproj" Condition="Exists('..\..\..\serval\src\SIL.DataAccess\SIL.DataAccess.csproj')" />
+		<EmbeddedResource Include="data\flores200languages.csv" />
 	</ItemGroup>
 
 	<Target Name="ZipThotNewModel" BeforeTargets="BeforeBuild">
