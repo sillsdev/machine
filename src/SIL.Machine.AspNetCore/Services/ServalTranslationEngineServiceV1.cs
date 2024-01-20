@@ -3,22 +3,16 @@ using Serval.Translation.V1;
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class ServalTranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
+public class ServalTranslationEngineServiceV1(
+    IEnumerable<ITranslationEngineService> engineServices,
+    HealthCheckService healthCheckService
+    ) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices;
+    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices = engineServices.ToDictionary(es => es.Type);
 
-    private readonly HealthCheckService _healthCheckService;
-
-    public ServalTranslationEngineServiceV1(
-        IEnumerable<ITranslationEngineService> engineServices,
-        HealthCheckService healthCheckService
-    )
-    {
-        _engineServices = engineServices.ToDictionary(es => es.Type);
-        _healthCheckService = healthCheckService;
-    }
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override async Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -131,6 +125,23 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
+    }
+
+    public override Task<GetLanguageInfoResponse> GetLanguageInfo(
+        GetLanguageInfoRequest request,
+        ServerCallContext context
+    )
+    {
+        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        LanguageInfoDto languageInfo = engineService.GetlanguageInfo(request.LanguageCode);
+        return Task.FromResult(
+            new GetLanguageInfoResponse
+            {
+                ResolvedLanguageCode = languageInfo.ResolvedLanguageCode,
+                CommonLanguageName = languageInfo.CommonLanguageName,
+                NativeLanguageSupport = languageInfo.NativeLanguageSupport,
+            }
+        );
     }
 
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)

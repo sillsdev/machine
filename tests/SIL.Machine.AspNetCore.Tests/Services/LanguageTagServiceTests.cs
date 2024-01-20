@@ -102,4 +102,25 @@ public class LanguageTagServiceTests
         string code = _languageTagService.ConvertToFlores200Code("eng-Latn");
         Assert.That(code, Is.EqualTo("eng_Latn"));
     }
+
+    [Test]
+    [TestCase("en", "English", "eng_Latn", true)]
+    [TestCase("ms", "Standard Malay", "zsm_Latn", true)]
+    [TestCase("cmn", "Chinese (Simplified)", "zho_Hans", true)]
+    [TestCase("xyz", "", "xyz", false)]
+    public void GetLanguageInfoAsync(
+        string languageCode,
+        string commonLanguageName,
+        string resolvedLanguageCode,
+        bool nativeLanguageSupport
+    )
+    {
+        LanguageInfoDto languageInfo = _languageTagService.CheckInFlores200(languageCode);
+        Assert.Multiple(() =>
+        {
+            Assert.That(languageInfo.CommonLanguageName, Is.EqualTo(commonLanguageName));
+            Assert.That(languageInfo.ResolvedLanguageCode, Is.EqualTo(resolvedLanguageCode));
+            Assert.That(languageInfo.NativeLanguageSupport, Is.EqualTo(nativeLanguageSupport));
+        });
+    }
 }
