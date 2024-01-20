@@ -7,6 +7,8 @@ public class LanguageTagService : ILanguageTagService
 
     private readonly Dictionary<string, string> _defaultScripts;
 
+    private readonly Dictionary<string, string> _flores200Languages;
+
     private static readonly Regex LangTagPattern = new Regex(
         "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
         RegexOptions.ExplicitCapture
@@ -16,6 +18,7 @@ public class LanguageTagService : ILanguageTagService
     {
         // initialise SLDR language tags to retrieve latest langtags.json file
         _defaultScripts = InitializeDefaultScripts();
+        _flores200Languages = InitializeFlores200Languages();
     }
 
     private static Dictionary<string, string> InitializeDefaultScripts()
@@ -56,7 +59,40 @@ public class LanguageTagService : ILanguageTagService
         return tempDefaultScripts;
     }
 
-    public string ConvertToFlores200Code(string languageTag)
+    private static Dictionary<string, string> InitializeFlores200Languages()
+    {
+        var tempFlores200Languages = new Dictionary<string, string>();
+        using var floresStream = Assembly
+            .GetExecutingAssembly()
+            .GetManifestResourceStream("SIL.Machine.AspNetCore.data.flores200languages.csv");
+        Debug.Assert(floresStream is not null);
+        var reader = new StreamReader(floresStream);
+        var firstLine = reader.ReadLine();
+        Debug.Assert(firstLine == "language, code");
+        while (!reader.EndOfStream)
+        {
+            string? line = reader.ReadLine();
+            if (line is null)
+                continue;
+            string[] values = line.Split(',');
+            tempFlores200Languages[values[1].Trim()] = values[0].Trim();
+        }
+        return tempFlores200Languages;
+    }
+
+    /**
+     * Converts a language tag to a Flores 200 code
+     * @param {string} languageTag - The language tag to convert
+     * @param out {string} flores200Code - The converted Flores 200 code
+     * @returns {bool} is the langauge is the Flores 200 list
+     */
+    public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
+    {
+        flores200Code = ResolveLanguageTag(languageTag);
+        return _flores200Languages.ContainsKey(flores200Code);
+    }
+
+    private string ResolveLanguageTag(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
         Match langTagMatch = LangTagPattern.Match(languageTag);

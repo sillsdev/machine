@@ -196,6 +196,7 @@ public class NmtEngineServiceTests
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
+                new LanguageTagService(),
                 ClearMLMonitorService
             );
         }
