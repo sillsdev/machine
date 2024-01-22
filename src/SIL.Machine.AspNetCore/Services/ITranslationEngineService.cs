@@ -42,5 +42,5 @@ public interface ITranslationEngineService
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
 
-    LanguageInfoDto GetlanguageInfo(string languageCode);
+    LanguageInfoDto GetlanguageInfo(string language);
 }

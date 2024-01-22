@@ -133,11 +133,11 @@ public class ServalTranslationEngineServiceV1(
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        LanguageInfoDto languageInfo = engineService.GetlanguageInfo(request.LanguageCode);
+        LanguageInfoDto languageInfo = engineService.GetlanguageInfo(request.Language);
         return Task.FromResult(
             new GetLanguageInfoResponse
             {
-                ResolvedLanguageCode = languageInfo.ResolvedLanguageCode,
+                IsoLanguageCode = languageInfo.ISOLanguageCode,
                 CommonLanguageName = languageInfo.CommonLanguageName,
                 NativeLanguageSupport = languageInfo.NativeLanguageSupport,
             }

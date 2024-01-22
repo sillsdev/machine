@@ -210,9 +210,9 @@ public class SmtTransferEngineService : ITranslationEngineService
         return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
     }
 
-    public LanguageInfoDto GetlanguageInfo(string languageCode)
+    public LanguageInfoDto GetlanguageInfo(string language)
     {
-        return new LanguageInfoDto(languageCode, "SmtTransfer", languageCode, "", false);
+        return new LanguageInfoDto(language, "SmtTransfer", language, "", false);
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

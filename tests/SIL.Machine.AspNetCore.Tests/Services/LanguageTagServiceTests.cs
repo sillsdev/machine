@@ -119,7 +119,7 @@ public class LanguageTagServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(languageInfo.CommonLanguageName, Is.EqualTo(commonLanguageName));
-            Assert.That(languageInfo.ResolvedLanguageCode, Is.EqualTo(resolvedLanguageCode));
+            Assert.That(languageInfo.ISOLanguageCode, Is.EqualTo(resolvedLanguageCode));
             Assert.That(languageInfo.NativeLanguageSupport, Is.EqualTo(nativeLanguageSupport));
         });
     }
