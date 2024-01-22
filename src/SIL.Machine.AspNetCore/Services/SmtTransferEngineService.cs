@@ -212,7 +212,7 @@ public class SmtTransferEngineService : ITranslationEngineService
 
     public LanguageInfoDto GetlanguageInfo(string languageCode)
     {
-        throw new NotImplementedException();
+        return new LanguageInfoDto(languageCode, "SmtTransfer", languageCode, "", false);
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
