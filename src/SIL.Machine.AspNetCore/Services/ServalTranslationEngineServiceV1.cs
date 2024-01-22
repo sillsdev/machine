@@ -137,7 +137,7 @@ public class ServalTranslationEngineServiceV1(
         return Task.FromResult(
             new GetLanguageInfoResponse
             {
-                IsoLanguageCode = languageInfo.ISOLanguageCode,
+                InternalCode = languageInfo.InternalCode,
                 CommonLanguageName = languageInfo.CommonLanguageName,
                 IsSupportedNatively = languageInfo.IsSupportedNatively,
             }
