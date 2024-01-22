@@ -118,9 +118,9 @@ public class LanguageTagServiceTests
         LanguageInfoDto languageInfo = _languageTagService.CheckInFlores200(languageCode);
         Assert.Multiple(() =>
         {
-            Assert.That(languageInfo.CommonLanguageName, Is.EqualTo(commonLanguageName));
+            Assert.That(languageInfo.Name, Is.EqualTo(commonLanguageName));
             Assert.That(languageInfo.InternalCode, Is.EqualTo(resolvedLanguageCode));
-            Assert.That(languageInfo.IsSupportedNatively, Is.EqualTo(nativeLanguageSupport));
+            Assert.That(languageInfo.IsNative, Is.EqualTo(nativeLanguageSupport));
         });
     }
 }

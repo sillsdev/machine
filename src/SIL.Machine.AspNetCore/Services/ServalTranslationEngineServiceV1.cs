@@ -138,8 +138,8 @@ public class ServalTranslationEngineServiceV1(
             new GetLanguageInfoResponse
             {
                 InternalCode = languageInfo.InternalCode,
-                CommonLanguageName = languageInfo.CommonLanguageName,
-                IsSupportedNatively = languageInfo.IsSupportedNatively,
+                Name = languageInfo.Name,
+                IsNative = languageInfo.IsNative,
             }
         );
     }
