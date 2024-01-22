@@ -124,7 +124,19 @@ public class LanguageTagService : ILanguageTagService
     {
         string flores200Code = ConvertToFlores200Code(languageTag);
         if (_flores200Languages.TryGetValue(flores200Code, out string? tempName))
-            return new LanguageInfoDto(flores200Code, "Nmt", flores200Code, tempName, true);
-        return new LanguageInfoDto(languageTag, "Nmt", flores200Code, "", false);
+            return new LanguageInfoDto(
+                language: languageTag,
+                engineType: "Nmt",
+                internalCode: flores200Code,
+                name: tempName,
+                isNative: true
+            );
+        return new LanguageInfoDto(
+            language: languageTag,
+            engineType: "Nmt",
+            internalCode: flores200Code,
+            name: null,
+            isNative: false
+        );
     }
 }
