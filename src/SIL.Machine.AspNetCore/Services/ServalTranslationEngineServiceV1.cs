@@ -139,7 +139,7 @@ public class ServalTranslationEngineServiceV1(
             {
                 IsoLanguageCode = languageInfo.ISOLanguageCode,
                 CommonLanguageName = languageInfo.CommonLanguageName,
-                NativeLanguageSupport = languageInfo.NativeLanguageSupport,
+                IsSupportedNatively = languageInfo.IsSupportedNatively,
             }
         );
     }
