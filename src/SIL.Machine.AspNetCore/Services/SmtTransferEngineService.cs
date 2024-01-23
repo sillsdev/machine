@@ -212,7 +212,7 @@ public class SmtTransferEngineService : ITranslationEngineService
 
     public LanguageInfoDto GetlanguageInfo(string language)
     {
-        return new LanguageInfoDto(language, "SmtTransfer", language, "", false);
+        throw new NotSupportedException("SMT transfer engines do not support language info.");
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

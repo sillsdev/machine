@@ -107,11 +107,11 @@ public class LanguageTagServiceTests
     [TestCase("en", "English", "eng_Latn", true)]
     [TestCase("ms", "Standard Malay", "zsm_Latn", true)]
     [TestCase("cmn", "Chinese (Simplified)", "zho_Hans", true)]
-    [TestCase("xyz", "", "xyz", false)]
+    [TestCase("xyz", null, "xyz", false)]
     public void GetLanguageInfoAsync(
         string languageCode,
-        string commonLanguageName,
-        string resolvedLanguageCode,
+        string? commonLanguageName,
+        string? resolvedLanguageCode,
         bool nativeLanguageSupport
     )
     {
