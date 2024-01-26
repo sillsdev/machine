@@ -115,7 +115,7 @@ public class LanguageTagServiceTests
         bool nativeLanguageSupport
     )
     {
-        LanguageInfoDto languageInfo = _languageTagService.CheckInFlores200(languageCode);
+        Models.LanguageInfo languageInfo = _languageTagService.GetFlores200LanguageInfo(languageCode);
         Assert.Multiple(() =>
         {
             Assert.That(languageInfo.Name, Is.EqualTo(commonLanguageName));

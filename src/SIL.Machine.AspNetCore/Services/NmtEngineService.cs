@@ -143,9 +143,9 @@ public class NmtEngineService(
         return Task.FromResult(_clearMLMonitorService.QueueSize);
     }
 
-    public LanguageInfoDto GetlanguageInfo(string language)
+    public Models.LanguageInfo GetLanguageInfo(string language)
     {
-        return _languageTagService.CheckInFlores200(language);
+        return _languageTagService.GetFlores200LanguageInfo(language);
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)

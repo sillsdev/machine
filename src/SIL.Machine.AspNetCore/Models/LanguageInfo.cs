@@ -1,9 +1,7 @@
 ﻿namespace SIL.Machine.AspNetCore.Models
 {
-    public class LanguageInfoDto
+    public class LanguageInfo
     {
-        public string Language { get; set; } = default!;
-        public string EngineType { get; set; } = default!;
         public bool IsNative { get; set; } = default!;
         public string? InternalCode { get; set; } = default!;
         public string? Name { get; set; } = default!;

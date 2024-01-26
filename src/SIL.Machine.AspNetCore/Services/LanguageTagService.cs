@@ -67,7 +67,8 @@ public class LanguageTagService : ILanguageTagService
             .GetManifestResourceStream("SIL.Machine.AspNetCore.data.flores200languages.csv");
         Debug.Assert(floresStream is not null);
         var reader = new StreamReader(floresStream);
-        Debug.Assert(reader.ReadLine() == "language, code");
+        var firstLine = reader.ReadLine();
+        Debug.Assert(firstLine == "language, code");
         while (!reader.EndOfStream)
         {
             string? line = reader.ReadLine();
@@ -120,22 +121,18 @@ public class LanguageTagService : ILanguageTagService
             return languageTag;
     }
 
-    public LanguageInfoDto CheckInFlores200(string languageTag)
+    public AspNetCore.Models.LanguageInfo GetFlores200LanguageInfo(string languageTag)
     {
         string flores200Code = ConvertToFlores200Code(languageTag);
         if (_flores200Languages.TryGetValue(flores200Code, out string? tempName))
-            return new LanguageInfoDto
+            return new AspNetCore.Models.LanguageInfo
             {
-                Language = languageTag,
-                EngineType = "Nmt",
                 InternalCode = flores200Code,
                 Name = tempName,
                 IsNative = true
             };
-        return new LanguageInfoDto
+        return new AspNetCore.Models.LanguageInfo
         {
-            Language = languageTag,
-            EngineType = "Nmt",
             InternalCode = flores200Code,
             Name = null,
             IsNative = false

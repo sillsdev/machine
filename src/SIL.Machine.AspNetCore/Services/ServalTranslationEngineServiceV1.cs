@@ -133,7 +133,7 @@ public class ServalTranslationEngineServiceV1(
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        LanguageInfoDto languageInfo = engineService.GetlanguageInfo(request.Language);
+        Models.LanguageInfo languageInfo = engineService.GetLanguageInfo(request.Language);
         return Task.FromResult(
             new GetLanguageInfoResponse
             {
