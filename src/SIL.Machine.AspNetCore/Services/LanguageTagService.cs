@@ -80,7 +80,19 @@ public class LanguageTagService : ILanguageTagService
         return tempFlores200Languages;
     }
 
-    public string ConvertToFlores200Code(string languageTag)
+    /**
+     * Converts a language tag to a Flores 200 code
+     * @param {string} languageTag - The language tag to convert
+     * @param out {string} flores200Code - The converted Flores 200 code
+     * @returns {bool} is the langauge is the Flores 200 list
+     */
+    public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
+    {
+        flores200Code = ResolveLanguageTag(languageTag);
+        return _flores200Languages.TryGetValue(flores200Code, out string? _);
+    }
+
+    private string ResolveLanguageTag(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
         Match langTagMatch = LangTagPattern.Match(languageTag);
@@ -119,23 +131,5 @@ public class LanguageTagService : ILanguageTagService
             return $"{iso639_3Code}_{script}";
         else
             return languageTag;
-    }
-
-    public AspNetCore.Models.LanguageInfo GetFlores200LanguageInfo(string languageTag)
-    {
-        string flores200Code = ConvertToFlores200Code(languageTag);
-        if (_flores200Languages.TryGetValue(flores200Code, out string? tempName))
-            return new AspNetCore.Models.LanguageInfo
-            {
-                InternalCode = flores200Code,
-                Name = tempName,
-                IsNative = true
-            };
-        return new AspNetCore.Models.LanguageInfo
-        {
-            InternalCode = flores200Code,
-            Name = null,
-            IsNative = false
-        };
     }
 }

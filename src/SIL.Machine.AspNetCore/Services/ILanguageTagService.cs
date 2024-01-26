@@ -2,6 +2,5 @@
 
 public interface ILanguageTagService
 {
-    string ConvertToFlores200Code(string languageTag);
-    Models.LanguageInfo GetFlores200LanguageInfo(string languageTag);
+    bool ConvertToFlores200Code(string languageTag, out string flores200Code);
 }

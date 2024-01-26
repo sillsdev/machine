@@ -133,13 +133,12 @@ public class ServalTranslationEngineServiceV1(
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        Models.LanguageInfo languageInfo = engineService.GetLanguageInfo(request.Language);
+        bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
         return Task.FromResult(
             new GetLanguageInfoResponse
             {
-                InternalCode = languageInfo.InternalCode,
-                Name = languageInfo.Name,
-                IsNative = languageInfo.IsNative,
+                InternalCode = internalCode,
+                IsNative = isNative,
             }
         );
     }

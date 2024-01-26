@@ -42,5 +42,5 @@ public interface ITranslationEngineService
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
 
-    Models.LanguageInfo GetLanguageInfo(string language);
+    bool IsLanguageNativeToModel(string language, out string internalCode);
 }
