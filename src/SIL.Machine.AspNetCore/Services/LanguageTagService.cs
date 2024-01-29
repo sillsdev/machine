@@ -89,7 +89,7 @@ public class LanguageTagService : ILanguageTagService
     public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
     {
         flores200Code = ResolveLanguageTag(languageTag);
-        return _flores200Languages.TryGetValue(flores200Code, out string? _);
+        return _flores200Languages.ContainsKey(flores200Code);
     }
 
     private string ResolveLanguageTag(string languageTag)
