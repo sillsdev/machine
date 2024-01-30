@@ -35,8 +35,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             AddGroup(groups, rightGroupName);
 
             foreach (
-                PatternNode<Word, ShapeNode> node in pattern.Children
-                    .GetNodes(Direction.RightToLeft)
+                PatternNode<Word, ShapeNode> node in pattern
+                    .Children.GetNodes(Direction.RightToLeft)
                     .TakeWhile(n => !(n is Group<Word, ShapeNode>))
                     .Reverse()
             )
@@ -111,8 +111,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
             foreach (
-                Tuple<ShapeNode, ShapeNode> tuple in targetMatch.Input.Shape
-                    .GetNodes(leftGroup.Range)
+                Tuple<ShapeNode, ShapeNode> tuple in targetMatch
+                    .Input.Shape.GetNodes(leftGroup.Range)
                     .Zip(targetMatch.Input.Shape.GetNodes(rightGroup.Range))
             )
             {

@@ -56,8 +56,8 @@ namespace SIL.Machine
                 int segmentCount = 0;
                 int sourceWordCount = 0;
                 int targetWordCount = 0;
-                IParallelTextCorpus corpus = _corpusSpec.ParallelCorpus
-                    .WhereNonempty()
+                IParallelTextCorpus corpus = _corpusSpec
+                    .ParallelCorpus.WhereNonempty()
                     .Take(_corpusSpec.MaxCorpusCount);
                 foreach (ParallelTextRow row in corpus)
                 {

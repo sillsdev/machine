@@ -84,12 +84,11 @@ namespace SIL.Machine.Corpora
         {
             get
             {
-                UsfmParserElement elem = _stack.LastOrDefault(
-                    e =>
-                        e.Type == UsfmElementType.Para
-                        || e.Type == UsfmElementType.Book
-                        || e.Type == UsfmElementType.Row
-                        || e.Type == UsfmElementType.Sidebar
+                UsfmParserElement elem = _stack.LastOrDefault(e =>
+                    e.Type == UsfmElementType.Para
+                    || e.Type == UsfmElementType.Book
+                    || e.Type == UsfmElementType.Row
+                    || e.Type == UsfmElementType.Sidebar
                 );
                 if (elem != null)
                     return Stylesheet.GetTag(elem.Marker);

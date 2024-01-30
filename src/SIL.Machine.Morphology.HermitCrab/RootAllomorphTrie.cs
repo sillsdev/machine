@@ -36,8 +36,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private void AddNode(ShapeNode node, State<Shape, ShapeNode> state, string id)
         {
-            Arc<Shape, ShapeNode> arc = state.Arcs.FirstOrDefault(
-                a => node.Annotation.FeatureStruct.ValueEquals(a.Input.FeatureStruct)
+            Arc<Shape, ShapeNode> arc = state.Arcs.FirstOrDefault(a =>
+                node.Annotation.FeatureStruct.ValueEquals(a.Input.FeatureStruct)
             );
             ShapeNode nextNode = node.GetNext(n => _filter(n.Annotation));
             State<Shape, ShapeNode> nextState;

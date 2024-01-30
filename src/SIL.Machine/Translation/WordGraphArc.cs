@@ -1,6 +1,6 @@
-﻿using SIL.Machine.Annotations;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Translation
 {

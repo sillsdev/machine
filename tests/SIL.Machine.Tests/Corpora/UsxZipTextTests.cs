@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 using SIL.Scripture;
-using System.Linq;
 
 namespace SIL.Machine.Corpora
 {

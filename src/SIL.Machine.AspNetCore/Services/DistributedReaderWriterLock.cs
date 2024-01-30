@@ -65,8 +65,8 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
                     RWLock? rwLock = sub.Change.Entity;
                     if (rwLock is not null && !rwLock.IsAvailableForWriting(lockId))
                     {
-                        List<DateTime> dateTimes = rwLock.ReaderLocks
-                            .Where(l => l.ExpiresAt.HasValue)
+                        List<DateTime> dateTimes = rwLock
+                            .ReaderLocks.Where(l => l.ExpiresAt.HasValue)
                             .Select(l => l.ExpiresAt.GetValueOrDefault())
                             .ToList();
                         if (rwLock.WriterLock?.ExpiresAt is not null)

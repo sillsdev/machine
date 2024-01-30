@@ -169,10 +169,9 @@ namespace SIL.Machine
                 ? targetWordScores
                 : targetWordScores.Select(wp => (wp.Word, Prob: wp.Score / scoreSum));
             query = query
-                .Where(
-                    wp =>
-                        Math.Round(wp.Prob, 8, MidpointRounding.AwayFromZero) > threshold
-                        && LogSpace.ToLogSpace(wp.Prob) >= logSourceWordThreshold
+                .Where(wp =>
+                    Math.Round(wp.Prob, 8, MidpointRounding.AwayFromZero) > threshold
+                    && LogSpace.ToLogSpace(wp.Prob) >= logSourceWordThreshold
                 )
                 .OrderByDescending(wp => wp.Prob);
 

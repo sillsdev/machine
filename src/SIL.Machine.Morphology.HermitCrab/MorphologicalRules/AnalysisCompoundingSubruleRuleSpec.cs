@@ -21,9 +21,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             Word output = match.Input.Clone();
             GenerateShape(_subrule.HeadLhs, output.Shape, match);
-            var nonHeadShape = new Shape(
-                begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor)
-            );
+            var nonHeadShape = new Shape(begin => new ShapeNode(
+                begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
+            ));
             GenerateShape(_subrule.NonHeadLhs, nonHeadShape, match);
             output.NonHeadUnapplied(new Word(output.Stratum, nonHeadShape));
             return output;

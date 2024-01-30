@@ -736,13 +736,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 "taz",
                 "tas"
             );
-            entry.Allomorphs[0].Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
-            );
+            entry
+                .Allomorphs[0]
+                .Environments.Add(
+                    new AllomorphEnvironment(
+                        ConstraintType.Require,
+                        null,
+                        Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                    )
+                );
 
             entry = AddEntry(
                 "disj",
@@ -759,27 +761,33 @@ namespace SIL.Machine.Morphology.HermitCrab
                 .Symbol("voc+")
                 .Symbol("round-")
                 .Value;
-            entry.Allomorphs[0].Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value
-                )
-            );
-            entry.Allomorphs[1].Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
-            );
-            entry.Allomorphs[2].Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
-            );
+            entry
+                .Allomorphs[0]
+                .Environments.Add(
+                    new AllomorphEnvironment(
+                        ConstraintType.Require,
+                        null,
+                        Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value
+                    )
+                );
+            entry
+                .Allomorphs[1]
+                .Environments.Add(
+                    new AllomorphEnvironment(
+                        ConstraintType.Require,
+                        null,
+                        Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                    )
+                );
+            entry
+                .Allomorphs[2]
+                .Environments.Add(
+                    new AllomorphEnvironment(
+                        ConstraintType.Require,
+                        null,
+                        Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                    )
+                );
 
             entry = AddEntry(
                 "stemname",
@@ -930,8 +938,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             Assert.That(
                 words,
-                Has.All
-                    .Property("SyntacticFeatureStruct")
+                Has.All.Property("SyntacticFeatureStruct")
                     .EqualTo(expected)
                     .Using(FreezableEqualityComparer<FeatureStruct>.Default)
             );

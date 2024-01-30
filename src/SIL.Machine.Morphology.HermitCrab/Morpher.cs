@@ -1,12 +1,5 @@
 ﻿using System;
-#if !SINGLE_THREADED
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-#endif
 using System.Collections.Generic;
-#if OUTPUT_ANALYSES
-using System.IO;
-#endif
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
@@ -14,6 +7,14 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
+#if OUTPUT_ANALYSES
+using System.IO;
+#endif
+
+#if !SINGLE_THREADED
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+#endif
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -321,13 +322,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return false;
             }
 
-            Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(
-                f =>
-                    !ContainsFeature(
-                        word.SyntacticFeatureStruct,
-                        f,
-                        new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())
-                    )
+            Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(f =>
+                !ContainsFeature(
+                    word.SyntacticFeatureStruct,
+                    f,
+                    new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())
+                )
             );
             if (feature != null)
             {

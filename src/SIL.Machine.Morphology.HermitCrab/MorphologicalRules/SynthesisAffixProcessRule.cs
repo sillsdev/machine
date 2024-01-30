@@ -61,7 +61,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             // if a final template was last applied,
             // do not allow a non-partial rule to apply unless the input is partial
             if (
-                !_rule.IsTemplateRule && (input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial && !_rule.IsPartial
+                !_rule.IsTemplateRule
+                && (input.IsLastAppliedRuleFinal ?? false)
+                && !input.IsPartial
+                && !_rule.IsPartial
             )
             {
                 if (_morpher.TraceManager.IsTracing)

@@ -107,12 +107,12 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("ClearML connection string is required");
 
-        builder.Services
-            .AddHttpClient("ClearML")
+        builder
+            .Services.AddHttpClient("ClearML")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
             // Add retry policy; fail after approx. 2 + 4 + 8 = 14 seconds
-            .AddTransientHttpErrorPolicy(
-                b => b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
+            .AddTransientHttpErrorPolicy(b =>
+                b.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)))
             );
 
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
@@ -121,8 +121,8 @@ public static class IMachineBuilderExtensions
         builder.Services.AddSingleton<IClearMLAuthenticationService, ClearMLAuthenticationService>();
         builder.Services.AddHostedService(p => p.GetRequiredService<IClearMLAuthenticationService>());
 
-        builder.Services
-            .AddHttpClient("ClearML-NoRetry")
+        builder
+            .Services.AddHttpClient("ClearML-NoRetry")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!));
         builder.Services.AddSingleton<ClearMLHealthCheck>();
 
@@ -160,25 +160,24 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Hangfire connection string is required");
 
-        builder.Services.AddHangfire(
-            c =>
-                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                    .UseSimpleAssemblyNameTypeSerializer()
-                    .UseRecommendedSerializerSettings()
-                    .UseMongoStorage(
-                        connectionString,
-                        new MongoStorageOptions
+        builder.Services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseMongoStorage(
+                    connectionString,
+                    new MongoStorageOptions
+                    {
+                        MigrationOptions = new MongoMigrationOptions
                         {
-                            MigrationOptions = new MongoMigrationOptions
-                            {
-                                MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                                BackupStrategy = new CollectionMongoBackupStrategy()
-                            },
-                            CheckConnection = true,
-                            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-                        }
-                    )
-                    .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy()
+                        },
+                        CheckConnection = true,
+                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
+                    }
+                )
+                .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
         return builder;
@@ -243,8 +242,8 @@ public static class IMachineBuilderExtensions
                     {
                         await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>.IndexKeys
-                                    .Ascending(e => e.EngineId)
+                                Builders<TranslationEngine>
+                                    .IndexKeys.Ascending(e => e.EngineId)
                                     .Ascending("currentBuild._id")
                             )
                         );
@@ -272,15 +271,18 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddServalPlatformService(this IMachineBuilder builder, string? connectionString = null)
+    public static IMachineBuilder AddServalPlatformService(
+        this IMachineBuilder builder,
+        string? connectionString = null
+    )
     {
         connectionString ??= builder.Configuration?.GetConnectionString("Serval");
         if (connectionString is null)
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
-        builder.Services
-            .AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
+        builder
+            .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
                 o.Address = new Uri(connectionString);
             })
@@ -385,11 +387,11 @@ public static class IMachineBuilderExtensions
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
             builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
             string? driveLetter = Path.GetPathRoot(smtTransferEngineOptions.EnginesDir)?[..1];
-            if(driveLetter is null)
+            if (driveLetter is null)
                 throw new InvalidOperationException("SMT Engine directory is required");
             // add health check for disk storage capacity
-            builder.Services
-                .AddHealthChecks()
+            builder
+                .Services.AddHealthChecks()
                 .AddDiskStorageHealthCheck(
                     x => x.AddDrive(driveLetter, 1_000), // 1GB
                     "SMT Engine Storage Capacity",

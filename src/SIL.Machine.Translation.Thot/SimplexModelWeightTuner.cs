@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SIL.Machine.Optimization;
 using SIL.Extensions;
+using SIL.Machine.Optimization;
 using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot

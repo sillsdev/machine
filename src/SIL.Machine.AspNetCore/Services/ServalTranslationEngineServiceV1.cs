@@ -202,19 +202,18 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         {
             Values =
             {
-                System.Enum
-                    .GetValues<Translation.TranslationSources>()
+                System
+                    .Enum.GetValues<Translation.TranslationSources>()
                     .Where(s => s != Translation.TranslationSources.None && source.HasFlag(s))
-                    .Select(
-                        s =>
-                            s switch
-                            {
-                                Translation.TranslationSources.Smt => TranslationSource.Primary,
-                                Translation.TranslationSources.Nmt => TranslationSource.Primary,
-                                Translation.TranslationSources.Transfer => TranslationSource.Secondary,
-                                Translation.TranslationSources.Prefix => TranslationSource.Human,
-                                _ => TranslationSource.Primary
-                            }
+                    .Select(s =>
+                        s switch
+                        {
+                            Translation.TranslationSources.Smt => TranslationSource.Primary,
+                            Translation.TranslationSources.Nmt => TranslationSource.Primary,
+                            Translation.TranslationSources.Transfer => TranslationSource.Secondary,
+                            Translation.TranslationSources.Prefix => TranslationSource.Human,
+                            _ => TranslationSource.Primary
+                        }
                     )
             }
         };

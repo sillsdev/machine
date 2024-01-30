@@ -214,8 +214,8 @@ namespace SIL.Machine.FiniteState
 
             fst = new Fst<AnnotatedStringData, int>(_operations) { UseUnification = false };
             fst.StartState = fst.CreateAcceptingState();
-            s1 = fst.StartState.Arcs
-                .Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateState())
+            s1 = fst
+                .StartState.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateState())
                 .Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons-").Value, fst.CreateState());
             s2 = s1.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas+").Value, null, fst.CreateState());
             State<AnnotatedStringData, int> s3 = s1.Arcs.Add(
@@ -223,12 +223,11 @@ namespace SIL.Machine.FiniteState
                 fst.CreateState()
             );
             s3.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
-            s3.Arcs
-                .Add(
-                    null,
-                    FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value,
-                    fst.CreateState()
-                )
+            s3.Arcs.Add(
+                null,
+                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value,
+                fst.CreateState()
+            )
                 .Arcs.Add(
                     null,
                     FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value,

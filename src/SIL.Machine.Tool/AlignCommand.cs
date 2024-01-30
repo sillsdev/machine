@@ -68,8 +68,8 @@ namespace SIL.Machine
                 alignments = new List<IReadOnlyCollection<AlignedWordPair>>();
                 IAlignmentCorpus refCorpus = ToolHelpers.CreateAlignmentsCorpus("text", _refOption.Value());
                 refCorpus = _corpusSpec.FilterAlignmentCorpus(refCorpus);
-                refParallelCorpus = _corpusSpec.SourceCorpus
-                    .AlignRows(_corpusSpec.TargetCorpus, refCorpus)
+                refParallelCorpus = _corpusSpec
+                    .SourceCorpus.AlignRows(_corpusSpec.TargetCorpus, refCorpus)
                     .Where(r => !r.IsEmpty);
             }
 

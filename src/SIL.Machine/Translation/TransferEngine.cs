@@ -127,8 +127,8 @@ namespace SIL.Machine.Translation
             if (LowercaseSource)
                 normalizedSourceTokens = normalizedSourceTokens.Lowercase();
 
-            IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = normalizedSourceTokens.Select(
-                word => _sourceAnalyzer.AnalyzeWord(word)
+            IEnumerable<IEnumerable<WordAnalysis>> sourceAnalyses = normalizedSourceTokens.Select(word =>
+                _sourceAnalyzer.AnalyzeWord(word)
             );
 
             return _transferer

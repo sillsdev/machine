@@ -5,7 +5,7 @@ public class ClearMLAuthenticationService(
     IHttpClientFactory httpClientFactory,
     IOptionsMonitor<ClearMLOptions> options,
     ILogger<ClearMLAuthenticationService> logger
-    ) : RecurrentTask("ClearML authentication service", services, RefreshPeriod, logger), IClearMLAuthenticationService
+) : RecurrentTask("ClearML authentication service", services, RefreshPeriod, logger), IClearMLAuthenticationService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
     private readonly IOptionsMonitor<ClearMLOptions> _options = options;
@@ -40,14 +40,14 @@ public class ClearMLAuthenticationService(
         }
         catch (Exception e)
         {
-            if (_authToken is ""){
+            if (_authToken is "")
+            {
                 _logger.LogError(e, "Error occurred while aquiring ClearML authentication token for the first time.");
                 // The ClearML token never was set.  We can't continue without it.
                 throw;
             }
             else
                 _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
-
         }
     }
 

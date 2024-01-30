@@ -54,7 +54,8 @@ namespace SIL.Machine.Corpora
                     }
                 }
                 else if (
-                    settings.BiblicalTermsListType == "Project" && settings.BiblicalTermsProjectName == settings.Name
+                    settings.BiblicalTermsListType == "Project"
+                    && settings.BiblicalTermsProjectName == settings.Name
                 )
                 {
                     using (Stream keyTermsFile = biblicalTermsFileEntry.Open())

@@ -211,14 +211,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .New(Language.SyntacticFeatureSystem)
                     .Symbol("V")
                     .Feature(Head)
-                    .EqualTo(
-                        head =>
-                            head.Feature("pers")
-                                .EqualTo("3")
-                                .Feature("tense")
-                                .EqualTo("pres")
-                                .Feature("evidential")
-                                .EqualTo("witnessed")
+                    .EqualTo(head =>
+                        head.Feature("pers")
+                            .EqualTo("3")
+                            .Feature("tense")
+                            .EqualTo("pres")
+                            .Feature("evidential")
+                            .EqualTo("witnessed")
                     )
                     .Value
             );

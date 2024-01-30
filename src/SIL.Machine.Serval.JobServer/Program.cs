@@ -2,8 +2,8 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddMachine(builder.Configuration)
+builder
+    .Services.AddMachine(builder.Configuration)
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddHangfireJobServer()
@@ -11,8 +11,8 @@ builder.Services
     .AddBuildJobService()
     .AddClearMLService();
 if (builder.Environment.IsDevelopment())
-    builder.Services
-        .AddOpenTelemetry()
+    builder
+        .Services.AddOpenTelemetry()
         .WithTracing(builder =>
         {
             builder

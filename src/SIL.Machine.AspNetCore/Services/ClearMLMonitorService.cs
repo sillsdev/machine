@@ -59,8 +59,8 @@ public class ClearMLMonitorService : RecurrentTask
                 .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
                 .ToDictionary(t => t.Id);
 
-            Dictionary<string, int> queuePositions = tasks.Values
-                .Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
+            Dictionary<string, int> queuePositions = tasks
+                .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
                 .OrderBy(t => t.Created)
                 .Select((t, i) => (Position: i, Task: t))
                 .ToDictionary(e => e.Task.Name, e => e.Position);

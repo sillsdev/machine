@@ -3,7 +3,15 @@
 public class LanguageTagService : ILanguageTagService
 {
     private static readonly Dictionary<string, string> StandardLanguages =
-        new() { { "ar", "arb" }, { "ms", "zsm" }, { "lv", "lvs" }, { "ne", "npi" }, { "sw", "swh" }, { "cmn", "zh" } };
+        new()
+        {
+            { "ar", "arb" },
+            { "ms", "zsm" },
+            { "lv", "lvs" },
+            { "ne", "npi" },
+            { "sw", "swh" },
+            { "cmn", "zh" }
+        };
 
     private readonly Dictionary<string, string> _defaultScripts;
 
@@ -41,7 +49,9 @@ public class LanguageTagService : ILanguageTagService
                 foreach (var t in tags.AsArray().Select(v => (string?)v))
                 {
                     if (
-                        t is not null && IetfLanguageTag.TryGetParts(t, out _, out string? s, out _, out _) && s is null
+                        t is not null
+                        && IetfLanguageTag.TryGetParts(t, out _, out string? s, out _, out _)
+                        && s is null
                     )
                     {
                         tempDefaultScripts[t] = script;

@@ -34,15 +34,15 @@ namespace SIL.Machine.FiniteState
             base.CopyTo(other);
 
             var otherDfst = (DeterministicFstTraversalInstance<TData, TOffset>)other;
-            Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = Output.Annotations
-                .SelectMany(a => a.GetNodesBreadthFirst())
+            Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = Output
+                .Annotations.SelectMany(a => a.GetNodesBreadthFirst())
                 .Zip(Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()))
                 .ToDictionary(t => t.Item1, t => t.Item2);
             otherDfst.Mappings.AddRange(
-                _mappings.Select(
-                    kvp =>
-                        new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(kvp.Key, outputMappings[kvp.Value])
-                )
+                _mappings.Select(kvp => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(
+                    kvp.Key,
+                    outputMappings[kvp.Value]
+                ))
             );
             foreach (Annotation<TOffset> ann in _queue)
                 otherDfst.Queue.Enqueue(ann);

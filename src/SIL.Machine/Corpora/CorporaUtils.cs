@@ -171,8 +171,8 @@ namespace SIL.Machine.Corpora
         {
             string[] source = verse.Split(VerseRef.verseSequenceIndicators, StringSplitOptions.None);
             foreach (
-                string[] pieces in source.Select(
-                    part => part.Split(VerseRef.verseRangeSeparators, StringSplitOptions.None)
+                string[] pieces in source.Select(part =>
+                    part.Split(VerseRef.verseRangeSeparators, StringSplitOptions.None)
                 )
             )
             {

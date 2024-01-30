@@ -89,8 +89,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
             Debug.Assert(start != null && end != null);
 
-            var morphs = targetMatch.Input.Morphs
-                .Where(ann => ann.Range.Overlaps(start, end))
+            var morphs = targetMatch
+                .Input.Morphs.Where(ann => ann.Range.Overlaps(start, end))
                 .Select(ann => new { Annotation = ann, Children = ann.Children.ToList() })
                 .ToArray();
             foreach (var morph in morphs)

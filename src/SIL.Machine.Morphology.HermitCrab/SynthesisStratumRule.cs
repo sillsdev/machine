@@ -19,8 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             _templatesRule = new SynthesisAffixTemplatesRule(morpher, stratum);
             _mrulesRule = null;
-            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(
-                mrule => mrule.CompileSynthesisRule(morpher)
+            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule =>
+                mrule.CompileSynthesisRule(morpher)
             );
             switch (stratum.MorphologicalRuleOrder)
             {
