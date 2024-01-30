@@ -26,11 +26,11 @@ jobs:
             cmake-args: "-A x64"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: lukka/get-cmake@latest
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             3.1.x
@@ -76,7 +76,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -108,7 +108,7 @@ jobs:
           dotnet pack src\SIL.Machine.Translation.TensorFlow\SIL.Machine.Translation.TensorFlow.csproj -c Release -o artifacts
 
       - name: Upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-package
           path: artifacts/*.nupkg
