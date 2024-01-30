@@ -13,6 +13,8 @@ public class LanguageTagService : ILanguageTagService
             { "cmn", "zh" }
         };
 
+    private static readonly Dictionary<string, string> StandardScripts = new() { { "Kore", "Hang" } };
+
     private readonly Dictionary<string, string> _defaultScripts;
 
     private readonly Dictionary<string, string> _flores200Languages;
@@ -136,6 +138,10 @@ public class LanguageTagService : ILanguageTagService
             script = tempScript2;
         else if (_defaultScripts.TryGetValue(languageSubtag, out string? tempScript))
             script = tempScript;
+
+        // There are a few extra conversions not in SIL Writing Systems that we need to handle
+        if (script is not null && StandardScripts.TryGetValue(script, out string? tempScript3))
+            script = tempScript3;
 
         if (script is not null)
             return $"{iso639_3Code}_{script}";

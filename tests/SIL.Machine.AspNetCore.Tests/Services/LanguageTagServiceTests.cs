@@ -26,6 +26,8 @@ public class LanguageTagServiceTests
     [TestCase("arb", "arb_Arab", Description = "Arabic")]
     [TestCase("eng", "eng_Latn", Description = "InsteadOfISO639_1")]
     [TestCase("eng-Latn", "eng_Latn", Description = "DashToUnderscore")]
+    [TestCase("kor", "kor_Hang", Description = "KoreanScript")]
+    [TestCase("kor_Kore", "kor_Hang", Description = "KoreanScriptCorrection")]
     public void ConvertToFlores200CodeTest(string language, string internalCodeTruth)
     {
         _languageTagService.ConvertToFlores200Code(language, out string internalCode);
