@@ -87,9 +87,21 @@ run(args)
             SharedFileService.GetBaseUri().Returns(new Uri("s3://bucket/folder1/folder2"));
             LanguageTagService = Substitute.For<ILanguageTagService>();
             LanguageTagService.ConvertToFlores200Code("es", out string spa);
-            Assert.That(spa, Is.EqualTo("spa_Latn"));
-            LanguageTagService.ConvertToFlores200Code("en", out string eng);
-            Assert.That(eng, Is.EqualTo("eng_Latn"));
+            var anyStringArg = Arg.Any<string>();
+            LanguageTagService
+                .ConvertToFlores200Code("es", out anyStringArg)
+                .Returns(x =>
+                {
+                    x[1] = "spa_Latn";
+                    return true;
+                });
+            LanguageTagService
+                .ConvertToFlores200Code("en", out anyStringArg)
+                .Returns(x =>
+                {
+                    x[1] = "eng_Latn";
+                    return true;
+                });
             BuildJobFactory = new NmtClearMLBuildJobFactory(SharedFileService, LanguageTagService, Engines, Options);
         }
     }
