@@ -85,12 +85,12 @@ jobs:
             3.1.x
             6.0.x
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: sp4c-linux-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: sp4c-win-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
