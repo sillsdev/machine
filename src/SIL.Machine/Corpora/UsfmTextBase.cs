@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SIL.Machine.Utils;
 using SIL.Scripture;
@@ -183,6 +184,12 @@ namespace SIL.Machine.Corpora
                     OutputMarker(state);
             }
 
+            public override void OptBreak(UsfmParserState state)
+            {
+                if (!_text._includeMarkers)
+                    _verseText.TrimEnd();
+            }
+
             public override void Text(UsfmParserState state, string text)
             {
                 if (_verseRef.IsDefault || !state.IsVersePara)
@@ -191,7 +198,7 @@ namespace SIL.Machine.Corpora
                 if (_text._includeMarkers)
                 {
                     text = text.TrimEnd('\r', '\n');
-                    if (text.Length > 0)
+                    if (text.Length > 0 && !state.Stack.Any(e => e.Type == UsfmElementType.Sidebar))
                     {
                         if (!text.IsWhiteSpace())
                         {
@@ -199,6 +206,10 @@ namespace SIL.Machine.Corpora
                                 _verseText.Append(token);
                             _nextParaTokens.Clear();
                             _nextParaTextStarted = true;
+                        }
+                        if (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                        {
+                            text = text.TrimStart();
                         }
                         _verseText.Append(text);
                     }

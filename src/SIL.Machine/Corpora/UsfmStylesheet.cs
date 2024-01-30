@@ -29,7 +29,8 @@ namespace SIL.Machine.Corpora
         {
             { "character", UsfmStyleType.Character },
             { "paragraph", UsfmStyleType.Paragraph },
-            { "note", UsfmStyleType.Note }
+            { "note", UsfmStyleType.Note },
+            { "milestone", UsfmStyleType.Milestone }
         };
 
         private static readonly Dictionary<string, UsfmTextType> TextTypeMappings = new Dictionary<
@@ -374,6 +375,16 @@ namespace SIL.Machine.Corpora
                 string endMarkerStr = tag.Marker + "*";
                 endTag = MakeEndTag(endMarkerStr);
                 tag.EndMarker = endMarkerStr;
+            }
+            else if (tag.StyleType == UsfmStyleType.Milestone)
+            {
+                if (endTag != null)
+                {
+                    endTag.StyleType = UsfmStyleType.MilestoneEnd;
+                    // eid is always an optional attribute for the end marker
+                    tag.Attributes.Add(new UsfmStyleAttribute("eid", isRequired: false));
+                    endTag.Name = tag.Name;
+                }
             }
 
             // Special cases

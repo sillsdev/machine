@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
             string usfm = ReadUsfm();
             var tokenizer = new UsfmTokenizer();
             IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
-            Assert.That(tokens, Has.Count.EqualTo(136));
+            Assert.That(tokens, Has.Count.EqualTo(151));
 
             Assert.That(tokens[0].Type, Is.EqualTo(UsfmTokenType.Book));
             Assert.That(tokens[0].Marker, Is.EqualTo("id"));
