@@ -52,7 +52,7 @@ jobs:
           cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
 
       - name: Upload sentence4c artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.sentencepiece4c-artifact }}
           path: ${{ github.workspace }}/src/sentencepiece4c/bin/${{ matrix.sentencepiece4c-dll }}
