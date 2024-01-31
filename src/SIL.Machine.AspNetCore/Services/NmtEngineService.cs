@@ -15,7 +15,7 @@ public class NmtEngineService(
     IBuildJobService buildJobService,
     ILanguageTagService languageTagService,
     ClearMLMonitorService clearMLMonitorService
-    ) : ITranslationEngineService
+) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
     private readonly IPlatformService _platformService = platformService;

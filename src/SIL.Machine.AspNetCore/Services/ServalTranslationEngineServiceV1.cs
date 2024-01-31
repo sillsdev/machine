@@ -6,11 +6,12 @@ namespace SIL.Machine.AspNetCore.Services;
 public class ServalTranslationEngineServiceV1(
     IEnumerable<ITranslationEngineService> engineServices,
     HealthCheckService healthCheckService
-    ) : TranslationEngineApi.TranslationEngineApiBase
+) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices = engineServices.ToDictionary(es => es.Type);
+    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
+        engineServices.ToDictionary(es => es.Type);
 
     private readonly HealthCheckService _healthCheckService = healthCheckService;
 
@@ -134,13 +135,7 @@ public class ServalTranslationEngineServiceV1(
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
-        return Task.FromResult(
-            new GetLanguageInfoResponse
-            {
-                InternalCode = internalCode,
-                IsNative = isNative,
-            }
-        );
+        return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative, });
     }
 
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
