@@ -52,14 +52,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
-        _buildPreprocessSummary.Add(
-            "SourceLanguageResolved",
-            _languageTagService.ConvertToFlores200Code(engine.SourceLanguage)
-        );
-        _buildPreprocessSummary.Add(
-            "TargetLanguageResolved",
-            _languageTagService.ConvertToFlores200Code(engine.TargetLanguage)
-        );
+
+        _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
+        _buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
+        _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
+        _buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", _buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))

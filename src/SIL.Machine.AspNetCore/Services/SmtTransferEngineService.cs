@@ -210,6 +210,11 @@ public class SmtTransferEngineService : ITranslationEngineService
         return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
     }
 
+    public bool IsLanguageNativeToModel(string language, out string internalCode)
+    {
+        throw new NotSupportedException("SMT transfer engines do not support language info.");
+    }
+
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
         (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(

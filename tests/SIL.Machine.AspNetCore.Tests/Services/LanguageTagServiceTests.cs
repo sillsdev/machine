@@ -13,93 +13,39 @@ public class LanguageTagServiceTests
     }
 
     [Test]
-    public void ConvertToFlores200Code_Iso639_1Code()
+    [TestCase("es", "spa_Latn", Description = "Iso639_1Code")]
+    [TestCase("hne", "hne_Deva", Description = "Iso639_3Code")]
+    [TestCase("ks-Arab", "kas_Arab", Description = "ScriptCode")]
+    [TestCase("srp_Cyrl", "srp_Cyrl", Description = "InvalidLangTag")]
+    [TestCase("zh", "zho_Hans", Description = "ChineseNoScript")]
+    [TestCase("zh-Hant", "zho_Hant", Description = "ChineseScript")]
+    [TestCase("zh-TW", "zho_Hant", Description = "ChineseRegion")]
+    [TestCase("cmn", "zho_Hans", Description = "MandarinChineseNoScript")]
+    [TestCase("cmn-Hant", "zho_Hant", Description = "MandarinChineseScript")]
+    [TestCase("ms", "zsm_Latn", Description = "Macrolanguage")]
+    [TestCase("arb", "arb_Arab", Description = "Arabic")]
+    [TestCase("eng", "eng_Latn", Description = "InsteadOfISO639_1")]
+    [TestCase("eng-Latn", "eng_Latn", Description = "DashToUnderscore")]
+    [TestCase("kor", "kor_Hang", Description = "KoreanScript")]
+    [TestCase("kor_Kore", "kor_Hang", Description = "KoreanScriptCorrection")]
+    public void ConvertToFlores200CodeTest(string language, string internalCodeTruth)
     {
-        string code = _languageTagService.ConvertToFlores200Code("es");
-        Assert.That(code, Is.EqualTo("spa_Latn"));
+        _languageTagService.ConvertToFlores200Code(language, out string internalCode);
+        Assert.That(internalCode, Is.EqualTo(internalCodeTruth));
     }
 
     [Test]
-    public void ConvertToFlores200Code_Iso639_3Code()
+    [TestCase("en", "eng_Latn", true)]
+    [TestCase("ms", "zsm_Latn", true)]
+    [TestCase("cmn", "zho_Hans", true)]
+    [TestCase("xyz", "xyz", false)]
+    public void GetLanguageInfoAsync(string languageCode, string? resolvedLanguageCode, bool nativeLanguageSupport)
     {
-        string code = _languageTagService.ConvertToFlores200Code("hne");
-        Assert.That(code, Is.EqualTo("hne_Deva"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_ScriptCode()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("ks-Arab");
-        Assert.That(code, Is.EqualTo("kas_Arab"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_InvalidLangTag()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("srp_Cyrl");
-        Assert.That(code, Is.EqualTo("srp_Cyrl"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_ChineseNoScript()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("zh");
-        Assert.That(code, Is.EqualTo("zho_Hans"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_ChineseScript()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("zh-Hant");
-        Assert.That(code, Is.EqualTo("zho_Hant"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_ChineseRegion()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("zh-TW");
-        Assert.That(code, Is.EqualTo("zho_Hant"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_MandarinChineseNoScript()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("cmn");
-        Assert.That(code, Is.EqualTo("zho_Hans"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_MandarinChineseScript()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("cmn-Hant");
-        Assert.That(code, Is.EqualTo("zho_Hant"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_Macrolanguage()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("ms");
-        Assert.That(code, Is.EqualTo("zsm_Latn"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_Arabic()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("arb");
-        Assert.That(code, Is.EqualTo("arb_Arab"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_HandleISO639_3_InsteadOfISO639_1()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("eng");
-        Assert.That(code, Is.EqualTo("eng_Latn"));
-    }
-
-    [Test]
-    public void ConvertToFlores200Code_DashToUnderscore()
-    {
-        string code = _languageTagService.ConvertToFlores200Code("eng-Latn");
-        Assert.That(code, Is.EqualTo("eng_Latn"));
+        bool isNative = _languageTagService.ConvertToFlores200Code(languageCode, out string internalCode);
+        Assert.Multiple(() =>
+        {
+            Assert.That(internalCode, Is.EqualTo(resolvedLanguageCode));
+            Assert.That(isNative, Is.EqualTo(nativeLanguageSupport));
+        });
     }
 }

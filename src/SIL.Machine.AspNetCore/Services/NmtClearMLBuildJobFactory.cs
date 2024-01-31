@@ -40,13 +40,15 @@ public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
             Uri sharedFileUri = _sharedFileService.GetBaseUri();
             string baseUri = sharedFileUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.Unescaped);
             string folder = sharedFileUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
+            _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
+            _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
             return "from machine.jobs.build_nmt_engine import run\n"
                 + "args = {\n"
                 + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
                 + $"    'engine_id': '{engineId}',\n"
                 + $"    'build_id': '{buildId}',\n"
-                + $"    'src_lang': '{_languageTagService.ConvertToFlores200Code(engine.SourceLanguage)}',\n"
-                + $"    'trg_lang': '{_languageTagService.ConvertToFlores200Code(engine.TargetLanguage)}',\n"
+                + $"    'src_lang': '{srcLang}',\n"
+                + $"    'trg_lang': '{trgLang}',\n"
                 + $"    'shared_file_uri': '{baseUri}',\n"
                 + $"    'shared_file_folder': '{folder}',\n"
                 + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")

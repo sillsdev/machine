@@ -7,31 +7,23 @@ public static class NmtBuildStages
     public const string Postprocess = "postprocess";
 }
 
-public class NmtEngineService : ITranslationEngineService
+public class NmtEngineService(
+    IPlatformService platformService,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
+    IRepository<TranslationEngine> engines,
+    IBuildJobService buildJobService,
+    ILanguageTagService languageTagService,
+    ClearMLMonitorService clearMLMonitorService
+) : ITranslationEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory;
-    private readonly IPlatformService _platformService;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly IRepository<TranslationEngine> _engines;
-    private readonly IBuildJobService _buildJobService;
-    private readonly ClearMLMonitorService _clearMLMonitorService;
-
-    public NmtEngineService(
-        IPlatformService platformService,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IDataAccessContext dataAccessContext,
-        IRepository<TranslationEngine> engines,
-        IBuildJobService buildJobService,
-        ClearMLMonitorService clearMLMonitorService
-    )
-    {
-        _lockFactory = lockFactory;
-        _platformService = platformService;
-        _dataAccessContext = dataAccessContext;
-        _engines = engines;
-        _buildJobService = buildJobService;
-        _clearMLMonitorService = clearMLMonitorService;
-    }
+    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
+    private readonly IPlatformService _platformService = platformService;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly IRepository<TranslationEngine> _engines = engines;
+    private readonly IBuildJobService _buildJobService = buildJobService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
+    private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
 
     public TranslationEngineType Type => TranslationEngineType.Nmt;
 
@@ -149,6 +141,11 @@ public class NmtEngineService : ITranslationEngineService
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_clearMLMonitorService.QueueSize);
+    }
+
+    public bool IsLanguageNativeToModel(string language, out string internalCode)
+    {
+        return _languageTagService.ConvertToFlores200Code(language, out internalCode);
     }
 
     private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
