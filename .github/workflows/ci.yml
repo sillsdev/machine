@@ -33,8 +33,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            3.1.x
-            6.0.x
+            8.0.x
 
       - name: Restore dotnet tools
         run: dotnet tool restore
@@ -66,7 +65,7 @@ jobs:
       - name: Test
         run: dotnet test --verbosity normal --collect:"Xplat Code Coverage"
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -82,8 +81,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            3.1.x
-            6.0.x
+            8.0.x
 
       - uses: actions/download-artifact@v4
         with:
