@@ -1,49 +1,16 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using SIL.IO;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextProjectSettingsParser : ParatextProjectSettingsParserBase
+    public class ZipParatextProjectSettingsParser : ZipParatextProjectSettingsParserBase
     {
         private readonly ZipArchive _archive;
 
         public ZipParatextProjectSettingsParser(ZipArchive archive)
         {
             _archive = archive;
-        }
-
-        protected override UsfmStylesheet CreateStylesheet(string fileName)
-        {
-            TempFile stylesheetTempFile = null;
-            TempFile customStylesheetTempFile = null;
-            try
-            {
-                string stylesheetPath = fileName;
-                ZipArchiveEntry stylesheetEntry = _archive.GetEntry(fileName);
-                if (stylesheetEntry != null)
-                {
-                    stylesheetTempFile = TempFile.CreateAndGetPathButDontMakeTheFile();
-                    stylesheetEntry.ExtractToFile(stylesheetTempFile.Path);
-                    stylesheetPath = stylesheetTempFile.Path;
-                }
-
-                string customStylesheetPath = null;
-                ZipArchiveEntry customStylesheetEntry = _archive.GetEntry("custom.sty");
-                if (customStylesheetEntry != null)
-                {
-                    customStylesheetTempFile = TempFile.CreateAndGetPathButDontMakeTheFile();
-                    customStylesheetEntry.ExtractToFile(customStylesheetTempFile.Path);
-                    customStylesheetPath = customStylesheetTempFile.Path;
-                }
-                return new UsfmStylesheet(stylesheetPath, customStylesheetPath);
-            }
-            finally
-            {
-                stylesheetTempFile?.Dispose();
-                customStylesheetTempFile?.Dispose();
-            }
         }
 
         protected override bool Exists(string fileName)
