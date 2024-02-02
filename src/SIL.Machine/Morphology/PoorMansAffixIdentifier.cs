@@ -37,12 +37,11 @@ namespace SIL.Machine.Morphology
             )
             {
                 if (
-                    results.All(
-                        a =>
-                            !affix.Ngram.StartsWith(
-                                a.Ngram,
-                                type == AffixType.Prefix ? Direction.LeftToRight : Direction.RightToLeft
-                            )
+                    results.All(a =>
+                        !affix.Ngram.StartsWith(
+                            a.Ngram,
+                            type == AffixType.Prefix ? Direction.LeftToRight : Direction.RightToLeft
+                        )
                     )
                 )
                     results.Add(

@@ -83,12 +83,10 @@ namespace SIL.Machine
                     _refWordTokenizerOption.Value() ?? "whitespace"
                 );
                 refCorpus = refCorpus.Tokenize(refWordTokenizer);
-                refParallelCorpus = _corpusSpec.Corpus
-                    .AlignRows(refCorpus)
-                    .Where(
-                        row =>
-                            row.SourceSegment.Count > 0
-                            && row.SourceSegment.Count <= TranslationConstants.MaxSegmentLength
+                refParallelCorpus = _corpusSpec
+                    .Corpus.AlignRows(refCorpus)
+                    .Where(row =>
+                        row.SourceSegment.Count > 0 && row.SourceSegment.Count <= TranslationConstants.MaxSegmentLength
                     );
                 refParallelCorpus = _preprocessSpec.Preprocess(refParallelCorpus);
             }

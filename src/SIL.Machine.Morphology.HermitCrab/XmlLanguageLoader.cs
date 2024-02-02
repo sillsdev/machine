@@ -25,9 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 string fileName = System.IO.Path.GetFileName(absoluteUri.ToString());
                 if (fileName == "HermitCrabInput.dtd")
-                    return GetType().Assembly.GetManifestResourceStream(
-                        "SIL.Machine.Morphology.HermitCrab.HermitCrabInput.dtd"
-                    );
+                    return GetType()
+                        .Assembly.GetManifestResourceStream("SIL.Machine.Morphology.HermitCrab.HermitCrabInput.dtd");
                 return base.GetEntity(absoluteUri, role, ofObjectToReturn);
             }
 

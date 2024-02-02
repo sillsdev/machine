@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - "**"
+    tags:
+      - "v*"
 
 jobs:
   build:
@@ -24,11 +26,11 @@ jobs:
             cmake-args: "-A x64"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: lukka/get-cmake@latest
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             3.1.x
@@ -50,7 +52,7 @@ jobs:
           cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
 
       - name: Upload sentence4c artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.sentencepiece4c-artifact }}
           path: ${{ github.workspace }}/src/sentencepiece4c/bin/${{ matrix.sentencepiece4c-dll }}
@@ -74,21 +76,21 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             3.1.x
             6.0.x
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: sp4c-linux-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: sp4c-win-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
@@ -106,7 +108,7 @@ jobs:
           dotnet pack src\SIL.Machine.Translation.TensorFlow\SIL.Machine.Translation.TensorFlow.csproj -c Release -o artifacts
 
       - name: Upload package
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nuget-package
           path: artifacts/*.nupkg

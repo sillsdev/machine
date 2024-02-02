@@ -233,14 +233,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 symFeatElem.Add(
                     new XElement(
                         "Symbols",
-                        symbolicFeature.PossibleSymbols.Select(
-                            symbol =>
-                                new XElement(
-                                    "Symbol",
-                                    new XAttribute("id", Normalize(symbol.ID)),
-                                    Normalize(symbol.Description)
-                                )
-                        )
+                        symbolicFeature.PossibleSymbols.Select(symbol => new XElement(
+                            "Symbol",
+                            new XAttribute("id", Normalize(symbol.ID)),
+                            Normalize(symbol.Description)
+                        ))
                     )
                 );
                 return symFeatElem;
@@ -509,15 +506,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             return new XElement(
                 "VariableFeatures",
-                variables.Select(
-                    kvp =>
-                        new XElement(
-                            "VariableFeature",
-                            new XAttribute("id", kvp.Value.Item1),
-                            new XAttribute("name", kvp.Key),
-                            new XAttribute("phonologicalFeature", Normalize(kvp.Value.Item2.ID))
-                        )
-                )
+                variables.Select(kvp => new XElement(
+                    "VariableFeature",
+                    new XAttribute("id", kvp.Value.Item1),
+                    new XAttribute("name", kvp.Key),
+                    new XAttribute("phonologicalFeature", Normalize(kvp.Value.Item2.ID))
+                ))
             );
         }
 
@@ -642,8 +636,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             ruleElem.Add(
                 new XElement(
                     "MorphologicalSubrules",
-                    affixProcessRule.Allomorphs.Select(
-                        sr => WriteMorphologicalSubrule(sr, affixProcessRule.Stratum.CharacterDefinitionTable)
+                    affixProcessRule.Allomorphs.Select(sr =>
+                        WriteMorphologicalSubrule(sr, affixProcessRule.Stratum.CharacterDefinitionTable)
                     )
                 )
             );
@@ -740,8 +734,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             ruleElem.Add(
                 new XElement(
                     "MorphologicalSubrules",
-                    realRule.Allomorphs.Select(
-                        sr => WriteMorphologicalSubrule(sr, realRule.Stratum.CharacterDefinitionTable)
+                    realRule.Allomorphs.Select(sr =>
+                        WriteMorphologicalSubrule(sr, realRule.Stratum.CharacterDefinitionTable)
                     )
                 )
             );
@@ -1014,15 +1008,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             CharacterDefinitionTable defaultTable
         )
         {
-            AllomorphEnvironment[] requiredEnvs = allomorph.Environments
-                .Where(e => e.Type == ConstraintType.Require)
+            AllomorphEnvironment[] requiredEnvs = allomorph
+                .Environments.Where(e => e.Type == ConstraintType.Require)
                 .ToArray();
             if (requiredEnvs.Length > 0)
                 alloElem.Add(
                     new XElement("RequiredEnvironments", requiredEnvs.Select(e => WriteEnvironment(e, defaultTable)))
                 );
-            AllomorphEnvironment[] excludedEnvs = allomorph.Environments
-                .Where(e => e.Type == ConstraintType.Exclude)
+            AllomorphEnvironment[] excludedEnvs = allomorph
+                .Environments.Where(e => e.Type == ConstraintType.Exclude)
                 .ToArray();
             if (excludedEnvs.Length > 0)
                 alloElem.Add(
@@ -1064,14 +1058,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             return new XElement(
                 "Properties",
-                properties.Select(
-                    kvp =>
-                        new XElement(
-                            "Property",
-                            new XAttribute("name", Normalize(kvp.Key)),
-                            Normalize(kvp.Value.ToString())
-                        )
-                )
+                properties.Select(kvp => new XElement(
+                    "Property",
+                    new XAttribute("name", Normalize(kvp.Key)),
+                    Normalize(kvp.Value.ToString())
+                ))
             );
         }
 

@@ -41,4 +41,6 @@ public interface ITranslationEngineService
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
+
+    bool IsLanguageNativeToModel(string language, out string internalCode);
 }

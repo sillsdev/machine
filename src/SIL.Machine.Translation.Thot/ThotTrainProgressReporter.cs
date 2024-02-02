@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation.Thot
 {
     public class ThotTrainProgressReporter : PhasedProgressReporter
     {
-        private readonly static Phase[] TrainPhases =
+        private static readonly Phase[] TrainPhases =
         {
             new Phase("Training language model", 0.01),
             new Phase("Training direct alignment model", 0.2),

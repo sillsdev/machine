@@ -107,11 +107,10 @@ namespace SIL.Machine.SequenceAlignment
                                 profile1.Alignment.Prefixes[i],
                                 Enumerable
                                     .Range(0, profileAlignment.ColumnCount)
-                                    .Select(
-                                        col =>
-                                            profileAlignment[0, col].IsNull
-                                                ? new AlignmentCell<TItem>()
-                                                : profileAlignment[0, col][0][seq]
+                                    .Select(col =>
+                                        profileAlignment[0, col].IsNull
+                                            ? new AlignmentCell<TItem>()
+                                            : profileAlignment[0, col][0][seq]
                                     ),
                                 profile1.Alignment.Suffixes[i]
                             )
@@ -126,11 +125,10 @@ namespace SIL.Machine.SequenceAlignment
                                 profile2.Alignment.Prefixes[j],
                                 Enumerable
                                     .Range(0, profileAlignment.ColumnCount)
-                                    .Select(
-                                        col =>
-                                            profileAlignment[1, col].IsNull
-                                                ? new AlignmentCell<TItem>()
-                                                : profileAlignment[1, col][0][seq]
+                                    .Select(col =>
+                                        profileAlignment[1, col].IsNull
+                                            ? new AlignmentCell<TItem>()
+                                            : profileAlignment[1, col][0][seq]
                                     ),
                                 profile2.Alignment.Suffixes[j]
                             )
@@ -196,12 +194,11 @@ namespace SIL.Machine.SequenceAlignment
             count = profile.Alignment.ColumnCount;
             return Enumerable
                 .Range(0, profile.Alignment.ColumnCount)
-                .Select(
-                    col =>
-                        Enumerable
-                            .Range(0, profile.Alignment.SequenceCount)
-                            .Select(seq => profile.Alignment[seq, col])
-                            .ToArray()
+                .Select(col =>
+                    Enumerable
+                        .Range(0, profile.Alignment.SequenceCount)
+                        .Select(seq => profile.Alignment[seq, col])
+                        .ToArray()
                 );
         }
 

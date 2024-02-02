@@ -132,16 +132,12 @@ namespace SIL.Machine.Morphology
             {
                 int freq = affixFreqDist[affix.Ngram.Length][affix.Ngram];
 
-                var maxCurveItem = itemFreqDist.ObservedSamples
-                    .Select(
-                        item =>
-                            new
-                            {
-                                Item = item,
-                                Curve = (double)affixFreqDist[affix.Ngram.Length + 1][affix.Ngram.Concat(item, dir)]
-                                    / freq
-                            }
-                    )
+                var maxCurveItem = itemFreqDist
+                    .ObservedSamples.Select(item => new
+                    {
+                        Item = item,
+                        Curve = (double)affixFreqDist[affix.Ngram.Length + 1][affix.Ngram.Concat(item, dir)] / freq
+                    })
                     .MaxBy(item => item.Curve);
                 double curveDrop = (1 - maxCurveItem.Curve) / (1 - itemProbDist[maxCurveItem.Item]);
 

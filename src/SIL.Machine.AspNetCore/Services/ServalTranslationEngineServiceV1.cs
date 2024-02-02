@@ -3,22 +3,17 @@ using Serval.Translation.V1;
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class ServalTranslationEngineServiceV1 : TranslationEngineApi.TranslationEngineApiBase
+public class ServalTranslationEngineServiceV1(
+    IEnumerable<ITranslationEngineService> engineServices,
+    HealthCheckService healthCheckService
+) : TranslationEngineApi.TranslationEngineApiBase
 {
     private static readonly Empty Empty = new();
 
-    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices;
+    private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
+        engineServices.ToDictionary(es => es.Type);
 
-    private readonly HealthCheckService _healthCheckService;
-
-    public ServalTranslationEngineServiceV1(
-        IEnumerable<ITranslationEngineService> engineServices,
-        HealthCheckService healthCheckService
-    )
-    {
-        _engineServices = engineServices.ToDictionary(es => es.Type);
-        _healthCheckService = healthCheckService;
-    }
+    private readonly HealthCheckService _healthCheckService = healthCheckService;
 
     public override async Task<Empty> Create(CreateRequest request, ServerCallContext context)
     {
@@ -133,6 +128,16 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
     }
 
+    public override Task<GetLanguageInfoResponse> GetLanguageInfo(
+        GetLanguageInfoRequest request,
+        ServerCallContext context
+    )
+    {
+        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        bool isNative = engineService.IsLanguageNativeToModel(request.Language, out string internalCode);
+        return Task.FromResult(new GetLanguageInfoResponse { InternalCode = internalCode, IsNative = isNative, });
+    }
+
     public override async Task<HealthCheckResponse> HealthCheck(Empty request, ServerCallContext context)
     {
         HealthReport healthReport = await _healthCheckService.CheckHealthAsync();
@@ -202,19 +207,18 @@ public class ServalTranslationEngineServiceV1 : TranslationEngineApi.Translation
         {
             Values =
             {
-                System.Enum
-                    .GetValues<Translation.TranslationSources>()
+                System
+                    .Enum.GetValues<Translation.TranslationSources>()
                     .Where(s => s != Translation.TranslationSources.None && source.HasFlag(s))
-                    .Select(
-                        s =>
-                            s switch
-                            {
-                                Translation.TranslationSources.Smt => TranslationSource.Primary,
-                                Translation.TranslationSources.Nmt => TranslationSource.Primary,
-                                Translation.TranslationSources.Transfer => TranslationSource.Secondary,
-                                Translation.TranslationSources.Prefix => TranslationSource.Human,
-                                _ => TranslationSource.Primary
-                            }
+                    .Select(s =>
+                        s switch
+                        {
+                            Translation.TranslationSources.Smt => TranslationSource.Primary,
+                            Translation.TranslationSources.Nmt => TranslationSource.Primary,
+                            Translation.TranslationSources.Transfer => TranslationSource.Secondary,
+                            Translation.TranslationSources.Prefix => TranslationSource.Human,
+                            _ => TranslationSource.Primary
+                        }
                     )
             }
         };

@@ -15,14 +15,13 @@ namespace SIL.Machine.Corpora
                 versification,
                 Enumerable
                     .Range(1, versification.GetLastBook() + 1)
-                    .Where(
-                        b =>
-                            Canon.IsCanonical(b)
-                            && (
-                                versification.GetLastChapter(b) != 1
-                                || versification.GetLastVerse(b, versification.GetLastChapter(b)) != 1
-                            )
-                            && (b < 87 || b > 92)
+                    .Where(b =>
+                        Canon.IsCanonical(b)
+                        && (
+                            versification.GetLastChapter(b) != 1
+                            || versification.GetLastVerse(b, versification.GetLastChapter(b)) != 1
+                        )
+                        && (b < 87 || b > 92)
                     )
                     .Select(b => new VersificationRefCorpusText(b, versification))
             );

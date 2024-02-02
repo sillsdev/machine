@@ -17,14 +17,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             _morpher = morpher;
             _template = template;
             _rules = new List<IRule<Word, ShapeNode>>(
-                template.Slots.Select(
-                    slot =>
-                        new RuleBatch<Word, ShapeNode>(
-                            slot.Rules.Select(mr => mr.CompileSynthesisRule(morpher)),
-                            false,
-                            FreezableEqualityComparer<Word>.Default
-                        )
-                )
+                template.Slots.Select(slot => new RuleBatch<Word, ShapeNode>(
+                    slot.Rules.Select(mr => mr.CompileSynthesisRule(morpher)),
+                    false,
+                    FreezableEqualityComparer<Word>.Default
+                ))
             );
         }
 

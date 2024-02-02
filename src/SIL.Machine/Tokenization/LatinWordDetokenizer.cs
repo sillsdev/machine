@@ -14,7 +14,7 @@ namespace SIL.Machine.Tokenization
             SingleAngle
         }
 
-        private readonly static Dictionary<char, QuoteType> QuotationMarks = new Dictionary<char, QuoteType>
+        private static readonly Dictionary<char, QuoteType> QuotationMarks = new Dictionary<char, QuoteType>
         {
             { '"', QuoteType.DoubleQuotation },
             { '“', QuoteType.DoubleQuotation },

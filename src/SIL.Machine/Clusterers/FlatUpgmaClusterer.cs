@@ -30,8 +30,8 @@ namespace SIL.Machine.Clusterers
                 {
                     for (int j = i + 1; j < clusters.Count; j++)
                     {
-                        double[] dists = clusters[i].DataObjects
-                            .SelectMany(
+                        double[] dists = clusters[i]
+                            .DataObjects.SelectMany(
                                 o => clusters[j].DataObjects,
                                 (o1, o2) =>
                                 {

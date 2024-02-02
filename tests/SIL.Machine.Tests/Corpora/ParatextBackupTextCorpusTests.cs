@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora

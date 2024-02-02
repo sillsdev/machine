@@ -53,12 +53,11 @@ namespace SIL.Machine.Rules
 
                                     Tuple<TData, HashSet<int>>[] workItems = results
                                         .Where(res => !Comparer.Equals(work.Item1, res))
-                                        .Select(
-                                            res =>
-                                                Tuple.Create(
-                                                    res,
-                                                    work.Item2 == null ? null : new HashSet<int>(work.Item2) { i }
-                                                )
+                                        .Select(res =>
+                                            Tuple.Create(
+                                                res,
+                                                work.Item2 == null ? null : new HashSet<int>(work.Item2) { i }
+                                            )
                                         )
                                         .ToArray();
                                     if (workItems.Length > 0)

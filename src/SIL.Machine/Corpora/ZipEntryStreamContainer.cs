@@ -1,6 +1,6 @@
-﻿using SIL.ObjectModel;
+﻿using System.IO;
 using System.IO.Compression;
-using System.IO;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
 {

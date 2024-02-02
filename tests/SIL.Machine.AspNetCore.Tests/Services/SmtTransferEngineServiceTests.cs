@@ -26,11 +26,11 @@ public class SmtTransferEngineServiceTests
         await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
         await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
-        await env.SmtBatchTrainer
-            .Received()
+        await env
+            .SmtBatchTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
-        await env.TruecaserTrainer
-            .Received()
+        await env
+            .TruecaserTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
         await env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         await env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
@@ -500,8 +500,8 @@ public class SmtTransferEngineServiceTests
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
         {
-            using ISubscription<TranslationEngine> subscription = await Engines.SubscribeAsync(
-                e => e.EngineId == "engine1"
+            using ISubscription<TranslationEngine> subscription = await Engines.SubscribeAsync(e =>
+                e.EngineId == "engine1"
             );
             while (true)
             {

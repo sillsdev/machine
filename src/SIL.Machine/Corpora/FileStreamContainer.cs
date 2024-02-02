@@ -1,5 +1,5 @@
-﻿using SIL.ObjectModel;
-using System.IO;
+﻿using System.IO;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
 {

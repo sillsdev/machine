@@ -4,16 +4,16 @@ using OpenTelemetry.Trace;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services
-    .AddMachine(builder.Configuration)
+builder
+    .Services.AddMachine(builder.Configuration)
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
     .AddBuildJobService()
     .AddClearMLService();
 if (builder.Environment.IsDevelopment())
-    builder.Services
-        .AddOpenTelemetry()
+    builder
+        .Services.AddOpenTelemetry()
         .WithTracing(builder =>
         {
             builder

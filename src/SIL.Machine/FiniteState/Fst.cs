@@ -120,7 +120,9 @@ namespace SIL.Machine.FiniteState
             Register<TOffset> startValue = registers[tag, 0];
             Register<TOffset> endValue = registers[tag + 1, 1];
             if (
-                startValue.HasOffset && endValue.HasOffset && !startValue.ValueEquals(endValue, _offsetEqualityComparer)
+                startValue.HasOffset
+                && endValue.HasOffset
+                && !startValue.ValueEquals(endValue, _offsetEqualityComparer)
             )
             {
                 if (_dir == Direction.LeftToRight)
@@ -366,10 +368,8 @@ namespace SIL.Machine.FiniteState
                 foreach (TagMapCommand cmd in _initializers)
                 {
                     if (cmd.Dest == 0)
-                        initRegisters[cmd.Dest, 0].SetOffset(
-                            traversalMethod.Annotations[annIndex].Range.GetStart(_dir),
-                            true
-                        );
+                        initRegisters[cmd.Dest, 0]
+                            .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
                     else
                         cmds.Add(cmd);
                 }
@@ -580,19 +580,18 @@ namespace SIL.Machine.FiniteState
             Tuple<SubsetState, Input, IEnumerable<Output<TData, TOffset>>, int>
         > DeterministicGetArcs(SubsetState from)
         {
-            ILookup<Input, NfaStateInfo> conditions = from.NfaStates
-                .SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc })
+            ILookup<Input, NfaStateInfo> conditions = from
+                .NfaStates.SelectMany(state => state.NfaState.Arcs, (state, arc) => new { State = state, Arc = arc })
                 .Where(stateArc => !stateArc.Arc.Input.IsEpsilon)
                 .ToLookup(
                     stateArc => stateArc.Arc.Input,
-                    stateArc =>
-                        new NfaStateInfo(
-                            stateArc.Arc.Target,
-                            stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
-                            Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority),
-                            stateArc.Arc.Priority,
-                            stateArc.State.Tags
-                        )
+                    stateArc => new NfaStateInfo(
+                        stateArc.Arc.Target,
+                        stateArc.State.Outputs.Concat(stateArc.Arc.Outputs),
+                        Math.Max(stateArc.Arc.Priority, stateArc.State.MaxPriority),
+                        stateArc.Arc.Priority,
+                        stateArc.State.Tags
+                    )
                 );
 
             var preprocessedConditions = new List<
@@ -681,9 +680,13 @@ namespace SIL.Machine.FiniteState
             if (index == groups.Length)
             {
                 NfaStateInfo[] targetStates = EpsilonClosure(
-                        states.Select(
-                            s => new NfaStateInfo(s.NfaState, s.Outputs, s.MaxPriority, s.LastPriority, s.Tags)
-                        ),
+                        states.Select(s => new NfaStateInfo(
+                            s.NfaState,
+                            s.Outputs,
+                            s.MaxPriority,
+                            s.LastPriority,
+                            s.Tags
+                        )),
                         GetFirstFreeIndex(curSubsetState)
                     )
                     .ToArray();
@@ -827,13 +830,10 @@ namespace SIL.Machine.FiniteState
                     cmdTags[kvp.Key] = kvp.Value;
             }
             newFst._initializers.AddRange(
-                cmdTags.Select(
-                    kvp =>
-                        new TagMapCommand(
-                            GetRegisterIndex(registerIndices, kvp.Key, kvp.Value),
-                            TagMapCommand.CurrentPosition
-                        )
-                )
+                cmdTags.Select(kvp => new TagMapCommand(
+                    GetRegisterIndex(registerIndices, kvp.Key, kvp.Value),
+                    TagMapCommand.CurrentPosition
+                ))
             );
 
             var subsetStates = new Dictionary<SubsetState, SubsetState> { { subsetStart, subsetStart } };

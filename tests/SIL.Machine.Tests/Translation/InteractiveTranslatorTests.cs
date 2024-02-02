@@ -84,8 +84,7 @@ namespace SIL.Machine.Translation
                 sb.Append("word ");
             sb.Append('.');
             string sourceSegment = sb.ToString();
-            env.Engine
-                .GetWordGraphAsync(sourceSegment)
+            env.Engine.GetWordGraphAsync(sourceSegment)
                 .Returns(
                     Task.FromResult(new WordGraph(WhitespaceTokenizer.Instance.Tokenize(sourceSegment).ToArray()))
                 );
@@ -107,8 +106,8 @@ namespace SIL.Machine.Translation
             translator.AppendToPrefix("the Word already existed .");
             await translator.ApproveAsync(alignedOnly: true);
 
-            await env.Engine
-                .Received()
+            await env
+                .Engine.Received()
                 .TrainSegmentAsync(
                     "En el principio la Palabra ya existía .",
                     "In the beginning the Word already existed ."
@@ -123,8 +122,8 @@ namespace SIL.Machine.Translation
             translator.AppendToPrefix("In the beginning ");
             await translator.ApproveAsync(alignedOnly: false);
 
-            await env.Engine
-                .Received()
+            await env
+                .Engine.Received()
                 .TrainSegmentAsync("En el principio la Palabra ya existía .", "In the beginning");
         }
 

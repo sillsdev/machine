@@ -196,6 +196,7 @@ public class NmtEngineServiceTests
                 new MemoryDataAccessContext(),
                 Engines,
                 BuildJobService,
+                new LanguageTagService(),
                 ClearMLMonitorService
             );
         }
@@ -207,15 +208,15 @@ public class NmtEngineServiceTests
 
         public Task WaitForBuildToStartAsync()
         {
-            return WaitForBuildState(
-                e => e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == NmtBuildStages.Train
+            return WaitForBuildState(e =>
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == NmtBuildStages.Train
             );
         }
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
         {
-            using ISubscription<TranslationEngine> subscription = await Engines.SubscribeAsync(
-                e => e.EngineId == "engine1"
+            using ISubscription<TranslationEngine> subscription = await Engines.SubscribeAsync(e =>
+                e.EngineId == "engine1"
             );
             while (true)
             {

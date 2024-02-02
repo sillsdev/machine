@@ -1,14 +1,14 @@
-﻿#if !SINGLE_THREADED
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-#endif
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
+#if !SINGLE_THREADED
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+#endif
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -23,14 +23,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             _morpher = morpher;
             _template = template;
             _rules = new List<IRule<Word, ShapeNode>>(
-                template.Slots.Select(
-                    slot =>
-                        new RuleBatch<Word, ShapeNode>(
-                            slot.Rules.Select(mr => mr.CompileAnalysisRule(morpher)),
-                            false,
-                            FreezableEqualityComparer<Word>.Default
-                        )
-                )
+                template.Slots.Select(slot => new RuleBatch<Word, ShapeNode>(
+                    slot.Rules.Select(mr => mr.CompileAnalysisRule(morpher)),
+                    false,
+                    FreezableEqualityComparer<Word>.Default
+                ))
             );
         }
 

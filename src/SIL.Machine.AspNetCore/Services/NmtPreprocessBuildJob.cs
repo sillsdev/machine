@@ -40,7 +40,12 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
         // Log summary of build data
         JsonObject _buildPreprocessSummary =
-            new() { { "Event", "BuildPreprocess" }, { "EngineId", engineId }, { "BuildId", buildId } };
+            new()
+            {
+                { "Event", "BuildPreprocess" },
+                { "EngineId", engineId },
+                { "BuildId", buildId }
+            };
         foreach (KeyValuePair<string, int> kvp in counts)
         {
             _buildPreprocessSummary.Add(kvp.Key, kvp.Value);
@@ -48,14 +53,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
-        _buildPreprocessSummary.Add(
-            "SourceLanguageResolved",
-            _languageTagService.ConvertToFlores200Code(engine.SourceLanguage)
-        );
-        _buildPreprocessSummary.Add(
-            "TargetLanguageResolved",
-            _languageTagService.ConvertToFlores200Code(engine.TargetLanguage)
-        );
+
+        _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
+        _buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
+        _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
+        _buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", _buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
@@ -110,20 +112,16 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
                 var parallelCorpora = new List<IParallelTextCorpus>();
 
-                IParallelTextCorpus parallelTextCorpus = sourceCorpora[CorpusType.Text].AlignRows(
-                    targetCorpora[CorpusType.Text],
-                    allSourceRows: true,
-                    allTargetRows: true
-                );
+                IParallelTextCorpus parallelTextCorpus = sourceCorpora[CorpusType.Text]
+                    .AlignRows(targetCorpora[CorpusType.Text], allSourceRows: true, allTargetRows: true);
                 parallelCorpora.Add(parallelTextCorpus);
                 if (
                     (bool?)buildOptionsObject?["use_key_terms"]
                     ?? true && sourceCorpora.ContainsKey(CorpusType.Term) && targetCorpora.ContainsKey(CorpusType.Term)
                 )
                 {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term].AlignRows(
-                        targetCorpora[CorpusType.Term]
-                    );
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term]
+                        .AlignRows(targetCorpora[CorpusType.Term]);
                     IEnumerable<string> keyTermsTextIds = parallelKeyTermsCorpus.Select(r => r.TextId).Distinct();
                     if (keyTermsTextIds.Count() == 1)
                         corpus.TrainOnTextIds.Add(keyTermsTextIds.First()); //Should only be one textId for key terms
@@ -167,8 +165,8 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         {
                             if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus tstc)
                             {
-                                refs = row.SourceRefs
-                                    .Cast<VerseRef>()
+                                refs = row
+                                    .SourceRefs.Cast<VerseRef>()
                                     .Select(srcRef =>
                                     {
                                         var trgRef = srcRef.Clone();

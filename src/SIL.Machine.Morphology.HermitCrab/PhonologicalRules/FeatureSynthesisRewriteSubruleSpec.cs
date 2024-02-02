@@ -28,8 +28,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         )
         {
             foreach (
-                Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in targetMatch.Input.Shape
-                    .GetNodes(range)
+                Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in targetMatch
+                    .Input.Shape.GetNodes(range)
                     .Zip(_rhs.Children)
             )
             {

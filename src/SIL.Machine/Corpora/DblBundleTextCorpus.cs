@@ -25,8 +25,8 @@ namespace SIL.Machine.Corpora
                     if (!SupportedVersions.Contains($"{parts[0]}.{parts[1]}"))
                         throw new InvalidOperationException("Unsupported version of DBL bundle.");
 
-                    ZipArchiveEntry versificationEntry = archive.Entries.FirstOrDefault(
-                        e => e.Name == "versification.vrs"
+                    ZipArchiveEntry versificationEntry = archive.Entries.FirstOrDefault(e =>
+                        e.Name == "versification.vrs"
                     );
                     if (versificationEntry != null)
                     {
@@ -40,8 +40,8 @@ namespace SIL.Machine.Corpora
                     }
 
                     foreach (
-                        XElement contentElem in doc.Root
-                            .Elements("publications")
+                        XElement contentElem in doc
+                            .Root.Elements("publications")
                             .Elements("publication")
                             .Where(pubElem => (bool?)pubElem.Attribute("default") ?? false)
                             .Elements("structure")

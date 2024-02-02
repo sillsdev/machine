@@ -23,8 +23,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             _nonAllomorphActions = new HashSet<MorphologicalOutputAction>();
             var redupParts = new List<List<MorphologicalOutputAction>>();
             foreach (
-                List<MorphologicalOutputAction> partActions in rhs.Where(
-                        action => !string.IsNullOrEmpty(action.PartName)
+                List<MorphologicalOutputAction> partActions in rhs.Where(action =>
+                        !string.IsNullOrEmpty(action.PartName)
                     )
                     .GroupBy(action => action.PartName)
                     .Select(g => g.ToList())
@@ -203,8 +203,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return;
 
             foreach (
-                Annotation<ShapeNode> inputChild in inputMorph.Children.Where(
-                    ann => ann.Type() == HCFeatureSystem.Morph
+                Annotation<ShapeNode> inputChild in inputMorph.Children.Where(ann =>
+                    ann.Type() == HCFeatureSystem.Morph
                 )
             )
             {

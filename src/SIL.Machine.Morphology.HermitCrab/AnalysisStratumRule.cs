@@ -28,8 +28,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 FreezableEqualityComparer<Word>.Default
             );
             _mrulesRule = null;
-            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules
-                .Select(mrule => mrule.CompileAnalysisRule(morpher))
+            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
+                .MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(morpher))
                 .Reverse();
             switch (stratum.MorphologicalRuleOrder)
             {

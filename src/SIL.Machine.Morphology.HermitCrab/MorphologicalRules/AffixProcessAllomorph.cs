@@ -86,7 +86,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         protected override bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
         {
-            if (!RequiredSyntacticFeatureStruct.IsUnifiable(word.SyntacticFeatureStruct))
+            if (!RequiredSyntacticFeatureStruct.Subsumes(word.SyntacticFeatureStruct))
             {
                 if (morpher != null && morpher.TraceManager.IsTracing)
                 {

@@ -16,8 +16,8 @@ namespace SIL.Machine.FiniteState
 
         public void Replace(AnnotatedStringData data, Annotation<int> ann)
         {
-            KeyValuePair<char, FeatureStruct> character = _characters.Single(
-                kvp => kvp.Value.ValueEquals(ann.FeatureStruct)
+            KeyValuePair<char, FeatureStruct> character = _characters.Single(kvp =>
+                kvp.Value.ValueEquals(ann.FeatureStruct)
             );
             data.Replace(ann.Range.Start, ann.Range.Length, character.Key.ToString());
         }

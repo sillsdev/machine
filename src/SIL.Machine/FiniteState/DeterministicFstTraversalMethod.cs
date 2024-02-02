@@ -149,8 +149,7 @@ namespace SIL.Machine.FiniteState
             {
                 inst.Output = ((ICloneable<TData>)Data).Clone();
                 inst.Mappings.AddRange(
-                    Data.Annotations
-                        .SelectMany(a => a.GetNodesBreadthFirst())
+                    Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
                         .Zip(
                             inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()),
                             (a1, a2) => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(a1, a2)

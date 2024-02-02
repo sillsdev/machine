@@ -21,8 +21,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         {
             var rhsAntiFSs = new List<FeatureStruct>();
             foreach (
-                Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children
-                    .OfType<Constraint<Word, ShapeNode>>()
+                Constraint<Word, ShapeNode> constraint in subrule
+                    .Rhs.Children.OfType<Constraint<Word, ShapeNode>>()
                     .Where(c => c.Type() == HCFeatureSystem.Segment)
             )
             {

@@ -141,9 +141,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             int errorPos;
             if (GetShapeNodes(str, out nodes, out errorPos))
             {
-                var shape = new Shape(
-                    begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor)
-                );
+                var shape = new Shape(begin => new ShapeNode(
+                    begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
+                ));
                 shape.AddRange(nodes);
                 return shape;
             }
@@ -164,9 +164,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             int errorPos;
             if (GetShapeNodes(str, out nodes, out errorPos))
             {
-                shape = new Shape(
-                    begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor)
-                );
+                shape = new Shape(begin => new ShapeNode(
+                    begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
+                ));
                 shape.AddRange(nodes);
                 return errorPos;
             }

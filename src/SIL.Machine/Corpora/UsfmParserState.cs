@@ -66,6 +66,12 @@ namespace SIL.Machine.Corpora
         public bool SpecialToken { get; internal set; }
 
         /// <summary>
+        /// Number of tokens to skip over because have been processed in advance
+        /// (i.e. for figures which are three tokens, or links, or chapter/verse alternates)
+        /// </summary>
+        public int SpecialTokenCount { get; internal set; }
+
+        /// <summary>
         /// True if the token processed is a figure.
         /// </summary>
         public bool IsFigure => CharTag?.Marker == "fig";
@@ -78,12 +84,11 @@ namespace SIL.Machine.Corpora
         {
             get
             {
-                UsfmParserElement elem = _stack.LastOrDefault(
-                    e =>
-                        e.Type == UsfmElementType.Para
-                        || e.Type == UsfmElementType.Book
-                        || e.Type == UsfmElementType.Row
-                        || e.Type == UsfmElementType.Sidebar
+                UsfmParserElement elem = _stack.LastOrDefault(e =>
+                    e.Type == UsfmElementType.Para
+                    || e.Type == UsfmElementType.Book
+                    || e.Type == UsfmElementType.Row
+                    || e.Type == UsfmElementType.Sidebar
                 );
                 if (elem != null)
                     return Stylesheet.GetTag(elem.Marker);

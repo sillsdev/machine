@@ -116,8 +116,8 @@ namespace SIL.Machine.Rules
                     return match.Input;
                 },
                 input =>
-                    input.Annotations
-                        .Single(ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word)
+                    input
+                        .Annotations.Single(ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word)
                         .FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value)
             );
 

@@ -144,7 +144,7 @@ public class S3WriteStream : Stream
         base.Dispose(disposing);
     }
 
-    public async override ValueTask DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
         if (_uploadResponses.Count == 0)
         {

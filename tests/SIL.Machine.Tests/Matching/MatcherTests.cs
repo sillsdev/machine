@@ -287,15 +287,14 @@ namespace SIL.Machine.Matching
                 .New()
                 .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
                 .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value)
-                .Group(
-                    g =>
-                        g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
-                            .Annotation(
-                                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(",").Value
-                            )
-                            .Optional.Annotation(
-                                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value
-                            )
+                .Group(g =>
+                    g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
+                        .Annotation(
+                            FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(",").Value
+                        )
+                        .Optional.Annotation(
+                            FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value
+                        )
                 )
                 .Optional.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                 .Value;
@@ -327,15 +326,14 @@ namespace SIL.Machine.Matching
                 .New()
                 .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
                 .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value)
-                .Group(
-                    g =>
-                        g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
-                            .Annotation(
-                                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(",").Value
-                            )
-                            .Optional.Annotation(
-                                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value
-                            )
+                .Group(g =>
+                    g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
+                        .Annotation(
+                            FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(",").Value
+                        )
+                        .Optional.Annotation(
+                            FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value
+                        )
                 )
                 .LazyOptional.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                 .Value;
@@ -893,17 +891,15 @@ namespace SIL.Machine.Matching
                 .Group(
                     "NP",
                     np =>
-                        np.Group(
-                            det =>
-                                det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                        np.Group(det =>
+                            det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                                .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                .OneOrMore
+                        )
+                            .Optional.Group(adj =>
+                                adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                                     .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
                                     .OneOrMore
-                        )
-                            .Optional.Group(
-                                adj =>
-                                    adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
-                                        .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                                        .OneOrMore
                             )
                             .ZeroOrMore.Group(
                                 "headNoun",
@@ -924,12 +920,11 @@ namespace SIL.Machine.Matching
                                         FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("verb").Value
                                     )
                             )
-                            .Group(
-                                adv =>
-                                    adv.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                                        .OneOrMore.Annotation(
-                                            FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value
-                                        )
+                            .Group(adv =>
+                                adv.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                    .OneOrMore.Annotation(
+                                        FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value
+                                    )
                             )
                             .ZeroOrMore
                 )
@@ -1151,17 +1146,15 @@ namespace SIL.Machine.Matching
                 .Group(
                     "NP",
                     np =>
-                        np.Group(
-                            det =>
-                                det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                        np.Group(det =>
+                            det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                                .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                .OneOrMore
+                        )
+                            .Optional.Group(adj =>
+                                adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                                     .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
                                     .OneOrMore
-                        )
-                            .Optional.Group(
-                                adj =>
-                                    adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
-                                        .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                                        .OneOrMore
                             )
                             .ZeroOrMore.Group(
                                 "headNoun",
@@ -1182,12 +1175,11 @@ namespace SIL.Machine.Matching
                                         FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("verb").Value
                                     )
                             )
-                            .Group(
-                                adv =>
-                                    adv.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                                        .OneOrMore.Annotation(
-                                            FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value
-                                        )
+                            .Group(adv =>
+                                adv.Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                    .OneOrMore.Annotation(
+                                        FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value
+                                    )
                             )
                             .ZeroOrMore
                 )
@@ -1212,12 +1204,11 @@ namespace SIL.Machine.Matching
             pattern = Pattern<AnnotatedStringData, int>
                 .New()
                 .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
-                .Or.Group(
-                    g =>
-                        g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
-                            .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value)
-                            .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("verb").Value)
-                            .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value)
+                .Or.Group(g =>
+                    g.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
+                        .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value)
+                        .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("verb").Value)
+                        .Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adv").Value)
                 )
                 .Value;
 

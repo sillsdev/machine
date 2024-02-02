@@ -250,8 +250,8 @@ namespace SIL.Machine.Translation
                         unmarkedStates.Enqueue(nextDfaState);
                     }
 
-                    bool isFinal = nextDfaState.NfaStates
-                        .Where(s => !s.IsSubState)
+                    bool isFinal = nextDfaState
+                        .NfaStates.Where(s => !s.IsSubState)
                         .Any(s => FinalStates.Contains(s.StateIndex));
                     if ((isFinal || !candidateArc.IsNextSubState) && candidateArc.Paths.Count > 0)
                     {
