@@ -255,8 +255,12 @@ public class ServalTranslationEngineServiceV1(
             TargetLanguage = source.TargetLanguage,
             TrainOnAll = source.TrainOnAll,
             PretranslateAll = source.PretranslateAll,
-            TrainOnBiblicalRange = source.TrainOnBiblicalRange,
-            PretranslateBiblicalRange = source.PretranslateBiblicalRange,
+            TrainOnChapters = source
+                .TrainOnChapters.Select(kvp => (kvp.Key, kvp.Value.Chapters.ToList()))
+                .ToDictionary(),
+            PretranslateChapters = source
+                .PretranslateChapters.Select(kvp => (kvp.Key, kvp.Value.Chapters.ToList()))
+                .ToDictionary(),
             TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
             PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
