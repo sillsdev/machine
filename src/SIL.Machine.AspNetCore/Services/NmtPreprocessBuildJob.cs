@@ -139,7 +139,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                             if (rowRef is not VerseRef vr)
                                 return false;
                             return bookChapters.TryGetValue(vr.Book, out HashSet<int>? chapters)
-                                && (chapters.Contains(vr.ChapterNum) || chapters.Count() == 0);
+                                && (chapters.Contains(vr.ChapterNum) || chapters.Count == 0);
                         }
                         if (corpus.TrainOnChapters is not null)
                             isInTrainOnChapters = row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r));
