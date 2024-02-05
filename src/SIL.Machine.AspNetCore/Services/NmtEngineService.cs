@@ -14,7 +14,8 @@ public class NmtEngineService(
     IRepository<TranslationEngine> engines,
     IBuildJobService buildJobService,
     ILanguageTagService languageTagService,
-    ClearMLMonitorService clearMLMonitorService
+    ClearMLMonitorService clearMLMonitorService,
+    ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
@@ -22,8 +23,9 @@ public class NmtEngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
 
     public TranslationEngineType Type => TranslationEngineType.Nmt;
 
@@ -108,9 +110,23 @@ public class NmtEngineService(
         }
     }
 
-    public Task<ModelInfo> GetModelInfoAsync(string engineId, CancellationToken cancellationToken = default)
+    public async Task<ModelPresignedUrl> GetModelPresignedUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    )
     {
-        throw new NotSupportedException();
+        var files = await _sharedFileService.ListFilesAsync($"models/", cancellationToken: cancellationToken);
+        // find latest file that start with the engineId
+        var latestFile = files.Where(f => f.StartsWith(engineId)).OrderByDescending(f => f).FirstOrDefault();
+        if (latestFile is null)
+            throw new FileNotFoundException("No built, saved model found for engine.", engineId);
+        string buildRevision = latestFile.Split('_').Last();
+        var modelInfo = new ModelPresignedUrl
+        {
+            PresignedUrl = (await _sharedFileService.GetPresignedUrlAsync($"models/{latestFile}")).ToString(),
+            BuildRevision = buildRevision
+        };
+        return modelInfo;
     }
 
     public Task<IReadOnlyList<TranslationResult>> TranslateAsync(

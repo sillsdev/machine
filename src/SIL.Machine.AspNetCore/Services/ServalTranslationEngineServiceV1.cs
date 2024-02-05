@@ -119,19 +119,20 @@ public class ServalTranslationEngineServiceV1(
         return Empty;
     }
 
-    public override async Task<GetModelInfoResponse> GetModelInfo(
-        GetModelInfoRequest request,
+    public override async Task<GetModelPresignedUrlResponse> GetModelPresignedUrl(
+        GetModelPresignedUrlRequest request,
         ServerCallContext context
     )
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        ModelInfo modelInfo = await engineService.GetModelInfoAsync(request.EngineId, context.CancellationToken);
-        return new GetModelInfoResponse
+        ModelPresignedUrl modelPresignedUrl = await engineService.GetModelPresignedUrlAsync(
+            request.EngineId,
+            context.CancellationToken
+        );
+        return new GetModelPresignedUrlResponse
         {
-            PresignedUrl = modelInfo.PresignedUrl,
-            BuildId = modelInfo.BuildId,
-            CreatedOn = modelInfo.CreatedOn,
-            ToBeDeletedOn = modelInfo.ToBeDeletedOn
+            PresignedUrl = modelPresignedUrl.PresignedUrl,
+            BuildRevision = modelPresignedUrl.BuildRevision
         };
     }
 

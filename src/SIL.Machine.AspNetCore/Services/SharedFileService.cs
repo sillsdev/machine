@@ -55,6 +55,25 @@ public class SharedFileService : ISharedFileService
         return new Uri(_baseUri, path);
     }
 
+    public async Task<Uri> GetPresignedUrlAsync(string path)
+    {
+        string presignedUrl = path;
+        if (_baseUri is not null)
+            if (_baseUri.Scheme == "s3")
+                presignedUrl = await _fileStorage.GetPresignedUrlAsync(path);
+        var url = GetResolvedUri(presignedUrl);
+        return url;
+    }
+
+    public Task<IReadOnlyCollection<string>> ListFilesAsync(
+        string path,
+        bool recurse = false,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return _fileStorage.ListFilesAsync(path, recurse, cancellationToken);
+    }
+
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         return _fileStorage.OpenReadAsync(path, cancellationToken);

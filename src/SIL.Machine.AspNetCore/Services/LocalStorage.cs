@@ -36,6 +36,11 @@ public class LocalStorage : DisposableBase, IFileStorage
         );
     }
 
+    public Task<string> GetPresignedUrlAsync(string path, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(path);
+    }
+
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         Uri pathUri = new(_basePath, Normalize(path));

@@ -96,6 +96,11 @@ public class InMemoryStorage : DisposableBase, IFileStorage
         );
     }
 
+    public Task<string> GetPresignedUrlAsync(string path, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(path);
+    }
+
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         if (!_memoryStreams.TryGetValue(Normalize(path), out Entry? ret))
