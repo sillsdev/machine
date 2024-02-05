@@ -151,6 +151,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    private static MongoStorageOptions GetMongoStorageOptions()
+    {
+        var mongoStorageOptions = new MongoStorageOptions
+        {
+            MigrationOptions = new MongoMigrationOptions
+            {
+                MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                BackupStrategy = new CollectionMongoBackupStrategy()
+            },
+            CheckConnection = true,
+            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
+        };
+        return mongoStorageOptions;
+    }
+
     public static IMachineBuilder AddMongoHangfireJobClient(
         this IMachineBuilder builder,
         string? connectionString = null
@@ -164,19 +179,7 @@ public static class IMachineBuilderExtensions
             c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseMongoStorage(
-                    connectionString,
-                    new MongoStorageOptions
-                    {
-                        MigrationOptions = new MongoMigrationOptions
-                        {
-                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy()
-                        },
-                        CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-                    }
-                )
+                .UseMongoStorage(connectionString, GetMongoStorageOptions())
                 .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
@@ -208,7 +211,7 @@ public static class IMachineBuilderExtensions
 
         builder.Services.AddHangfireServer(o =>
         {
-            o.Queues = queues.ToArray();
+            o.Queues = [.. queues];
         });
         return builder;
     }
@@ -399,6 +402,20 @@ public static class IMachineBuilderExtensions
                 );
         }
 
+        return builder;
+    }
+
+    public static IMachineBuilder AddModelCleanupJob(this IMachineBuilder builder, string? connectionString = null)
+    {
+        connectionString ??= builder.Configuration?.GetConnectionString("Hangfire");
+        if (connectionString is null)
+            throw new InvalidOperationException("Hangfire connection string is required");
+
+        var mongoClientSettings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+        JobStorage.Current = new MongoStorage(mongoClientSettings, "recurring_job", GetMongoStorageOptions());
+        builder.Services.AddSingleton<ICleanupOldModelsJob, CleanupOldModelsJob>();
+        RecurringJobOptions options = new() { TimeZone = TimeZoneInfo.Utc };
+        RecurringJob.AddOrUpdate<ICleanupOldModelsJob>("Cleanup-job", x => x.RunAsync(), Cron.Daily, options);
         return builder;
     }
 

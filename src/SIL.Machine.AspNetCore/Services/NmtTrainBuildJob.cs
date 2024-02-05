@@ -68,6 +68,11 @@ public class NmtTrainBuildJob : HangfireBuildJob
                         + $"    'trg_lang': '{ConvertLanguageTag(engine.TargetLanguage)}',\n"
                         + $"    'shared_file_uri': '{_sharedFileService.GetBaseUri()}',\n"
                         + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
+                        + (
+                            engine.IsModelRetrievable
+                                ? $"    'save_model': '{engine.Id}_{engine.BuildRevision + 1}',\n"
+                                : ""
+                        )
                         + $"    'clearml': False\n"
                         + "}\n"
                         + "run(args)\n"

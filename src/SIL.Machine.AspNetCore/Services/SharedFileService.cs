@@ -55,12 +55,12 @@ public class SharedFileService : ISharedFileService
         return new Uri(_baseUri, path);
     }
 
-    public async Task<Uri> GetPresignedUrlAsync(string path)
+    public async Task<Uri> GetPresignedUrlAsync(string path, int minutesToExpire)
     {
         string presignedUrl = path;
         if (_baseUri is not null)
             if (_baseUri.Scheme == "s3")
-                presignedUrl = await _fileStorage.GetPresignedUrlAsync(path);
+                presignedUrl = await _fileStorage.GetPresignedUrlAsync(path, minutesToExpire);
         var url = GetResolvedUri(presignedUrl);
         return url;
     }

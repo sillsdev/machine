@@ -23,6 +23,7 @@ public class ServalTranslationEngineServiceV1(
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
+            request.IsModelRetrievable,
             context.CancellationToken
         );
         return Empty;
@@ -132,7 +133,8 @@ public class ServalTranslationEngineServiceV1(
         return new GetModelPresignedUrlResponse
         {
             PresignedUrl = modelPresignedUrl.PresignedUrl,
-            BuildRevision = modelPresignedUrl.BuildRevision
+            BuildRevision = modelPresignedUrl.BuildRevision,
+            UrlExpirationTime = modelPresignedUrl.UrlExpirationTime
         };
     }
 

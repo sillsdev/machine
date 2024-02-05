@@ -2,11 +2,13 @@
 
 public interface ISharedFileService
 {
+    public const string ModelDirectory = "models/";
+
     Uri GetBaseUri();
 
     Uri GetResolvedUri(string path);
 
-    Task<Uri> GetPresignedUrlAsync(string path);
+    Task<Uri> GetPresignedUrlAsync(string path, int minutesToExpire);
 
     Task<IReadOnlyCollection<string>> ListFilesAsync(
         string path,

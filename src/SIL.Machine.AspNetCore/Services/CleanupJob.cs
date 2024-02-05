@@ -6,11 +6,9 @@ public class CleanupOldModelsJob(ISharedFileService sharedFileService) : ICleanu
     private List<string> _filesPreviouslyMarkedForDeletion = [];
     private readonly List<string> _filesNewlyMarkedForDeletion = [];
 
-    private static readonly string MODEL_DIRECTORY = "models/";
-
     public async Task RunAsync()
     {
-        var files = await SharedFileService.ListFilesAsync(MODEL_DIRECTORY);
+        var files = await SharedFileService.ListFilesAsync(ISharedFileService.ModelDirectory);
         // split name by underscore into engineID and buildRevision
         Dictionary<string, int> modelsByEngineId = [];
         foreach (string file in files)

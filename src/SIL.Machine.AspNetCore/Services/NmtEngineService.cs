@@ -29,11 +29,14 @@ public class NmtEngineService(
 
     public TranslationEngineType Type => TranslationEngineType.Nmt;
 
+    private const int MinutesToExpire = 60;
+
     public async Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool isModelRetrievable = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -43,12 +46,13 @@ public class NmtEngineService(
             {
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
+                TargetLanguage = targetLanguage,
+                IsModelRetrievable = isModelRetrievable
             },
             cancellationToken
         );
         await _buildJobService.CreateEngineAsync(
-            new[] { BuildJobType.Cpu, BuildJobType.Gpu },
+            [BuildJobType.Cpu, BuildJobType.Gpu],
             engineId,
             engineName,
             cancellationToken
@@ -115,16 +119,35 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        var files = await _sharedFileService.ListFilesAsync($"models/", cancellationToken: cancellationToken);
-        // find latest file that start with the engineId
-        var latestFile = files.Where(f => f.StartsWith(engineId)).OrderByDescending(f => f).FirstOrDefault();
-        if (latestFile is null)
-            throw new FileNotFoundException("No built, saved model found for engine.", engineId);
-        string buildRevision = latestFile.Split('_').Last();
+        TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+        if (!engine.IsModelRetrievable)
+            throw new InvalidOperationException(
+                "The model cannot be downloaded. "
+                    + "To enable downloading the model, recreate the engine with IsModelRetrievable property to true."
+            );
+        if (engine.BuildRevision == 0)
+            throw new InvalidOperationException("The engine has not been built yet.");
+        string filename = $"{engineId}_{engine.BuildRevision}.tar.gz";
+        bool fileExists = await _sharedFileService.ExistsAsync(
+            ISharedFileService.ModelDirectory + filename,
+            cancellationToken
+        );
+        if (!fileExists)
+            throw new FileNotFoundException(
+                $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
+            );
         var modelInfo = new ModelPresignedUrl
         {
-            PresignedUrl = (await _sharedFileService.GetPresignedUrlAsync($"models/{latestFile}")).ToString(),
-            BuildRevision = buildRevision
+            PresignedUrl = (
+                await _sharedFileService.GetPresignedUrlAsync(
+                    ISharedFileService.ModelDirectory + filename,
+                    MinutesToExpire
+                )
+            ).ToString(),
+            BuildRevision = engine.BuildRevision,
+            UrlExpirationTime = DateTime
+                .UtcNow.AddMinutes(MinutesToExpire)
+                .ToString("yyyy-MM-ddTHH\\:mm\\:ss.fffffffzzz", CultureInfo.InvariantCulture)
         };
         return modelInfo;
     }
@@ -177,5 +200,13 @@ public class NmtEngineService(
         );
         if (buildId is not null && jobState is BuildJobState.None)
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+    }
+
+    private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
+    {
+        TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new InvalidOperationException($"The engine {engineId} does not exist.");
+        return engine;
     }
 }

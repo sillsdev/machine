@@ -5,37 +5,25 @@ public static class SmtTransferBuildStages
     public const string Train = "train";
 }
 
-public class SmtTransferEngineService : ITranslationEngineService
+public class SmtTransferEngineService(
+    IDistributedReaderWriterLockFactory lockFactory,
+    IPlatformService platformService,
+    IDataAccessContext dataAccessContext,
+    IRepository<TranslationEngine> engines,
+    IRepository<TrainSegmentPair> trainSegmentPairs,
+    SmtTransferEngineStateService stateService,
+    IBuildJobService buildJobService,
+    JobStorage jobStorage
+) : ITranslationEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory;
-    private readonly IPlatformService _platformService;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly IRepository<TranslationEngine> _engines;
-    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
-    private readonly SmtTransferEngineStateService _stateService;
-    private readonly IBuildJobService _buildJobService;
-    private readonly JobStorage _jobStorage;
-
-    public SmtTransferEngineService(
-        IDistributedReaderWriterLockFactory lockFactory,
-        IPlatformService platformService,
-        IDataAccessContext dataAccessContext,
-        IRepository<TranslationEngine> engines,
-        IRepository<TrainSegmentPair> trainSegmentPairs,
-        SmtTransferEngineStateService stateService,
-        IBuildJobService buildJobService,
-        JobStorage jobStorage
-    )
-    {
-        _lockFactory = lockFactory;
-        _platformService = platformService;
-        _dataAccessContext = dataAccessContext;
-        _engines = engines;
-        _trainSegmentPairs = trainSegmentPairs;
-        _stateService = stateService;
-        _buildJobService = buildJobService;
-        _jobStorage = jobStorage;
-    }
+    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
+    private readonly IPlatformService _platformService = platformService;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly IRepository<TranslationEngine> _engines = engines;
+    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
+    private readonly SmtTransferEngineStateService _stateService = stateService;
+    private readonly IBuildJobService _buildJobService = buildJobService;
+    private readonly JobStorage _jobStorage = jobStorage;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
@@ -44,6 +32,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool isModelRetrievable = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -53,7 +42,8 @@ public class SmtTransferEngineService : ITranslationEngineService
             {
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
+                TargetLanguage = targetLanguage,
+                IsModelRetrievable = isModelRetrievable
             },
             cancellationToken
         );

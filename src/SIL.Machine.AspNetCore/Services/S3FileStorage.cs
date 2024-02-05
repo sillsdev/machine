@@ -65,7 +65,11 @@ public class S3FileStorage : DisposableBase, IFileStorage
         return response.S3Objects.Select(s3Obj => s3Obj.Key[_basePath.Length..]).ToList();
     }
 
-    public Task<string> GetPresignedUrlAsync(string path, CancellationToken cancellationToken = default)
+    public Task<string> GetPresignedUrlAsync(
+        string path,
+        int minutesToExpire,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(
             _client.GetPreSignedURL(
@@ -73,7 +77,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
                 {
                     BucketName = _bucketName,
                     Key = _basePath + Normalize(path),
-                    Expires = DateTime.UtcNow.AddMinutes(60)
+                    Expires = DateTime.UtcNow.AddMinutes(minutesToExpire)
                 }
             )
         );

@@ -9,6 +9,7 @@ public interface ITranslationEngineService
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool isModelRetrievable = false,
         CancellationToken cancellationToken = default
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);

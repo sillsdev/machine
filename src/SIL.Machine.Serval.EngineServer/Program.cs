@@ -11,11 +11,8 @@ builder
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
     .AddBuildJobService()
+    .AddModelCleanupJob()
     .AddClearMLService();
-
-builder.Services.AddSingleton<ICleanupOldModelsJob, CleanupOldModelsJob>();
-RecurringJobOptions options = new() { TimeZone = TimeZoneInfo.Utc };
-RecurringJob.AddOrUpdate<ICleanupOldModelsJob>("Cleanup-job", x => x.RunAsync(), Cron.Daily, options);
 
 if (builder.Environment.IsDevelopment())
     builder

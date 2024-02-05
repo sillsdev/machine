@@ -96,7 +96,11 @@ public class InMemoryStorage : DisposableBase, IFileStorage
         );
     }
 
-    public Task<string> GetPresignedUrlAsync(string path, CancellationToken cancellationToken = default)
+    public Task<string> GetPresignedUrlAsync(
+        string path,
+        int minutesToExpire,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(path);
     }
