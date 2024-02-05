@@ -176,8 +176,14 @@ namespace SIL.Machine.AspNetCore.Services
                         TargetLanguage = "es",
                         PretranslateAll = false,
                         TrainOnAll = false,
-                        PretranslateChapters = parser.GetChapters(pretranslateBiblicalRangeChapters),
-                        TrainOnChapters = parser.GetChapters(trainOnBiblicalRangeChapters),
+                        PretranslateChapters = parser
+                            .GetChapters(pretranslateBiblicalRangeChapters)
+                            .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
+                            .ToDictionary(),
+                        TrainOnChapters = parser
+                            .GetChapters(trainOnBiblicalRangeChapters)
+                            .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
+                            .ToDictionary(),
                         PretranslateTextIds = new HashSet<string>(),
                         TrainOnTextIds = new HashSet<string>(),
                         SourceFiles = new List<CorpusFile>
@@ -211,8 +217,14 @@ namespace SIL.Machine.AspNetCore.Services
                     TargetLanguage = "es",
                     PretranslateAll = false,
                     TrainOnAll = false,
-                    PretranslateChapters = parser.GetChapters(pretranslateBiblicalRangeChapters),
-                    TrainOnChapters = parser.GetChapters(trainOnBiblicalRangeChapters),
+                    PretranslateChapters = parser
+                        .GetChapters(pretranslateBiblicalRangeChapters)
+                        .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
+                        .ToDictionary(),
+                    TrainOnChapters = parser
+                        .GetChapters(trainOnBiblicalRangeChapters)
+                        .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
+                        .ToDictionary(),
                     PretranslateTextIds = new HashSet<string>(),
                     TrainOnTextIds = new HashSet<string>(),
                     SourceFiles = new List<CorpusFile>
