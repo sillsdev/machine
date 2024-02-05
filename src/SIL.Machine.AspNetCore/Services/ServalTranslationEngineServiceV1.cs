@@ -119,6 +119,22 @@ public class ServalTranslationEngineServiceV1(
         return Empty;
     }
 
+    public override async Task<GetModelInfoResponse> GetModelInfo(
+        GetModelInfoRequest request,
+        ServerCallContext context
+    )
+    {
+        ITranslationEngineService engineService = GetEngineService(request.EngineType);
+        ModelInfo modelInfo = await engineService.GetModelInfoAsync(request.EngineId, context.CancellationToken);
+        return new GetModelInfoResponse
+        {
+            PresignedUrl = modelInfo.PresignedUrl,
+            BuildId = modelInfo.BuildId,
+            CreatedOn = modelInfo.CreatedOn,
+            ToBeDeletedOn = modelInfo.ToBeDeletedOn
+        };
+    }
+
     public override async Task<GetQueueSizeResponse> GetQueueSize(
         GetQueueSizeRequest request,
         ServerCallContext context

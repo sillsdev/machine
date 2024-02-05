@@ -225,6 +225,11 @@ public class SmtTransferEngineService : ITranslationEngineService
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
     }
 
+    public Task<ModelInfo> GetModelInfoAsync(string engineId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
     {
         TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);

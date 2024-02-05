@@ -108,6 +108,11 @@ public class NmtEngineService(
         }
     }
 
+    public Task<ModelInfo> GetModelInfoAsync(string engineId, CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException();
+    }
+
     public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
