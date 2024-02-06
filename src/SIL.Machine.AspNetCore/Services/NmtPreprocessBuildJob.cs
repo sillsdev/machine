@@ -130,32 +130,58 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
                 foreach (ParallelTextRow row in parallelCorpora.Flatten())
                 {
-                    bool isInTrainOnRange = false;
-                    bool isInPretranslateRange = false;
-                    if(targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc && row.Refs.All(r => r is VerseRef)){
-                        Dictionary<string, List<int>> rowChaptersPerBook = row.Refs.Cast<VerseRef>().GroupBy(vr => vr.Book).ToDictionary(g => g.Key, g => g.Select(vr => vr.ChapterNum).ToList());
-                        var parser = new BiblicalRangeStringParser(stc.Versification);
-                        if(corpus.TrainOnBiblicalRange != null && corpus.TrainOnBiblicalRange != ""){
-                            Dictionary<string, List<int>> trainOnBiblicalRangeChapters = parser.Parse(corpus.TrainOnBiblicalRange); //TODO calculate once
-                            isInTrainOnRange = rowChaptersPerBook.Join(trainOnBiblicalRangeChapters, rcpb => rcpb.Key, tobrc => tobrc.Key, (rcbp, tobrc) =>
-                                rcbp.Value.Intersect(tobrc.Value).Count() > 0 || (rcbp.Value.Count() > 0 && tobrc.Value.Count() == 0) //Empty list means all chapters from book
-                            ).Any(b => b);
-                        }
-                        if(corpus.PretranslateBiblicalRange != null && corpus.PretranslateBiblicalRange != ""){
-                            Dictionary<string, List<int>> pretranslateBiblicalRangeChapters = parser.Parse(corpus.PretranslateBiblicalRange);
-                            isInPretranslateRange = rowChaptersPerBook.Join(pretranslateBiblicalRangeChapters, rcpb => rcpb.Key, pbrc => pbrc.Key, (rcbp, pbrc) =>
-                                rcbp.Value.Intersect(pbrc.Value).Count() > 0 || (rcbp.Value.Count() > 0 && pbrc.Value.Count() == 0)
-                            ).Any(b => b);
+                    bool isInTrainOnChapters = false;
+                    bool isInPretranslateChapters = false;
+                    if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc && row.Refs.All(r => r is VerseRef))
+                    {
+                        Dictionary<string, List<int>>? rowChaptersPerBook = null;
+                        if (corpus.TrainOnChapters != null || corpus.PretranslateChapters != null)
+                        {
+                            rowChaptersPerBook = row
+                                .Refs.Cast<VerseRef>()
+                                .GroupBy(vr => vr.Book)
+                                .ToDictionary(g => g.Key, g => g.Select(vr => vr.ChapterNum).ToList());
+
+                            if (corpus.TrainOnChapters != null)
+                            {
+                                isInTrainOnChapters = rowChaptersPerBook
+                                    .Join(
+                                        corpus.TrainOnChapters,
+                                        rcpb => rcpb.Key,
+                                        tobrc => tobrc.Key,
+                                        (rcbp, tobrc) =>
+                                            rcbp.Value.Intersect(tobrc.Value).Count() > 0
+                                            || (rcbp.Value.Count() > 0 && tobrc.Value.Count() == 0) //Empty list means all chapters from book
+                                    )
+                                    .Any(b => b);
+                            }
+                            if (corpus.PretranslateChapters != null)
+                            {
+                                isInPretranslateChapters = rowChaptersPerBook
+                                    .Join(
+                                        corpus.PretranslateChapters,
+                                        rcpb => rcpb.Key,
+                                        pbrc => pbrc.Key,
+                                        (rcbp, pbrc) =>
+                                            rcbp.Value.Intersect(pbrc.Value).Count() > 0
+                                            || (rcbp.Value.Count() > 0 && pbrc.Value.Count() == 0)
+                                    )
+                                    .Any(b => b);
+                            }
                         }
                     }
-                    if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId) || isInTrainOnRange)
+                    if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId) || isInTrainOnChapters)
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
                         counts["NumTrainRows"] += 1;
                     }
                     if (
-                        (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId) || isInPretranslateRange)
+                        (
+                            corpus.PretranslateAll
+                            || corpus.PretranslateTextIds.Contains(row.TextId)
+                            || isInPretranslateChapters
+                        )
                         && row.SourceSegment.Count > 0
                         && row.TargetSegment.Count == 0
                     )

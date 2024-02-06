@@ -149,10 +149,10 @@ namespace SIL.Machine.AspNetCore.Services
         }
 
         [Test]
-        [TestCase("MAT","1CH",23,4)]
-        [TestCase("NT;LEV","1CH",25,4)]
-        [TestCase("OT","MRK",10,0)]
-        [TestCase("OT","MLK",0,0, true)]
+        [TestCase("MAT", "1CH", 23, 4)]
+        [TestCase("NT;LEV", "1CH", 25, 4)]
+        [TestCase("OT", "MRK", 10, 0)]
+        [TestCase("OT", "MLK", 0, 0, true)]
         public async Task BuildJobTest_Chapterlevel(
             string trainOnBiblicalRangeChapters,
             string pretranslateBiblicalRangeChapters,
@@ -162,45 +162,81 @@ namespace SIL.Machine.AspNetCore.Services
         )
         {
             using var env = new TestEnvironment();
-            var corpus1 = new Corpus
+            var parser = new ScriptureRangeParser();
+
+            Corpus corpus1 = new Corpus();
+            if (throwsException)
             {
-                Id = "corpusId1",
-                SourceLanguage = "en",
-                TargetLanguage = "es",
-                PretranslateAll = false,
-                TrainOnAll = false,
-                PretranslateBiblicalRange = pretranslateBiblicalRangeChapters,
-                TrainOnBiblicalRange = trainOnBiblicalRangeChapters,
-                PretranslateTextIds = new HashSet<string>(),
-                TrainOnTextIds = new HashSet<string>(),
-                SourceFiles = new List<CorpusFile>
+                Assert.Throws<ArgumentException>(() =>
                 {
-                    new CorpusFile
+                    corpus1 = new Corpus
                     {
-                        TextId = "textId1",
-                        Format = FileFormat.Paratext,
-                        Location = Path.Combine(Path.GetTempPath(), "Project.zip")
-                    }
-                },
-                TargetFiles = new List<CorpusFile>
-                {
-                    new CorpusFile
-                    {
-                        TextId = "textId1",
-                        Format = FileFormat.Paratext,
-                        Location = Path.Combine(Path.GetTempPath(), "Project2.zip")
-                    }
-                }
-            };
-            var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
-            if (!throwsException){
-                await env.BuildJob.RunAsync("engine1", "build1", corpora, "{\"use_key_terms\":false}", default);
-            } else {
-                Assert.ThrowsAsync<ArgumentException>(async () => {
-                    await env.BuildJob.RunAsync("engine1", "build1", corpora, "{\"use_key_terms\":false}", default);
+                        Id = "corpusId1",
+                        SourceLanguage = "en",
+                        TargetLanguage = "es",
+                        PretranslateAll = false,
+                        TrainOnAll = false,
+                        PretranslateChapters = parser.GetChapters(pretranslateBiblicalRangeChapters),
+                        TrainOnChapters = parser.GetChapters(trainOnBiblicalRangeChapters),
+                        PretranslateTextIds = new HashSet<string>(),
+                        TrainOnTextIds = new HashSet<string>(),
+                        SourceFiles = new List<CorpusFile>
+                        {
+                            new CorpusFile
+                            {
+                                TextId = "textId1",
+                                Format = FileFormat.Paratext,
+                                Location = Path.Combine(Path.GetTempPath(), "Project.zip")
+                            }
+                        },
+                        TargetFiles = new List<CorpusFile>
+                        {
+                            new CorpusFile
+                            {
+                                TextId = "textId1",
+                                Format = FileFormat.Paratext,
+                                Location = Path.Combine(Path.GetTempPath(), "Project2.zip")
+                            }
+                        }
+                    };
                 });
                 return;
             }
+            else
+            {
+                corpus1 = new Corpus
+                {
+                    Id = "corpusId1",
+                    SourceLanguage = "en",
+                    TargetLanguage = "es",
+                    PretranslateAll = false,
+                    TrainOnAll = false,
+                    PretranslateChapters = parser.GetChapters(pretranslateBiblicalRangeChapters),
+                    TrainOnChapters = parser.GetChapters(trainOnBiblicalRangeChapters),
+                    PretranslateTextIds = new HashSet<string>(),
+                    TrainOnTextIds = new HashSet<string>(),
+                    SourceFiles = new List<CorpusFile>
+                    {
+                        new CorpusFile
+                        {
+                            TextId = "textId1",
+                            Format = FileFormat.Paratext,
+                            Location = Path.Combine(Path.GetTempPath(), "Project.zip")
+                        }
+                    },
+                    TargetFiles = new List<CorpusFile>
+                    {
+                        new CorpusFile
+                        {
+                            TextId = "textId1",
+                            Format = FileFormat.Paratext,
+                            Location = Path.Combine(Path.GetTempPath(), "Project2.zip")
+                        }
+                    }
+                };
+            }
+            var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
+            await env.BuildJob.RunAsync("engine1", "build1", corpora, "{\"use_key_terms\":false}", default);
             using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
             {
                 using (var reader = new StreamReader(stream))
@@ -216,7 +252,11 @@ namespace SIL.Machine.AspNetCore.Services
                 {
                     JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
                     Assert.NotNull(pretranslationJsonObject);
-                    Assert.That(pretranslationJsonObject!.ToList().Count, Is.EqualTo(numEntriesWrittenToPretranslate), JsonSerializer.Serialize(pretranslationJsonObject));
+                    Assert.That(
+                        pretranslationJsonObject!.ToList().Count,
+                        Is.EqualTo(numEntriesWrittenToPretranslate),
+                        JsonSerializer.Serialize(pretranslationJsonObject)
+                    );
                 }
             }
         }
