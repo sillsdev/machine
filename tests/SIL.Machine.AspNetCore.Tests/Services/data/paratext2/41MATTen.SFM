@@ -1,0 +1,40 @@
+\id MAT - Test
+\h Matthew
+\mt Matthew
+\ip An introduction to Matthew
+\c 1
+\s Chapter One
+\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
+\li1
+\v 2 \bd C\bd*hapter one,
+\li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
+\v 3 Chapter one,
+\li2 verse three.
+\v 4 Chapter one, 
+\li2 verse four,
+\v 5 Chapter one,
+\li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
+\c 2 
+\s1 Chapter Two
+\p
+\v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
+\v 2-3 Chapter two, verse \fm ∆\fm*two.
+\v 3-4a Chapter two, verse \w three|lemma\w*.
+\v 4b Chapter two, verse four.
+\p
+\v 6 Chapter two, verse \w six|strong="12345" \w*.
+\v 6 Bad verse.
+\v 5 Chapter two, verse five \rq (MAT 3:1)\rq*.
+\v 7a Chapter two, verse seven A, 
+\s Section header
+\p
+\v 7b verse seven B.
+\p
+\v 8 This is a list:
+\b
+\tr \tc1
+\v 9 Chapter\tcr2 2\tc3 verse\tcr4 9
+\tr \tc1-2
+\v 10 \tc3-4 Chapter 2 verse 10
+\v 11-12
+\restore restore information
