@@ -46,7 +46,7 @@ public class SmtTransferEngineServiceTests
     }
 
     [Test]
-    public async Task CancelBuildAsync()
+    public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
         await env.SmtBatchTrainer.TrainAsync(
@@ -71,6 +71,13 @@ public class SmtTransferEngineServiceTests
         await env.TruecaserTrainer.DidNotReceive().SaveAsync();
         engine = env.Engines.Get("engine1");
         Assert.That(engine.CurrentBuild, Is.Null);
+    }
+
+    [Test]
+    public void CancelBuildAsync_NotBuilding()
+    {
+        using var env = new TestEnvironment();
+        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync("engine1"));
     }
 
     [Test]

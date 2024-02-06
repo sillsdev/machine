@@ -199,7 +199,8 @@ public class SmtTransferEngineService : ITranslationEngineService
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
-            await CancelBuildJobAsync(engineId, cancellationToken);
+            if (!await CancelBuildJobAsync(engineId, cancellationToken))
+                throw new InvalidOperationException("The engine is not currently building.");
             SmtTransferEngineState state = _stateService.Get(engineId);
             state.LastUsedTime = DateTime.UtcNow;
         }
@@ -215,7 +216,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         throw new NotSupportedException("SMT transfer engines do not support language info.");
     }
 
-    private async Task CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
+    private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
         (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
             engineId,
@@ -223,6 +224,7 @@ public class SmtTransferEngineService : ITranslationEngineService
         );
         if (buildId is not null && jobState is BuildJobState.None)
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+        return buildId is not null;
     }
 
     private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
