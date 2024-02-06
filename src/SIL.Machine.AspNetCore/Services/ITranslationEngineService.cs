@@ -41,7 +41,7 @@ public interface ITranslationEngineService
 
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<ModelPresignedUrl> GetModelPresignedUrlAsync(string engineId, CancellationToken cancellationToken = default);
+    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
 

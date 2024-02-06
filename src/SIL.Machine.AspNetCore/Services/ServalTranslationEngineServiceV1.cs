@@ -23,7 +23,7 @@ public class ServalTranslationEngineServiceV1(
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
-            request.IsModelRetrievable,
+            request.IsModelPersisted,
             context.CancellationToken
         );
         return Empty;
@@ -120,23 +120,23 @@ public class ServalTranslationEngineServiceV1(
         return Empty;
     }
 
-    public override async Task<GetModelPresignedUrlResponse> GetModelPresignedUrl(
-        GetModelPresignedUrlRequest request,
+    public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
+        GetModelDownloadUrlRequest request,
         ServerCallContext context
     )
     {
         try
         {
             ITranslationEngineService engineService = GetEngineService(request.EngineType);
-            ModelPresignedUrl modelPresignedUrl = await engineService.GetModelPresignedUrlAsync(
+            ModelDownloadUrl modelDownloadUrl = await engineService.GetModelDownloadUrlAsync(
                 request.EngineId,
                 context.CancellationToken
             );
-            return new GetModelPresignedUrlResponse
+            return new GetModelDownloadUrlResponse
             {
-                PresignedUrl = modelPresignedUrl.PresignedUrl,
-                BuildRevision = modelPresignedUrl.BuildRevision,
-                UrlExpirationTime = modelPresignedUrl.UrlExpirationTime
+                Url = modelDownloadUrl.Url,
+                ModelRevision = modelDownloadUrl.ModelRevision,
+                ExpiresAt = modelDownloadUrl.ExipiresAt.ToTimestamp()
             };
         }
         catch (InvalidOperationException e)

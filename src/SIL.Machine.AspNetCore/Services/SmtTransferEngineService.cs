@@ -215,7 +215,7 @@ public class SmtTransferEngineService(
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
     }
 
-    public Task<ModelPresignedUrl> GetModelPresignedUrlAsync(
+    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )

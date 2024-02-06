@@ -114,7 +114,7 @@ public class NmtEngineService(
         }
     }
 
-    public async Task<ModelPresignedUrl> GetModelPresignedUrlAsync(
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
         string engineId,
         CancellationToken cancellationToken = default
     )
@@ -136,18 +136,16 @@ public class NmtEngineService(
             throw new FileNotFoundException(
                 $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
             );
-        var modelInfo = new ModelPresignedUrl
+        var modelInfo = new ModelDownloadUrl
         {
-            PresignedUrl = (
+            Url = (
                 await _sharedFileService.GetPresignedUrlAsync(
                     ISharedFileService.ModelDirectory + filename,
                     MinutesToExpire
                 )
             ).ToString(),
-            BuildRevision = engine.BuildRevision,
-            UrlExpirationTime = DateTime
-                .UtcNow.AddMinutes(MinutesToExpire)
-                .ToString("yyyy-MM-ddTHH\\:mm\\:ss.fffffffzzz", CultureInfo.InvariantCulture)
+            ModelRevision = engine.BuildRevision,
+            ExipiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire)
         };
         return modelInfo;
     }
