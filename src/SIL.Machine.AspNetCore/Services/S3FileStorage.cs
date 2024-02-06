@@ -1,5 +1,3 @@
-using static SIL.Machine.AspNetCore.Utils.SharedFileUtils;
-
 namespace SIL.Machine.AspNetCore.Services;
 
 public class S3FileStorage : DisposableBase, IFileStorage
@@ -77,7 +75,11 @@ public class S3FileStorage : DisposableBase, IFileStorage
                 {
                     BucketName = _bucketName,
                     Key = _basePath + Normalize(path),
-                    Expires = DateTime.UtcNow.AddMinutes(minutesToExpire)
+                    Expires = DateTime.UtcNow.AddMinutes(minutesToExpire),
+                    ResponseHeaderOverrides = new ResponseHeaderOverrides
+                    {
+                        ContentDisposition = new ContentDisposition() { FileName = Path.GetFileName(path) }.ToString()
+                    }
                 }
             )
         );

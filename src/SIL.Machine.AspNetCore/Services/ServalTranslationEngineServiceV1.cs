@@ -125,17 +125,28 @@ public class ServalTranslationEngineServiceV1(
         ServerCallContext context
     )
     {
-        ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        ModelPresignedUrl modelPresignedUrl = await engineService.GetModelPresignedUrlAsync(
-            request.EngineId,
-            context.CancellationToken
-        );
-        return new GetModelPresignedUrlResponse
+        try
         {
-            PresignedUrl = modelPresignedUrl.PresignedUrl,
-            BuildRevision = modelPresignedUrl.BuildRevision,
-            UrlExpirationTime = modelPresignedUrl.UrlExpirationTime
-        };
+            ITranslationEngineService engineService = GetEngineService(request.EngineType);
+            ModelPresignedUrl modelPresignedUrl = await engineService.GetModelPresignedUrlAsync(
+                request.EngineId,
+                context.CancellationToken
+            );
+            return new GetModelPresignedUrlResponse
+            {
+                PresignedUrl = modelPresignedUrl.PresignedUrl,
+                BuildRevision = modelPresignedUrl.BuildRevision,
+                UrlExpirationTime = modelPresignedUrl.UrlExpirationTime
+            };
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
     }
 
     public override async Task<GetQueueSizeResponse> GetQueueSize(

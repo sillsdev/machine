@@ -411,11 +411,23 @@ public static class IMachineBuilderExtensions
         if (connectionString is null)
             throw new InvalidOperationException("Hangfire connection string is required");
 
-        var mongoClientSettings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-        JobStorage.Current = new MongoStorage(mongoClientSettings, "recurring_job", GetMongoStorageOptions());
+        var mongoUrl = MongoUrl.Create(connectionString);
+        JobStorage.Current = new MongoStorage(
+            MongoClientSettings.FromUrl(mongoUrl),
+            mongoUrl.DatabaseName,
+            GetMongoStorageOptions()
+        );
         builder.Services.AddSingleton<ICleanupOldModelsJob, CleanupOldModelsJob>();
-        RecurringJobOptions options = new() { TimeZone = TimeZoneInfo.Utc };
-        RecurringJob.AddOrUpdate<ICleanupOldModelsJob>("Cleanup-job", x => x.RunAsync(), Cron.Daily, options);
+        RecurringJob.AddOrUpdate<ICleanupOldModelsJob>(
+            recurringJobId: "cleanup-job",
+            queue: "cleanup-job",
+            methodCall: o => o.RunAsync(),
+            cronExpression: Cron.Minutely
+        );
+        builder.Services.AddHangfireServer(o =>
+        {
+            o.Queues = ["cleanup-job"];
+        });
         return builder;
     }
 

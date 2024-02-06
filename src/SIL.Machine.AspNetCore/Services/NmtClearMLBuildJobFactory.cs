@@ -1,24 +1,16 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
+public class NmtClearMLBuildJobFactory(
+    ISharedFileService sharedFileService,
+    ILanguageTagService languageTagService,
+    IRepository<TranslationEngine> engines,
+    IOptionsMonitor<ClearMLOptions> options
+) : IClearMLBuildJobFactory
 {
-    private readonly ISharedFileService _sharedFileService;
-    private readonly ILanguageTagService _languageTagService;
-    private readonly IRepository<TranslationEngine> _engines;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-
-    public NmtClearMLBuildJobFactory(
-        ISharedFileService sharedFileService,
-        ILanguageTagService languageTagService,
-        IRepository<TranslationEngine> engines,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-    {
-        _sharedFileService = sharedFileService;
-        _languageTagService = languageTagService;
-        _engines = engines;
-        _options = options;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
+    private readonly IRepository<TranslationEngine> _engines = engines;
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     public TranslationEngineType EngineType => TranslationEngineType.Nmt;
 

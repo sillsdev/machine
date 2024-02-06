@@ -1,6 +1,5 @@
 using Hangfire;
 using OpenTelemetry.Trace;
-using SIL.Machine.AspNetCore.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
