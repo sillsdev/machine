@@ -405,29 +405,10 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddModelCleanupJob(this IMachineBuilder builder, string? connectionString = null)
+    public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
-        connectionString ??= builder.Configuration?.GetConnectionString("Hangfire");
-        if (connectionString is null)
-            throw new InvalidOperationException("Hangfire connection string is required");
-
-        var mongoUrl = MongoUrl.Create(connectionString);
-        JobStorage.Current = new MongoStorage(
-            MongoClientSettings.FromUrl(mongoUrl),
-            mongoUrl.DatabaseName,
-            GetMongoStorageOptions()
-        );
-        builder.Services.AddSingleton<ICleanupOldModelsJob, CleanupOldModelsJob>();
-        RecurringJob.AddOrUpdate<ICleanupOldModelsJob>(
-            recurringJobId: "cleanup-job",
-            queue: "cleanup-job",
-            methodCall: o => o.RunAsync(),
-            cronExpression: Cron.Minutely
-        );
-        builder.Services.AddHangfireServer(o =>
-        {
-            o.Queues = ["cleanup-job"];
-        });
+        builder.Services.AddSingleton<CleanupOldModelsService>();
+        builder.Services.AddHostedService(p => p.GetRequiredService<CleanupOldModelsService>());
         return builder;
     }
 

@@ -1,25 +1,27 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-public class CleanupOldModelsJob(
+public class CleanupOldModelsService(
+    IServiceProvider services,
     ISharedFileService sharedFileService,
     IRepository<TranslationEngine> engines,
-    ILogger<CleanupOldModelsJob> logger
-) : ICleanupOldModelsJob
+    ILogger<CleanupOldModelsService> logger
+) : RecurrentTask("Cleanup Old Models Service", services, RefreshPeriod, logger)
 {
     public ISharedFileService SharedFileService { get; } = sharedFileService;
-    private ILogger<CleanupOldModelsJob> _logger = logger;
+    private ILogger<CleanupOldModelsService> _logger = logger;
     private IRepository<TranslationEngine> _engines = engines;
     private List<string> _filesPreviouslyMarkedForDeletion = [];
     private readonly List<string> _filesNewlyMarkedForDeletion = [];
+    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromDays(1);
 
-    public async Task RunAsync()
+    protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         await CheckModelsAsync();
     }
 
     public async Task CheckModelsAsync()
     {
-        _logger.LogDebug("Running model cleanup job");
+        _logger.LogInformation("Running model cleanup job");
         var paths = await SharedFileService.ListFilesAsync(ISharedFileService.ModelDirectory);
         foreach (string path in paths)
         {

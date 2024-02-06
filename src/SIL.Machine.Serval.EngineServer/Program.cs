@@ -1,5 +1,6 @@
 using Hangfire;
 using OpenTelemetry.Trace;
+using SIL.Machine.AspNetCore.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,7 @@ builder
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
     .AddBuildJobService()
-    .AddModelCleanupJob()
+    .AddModelCleanupService()
     .AddClearMLService();
 
 if (builder.Environment.IsDevelopment())

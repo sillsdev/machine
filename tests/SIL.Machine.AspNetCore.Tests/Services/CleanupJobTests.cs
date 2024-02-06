@@ -57,21 +57,22 @@ public class CleanupJobTests
     }
 
     [Test]
-    public async Task RunAsync_ValidFiles()
+    public async Task DoWorkAsync_ValidFiles()
     {
         await SetUpAsync();
-        var cleanupJob = new CleanupOldModelsJob(
+        var cleanupJob = new CleanupOldModelsService(
+            Substitute.For<IServiceProvider>(),
             _sharedFileService,
             _engines,
-            Substitute.For<ILogger<CleanupOldModelsJob>>()
+            Substitute.For<ILogger<CleanupOldModelsService>>()
         );
-        await cleanupJob.RunAsync();
+        await cleanupJob.CheckModelsAsync();
         // both valid and invalid files still exist after running once
         Assert.That(
             _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
             Is.EquivalentTo(validFiles.Concat(invalidFiles).ToHashSet())
         );
-        await cleanupJob.RunAsync();
+        await cleanupJob.CheckModelsAsync();
         // only valid files exist after running twice
         Assert.That(
             _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
