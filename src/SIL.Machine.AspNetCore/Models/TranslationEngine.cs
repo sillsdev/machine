@@ -7,7 +7,7 @@ public class TranslationEngine : IEntity
     public string EngineId { get; set; } = default!;
     public string SourceLanguage { get; set; } = default!;
     public string TargetLanguage { get; set; } = default!;
-    public bool IsModelRetrievable { get; set; } = false;
+    public bool IsModelPersisted { get; set; } = false;
     public int BuildRevision { get; set; }
     public Build? CurrentBuild { get; set; }
 }

@@ -32,7 +32,7 @@ public class SmtTransferEngineService(
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
-        bool isModelRetrievable = false,
+        bool isModelPersisted = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -43,7 +43,7 @@ public class SmtTransferEngineService(
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
-                IsModelRetrievable = isModelRetrievable
+                IsModelPersisted = isModelPersisted
             },
             cancellationToken
         );

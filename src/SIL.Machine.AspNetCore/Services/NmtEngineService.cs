@@ -36,7 +36,7 @@ public class NmtEngineService(
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
-        bool isModelRetrievable = false,
+        bool isModelPersisted = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -47,7 +47,7 @@ public class NmtEngineService(
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
-                IsModelRetrievable = isModelRetrievable
+                IsModelPersisted = isModelPersisted
             },
             cancellationToken
         );
@@ -120,10 +120,10 @@ public class NmtEngineService(
     )
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
-        if (!engine.IsModelRetrievable)
+        if (!engine.IsModelPersisted)
             throw new InvalidOperationException(
                 "The model cannot be downloaded. "
-                    + "To enable downloading the model, recreate the engine with IsModelRetrievable property to true."
+                    + "To enable downloading the model, recreate the engine with IsModelPersisted property to true."
             );
         if (engine.BuildRevision == 0)
             throw new InvalidOperationException("The engine has not been built yet.");

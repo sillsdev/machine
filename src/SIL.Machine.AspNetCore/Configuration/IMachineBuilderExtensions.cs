@@ -211,7 +211,7 @@ public static class IMachineBuilderExtensions
 
         builder.Services.AddHangfireServer(o =>
         {
-            o.Queues = [.. queues];
+            o.Queues = queues.ToArray();
         });
         return builder;
     }

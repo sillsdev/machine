@@ -44,7 +44,7 @@ public class NmtClearMLBuildJobFactory(
                 + $"    'shared_file_uri': '{baseUri}',\n"
                 + $"    'shared_file_folder': '{folder}',\n"
                 + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
-                + (engine.IsModelRetrievable ? $"    'save_model': '{engineId}_{engine.BuildRevision + 1}',\n" : "")
+                + (engine.IsModelPersisted ? $"    'save_model': '{engineId}_{engine.BuildRevision + 1}',\n" : "")
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";

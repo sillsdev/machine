@@ -26,7 +26,7 @@ public class CleanupJobTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 BuildRevision = 1,
-                IsModelRetrievable = true
+                IsModelPersisted = true
             }
         );
         _engines.Add(
@@ -37,7 +37,7 @@ public class CleanupJobTests
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 BuildRevision = 2,
-                IsModelRetrievable = true
+                IsModelPersisted = true
             }
         );
         async Task WriteFileStub(string path, string content)
