@@ -18,6 +18,11 @@ public class ScriptureRangeParser
         RegexOptions.Compiled
     );
 
+    public static Dictionary<string, List<int>> GetChapters(string chapterSelections, ScrVers versification = null)
+    {
+        return new ScriptureRangeParser(versification).GetChapters(chapterSelections);
+    }
+
     public ScriptureRangeParser(ScrVers versification = null)
     {
         if (versification == null)

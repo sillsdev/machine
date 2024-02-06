@@ -132,43 +132,19 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 {
                     bool isInTrainOnChapters = false;
                     bool isInPretranslateChapters = false;
-                    if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc && row.Refs.All(r => r is VerseRef))
+                    if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc)
                     {
-                        Dictionary<string, List<int>>? rowChaptersPerBook = null;
-                        if (corpus.TrainOnChapters != null || corpus.PretranslateChapters != null)
+                        bool IsInChapters(Dictionary<string, HashSet<int>> bookChapters, object rowRef)
                         {
-                            rowChaptersPerBook = row
-                                .Refs.Cast<VerseRef>()
-                                .GroupBy(vr => vr.Book)
-                                .ToDictionary(g => g.Key, g => g.Select(vr => vr.ChapterNum).ToList());
-
-                            if (corpus.TrainOnChapters != null)
-                            {
-                                isInTrainOnChapters = rowChaptersPerBook
-                                    .Join(
-                                        corpus.TrainOnChapters,
-                                        rcpb => rcpb.Key,
-                                        tobrc => tobrc.Key,
-                                        (rcbp, tobrc) =>
-                                            rcbp.Value.Intersect(tobrc.Value).Count() > 0
-                                            || (rcbp.Value.Count() > 0 && tobrc.Value.Count() == 0) //Empty list means all chapters from book
-                                    )
-                                    .Any(b => b);
-                            }
-                            if (corpus.PretranslateChapters != null)
-                            {
-                                isInPretranslateChapters = rowChaptersPerBook
-                                    .Join(
-                                        corpus.PretranslateChapters,
-                                        rcpb => rcpb.Key,
-                                        pbrc => pbrc.Key,
-                                        (rcbp, pbrc) =>
-                                            rcbp.Value.Intersect(pbrc.Value).Count() > 0
-                                            || (rcbp.Value.Count() > 0 && pbrc.Value.Count() == 0)
-                                    )
-                                    .Any(b => b);
-                            }
+                            if (rowRef is not VerseRef vr)
+                                return false;
+                            return bookChapters.TryGetValue(vr.Book, out HashSet<int>? chapters)
+                                && (chapters.Contains(vr.ChapterNum) || chapters.Count() == 0);
                         }
+                        if (corpus.TrainOnChapters is not null)
+                            isInTrainOnChapters = row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r));
+                        if (corpus.PretranslateChapters is not null)
+                            isInPretranslateChapters = row.Refs.Any(r => IsInChapters(corpus.PretranslateChapters, r));
                     }
                     if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId) || isInTrainOnChapters)
                     {
