@@ -29,6 +29,11 @@ public class NmtEngineService(
 
     public const string ModelDirectory = "models/";
 
+    public static string GetModelPath(string engineId, int buildRevision)
+    {
+        return $"{ModelDirectory}{engineId}_{buildRevision}.tar.gz";
+    }
+
     public TranslationEngineType Type => TranslationEngineType.Nmt;
 
     private const int MinutesToExpire = 60;
@@ -38,7 +43,7 @@ public class NmtEngineService(
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
-        bool? isModelPersisted = false,
+        bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -130,11 +135,8 @@ public class NmtEngineService(
             );
         if (engine.BuildRevision == 0)
             throw new InvalidOperationException("The engine has not been built yet.");
-        string filename = $"{engineId}_{engine.BuildRevision}.tar.gz";
-        bool fileExists = await _sharedFileService.ExistsAsync(
-            NmtEngineService.ModelDirectory + filename,
-            cancellationToken
-        );
+        string filepath = GetModelPath(engineId, engine.BuildRevision);
+        bool fileExists = await _sharedFileService.ExistsAsync(filepath, cancellationToken);
         if (!fileExists)
             throw new FileNotFoundException(
                 $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
@@ -142,7 +144,7 @@ public class NmtEngineService(
         var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
         var modelInfo = new ModelDownloadUrl
         {
-            Url = await _sharedFileService.GetDownloadUrlAsync(NmtEngineService.ModelDirectory + filename, expiresAt),
+            Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
             ExipiresAt = expiresAt
         };

@@ -407,8 +407,7 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
-        builder.Services.AddSingleton<ModelCleanupService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<ModelCleanupService>());
+        builder.Services.AddHostedService<ModelCleanupService>();
         return builder;
     }
 

@@ -32,10 +32,15 @@ public class SmtTransferEngineService(
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
-        bool? isModelPersisted = true,
+        bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
     {
+        if (isModelPersisted == false)
+            throw new NotSupportedException(
+                "SMT transfer engines do not support non-persisted models."
+                    + "Please remove the isModelPersisted parameter or set it to true."
+            );
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         await _engines.InsertAsync(
             new TranslationEngine
