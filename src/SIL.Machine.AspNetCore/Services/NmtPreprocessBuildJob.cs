@@ -1,5 +1,4 @@
-﻿using System.Data;
-using Google.Protobuf;
+﻿using Google.Protobuf;
 using MongoDB.Bson.IO;
 
 namespace SIL.Machine.AspNetCore.Services;
