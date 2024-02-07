@@ -38,7 +38,7 @@ public class NmtEngineService(
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
-        bool isModelPersisted = false,
+        bool? isModelPersisted = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -123,7 +123,7 @@ public class NmtEngineService(
     )
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
-        if (!engine.IsModelPersisted)
+        if (engine.IsModelPersisted != true)
             throw new NotSupportedException(
                 "The model cannot be downloaded. "
                     + "To enable downloading the model, recreate the engine with IsModelPersisted property to true."

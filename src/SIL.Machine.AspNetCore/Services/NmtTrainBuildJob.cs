@@ -71,7 +71,7 @@ public class NmtTrainBuildJob : HangfireBuildJob
                         // buildRevision + 1 because the build revision is incremented after the build job
                         // is finished successfully but the file should be saved with the new revision number
                         + (
-                            engine.IsModelPersisted
+                            (engine.IsModelPersisted == true)
                                 ? $"    'save_model': '{engine.Id}_{engine.BuildRevision + 1}',\n"
                                 : ""
                         )
