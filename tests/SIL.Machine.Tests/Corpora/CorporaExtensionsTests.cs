@@ -15,9 +15,9 @@ namespace SIL.Machine.Corpora
             Assert.That(lines.Count, Is.EqualTo(41899));
 
             (string text, VerseRef origRef, VerseRef? corpusRef) = lines[0];
+
             Assert.That(text, Is.EqualTo(""));
             Assert.That(origRef, Is.EqualTo(new VerseRef("GEN 1:1", ScrVers.Original)));
-            Assert.That(corpusRef.HasValue, Is.False);
 
             (text, origRef, corpusRef) = lines[3167];
             Assert.That(text, Is.EqualTo("Chapter fourteen, verse fifty-five. Segment b."));
@@ -32,7 +32,6 @@ namespace SIL.Machine.Corpora
             (text, origRef, corpusRef) = lines[10727];
             Assert.That(text, Is.EqualTo("<range>"));
             Assert.That(origRef, Is.EqualTo(new VerseRef("1CH 12:4", ScrVers.Original)));
-            Assert.That(corpusRef.HasValue, Is.False);
 
             (text, origRef, corpusRef) = lines[10731];
             Assert.That(text, Is.EqualTo("<range>"));

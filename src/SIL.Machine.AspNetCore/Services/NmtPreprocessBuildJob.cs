@@ -161,22 +161,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         IReadOnlyList<object> refs;
                         if (row.TargetRefs.Count == 0)
                         {
-                            if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus tstc)
-                            {
-                                refs = row
-                                    .SourceRefs.Cast<VerseRef>()
-                                    .Select(srcRef =>
-                                    {
-                                        var trgRef = srcRef.Clone();
-                                        trgRef.ChangeVersification(tstc.Versification);
-                                        return (object)trgRef;
-                                    })
-                                    .ToList();
-                            }
-                            else
-                            {
-                                refs = row.SourceRefs;
-                            }
+                            refs = row.SourceRefs;
                         }
                         else
                         {
