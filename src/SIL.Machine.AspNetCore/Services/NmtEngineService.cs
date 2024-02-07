@@ -14,7 +14,8 @@ public class NmtEngineService(
     IRepository<TranslationEngine> engines,
     IBuildJobService buildJobService,
     ILanguageTagService languageTagService,
-    ClearMLMonitorService clearMLMonitorService
+    ClearMLMonitorService clearMLMonitorService,
+    ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
@@ -22,16 +23,22 @@ public class NmtEngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+
+    public const string ModelDirectory = "models/";
 
     public TranslationEngineType Type => TranslationEngineType.Nmt;
+
+    private const int MinutesToExpire = 60;
 
     public async Task CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool isModelPersisted = false,
         CancellationToken cancellationToken = default
     )
     {
@@ -41,12 +48,13 @@ public class NmtEngineService(
             {
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
+                TargetLanguage = targetLanguage,
+                IsModelPersisted = isModelPersisted
             },
             cancellationToken
         );
         await _buildJobService.CreateEngineAsync(
-            new[] { BuildJobType.Cpu, BuildJobType.Gpu },
+            [BuildJobType.Cpu, BuildJobType.Gpu],
             engineId,
             engineName,
             cancellationToken
@@ -109,6 +117,38 @@ public class NmtEngineService(
         }
     }
 
+    public async Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
+        if (!engine.IsModelPersisted)
+            throw new NotSupportedException(
+                "The model cannot be downloaded. "
+                    + "To enable downloading the model, recreate the engine with IsModelPersisted property to true."
+            );
+        if (engine.BuildRevision == 0)
+            throw new InvalidOperationException("The engine has not been built yet.");
+        string filename = $"{engineId}_{engine.BuildRevision}.tar.gz";
+        bool fileExists = await _sharedFileService.ExistsAsync(
+            NmtEngineService.ModelDirectory + filename,
+            cancellationToken
+        );
+        if (!fileExists)
+            throw new FileNotFoundException(
+                $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
+            );
+        var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
+        var modelInfo = new ModelDownloadUrl
+        {
+            Url = await _sharedFileService.GetDownloadUrlAsync(NmtEngineService.ModelDirectory + filename, expiresAt),
+            ModelRevision = engine.BuildRevision,
+            ExipiresAt = expiresAt
+        };
+        return modelInfo;
+    }
+
     public Task<IReadOnlyList<TranslationResult>> TranslateAsync(
         string engineId,
         int n,
@@ -158,5 +198,13 @@ public class NmtEngineService(
         if (buildId is not null && jobState is BuildJobState.None)
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId is not null;
+    }
+
+    private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
+    {
+        TranslationEngine? engine = await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
+        if (engine is null)
+            throw new InvalidOperationException($"The engine {engineId} does not exist.");
+        return engine;
     }
 }

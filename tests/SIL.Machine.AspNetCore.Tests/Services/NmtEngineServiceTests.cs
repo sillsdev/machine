@@ -204,7 +204,8 @@ public class NmtEngineServiceTests
                 Engines,
                 BuildJobService,
                 new LanguageTagService(),
-                ClearMLMonitorService
+                ClearMLMonitorService,
+                SharedFileService
             );
         }
 

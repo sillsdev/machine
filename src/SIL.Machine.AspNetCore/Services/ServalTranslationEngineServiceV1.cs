@@ -23,6 +23,7 @@ public class ServalTranslationEngineServiceV1(
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
+            request.IsModelPersisted,
             context.CancellationToken
         );
         return Empty;
@@ -124,6 +125,31 @@ public class ServalTranslationEngineServiceV1(
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
         return Empty;
+    }
+
+    public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
+        GetModelDownloadUrlRequest request,
+        ServerCallContext context
+    )
+    {
+        try
+        {
+            ITranslationEngineService engineService = GetEngineService(request.EngineType);
+            ModelDownloadUrl modelDownloadUrl = await engineService.GetModelDownloadUrlAsync(
+                request.EngineId,
+                context.CancellationToken
+            );
+            return new GetModelDownloadUrlResponse
+            {
+                Url = modelDownloadUrl.Url,
+                ModelRevision = modelDownloadUrl.ModelRevision,
+                ExpiresAt = modelDownloadUrl.ExipiresAt.ToTimestamp()
+            };
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
     }
 
     public override async Task<GetQueueSizeResponse> GetQueueSize(

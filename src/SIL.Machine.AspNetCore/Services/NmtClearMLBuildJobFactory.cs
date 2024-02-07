@@ -1,24 +1,16 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
+public class NmtClearMLBuildJobFactory(
+    ISharedFileService sharedFileService,
+    ILanguageTagService languageTagService,
+    IRepository<TranslationEngine> engines,
+    IOptionsMonitor<ClearMLOptions> options
+) : IClearMLBuildJobFactory
 {
-    private readonly ISharedFileService _sharedFileService;
-    private readonly ILanguageTagService _languageTagService;
-    private readonly IRepository<TranslationEngine> _engines;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-
-    public NmtClearMLBuildJobFactory(
-        ISharedFileService sharedFileService,
-        ILanguageTagService languageTagService,
-        IRepository<TranslationEngine> engines,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-    {
-        _sharedFileService = sharedFileService;
-        _languageTagService = languageTagService;
-        _engines = engines;
-        _options = options;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
+    private readonly IRepository<TranslationEngine> _engines = engines;
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     public TranslationEngineType EngineType => TranslationEngineType.Nmt;
 
@@ -52,6 +44,9 @@ public class NmtClearMLBuildJobFactory : IClearMLBuildJobFactory
                 + $"    'shared_file_uri': '{baseUri}',\n"
                 + $"    'shared_file_folder': '{folder}',\n"
                 + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
+                // buildRevision + 1 because the build revision is incremented after the build job
+                // is finished successfully but the file should be saved with the new revision number
+                + (engine.IsModelPersisted ? $"    'save_model': '{engineId}_{engine.BuildRevision + 1}',\n" : $"")
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";

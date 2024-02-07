@@ -55,6 +55,20 @@ public class SharedFileService : ISharedFileService
         return new Uri(_baseUri, path);
     }
 
+    public async Task<string> GetDownloadUrlAsync(string path, DateTime expiresAt)
+    {
+        return await _fileStorage.GetDownloadUrlAsync(path, expiresAt);
+    }
+
+    public Task<IReadOnlyCollection<string>> ListFilesAsync(
+        string path,
+        bool recurse = false,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return _fileStorage.ListFilesAsync(path, recurse, cancellationToken);
+    }
+
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         return _fileStorage.OpenReadAsync(path, cancellationToken);
