@@ -9,9 +9,13 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment();
         await env.Service.CreateAsync("engine2", "Engine 2", "es", "en");
         TranslationEngine? engine = await env.Engines.GetAsync(e => e.EngineId == "engine2");
-        Assert.That(engine, Is.Not.Null);
-        Assert.That(engine.EngineId, Is.EqualTo("engine2"));
-        Assert.That(engine.BuildRevision, Is.EqualTo(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(engine, Is.Not.Null);
+            Assert.That(engine?.EngineId, Is.EqualTo("engine2"));
+            Assert.That(engine?.BuildRevision, Is.EqualTo(0));
+            Assert.That(engine?.IsModelPersisted, Is.True);
+        });
         env.SmtModelFactory.Received().InitNew("engine2");
         env.TransferEngineFactory.Received().InitNew("engine2");
     }

@@ -15,17 +15,18 @@ public class ServalTranslationEngineServiceV1(
 
     private readonly HealthCheckService _healthCheckService = healthCheckService;
 
-    public override async Task<Empty> Create(CreateRequest request, ServerCallContext context)
+    public override async Task<CreateResponse> Create(CreateRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        await engineService.CreateAsync(
+        TranslationEngine translationEngine = await engineService.CreateAsync(
             request.EngineId,
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
+            request.HasIsModelPersisted ? request.IsModelPersisted : null,
             context.CancellationToken
         );
-        return Empty;
+        return new CreateResponse { IsModelPersisted = translationEngine.IsModelPersisted };
     }
 
     public override async Task<Empty> Delete(DeleteRequest request, ServerCallContext context)
@@ -124,6 +125,31 @@ public class ServalTranslationEngineServiceV1(
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
         return Empty;
+    }
+
+    public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(
+        GetModelDownloadUrlRequest request,
+        ServerCallContext context
+    )
+    {
+        try
+        {
+            ITranslationEngineService engineService = GetEngineService(request.EngineType);
+            ModelDownloadUrl modelDownloadUrl = await engineService.GetModelDownloadUrlAsync(
+                request.EngineId,
+                context.CancellationToken
+            );
+            return new GetModelDownloadUrlResponse
+            {
+                Url = modelDownloadUrl.Url,
+                ModelRevision = modelDownloadUrl.ModelRevision,
+                ExpiresAt = modelDownloadUrl.ExipiresAt.ToTimestamp()
+            };
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+        }
     }
 
     public override async Task<GetQueueSizeResponse> GetQueueSize(

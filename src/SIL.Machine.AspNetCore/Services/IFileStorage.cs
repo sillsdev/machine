@@ -14,5 +14,7 @@ public interface IFileStorage : IDisposable
 
     Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default);
 
+    Task<string> GetDownloadUrlAsync(string path, DateTime expiresAt, CancellationToken cancellationToken = default);
+
     Task DeleteAsync(string path, bool recurse = false, CancellationToken cancellationToken = default);
 }

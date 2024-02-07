@@ -68,6 +68,13 @@ public class NmtTrainBuildJob : HangfireBuildJob
                         + $"    'trg_lang': '{ConvertLanguageTag(engine.TargetLanguage)}',\n"
                         + $"    'shared_file_uri': '{_sharedFileService.GetBaseUri()}',\n"
                         + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
+                        // buildRevision + 1 because the build revision is incremented after the build job
+                        // is finished successfully but the file should be saved with the new revision number
+                        + (
+                            engine.IsModelPersisted
+                                ? $"    'save_model': '{engine.Id}_{engine.BuildRevision + 1}',\n"
+                                : ""
+                        )
                         + $"    'clearml': False\n"
                         + "}\n"
                         + "run(args)\n"
