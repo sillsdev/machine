@@ -50,7 +50,7 @@ public class ServalTranslationEngineServiceV1(
         }
         catch (EngineNotBuiltException e)
         {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
 
         return new TranslateResponse { Results = { results.Select(Map) } };
@@ -73,7 +73,7 @@ public class ServalTranslationEngineServiceV1(
         }
         catch (EngineNotBuiltException e)
         {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
         return new GetWordGraphResponse { WordGraph = Map(wordGraph) };
     }
@@ -107,7 +107,7 @@ public class ServalTranslationEngineServiceV1(
         }
         catch (InvalidOperationException e)
         {
-            throw new RpcException(new Status(StatusCode.Aborted, e.Message));
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
         return Empty;
     }
@@ -115,7 +115,14 @@ public class ServalTranslationEngineServiceV1(
     public override async Task<Empty> CancelBuild(CancelBuildRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
+        try
+        {
+            await engineService.CancelBuildAsync(request.EngineId, context.CancellationToken);
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
+        }
         return Empty;
     }
 
