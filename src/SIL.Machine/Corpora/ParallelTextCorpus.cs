@@ -68,6 +68,10 @@ namespace SIL.Machine.Corpora
             using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(textIds).GetEnumerator())
             {
                 var rangeInfo = new RangeInfo();
+                rangeInfo.Versification =
+                    TargetCorpus is ScriptureTextCorpus tc && SourceCorpus is ScriptureTextCorpus
+                        ? tc.Versification
+                        : null;
                 var sourceSameRefRows = new List<TextRow>();
                 var targetSameRefRows = new List<TextRow>();
 
@@ -357,6 +361,19 @@ namespace SIL.Machine.Corpora
 
             var sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
             var targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
+            if (targetRefs.Length == 0 && TargetCorpus is ScriptureTextCorpus stc)
+            {
+                targetRefs = sourceRefs
+                    .Cast<VerseRef>()
+                    .Select(r =>
+                    {
+                        var t = r.Clone();
+                        t.ChangeVersification(stc.Versification);
+                        return t;
+                    })
+                    .Cast<object>()
+                    .ToArray();
+            }
 
             TextRowFlags sourceFlags;
             if (srcRow == null)
@@ -465,9 +482,26 @@ namespace SIL.Machine.Corpora
             public bool IsSourceEmpty => SourceSegment.Count == 0;
             public bool IsTargetEmpty => TargetSegment.Count == 0;
 
+            public ScrVers Versification { get; set; } = null;
+
             public ParallelTextRow CreateRow()
             {
-                var row = new ParallelTextRow(TextId, SourceRefs.ToArray(), TargetRefs.ToArray())
+                var trgRefs = TargetRefs.ToArray();
+                if (TargetRefs.Count == 0 && Versification != null)
+                {
+                    trgRefs = SourceRefs
+                        .ToArray()
+                        .Cast<VerseRef>()
+                        .Select(r =>
+                        {
+                            var t = r.Clone();
+                            t.ChangeVersification(Versification);
+                            return t;
+                        })
+                        .Cast<object>()
+                        .ToArray();
+                }
+                var row = new ParallelTextRow(TextId, SourceRefs.ToArray(), trgRefs)
                 {
                     SourceSegment = SourceSegment.ToArray(),
                     TargetSegment = TargetSegment.ToArray(),
