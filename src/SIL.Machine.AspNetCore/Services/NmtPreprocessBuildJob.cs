@@ -1,7 +1,4 @@
-﻿using Google.Protobuf;
-using MongoDB.Bson.IO;
-
-namespace SIL.Machine.AspNetCore.Services;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
 public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
@@ -129,14 +126,34 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
                 foreach (ParallelTextRow row in parallelCorpora.Flatten())
                 {
-                    if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId))
+                    bool isInTrainOnChapters = false;
+                    bool isInPretranslateChapters = false;
+                    if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc)
+                    {
+                        bool IsInChapters(Dictionary<string, HashSet<int>> bookChapters, object rowRef)
+                        {
+                            if (rowRef is not VerseRef vr)
+                                return false;
+                            return bookChapters.TryGetValue(vr.Book, out HashSet<int>? chapters)
+                                && (chapters.Contains(vr.ChapterNum) || chapters.Count == 0);
+                        }
+                        if (corpus.TrainOnChapters is not null)
+                            isInTrainOnChapters = row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r));
+                        if (corpus.PretranslateChapters is not null)
+                            isInPretranslateChapters = row.Refs.Any(r => IsInChapters(corpus.PretranslateChapters, r));
+                    }
+                    if (corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId) || isInTrainOnChapters)
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
                         counts["NumTrainRows"] += 1;
                     }
                     if (
-                        (corpus.PretranslateAll || corpus.PretranslateTextIds.Contains(row.TextId))
+                        (
+                            corpus.PretranslateAll
+                            || corpus.PretranslateTextIds.Contains(row.TextId)
+                            || isInPretranslateChapters
+                        )
                         && row.SourceSegment.Count > 0
                         && row.TargetSegment.Count == 0
                     )
