@@ -269,7 +269,7 @@ namespace SIL.Machine.Corpora
             return new FlattenTextCorpus(corpusArray);
         }
 
-        public static IEnumerable<(string Text, VerseRef RefCorpusVerseRef, VerseRef? CorpusVerseRef)> ExtractScripture(
+        public static IEnumerable<(string Text, VerseRef RefCorpusVerseRef, VerseRef CorpusVerseRef)> ExtractScripture(
             this ITextCorpus corpus,
             ITextCorpus refCorpus = null
         )
@@ -290,7 +290,7 @@ namespace SIL.Machine.Corpora
                     && vref.CompareTo(curRef.Value, null, compareAllVerses: true, compareSegments: false) != 0
                 )
                 {
-                    yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef);
+                    yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef.Value);
                     curTrgLineRange = curTrgLineRange || curTrgLine.Length > 0;
                     curTrgLine = new StringBuilder();
                     curTrgRef = null;
@@ -348,7 +348,7 @@ namespace SIL.Machine.Corpora
             }
 
             if (curRef.HasValue)
-                yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef);
+                yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef.Value);
         }
 
         private class TransformTextCorpus : TextCorpusBase
