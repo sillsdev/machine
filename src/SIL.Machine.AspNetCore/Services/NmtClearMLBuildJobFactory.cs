@@ -46,11 +46,7 @@ public class NmtClearMLBuildJobFactory(
                 + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
                 // buildRevision + 1 because the build revision is incremented after the build job
                 // is finished successfully but the file should be saved with the new revision number
-                + (
-                    (engine.IsModelPersisted == true)
-                        ? $"    'save_model': '{engineId}_{engine.BuildRevision + 1}',\n"
-                        : $""
-                )
+                + (engine.IsModelPersisted ? $"    'save_model': '{engineId}_{engine.BuildRevision + 1}',\n" : $"")
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";

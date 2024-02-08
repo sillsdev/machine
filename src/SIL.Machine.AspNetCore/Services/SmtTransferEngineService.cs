@@ -48,7 +48,7 @@ public class SmtTransferEngineService(
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
-                IsModelPersisted = true // SMT transfer engines are always persisted
+                IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
             },
             cancellationToken
         );

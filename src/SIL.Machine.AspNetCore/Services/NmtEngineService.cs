@@ -54,7 +54,7 @@ public class NmtEngineService(
                 EngineId = engineId,
                 SourceLanguage = sourceLanguage,
                 TargetLanguage = targetLanguage,
-                IsModelPersisted = isModelPersisted
+                IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
             },
             cancellationToken
         );

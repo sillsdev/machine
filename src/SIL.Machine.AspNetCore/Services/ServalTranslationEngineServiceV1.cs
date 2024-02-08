@@ -23,7 +23,7 @@ public class ServalTranslationEngineServiceV1(
             request.HasEngineName ? request.EngineName : null,
             request.SourceLanguage,
             request.TargetLanguage,
-            request.IsModelPersisted,
+            request.HasIsModelPersisted ? request.IsModelPersisted : null,
             context.CancellationToken
         );
         return Empty;
