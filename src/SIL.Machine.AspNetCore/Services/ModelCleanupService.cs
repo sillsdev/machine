@@ -7,11 +7,9 @@ public class ModelCleanupService(
     ILogger<ModelCleanupService> logger
 ) : RecurrentTask("Model Cleanup Service", services, RefreshPeriod, logger)
 {
-    private ISharedFileService _sharedFileService = sharedFileService;
-    private ILogger<ModelCleanupService> _logger = logger;
-    private IRepository<TranslationEngine> _engines = engines;
-    private List<string> _filesPreviouslyMarkedForDeletion = [];
-    private readonly List<string> _filesNewlyMarkedForDeletion = [];
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ILogger<ModelCleanupService> _logger = logger;
+    private readonly IRepository<TranslationEngine> _engines = engines;
     private static readonly TimeSpan RefreshPeriod = TimeSpan.FromDays(1);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
