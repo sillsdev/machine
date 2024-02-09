@@ -12,8 +12,12 @@ public class NmtEngineServiceTests
         await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get("engine1");
-        Assert.That(engine.CurrentBuild, Is.Null);
-        Assert.That(engine.BuildRevision, Is.EqualTo(2));
+        Assert.Multiple(() =>
+        {
+            Assert.That(engine.CurrentBuild, Is.Null);
+            Assert.That(engine.BuildRevision, Is.EqualTo(2));
+            Assert.That(engine.IsModelPersisted, Is.False);
+        });
     }
 
     [Test]
@@ -204,7 +208,8 @@ public class NmtEngineServiceTests
                 Engines,
                 BuildJobService,
                 new LanguageTagService(),
-                ClearMLMonitorService
+                ClearMLMonitorService,
+                SharedFileService
             );
         }
 

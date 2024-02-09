@@ -65,6 +65,28 @@ public class S3FileStorage : DisposableBase, IFileStorage
         return response.S3Objects.Select(s3Obj => s3Obj.Key[_basePath.Length..]).ToList();
     }
 
+    public Task<string> GetDownloadUrlAsync(
+        string path,
+        DateTime expiresAt,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Task.FromResult(
+            _client.GetPreSignedURL(
+                new GetPreSignedUrlRequest
+                {
+                    BucketName = _bucketName,
+                    Key = _basePath + Normalize(path),
+                    Expires = expiresAt,
+                    ResponseHeaderOverrides = new ResponseHeaderOverrides
+                    {
+                        ContentDisposition = new ContentDisposition() { FileName = Path.GetFileName(path) }.ToString()
+                    }
+                }
+            )
+        );
+    }
+
     public async Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         GetObjectRequest request = new() { BucketName = _bucketName, Key = _basePath + Normalize(path) };

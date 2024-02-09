@@ -36,6 +36,15 @@ public class LocalStorage : DisposableBase, IFileStorage
         );
     }
 
+    public Task<string> GetDownloadUrlAsync(
+        string path,
+        DateTime expiresAt,
+        CancellationToken cancellationToken = default
+    )
+    {
+        throw new NotSupportedException();
+    }
+
     public Task<Stream> OpenReadAsync(string path, CancellationToken cancellationToken = default)
     {
         Uri pathUri = new(_basePath, Normalize(path));

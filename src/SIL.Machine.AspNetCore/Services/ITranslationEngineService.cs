@@ -4,11 +4,12 @@ public interface ITranslationEngineService
 {
     TranslationEngineType Type { get; }
 
-    Task CreateAsync(
+    Task<TranslationEngine> CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     );
     Task DeleteAsync(string engineId, CancellationToken cancellationToken = default);
@@ -39,6 +40,8 @@ public interface ITranslationEngineService
     );
 
     Task CancelBuildAsync(string engineId, CancellationToken cancellationToken = default);
+
+    Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
 

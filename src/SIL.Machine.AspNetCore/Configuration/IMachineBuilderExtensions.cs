@@ -151,6 +151,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    private static MongoStorageOptions GetMongoStorageOptions()
+    {
+        var mongoStorageOptions = new MongoStorageOptions
+        {
+            MigrationOptions = new MongoMigrationOptions
+            {
+                MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                BackupStrategy = new CollectionMongoBackupStrategy()
+            },
+            CheckConnection = true,
+            CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
+        };
+        return mongoStorageOptions;
+    }
+
     public static IMachineBuilder AddMongoHangfireJobClient(
         this IMachineBuilder builder,
         string? connectionString = null
@@ -164,19 +179,7 @@ public static class IMachineBuilderExtensions
             c.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UseMongoStorage(
-                    connectionString,
-                    new MongoStorageOptions
-                    {
-                        MigrationOptions = new MongoMigrationOptions
-                        {
-                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy()
-                        },
-                        CheckConnection = true,
-                        CheckQueuedJobsStrategy = CheckQueuedJobsStrategy.TailNotificationsCollection,
-                    }
-                )
+                .UseMongoStorage(connectionString, GetMongoStorageOptions())
                 .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
@@ -399,6 +402,12 @@ public static class IMachineBuilderExtensions
                 );
         }
 
+        return builder;
+    }
+
+    public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
+    {
+        builder.Services.AddHostedService<ModelCleanupService>();
         return builder;
     }
 

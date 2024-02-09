@@ -1,15 +1,9 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class HangfireHealthCheck : IHealthCheck
+public class HangfireHealthCheck(JobStorage jobStorage, IOptions<BackgroundJobServerOptions> options) : IHealthCheck
 {
-    private readonly JobStorage _jobStorage;
-    private readonly IOptions<BackgroundJobServerOptions> _options;
-
-    public HangfireHealthCheck(JobStorage jobStorage, IOptions<BackgroundJobServerOptions> options)
-    {
-        _jobStorage = jobStorage;
-        _options = options;
-    }
+    private readonly JobStorage _jobStorage = jobStorage;
+    private readonly IOptions<BackgroundJobServerOptions> _options = options;
 
     public Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,

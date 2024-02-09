@@ -5,59 +5,52 @@ public static class SmtTransferBuildStages
     public const string Train = "train";
 }
 
-public class SmtTransferEngineService : ITranslationEngineService
+public class SmtTransferEngineService(
+    IDistributedReaderWriterLockFactory lockFactory,
+    IPlatformService platformService,
+    IDataAccessContext dataAccessContext,
+    IRepository<TranslationEngine> engines,
+    IRepository<TrainSegmentPair> trainSegmentPairs,
+    SmtTransferEngineStateService stateService,
+    IBuildJobService buildJobService,
+    JobStorage jobStorage
+) : ITranslationEngineService
 {
-    private readonly IDistributedReaderWriterLockFactory _lockFactory;
-    private readonly IPlatformService _platformService;
-    private readonly IDataAccessContext _dataAccessContext;
-    private readonly IRepository<TranslationEngine> _engines;
-    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
-    private readonly SmtTransferEngineStateService _stateService;
-    private readonly IBuildJobService _buildJobService;
-    private readonly JobStorage _jobStorage;
-
-    public SmtTransferEngineService(
-        IDistributedReaderWriterLockFactory lockFactory,
-        IPlatformService platformService,
-        IDataAccessContext dataAccessContext,
-        IRepository<TranslationEngine> engines,
-        IRepository<TrainSegmentPair> trainSegmentPairs,
-        SmtTransferEngineStateService stateService,
-        IBuildJobService buildJobService,
-        JobStorage jobStorage
-    )
-    {
-        _lockFactory = lockFactory;
-        _platformService = platformService;
-        _dataAccessContext = dataAccessContext;
-        _engines = engines;
-        _trainSegmentPairs = trainSegmentPairs;
-        _stateService = stateService;
-        _buildJobService = buildJobService;
-        _jobStorage = jobStorage;
-    }
+    private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
+    private readonly IPlatformService _platformService = platformService;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
+    private readonly IRepository<TranslationEngine> _engines = engines;
+    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
+    private readonly SmtTransferEngineStateService _stateService = stateService;
+    private readonly IBuildJobService _buildJobService = buildJobService;
+    private readonly JobStorage _jobStorage = jobStorage;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
-    public async Task CreateAsync(
+    public async Task<TranslationEngine> CreateAsync(
         string engineId,
         string? engineName,
         string sourceLanguage,
         string targetLanguage,
+        bool? isModelPersisted = null,
         CancellationToken cancellationToken = default
     )
     {
+        if (isModelPersisted == false)
+            throw new NotSupportedException(
+                "SMT transfer engines do not support non-persisted models."
+                    + "Please remove the isModelPersisted parameter or set it to true."
+            );
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        await _engines.InsertAsync(
-            new TranslationEngine
-            {
-                EngineId = engineId,
-                SourceLanguage = sourceLanguage,
-                TargetLanguage = targetLanguage
-            },
-            cancellationToken
-        );
-        await _buildJobService.CreateEngineAsync(new[] { BuildJobType.Cpu }, engineId, engineName, cancellationToken);
+        var translationEngine = new TranslationEngine
+        {
+            EngineId = engineId,
+            SourceLanguage = sourceLanguage,
+            TargetLanguage = targetLanguage,
+            IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
+        };
+        await _engines.InsertAsync(translationEngine, cancellationToken);
+        await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, cancellationToken);
         await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, CancellationToken.None);
@@ -66,6 +59,7 @@ public class SmtTransferEngineService : ITranslationEngineService
             SmtTransferEngineState state = _stateService.Get(engineId);
             state.InitNew();
         }
+        return translationEngine;
     }
 
     public async Task DeleteAsync(string engineId, CancellationToken cancellationToken = default)
@@ -225,6 +219,14 @@ public class SmtTransferEngineService : ITranslationEngineService
         if (buildId is not null && jobState is BuildJobState.None)
             await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId is not null;
+    }
+
+    public Task<ModelDownloadUrl> GetModelDownloadUrlAsync(
+        string engineId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        throw new NotSupportedException();
     }
 
     private async Task<TranslationEngine> GetEngineAsync(string engineId, CancellationToken cancellationToken)
