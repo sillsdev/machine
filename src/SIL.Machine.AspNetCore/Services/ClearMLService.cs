@@ -15,7 +15,7 @@ public class ClearMLService(
         new()
         {
             PropertyNamingPolicy = s_jsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(s_jsonNamingPolicy) }
+            Converters = { new Utils.CustomEnumConverterFactory(s_jsonNamingPolicy) }
         };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
