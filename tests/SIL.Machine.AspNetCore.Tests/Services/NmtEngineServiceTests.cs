@@ -93,7 +93,9 @@ public class NmtEngineServiceTests
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
         private readonly BackgroundJobClient _jobClient;
+#pragma warning disable CA2213 // Disposed in DisposeManagedResources
         private BackgroundJobServer _jobServer;
+#pragma warning restore CA2213
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
 
         public TestEnvironment()

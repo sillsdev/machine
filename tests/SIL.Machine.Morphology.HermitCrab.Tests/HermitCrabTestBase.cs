@@ -900,7 +900,9 @@ public abstract class HermitCrabTestBase
         table.AddBoundary(strRep);
     }
 
+#pragma warning disable CA1720 // Identifier contains type name - legacy
     protected FeatureStruct Char(CharacterDefinitionTable table, string strRep)
+#pragma warning restore CA1720
     {
         return table[strRep].FeatureStruct;
     }

@@ -4,7 +4,9 @@ namespace SIL.Machine.AspNetCore.Services;
 
 public class S3FileStorage : DisposableBase, IFileStorage
 {
+#pragma warning disable CA2213 // Disposed in DisposeManagedResources
     private readonly AmazonS3Client _client;
+#pragma warning restore CA2213
     private readonly string _bucketName;
     private readonly string _basePath;
     private readonly ILoggerFactory _loggerFactory;
@@ -118,5 +120,10 @@ public class S3FileStorage : DisposableBase, IFileStorage
             throw new HttpRequestException(
                 $"Received status code {response.HttpStatusCode} when attempting to delete {path}"
             );
+    }
+
+    protected override void DisposeManagedResources()
+    {
+        _client?.Dispose();
     }
 }

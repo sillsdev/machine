@@ -145,6 +145,9 @@ dotnet_diagnostic.CA1305.severity = warning
 # CA1507: Use nameof to express symbol names
 dotnet_diagnostic.CA1507.severity = warning
 
+# CA1708: Identifiers should differ by more than case
+dotnet_diagnostic.CA1708.severity = warning
+
 # CA1510: Use ArgumentNullException throw helper
 dotnet_diagnostic.CA1510.severity = warning
 
@@ -156,6 +159,15 @@ dotnet_diagnostic.CA1512.severity = warning
 
 # CA1513: Use ObjectDisposedException throw helper
 dotnet_diagnostic.CA1513.severity = warning
+
+# CA1715: Identifiers should have correct prefix
+dotnet_diagnostic.CA1715.severity = warning
+
+# CA1720: Identifiers should not contain type names
+dotnet_diagnostic.CA1720.severity = warning
+
+# CA1724: Type Names Should Not Match Namespaces
+dotnet_diagnostic.CA1724.severity = warning
 
 # CA1725: Parameter names should match base declaration
 dotnet_diagnostic.CA1725.severity = warning
@@ -401,6 +413,33 @@ dotnet_diagnostic.CA1050.severity = warning
 
 # CA1816: Call GC.SuppressFinalize correctly
 dotnet_diagnostic.CA1816.severity = warning
+
+# CA1801: Review unused parameters
+dotnet_diagnostic.CA1801.severity = warning
+
+# CA2200: Rethrow to preserve stack details
+dotnet_diagnostic.CA2200.severity = warning
+
+# CA2211: Non-constant fields should not be visible
+dotnet_diagnostic.CA2211.severity = warning
+
+# CA2213: Disposable fields should be disposed
+dotnet_diagnostic.CA2213.severity = warning
+
+# CA2214: Do not call overridable methods in constructors
+dotnet_diagnostic.CA2214.severity = warning
+
+# CA2215: Dispose methods should call base class dispose
+dotnet_diagnostic.CA2215.severity = warning
+
+# CA2216: Disposable types should declare finalizer
+dotnet_diagnostic.CA2216.severity = warning
+
+# CA2218: Override GetHashCode on overriding Equals
+dotnet_diagnostic.CA2218.severity = warning
+
+# CA2219: Do not raise exceptions in exception clauses
+dotnet_diagnostic.CA2219.severity = warning
 
 # NUnit2046 Use Has.Length/Has.Count/Is.Empty instead of testing property directly
 dotnet_diagnostic.NUnit2046.severity = warning

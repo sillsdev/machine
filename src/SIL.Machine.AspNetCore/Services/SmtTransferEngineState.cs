@@ -12,8 +12,10 @@ public class SmtTransferEngineState(
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly AsyncLock _lock = new();
 
+#pragma warning disable CA2213 // Disposed in UnloadAsync
     private IInteractiveTranslationModel? _smtModel;
     private HybridTranslationEngine? _hybridEngine;
+#pragma warning restore CA2213
 
     public string EngineId { get; } = engineId;
 
@@ -107,9 +109,11 @@ public class SmtTransferEngineState(
         await SaveModelAsync(cancellationToken);
 
         _hybridEngine.Dispose();
-
-        _smtModel = null;
         _hybridEngine = null;
+
+        _smtModel?.Dispose();
+        _smtModel = null;
+
         CurrentBuildRevision = -1;
     }
 

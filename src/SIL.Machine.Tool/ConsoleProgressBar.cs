@@ -103,6 +103,8 @@ public class ConsoleProgressBar : IDisposable, IProgress<ProgressStatus>
         {
             _disposed = true;
             UpdateText(string.Empty);
+            _timer.Dispose();
+            _outWriter.Dispose();
         }
     }
 }

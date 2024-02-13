@@ -42,6 +42,7 @@ public class InMemoryStorage : DisposableBase, IFileStorage
         protected override void Dispose(bool disposing)
         {
             _parent._memoryStreams[Path] = new Entry(this);
+            base.Dispose(disposing);
         }
 
         public override void Flush()

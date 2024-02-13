@@ -74,4 +74,11 @@ public class ClearMLAuthenticationService(
         _authToken = refreshedToken;
         _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }
+
+    public override void Dispose()
+    {
+        _httpClient.Dispose();
+        base.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

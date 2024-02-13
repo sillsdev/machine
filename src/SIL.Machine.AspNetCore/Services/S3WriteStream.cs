@@ -142,6 +142,7 @@ public class S3WriteStream(
                 }
             }
         }
+        _client.Dispose();
         base.Dispose(disposing);
     }
 
@@ -189,6 +190,7 @@ public class S3WriteStream(
         {
             await AbortAsync(e);
         }
+        await base.DisposeAsync();
     }
 
     private async Task AbortAsync(Exception? e = null)

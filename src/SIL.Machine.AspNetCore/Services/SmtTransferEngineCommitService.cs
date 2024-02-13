@@ -38,4 +38,11 @@ public class SmtTransferEngineCommitService(
             _logger.LogError(e, "Error occurred while committing SMT transfer engines.");
         }
     }
+
+    public override void Dispose()
+    {
+        _stateService.Dispose();
+        base.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

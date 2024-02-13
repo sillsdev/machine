@@ -219,7 +219,9 @@ public class SmtTransferEngineServiceTests
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
         private readonly BackgroundJobClient _jobClient;
+#pragma warning disable CA2213 // Disposed properly in DisposeManagedResources
         private BackgroundJobServer _jobServer;
+#pragma warning restore CA2213
         private readonly ITruecaserFactory _truecaserFactory;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
         private readonly IBuildJobService _buildJobService;

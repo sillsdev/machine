@@ -2,7 +2,9 @@
 
 public class AsyncTimer : AsyncDisposableBase
 {
+#pragma warning disable CA2213 // Disposed in DisposeManagedResources
     private readonly Timer _timer;
+#pragma warning restore CA2213
     private readonly Func<Task> _callback;
     private readonly AsyncLock _lock;
     private bool _running;
