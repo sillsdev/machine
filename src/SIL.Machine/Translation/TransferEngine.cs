@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -166,10 +165,8 @@ namespace SIL.Machine.Translation
                             }
                         }
                         else
-                        {
                             foreach (int i in sourceIndices)
                                 alignment[i, j] = true;
-                        }
 
                         if (targetWord != null)
                         {

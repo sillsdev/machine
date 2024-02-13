@@ -24,8 +24,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _pattern = new Pattern<Word, ShapeNode>();
             foreach (PatternNode<Word, ShapeNode> node in pattern.Children)
             {
-                var group = node as Group<Word, ShapeNode>;
-                if (group != null)
+                if (node is Group<Word, ShapeNode> group)
                 {
                     var newGroup = new Group<Word, ShapeNode>(group.Name);
                     foreach (
@@ -39,9 +38,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     _pattern.Children.Add(newGroup);
                 }
                 else
-                {
                     _pattern.Children.Add(node.Clone());
-                }
             }
             _pattern.Freeze();
         }

@@ -87,7 +87,7 @@ run(args)
             SharedFileService.GetBaseUri().Returns(new Uri("s3://bucket/folder1/folder2"));
             LanguageTagService = Substitute.For<ILanguageTagService>();
             LanguageTagService.ConvertToFlores200Code("es", out string spa);
-            var anyStringArg = Arg.Any<string>();
+            string? anyStringArg = Arg.Any<string>();
             LanguageTagService
                 .ConvertToFlores200Code("es", out anyStringArg)
                 .Returns(x =>

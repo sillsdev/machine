@@ -89,7 +89,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!RequiredSyntacticFeatureStruct.Subsumes(word.SyntacticFeatureStruct))
             {
                 if (morpher != null && morpher.TraceManager.IsTracing)
-                {
                     morpher.TraceManager.Failed(
                         morpher.Language,
                         word,
@@ -97,7 +96,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         this,
                         RequiredSyntacticFeatureStruct
                     );
-                }
                 return false;
             }
 

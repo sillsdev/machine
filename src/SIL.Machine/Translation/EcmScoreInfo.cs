@@ -33,7 +33,7 @@ namespace SIL.Machine.Translation
 
         public int[] GetLastInsPrefixWordFromEsi()
         {
-            var results = new int[Operations.Count];
+            int[] results = new int[Operations.Count];
 
             for (int j = Operations.Count - 1; j >= 0; j--)
             {

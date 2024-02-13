@@ -52,16 +52,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         private void MprFeaturesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (MprFeature mf in e.OldItems)
                     mf.Group = null;
-            }
 
             if (e.NewItems != null)
-            {
                 foreach (MprFeature mf in e.NewItems)
                     mf.Group = this;
-            }
         }
 
         public string Name { get; set; }

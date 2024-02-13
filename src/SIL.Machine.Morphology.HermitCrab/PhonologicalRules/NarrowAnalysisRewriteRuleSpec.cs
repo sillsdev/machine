@@ -22,17 +22,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _targetCount = subrule.Rhs.Children.Count;
 
             if (subrule.Rhs.IsEmpty)
-            {
                 Pattern.Children.Add(
                     new Constraint<Word, ShapeNode>(
                         FeatureStruct.New().Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value
                     )
                 );
-            }
             else
-            {
                 Pattern.Children.AddRange(subrule.Rhs.Children.CloneItems());
-            }
             Pattern.Freeze();
 
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));

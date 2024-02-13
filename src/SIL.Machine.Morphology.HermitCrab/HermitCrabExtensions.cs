@@ -28,20 +28,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
         {
-            // TODO: handle reentrancy properly
+            // TODO: handle reentrance properly
 
             var result = new FeatureStruct();
             foreach (Feature feature in fs.Features)
             {
                 FeatureValue value = fs.GetValue(feature);
-                var childFS = value as FeatureStruct;
                 FeatureValue newValue;
-                if (childFS != null)
-                {
+                if (value is FeatureStruct childFS)
                     newValue = HCFeatureSystem.Instance.ContainsFeature(feature)
                         ? childFS.Clone()
                         : childFS.AntiFeatureStruct();
-                }
                 else
                 {
                     var childSfv = (SimpleFeatureValue)value;
@@ -89,7 +86,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
         }
 
-        private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<
+        private static readonly IEqualityComparer<ShapeNode> s_nodeComparer = new ProjectionEqualityComparer<
             ShapeNode,
             FeatureStruct
         >(node => node.Annotation.FeatureStruct, FreezableEqualityComparer<FeatureStruct>.Default);
@@ -97,7 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal static bool Duplicates(this Shape x, Shape y)
         {
             return x.Where(n => !n.Annotation.Optional)
-                .SequenceEqual(y.Where(n => !n.Annotation.Optional), NodeComparer);
+                .SequenceEqual(y.Where(n => !n.Annotation.Optional), s_nodeComparer);
         }
 
         internal static IEnumerable<Word> RemoveDuplicates(this IEnumerable<Word> words)
@@ -134,9 +131,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             foreach (PatternNode<Word, ShapeNode> node in nodes)
             {
-                var constraint = node as Constraint<Word, ShapeNode>;
                 if (
-                    constraint != null
+                    node is Constraint<Word, ShapeNode> constraint
                     && (constraint.FeatureStruct.IsEmpty || constraint.Type() != HCFeatureSystem.Boundary)
                 )
                 {
@@ -144,8 +140,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                var alternation = node as Alternation<Word, ShapeNode>;
-                if (alternation != null)
+                if (node is Alternation<Word, ShapeNode> alternation)
                 {
                     var newAlteration = new Alternation<Word, ShapeNode>(
                         alternation.Children.DeepCloneExceptBoundaries()
@@ -155,8 +150,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                var group = node as Group<Word, ShapeNode>;
-                if (group != null)
+                if (node is Group<Word, ShapeNode> group)
                 {
                     var newGroup = new Group<Word, ShapeNode>(group.Name, group.Children.DeepCloneExceptBoundaries());
                     if (newGroup.Children.Count > 0)
@@ -164,8 +158,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                var quantifier = node as Quantifier<Word, ShapeNode>;
-                if (quantifier != null)
+                if (node is Quantifier<Word, ShapeNode> quantifier)
                 {
                     var newQuantifier = new Quantifier<Word, ShapeNode>(
                         quantifier.MinOccur,
@@ -177,8 +170,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                var pattern = node as Pattern<Word, ShapeNode>;
-                if (pattern != null)
+                if (node is Pattern<Word, ShapeNode> pattern)
                 {
                     var newPattern = new Pattern<Word, ShapeNode>(
                         pattern.Name,
@@ -244,13 +236,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         public static string ToString(
             this IEnumerable<ShapeNode> nodes,
             CharacterDefinitionTable table,
-            bool includeBdry
+            bool includeBoundary
         )
         {
             var sb = new StringBuilder();
             foreach (ShapeNode node in nodes)
             {
-                if ((!includeBdry && node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
+                if ((!includeBoundary && node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
                     continue;
 
                 IEnumerable<string> strReps = table.GetMatchingStrReps(node);
@@ -265,9 +257,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             SymbolicFeatureValue pos;
             if (fs.TryGetValue(SyntacticFeatureSystem.PartOfSpeechID, out pos))
-            {
                 return pos.Values;
-            }
             return Enumerable.Empty<FeatureSymbol>();
         }
 

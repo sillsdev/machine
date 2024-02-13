@@ -105,10 +105,8 @@ namespace SIL.Machine.FeatureModel
         public bool TryGetSymbol(string id, out FeatureSymbol symbol)
         {
             foreach (SymbolicFeature sf in _features.OfType<SymbolicFeature>())
-            {
                 if (sf.PossibleSymbols.TryGet(id, out symbol))
                     return true;
-            }
 
             symbol = null;
             return false;
@@ -116,8 +114,7 @@ namespace SIL.Machine.FeatureModel
 
         public bool ContainsSymbol(string id)
         {
-            FeatureSymbol symbol;
-            return TryGetSymbol(id, out symbol);
+            return TryGetSymbol(id, out FeatureSymbol _);
         }
 
         public bool ContainsSymbol(FeatureSymbol symbol)

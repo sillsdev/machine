@@ -48,7 +48,7 @@ namespace SIL.Machine.Corpora
             if (!includeEmpty)
                 rows = rows.Where(row => !row.IsEmpty);
 
-            var splitCorpus = corpus.Select((row, i) => (row, splitIndices.Contains(i)));
+            IEnumerable<(T row, bool)> splitCorpus = corpus.Select((row, i) => (row, splitIndices.Contains(i)));
             return (splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
         }
 
@@ -256,8 +256,12 @@ namespace SIL.Machine.Corpora
             int corpusSize = corpus.Count(includeEmpty);
             ISet<int> splitIndices = CorporaUtils.GetSplitIndices(corpusSize, percent, size, seed);
 
-            var mainCorpus = corpus.Where((row, i) => !splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty));
-            var splitCorpus = corpus.Where((row, i) => splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty));
+            ITextCorpus mainCorpus = corpus.Where(
+                (row, i) => !splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty)
+            );
+            ITextCorpus splitCorpus = corpus.Where(
+                (row, i) => splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty)
+            );
             return (mainCorpus, splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
         }
 
@@ -298,9 +302,7 @@ namespace SIL.Machine.Corpora
 
                 curRef = vref;
                 if (!curTrgRef.HasValue && row.TargetRefs.Count > 0)
-                {
                     curTrgRef = (VerseRef)row.TargetRefs[0];
-                }
                 else if (curTrgRef.HasValue && row.TargetRefs.Count > 0 && !curTrgRef.Value.Equals(row.TargetRefs[0]))
                 {
                     curTrgRef.Value.Simplify();
@@ -330,9 +332,7 @@ namespace SIL.Machine.Corpora
                         }
                     }
                     else
-                    {
                         curTrgRef = endRef;
-                    }
                 }
 
                 if (!row.IsTargetInRange || row.IsTargetRangeStart || row.TargetText.Length > 0)
@@ -989,8 +989,12 @@ namespace SIL.Machine.Corpora
             int corpusSize = corpus.Count(includeEmpty);
             ISet<int> splitIndices = CorporaUtils.GetSplitIndices(corpusSize, percent, size, seed);
 
-            var mainCorpus = corpus.Where((row, i) => !splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty));
-            var splitCorpus = corpus.Where((row, i) => splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty));
+            IParallelTextCorpus mainCorpus = corpus.Where(
+                (row, i) => !splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty)
+            );
+            IParallelTextCorpus splitCorpus = corpus.Where(
+                (row, i) => splitIndices.Contains(i) && (includeEmpty || !row.IsEmpty)
+            );
             return (mainCorpus, splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
         }
 
@@ -1145,7 +1149,12 @@ namespace SIL.Machine.Corpora
                         translations = _translationEngine.TranslateBatch(batch.Select(r => r.SourceSegment).ToArray());
                     else
                         translations = _translationEngine.TranslateBatch(batch.Select(r => r.SourceText).ToArray());
-                    foreach (var (row, translation) in batch.Zip(translations, (r, t) => (r, t)))
+                    foreach (
+                        (ParallelTextRow row, TranslationResult translation) in batch.Zip(
+                            translations,
+                            (r, t) => (r, t)
+                        )
+                    )
                     {
                         row.TargetSegment = translation.TargetTokens;
                         yield return row;
@@ -1177,7 +1186,9 @@ namespace SIL.Machine.Corpora
                     IReadOnlyList<WordAlignmentMatrix> alignments = _aligner.AlignBatch(
                         batch.Select(r => (r.SourceSegment, r.TargetSegment)).ToArray()
                     );
-                    foreach (var (row, alignment) in batch.Zip(alignments, (r, a) => (r, a)))
+                    foreach (
+                        (ParallelTextRow row, WordAlignmentMatrix alignment) in batch.Zip(alignments, (r, a) => (r, a))
+                    )
                     {
                         WordAlignmentMatrix knownAlignment = row.CreateAlignmentMatrix();
                         IReadOnlyCollection<AlignedWordPair> wordPairs;
@@ -1187,9 +1198,7 @@ namespace SIL.Machine.Corpora
                             wordPairs = knownAlignment.ToAlignedWordPairs();
                         }
                         else
-                        {
                             wordPairs = alignment.ToAlignedWordPairs();
-                        }
                         if (_aligner is IWordAlignmentModel model)
                             model.ComputeAlignedWordPairScores(row.SourceSegment, row.TargetSegment, wordPairs);
                         row.AlignedWordPairs = wordPairs;

@@ -96,12 +96,10 @@ namespace SIL.Machine.DataStructures
                     throw new ArgumentOutOfRangeException(nameof(value), "The capacity cannot be less than 0.");
 
                 if (value < _numNodes)
-                {
                     throw new ArgumentOutOfRangeException(
                         nameof(value),
                         "The capacity cannot be less than the current count."
                     );
-                }
 #endif
 
                 Resize(value);
@@ -176,9 +174,7 @@ namespace SIL.Machine.DataStructures
                 node.QueueIndex = parent;
             }
             else
-            {
                 return;
-            }
             while (parent > 1)
             {
                 parent >>= 1;
@@ -203,9 +199,7 @@ namespace SIL.Machine.DataStructures
 
             // If leaf node, we're done
             if (childLeftIndex > _numNodes)
-            {
                 return;
-            }
 
             // Check if the left-child is higher-priority than the current node
             int childRightIndex = childLeftIndex + 1;
@@ -240,9 +234,7 @@ namespace SIL.Machine.DataStructures
             }
             // Not swapping with left-child, does right-child exist?
             else if (childRightIndex > _numNodes)
-            {
                 return;
-            }
             else
             {
                 // Check if the right-child is higher-priority than the current node
@@ -255,9 +247,7 @@ namespace SIL.Machine.DataStructures
                 }
                 // Neither child is higher-priority than current, so finish and stop.
                 else
-                {
                     return;
-                }
             }
 
             while (true)
@@ -361,12 +351,10 @@ namespace SIL.Machine.DataStructures
                 throw new InvalidOperationException("The queue is empty.");
 
             if (!IsValidQueue())
-            {
                 throw new InvalidOperationException(
                     "Queue has been corrupted (Did you update a node priority manually instead of calling "
                         + "UpdatePriority()? Or add the same node to two different queues?)"
                 );
-            }
 #endif
 
             T returnMe = _nodes[1];
@@ -450,14 +438,10 @@ namespace SIL.Machine.DataStructures
             int parentIndex = node.QueueIndex >> 1;
 
             if (parentIndex > 0 && HasHigherPriority(node, _nodes[parentIndex]))
-            {
                 CascadeUp(node);
-            }
             else
-            {
                 //Note that CascadeDown will be called if parentNode == node (that is, node is the root)
                 CascadeDown(node);
-            }
         }
 
         /// <summary>

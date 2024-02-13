@@ -28,9 +28,7 @@ namespace SIL.Machine.Corpora
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (includeEmpty)
-                    {
                         count++;
-                    }
                     else if (line.Length > 0)
                     {
                         int index = line.IndexOf("\t");
@@ -66,9 +64,7 @@ namespace SIL.Machine.Corpora
                         line = line.Substring(index + 1);
                     }
                     else
-                    {
                         rowRef = new MultiKeyRef(Id, lineNum);
-                    }
                     yield return new AlignmentRow(Id, rowRef) { AlignedWordPairs = AlignedWordPair.Parse(line) };
                     lineNum++;
                 }

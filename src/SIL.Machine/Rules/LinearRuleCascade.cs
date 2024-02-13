@@ -43,9 +43,7 @@ namespace SIL.Machine.Rules
                             output.Add(result);
                     }
                     else
-                    {
                         output.Add(result);
-                    }
                     applied = true;
                 }
 

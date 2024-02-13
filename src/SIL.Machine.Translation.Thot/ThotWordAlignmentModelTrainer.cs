@@ -70,19 +70,15 @@ namespace SIL.Machine.Translation.Thot
                         if (parameters.HmmP0 != null)
                             Thot.swAlignModel_setHmmP0(ibm2OrHmm, parameters.HmmP0.Value);
                         if (parameters.HmmLexicalSmoothingFactor != null)
-                        {
                             Thot.swAlignModel_setHmmLexicalSmoothingFactor(
                                 ibm2OrHmm,
                                 parameters.HmmLexicalSmoothingFactor.Value
                             );
-                        }
                         if (parameters.HmmAlignmentSmoothingFactor != null)
-                        {
                             Thot.swAlignModel_setHmmAlignmentSmoothingFactor(
                                 ibm2OrHmm,
                                 parameters.HmmAlignmentSmoothingFactor.Value
                             );
-                        }
                         _models.Add((ibm2OrHmm, parameters.GetHmmIterationCount(modelType)));
                     }
                     else
@@ -101,12 +97,10 @@ namespace SIL.Machine.Translation.Thot
                 {
                     ibm3 = Thot.CreateAlignmentModel(ThotWordAlignmentModelType.Ibm3, ibm2OrHmm);
                     if (parameters.Ibm3FertilitySmoothingFactor != null)
-                    {
                         Thot.swAlignModel_setIbm3FertilitySmoothingFactor(
                             ibm3,
                             parameters.Ibm3FertilitySmoothingFactor.Value
                         );
-                    }
                     if (parameters.Ibm3CountThreshold != null)
                         Thot.swAlignModel_setIbm3CountThreshold(ibm3, parameters.Ibm3CountThreshold.Value);
                     _models.Add((ibm3, parameters.GetIbm3IterationCount(modelType)));
@@ -122,12 +116,10 @@ namespace SIL.Machine.Translation.Thot
                     if (ibm4 != IntPtr.Zero)
                     {
                         if (parameters.Ibm4DistortionSmoothingFactor != null)
-                        {
                             Thot.swAlignModel_setIbm4DistortionSmoothingFactor(
                                 ibm4,
                                 parameters.Ibm4DistortionSmoothingFactor.Value
                             );
-                        }
                         AddWordClasses(ibm4, parameters.SourceWordClasses, isSource: true);
                         AddWordClasses(ibm4, parameters.TargetWordClasses, isSource: false);
                         _models.Add((ibm4, parameters.GetIbm4IterationCount(modelType)));
@@ -156,9 +148,7 @@ namespace SIL.Machine.Translation.Thot
             progress?.Report(new ProgressStatus(curStep, numSteps));
 
             if (!string.IsNullOrEmpty(_sourceFileName) && !string.IsNullOrEmpty(_targetFileName))
-            {
                 Thot.swAlignModel_readSentencePairs(Handle, _sourceFileName, _targetFileName, "");
-            }
             else
             {
                 int corpusCount = 0;

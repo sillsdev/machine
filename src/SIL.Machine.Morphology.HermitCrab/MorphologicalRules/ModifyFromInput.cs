@@ -11,7 +11,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public class ModifyFromInput : MorphologicalOutputAction
     {
-        private readonly SimpleContext _simpleCtxt;
+        private readonly SimpleContext _simpleContext;
 
         internal ModifyFromInput(string partName, FeatureStruct fs, params SymbolicFeatureValue[] variables)
             : this(partName, new SimpleContext(new NaturalClass(fs), variables)) { }
@@ -19,15 +19,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public ModifyFromInput(string partName, NaturalClass nc, IEnumerable<SymbolicFeatureValue> variables)
             : this(partName, new SimpleContext(nc, variables)) { }
 
-        public ModifyFromInput(string partName, SimpleContext simpleCtxt)
+        public ModifyFromInput(string partName, SimpleContext simpleContext)
             : base(partName)
         {
-            _simpleCtxt = simpleCtxt;
+            _simpleContext = simpleContext;
         }
 
         public SimpleContext SimpleContext
         {
-            get { return _simpleCtxt; }
+            get { return _simpleContext; }
         }
 
         public override void GenerateAnalysisLhs(
@@ -44,10 +44,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 Constraint<Word, ShapeNode> constraint in group
                     .GetNodesDepthFirst()
                     .OfType<Constraint<Word, ShapeNode>>()
-                    .Where(c => c.Type() == (FeatureSymbol)_simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type))
+                    .Where(c => c.Type() == (FeatureSymbol)_simpleContext.FeatureStruct.GetValue(HCFeatureSystem.Type))
             )
             {
-                constraint.FeatureStruct.PriorityUnion(_simpleCtxt.FeatureStruct);
+                constraint.FeatureStruct.PriorityUnion(_simpleContext.FeatureStruct);
             }
             analysisLhs.Children.Add(group);
             capturedParts[PartName]++;
@@ -65,11 +65,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 ShapeNode outputNode = inputNode.Clone();
                 if (
                     outputNode.Annotation.Type()
-                    == (FeatureSymbol)_simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type)
+                    == (FeatureSymbol)_simpleContext.FeatureStruct.GetValue(HCFeatureSystem.Type)
                 )
                 {
                     outputNode.Annotation.FeatureStruct.PriorityUnion(
-                        _simpleCtxt.FeatureStruct,
+                        _simpleContext.FeatureStruct,
                         match.VariableBindings
                     );
                 }
@@ -81,7 +81,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public override string ToString()
         {
-            return string.Format("<{0}> -> {1}", PartName, _simpleCtxt.FeatureStruct);
+            return string.Format("<{0}> -> {1}", PartName, _simpleContext.FeatureStruct);
         }
     }
 }

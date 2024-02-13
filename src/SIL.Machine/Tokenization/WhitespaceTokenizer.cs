@@ -19,9 +19,7 @@ namespace SIL.Machine.Tokenization
                     startIndex = -1;
                 }
                 else if (startIndex == -1)
-                {
                     startIndex = i;
-                }
             }
 
             if (startIndex != -1)

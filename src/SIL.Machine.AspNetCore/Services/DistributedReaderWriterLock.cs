@@ -1,19 +1,12 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class DistributedReaderWriterLock : IDistributedReaderWriterLock
+public class DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
+    : IDistributedReaderWriterLock
 {
-    private readonly string _hostId;
-    private readonly IRepository<RWLock> _locks;
-    private readonly IIdGenerator _idGenerator;
-    private readonly string _id;
-
-    public DistributedReaderWriterLock(string hostId, IRepository<RWLock> locks, IIdGenerator idGenerator, string id)
-    {
-        _hostId = hostId;
-        _locks = locks;
-        _idGenerator = idGenerator;
-        _id = id;
-    }
+    private readonly string _hostId = hostId;
+    private readonly IRepository<RWLock> _locks = locks;
+    private readonly IIdGenerator _idGenerator = idGenerator;
+    private readonly string _id = id;
 
     public async Task<IAsyncDisposable> ReaderLockAsync(
         TimeSpan? lifetime = default,
@@ -65,7 +58,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
                     RWLock? rwLock = sub.Change.Entity;
                     if (rwLock is not null && !rwLock.IsAvailableForWriting(lockId))
                     {
-                        List<DateTime> dateTimes = rwLock
+                        var dateTimes = rwLock
                             .ReaderLocks.Where(l => l.ExpiresAt.HasValue)
                             .Select(l => l.ExpiresAt.GetValueOrDefault())
                             .ToList();
@@ -102,7 +95,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken
     )
     {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         Expression<Func<RWLock, bool>> filter = rwl =>
             rwl.Id == _id
             && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
@@ -131,7 +124,7 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         CancellationToken cancellationToken
     )
     {
-        var now = DateTime.UtcNow;
+        DateTime now = DateTime.UtcNow;
         Expression<Func<RWLock, bool>> filter = rwl =>
             rwl.Id == _id
             && (rwl.WriterLock == null || rwl.WriterLock.ExpiresAt != null && rwl.WriterLock.ExpiresAt <= now)
@@ -153,16 +146,10 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         return rwLock is not null;
     }
 
-    private class WriterLockReleaser : AsyncDisposableBase
+    private class WriterLockReleaser(DistributedReaderWriterLock distributedLock, string lockId) : AsyncDisposableBase
     {
-        private readonly DistributedReaderWriterLock _distributedLock;
-        private readonly string _lockId;
-
-        public WriterLockReleaser(DistributedReaderWriterLock distributedLock, string lockId)
-        {
-            _distributedLock = distributedLock;
-            _lockId = lockId;
-        }
+        private readonly DistributedReaderWriterLock _distributedLock = distributedLock;
+        private readonly string _lockId = lockId;
 
         protected override async ValueTask DisposeAsyncCore()
         {
@@ -172,16 +159,10 @@ public class DistributedReaderWriterLock : IDistributedReaderWriterLock
         }
     }
 
-    private class ReaderLockReleaser : AsyncDisposableBase
+    private class ReaderLockReleaser(DistributedReaderWriterLock distributedLock, string lockId) : AsyncDisposableBase
     {
-        private readonly DistributedReaderWriterLock _distributedLock;
-        private readonly string _lockId;
-
-        public ReaderLockReleaser(DistributedReaderWriterLock distributedLock, string lockId)
-        {
-            _distributedLock = distributedLock;
-            _lockId = lockId;
-        }
+        private readonly DistributedReaderWriterLock _distributedLock = distributedLock;
+        private readonly string _lockId = lockId;
 
         protected override async ValueTask DisposeAsyncCore()
         {

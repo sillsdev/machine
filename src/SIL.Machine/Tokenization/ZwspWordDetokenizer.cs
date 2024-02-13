@@ -4,11 +4,11 @@ namespace SIL.Machine.Tokenization
 {
     public class ZwspWordDetokenizer : LatinWordDetokenizer
     {
-        protected override DetokenizeOperation GetOperation(object ctxt, string token)
+        protected override DetokenizeOperation GetOperation(object context, string token)
         {
             if (char.IsWhiteSpace(token[0]))
                 return DetokenizeOperation.MergeBoth;
-            return base.GetOperation(ctxt, token);
+            return base.GetOperation(context, token);
         }
 
         protected override string GetSeparator(
@@ -26,9 +26,7 @@ namespace SIL.Machine.Tokenization
                 return " ";
             }
             else if (ops[index] == DetokenizeOperation.MergeLeft && char.IsPunctuation(tokens[index][0]))
-            {
                 return " ";
-            }
             return "\u200b";
         }
     }

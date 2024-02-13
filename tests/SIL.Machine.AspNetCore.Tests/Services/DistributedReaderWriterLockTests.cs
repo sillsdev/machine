@@ -63,7 +63,7 @@ public class DistributedReaderWriterLockTests
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.WriterLockAsync();
-        var task = rwLock.ReaderLockAsync();
+        Task<IAsyncDisposable> task = rwLock.ReaderLockAsync();
         await AssertNeverCompletesAsync(task);
     }
 
@@ -108,7 +108,7 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
         {
-            var task = rwLock.ReaderLockAsync();
+            Task<IAsyncDisposable> task = rwLock.ReaderLockAsync();
             await Task.Delay(500);
             await using (await task)
             {
@@ -195,7 +195,7 @@ public class DistributedReaderWriterLockTests
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.ReaderLockAsync();
-        var task = rwLock.WriterLockAsync();
+        Task<IAsyncDisposable> task = rwLock.WriterLockAsync();
         await AssertNeverCompletesAsync(task);
     }
 
@@ -238,7 +238,7 @@ public class DistributedReaderWriterLockTests
         IDistributedReaderWriterLock rwLock = await env.Factory.CreateAsync("test");
 
         await rwLock.WriterLockAsync();
-        var task = rwLock.WriterLockAsync();
+        Task<IAsyncDisposable> task = rwLock.WriterLockAsync();
         await AssertNeverCompletesAsync(task);
     }
 
@@ -323,7 +323,7 @@ public class DistributedReaderWriterLockTests
         RWLock entity;
         await using (await rwLock.WriterLockAsync(TimeSpan.FromMilliseconds(400)))
         {
-            var task = rwLock.WriterLockAsync();
+            Task<IAsyncDisposable> task = rwLock.WriterLockAsync();
             await Task.Delay(500);
             await using (await task)
             {
@@ -385,7 +385,7 @@ public class DistributedReaderWriterLockTests
         Task completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
         if (completedTask == task)
             Assert.Fail("Task completed unexpectedly.");
-        var _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
+        Task _ = task.ContinueWith(_ => Assert.Fail("Task completed unexpectedly."), TaskScheduler.Default);
     }
 
     private class TestEnvironment
@@ -394,7 +394,7 @@ public class DistributedReaderWriterLockTests
         {
             Locks = new MemoryRepository<RWLock>();
             var idGenerator = new ObjectIdGenerator();
-            var options = Substitute.For<IOptions<ServiceOptions>>();
+            IOptions<ServiceOptions> options = Substitute.For<IOptions<ServiceOptions>>();
             options.Value.Returns(new ServiceOptions { ServiceId = "host" });
             Factory = new DistributedReaderWriterLockFactory(options, Locks, idGenerator);
         }

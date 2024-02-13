@@ -36,7 +36,7 @@ namespace SIL.Machine.Optimization
             if (v.Count != Count)
                 throw new ArgumentException("Can only add vectors of the same dimensionality");
 
-            Vector vector = new Vector(v.Count);
+            var vector = new Vector(v.Count);
             for (int i = 0; i < v.Count; i++)
             {
                 vector[i] = this[i] + v[i];
@@ -54,7 +54,7 @@ namespace SIL.Machine.Optimization
             if (v.Count != Count)
                 throw new ArgumentException("Can only subtract vectors of the same dimensionality");
 
-            Vector vector = new Vector(v.Count);
+            var vector = new Vector(v.Count);
             for (int i = 0; i < v.Count; i++)
             {
                 vector[i] = this[i] - v[i];
@@ -69,7 +69,7 @@ namespace SIL.Machine.Optimization
         /// <returns></returns>
         public Vector Multiply(double scalar)
         {
-            Vector scaledVector = new Vector(Count);
+            var scaledVector = new Vector(Count);
             for (int i = 0; i < Count; i++)
             {
                 scaledVector[i] = this[i] * scalar;

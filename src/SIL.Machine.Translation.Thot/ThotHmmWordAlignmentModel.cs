@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Corpora;
 
@@ -69,9 +68,7 @@ namespace SIL.Machine.Translation.Thot
                         prevSourceIndex = sourceIndex;
                     }
                     else
-                    {
                         prevSourceIndex = sourceIndices[j];
-                    }
                 }
             }
 

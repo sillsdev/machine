@@ -38,8 +38,7 @@ namespace SIL.Machine.Translation
 
         public double Compute(string[] x, string[] y)
         {
-            double[,] distMatrix;
-            return ComputeDistMatrix(x, y, true, false, out distMatrix);
+            return ComputeDistMatrix(x, y, true, false, out double[,] _);
         }
 
         public double ComputePrefix(
@@ -115,8 +114,8 @@ namespace SIL.Machine.Translation
             bool isLastItemComplete
         )
         {
-            var x = new[] { xWord };
-            var y = new string[prevScores.Count - 1];
+            string[] x = new[] { xWord };
+            string[] y = new string[prevScores.Count - 1];
             for (int i = 0; i < yIncr.Length; i++)
                 y[prevScores.Count - yIncr.Length - 1 + i] = yIncr[i];
 
@@ -136,9 +135,6 @@ namespace SIL.Machine.Translation
             for (int jIncr = 0; jIncr < yIncr.Length; jIncr++)
             {
                 int j = startPos + jIncr;
-                int iPred,
-                    jPred;
-                EditOperation op;
                 double dist = ProcessDistMatrixCell(
                     x,
                     y,
@@ -147,9 +143,9 @@ namespace SIL.Machine.Translation
                     j != y.Length || isLastItemComplete,
                     1,
                     j,
-                    out iPred,
-                    out jPred,
-                    out op
+                    out int _,
+                    out int _,
+                    out EditOperation op
                 );
                 scores[j] = dist;
                 distMatrix[1, j] = dist;

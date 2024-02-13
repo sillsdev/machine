@@ -67,11 +67,13 @@ namespace SIL.Machine.Corpora
             using (var trgEnumerator = new TargetCorpusEnumerator(TargetCorpus.GetRows(textIds).GetEnumerator()))
             using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(textIds).GetEnumerator())
             {
-                var rangeInfo = new RangeInfo();
-                rangeInfo.Versification =
-                    TargetCorpus is ScriptureTextCorpus tc && SourceCorpus is ScriptureTextCorpus
-                        ? tc.Versification
-                        : null;
+                var rangeInfo = new RangeInfo
+                {
+                    Versification =
+                        TargetCorpus is ScriptureTextCorpus tc && SourceCorpus is ScriptureTextCorpus
+                            ? tc.Versification
+                            : null
+                };
                 var sourceSameRefRows = new List<TextRow>();
                 var targetSameRefRows = new List<TextRow>();
 
@@ -359,15 +361,15 @@ namespace SIL.Machine.Corpora
             else
                 throw new ArgumentNullException("Either a source or target must be specified.");
 
-            var sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
-            var targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
+            object[] sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
+            object[] targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
             if (targetRefs.Length == 0 && TargetCorpus is ScriptureTextCorpus stc)
             {
                 targetRefs = sourceRefs
                     .Cast<VerseRef>()
                     .Select(r =>
                     {
-                        var t = r.Clone();
+                        VerseRef t = r.Clone();
                         t.ChangeVersification(stc.Versification);
                         return t;
                     })
@@ -436,7 +438,9 @@ namespace SIL.Machine.Corpora
                         forceTargetInRange: forceTargetInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 
@@ -465,7 +469,9 @@ namespace SIL.Machine.Corpora
                         forceSourceInRange: forceSourceInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 
@@ -486,7 +492,7 @@ namespace SIL.Machine.Corpora
 
             public ParallelTextRow CreateRow()
             {
-                var trgRefs = TargetRefs.ToArray();
+                object[] trgRefs = TargetRefs.ToArray();
                 if (TargetRefs.Count == 0 && Versification != null)
                 {
                     trgRefs = SourceRefs
@@ -494,7 +500,7 @@ namespace SIL.Machine.Corpora
                         .Cast<VerseRef>()
                         .Select(r =>
                         {
-                            var t = r.Clone();
+                            VerseRef t = r.Clone();
                             t.ChangeVersification(Versification);
                             return t;
                         })
@@ -521,14 +527,14 @@ namespace SIL.Machine.Corpora
 
         private class DefaultRowRefComparer : IComparer<object>
         {
-            private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer(compareSegments: false);
+            private static readonly VerseRefComparer s_verseRefComparer = new VerseRefComparer(compareSegments: false);
 
             public int Compare(object x, object y)
             {
                 // Do not use the default comparer for VerseRef, since we want to compare all verses in a range or
                 // sequence
                 if (x is VerseRef vx && y is VerseRef vy)
-                    return VerseRefComparer.Compare(vx, vy);
+                    return s_verseRefComparer.Compare(vx, vy);
 
                 return Comparer<object>.Default.Compare(x, y);
             }
@@ -539,7 +545,7 @@ namespace SIL.Machine.Corpora
             private readonly IEnumerator<TextRow> _enumerator;
             private bool _isScripture = false;
             private bool _isEnumerating = false;
-            private Queue<TextRow> _verseRows;
+            private readonly Queue<TextRow> _verseRows;
             private TextRow _current;
 
             public TargetCorpusEnumerator(IEnumerator<TextRow> enumerator)
@@ -624,8 +630,10 @@ namespace SIL.Machine.Corpora
                     // convert one-to-many versification mapping to a verse range
                     if (verseRef.Equals(prevVerseRef))
                     {
-                        var (rangeStartVerseRef, rangeStartRow) = rowList[rowList.Count + rangeStartOffset];
-                        var flags = TextRowFlags.InRange;
+                        (VerseRef rangeStartVerseRef, TextRow rangeStartRow) = rowList[
+                            rowList.Count + rangeStartOffset
+                        ];
+                        TextRowFlags flags = TextRowFlags.InRange;
                         if (rangeStartRow.IsSentenceStart)
                             flags |= TextRowFlags.SentenceStart;
                         if (rangeStartOffset == -1 && (!rangeStartRow.IsInRange || rangeStartRow.IsRangeStart))
@@ -642,9 +650,7 @@ namespace SIL.Machine.Corpora
                         rangeStartOffset--;
                     }
                     else
-                    {
                         rangeStartOffset = -1;
-                    }
                     rowList.Add((verseRef, row));
                     if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
                         outOfOrder = true;
@@ -654,7 +660,7 @@ namespace SIL.Machine.Corpora
                 if (outOfOrder)
                     rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
 
-                foreach (var (_, row) in rowList)
+                foreach ((VerseRef _, TextRow row) in rowList)
                     _verseRows.Enqueue(row);
             }
         }

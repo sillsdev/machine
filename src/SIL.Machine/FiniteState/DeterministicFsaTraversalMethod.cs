@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -23,15 +21,15 @@ namespace SIL.Machine.FiniteState
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         )
         {
             Stack<DeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
                 ref annIndex,
                 initRegisters,
-                initCmds,
-                initAnns
+                initCommands,
+                initAnnotations
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
@@ -52,7 +50,9 @@ namespace SIL.Machine.FiniteState
                                 curResults
                             )
                         )
+                        {
                             instStack.Push(ni);
+                        }
                         releaseInstance = false;
                         break;
                     }
@@ -73,8 +73,8 @@ namespace SIL.Machine.FiniteState
         private Stack<DeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
             Register<TOffset>[,] registers,
-            IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> commands,
+            ISet<int> initAnnotations
         )
         {
             var instStack = new Stack<DeterministicFsaTraversalInstance<TData, TOffset>>();
@@ -82,11 +82,13 @@ namespace SIL.Machine.FiniteState
                 DeterministicFsaTraversalInstance<TData, TOffset> inst in Initialize(
                     ref annIndex,
                     registers,
-                    cmds,
-                    initAnns
+                    commands,
+                    initAnnotations
                 )
             )
+            {
                 instStack.Push(inst);
+            }
             return instStack;
         }
     }

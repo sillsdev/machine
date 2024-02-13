@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
 {
     public class UsxVerseParser
     {
-        private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
+        private static readonly HashSet<string> s_nonVerseParaStyles = new HashSet<string>
         {
             "ms",
             "mr",
@@ -25,18 +25,18 @@ namespace SIL.Machine.Corpora
 
         public IEnumerable<UsxVerse> Parse(Stream stream)
         {
-            var ctxt = new ParseContext();
+            var context = new ParseContext();
             var doc = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
             XElement bookElem = doc.Descendants("book").First();
             XElement rootElem = bookElem.Parent;
-            foreach (UsxVerse verse in ParseElement(rootElem, ctxt))
+            foreach (UsxVerse verse in ParseElement(rootElem, context))
                 yield return verse;
 
-            if (ctxt.IsInVerse)
-                yield return ctxt.CreateVerse();
+            if (context.IsInVerse)
+                yield return context.CreateVerse();
         }
 
-        private IEnumerable<UsxVerse> ParseElement(XElement elem, ParseContext ctxt)
+        private IEnumerable<UsxVerse> ParseElement(XElement elem, ParseContext context)
         {
             foreach (XNode node in elem.Nodes())
             {
@@ -46,88 +46,82 @@ namespace SIL.Machine.Corpora
                         switch (e.Name.LocalName)
                         {
                             case "chapter":
-                                if (ctxt.IsInVerse)
-                                    yield return ctxt.CreateVerse();
-                                ctxt.Chapter = (string)e.Attribute("number");
-                                ctxt.Verse = null;
-                                ctxt.IsSentenceStart = true;
+                                if (context.IsInVerse)
+                                    yield return context.CreateVerse();
+                                context.Chapter = (string)e.Attribute("number");
+                                context.Verse = null;
+                                context.IsSentenceStart = true;
                                 break;
 
                             case "para":
                                 if (!IsVersePara(e))
                                 {
-                                    ctxt.IsSentenceStart = true;
+                                    context.IsSentenceStart = true;
                                     continue;
                                 }
-                                ctxt.ParaElement = e;
-                                foreach (UsxVerse evt in ParseElement(e, ctxt))
+                                context.ParaElement = e;
+                                foreach (UsxVerse evt in ParseElement(e, context))
                                     yield return evt;
                                 break;
 
                             case "verse":
                                 if (e.Attribute("eid") != null)
                                 {
-                                    yield return ctxt.CreateVerse();
-                                    ctxt.Verse = null;
+                                    yield return context.CreateVerse();
+                                    context.Verse = null;
                                 }
                                 else
                                 {
                                     string verse = (string)e.Attribute("number") ?? (string)e.Attribute("pubnumber");
-                                    if (ctxt.IsInVerse)
+                                    if (context.IsInVerse)
                                     {
-                                        if (verse == ctxt.Verse)
+                                        if (verse == context.Verse)
                                         {
-                                            yield return ctxt.CreateVerse();
+                                            yield return context.CreateVerse();
 
                                             // ignore duplicate verse
-                                            ctxt.Verse = null;
+                                            context.Verse = null;
                                         }
-                                        else if (VerseRef.AreOverlappingVersesRanges(verse, ctxt.Verse))
-                                        {
+                                        else if (VerseRef.AreOverlappingVersesRanges(verse, context.Verse))
                                             // merge overlapping verse ranges in to one range
-                                            ctxt.Verse = CorporaUtils.MergeVerseRanges(verse, ctxt.Verse);
-                                        }
+                                            context.Verse = CorporaUtils.MergeVerseRanges(verse, context.Verse);
                                         else
                                         {
-                                            yield return ctxt.CreateVerse();
-                                            ctxt.Verse = verse;
+                                            yield return context.CreateVerse();
+                                            context.Verse = verse;
                                         }
                                     }
                                     else
-                                    {
-                                        ctxt.Verse = verse;
-                                    }
+                                        context.Verse = verse;
                                 }
                                 break;
 
                             case "char":
                                 if ((string)e.Attribute("style") == "rq")
                                 {
-                                    if (ctxt.IsInVerse)
-                                        ctxt.AddToken("", e);
+                                    if (context.IsInVerse)
+                                        context.AddToken("", e);
                                 }
                                 else
-                                {
-                                    foreach (UsxVerse evt in ParseElement(e, ctxt))
+                                    foreach (UsxVerse evt in ParseElement(e, context))
                                         yield return evt;
-                                }
                                 break;
 
                             case "wg":
-                                if (ctxt.IsInVerse)
-                                    ctxt.AddToken(e.Value, e);
+                                if (context.IsInVerse)
+                                    context.AddToken(e.Value, e);
                                 break;
 
                             case "figure":
-                                if (ctxt.IsInVerse)
-                                    ctxt.AddToken("", e);
+                                if (context.IsInVerse)
+                                    context.AddToken("", e);
                                 break;
                         }
                         break;
 
                     case XText text:
-                        if (ctxt.IsInVerse)
-                            ctxt.AddToken(text.Value);
+                        if (context.IsInVerse)
+                            context.AddToken(text.Value);
                         break;
                 }
             }
@@ -135,8 +129,8 @@ namespace SIL.Machine.Corpora
 
         private static bool IsVersePara(XElement paraElem)
         {
-            var style = (string)paraElem.Attribute("style");
-            if (NonVerseParaStyles.Contains(style))
+            string style = (string)paraElem.Attribute("style");
+            if (s_nonVerseParaStyles.Contains(style))
                 return false;
 
             if (IsNumberedStyle("ms", style))
@@ -155,7 +149,7 @@ namespace SIL.Machine.Corpora
 
         private class ParseContext
         {
-            private List<UsxToken> _tokens = new List<UsxToken>();
+            private readonly List<UsxToken> _tokens = new List<UsxToken>();
 
             public string Chapter { get; set; }
             public string Verse { get; set; }

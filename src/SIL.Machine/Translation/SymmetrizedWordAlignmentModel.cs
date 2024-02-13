@@ -157,7 +157,12 @@ namespace SIL.Machine.Translation
             AlignedWordPair[] inverseWordPairs = wordPairs.Select(wp => wp.Invert()).ToArray();
             _directWordAlignmentModel.ComputeAlignedWordPairScores(sourceSegment, targetSegment, wordPairs);
             _inverseWordAlignmentModel.ComputeAlignedWordPairScores(targetSegment, sourceSegment, inverseWordPairs);
-            foreach (var (wordPair, inverseWordPair) in wordPairs.Zip(inverseWordPairs, (wp, invWp) => (wp, invWp)))
+            foreach (
+                (AlignedWordPair wordPair, AlignedWordPair inverseWordPair) in wordPairs.Zip(
+                    inverseWordPairs,
+                    (wp, invWp) => (wp, invWp)
+                )
+            )
             {
                 wordPair.TranslationScore = Math.Max(wordPair.TranslationScore, inverseWordPair.TranslationScore);
                 wordPair.AlignmentScore = Math.Max(wordPair.AlignmentScore, inverseWordPair.AlignmentScore);

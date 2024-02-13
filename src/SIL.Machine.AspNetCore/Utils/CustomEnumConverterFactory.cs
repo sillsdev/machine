@@ -1,11 +1,8 @@
-public sealed class CustomEnumConverterFactory : JsonConverterFactory
-{
-    private readonly JsonNamingPolicy _namingPolicy;
+namespace SIL.Machine.AspNetCore.Utils;
 
-    public CustomEnumConverterFactory(JsonNamingPolicy namingPolicy)
-    {
-        _namingPolicy = namingPolicy;
-    }
+public sealed class CustomEnumConverterFactory(JsonNamingPolicy namingPolicy) : JsonConverterFactory
+{
+    private readonly JsonNamingPolicy _namingPolicy = namingPolicy;
 
     public override bool CanConvert(Type typeToConvert) => typeToConvert.IsEnum;
 
@@ -14,16 +11,14 @@ public sealed class CustomEnumConverterFactory : JsonConverterFactory
         object[]? knownValues = null;
 
         if (typeToConvert == typeof(BindingFlags))
-        {
-            knownValues = new object[] { BindingFlags.CreateInstance | BindingFlags.DeclaredOnly };
-        }
+            knownValues = [BindingFlags.CreateInstance | BindingFlags.DeclaredOnly];
 
         return (JsonConverter)
             Activator.CreateInstance(
                 typeof(CustomEnumConverter<>).MakeGenericType(typeToConvert),
                 BindingFlags.Instance | BindingFlags.Public,
                 binder: null,
-                args: new object?[] { _namingPolicy, options, knownValues },
+                args: [_namingPolicy, options, knownValues],
                 culture: null
             )!;
     }
@@ -34,8 +29,8 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
 {
     private readonly JsonNamingPolicy _namingPolicy;
 
-    private readonly Dictionary<string, T> _readCache = new();
-    private readonly Dictionary<T, JsonEncodedText> _writeCache = new();
+    private readonly Dictionary<string, T> _readCache = [];
+    private readonly Dictionary<T, JsonEncodedText> _writeCache = [];
 
     // This converter will only support up to 64 enum values (including flags) on serialization and deserialization
     private const int NameCacheLimit = 64;
@@ -62,12 +57,10 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
 
             for (int i = 0; i < values.Length; i++)
             {
-                T value = (T)values.GetValue(i)!;
+                var value = (T)values.GetValue(i)!;
 
                 if (!TryProcessValue(value))
-                {
                     break;
-                }
             }
         }
 
@@ -107,7 +100,10 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
             if (_writeCache.Count == NameCacheLimit)
             {
                 Debug.Assert(_readCache.Count == NameCacheLimit);
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(value),
+                    $"Could not convert {value} of type {typeof(T).Name} to a string. The enum has too many values to cache."
+                );
             }
 
             formatted = FormatAndAddToCaches(value, options.Encoder);
@@ -118,7 +114,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
 
     private JsonEncodedText FormatAndAddToCaches(T value, JavaScriptEncoder? encoder)
     {
-        (string valueFormattedToStr, JsonEncodedText valueEncoded) = FormatEnumValue(
+        (string valueFormattedToStr, JsonEncodedText valueEncoded) = CustomEnumConverter<T>.FormatEnumValue(
             value.ToString(),
             _namingPolicy,
             encoder
@@ -128,7 +124,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
         return valueEncoded;
     }
 
-    private ValueTuple<string, JsonEncodedText> FormatEnumValue(
+    private static ValueTuple<string, JsonEncodedText> FormatEnumValue(
         string value,
         JsonNamingPolicy namingPolicy,
         JavaScriptEncoder? encoder
@@ -137,9 +133,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
         string converted;
 
         if (!value.Contains(ValueSeparator))
-        {
             converted = namingPolicy.ConvertName(value);
-        }
         else
         {
             // todo: optimize implementation here by leveraging https://github.com/dotnet/runtime/issues/934.

@@ -255,10 +255,8 @@ namespace SIL.Machine.DataStructures
             if (preorder)
                 action((TNode)node);
             if (!node.IsLeaf)
-            {
                 foreach (TNode child in node.Children.GetNodes(dir))
                     DepthFirstTraverseNode(child, action, dir, preorder);
-            }
             if (!preorder)
                 action((TNode)node);
         }
@@ -283,10 +281,8 @@ namespace SIL.Machine.DataStructures
                 TNode node = queue.Dequeue();
                 action(node);
                 if (!node.IsLeaf)
-                {
                     foreach (TNode child in node.Children.GetNodes(dir))
                         queue.Enqueue(child);
-                }
             }
         }
 
@@ -327,10 +323,8 @@ namespace SIL.Machine.DataStructures
                 TNode node = queue.Dequeue();
                 yield return node;
                 if (!node.IsLeaf)
-                {
                     foreach (TNode child in node.Children.GetNodes(dir))
                         queue.Enqueue(child);
-                }
             }
         }
 

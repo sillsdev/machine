@@ -22,15 +22,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         private void EntriesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (LexEntry entry in e.OldItems)
                     entry.Family = null;
-            }
             if (e.NewItems != null)
-            {
                 foreach (LexEntry entry in e.NewItems)
                     entry.Family = this;
-            }
         }
 
         public ICollection<LexEntry> Entries

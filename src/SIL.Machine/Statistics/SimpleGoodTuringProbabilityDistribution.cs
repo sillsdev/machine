@@ -40,63 +40,63 @@ namespace SIL.Machine.Statistics
                 i++;
             }
 
-            var zr = new double[r.Count];
-            var logr = new double[r.Count];
-            var logzr = new double[r.Count];
+            double[] zr = new double[r.Count];
+            double[] logR = new double[r.Count];
+            double[] logZR = new double[r.Count];
             for (int j = 0; j < r.Count; j++)
             {
                 i = j > 0 ? r[j - 1] : 0;
                 int k = j == r.Count - 1 ? 2 * r[j] - i : r[j + 1];
                 zr[j] = 2.0 * nr[j] / (k - i);
-                logr[j] = Math.Log(r[j]);
-                logzr[j] = Math.Log(zr[j]);
+                logR[j] = Math.Log(r[j]);
+                logZR[j] = Math.Log(zr[j]);
             }
 
-            double xycov = 0,
-                xvar = 0,
-                xmean = 0,
-                ymean = 0;
+            double xyCov = 0,
+                xVar = 0,
+                xMean = 0,
+                yMean = 0;
             for (int j = 0; j < r.Count; j++)
             {
-                xmean += logr[j];
-                ymean += logzr[j];
+                xMean += logR[j];
+                yMean += logZR[j];
             }
-            xmean /= r.Count;
-            ymean /= r.Count;
-            for (int j = 0; j < logr.Length; j++)
+            xMean /= r.Count;
+            yMean /= r.Count;
+            for (int j = 0; j < logR.Length; j++)
             {
-                xycov += (logr[j] - xmean) * (logzr[j] - ymean);
-                xvar += Math.Pow(logr[j] - xmean, 2);
+                xyCov += (logR[j] - xMean) * (logZR[j] - yMean);
+                xVar += Math.Pow(logR[j] - xMean, 2);
             }
-            _slope = Math.Abs(xvar - 0) > double.Epsilon ? xycov / xvar : 0;
-            _intercept = ymean - _slope * xmean;
+            _slope = Math.Abs(xVar - 0) > double.Epsilon ? xyCov / xVar : 0;
+            _intercept = yMean - _slope * xMean;
 
-            var rstar = new double[r.Count];
+            double[] rStar = new double[r.Count];
             for (int j = 0; j < r.Count; j++)
             {
-                double smoothRstar = (r[j] + 1) * GetSmoothedSamplesCount(r[j] + 1) / GetSmoothedSamplesCount(r[j]);
+                double smoothRStar = (r[j] + 1) * GetSmoothedSamplesCount(r[j] + 1) / GetSmoothedSamplesCount(r[j]);
                 if (r.Count == j + 1 || r[j + 1] != r[j] + 1)
-                    rstar[j] = smoothRstar;
+                    rStar[j] = smoothRStar;
                 else
                 {
-                    double unsmoothRstar = (double)(r[j] + 1) * nr[j + 1] / nr[j];
+                    double unsmoothRStar = (double)(r[j] + 1) * nr[j + 1] / nr[j];
                     double std = Math.Sqrt(GetVariance(r[j], nr[j], nr[j + 1]));
-                    if (Math.Abs(unsmoothRstar - smoothRstar) <= 1.96 * std)
-                        rstar[j] = smoothRstar;
+                    if (Math.Abs(unsmoothRStar - smoothRStar) <= 1.96 * std)
+                        rStar[j] = smoothRStar;
                     else
-                        rstar[j] = unsmoothRstar;
+                        rStar[j] = unsmoothRStar;
                 }
             }
 
             double samplesCountPrime = 0;
             for (int j = 0; j < r.Count; j++)
-                samplesCountPrime += nr[j] * rstar[j];
+                samplesCountPrime += nr[j] * rStar[j];
 
             _probZero =
                 (double)FrequencyDistribution.ObservedSamples.Count(s => FrequencyDistribution[s] == 1)
                 / FrequencyDistribution.SampleOutcomeCount;
             for (int j = 0; j < r.Count; j++)
-                _probs[r[j]] = (1.0 - _probZero) * rstar[j] / samplesCountPrime;
+                _probs[r[j]] = (1.0 - _probZero) * rStar[j] / samplesCountPrime;
         }
 
         private double GetSmoothedSamplesCount(int r)

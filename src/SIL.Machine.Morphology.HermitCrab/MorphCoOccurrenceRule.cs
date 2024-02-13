@@ -91,8 +91,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         private bool CoOccurs(T key, Word word)
         {
-            List<Allomorph> morphList = word.AllomorphsInMorphOrder.ToList();
-            List<T> others = _others.ToList();
+            var morphList = word.AllomorphsInMorphOrder.ToList();
+            var others = _others.ToList();
 
             switch (_adjacency)
             {
@@ -107,9 +107,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         T curMorphObj = GetMorphObject(morphList[i]);
                         if (key == curMorphObj)
-                        {
                             break;
-                        }
                         if (others.Count > 0 && others[0] == curMorphObj)
                         {
                             if (_adjacency == MorphCoOccurrenceAdjacency.AdjacentToLeft)
@@ -124,9 +122,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                                         return false;
                                 }
                                 else if (key != nextMorphObj)
-                                {
                                     return false;
-                                }
                             }
                             others.RemoveAt(0);
                         }
@@ -139,9 +135,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         T curMorphObj = GetMorphObject(morphList[i]);
                         if (key == curMorphObj)
-                        {
                             break;
-                        }
                         if (others.Count > 0 && others[others.Count - 1] == curMorphObj)
                         {
                             if (_adjacency == MorphCoOccurrenceAdjacency.AdjacentToRight)
@@ -156,9 +150,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                                         return false;
                                 }
                                 else if (key != prevMorphObj)
-                                {
                                     return false;
-                                }
                             }
                             others.RemoveAt(others.Count - 1);
                         }
@@ -181,8 +173,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override bool Equals(object other)
         {
-            var otherRule = other as MorphCoOccurrenceRule<T>;
-            return otherRule != null && Equals(otherRule);
+            return other is MorphCoOccurrenceRule<T> otherRule && Equals(otherRule);
         }
 
         public override int GetHashCode()

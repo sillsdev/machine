@@ -21,35 +21,27 @@ namespace SIL.Machine.Translation
             TargetTokens = targetTokens.ToArray();
             Confidences = confidences.ToArray();
             if (Confidences.Count != TargetTokens.Count)
-            {
                 throw new ArgumentException(
                     "The confidences must be the same length as the target segment.",
                     nameof(confidences)
                 );
-            }
             Sources = sources.ToArray();
             if (Sources.Count != TargetTokens.Count)
-            {
                 throw new ArgumentException(
                     "The sources must be the same length as the target segment.",
                     nameof(sources)
                 );
-            }
             Alignment = alignment;
             if (Alignment.RowCount != SourceTokens.Count)
-            {
                 throw new ArgumentException(
                     "The alignment source length must be the same length as the source segment.",
                     nameof(alignment)
                 );
-            }
             if (Alignment.ColumnCount != TargetTokens.Count)
-            {
                 throw new ArgumentException(
                     "The alignment target length must be the same length as the target segment.",
                     nameof(alignment)
                 );
-            }
 
             Phrases = phrases.ToArray();
         }

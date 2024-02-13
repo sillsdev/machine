@@ -77,9 +77,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         _morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, reason.Item1, reason.Item2);
                     }
                     else
-                    {
                         _morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.Pattern, null);
-                    }
                 }
                 input.CurrentRuleResults = null;
             }

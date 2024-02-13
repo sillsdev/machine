@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
     {
         private const char ZeroWidthSpace = '\u200B';
 
-        private static readonly Regex RtlVerseRegex = new Regex(
+        private static readonly Regex s_rtlVerseRegex = new Regex(
             @"[\u200E\u200F]*(\d+\w?)[\u200E\u200F]*([\p{P}\p{S}])[\u200E\u200F]*(?=\d)",
             RegexOptions.Compiled
         );
@@ -39,7 +39,7 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyList<UsfmToken> Tokenize(string usfm, bool preserveWhitespace = false)
         {
-            List<UsfmToken> tokens = new List<UsfmToken>();
+            var tokens = new List<UsfmToken>();
 
             int index = 0; // Current position
             while (index < usfm.Length)
@@ -49,7 +49,7 @@ namespace SIL.Machine.Corpora
                     nextMarkerIndex = usfm.Length;
 
                 // If text, create text token until end or next \
-                var ch = usfm[index];
+                char ch = usfm[index];
                 if (ch != '\\')
                 {
                     string text = usfm.Substring(index, nextMarkerIndex - index);
@@ -127,10 +127,8 @@ namespace SIL.Machine.Corpora
 
                 // Multiple whitespace after non-end marker is ok
                 if (!marker.EndsWith("*", StringComparison.Ordinal) && !preserveWhitespace)
-                {
                     while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
                         index++;
-                }
 
                 // Lookup marker
                 UsfmTag tag = Stylesheet.GetTag(marker.TrimStart('+'));
@@ -152,7 +150,6 @@ namespace SIL.Machine.Corpora
                     case UsfmStyleType.Character:
                         // Handle verse special case
                         if ((tag.TextProperties & UsfmTextProperties.Verse) > 0)
-                        {
                             tokens.Add(
                                 new UsfmToken(
                                     UsfmTokenType.Verse,
@@ -162,11 +159,8 @@ namespace SIL.Machine.Corpora
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
-                        }
                         else
-                        {
                             tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, endMarker));
-                        }
                         break;
                     case UsfmStyleType.Paragraph:
                         // Handle chapter special case
@@ -210,9 +204,7 @@ namespace SIL.Machine.Corpora
                     case UsfmStyleType.Unknown:
                         // End tokens are always end tokens, even if unknown
                         if (marker.EndsWith("*", StringComparison.Ordinal))
-                        {
                             tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null));
-                        }
                         else
                         {
                             // Handle special case of esb and esbe which might not be in basic stylesheet
@@ -228,7 +220,7 @@ namespace SIL.Machine.Corpora
                         break;
                     case UsfmStyleType.Milestone:
                     case UsfmStyleType.MilestoneEnd:
-                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the begining. Instead create at
+                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the beginning. Instead create at
                         // text token for all the text up to the beginning of the next marker. This will make typing of milestones easiest since
                         // the partially typed milestone more be reformatted to have a normal ending even if it hasn't been typed yet.
                         if (!MilestoneEnded(usfm, index))
@@ -345,7 +337,7 @@ namespace SIL.Machine.Corpora
                         {
                             string directionMarker =
                                 RtlReferenceOrder == RtlReferenceOrder.BookVerseChapter ? "\u200e" : "\u200f";
-                            tokenUsfm = RtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
+                            tokenUsfm = s_rtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
                         }
                         break;
                     case UsfmTokenType.Text:
@@ -365,9 +357,7 @@ namespace SIL.Machine.Corpora
                                 usfm.Length--;
                             }
                             else
-                            {
                                 tokenUsfm = tokenUsfm.TrimStart(' ');
-                            }
                         }
                         break;
                     default:
@@ -396,7 +386,10 @@ namespace SIL.Machine.Corpora
                 && usfm[usfm.Length - 2] == '\r'
                 && usfm[usfm.Length - 1] == '\n'
             )
+            {
                 usfm.Remove(usfm.Length - 3, 1);
+            }
+
             return usfm.ToString();
         }
 
@@ -421,10 +414,8 @@ namespace SIL.Machine.Corpora
 
             // Skip over trailing spaces
             if (!preserveWhitespace)
-            {
                 while ((index < usfm.Length) && IsNonSemanticWhiteSpace(usfm[index]))
                     index++;
-            }
 
             return data;
         }
@@ -435,11 +426,11 @@ namespace SIL.Machine.Corpora
         /// </summary>
         private static string RegularizeSpaces(string str)
         {
-            StringBuilder sb = new StringBuilder(str.Length);
+            var sb = new StringBuilder(str.Length);
             bool wasSpace = false;
             for (int i = 0; i < str.Length; i++)
             {
-                var ch = str[i];
+                char ch = str[i];
                 // Control characters and CR/LF and TAB become spaces
                 if (ch < 32)
                 {
@@ -449,7 +440,7 @@ namespace SIL.Machine.Corpora
                 }
                 else if (!wasSpace && ch == ZeroWidthSpace && i + 1 < str.Length && IsNonSemanticWhiteSpace(str[i + 1]))
                 {
-                    // ZWSP is redundant if followed by a space
+                    // Zero Width Space is redundant if followed by a space
                 }
                 else if (IsNonSemanticWhiteSpace(ch))
                 {
@@ -533,7 +524,9 @@ namespace SIL.Machine.Corpora
                 expectedStartMarker == ""
                 && (tokens.Last().Type == UsfmTokenType.Milestone || tokens.Last().Type == UsfmTokenType.MilestoneEnd)
             )
+            {
                 return tokens.Last();
+            }
 
             int nestingLevel = 0;
             for (int i = tokens.Count - 1; i >= 0; i--)
@@ -584,7 +577,7 @@ namespace SIL.Machine.Corpora
         private static bool IsNonSemanticWhiteSpace(char c)
         {
             // Consider \u200B (ZERO-WIDTH SPACE),
-            // FB 18842 -- ZWJ and ZWNJ are not whitespace
+            // FB 18842 -- Zero-Width Joiner and Zero-width non-joiner are not whitespace
             return (c != '\u3000' && char.IsWhiteSpace(c)) || (c == ZeroWidthSpace);
         }
     }

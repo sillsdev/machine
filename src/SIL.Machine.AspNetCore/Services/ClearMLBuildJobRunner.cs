@@ -1,15 +1,13 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLBuildJobRunner : IBuildJobRunner
+public class ClearMLBuildJobRunner(
+    IClearMLService clearMLService,
+    IEnumerable<IClearMLBuildJobFactory> buildJobFactories
+) : IBuildJobRunner
 {
-    private readonly IClearMLService _clearMLService;
-    private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories;
-
-    public ClearMLBuildJobRunner(IClearMLService clearMLService, IEnumerable<IClearMLBuildJobFactory> buildJobFactories)
-    {
-        _clearMLService = clearMLService;
-        _buildJobFactories = buildJobFactories.ToDictionary(f => f.EngineType);
-    }
+    private readonly IClearMLService _clearMLService = clearMLService;
+    private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories =
+        buildJobFactories.ToDictionary(f => f.EngineType);
 
     public BuildJobRunner Type => BuildJobRunner.ClearML;
 

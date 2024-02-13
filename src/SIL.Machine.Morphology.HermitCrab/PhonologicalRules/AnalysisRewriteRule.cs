@@ -42,8 +42,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             foreach (RewriteSubrule sr in _rule.Subrules)
             {
                 IPhonologicalPatternRuleSpec ruleSpec = null;
-                var mode = RewriteApplicationMode.Iterative;
-                var reapplyType = ReapplyType.Normal;
+                RewriteApplicationMode mode = RewriteApplicationMode.Iterative;
+                ReapplyType reapplyType = ReapplyType.Normal;
                 if (_rule.Lhs.Children.Count == sr.Rhs.Children.Count)
                 {
                     ruleSpec = new FeatureAnalysisRewriteRuleSpec(settings, rule.Lhs, sr);
@@ -178,9 +178,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     applied = true;
                 }
                 else if (_morpher.TraceManager.IsTracing)
-                {
                     _morpher.TraceManager.PhonologicalRuleNotUnapplied(_rule, i, input);
-                }
             }
 
             if (applied)

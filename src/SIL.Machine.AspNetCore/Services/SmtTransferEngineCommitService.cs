@@ -1,30 +1,31 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferEngineCommitService : RecurrentTask
-{
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
-    private readonly SmtTransferEngineStateService _stateService;
-    private readonly ILogger<SmtTransferEngineCommitService> _logger;
-
-    public SmtTransferEngineCommitService(
-        IServiceProvider services,
-        IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
-        SmtTransferEngineStateService stateService,
-        ILogger<SmtTransferEngineCommitService> logger
+public class SmtTransferEngineCommitService(
+    IServiceProvider services,
+    IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
+    SmtTransferEngineStateService stateService,
+    ILogger<SmtTransferEngineCommitService> logger
+)
+    : RecurrentTask(
+        "SMT transfer engine commit service",
+        services,
+        engineOptions.CurrentValue.EngineCommitFrequency,
+        logger
     )
-        : base("SMT transfer engine commit service", services, engineOptions.CurrentValue.EngineCommitFrequency, logger)
-    {
-        _engineOptions = engineOptions;
-        _stateService = stateService;
-        _logger = logger;
-    }
+{
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
+    private readonly SmtTransferEngineStateService _stateService = stateService;
+    private readonly ILogger<SmtTransferEngineCommitService> _logger = logger;
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         try
         {
-            var engines = scope.ServiceProvider.GetRequiredService<IRepository<TranslationEngine>>();
-            var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
+            IRepository<TranslationEngine> engines = scope.ServiceProvider.GetRequiredService<
+                IRepository<TranslationEngine>
+            >();
+            IDistributedReaderWriterLockFactory lockFactory =
+                scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             await _stateService.CommitAsync(
                 lockFactory,
                 engines,

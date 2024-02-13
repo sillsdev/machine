@@ -5,7 +5,7 @@ public class ClearMLAuthenticationService(
     IHttpClientFactory httpClientFactory,
     IOptionsMonitor<ClearMLOptions> options,
     ILogger<ClearMLAuthenticationService> logger
-) : RecurrentTask("ClearML authentication service", services, RefreshPeriod, logger), IClearMLAuthenticationService
+) : RecurrentTask("ClearML authentication service", services, s_refreshPeriod, logger), IClearMLAuthenticationService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
     private readonly IOptionsMonitor<ClearMLOptions> _options = options;
@@ -14,7 +14,7 @@ public class ClearMLAuthenticationService(
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
-    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromSeconds(3600);
+    private static readonly TimeSpan s_refreshPeriod = TimeSpan.FromSeconds(3600);
     private string _authToken = "";
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
@@ -42,7 +42,7 @@ public class ClearMLAuthenticationService(
         {
             if (_authToken is "")
             {
-                _logger.LogError(e, "Error occurred while aquiring ClearML authentication token for the first time.");
+                _logger.LogError(e, "Error occurred while acquiring ClearML authentication token for the first time.");
                 // The ClearML token never was set.  We can't continue without it.
                 throw;
             }
@@ -57,14 +57,20 @@ public class ClearMLAuthenticationService(
         {
             Content = new StringContent("{}", Encoding.UTF8, "application/json")
         };
-        var authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
-        var base64EncodedAuthenticationString = Convert.ToBase64String(Encoding.ASCII.GetBytes(authenticationString));
+        string authenticationString = $"{_options.CurrentValue.AccessKey}:{_options.CurrentValue.SecretKey}";
+        string base64EncodedAuthenticationString = Convert.ToBase64String(
+            Encoding.ASCII.GetBytes(authenticationString)
+        );
         request.Headers.Add("Authorization", $"Basic {base64EncodedAuthenticationString}");
         HttpResponseMessage response = await _httpClient.SendAsync(request, cancellationToken);
         string result = await response.Content.ReadAsStringAsync(cancellationToken);
         string? refreshedToken = (string?)((JsonObject?)JsonNode.Parse(result))?["data"]?["token"];
         if (refreshedToken is null || refreshedToken is "")
-            throw new Exception($"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}");
+        {
+            throw new AuthenticationException(
+                $"ClearML authentication failed - {response.StatusCode}: {response.ReasonPhrase}"
+            );
+        }
         _authToken = refreshedToken;
         _logger.LogInformation("ClearML Authentication Token Refresh Successful.");
     }

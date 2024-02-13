@@ -76,15 +76,15 @@ namespace SIL.Machine.Translation
 
                 // init ecm score info for each word of arc
                 EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
-                var esis = new List<EcmScoreInfo>();
+                var ecmScoreInfos = new List<EcmScoreInfo>();
                 foreach (string word in arc.TargetTokens)
                 {
                     var esi = new EcmScoreInfo();
                     _ecm.SetupEsi(esi, prevEsi, word);
-                    esis.Add(esi);
+                    ecmScoreInfos.Add(esi);
                     prevEsi = esi;
                 }
-                _arcEcmScoreInfos.Add(esis);
+                _arcEcmScoreInfos.Add(ecmScoreInfos);
 
                 // init best scores for the arc's successive state
                 UpdateStateBestScores(arcIndex, 0);
@@ -116,9 +116,12 @@ namespace SIL.Machine.Translation
         private void UpdateStateBestScores(int arcIndex, int prefixDiffSize)
         {
             WordGraphArc arc = _wordGraph.Arcs[arcIndex];
-            List<EcmScoreInfo> arcEsis = _arcEcmScoreInfos[arcIndex];
+            List<EcmScoreInfo> arcEcmScoreInfos = _arcEcmScoreInfos[arcIndex];
 
-            EcmScoreInfo prevEsi = arcEsis.Count == 0 ? _stateEcmScoreInfos[arc.PrevState] : arcEsis[arcEsis.Count - 1];
+            EcmScoreInfo prevEsi =
+                arcEcmScoreInfos.Count == 0
+                    ? _stateEcmScoreInfos[arc.PrevState]
+                    : arcEcmScoreInfos[arcEcmScoreInfos.Count - 1];
 
             double wordGraphScore = _stateWordGraphScores[arc.PrevState] + arc.Score;
 
@@ -174,18 +177,16 @@ namespace SIL.Machine.Translation
                         validProcPrefixCount++;
                 }
                 else if (_prevPrefix[i] == prefix[i])
-                {
                     validProcPrefixCount++;
-                }
             }
 
             int diffSize = _prevPrefix.Length - validProcPrefixCount;
             if (diffSize > 0)
             {
                 // adjust size of info for arcs
-                foreach (List<EcmScoreInfo> esis in _arcEcmScoreInfos)
+                foreach (List<EcmScoreInfo> ecmScoreInfos in _arcEcmScoreInfos)
                 {
-                    foreach (EcmScoreInfo esi in esis)
+                    foreach (EcmScoreInfo esi in ecmScoreInfos)
                     {
                         for (int i = 0; i < diffSize; i++)
                             esi.RemoveLast();
@@ -205,7 +206,7 @@ namespace SIL.Machine.Translation
             }
 
             // get difference between prefix and valid portion of processed prefix
-            var prefixDiff = new string[prefix.Count - validProcPrefixCount];
+            string[] prefixDiff = new string[prefix.Count - validProcPrefixCount];
             for (int i = 0; i < prefixDiff.Length; i++)
                 prefixDiff[i] = prefix[validProcPrefixCount + i];
 
@@ -242,9 +243,7 @@ namespace SIL.Machine.Translation
                         : hypothesis.Arcs[hypothesis.Arcs.Count - 1].NextState;
 
                 if (_wordGraph.FinalStates.Contains(lastState))
-                {
                     yield return hypothesis;
-                }
                 else if (ConfidenceThreshold <= 0)
                 {
                     hypothesis.Arcs.AddRange(_wordGraph.GetBestPathFromStateToFinalState(lastState));
@@ -300,12 +299,12 @@ namespace SIL.Machine.Translation
 
                 // update ecm score info for each word of arc
                 EcmScoreInfo prevEsi = _stateEcmScoreInfos[arc.PrevState];
-                List<EcmScoreInfo> esis = _arcEcmScoreInfos[arcIndex];
-                while (esis.Count < arc.TargetTokens.Count)
-                    esis.Add(new EcmScoreInfo());
+                List<EcmScoreInfo> ecmScoreInfos = _arcEcmScoreInfos[arcIndex];
+                while (ecmScoreInfos.Count < arc.TargetTokens.Count)
+                    ecmScoreInfos.Add(new EcmScoreInfo());
                 for (int i = 0; i < arc.TargetTokens.Count; i++)
                 {
-                    EcmScoreInfo esi = esis[i];
+                    EcmScoreInfo esi = ecmScoreInfos[i];
                     _ecm.ExtendEsi(
                         esi,
                         prevEsi,

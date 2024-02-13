@@ -30,11 +30,8 @@ namespace SIL.Machine.Corpora
                     splitSize = Math.Min(splitSize, size.Value);
             }
             else
-            {
                 splitSize = size.Value;
-            }
-
-            var r = seed != null ? new Random(seed.Value) : new Random();
+            Random r = seed != null ? new Random(seed.Value) : new Random();
             return new HashSet<int>(Enumerable.Range(0, corpusSize).OrderBy(i => r.Next()).Take(splitSize));
         }
 
@@ -44,16 +41,14 @@ namespace SIL.Machine.Corpora
             (int, string) startVerseNum = (-1, null);
             (int, string) prevVerseNum = (-1, null);
             foreach (
-                (int, string) verseNum in GetVerseNums(verse1)
-                    .Union(GetVerseNums(verse2))
+                (int, string) verseNum in GetVerseNumbers(verse1)
+                    .Union(GetVerseNumbers(verse2))
                     .OrderBy(vn => vn.Item1)
                     .ThenBy(vn => vn.Item2)
             )
             {
                 if (prevVerseNum.Item1 == -1)
-                {
                     startVerseNum = verseNum;
-                }
                 else if (
                     prevVerseNum.Item1 == verseNum.Item1
                     && prevVerseNum.Item1.ToString(CultureInfo.InvariantCulture) == prevVerseNum.Item2
@@ -79,9 +74,7 @@ namespace SIL.Machine.Corpora
         {
             string[] filePatternArray = filePatterns.ToArray();
             if (filePatternArray.Length == 1 && File.Exists(filePatternArray[0]))
-            {
                 yield return ("*all*", filePatternArray[0]);
-            }
             else
             {
                 foreach (string filePattern in filePatternArray)
@@ -92,7 +85,9 @@ namespace SIL.Machine.Corpora
                         && !File.Exists(filePattern)
                         && !Directory.Exists(filePattern)
                     )
+                    {
                         throw new FileNotFoundException("The specified path does not exist.", filePattern);
+                    }
 
                     string path = filePattern;
                     string searchPattern = "*";
@@ -167,7 +162,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private static IEnumerable<(int, string)> GetVerseNums(string verse)
+        private static IEnumerable<(int, string)> GetVerseNumbers(string verse)
         {
             string[] source = verse.Split(VerseRef.verseSequenceIndicators, StringSplitOptions.None);
             foreach (

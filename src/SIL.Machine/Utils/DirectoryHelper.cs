@@ -14,9 +14,7 @@ namespace SIL.Machine.Utils
             if (Directory.Exists(path))
             {
                 foreach (string directory in Directory.GetDirectories(path))
-                {
                     DeleteDirectoryRobust(directory);
-                }
 
                 try
                 {

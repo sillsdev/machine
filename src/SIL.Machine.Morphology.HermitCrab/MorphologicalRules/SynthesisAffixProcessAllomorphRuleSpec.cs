@@ -36,9 +36,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _nonAllomorphActions.Add(partActions[0]);
                 }
                 else
-                {
                     redupParts.Add(partActions);
-                }
             }
             if (redupParts.Count > 0)
             {
@@ -65,9 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 prefixPartIndex--;
                             }
                             else
-                            {
                                 prefixPartIndex = lhs.Count - 1;
-                            }
                         }
                         break;
 
@@ -89,9 +85,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 suffixPartIndex++;
                             }
                             else
-                            {
                                 suffixPartIndex = 0;
-                            }
                         }
                         break;
                 }
@@ -153,9 +147,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         }
                     }
                     else
-                    {
                         newMorphNodes.Add(mapping.Item2);
-                    }
                 }
             }
 

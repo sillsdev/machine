@@ -153,7 +153,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 );
 
             if (_language.MprFeatures.Count > 0)
-            {
                 langElem.Add(
                     new XElement(
                         "MorphologicalPhonologicalRuleFeatures",
@@ -161,7 +160,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         _language.MprFeatureGroups.Select(WriteMprFeatureGroup)
                     )
                 );
-            }
 
             if (_language.StemNames.Count > 0)
                 langElem.Add(new XElement("StemNames", _language.StemNames.Select(WriteStemName)));
@@ -185,24 +183,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             langElem.Add(new XElement("Strata", _language.Strata.Select(WriteStratum)));
 
             if (_language.MorphemeCoOccurrenceRules.Count > 0)
-            {
                 langElem.Add(
                     new XElement(
                         "MorphemeCoOccurrenceRules",
                         _language.MorphemeCoOccurrenceRules.Select(t => WriteMorphemeCoOccurrenceRule(t.Key, t.Rule))
                     )
                 );
-            }
 
             if (_language.AllomorphCoOccurrenceRules.Count > 0)
-            {
                 langElem.Add(
                     new XElement(
                         "AllomorphCoOccurrenceRules",
                         _language.AllomorphCoOccurrenceRules.Select(t => WriteAllomorphCoOccurrenceRule(t.Key, t.Rule))
                     )
                 );
-            }
 
             return langElem;
         }
@@ -218,8 +212,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WriteFeature(Feature feature)
         {
-            var symbolicFeature = feature as SymbolicFeature;
-            if (symbolicFeature != null)
+            if (feature is SymbolicFeature symbolicFeature)
             {
                 var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", Normalize(symbolicFeature.ID)));
                 if (symbolicFeature.DefaultValue != null)
@@ -357,16 +350,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
         }
 
-        private XElement WriteBoundaryDefinition(CharacterDefinition bdryDef)
+        private XElement WriteBoundaryDefinition(CharacterDefinition boundaryDef)
         {
             string id = "char" + _nextCharDefIndex++;
-            _charDefs[bdryDef] = id;
+            _charDefs[boundaryDef] = id;
             return new XElement(
                 "BoundaryDefinition",
                 new XAttribute("id", id),
                 new XElement(
                     "Representations",
-                    bdryDef.Representations.Select(rep => new XElement("Representation", Normalize(rep)))
+                    boundaryDef.Representations.Select(rep => new XElement("Representation", Normalize(rep)))
                 )
             );
         }
@@ -376,16 +369,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             string id = "nc" + _nextNaturalClassIndex++;
             _naturalClasses[nc] = id;
 
-            var segmentNC = nc as SegmentNaturalClass;
-            if (segmentNC != null)
-            {
+            if (nc is SegmentNaturalClass segmentNC)
                 return new XElement(
                     "SegmentNaturalClass",
                     new XAttribute("id", id),
                     new XElement("Name", Normalize(segmentNC.Name)),
                     segmentNC.Segments.Select(seg => WriteSegment(seg, null))
                 );
-            }
 
             return new XElement(
                 "FeatureNaturalClass",
@@ -404,8 +394,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WritePhonologicalRule(IPhonologicalRule prule)
         {
-            var rewriteRule = prule as RewriteRule;
-            if (rewriteRule != null)
+            if (prule is RewriteRule rewriteRule)
                 return WritePhonologicalRule(rewriteRule);
 
             return WriteMetathesisRule((MetathesisRule)prule);
@@ -522,8 +511,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             )
             {
                 var fvElem = new XElement("FeatureValue", new XAttribute("feature", Normalize(feature.ID)));
-                var symbolicFeature = feature as SymbolicFeature;
-                if (symbolicFeature != null)
+                if (feature is SymbolicFeature symbolicFeature)
                 {
                     SymbolicFeatureValue value = fs.GetValue(symbolicFeature);
                     fvElem.Add(
@@ -583,12 +571,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WriteMorphologicalRule(IMorphologicalRule mrule, Dictionary<IMorphologicalRule, string> mrules)
         {
-            var affixProcessRule = mrule as AffixProcessRule;
-            if (affixProcessRule != null)
+            if (mrule is AffixProcessRule affixProcessRule)
                 return WriteMorphologicalRule(affixProcessRule, mrules);
 
-            var realRule = mrule as RealizationalAffixProcessRule;
-            if (realRule != null)
+            if (mrule is RealizationalAffixProcessRule realRule)
                 return WriteRealizationalRule(realRule, mrules);
 
             return WriteCompoundingRule((CompoundingRule)mrule, mrules);
@@ -866,30 +852,21 @@ namespace SIL.Machine.Morphology.HermitCrab
             CharacterDefinitionTable defaultTable
         )
         {
-            var copy = action as CopyFromInput;
-            if (copy != null)
-            {
+            if (action is CopyFromInput copy)
                 return new XElement("CopyFromInput", new XAttribute("index", Normalize(prefix + copy.PartName)));
-            }
 
-            var insertShapeNode = action as InsertSimpleContext;
-            if (insertShapeNode != null)
-            {
+            if (action is InsertSimpleContext insertShapeNode)
                 return new XElement(
                     "InsertSimpleContext",
                     WriteSimpleContext(insertShapeNode.SimpleContext, variables)
                 );
-            }
 
-            var modify = action as ModifyFromInput;
-            if (modify != null)
-            {
+            if (action is ModifyFromInput modify)
                 return new XElement(
                     "ModifyFromInput",
                     new XAttribute("index", Normalize(prefix + modify.PartName)),
                     WriteSimpleContext(modify.SimpleContext, variables)
                 );
-            }
 
             var insertSegments = (InsertSegments)action;
             var insertSegmentsElem = new XElement("InsertSegments");
@@ -1084,8 +1061,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private bool IsAnchor(PatternNode<Word, ShapeNode> node, FeatureSymbol type)
         {
-            var constraint = node as Constraint<Word, ShapeNode>;
-            if (constraint != null)
+            if (node is Constraint<Word, ShapeNode> constraint)
                 return constraint.Type() == HCFeatureSystem.Anchor
                     && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
             return false;
@@ -1114,14 +1090,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             string id
         )
         {
-            var constraint = node as Constraint<Word, ShapeNode>;
-            if (constraint != null)
+            if (node is Constraint<Word, ShapeNode> constraint)
             {
                 if (constraint.Tag == null)
                     yield break;
 
-                var charDef = constraint.Tag as CharacterDefinition;
-                if (charDef != null)
+                if (constraint.Tag is CharacterDefinition charDef)
                     yield return charDef.Type == HCFeatureSystem.Segment
                         ? WriteSegment(charDef, id)
                         : WriteBoundaryMarker(charDef, id);
@@ -1130,15 +1104,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 yield break;
             }
 
-            var quantifier = node as Quantifier<Word, ShapeNode>;
-            if (quantifier != null)
+            if (node is Quantifier<Word, ShapeNode> quantifier)
             {
                 yield return WriteOptionalSegmentSequence(quantifier, variables, defaultTable, id);
                 yield break;
             }
 
-            var group = node as Group<Word, ShapeNode>;
-            if (group != null)
+            if (node is Group<Word, ShapeNode> group)
             {
                 if (!string.IsNullOrEmpty(group.Name))
                 {
@@ -1155,29 +1127,25 @@ namespace SIL.Machine.Morphology.HermitCrab
                         yield return elem;
                 }
                 else if (group.Tag != null)
-                {
                     // Segments group
                     yield return WriteSegments((Segments)group.Tag, id, defaultTable);
-                }
                 else
-                {
                     // Normal group
                     foreach (PatternNode<Word, ShapeNode> childNode in group.Children)
                     {
                         foreach (XElement elem in WritePatternNodes(childNode, variables, defaultTable, prefix, id))
                             yield return elem;
                     }
-                }
             }
         }
 
         private XElement WriteBoundaryMarker(CharacterDefinition charDef, string id)
         {
-            var brdyElem = new XElement("BoundaryMarker");
+            var boundaryElem = new XElement("BoundaryMarker");
             if (!string.IsNullOrEmpty(id))
-                brdyElem.Add(new XAttribute("id", Normalize(id)));
-            brdyElem.Add(new XAttribute("boundary", _charDefs[charDef]));
-            return brdyElem;
+                boundaryElem.Add(new XAttribute("id", Normalize(id)));
+            boundaryElem.Add(new XAttribute("boundary", _charDefs[charDef]));
+            return boundaryElem;
         }
 
         private XElement WriteSegment(CharacterDefinition charDef, string id)
@@ -1190,33 +1158,33 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private XElement WriteSimpleContext(
-            SimpleContext simpleCtxt,
+            SimpleContext simpleContext,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             string id = null
         )
         {
-            var ctxtElem = new XElement("SimpleContext");
+            var contextElem = new XElement("SimpleContext");
             if (!string.IsNullOrEmpty(id))
-                ctxtElem.Add(new XAttribute("id", Normalize(id)));
-            ctxtElem.Add(new XAttribute("naturalClass", _naturalClasses[simpleCtxt.NaturalClass]));
-            if (simpleCtxt.Variables.Count > 0)
+                contextElem.Add(new XAttribute("id", Normalize(id)));
+            contextElem.Add(new XAttribute("naturalClass", _naturalClasses[simpleContext.NaturalClass]));
+            if (simpleContext.Variables.Count > 0)
             {
                 var alphaVarsElem = new XElement("AlphaVariables");
-                foreach (SymbolicFeatureValue ctxtVar in simpleCtxt.Variables)
+                foreach (SymbolicFeatureValue contextVar in simpleContext.Variables)
                 {
-                    SymbolicFeature feature = ctxtVar.Feature;
+                    SymbolicFeature feature = contextVar.Feature;
                     Tuple<string, SymbolicFeature> var = variables.GetOrCreate(
-                        ctxtVar.VariableName,
+                        contextVar.VariableName,
                         () => Tuple.Create("var" + _nextVariableFeatureIndex++, feature)
                     );
-                    var alphVarElem = new XElement("AlphaVariable", new XAttribute("variableFeature", var.Item1));
-                    if (!ctxtVar.Agree)
-                        alphVarElem.Add(new XAttribute("polarity", "minus"));
-                    alphaVarsElem.Add(alphVarElem);
+                    var alphaVarElem = new XElement("AlphaVariable", new XAttribute("variableFeature", var.Item1));
+                    if (!contextVar.Agree)
+                        alphaVarElem.Add(new XAttribute("polarity", "minus"));
+                    alphaVarsElem.Add(alphaVarElem);
                 }
-                ctxtElem.Add(alphaVarsElem);
+                contextElem.Add(alphaVarsElem);
             }
-            return ctxtElem;
+            return contextElem;
         }
 
         private XElement WriteOptionalSegmentSequence(

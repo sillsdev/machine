@@ -5,12 +5,12 @@ public class ModelCleanupService(
     ISharedFileService sharedFileService,
     IRepository<TranslationEngine> engines,
     ILogger<ModelCleanupService> logger
-) : RecurrentTask("Model Cleanup Service", services, RefreshPeriod, logger)
+) : RecurrentTask("Model Cleanup Service", services, s_refreshPeriod, logger)
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILogger<ModelCleanupService> _logger = logger;
     private readonly IRepository<TranslationEngine> _engines = engines;
-    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromDays(1);
+    private static readonly TimeSpan s_refreshPeriod = TimeSpan.FromDays(1);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
@@ -34,19 +34,15 @@ public class ModelCleanupService(
         IEnumerable<string> validFilenamesForNextBuild = allEngines.Select(e =>
             NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1)
         );
-        HashSet<string> filenameFilter = validFilenames.Concat(validFilenamesForNextBuild).ToHashSet();
+        var filenameFilter = validFilenames.Concat(validFilenamesForNextBuild).ToHashSet();
 
         foreach (string path in paths)
-        {
             if (!filenameFilter.Contains(path))
-            {
                 await DeleteFileAsync(
                     path,
                     $"file in S3 bucket not found in database.  It may be an old rev, etc.",
                     cancellationToken
                 );
-            }
-        }
     }
 
     private async Task DeleteFileAsync(string path, string message, CancellationToken cancellationToken = default)

@@ -187,13 +187,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         )
         {
             if (index == morphemes.Length)
-            {
                 yield return new Stack<Tuple<IMorphologicalRule, RootAllomorph>>();
-            }
             else
             {
-                var entry = morphemes[index] as LexEntry;
-                if (entry != null)
+                if (morphemes[index] is LexEntry entry)
                 {
                     foreach (RootAllomorph allo in entry.Allomorphs)
                     {
@@ -234,10 +231,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
                     foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
-                    {
                         if (IsMatch(word, validWord))
                             matches.Add(validWord);
-                    }
                 }
             }
             return matches;
@@ -260,10 +255,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                             foreach (Word synthesisWord in LexicalLookup(analysisWord))
                             {
                                 foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
-                                {
                                     if (IsMatch(word, validWord))
                                         matches.Add(validWord);
-                                }
                             }
                         }
                     }
@@ -348,9 +341,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return true;
             }
             else if (_traceManager.IsTracing)
-            {
                 _traceManager.Failed(_lang, validWord, FailureReason.SurfaceFormMismatch, null, word);
-            }
             return false;
         }
 
@@ -407,7 +398,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (wordAnalysis.Morphemes.Count == 0)
                 return Enumerable.Empty<string>();
 
-            List<Morpheme> morphemes = wordAnalysis.Morphemes.Cast<Morpheme>().ToList();
+            var morphemes = wordAnalysis.Morphemes.Cast<Morpheme>().ToList();
             var rootEntry = (LexEntry)morphemes[wordAnalysis.RootMorphemeIndex];
             var realizationalFS = new FeatureStruct();
             var results = new HashSet<string>();
@@ -431,9 +422,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         )
         {
             if (leftIndex == -1 && rightIndex == morphemes.Count)
-            {
                 yield return new Stack<Morpheme>();
-            }
             else
             {
                 if (rightIndex < morphemes.Count)

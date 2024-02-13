@@ -26,15 +26,15 @@ namespace SIL.Machine.FiniteState
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         )
         {
             Stack<NondeterministicFstTraversalInstance<TData, TOffset>> instStack = InitializeStack(
                 ref annIndex,
                 initRegisters,
-                initCmds,
-                initAnns
+                initCommands,
+                initAnnotations
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
@@ -61,9 +61,7 @@ namespace SIL.Machine.FiniteState
                         {
                             NondeterministicFstTraversalInstance<TData, TOffset> ti;
                             if (isInstReusable)
-                            {
                                 ti = inst;
-                            }
                             else
                             {
                                 ti = CopyInstance(inst);
@@ -85,13 +83,12 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
-                                Tuple.Create(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers,
-                                    newInst.Outputs.ToArray()
-                                );
+                            var key = Tuple.Create(
+                                newInst.State,
+                                newInst.AnnotationIndex,
+                                newInst.Registers,
+                                newInst.Outputs.ToArray()
+                            );
                             if (!traversed.Contains(key))
                             {
                                 instStack.Push(newInst);
@@ -129,13 +126,12 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
-                                    Tuple.Create(
-                                        newInst.State,
-                                        newInst.AnnotationIndex,
-                                        newInst.Registers,
-                                        newInst.Outputs.ToArray()
-                                    );
+                                var key = Tuple.Create(
+                                    newInst.State,
+                                    newInst.AnnotationIndex,
+                                    newInst.Registers,
+                                    newInst.Outputs.ToArray()
+                                );
                                 if (!traversed.Contains(key))
                                 {
                                     instStack.Push(newInst);
@@ -186,8 +182,8 @@ namespace SIL.Machine.FiniteState
         private Stack<NondeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
             Register<TOffset>[,] registers,
-            IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> commands,
+            ISet<int> initAnnotations
         )
         {
             var instStack = new Stack<NondeterministicFstTraversalInstance<TData, TOffset>>();
@@ -195,8 +191,8 @@ namespace SIL.Machine.FiniteState
                 NondeterministicFstTraversalInstance<TData, TOffset> inst in Initialize(
                     ref annIndex,
                     registers,
-                    cmds,
-                    initAnns
+                    commands,
+                    initAnnotations
                 )
             )
             {

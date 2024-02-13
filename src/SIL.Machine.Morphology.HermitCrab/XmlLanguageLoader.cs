@@ -210,9 +210,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 XmlResolver = new ResourceXmlResolver()
             };
 
-            using (XmlReader reader = XmlReader.Create(_configPath, settings))
+            using (var reader = XmlReader.Create(_configPath, settings))
             {
-                XDocument doc = XDocument.Load(reader);
+                var doc = XDocument.Load(reader);
                 LoadLanguage(doc.Elements("HermitCrabInput").Elements("Language").Single(IsActive));
                 return _language;
             }
@@ -319,7 +319,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private void LoadStemName(XElement stemNameElem)
         {
-            var posIDs = (string)stemNameElem.Attribute("partsOfSpeech");
+            string posIDs = (string)stemNameElem.Attribute("partsOfSpeech");
             FeatureSymbol[] pos = posIDs.Split(' ').Select(id => _posFeature.PossibleSymbols[id]).ToArray();
             var regions = new List<FeatureStruct>();
             foreach (XElement regionElem in stemNameElem.Elements("Regions").Elements("Region"))
@@ -343,10 +343,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private void LoadMprFeatGroup(XElement mprFeatGroupElem)
         {
-            var group = new MprFeatureGroup { Name = (string)mprFeatGroupElem.Element("Name") };
-            group.MatchType = GetGroupMatchType((string)mprFeatGroupElem.Attribute("matchType"));
-            group.Output = GetGroupOutput((string)mprFeatGroupElem.Attribute("outputType"));
-            var mprFeatIdsStr = (string)mprFeatGroupElem.Attribute("features");
+            var group = new MprFeatureGroup
+            {
+                Name = (string)mprFeatGroupElem.Element("Name"),
+                MatchType = GetGroupMatchType((string)mprFeatGroupElem.Attribute("matchType")),
+                Output = GetGroupOutput((string)mprFeatGroupElem.Attribute("outputType"))
+            };
+            string mprFeatIdsStr = (string)mprFeatGroupElem.Attribute("features");
             foreach (MprFeature mprFeat in LoadMprFeatures(mprFeatIdsStr))
                 group.MprFeatures.Add(mprFeat);
             _language.MprFeatureGroups.Add(group);
@@ -362,7 +365,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 )
             };
 
-            var pruleIdsStr = (string)stratumElem.Attribute("phonologicalRules");
+            string pruleIdsStr = (string)stratumElem.Attribute("phonologicalRules");
             if (!string.IsNullOrEmpty(pruleIdsStr))
             {
                 foreach (string pruleId in pruleIdsStr.Split(' '))
@@ -399,7 +402,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     mrules[(string)mruleElem.Attribute("id")] = mrule;
             }
 
-            var mruleIdsStr = (string)stratumElem.Attribute("morphologicalRules");
+            string mruleIdsStr = (string)stratumElem.Attribute("morphologicalRules");
             if (!string.IsNullOrEmpty(mruleIdsStr))
             {
                 foreach (string mruleId in mruleIdsStr.Split(' '))
@@ -431,7 +434,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private bool TryLoadLexEntry(XElement entryElem, CharacterDefinitionTable table, out LexEntry entry)
         {
-            var id = (string)entryElem.Attribute("id");
+            string id = (string)entryElem.Attribute("id");
             entry = new LexEntry
             {
                 Id = (string)entryElem.Element("MorphemeId"),
@@ -439,7 +442,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             };
 
             var fs = new FeatureStruct();
-            var pos = (string)entryElem.Attribute("partOfSpeech");
+            string pos = (string)entryElem.Attribute("partOfSpeech");
             if (!string.IsNullOrEmpty(pos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(pos));
 
@@ -454,7 +457,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             entry.MprFeatures.UnionWith(LoadMprFeatures((string)entryElem.Attribute("ruleFeatures")));
 
-            var familyID = (string)entryElem.Attribute("family");
+            string familyID = (string)entryElem.Attribute("family");
             if (!string.IsNullOrEmpty(familyID))
             {
                 LexFamily family = _families[familyID];
@@ -494,8 +497,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private RootAllomorph LoadRootAllomorph(XElement alloElem, CharacterDefinitionTable table)
         {
-            var shapeStr = (string)alloElem.Element("PhoneticShape");
-            Segments segments = new Segments(table, shapeStr);
+            string shapeStr = (string)alloElem.Element("PhoneticShape");
+            var segments = new Segments(table, shapeStr);
             if (segments.Shape.All(n => n.Type() == HCFeatureSystem.Boundary))
                 throw new InvalidShapeException(shapeStr, 0);
             var allomorph = new RootAllomorph(segments) { IsBound = (bool?)alloElem.Attribute("isBound") ?? false };
@@ -507,7 +510,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 LoadAllomorphEnvironments(alloElem.Element("ExcludedEnvironments"), ConstraintType.Exclude, table)
             );
 
-            var stemNameIDStr = (string)alloElem.Attribute("stemName");
+            string stemNameIDStr = (string)alloElem.Attribute("stemName");
             if (!string.IsNullOrEmpty(stemNameIDStr))
                 allomorph.StemName = _stemNames[stemNameIDStr];
 
@@ -557,7 +560,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             MorphCoOccurrenceAdjacency adjacency = GetMorphCoOccurrenceAdjacency(
                 (string)coOccurElem.Attribute("adjacency")
             );
-            var morphemeIDsStr = (string)coOccurElem.Attribute("otherMorphemes");
+            string morphemeIDsStr = (string)coOccurElem.Attribute("otherMorphemes");
             var rule = new MorphemeCoOccurrenceRule(
                 type,
                 morphemeIDsStr.Split(' ').Select(id => _morphemes[id]),
@@ -574,7 +577,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             MorphCoOccurrenceAdjacency adjacency = GetMorphCoOccurrenceAdjacency(
                 (string)coOccurElem.Attribute("adjacency")
             );
-            var allomorphIDsStr = (string)coOccurElem.Attribute("otherAllomorphs");
+            string allomorphIDsStr = (string)coOccurElem.Attribute("otherAllomorphs");
             var rule = new AllomorphCoOccurrenceRule(
                 type,
                 allomorphIDsStr.Split(' ').Select(id => _allomorphs[id]),
@@ -599,7 +602,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (XElement featValElem in elem.Elements("FeatureValue").Where(IsActive))
             {
                 Feature feature = featSys.GetFeature((string)featValElem.Attribute("feature"));
-                var valueIDsStr = (string)featValElem.Attribute("symbolValues");
+                string valueIDsStr = (string)featValElem.Attribute("symbolValues");
                 if (!string.IsNullOrEmpty(valueIDsStr))
                 {
                     var sf = (SymbolicFeature)feature;
@@ -628,8 +631,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private Feature LoadFeature(XElement featElem)
         {
-            var id = (string)featElem.Attribute("id");
-            var name = (string)featElem.Element("Name");
+            string id = (string)featElem.Attribute("id");
+            string name = (string)featElem.Element("Name");
             switch (featElem.Name.LocalName)
             {
                 case "SymbolicFeature":
@@ -638,7 +641,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         .Elements("Symbol")
                         .Select(e => new FeatureSymbol((string)e.Attribute("id"), (string)e));
                     var feature = new SymbolicFeature(id, symbols) { Description = name };
-                    var defValId = (string)featElem.Attribute("defaultSymbol");
+                    string defValId = (string)featElem.Attribute("defaultSymbol");
                     if (!string.IsNullOrEmpty(defValId))
                         feature.DefaultSymbolID = defValId;
                     return feature;
@@ -672,18 +675,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             foreach (
-                XElement bdryDefElem in charDefTableElem
+                XElement boundaryDefElem in charDefTableElem
                     .Elements("BoundaryDefinitions")
                     .Elements("BoundaryDefinition")
                     .Where(IsActive)
             )
             {
-                IEnumerable<string> reps = bdryDefElem
+                IEnumerable<string> reps = boundaryDefElem
                     .Elements("Representations")
                     .Elements("Representation")
                     .Select(e => (string)e);
                 CharacterDefinition cd = table.AddBoundary(reps);
-                _charDefs[(string)bdryDefElem.Attribute("id")] = cd;
+                _charDefs[(string)boundaryDefElem.Attribute("id")] = cd;
             }
 
             _language.CharacterDefinitionTables.Add(table);
@@ -742,7 +745,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private void LoadRewriteRule(XElement pruleElem)
         {
-            var multAppOrderStr = (string)pruleElem.Attribute("multipleApplicationOrder");
+            string multAppOrderStr = (string)pruleElem.Attribute("multipleApplicationOrder");
             var prule = new RewriteRule
             {
                 Name = (string)pruleElem.Element("Name"),
@@ -778,15 +781,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             var subrule = new RewriteSubrule();
 
-            var requiredPos = (string)psubruleElem.Attribute("requiredPartsOfSpeech");
+            string requiredPos = (string)psubruleElem.Attribute("requiredPartsOfSpeech");
             if (!string.IsNullOrEmpty(requiredPos))
-            {
                 subrule.RequiredSyntacticFeatureStruct = FeatureStruct
                     .New()
                     .Feature(_posFeature)
                     .EqualTo(ParsePartsOfSpeech(requiredPos))
                     .Value;
-            }
 
             subrule.RequiredMprFeatures.UnionWith(
                 LoadMprFeatures((string)psubruleElem.Attribute("requiredMPRFeatures"))
@@ -848,7 +849,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             out IMorphologicalRule mrule
         )
         {
-            var id = (string)mruleElem.Attribute("id");
+            string id = (string)mruleElem.Attribute("id");
             var affixProcessRule = new AffixProcessRule
             {
                 Name = (string)mruleElem.Element("Name"),
@@ -857,12 +858,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Blockable = (bool?)mruleElem.Attribute("blockable") ?? true,
                 IsPartial = (bool?)mruleElem.Attribute("partial") ?? false
             };
-            var multApp = (string)mruleElem.Attribute("multipleApplication");
+            string multApp = (string)mruleElem.Attribute("multipleApplication");
             if (!string.IsNullOrEmpty(multApp))
                 affixProcessRule.MaxApplicationCount = int.Parse(multApp);
 
             var fs = new FeatureStruct();
-            var requiredPos = (string)mruleElem.Attribute("requiredPartsOfSpeech");
+            string requiredPos = (string)mruleElem.Attribute("requiredPartsOfSpeech");
             if (!string.IsNullOrEmpty(requiredPos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(requiredPos));
             XElement requiredHeadFeatElem = mruleElem.Element("RequiredHeadFeatures");
@@ -875,7 +876,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             affixProcessRule.RequiredSyntacticFeatureStruct = fs;
 
             fs = new FeatureStruct();
-            var outPos = (string)mruleElem.Attribute("outputPartOfSpeech");
+            string outPos = (string)mruleElem.Attribute("outputPartOfSpeech");
             if (!string.IsNullOrEmpty(outPos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(outPos));
             XElement outHeadFeatElem = mruleElem.Element("OutputHeadFeatures");
@@ -887,18 +888,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             fs.Freeze();
             affixProcessRule.OutSyntacticFeatureStruct = fs;
 
-            var obligHeadIDsStr = (string)mruleElem.Attribute("outputObligatoryFeatures");
-            if (!string.IsNullOrEmpty(obligHeadIDsStr))
+            string obligatoryHeadIDsStr = (string)mruleElem.Attribute("outputObligatoryFeatures");
+            if (!string.IsNullOrEmpty(obligatoryHeadIDsStr))
             {
-                foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
-                {
+                foreach (string obligatoryHeadID in obligatoryHeadIDsStr.Split(' '))
                     affixProcessRule.ObligatorySyntacticFeatures.Add(
-                        _language.SyntacticFeatureSystem.GetFeature(obligHeadID)
+                        _language.SyntacticFeatureSystem.GetFeature(obligatoryHeadID)
                     );
-                }
             }
 
-            var stemNameIDStr = (string)mruleElem.Attribute("requiredStemName");
+            string stemNameIDStr = (string)mruleElem.Attribute("requiredStemName");
             if (!string.IsNullOrEmpty(stemNameIDStr))
                 affixProcessRule.RequiredStemName = _stemNames[stemNameIDStr];
 
@@ -943,7 +942,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             out IMorphologicalRule mrule
         )
         {
-            var realRuleID = (string)realRuleElem.Attribute("id");
+            string realRuleID = (string)realRuleElem.Attribute("id");
             var realRule = new RealizationalAffixProcessRule
             {
                 Name = (string)realRuleElem.Element("Name"),
@@ -964,13 +963,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             XElement realFeatElem = realRuleElem.Element("RealizationalFeatures");
             if (realFeatElem != null)
-            {
                 realRule.RealizationalFeatureStruct = FeatureStruct
                     .New()
                     .Feature(_headFeature)
                     .EqualTo(LoadFeatureStruct(realFeatElem, _language.SyntacticFeatureSystem))
                     .Value;
-            }
             LoadProperties(realRuleElem.Element("Properties"), realRule.Properties);
 
             foreach (
@@ -1079,7 +1076,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             int i = 1;
             foreach (XElement pseqElem in reqPhonInputElem.Elements("PhoneticSequence"))
             {
-                var id = (string)pseqElem.Attribute("id");
+                string id = (string)pseqElem.Attribute("id");
                 string name = null;
                 if (!string.IsNullOrEmpty(id))
                 {
@@ -1125,7 +1122,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     case "InsertSegments":
                         string tableId = (string)partElem.Attribute("characterDefinitionTable");
                         CharacterDefinitionTable table = tableId == null ? defaultTable : _tables[tableId];
-                        var shapeStr = (string)partElem.Element("PhoneticShape");
+                        string shapeStr = (string)partElem.Element("PhoneticShape");
                         rhs.Add(new InsertSegments(new Segments(table, shapeStr)));
                         break;
                 }
@@ -1138,64 +1135,56 @@ namespace SIL.Machine.Morphology.HermitCrab
             out IMorphologicalRule mrule
         )
         {
-            var compRuleID = (string)compRuleElem.Attribute("id");
+            string compRuleID = (string)compRuleElem.Attribute("id");
             var compRule = new CompoundingRule
             {
                 Name = (string)compRuleElem.Element("Name"),
                 Blockable = (bool?)compRuleElem.Attribute("blockable") ?? true
             };
-            var multApp = (string)compRuleElem.Attribute("multipleApplication");
+            string multApp = (string)compRuleElem.Attribute("multipleApplication");
             if (!string.IsNullOrEmpty(multApp))
                 compRule.MaxApplicationCount = int.Parse(multApp);
 
             var fs = new FeatureStruct();
-            var headRequiredPos = (string)compRuleElem.Attribute("headPartsOfSpeech");
+            string headRequiredPos = (string)compRuleElem.Attribute("headPartsOfSpeech");
             if (!string.IsNullOrEmpty(headRequiredPos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(headRequiredPos));
             XElement headRequiredHeadFeatElem = compRuleElem.Element("HeadRequiredHeadFeatures");
             if (headRequiredHeadFeatElem != null)
-            {
                 fs.AddValue(
                     _headFeature,
                     LoadFeatureStruct(headRequiredHeadFeatElem, _language.SyntacticFeatureSystem)
                 );
-            }
             XElement headRequiredFootFeatElem = compRuleElem.Element("HeadRequiredFootFeatures");
             if (headRequiredFootFeatElem != null)
-            {
                 fs.AddValue(
                     _footFeature,
                     LoadFeatureStruct(headRequiredFootFeatElem, _language.SyntacticFeatureSystem)
                 );
-            }
             fs.Freeze();
             compRule.HeadRequiredSyntacticFeatureStruct = fs;
 
             fs = new FeatureStruct();
-            var nonHeadRequiredPos = (string)compRuleElem.Attribute("nonHeadPartsOfSpeech");
+            string nonHeadRequiredPos = (string)compRuleElem.Attribute("nonHeadPartsOfSpeech");
             if (!string.IsNullOrEmpty(nonHeadRequiredPos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(nonHeadRequiredPos));
             XElement nonHeadRequiredHeadFeatElem = compRuleElem.Element("NonHeadRequiredHeadFeatures");
             if (nonHeadRequiredHeadFeatElem != null)
-            {
                 fs.AddValue(
                     _headFeature,
                     LoadFeatureStruct(nonHeadRequiredHeadFeatElem, _language.SyntacticFeatureSystem)
                 );
-            }
             XElement nonHeadRequiredFootFeatElem = compRuleElem.Element("NonHeadRequiredFootFeatures");
             if (nonHeadRequiredFootFeatElem != null)
-            {
                 fs.AddValue(
                     _footFeature,
                     LoadFeatureStruct(nonHeadRequiredFootFeatElem, _language.SyntacticFeatureSystem)
                 );
-            }
             fs.Freeze();
             compRule.NonHeadRequiredSyntacticFeatureStruct = fs;
 
             fs = new FeatureStruct();
-            var outPos = (string)compRuleElem.Attribute("outputPartOfSpeech");
+            string outPos = (string)compRuleElem.Attribute("outputPartOfSpeech");
             if (!string.IsNullOrEmpty(outPos))
                 fs.AddValue(_posFeature, ParsePartsOfSpeech(outPos));
             XElement outHeadFeatElem = compRuleElem.Element("OutputHeadFeatures");
@@ -1207,12 +1196,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             fs.Freeze();
             compRule.OutSyntacticFeatureStruct = fs;
 
-            var obligHeadIDsStr = (string)compRuleElem.Attribute("outputObligatoryFeatures");
-            if (!string.IsNullOrEmpty(obligHeadIDsStr))
-            {
-                foreach (string obligHeadID in obligHeadIDsStr.Split(' '))
-                    compRule.ObligatorySyntacticFeatures.Add(_language.SyntacticFeatureSystem.GetFeature(obligHeadID));
-            }
+            string obligatoryHeadIDsStr = (string)compRuleElem.Attribute("outputObligatoryFeatures");
+            if (!string.IsNullOrEmpty(obligatoryHeadIDsStr))
+                foreach (string obligatoryHeadID in obligatoryHeadIDsStr.Split(' '))
+                    compRule.ObligatorySyntacticFeatures.Add(
+                        _language.SyntacticFeatureSystem.GetFeature(obligatoryHeadID)
+                    );
 
             foreach (
                 XElement subruleElem in compRuleElem
@@ -1287,7 +1276,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 IsFinal = (bool)tempElem.Attribute("final")
             };
 
-            var requiredPos = (string)tempElem.Attribute("requiredPartsOfSpeech");
+            string requiredPos = (string)tempElem.Attribute("requiredPartsOfSpeech");
             if (!string.IsNullOrEmpty(requiredPos))
                 template.RequiredSyntacticFeatureStruct = FeatureStruct
                     .New()
@@ -1298,7 +1287,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (XElement slotElem in tempElem.Elements("Slot").Where(IsActive))
             {
                 var rules = new List<MorphemicMorphologicalRule>();
-                var ruleIDsStr = (string)slotElem.Attribute("morphologicalRules");
+                string ruleIDsStr = (string)slotElem.Attribute("morphologicalRules");
                 IMorphologicalRule lastRule = null;
                 foreach (string ruleID in ruleIDsStr.Split(' '))
                 {
@@ -1311,9 +1300,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 var slot = new AffixTemplateSlot(rules) { Name = (string)slotElem.Element("Name") };
 
-                var optionalStr = (string)slotElem.Attribute("optional") ?? "false";
-                var realRule = lastRule as RealizationalAffixProcessRule;
-                if (string.IsNullOrEmpty(optionalStr) && realRule != null)
+                string optionalStr = (string)slotElem.Attribute("optional") ?? "false";
+                if (string.IsNullOrEmpty(optionalStr) && lastRule is RealizationalAffixProcessRule realRule)
                     slot.Optional = !realRule.RealizationalFeatureStruct.IsEmpty;
                 else
                     slot.Optional = optionalStr == "true";
@@ -1349,8 +1337,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (XElement varFeatElem in alphaVarsElem.Elements("VariableFeature"))
                 {
-                    var varName = (string)varFeatElem.Attribute("name");
-                    var feature = _language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(
+                    string varName = (string)varFeatElem.Attribute("name");
+                    SymbolicFeature feature = _language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(
                         (string)varFeatElem.Attribute("phonologicalFeature")
                     );
                     variables[(string)varFeatElem.Attribute("id")] = Tuple.Create(varName, feature);
@@ -1372,8 +1360,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 switch (recElem.Name.LocalName)
                 {
                     case "SimpleContext":
-                        SimpleContext simpleCtxt = LoadSimpleContext(recElem, variables);
-                        node = new Constraint<Word, ShapeNode>(simpleCtxt.FeatureStruct) { Tag = simpleCtxt };
+                        SimpleContext simpleContext = LoadSimpleContext(recElem, variables);
+                        node = new Constraint<Word, ShapeNode>(simpleContext.FeatureStruct) { Tag = simpleContext };
                         break;
 
                     case "Segment":
@@ -1385,9 +1373,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
 
                     case "OptionalSegmentSequence":
-                        var minStr = (string)recElem.Attribute("min");
+                        string minStr = (string)recElem.Attribute("min");
                         int min = string.IsNullOrEmpty(minStr) ? 0 : int.Parse(minStr);
-                        var maxStr = (string)recElem.Attribute("max");
+                        string maxStr = (string)recElem.Attribute("max");
                         int max = string.IsNullOrEmpty(maxStr) ? -1 : int.Parse(maxStr);
                         node = new Quantifier<Word, ShapeNode>(
                             min,
@@ -1398,7 +1386,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                     case "Segments":
                         CharacterDefinitionTable segsTable = GetTable(recElem, defaultTable);
-                        var shapeStr = (string)recElem.Element("PhoneticShape");
+                        string shapeStr = (string)recElem.Element("PhoneticShape");
                         var segments = new Segments(segsTable, shapeStr);
                         node = new Group<Word, ShapeNode>(
                             segments.Shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct))
@@ -1410,7 +1398,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
 
                 Debug.Assert(node != null);
-                var id = (string)recElem.Attribute("id");
+                string id = (string)recElem.Attribute("id");
                 string groupName;
                 if (groupNames == null || string.IsNullOrEmpty(id) || !groupNames.TryGetValue(id, out groupName))
                     yield return node;
@@ -1420,18 +1408,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private SimpleContext LoadSimpleContext(
-            XElement ctxtElem,
+            XElement contextElem,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables
         )
         {
-            var natClassID = (string)ctxtElem.Attribute("naturalClass");
+            string natClassID = (string)contextElem.Attribute("naturalClass");
             NaturalClass nc = _natClasses[natClassID];
-            var ctxtVars = new List<SymbolicFeatureValue>();
-            foreach (XElement varElem in ctxtElem.Elements("AlphaVariables").Elements("AlphaVariable"))
+            var contextVars = new List<SymbolicFeatureValue>();
+            foreach (XElement varElem in contextElem.Elements("AlphaVariables").Elements("AlphaVariable"))
             {
-                var varID = (string)varElem.Attribute("variableFeature");
+                string varID = (string)varElem.Attribute("variableFeature");
                 Tuple<string, SymbolicFeature> variable = variables[varID];
-                ctxtVars.Add(
+                contextVars.Add(
                     new SymbolicFeatureValue(
                         variable.Item2,
                         variable.Item1,
@@ -1439,7 +1427,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     )
                 );
             }
-            return new SimpleContext(nc, ctxtVars);
+            return new SimpleContext(nc, contextVars);
         }
 
         private Pattern<Word, ShapeNode> LoadPhoneticTemplate(

@@ -5,16 +5,16 @@ namespace SIL.Machine.Annotations
 {
     public struct Range<TOffset> : IComparable<Range<TOffset>>, IComparable, IEquatable<Range<TOffset>>
     {
-        private static volatile RangeFactory<TOffset> FactoryInternal;
+        private static volatile RangeFactory<TOffset> s_factoryInternal;
         private static RangeFactory<TOffset> Factory
         {
             get
             {
-                RangeFactory<TOffset> factory = FactoryInternal;
+                RangeFactory<TOffset> factory = s_factoryInternal;
                 if (factory == null)
                 {
                     factory = CreateFactory();
-                    FactoryInternal = factory;
+                    s_factoryInternal = factory;
                 }
                 return factory;
             }
@@ -124,11 +124,8 @@ namespace SIL.Machine.Annotations
                 return false;
 
             if (Factory.IncludeEndpoint)
-            {
                 return Factory.Comparer.Compare(Start, other.End) <= 0
                     && Factory.Comparer.Compare(End, other.Start) >= 0;
-            }
-
             return Factory.Comparer.Compare(Start, other.End) < 0 && Factory.Comparer.Compare(End, other.Start) > 0;
         }
 
@@ -202,7 +199,7 @@ namespace SIL.Machine.Annotations
 
         public override bool Equals(object obj)
         {
-            return obj is Range<TOffset> && Equals((Range<TOffset>)obj);
+            return obj is Range<TOffset> range && Equals(range);
         }
 
         public bool Equals(Range<TOffset> other)

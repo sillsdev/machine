@@ -1,23 +1,16 @@
-public class ClearMLHealthCheck : IHealthCheck
-{
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
-    private int _numConsecutiveFailures;
-    private readonly AsyncLock _lock;
+namespace SIL.Machine.AspNetCore.Services;
 
-    public ClearMLHealthCheck(
-        IClearMLAuthenticationService clearMLAuthenticationService,
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
-        _options = options;
-        _clearMLAuthenticationService = clearMLAuthenticationService;
-        _numConsecutiveFailures = 0;
-        _lock = new AsyncLock();
-    }
+public class ClearMLHealthCheck(
+    IClearMLAuthenticationService clearMLAuthenticationService,
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options
+) : IHealthCheck
+{
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
+    private int _numConsecutiveFailures = 0;
+    private readonly AsyncLock _lock = new();
 
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
@@ -29,16 +22,18 @@ public class ClearMLHealthCheck : IHealthCheck
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
+            {
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
                 );
-            using (await _lock.LockAsync())
+            }
+            using (await _lock.LockAsync(cancellationToken))
                 _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");
         }
         catch (Exception e)
         {
-            using (await _lock.LockAsync())
+            using (await _lock.LockAsync(cancellationToken))
             {
                 _numConsecutiveFailures++;
                 return _numConsecutiveFailures > 3
@@ -80,18 +75,16 @@ public class ClearMLHealthCheck : IHealthCheck
         JsonNode? workers_node = result?["data"]?["workers"];
         if (workers_node is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
-        JsonArray workers = (JsonArray)workers_node;
-        foreach (var worker in workers)
+        var workers = (JsonArray)workers_node;
+        foreach (JsonNode? worker in workers)
         {
             JsonNode? queues_node = worker?["queues"];
             if (queues_node is null)
                 continue;
-            JsonArray queues = (JsonArray)queues_node;
-            foreach (var queue in queues)
-            {
+            var queues = (JsonArray)queues_node;
+            foreach (JsonNode? queue in queues)
                 if ((string?)queue?["name"] == _options.CurrentValue.Queue)
                     return true;
-            }
         }
         return false;
     }

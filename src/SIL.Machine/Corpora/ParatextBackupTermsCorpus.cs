@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTermsCorpus : DictionaryTextCorpus
     {
-        private static readonly List<string> PredefinedTermsListTypes = new List<string>()
+        private static readonly List<string> s_predefinedTermsListTypes = new List<string>()
         {
             "Major",
             "All",
@@ -21,8 +21,8 @@ namespace SIL.Machine.Corpora
 
         public ParatextBackupTermsCorpus(string fileName, IEnumerable<string> termCategories)
         {
-            List<TextRow> rows = new List<TextRow>();
-            using (var archive = ZipFile.OpenRead(fileName))
+            var rows = new List<TextRow>();
+            using (ZipArchive archive = ZipFile.OpenRead(fileName))
             {
                 ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
                 if (termsFileEntry is null)
@@ -41,7 +41,7 @@ namespace SIL.Machine.Corpora
 
                 XDocument biblicalTermsDoc;
                 IDictionary<string, string> termIdToCategoryDictionary;
-                if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
+                if (s_predefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
                 {
                     using (
                         Stream keyTermsFile = Assembly
@@ -65,10 +65,7 @@ namespace SIL.Machine.Corpora
                     }
                 }
                 else
-                {
                     termIdToCategoryDictionary = new Dictionary<string, string>();
-                }
-
                 IEnumerable<XElement> termsElements = termRenderingsDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering");
@@ -98,8 +95,8 @@ namespace SIL.Machine.Corpora
 
         public static IReadOnlyList<string> GetRenderings(string rendering)
         {
-            //If entire term rednering is surrounded in square brackets, remove them
-            Regex rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
+            //If entire term rendering is surrounded in square brackets, remove them
+            var rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
             Match match = rx.Match(rendering);
             if (match.Success)
                 rendering = match.Groups[0].Value;
@@ -109,11 +106,9 @@ namespace SIL.Machine.Corpora
             rendering = rendering.Trim();
             rendering = StripParens(rendering);
             rendering = StripParens(rendering, left: '[', right: ']');
-            Regex rx2 = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
+            var rx2 = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
             foreach (Match m in rx2.Matches(rendering))
-            {
                 rendering.Replace(m.Value, "");
-            }
             IEnumerable<string> glosses = Regex.Split(rendering, @"\|\|");
             glosses = glosses.Select(g => g.Trim()).Where(s => s != "").Distinct().ToList();
             return (IReadOnlyList<string>)glosses;
@@ -145,10 +140,8 @@ namespace SIL.Machine.Corpora
                     {
                         parens--;
                         if (parens == 0)
-                        {
                             termString =
                                 termString.Substring(0, i) + termString.Substring(end, termString.Length - end);
-                        }
                     }
                 }
             }

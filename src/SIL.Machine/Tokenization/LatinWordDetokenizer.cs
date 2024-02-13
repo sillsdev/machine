@@ -14,7 +14,7 @@ namespace SIL.Machine.Tokenization
             SingleAngle
         }
 
-        private static readonly Dictionary<char, QuoteType> QuotationMarks = new Dictionary<char, QuoteType>
+        private static readonly Dictionary<char, QuoteType> s_quotationMarks = new Dictionary<char, QuoteType>
         {
             { '"', QuoteType.DoubleQuotation },
             { '“', QuoteType.DoubleQuotation },
@@ -37,9 +37,9 @@ namespace SIL.Machine.Tokenization
             return new Stack<char>();
         }
 
-        protected override DetokenizeOperation GetOperation(object ctxt, string token)
+        protected override DetokenizeOperation GetOperation(object context, string token)
         {
-            var quotes = (Stack<char>)ctxt;
+            var quotes = (Stack<char>)context;
             char c = token[0];
             if (
                 CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.CurrencySymbol
@@ -48,9 +48,9 @@ namespace SIL.Machine.Tokenization
             {
                 return DetokenizeOperation.MergeRight;
             }
-            else if (QuotationMarks.ContainsKey(c))
+            else if (s_quotationMarks.ContainsKey(c))
             {
-                if (quotes.Count == 0 || QuotationMarks[c] != QuotationMarks[quotes.Peek()])
+                if (quotes.Count == 0 || s_quotationMarks[c] != s_quotationMarks[quotes.Peek()])
                 {
                     quotes.Push(c);
                     return DetokenizeOperation.MergeRight;
@@ -62,13 +62,9 @@ namespace SIL.Machine.Tokenization
                 }
             }
             else if (c == '/' || c == '\\')
-            {
                 return DetokenizeOperation.MergeBoth;
-            }
             else if (char.IsPunctuation(c) || c == '>')
-            {
                 return DetokenizeOperation.MergeLeft;
-            }
 
             return DetokenizeOperation.NoOperation;
         }

@@ -2,14 +2,9 @@
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class ServalPlatformService : IPlatformService
+public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client) : IPlatformService
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client;
-
-    public ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client)
-    {
-        _client = client;
-    }
+    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
@@ -93,7 +88,8 @@ public class ServalPlatformService : IPlatformService
         CancellationToken cancellationToken = default
     )
     {
-        using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
+        using AsyncClientStreamingCall<InsertPretranslationRequest, Google.Protobuf.WellKnownTypes.Empty> call =
+            _client.InsertPretranslations(cancellationToken: cancellationToken);
         await foreach (Pretranslation? pretranslation in pretranslations)
         {
             await call.RequestStream.WriteAsync(

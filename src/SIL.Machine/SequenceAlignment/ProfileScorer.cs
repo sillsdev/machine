@@ -38,18 +38,16 @@ namespace SIL.Machine.SequenceAlignment
                 for (int j = 0; j < sequence2.Alignment.SequenceCount; j++)
                 {
                     if ((p == null || !p[i].IsNull) && !q[j].IsNull)
-                    {
                         sum += (int)(
                             _scorer.GetInsertionScore(
                                 sequence1.Alignment.Sequences[i],
-                                p == null ? default(TItem) : p[i][0],
+                                p == null ? default : p[i][0],
                                 sequence2.Alignment.Sequences[j],
                                 q[j][0]
                             )
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]
                         );
-                    }
                 }
             }
 
@@ -69,18 +67,16 @@ namespace SIL.Machine.SequenceAlignment
                 for (int j = 0; j < sequence2.Alignment.SequenceCount; j++)
                 {
                     if (!p[i].IsNull && (q == null || !q[j].IsNull))
-                    {
                         sum += (int)(
                             _scorer.GetDeletionScore(
                                 sequence1.Alignment.Sequences[i],
                                 p[i][0],
                                 sequence2.Alignment.Sequences[j],
-                                q == null ? default(TItem) : q[j][0]
+                                q == null ? default : q[j][0]
                             )
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]
                         );
-                    }
                 }
             }
 
@@ -100,7 +96,6 @@ namespace SIL.Machine.SequenceAlignment
                 for (int j = 0; j < sequence2.Alignment.SequenceCount; j++)
                 {
                     if (!p[i].IsNull && !q[j].IsNull)
-                    {
                         sum += (int)(
                             _scorer.GetSubstitutionScore(
                                 sequence1.Alignment.Sequences[i],
@@ -111,7 +106,6 @@ namespace SIL.Machine.SequenceAlignment
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]
                         );
-                    }
                 }
             }
 
@@ -164,7 +158,6 @@ namespace SIL.Machine.SequenceAlignment
                 for (int j = 0; j < sequence2.Alignment.SequenceCount; j++)
                 {
                     if (!p[i].IsNull)
-                    {
                         sum += (int)(
                             _scorer.GetMaxScore1(
                                 sequence1.Alignment.Sequences[i],
@@ -174,7 +167,6 @@ namespace SIL.Machine.SequenceAlignment
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]
                         );
-                    }
                 }
             }
 
@@ -193,7 +185,6 @@ namespace SIL.Machine.SequenceAlignment
                 for (int j = 0; j < sequence2.Alignment.SequenceCount; j++)
                 {
                     if (!q[j].IsNull)
-                    {
                         sum += (int)(
                             _scorer.GetMaxScore2(
                                 sequence1.Alignment.Sequences[i],
@@ -203,7 +194,6 @@ namespace SIL.Machine.SequenceAlignment
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]
                         );
-                    }
                 }
             }
 

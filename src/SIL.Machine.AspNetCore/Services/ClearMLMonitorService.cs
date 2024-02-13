@@ -1,48 +1,39 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
-namespace SIL.Machine.AspNetCore.Services;
-
-public class ClearMLMonitorService : RecurrentTask
+public class ClearMLMonitorService(
+    IServiceProvider services,
+    IClearMLService clearMLService,
+    ISharedFileService sharedFileService,
+    IOptions<ClearMLOptions> options,
+    ILogger<ClearMLMonitorService> logger
+)
+    : RecurrentTask(
+        "ClearML monitor service",
+        services,
+        options.Value.BuildPollingTimeout,
+        logger,
+        options.Value.BuildPollingEnabled
+    )
 {
-    private static readonly string EvalMetric = CreateMD5("eval");
-    private static readonly string BleuVariant = CreateMD5("bleu");
+    private static readonly string s_evalMetric = CreateMD5("eval");
+    private static readonly string s_bleuVariant = CreateMD5("bleu");
 
-    private static readonly string SummaryMetric = CreateMD5("Summary");
-    private static readonly string CorpusSizeVariant = CreateMD5("corpus_size");
-    private static readonly string ProgressVariant = CreateMD5("progress");
+    private static readonly string s_summaryMetric = CreateMD5("Summary");
+    private static readonly string s_corpusSizeVariant = CreateMD5("corpus_size");
+    private static readonly string s_progressVariant = CreateMD5("progress");
 
-    private readonly IClearMLService _clearMLService;
-    private readonly ISharedFileService _sharedFileService;
-    private readonly ILogger<ClearMLMonitorService> _logger;
-    private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
+    private readonly IClearMLService _clearMLService = clearMLService;
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ILogger<ClearMLMonitorService> _logger = logger;
+    private readonly Dictionary<string, ProgressStatus> _curBuildStatus = [];
 
     public int QueueSize { get; private set; }
-
-    public ClearMLMonitorService(
-        IServiceProvider services,
-        IClearMLService clearMLService,
-        ISharedFileService sharedFileService,
-        IOptions<ClearMLOptions> options,
-        ILogger<ClearMLMonitorService> logger
-    )
-        : base(
-            "ClearML monitor service",
-            services,
-            options.Value.BuildPollingTimeout,
-            logger,
-            options.Value.BuildPollingEnabled
-        )
-    {
-        _clearMLService = clearMLService;
-        _sharedFileService = sharedFileService;
-        _logger = logger;
-    }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         try
         {
-            var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
+            IBuildJobService buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
             IReadOnlyList<TranslationEngine> trainingEngines = await buildJobService.GetBuildingEnginesAsync(
                 BuildJobRunner.ClearML,
                 cancellationToken
@@ -50,7 +41,7 @@ public class ClearMLMonitorService : RecurrentTask
             if (trainingEngines.Count == 0)
                 return;
 
-            Dictionary<string, ClearMLTask> tasks = (
+            var tasks = (
                 await _clearMLService.GetTasksByIdAsync(
                     trainingEngines.Select(e => e.CurrentBuild!.JobId),
                     cancellationToken
@@ -59,7 +50,7 @@ public class ClearMLMonitorService : RecurrentTask
                 .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
                 .ToDictionary(t => t.Id);
 
-            Dictionary<string, int> queuePositions = tasks
+            var queuePositions = tasks
                 .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
                 .OrderBy(t => t.Created)
                 .Select((t, i) => (Position: i, Task: t))
@@ -67,8 +58,9 @@ public class ClearMLMonitorService : RecurrentTask
 
             QueueSize = queuePositions.Count;
 
-            var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
-            var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
+            IPlatformService platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
+            IDistributedReaderWriterLockFactory lockFactory =
+                scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             foreach (TranslationEngine engine in trainingEngines)
             {
                 if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
@@ -120,7 +112,7 @@ public class ClearMLMonitorService : RecurrentTask
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(
                                     task.LastIteration,
-                                    percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
+                                    percentCompleted: GetMetric(task, s_summaryMetric, s_progressVariant)
                                 ),
                                 0,
                                 cancellationToken
@@ -140,13 +132,12 @@ public class ClearMLMonitorService : RecurrentTask
                                 buildJobService,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
-                                (int)GetMetric(task, SummaryMetric, CorpusSizeVariant),
-                                GetMetric(task, EvalMetric, BleuVariant),
+                                (int)GetMetric(task, s_summaryMetric, s_corpusSizeVariant),
+                                GetMetric(task, s_evalMetric, s_bleuVariant),
                                 engine.CurrentBuild.Options,
                                 cancellationToken
                             );
                             if (canceling)
-                            {
                                 await TrainJobCanceledAsync(
                                     lockFactory,
                                     buildJobService,
@@ -155,7 +146,6 @@ public class ClearMLMonitorService : RecurrentTask
                                     engine.CurrentBuild.BuildId,
                                     cancellationToken
                                 );
-                            }
                             break;
 
                         case ClearMLTaskStatus.Stopped:

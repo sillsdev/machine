@@ -77,10 +77,8 @@ namespace SIL.Machine.Translation
                         startingJ = phrase.TargetSegmentCut;
                     }
                     else
-                    {
                         // hit a phrase with a low confidence, so don't include any more words in this suggestion
                         break;
-                    }
                 }
                 if (suggestionConfidence == -1)
                     break;
@@ -133,9 +131,7 @@ namespace SIL.Machine.Translation
                     i++;
                 }
                 if (j == newSuggestion.Count)
-                {
                     return true;
-                }
                 else if (i < suggestion.Count && newSuggestion[j] != suggestion[i])
                 {
                     if (j != 0)
@@ -149,7 +145,7 @@ namespace SIL.Machine.Translation
 
         private static int[] ComputeKmpTable(IReadOnlyList<string> newSuggestion)
         {
-            var table = new int[newSuggestion.Count];
+            int[] table = new int[newSuggestion.Count];
             int len = 0;
             int i = 1;
             table[0] = 0;
@@ -163,9 +159,7 @@ namespace SIL.Machine.Translation
                     i++;
                 }
                 else if (len != 0)
-                {
                     len = table[len - 1];
-                }
                 else
                 {
                     table[i] = len;

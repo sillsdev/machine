@@ -21,18 +21,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             Pattern.Acceptable = match => CheckTarget(match, lhs);
 
             if (lhs.IsEmpty)
-            {
                 Pattern.Children.Add(
                     new Constraint<Word, ShapeNode>(
                         FeatureStruct.New().Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value
                     )
                 );
-            }
             else
             {
                 foreach (Constraint<Word, ShapeNode> constraint in lhs.Children.Cast<Constraint<Word, ShapeNode>>())
                 {
-                    var newConstraint = constraint.Clone();
+                    Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
                     if (isIterative)
                         newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
                     Pattern.Children.Add(newConstraint);
@@ -44,11 +42,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             foreach (RewriteSubrule subrule in subrules)
             {
                 if (lhs.Children.Count == subrule.Rhs.Children.Count)
-                {
                     SubruleSpecs.Add(new FeatureSynthesisRewriteSubruleSpec(matcherSettings, isIterative, subrule, i));
-                }
                 else if (lhs.Children.Count > subrule.Rhs.Children.Count)
-                {
                     SubruleSpecs.Add(
                         new NarrowSynthesisRewriteSubruleSpec(
                             matcherSettings,
@@ -58,13 +53,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             i
                         )
                     );
-                }
                 else if (lhs.Children.Count == 0)
-                {
                     SubruleSpecs.Add(
                         new EpenthesisSynthesisRewriteSubruleSpec(matcherSettings, isIterative, subrule, i)
                     );
-                }
                 i++;
             }
         }

@@ -13,7 +13,7 @@ public class BuildJobService : IBuildJobService
     )
     {
         _runners = runners.ToDictionary(r => r.Type);
-        _runnersByJobType = new Dictionary<BuildJobType, IBuildJobRunner>();
+        _runnersByJobType = [];
         foreach (KeyValuePair<BuildJobType, BuildJobRunner> kvp in options.Value.Runners)
             _runnersByJobType.Add(kvp.Key, _runners[kvp.Value]);
         _engines = engines;

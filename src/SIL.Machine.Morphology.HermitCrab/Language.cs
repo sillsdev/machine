@@ -49,10 +49,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private void StrataChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (Stratum stratum in e.OldItems)
                     stratum.Depth = -1;
-            }
             for (int i = 0; i < _strata.Count; i++)
                 _strata[i].Depth = i;
         }

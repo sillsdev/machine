@@ -308,7 +308,7 @@ public class SmtTransferEngineServiceTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "smt_transfer" },
+                Queues = ["smt_transfer"],
                 CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
@@ -335,7 +335,7 @@ public class SmtTransferEngineServiceTests
 
         private ISmtModelFactory CreateSmtModelFactory()
         {
-            var factory = Substitute.For<ISmtModelFactory>();
+            ISmtModelFactory factory = Substitute.For<ISmtModelFactory>();
 
             var translationResult = new TranslationResult(
                 "this is a TEST.",
@@ -427,8 +427,8 @@ public class SmtTransferEngineServiceTests
 
         private static ITransferEngineFactory CreateTransferEngineFactory()
         {
-            var factory = Substitute.For<ITransferEngineFactory>();
-            var engine = Substitute.For<ITranslationEngine>();
+            ITransferEngineFactory factory = Substitute.For<ITransferEngineFactory>();
+            ITranslationEngine engine = Substitute.For<ITranslationEngine>();
             engine
                 .TranslateAsync(Arg.Any<string>())
                 .Returns(
@@ -471,7 +471,7 @@ public class SmtTransferEngineServiceTests
 
         private ITruecaserFactory CreateTruecaserFactory()
         {
-            var factory = Substitute.For<ITruecaserFactory>();
+            ITruecaserFactory factory = Substitute.For<ITruecaserFactory>();
             factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
             factory
                 .CreateTrainer(Arg.Any<string>(), Arg.Any<ITokenizer<string, int, string>>(), Arg.Any<ITextCorpus>())
@@ -529,19 +529,13 @@ public class SmtTransferEngineServiceTests
             _jobServer.Dispose();
         }
 
-        private class EnvActivator : JobActivator
+        private class EnvActivator(SmtTransferEngineServiceTests.TestEnvironment env) : JobActivator
         {
-            private readonly TestEnvironment _env;
-
-            public EnvActivator(TestEnvironment env)
-            {
-                _env = env;
-            }
+            private readonly TestEnvironment _env = env;
 
             public override object ActivateJob(Type jobType)
             {
                 if (jobType == typeof(SmtTransferBuildJob))
-                {
                     return new SmtTransferBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -553,7 +547,6 @@ public class SmtTransferEngineServiceTests
                         _env.SmtModelFactory,
                         Substitute.For<ICorpusService>()
                     );
-                }
                 return base.ActivateJob(jobType);
             }
         }

@@ -138,10 +138,8 @@ namespace SIL.Machine.Matching
             if (pattern.Children.All(node => node is Pattern<TData, TOffset>))
             {
                 foreach (Pattern<TData, TOffset> childExpr in pattern.Children.Cast<Pattern<TData, TOffset>>())
-                {
                     if (GeneratePatternNfa(startState, childExpr, name, acceptables, ref nextPriority))
                         hasVariables = true;
-                }
             }
             else
             {
@@ -170,7 +168,7 @@ namespace SIL.Machine.Matching
             TOffset matchStart,
                 matchEnd;
             _fsa.GetOffsets(EntireMatch, match.Registers, out matchStart, out matchEnd);
-            Range<TOffset> matchRange = Range<TOffset>.Create(matchStart, matchEnd);
+            var matchRange = Range<TOffset>.Create(matchStart, matchEnd);
             var groupCaptures = new List<GroupCapture<TOffset>>();
             foreach (string groupName in _fsa.GroupNames)
             {
@@ -184,7 +182,7 @@ namespace SIL.Machine.Matching
                 {
                     if (Range<TOffset>.IsValidRange(start, end) && !Range<TOffset>.IsEmptyRange(start, end))
                     {
-                        Range<TOffset> range = Range<TOffset>.Create(start, end);
+                        var range = Range<TOffset>.Create(start, end);
                         if (matchRange.Contains(range))
                             groupCapture = new GroupCapture<TOffset>(groupName, range);
                     }
@@ -326,12 +324,10 @@ namespace SIL.Machine.Matching
         {
             Annotation<TOffset> startAnn;
             if (!input.Annotations.FindDepthFirst(start, _settings.Direction, out startAnn))
-            {
                 startAnn =
                     startAnn == input.Annotations.GetBegin(_settings.Direction)
                         ? input.Annotations.GetFirst(_settings.Direction)
                         : startAnn.GetNext(_settings.Direction);
-            }
             if (!_settings.Filter(startAnn))
                 startAnn = startAnn.GetNextDepthFirst(_settings.Direction, _settings.Filter);
             return startAnn;

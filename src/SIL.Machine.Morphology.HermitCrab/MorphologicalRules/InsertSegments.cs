@@ -33,10 +33,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         )
         {
             foreach (ShapeNode node in _segments.Shape)
-            {
                 if (node.Annotation.Type() != HCFeatureSystem.Boundary)
                     analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(node.Annotation.FeatureStruct));
-            }
         }
 
         public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)

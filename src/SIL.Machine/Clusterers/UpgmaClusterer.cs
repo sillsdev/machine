@@ -100,8 +100,8 @@ namespace SIL.Machine.Clusterers
                 double jWeight = (double)jCount / (iCount + jCount);
                 foreach (Cluster<T> kCluster in clusters.Where(c => c != iCluster && c != jCluster))
                 {
-                    UnorderedTuple<Cluster<T>, Cluster<T>> kiKey = UnorderedTuple.Create(kCluster, iCluster);
-                    UnorderedTuple<Cluster<T>, Cluster<T>> kjKey = UnorderedTuple.Create(kCluster, jCluster);
+                    var kiKey = UnorderedTuple.Create(kCluster, iCluster);
+                    var kjKey = UnorderedTuple.Create(kCluster, jCluster);
                     distances[UnorderedTuple.Create(uCluster, kCluster)] =
                         (iWeight * distances[kiKey]) + (jWeight * distances[kjKey]);
                     distances.Remove(kiKey);

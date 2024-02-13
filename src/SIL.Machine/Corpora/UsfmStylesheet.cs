@@ -10,9 +10,12 @@ namespace SIL.Machine.Corpora
 {
     public class UsfmStylesheet
     {
-        private static readonly Regex CellRangeRegex = new Regex(@"^(t[ch][cr]?[1-5])-([2-5])$", RegexOptions.Compiled);
+        private static readonly Regex s_cellRangeRegex = new Regex(
+            @"^(t[ch][cr]?[1-5])-([2-5])$",
+            RegexOptions.Compiled
+        );
 
-        private static readonly Dictionary<string, UsfmJustification> JustificationMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmJustification> s_justificationMappings = new Dictionary<
             string,
             UsfmJustification
         >(StringComparer.OrdinalIgnoreCase)
@@ -23,9 +26,10 @@ namespace SIL.Machine.Corpora
             { "both", UsfmJustification.Both }
         };
 
-        private static readonly Dictionary<string, UsfmStyleType> StyleMappings = new Dictionary<string, UsfmStyleType>(
-            StringComparer.OrdinalIgnoreCase
-        )
+        private static readonly Dictionary<string, UsfmStyleType> s_styleMappings = new Dictionary<
+            string,
+            UsfmStyleType
+        >(StringComparer.OrdinalIgnoreCase)
         {
             { "character", UsfmStyleType.Character },
             { "paragraph", UsfmStyleType.Paragraph },
@@ -33,7 +37,7 @@ namespace SIL.Machine.Corpora
             { "milestone", UsfmStyleType.Milestone }
         };
 
-        private static readonly Dictionary<string, UsfmTextType> TextTypeMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmTextType> s_textTypeMappings = new Dictionary<
             string,
             UsfmTextType
         >(StringComparer.OrdinalIgnoreCase)
@@ -49,7 +53,7 @@ namespace SIL.Machine.Corpora
             { "chapternumber", UsfmTextType.Other }
         };
 
-        private static readonly Dictionary<string, UsfmTextProperties> TextPropertyMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmTextProperties> s_textPropertyMappings = new Dictionary<
             string,
             UsfmTextProperties
         >(StringComparer.OrdinalIgnoreCase)
@@ -97,7 +101,7 @@ namespace SIL.Machine.Corpora
 
         public static bool IsCellRange(string tag, out string baseMarker, out int colSpan)
         {
-            var match = CellRangeRegex.Match(tag);
+            Match match = s_cellRangeRegex.Match(tag);
             if (match.Success)
             {
                 baseMarker = match.Groups[1].Value;
@@ -129,9 +133,7 @@ namespace SIL.Machine.Corpora
         {
             IEnumerable<string> lines;
             if (File.Exists(stylesheetFileName))
-            {
                 lines = File.ReadAllLines(stylesheetFileName);
-            }
             else
             {
                 string fileName = Path.GetFileName(stylesheetFileName);
@@ -143,7 +145,7 @@ namespace SIL.Machine.Corpora
 
             List<StylesheetEntry> entries = SplitStylesheet(lines);
 
-            HashSet<string> foundStyles = new HashSet<string>();
+            var foundStyles = new HashSet<string>();
             for (int i = 0; i < entries.Count; ++i)
             {
                 StylesheetEntry entry = entries[i];
@@ -172,7 +174,7 @@ namespace SIL.Machine.Corpora
 
         private UsfmTag CreateTag(string marker)
         {
-            // If tag already exists update with addtl info (normally from custom.sty)
+            // If tag already exists update with additional info (normally from custom.sty)
             if (!_markers.TryGetValue(marker, out UsfmTag tag))
             {
                 tag = new UsfmTag(marker);
@@ -218,14 +220,9 @@ namespace SIL.Machine.Corpora
 
                     case "fontsize":
                         if (entry.Text == "-")
-                        {
                             tag.FontSize = 0;
-                        }
-                        else
-                        {
-                            if (ParseInteger(entry, out int fontSize))
-                                tag.FontSize = fontSize;
-                        }
+                        else if (ParseInteger(entry, out int fontSize))
+                            tag.FontSize = fontSize;
                         break;
 
                     case "xmltag":
@@ -274,14 +271,9 @@ namespace SIL.Machine.Corpora
 
                     case "rank":
                         if (entry.Text == "-")
-                        {
                             tag.Rank = 0;
-                        }
-                        else
-                        {
-                            if (ParseInteger(entry, out int rank))
-                                tag.Rank = rank;
-                        }
+                        else if (ParseInteger(entry, out int rank))
+                            tag.Rank = rank;
                         break;
 
                     case "bold":
@@ -330,25 +322,20 @@ namespace SIL.Machine.Corpora
 
                     case "color":
                         if (entry.Text == "-")
-                        {
                             tag.Color = 0;
-                        }
-                        else
-                        {
-                            if (ParseInteger(entry, out int color))
-                                tag.Color = color;
-                        }
+                        else if (ParseInteger(entry, out int color))
+                            tag.Color = color;
                         break;
 
                     case "justification":
                         UsfmJustification justification;
-                        if (JustificationMappings.TryGetValue(entry.Text, out justification))
+                        if (s_justificationMappings.TryGetValue(entry.Text, out justification))
                             tag.Justification = justification;
                         break;
 
                     case "styletype":
                         UsfmStyleType styleType;
-                        if (StyleMappings.TryGetValue(entry.Text, out styleType))
+                        if (s_styleMappings.TryGetValue(entry.Text, out styleType))
                             tag.StyleType = styleType;
                         break;
 
@@ -441,7 +428,7 @@ namespace SIL.Machine.Corpora
                 tag.TextProperties |= UsfmTextProperties.Verse;
 
             UsfmTextType textType;
-            if (TextTypeMappings.TryGetValue(entry.Text, out textType))
+            if (s_textTypeMappings.TryGetValue(entry.Text, out textType))
                 tag.TextType = textType;
         }
 
@@ -456,7 +443,7 @@ namespace SIL.Machine.Corpora
                     continue;
 
                 UsfmTextProperties textProperty;
-                if (TextPropertyMappings.TryGetValue(part, out textProperty))
+                if (s_textPropertyMappings.TryGetValue(part, out textProperty))
                     tag.TextProperties |= textProperty;
             }
 
@@ -487,7 +474,7 @@ namespace SIL.Machine.Corpora
 
         private List<StylesheetEntry> SplitStylesheet(IEnumerable<string> fileLines)
         {
-            List<StylesheetEntry> entries = new List<StylesheetEntry>();
+            var entries = new List<StylesheetEntry>();
             // Lines that are not compatible with USFM 2 are started with #!, so these two characters are stripped from
             // the beginning of lines.
             foreach (
@@ -500,10 +487,8 @@ namespace SIL.Machine.Corpora
                     continue;
 
                 if (!line.StartsWith("\\", StringComparison.Ordinal))
-                {
                     // ignore lines that do not start with a backslash
                     continue;
-                }
 
                 string[] parts = line.Split(new[] { ' ' }, 2);
                 entries.Add(

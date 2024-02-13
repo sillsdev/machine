@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "formulahendry.dotnet-test-explorer",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "streetsidesoftware.code-spell-checker",
+        "csharpier.csharpier-vscode",
+        "editorconfig.editorconfig",
+        "mhutchie.git-graph",
+        "ms-dotnettools.vscodeintellicode-csharp",
+        "wycliffeassociates.usfmvscode"
+    ]
+}

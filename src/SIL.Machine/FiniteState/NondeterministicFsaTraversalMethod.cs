@@ -23,15 +23,15 @@ namespace SIL.Machine.FiniteState
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         )
         {
             Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> instStack = InitializeStack(
                 ref annIndex,
                 initRegisters,
-                initCmds,
-                initAnns
+                initCommands,
+                initAnnotations
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
@@ -57,9 +57,7 @@ namespace SIL.Machine.FiniteState
                         {
                             NondeterministicFsaTraversalInstance<TData, TOffset> ti;
                             if (isInstReusable)
-                            {
                                 ti = inst;
-                            }
                             else
                             {
                                 ti = CopyInstance(inst);
@@ -74,11 +72,7 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                newInst.State,
-                                newInst.AnnotationIndex,
-                                newInst.Registers
-                            );
+                            var key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
                             if (!traversed.Contains(key))
                             {
                                 instStack.Push(newInst);
@@ -109,11 +103,7 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers
-                                );
+                                var key = Tuple.Create(newInst.State, newInst.AnnotationIndex, newInst.Registers);
                                 if (!traversed.Contains(key))
                                 {
                                     instStack.Push(newInst);
@@ -162,8 +152,8 @@ namespace SIL.Machine.FiniteState
         private Stack<NondeterministicFsaTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
             Register<TOffset>[,] registers,
-            IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> commands,
+            ISet<int> initAnnotations
         )
         {
             var instStack = new Stack<NondeterministicFsaTraversalInstance<TData, TOffset>>();
@@ -171,8 +161,8 @@ namespace SIL.Machine.FiniteState
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst in Initialize(
                     ref annIndex,
                     registers,
-                    cmds,
-                    initAnns
+                    commands,
+                    initAnnotations
                 )
             )
                 instStack.Push(inst);

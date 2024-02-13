@@ -166,9 +166,7 @@ namespace SIL.Machine.Translation.Thot
 
             int index = l.IndexOf(' ');
             if (index == -1)
-            {
                 name = l;
-            }
             else
             {
                 name = l.Substring(0, index);
@@ -402,9 +400,7 @@ namespace SIL.Machine.Translation.Thot
                     return false;
             }
             else if (!_modelWeights.SequenceEqual(other._modelWeights))
-            {
                 return false;
-            }
 
             return _tmFileNamePrefix == other._tmFileNamePrefix
                 && _lmFileNamePrefix == other._lmFileNamePrefix

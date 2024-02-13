@@ -39,7 +39,7 @@ namespace SIL.Machine.Clusterers
 
             while (clusters.Count > 2)
             {
-                Dictionary<Cluster<T>, double> r = clusters.ToDictionary(
+                var r = clusters.ToDictionary(
                     c => c,
                     c =>
                         clusters
@@ -100,8 +100,8 @@ namespace SIL.Machine.Clusterers
 
                 foreach (Cluster<T> kCluster in clusters.Where(c => c != iCluster && c != jCluster))
                 {
-                    UnorderedTuple<Cluster<T>, Cluster<T>> kiKey = UnorderedTuple.Create(kCluster, iCluster);
-                    UnorderedTuple<Cluster<T>, Cluster<T>> kjKey = UnorderedTuple.Create(kCluster, jCluster);
+                    var kiKey = UnorderedTuple.Create(kCluster, iCluster);
+                    var kjKey = UnorderedTuple.Create(kCluster, jCluster);
                     distances[UnorderedTuple.Create(kCluster, uCluster)] =
                         (distances[kiKey] + distances[kjKey] - minDist) / 2;
                     distances.Remove(kiKey);

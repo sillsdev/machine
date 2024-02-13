@@ -106,9 +106,7 @@ namespace SIL.Machine.Clusterers
                         }
                     }
                     else
-                    {
                         startIndex = entry.Item2;
-                    }
                 }
                 else if (entry.Item2 == endIndex - 1)
                 {

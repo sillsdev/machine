@@ -9,6 +9,9 @@
 		<AssemblyName>hc</AssemblyName>
 		<Description>A command-line tool for the HermitCrab parser.</Description>
 		<PackageId>SIL.Machine.Morphology.HermitCrab.Tool</PackageId>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

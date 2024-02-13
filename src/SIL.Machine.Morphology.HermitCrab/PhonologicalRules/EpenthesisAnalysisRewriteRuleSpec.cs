@@ -29,10 +29,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)
         {
             foreach (ShapeNode node in match.Input.Shape.GetNodes(match.Range))
-            {
                 if (!node.Annotation.Optional)
                     return true;
-            }
 
             return false;
         }

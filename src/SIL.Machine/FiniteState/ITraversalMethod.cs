@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
@@ -11,8 +10,8 @@ namespace SIL.Machine.FiniteState
         IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         );
     }
 }

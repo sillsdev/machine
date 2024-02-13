@@ -37,7 +37,7 @@ namespace SIL.Machine.Translation.TensorFlow
             _signature = signature ?? new SavedModelTranslateSignature();
             _session = Session.LoadFromSavedModel(modelFilename);
             byte[] bytes = File.ReadAllBytes(Path.Combine(modelFilename, "saved_model.pb"));
-            var metadata = SavedModel.Parser.ParseFrom(bytes);
+            SavedModel metadata = SavedModel.Parser.ParseFrom(bytes);
             bool found = false;
             foreach (MetaGraphDef metaGraph in metadata.MetaGraphs)
             {
@@ -189,10 +189,16 @@ namespace SIL.Machine.Translation.TensorFlow
             CheckDisposed();
 
             var results = new List<IReadOnlyList<TranslationResult>>();
-            foreach (var (sourceTokenStrs, inputTokens, inputLengths) in Batch(segments))
+            foreach (
+                (
+                    IReadOnlyList<IReadOnlyList<string>> sourceTokenStrs,
+                    NDArray inputTokens,
+                    NDArray inputLengths
+                ) in Batch(segments)
+            )
             {
-                var curBatchSize = (int)inputTokens.dims[0];
-                NDArray refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
+                int curBatchSize = (int)inputTokens.dims[0];
+                var refs = new NDArray(Enumerable.Repeat("", curBatchSize).ToArray(), new Shape(curBatchSize, 1));
                 NDArray refsLengths = np.array(Enumerable.Repeat(1, curBatchSize).ToArray());
 
                 _session.graph.as_default();

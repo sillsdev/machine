@@ -15,19 +15,24 @@ namespace SIL.Machine.Translation
             IEnumerable<IReadOnlyList<string>> references
         )
         {
-            var precs = new double[BleuN];
-            var total = new double[BleuN];
+            double[] precisions = new double[BleuN];
+            double[] total = new double[BleuN];
             int transWordCount = 0,
                 refWordCount = 0;
 
-            foreach (var (translation, reference) in translations.Zip(references, (t, r) => (t, r)))
+            foreach (
+                (IReadOnlyList<string> translation, IReadOnlyList<string> reference) in translations.Zip(
+                    references,
+                    (t, r) => (t, r)
+                )
+            )
             {
                 transWordCount += translation.Count;
                 refWordCount += reference.Count;
                 for (int n = 1; n <= BleuN; n++)
                 {
-                    ComputeBleuPrecision(translation, reference, n, out int segPrec, out int segTotal);
-                    precs[n - 1] += segPrec;
+                    ComputeBleuPrecision(translation, reference, n, out int segPrecision, out int segTotal);
+                    precisions[n - 1] += segPrecision;
                     total[n - 1] += segTotal;
                 }
             }
@@ -36,10 +41,10 @@ namespace SIL.Machine.Translation
                 transWordCount < refWordCount ? Math.Exp(1.0 - ((double)refWordCount / transWordCount)) : 1.0;
 
             double bleu = 0;
-            var bleus = new double[BleuN];
+            double[] bleus = new double[BleuN];
             for (int n = 1; n <= BleuN; n++)
             {
-                bleus[n - 1] = total[n - 1] == 0 ? 0 : precs[n - 1] / total[n - 1];
+                bleus[n - 1] = total[n - 1] == 0 ? 0 : precisions[n - 1] / total[n - 1];
                 bleu += (1.0 / BleuN) * (bleus[n - 1] == 0 ? -999999999 : Math.Log(bleus[n - 1]));
             }
             bleu = brevityPenalty * Math.Exp(bleu);
@@ -50,7 +55,7 @@ namespace SIL.Machine.Translation
             IReadOnlyList<string> translation,
             IReadOnlyList<string> reference,
             int n,
-            out int prec,
+            out int precision,
             out int total
         )
         {
@@ -59,7 +64,7 @@ namespace SIL.Machine.Translation
 
             var matched = new HashSet<int>();
 
-            prec = 0;
+            precision = 0;
             for (int i = 0; i < total; i++)
             {
                 for (int j = 0; j < refTotal; j++)
@@ -76,7 +81,7 @@ namespace SIL.Machine.Translation
 
                     if (match && !matched.Contains(j))
                     {
-                        prec++;
+                        precision++;
                         matched.Add(j);
                         break;
                     }
@@ -115,7 +120,12 @@ namespace SIL.Machine.Translation
             int sCount = 0;
             int paCount = 0;
             int saCount = 0;
-            foreach (var (alignment, reference) in alignments.Zip(references, (a, r) => (a, r)))
+            foreach (
+                (
+                    IReadOnlyCollection<AlignedWordPair> alignment,
+                    IReadOnlyCollection<AlignedWordPair> reference
+                ) in alignments.Zip(references, (a, r) => (a, r))
+            )
             {
                 aCount += alignment.Count;
                 foreach (AlignedWordPair wp in reference)
@@ -130,9 +140,7 @@ namespace SIL.Machine.Translation
                         }
                     }
                     else if (alignment.Contains(wp))
-                    {
                         paCount++;
-                    }
                 }
             }
             return (aCount, sCount, paCount, saCount);

@@ -7,10 +7,10 @@ namespace SIL.Machine.Tokenization
 {
     public class LatinWordTokenizer : WhitespaceTokenizer
     {
-        private static readonly Regex InnerWordPunctRegex = new Regex(
+        private static readonly Regex s_innerWordPunctuationRegex = new Regex(
             @"\G[&\-.:=,?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+"
         );
-        private static readonly Regex UrlRegex = new Regex(
+        private static readonly Regex s_urlRegex = new Regex(
             @"^(?:[\w-]+://?|www[.])[^\s()<>]+(?:[\w\d]+|(?:[^\p{P}\s]|/))",
             RegexOptions.IgnoreCase
         );
@@ -24,117 +24,117 @@ namespace SIL.Machine.Tokenization
             _abbreviations = new HashSet<string>(abbreviations.Select(a => a.ToLowerInvariant()));
         }
 
-        public bool TreatApostropheAsSingleQuote = false;
+        public bool _treatApostropheAsSingleQuote = false;
 
         public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
         {
-            var ctxt = new TokenizeContext();
+            var context = new TokenizeContext();
             foreach (Range<int> charRange in base.TokenizeAsRanges(data, range))
             {
-                Match urlMatch = UrlRegex.Match(data.Substring(charRange.Start, charRange.Length));
+                Match urlMatch = s_urlRegex.Match(data.Substring(charRange.Start, charRange.Length));
                 if (urlMatch.Success)
                 {
                     yield return Range<int>.Create(charRange.Start, charRange.Start + urlMatch.Length);
-                    ctxt.Index = charRange.Start + urlMatch.Length;
+                    context.Index = charRange.Start + urlMatch.Length;
                 }
                 else
-                {
-                    ctxt.Index = charRange.Start;
-                }
+                    context.Index = charRange.Start;
 
-                ctxt.WordStart = -1;
-                ctxt.InnerWordPunct = -1;
-                while (ctxt.Index < charRange.End)
+                context.WordStart = -1;
+                context.InnerWordPunct = -1;
+                while (context.Index < charRange.End)
                 {
-                    (Range<int> tokenRange1, Range<int> tokenRange2) = ProcessCharacter(data, range, ctxt);
+                    (Range<int> tokenRange1, Range<int> tokenRange2) = ProcessCharacter(data, range, context);
                     if (tokenRange1 != Range<int>.Null)
                         yield return tokenRange1;
                     if (tokenRange2 != Range<int>.Null)
                         yield return tokenRange2;
                 }
 
-                if (ctxt.WordStart != -1)
+                if (context.WordStart != -1)
                 {
-                    if (ctxt.InnerWordPunct != -1)
+                    if (context.InnerWordPunct != -1)
                     {
-                        string innerPunctStr = data.Substring(ctxt.InnerWordPunct, charRange.End - ctxt.InnerWordPunct);
+                        string innerPunctStr = data.Substring(
+                            context.InnerWordPunct,
+                            charRange.End - context.InnerWordPunct
+                        );
                         if (
-                            (innerPunctStr == "." && IsAbbreviation(data, ctxt.WordStart, ctxt.InnerWordPunct))
-                            || (innerPunctStr == "'" && !TreatApostropheAsSingleQuote)
+                            (innerPunctStr == "." && IsAbbreviation(data, context.WordStart, context.InnerWordPunct))
+                            || (innerPunctStr == "'" && !_treatApostropheAsSingleQuote)
                         )
                         {
-                            yield return Range<int>.Create(ctxt.WordStart, charRange.End);
+                            yield return Range<int>.Create(context.WordStart, charRange.End);
                         }
                         else
                         {
-                            yield return Range<int>.Create(ctxt.WordStart, ctxt.InnerWordPunct);
-                            yield return Range<int>.Create(ctxt.InnerWordPunct, charRange.End);
+                            yield return Range<int>.Create(context.WordStart, context.InnerWordPunct);
+                            yield return Range<int>.Create(context.InnerWordPunct, charRange.End);
                         }
                     }
                     else
-                    {
-                        yield return Range<int>.Create(ctxt.WordStart, charRange.End);
-                    }
+                        yield return Range<int>.Create(context.WordStart, charRange.End);
                 }
             }
         }
 
-        protected virtual (Range<int>, Range<int>) ProcessCharacter(string data, Range<int> range, TokenizeContext ctxt)
+        protected virtual (Range<int>, Range<int>) ProcessCharacter(
+            string data,
+            Range<int> range,
+            TokenizeContext context
+        )
         {
-            var tokenRanges = (Range<int>.Null, Range<int>.Null);
-            char c = data[ctxt.Index];
-            int endIndex = ctxt.Index + 1;
+            (Range<int>, Range<int>) tokenRanges = (Range<int>.Null, Range<int>.Null);
+            char c = data[context.Index];
+            int endIndex = context.Index + 1;
             if (char.IsPunctuation(c) || char.IsSymbol(c) || char.IsControl(c))
             {
                 while (endIndex != range.End && data[endIndex] == c)
                     endIndex++;
-                if (ctxt.WordStart == -1)
+                if (context.WordStart == -1)
                 {
-                    if (c == '\'' && !TreatApostropheAsSingleQuote)
-                        ctxt.WordStart = ctxt.Index;
+                    if (c == '\'' && !_treatApostropheAsSingleQuote)
+                        context.WordStart = context.Index;
                     else
-                        tokenRanges = (Range<int>.Create(ctxt.Index, endIndex), Range<int>.Null);
+                        tokenRanges = (Range<int>.Create(context.Index, endIndex), Range<int>.Null);
                 }
-                else if (ctxt.InnerWordPunct != -1)
+                else if (context.InnerWordPunct != -1)
                 {
-                    string innerPunctStr = data.Substring(ctxt.InnerWordPunct, ctxt.Index - ctxt.InnerWordPunct);
-                    if (innerPunctStr == "'" && !TreatApostropheAsSingleQuote)
-                    {
-                        tokenRanges = (Range<int>.Create(ctxt.WordStart, ctxt.Index), Range<int>.Null);
-                    }
+                    string innerPunctStr = data.Substring(
+                        context.InnerWordPunct,
+                        context.Index - context.InnerWordPunct
+                    );
+                    if (innerPunctStr == "'" && !_treatApostropheAsSingleQuote)
+                        tokenRanges = (Range<int>.Create(context.WordStart, context.Index), Range<int>.Null);
                     else
-                    {
                         tokenRanges = (
-                            Range<int>.Create(ctxt.WordStart, ctxt.InnerWordPunct),
-                            Range<int>.Create(ctxt.InnerWordPunct, ctxt.Index)
+                            Range<int>.Create(context.WordStart, context.InnerWordPunct),
+                            Range<int>.Create(context.InnerWordPunct, context.Index)
                         );
-                    }
-                    ctxt.WordStart = ctxt.Index;
+                    context.WordStart = context.Index;
                 }
                 else
                 {
-                    Match match = InnerWordPunctRegex.Match(data, ctxt.Index);
+                    Match match = s_innerWordPunctuationRegex.Match(data, context.Index);
                     if (match.Success)
                     {
-                        ctxt.InnerWordPunct = ctxt.Index;
-                        ctxt.Index += match.Length;
+                        context.InnerWordPunct = context.Index;
+                        context.Index += match.Length;
                         return tokenRanges;
                     }
 
                     tokenRanges = (
-                        Range<int>.Create(ctxt.WordStart, ctxt.Index),
-                        Range<int>.Create(ctxt.Index, endIndex)
+                        Range<int>.Create(context.WordStart, context.Index),
+                        Range<int>.Create(context.Index, endIndex)
                     );
-                    ctxt.WordStart = -1;
+                    context.WordStart = -1;
                 }
             }
-            else if (ctxt.WordStart == -1)
-            {
-                ctxt.WordStart = ctxt.Index;
-            }
+            else if (context.WordStart == -1)
+                context.WordStart = context.Index;
 
-            ctxt.InnerWordPunct = -1;
-            ctxt.Index = endIndex;
+            context.InnerWordPunct = -1;
+            context.Index = endIndex;
             return tokenRanges;
         }
 

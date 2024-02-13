@@ -32,7 +32,7 @@ namespace SIL.Machine.Corpora
 
         private static string GetId(string archiveFileName, string path, Encoding encoding)
         {
-            using (var archive = ZipFile.OpenRead(archiveFileName))
+            using (ZipArchive archive = ZipFile.OpenRead(archiveFileName))
             {
                 ZipArchiveEntry entry = archive.GetEntry(path);
                 using (var reader = new StreamReader(entry.Open(), encoding))

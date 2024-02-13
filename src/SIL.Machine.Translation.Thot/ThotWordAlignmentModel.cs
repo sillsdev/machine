@@ -120,11 +120,9 @@ namespace SIL.Machine.Translation.Thot
             CheckDisposed();
 
             if (_owned)
-            {
                 throw new InvalidOperationException(
                     "The word alignment model cannot be trained independently of its SMT model."
                 );
-            }
 
             return new Trainer(this, corpus);
         }
@@ -238,8 +236,8 @@ namespace SIL.Machine.Translation.Thot
             {
                 uint transCount = Thot.swAlignTrans_getCount(transHandle);
 
-                var wordIndices = new uint[transCount];
-                var probs = new double[transCount];
+                uint[] wordIndices = new uint[transCount];
+                double[] probs = new double[transCount];
                 Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
 
                 return wordIndices.Zip(probs, (w, p) => (TargetWords[(int)w], p));
@@ -263,8 +261,8 @@ namespace SIL.Machine.Translation.Thot
             {
                 uint transCount = Thot.swAlignTrans_getCount(transHandle);
 
-                var wordIndices = new uint[transCount];
-                var probs = new double[transCount];
+                uint[] wordIndices = new uint[transCount];
+                double[] probs = new double[transCount];
                 Thot.swAlignTrans_getTranslations(transHandle, wordIndices, probs, transCount);
 
                 return wordIndices.Zip(probs, (w, p) => ((int)w, p));

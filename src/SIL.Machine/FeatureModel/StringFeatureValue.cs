@@ -82,8 +82,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as StringFeatureValue;
-            if (otherSfv == null)
+            if (!(other is StringFeatureValue otherSfv))
                 return false;
 
             not = not ? !Not : Not;
@@ -101,8 +100,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as StringFeatureValue;
-            if (otherSfv == null)
+            if (!(other is StringFeatureValue otherSfv))
                 return false;
 
             not = not ? !Not : Not;
@@ -120,8 +118,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as StringFeatureValue;
-            if (otherSfv == null)
+            if (!(other is StringFeatureValue otherSfv))
                 return;
 
             not = not ? !Not : Not;
@@ -151,8 +148,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void UnionWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as StringFeatureValue;
-            if (otherSfv == null)
+            if (!(other is StringFeatureValue otherSfv))
                 return;
 
             not = not ? !Not : Not;
@@ -182,8 +178,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void ExceptWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as StringFeatureValue;
-            if (otherSfv == null)
+            if (!(other is StringFeatureValue otherSfv))
                 return;
 
             not = not ? !Not : Not;

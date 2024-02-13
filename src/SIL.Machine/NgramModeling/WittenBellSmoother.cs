@@ -37,7 +37,7 @@ namespace SIL.Machine.NgramModeling
             if (freqDist.ObservedSamples.Count == 0)
                 return 0;
 
-            double numer =
+            double numerator =
                 freqDist[item]
                 + (
                     freqDist.ObservedSamples.Count
@@ -47,8 +47,8 @@ namespace SIL.Machine.NgramModeling
                             : _lowerOrderModel.GetProbability(item, context.SkipFirst(_dir))
                     )
                 );
-            double denom = freqDist.SampleOutcomeCount + freqDist.ObservedSamples.Count;
-            return numer / denom;
+            double denominator = freqDist.SampleOutcomeCount + freqDist.ObservedSamples.Count;
+            return numerator / denominator;
         }
 
         public NgramModel<TSeq, TItem> LowerOrderModel

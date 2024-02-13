@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 {
     public class WordGraph
     {
-        private static readonly int[] EmptyArcIndices = new int[0];
+        private static readonly int[] s_emptyArcIndices = new int[0];
 
         public const int InitialState = 0;
 
@@ -64,7 +64,7 @@ namespace SIL.Machine.Translation
             StateInfo stateInfo;
             if (_states.TryGetValue(state, out stateInfo))
                 return stateInfo.PrevArcIndices;
-            return EmptyArcIndices;
+            return s_emptyArcIndices;
         }
 
         public IReadOnlyList<int> GetNextArcIndices(int state)
@@ -72,7 +72,7 @@ namespace SIL.Machine.Translation
             StateInfo stateInfo;
             if (_states.TryGetValue(state, out stateInfo))
                 return stateInfo.NextArcIndices;
-            return EmptyArcIndices;
+            return s_emptyArcIndices;
         }
 
         public IEnumerable<double> ComputeRestScores()
@@ -124,11 +124,8 @@ namespace SIL.Machine.Translation
                     }
                     accessibleStates.Add(arc.NextState);
                 }
-                else
-                {
-                    if (!accessibleStates.Contains(arc.NextState))
-                        prevScores[arc.NextState] = LogSpace.Zero;
-                }
+                else if (!accessibleStates.Contains(arc.NextState))
+                    prevScores[arc.NextState] = LogSpace.Zero;
             }
         }
 
@@ -202,13 +199,11 @@ namespace SIL.Machine.Translation
 
                         Path path;
                         if (dfaState.Paths.TryGetValue(nfaState.StateIndex, out Path prevPath))
-                        {
                             path = new Path(
                                 prevPath.StartState,
                                 prevPath.Arcs.Concat(arcIndex),
                                 LogSpace.Multiply(prevPath.Score, arc.Score)
                             );
-                        }
                         else
                         {
                             path = new Path(dfaState.Index, new[] { arcIndex }, arc.Score);
@@ -239,14 +234,10 @@ namespace SIL.Machine.Translation
                         int stateIndex = candidateArc.IsNextSubState ? dfaState.Index : nextDfaStateIndex++;
                         nextDfaState = new DfaState(stateIndex, candidateArc.NfaStates);
                         if (candidateArc.IsNextSubState)
-                        {
                             foreach (KeyValuePair<int, Path> kvp in candidateArc.Paths)
                                 nextDfaState.Paths.Add(kvp);
-                        }
                         else
-                        {
                             dfaStates.Add(nextDfaState);
-                        }
                         unmarkedStates.Enqueue(nextDfaState);
                     }
 
@@ -293,14 +284,10 @@ namespace SIL.Machine.Translation
             foreach (NfaState nfaState in dfaState.NfaStates)
             {
                 if (nfaState.IsSubState)
-                {
                     yield return (nfaState.ArcIndex, nfaState);
-                }
                 else
-                {
                     foreach (int arcIndex in GetNextArcIndices(nfaState.StateIndex))
                         yield return (arcIndex, nfaState);
-                }
             }
         }
 
@@ -330,9 +317,7 @@ namespace SIL.Machine.Translation
             while (!end)
             {
                 if (curState == state)
-                {
                     end = true;
-                }
                 else
                 {
                     int arcIndex = stateBestPredArcs[curState];
@@ -389,7 +374,7 @@ namespace SIL.Machine.Translation
 
             public override int GetHashCode()
             {
-                var hashCode = -1525131978;
+                int hashCode = -1525131978;
                 hashCode = hashCode * -1521134295 + StateIndex.GetHashCode();
                 hashCode = hashCode * -1521134295 + ArcIndex.GetHashCode();
                 hashCode = hashCode * -1521134295 + WordIndex.GetHashCode();

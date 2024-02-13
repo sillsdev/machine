@@ -40,8 +40,7 @@ namespace SIL.Machine.Morphology
 
         public bool HaveSameStem(TSeq x, TSeq y)
         {
-            double score;
-            return HaveSameStem(x, y, out score);
+            return HaveSameStem(x, y, out double _);
         }
 
         public bool HaveSameStem(TSeq x, TSeq y, out double score)

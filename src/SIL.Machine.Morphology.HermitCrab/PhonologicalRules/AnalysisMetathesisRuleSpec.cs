@@ -22,7 +22,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _rightGroupName = rightGroupName;
 
             Group<Word, ShapeNode>[] groupOrder = pattern.Children.OfType<Group<Word, ShapeNode>>().ToArray();
-            Dictionary<string, Group<Word, ShapeNode>> groups = groupOrder.ToDictionary(g => g.Name);
+            var groups = groupOrder.ToDictionary(g => g.Name);
             _pattern = new Pattern<Word, ShapeNode>();
             foreach (
                 PatternNode<Word, ShapeNode> node in pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>))

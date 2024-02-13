@@ -52,8 +52,6 @@ public class NmtClearMLBuildJobFactory(
                 + "run(args)\n";
         }
         else
-        {
             throw new ArgumentException("Unknown build stage.", nameof(stage));
-        }
     }
 }

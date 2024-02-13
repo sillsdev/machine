@@ -51,22 +51,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             string[] strRepsArray = strReps.ToArray();
             string[] normalizedStrRepsArray = strRepsArray.Select(s => s.Normalize(NormalizationForm.FormD)).ToArray();
             if (normalizedStrRepsArray.Any(s => _charDefLookup.ContainsKey(s)))
-            {
                 throw new ArgumentException(
                     "The table already contains a character definition with one of the specified representations.",
                     "strReps"
                 );
-            }
 
             if (fs == null)
-            {
                 fs = FeatureStruct
                     .New()
                     .Symbol(type)
                     .Feature(HCFeatureSystem.StrRep)
                     .EqualTo(normalizedStrRepsArray)
                     .Value;
-            }
             else
             {
                 fs.AddValue(HCFeatureSystem.Type, type);
@@ -89,13 +85,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         public IEnumerable<string> GetMatchingStrReps(ShapeNode node)
         {
             foreach (CharacterDefinition cd in this)
-            {
                 if (cd.FeatureStruct.IsUnifiable(node.Annotation.FeatureStruct))
-                {
                     foreach (string representation in cd.Representations)
                         yield return representation;
-                }
-            }
         }
 
         private bool GetShapeNodes(string str, out IEnumerable<ShapeNode> nodes, out int errorPos)

@@ -174,9 +174,7 @@ namespace SIL.Machine.SequenceAlignment
                 _result = new Alignment<TSeq, TItem>(alignment.RawScore, alignment.NormalizedScore, reorderedSequences);
             }
             else
-            {
                 _result = alignment;
-            }
         }
 
         public Alignment<TSeq, TItem> GetAlignment()

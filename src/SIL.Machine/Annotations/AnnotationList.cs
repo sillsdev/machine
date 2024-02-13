@@ -67,11 +67,9 @@ namespace SIL.Machine.Annotations
         public int GetFrozenHashCode()
         {
             if (!IsFrozen)
-            {
                 throw new InvalidOperationException(
                     "The annotation list does not have a valid hash code, because it is mutable."
                 );
-            }
             return _hashCode;
         }
 
@@ -122,13 +120,10 @@ namespace SIL.Machine.Annotations
         {
             CheckFrozen();
             if (_parent != null && !_parent.Range.Contains(node.Range))
-            {
                 throw new ArgumentException(
                     "The new annotation must be within the range of the parent annotation.",
                     nameof(node)
                 );
-            }
-
             node.Remove(false);
             if (subsume)
             {
@@ -163,11 +158,8 @@ namespace SIL.Machine.Annotations
             if (base.Remove(node))
             {
                 if (preserveChildren)
-                {
                     foreach (Annotation<TOffset> ann in node.Children.ToArray())
                         Add(ann, false);
-                }
-
                 return true;
             }
 
@@ -204,7 +196,7 @@ namespace SIL.Machine.Annotations
             }
             else
             {
-                Range<TOffset> offsetRange = Range<TOffset>.Create(offset, Direction.RightToLeft);
+                var offsetRange = Range<TOffset>.Create(offset, Direction.RightToLeft);
                 if (Find(new Annotation<TOffset>(offsetRange), Direction.RightToLeft, out result))
                     return true;
 

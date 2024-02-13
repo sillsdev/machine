@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks;
 
-namespace SIL.Machine
+namespace SIL.Machine;
+
+public class Program
 {
-    public class Program
+    public static Task<int> Main(string[] args)
     {
-        public static Task<int> Main(string[] args)
-        {
-            var app = new App();
-            return app.ExecuteAsync(args);
-        }
+        var app = new App();
+        return app.ExecuteAsync(args);
     }
 }

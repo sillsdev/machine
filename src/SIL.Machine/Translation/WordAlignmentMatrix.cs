@@ -15,10 +15,8 @@ namespace SIL.Machine.Translation
         {
             _matrix = new bool[rowCount, columnCount];
             if (setValues != null)
-            {
                 foreach ((int i, int j) in setValues)
                     _matrix[i, j] = true;
-            }
         }
 
         private WordAlignmentMatrix(WordAlignmentMatrix other)
@@ -91,30 +89,24 @@ namespace SIL.Machine.Translation
         public bool IsDiagonalNeighborAligned(int i, int j)
         {
             foreach ((int di, int dj) in new[] { (1, 1), (-1, 1), (1, -1), (-1, -1) })
-            {
                 if (GetSafe(i + di, j + dj))
                     return true;
-            }
             return false;
         }
 
         public bool IsHorizontalNeighborAligned(int i, int j)
         {
             foreach ((int di, int dj) in new[] { (0, 1), (0, -1) })
-            {
                 if (GetSafe(i + di, j + dj))
                     return true;
-            }
             return false;
         }
 
         public bool IsVerticalNeighborAligned(int i, int j)
         {
             foreach ((int di, int dj) in new[] { (1, 0), (-1, 0) })
-            {
                 if (GetSafe(i + di, j + dj))
                     return true;
-            }
             return false;
         }
 
@@ -197,9 +189,9 @@ namespace SIL.Machine.Translation
 
             WordAlignmentMatrix orig = Clone();
             IntersectWith(other);
-            bool IsBlockNeighorAligned(int i, int j) =>
+            bool IsBlockNeighborAligned(int i, int j) =>
                 IsHorizontalNeighborAligned(i, j) || IsVerticalNeighborAligned(i, j);
-            OchGrow(IsBlockNeighorAligned, orig, other);
+            OchGrow(IsBlockNeighborAligned, orig, other);
         }
 
         public void PrioritySymmetrizeWith(WordAlignmentMatrix other)
@@ -358,7 +350,7 @@ namespace SIL.Machine.Translation
 
         public void Transpose()
         {
-            var newMatrix = new bool[ColumnCount, RowCount];
+            bool[,] newMatrix = new bool[ColumnCount, RowCount];
             for (int i = 0; i < RowCount; i++)
             {
                 for (int j = 0; j < ColumnCount; j++)
@@ -372,7 +364,7 @@ namespace SIL.Machine.Translation
             out IReadOnlyList<int> targetIndices
         )
         {
-            var source = new int[ColumnCount];
+            int[] source = new int[ColumnCount];
             int[] target = Enumerable.Repeat(-2, RowCount).ToArray();
             var wordPairs = new List<AlignedWordPair>();
             int prev = -1;
@@ -438,7 +430,7 @@ namespace SIL.Machine.Translation
             // all remaining target indices are unaligned, so fill them in
             if (includeNull && nullAlignedTargetIndices.Count > 0)
             {
-                var nullAlignedTargetWordPairs = nullAlignedTargetIndices
+                IEnumerable<AlignedWordPair> nullAlignedTargetWordPairs = nullAlignedTargetIndices
                     .OrderBy(j => j)
                     .Select(j => new AlignedWordPair(-1, j));
                 wordPairs = nullAlignedTargetWordPairs.Concat(wordPairs).ToList();
@@ -535,7 +527,7 @@ namespace SIL.Machine.Translation
             if (rowCount == RowCount && columnCount == ColumnCount)
                 return;
 
-            var newMatrix = new bool[rowCount, columnCount];
+            bool[,] newMatrix = new bool[rowCount, columnCount];
             int minI = Math.Min(RowCount, rowCount);
             int minJ = Math.Min(ColumnCount, columnCount);
 

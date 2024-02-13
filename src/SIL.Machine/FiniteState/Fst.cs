@@ -11,13 +11,13 @@ using SIL.ObjectModel;
 namespace SIL.Machine.FiniteState
 {
     /// <summary>
-    /// A finite state transducer that works withs annotations with feature structures.
+    /// A finite state transducer that works with annotations with feature structures.
     ///
     /// Note: Deterministic FSTs do not work properly with input annotations that have feature structures with
-    /// underspecified feature values, i.e. symbolic or string feature values with more than one symbol or string.
-    /// These underspecified feature values can make the input ambiguous and cause a deterministic FST to have
+    /// under specified feature values, i.e. symbolic or string feature values with more than one symbol or string.
+    /// These under specified feature values can make the input ambiguous and cause a deterministic FST to have
     /// different results than the equivalent non-deterministic FST for the same input. If it is possible
-    /// for the input to contain underspecified feature values, then a non-deterministic FST should be used.
+    /// for the input to contain under specified feature values, then a non-deterministic FST should be used.
     /// </summary>
     public class Fst<TData, TOffset> : IFreezable
         where TData : IAnnotatedData<TOffset>
@@ -138,8 +138,8 @@ namespace SIL.Machine.FiniteState
                 return true;
             }
 
-            start = default(TOffset);
-            end = default(TOffset);
+            start = default;
+            end = default;
             return false;
         }
 
@@ -359,23 +359,25 @@ namespace SIL.Machine.FiniteState
 
             int annIndex = traversalMethod.Annotations.IndexOf(start);
 
-            var initAnns = new HashSet<int>();
+            var initAnnotations = new HashSet<int>();
             while (annIndex < traversalMethod.Annotations.Count)
             {
                 var initRegisters = new Register<TOffset>[_registerCount, 2];
 
-                var cmds = new List<TagMapCommand>();
+                var commands = new List<TagMapCommand>();
                 foreach (TagMapCommand cmd in _initializers)
                 {
                     if (cmd.Dest == 0)
+                    {
                         initRegisters[cmd.Dest, 0]
                             .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
+                    }
                     else
-                        cmds.Add(cmd);
+                        commands.Add(cmd);
                 }
 
-                List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns)
+                var curResults = traversalMethod
+                    .Traverse(ref annIndex, initRegisters, commands, initAnnotations)
                     .ToList();
                 if (curResults.Count > 0)
                 {
@@ -411,9 +413,7 @@ namespace SIL.Machine.FiniteState
             if (_dir == Direction.RightToLeft)
                 compare = -compare;
             if (IsDeterministic)
-            {
                 compare = x.IsLazy ? -compare : compare;
-            }
             else if (compare == 0)
             {
                 foreach (Tuple<int, int> priorityPair in x.Priorities.Zip(y.Priorities))
@@ -561,8 +561,7 @@ namespace SIL.Machine.FiniteState
 
             public override bool Equals(object obj)
             {
-                var other = obj as SubsetState;
-                return other != null && Equals(other);
+                return obj is SubsetState other && Equals(other);
             }
 
             public bool Equals(SubsetState other)
@@ -622,7 +621,9 @@ namespace SIL.Machine.FiniteState
                             out newCond
                         )
                     )
+                    {
                         newCond = null;
+                    }
                     if (newCond != null)
                         temp.Add(Tuple.Create(newCond, preprocessedCond.Item2, preprocessedCond.Item3.Concat(cond)));
 
@@ -661,7 +662,9 @@ namespace SIL.Machine.FiniteState
                                 int
                             > arc in GetAllArcsForInput(input, from, groups, 0, Enumerable.Empty<NfaStateInfo>())
                         )
+                        {
                             yield return arc;
+                        }
                     }
                 }
             }
@@ -720,10 +723,8 @@ namespace SIL.Machine.FiniteState
                 }
 
                 if (commonPrefix.Count > 0)
-                {
                     foreach (NfaStateInfo state in targetStates)
                         state.Outputs.RemoveRange(0, commonPrefix.Count);
-                }
 
                 yield return Tuple.Create(
                     new SubsetState(targetStates),
@@ -745,7 +746,9 @@ namespace SIL.Machine.FiniteState
                             states.Concat(state)
                         )
                     )
+                    {
                         yield return arc;
+                    }
                 }
             }
         }
@@ -849,6 +852,7 @@ namespace SIL.Machine.FiniteState
                         curSubsetState
                     )
                 )
+                {
                     CreateOptimizedArc(
                         newFst,
                         subsetStates,
@@ -860,6 +864,7 @@ namespace SIL.Machine.FiniteState
                         t.Item3,
                         t.Item4
                     );
+                }
             }
 
             var regNums = new Dictionary<int, int>();
@@ -879,10 +884,10 @@ namespace SIL.Machine.FiniteState
         private void RenumberCommands(
             Fst<TData, TOffset> newFst,
             Dictionary<int, int> regNums,
-            List<TagMapCommand> cmds
+            List<TagMapCommand> commands
         )
         {
-            foreach (TagMapCommand cmd in cmds)
+            foreach (TagMapCommand cmd in commands)
             {
                 if (cmd.Src != TagMapCommand.CurrentPosition && !regNums.ContainsKey(cmd.Src))
                     regNums[cmd.Src] = newFst._registerCount++;
@@ -892,7 +897,7 @@ namespace SIL.Machine.FiniteState
                     cmd.Src = regNums[cmd.Src];
                 cmd.Dest = regNums[cmd.Dest];
             }
-            cmds.Sort();
+            commands.Sort();
         }
 
         private void CreateOptimizedArc(
@@ -927,12 +932,12 @@ namespace SIL.Machine.FiniteState
                 }
             }
 
-            var cmds = new List<TagMapCommand>();
+            var commands = new List<TagMapCommand>();
 
             SubsetState subsetState;
             if (subsetStates.TryGetValue(target, out subsetState))
             {
-                ReorderTagIndices(target, subsetState, registerIndices, cmds);
+                ReorderTagIndices(target, subsetState, registerIndices, commands);
                 target = subsetState;
             }
             else
@@ -946,7 +951,7 @@ namespace SIL.Machine.FiniteState
             {
                 int reg = GetRegisterIndex(registerIndices, tag.Key, tag.Value);
                 bool found = false;
-                foreach (TagMapCommand cmd in cmds)
+                foreach (TagMapCommand cmd in commands)
                 {
                     if (cmd.Src == reg)
                     {
@@ -956,10 +961,10 @@ namespace SIL.Machine.FiniteState
                     }
                 }
                 if (!found)
-                    cmds.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
+                    commands.Add(new TagMapCommand(reg, TagMapCommand.CurrentPosition));
             }
 
-            curSubsetState.State.Arcs.Add(input, outputs, target.State, cmds, priority);
+            curSubsetState.State.Arcs.Add(input, outputs, target.State, commands, priority);
         }
 
         private void CreateOptimizedState(
@@ -1004,9 +1009,7 @@ namespace SIL.Machine.FiniteState
                     }
                 }
                 if (accepting)
-                {
                     subsetState.State = newFst.CreateAcceptingState(acceptInfos, finishers, isLazy);
-                }
                 else
                 {
                     subsetState.State = newFst.CreateState();
@@ -1022,9 +1025,7 @@ namespace SIL.Machine.FiniteState
                 }
             }
             else
-            {
                 subsetState.State = newFst.CreateState();
-            }
         }
 
         private bool IsLazyAcceptingState(SubsetState state)
@@ -1059,10 +1060,10 @@ namespace SIL.Machine.FiniteState
             SubsetState from,
             SubsetState to,
             Dictionary<Tuple<int, int>, int> registerIndices,
-            List<TagMapCommand> cmds
+            List<TagMapCommand> commands
         )
         {
-            var newCmds = new List<TagMapCommand>();
+            var newCommands = new List<TagMapCommand>();
             var reorderedIndices = new Dictionary<Tuple<int, int>, int>();
             var reorderedStates = new Dictionary<Tuple<int, int>, NfaStateInfo>();
 
@@ -1075,7 +1076,7 @@ namespace SIL.Machine.FiniteState
 
                     foreach (KeyValuePair<int, int> fromTag in fromState.Tags)
                     {
-                        Tuple<int, int> tagIndex = Tuple.Create(fromTag.Key, toState.Tags[fromTag.Key]);
+                        var tagIndex = Tuple.Create(fromTag.Key, toState.Tags[fromTag.Key]);
 
                         int index;
                         if (reorderedIndices.TryGetValue(tagIndex, out index))
@@ -1088,18 +1089,20 @@ namespace SIL.Machine.FiniteState
                                     && state.LastPriority <= fromState.LastPriority
                                 )
                             )
+                            {
                                 continue;
+                            }
 
                             int src = GetRegisterIndex(registerIndices, fromTag.Key, index);
                             int dest = GetRegisterIndex(registerIndices, fromTag.Key, tagIndex.Item2);
-                            newCmds.RemoveAll(cmd => cmd.Src == src && cmd.Dest == dest);
+                            newCommands.RemoveAll(cmd => cmd.Src == src && cmd.Dest == dest);
                         }
 
                         if (tagIndex.Item2 != fromTag.Value)
                         {
                             int src = GetRegisterIndex(registerIndices, fromTag.Key, fromTag.Value);
                             int dest = GetRegisterIndex(registerIndices, fromTag.Key, tagIndex.Item2);
-                            newCmds.Add(new TagMapCommand(dest, src));
+                            newCommands.Add(new TagMapCommand(dest, src));
                         }
 
                         reorderedIndices[tagIndex] = fromTag.Value;
@@ -1107,7 +1110,7 @@ namespace SIL.Machine.FiniteState
                     }
                 }
             }
-            cmds.AddRange(newCmds);
+            commands.AddRange(newCommands);
         }
 
         private static IEnumerable<NfaStateInfo> EpsilonClosure(IEnumerable<NfaStateInfo> from, int index)
@@ -1177,9 +1180,8 @@ namespace SIL.Machine.FiniteState
             if (index == 0)
                 return tag;
 
-            Tuple<int, int> key = Tuple.Create(tag, index);
-            int registerIndex;
-            if (registerIndices.TryGetValue(key, out registerIndex))
+            var key = Tuple.Create(tag, index);
+            if (registerIndices.TryGetValue(key, out int registerIndex))
                 return registerIndex;
 
             registerIndex = _nextTag + registerIndices.Count;
@@ -1208,10 +1210,8 @@ namespace SIL.Machine.FiniteState
                 var visitedStates = new HashSet<State<TData, TOffset>>();
                 var visitedArcs = new HashSet<Arc<TData, TOffset>>();
                 foreach (State<TData, TOffset> state in _states)
-                {
                     if (HasEpsilonLoopImpl(state, state, visitedStates, visitedArcs))
                         return true;
-                }
                 return false;
             }
         }
@@ -1309,8 +1309,7 @@ namespace SIL.Machine.FiniteState
             fst.StartState = startState.IsAccepting
                 ? fst.CreateAcceptingState(startState.AcceptInfos)
                 : fst.CreateState();
-            var copies = new Dictionary<State<TData, TOffset>, State<TData, TOffset>>();
-            copies[startState] = fst.StartState;
+            var copies = new Dictionary<State<TData, TOffset>, State<TData, TOffset>> { [startState] = fst.StartState };
             fst.StartState.Arcs.Add(arc.Input, arc.Outputs, Copy(fst, arc.Target, CopyAddArc, copies));
             return fst;
         }
@@ -1329,9 +1328,7 @@ namespace SIL.Machine.FiniteState
                     state.Arcs.Add(target, arc.PriorityType);
             }
             else
-            {
                 state.Arcs.Add(arc.Input, arc.Outputs, target);
-            }
         }
 
         private static State<TData, TOffset> Copy(
@@ -1366,10 +1363,8 @@ namespace SIL.Machine.FiniteState
                 return true;
             visited.Add(state);
             foreach (Arc<TData, TOffset> arc in state.Arcs)
-            {
                 if (HasLoopImpl(arc.Target, visited))
                     return true;
-            }
             return false;
         }
 
@@ -1441,13 +1436,9 @@ namespace SIL.Machine.FiniteState
                     state.Arcs.Add(target, arc.PriorityType);
             }
             else if (arc.Outputs[0] is RemoveOutput<TData, TOffset>)
-            {
                 state.Arcs.Add(target);
-            }
             else
-            {
                 state.Arcs.Add(arc.Outputs[0].FeatureStruct, target);
-            }
         }
 
         public Fst<TData, TOffset> GetInputAcceptor()
@@ -1485,9 +1476,7 @@ namespace SIL.Machine.FiniteState
                     state.Arcs.Add(target, arc.PriorityType);
             }
             else
-            {
                 state.Arcs.Add(arc.Input.FeatureStruct, target);
-            }
         }
 
         public bool IsEquivalentTo(Fst<TData, TOffset> otherFst)
@@ -1642,7 +1631,7 @@ namespace SIL.Machine.FiniteState
                 }
             }
 
-            Dictionary<State<TData, TOffset>, State<TData, TOffset>> nondistinguisablePairs = partitions
+            var nondistinguisablePairs = partitions
                 .Where(p => p.Count > 1)
                 .SelectMany(
                     p => p.Where(state => !state.Equals(p.First())),
@@ -1704,7 +1693,9 @@ namespace SIL.Machine.FiniteState
                         || !_state.AcceptInfos.SequenceEqual(other._state.AcceptInfos)
                     )
                 )
+                {
                     return false;
+                }
 
                 if (_arc == null)
                     return other._arc == null;
@@ -1752,7 +1743,7 @@ namespace SIL.Machine.FiniteState
             var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
             var newStates =
                 new Dictionary<Tuple<State<TData, TOffset>, State<TData, TOffset>>, State<TData, TOffset>>();
-            Tuple<State<TData, TOffset>, State<TData, TOffset>> pair = Tuple.Create(StartState, other.StartState);
+            var pair = Tuple.Create(StartState, other.StartState);
             queue.Enqueue(pair);
             newStates[pair] = newFst.StartState;
             while (queue.Count > 0)
@@ -1767,7 +1758,6 @@ namespace SIL.Machine.FiniteState
                 foreach (Arc<TData, TOffset> arc1 in p.Item1.Arcs)
                 {
                     if (arc1.Input.IsEpsilon)
-                    {
                         newArcs.Add(
                             Tuple.Create(
                                 arc1.Target,
@@ -1777,7 +1767,6 @@ namespace SIL.Machine.FiniteState
                                 arc1.PriorityType
                             )
                         );
-                    }
                     else
                     {
                         foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => !a.Input.IsEpsilon))
@@ -1813,9 +1802,8 @@ namespace SIL.Machine.FiniteState
                     > newArc in newArcs
                 )
                 {
-                    Tuple<State<TData, TOffset>, State<TData, TOffset>> key = Tuple.Create(newArc.Item1, newArc.Item2);
-                    State<TData, TOffset> r;
-                    if (!newStates.TryGetValue(key, out r))
+                    var key = Tuple.Create(newArc.Item1, newArc.Item2);
+                    if (!newStates.TryGetValue(key, out State<TData, TOffset> r))
                     {
                         if (newArc.Item1.IsAccepting && newArc.Item2.IsAccepting)
                             r = newFst.CreateAcceptingState(newArc.Item1.AcceptInfos.Concat(newArc.Item2.AcceptInfos));
@@ -1833,9 +1821,7 @@ namespace SIL.Machine.FiniteState
                             s.Arcs.Add(r, newArc.Item5);
                     }
                     else
-                    {
                         s.Arcs.Add(newArc.Item3, r);
-                    }
                 }
             }
             return newFst;
@@ -1868,7 +1854,7 @@ namespace SIL.Machine.FiniteState
             var queue = new Queue<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
             var newStates =
                 new Dictionary<Tuple<State<TData, TOffset>, State<TData, TOffset>>, State<TData, TOffset>>();
-            Tuple<State<TData, TOffset>, State<TData, TOffset>> pair = Tuple.Create(StartState, other.StartState);
+            var pair = Tuple.Create(StartState, other.StartState);
             queue.Enqueue(pair);
             newStates[pair] = newFst.StartState;
             while (queue.Count > 0)
@@ -1890,7 +1876,6 @@ namespace SIL.Machine.FiniteState
                 foreach (Arc<TData, TOffset> arc1 in p.Item1.Arcs)
                 {
                     if (arc1.Outputs.Count == 0 || arc1.Outputs[0] is RemoveOutput<TData, TOffset>)
-                    {
                         newArcs.Add(
                             Tuple.Create(
                                 arc1.Target,
@@ -1901,7 +1886,6 @@ namespace SIL.Machine.FiniteState
                                 arc1.PriorityType
                             )
                         );
-                    }
                     else
                     {
                         FeatureStruct compareFs;
@@ -1911,9 +1895,7 @@ namespace SIL.Machine.FiniteState
                             compareFs.PriorityUnion(arc1.Outputs[0].FeatureStruct);
                         }
                         else
-                        {
                             compareFs = arc1.Outputs[0].FeatureStruct;
-                        }
 
                         foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => !a.Input.IsEpsilon))
                         {
@@ -1938,9 +1920,7 @@ namespace SIL.Machine.FiniteState
                                             output = new ReplaceOutput<TData, TOffset>(fs);
                                     }
                                     else
-                                    {
                                         output = arc2.Outputs[0];
-                                    }
                                 }
 
                                 newArcs.Add(
@@ -1981,7 +1961,7 @@ namespace SIL.Machine.FiniteState
                     > newArc in newArcs
                 )
                 {
-                    Tuple<State<TData, TOffset>, State<TData, TOffset>> key = Tuple.Create(newArc.Item1, newArc.Item2);
+                    var key = Tuple.Create(newArc.Item1, newArc.Item2);
                     State<TData, TOffset> r;
                     if (!newStates.TryGetValue(key, out r))
                     {
@@ -2001,7 +1981,6 @@ namespace SIL.Machine.FiniteState
                             s.Arcs.Add(r, newArc.Item6);
                     }
                     else
-                    {
                         s.Arcs.Add(
                             newArc.Item3,
                             newArc.Item4 == null
@@ -2009,7 +1988,6 @@ namespace SIL.Machine.FiniteState
                                 : newArc.Item4.ToEnumerable(),
                             r
                         );
-                    }
                 }
             }
             return newFst;

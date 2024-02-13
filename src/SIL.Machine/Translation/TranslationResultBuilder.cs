@@ -115,9 +115,7 @@ namespace SIL.Machine.Translation
                             _sources[j] = TranslationSources.Prefix;
                         }
                         else if (wordOp == EditOperation.Hit)
-                        {
                             _sources[j] |= TranslationSources.Prefix;
-                        }
 
                         alignmentColsToCopy.Add(i);
 

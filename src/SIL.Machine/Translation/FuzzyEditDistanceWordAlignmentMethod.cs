@@ -109,9 +109,7 @@ namespace SIL.Machine.Translation
                         }
                     }
                     else
-                    {
                         waMatrix[bestIndex, j] = true;
-                    }
                 }
             }
 

@@ -50,43 +50,31 @@ namespace SIL.Machine.Morphology.HermitCrab
         private void MorphologicalRulesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (IMorphologicalRule mr in e.OldItems)
                     mr.Stratum = null;
-            }
             if (e.NewItems != null)
-            {
                 foreach (IMorphologicalRule mr in e.NewItems)
                     mr.Stratum = this;
-            }
         }
 
         private void TemplatesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (AffixTemplate template in e.OldItems)
                     template.Stratum = null;
-            }
             if (e.NewItems != null)
-            {
                 foreach (AffixTemplate template in e.NewItems)
                     template.Stratum = this;
-            }
         }
 
         private void EntriesChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (e.OldItems != null)
-            {
                 foreach (LexEntry entry in e.OldItems)
                     entry.Stratum = null;
-            }
             if (e.NewItems != null)
-            {
                 foreach (LexEntry entry in e.NewItems)
                     entry.Stratum = this;
-            }
         }
 
         /// <summary>

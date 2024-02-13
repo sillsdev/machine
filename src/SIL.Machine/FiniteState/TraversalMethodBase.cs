@@ -90,18 +90,18 @@ namespace SIL.Machine.FiniteState
         public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         );
 
         protected static void ExecuteCommands(
             Register<TOffset>[,] registers,
-            IEnumerable<TagMapCommand> cmds,
+            IEnumerable<TagMapCommand> commands,
             Register<TOffset> start,
             Register<TOffset> end
         )
         {
-            foreach (TagMapCommand cmd in cmds)
+            foreach (TagMapCommand cmd in commands)
             {
                 if (cmd.Src == TagMapCommand.CurrentPosition)
                 {
@@ -148,8 +148,7 @@ namespace SIL.Machine.FiniteState
                     foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
                     {
                         TData resOutput = output;
-                        var cloneable = resOutput as ICloneable<TData>;
-                        if (cloneable != null)
+                        if (resOutput is ICloneable<TData> cloneable)
                             resOutput = cloneable.Clone();
 
                         var candidate = new FstResult<TData, TOffset>(
@@ -157,11 +156,11 @@ namespace SIL.Machine.FiniteState
                             acceptInfo.ID,
                             matchRegisters,
                             resOutput,
-                            varBindings == null ? null : varBindings.Clone(),
+                            varBindings?.Clone(),
                             acceptInfo.Priority,
                             arc.Target.IsLazy,
                             ann,
-                            priorities == null ? null : priorities.ToArray(),
+                            priorities?.ToArray(),
                             curResults.Count
                         );
                         if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
@@ -171,8 +170,7 @@ namespace SIL.Machine.FiniteState
                 else
                 {
                     TData resOutput = output;
-                    var cloneable = resOutput as ICloneable<TData>;
-                    if (cloneable != null)
+                    if (resOutput is ICloneable<TData> cloneable)
                         resOutput = cloneable.Clone();
                     curResults.Add(
                         new FstResult<TData, TOffset>(
@@ -180,11 +178,11 @@ namespace SIL.Machine.FiniteState
                             null,
                             matchRegisters,
                             resOutput,
-                            varBindings == null ? null : varBindings.Clone(),
+                            varBindings?.Clone(),
                             -1,
                             arc.Target.IsLazy,
                             ann,
-                            priorities == null ? null : priorities.ToArray(),
+                            priorities?.ToArray(),
                             curResults.Count
                         )
                     );
@@ -195,11 +193,11 @@ namespace SIL.Machine.FiniteState
         protected IEnumerable<TInst> Initialize(
             ref int annIndex,
             Register<TOffset>[,] registers,
-            IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> commands,
+            ISet<int> initAnnotations
         )
         {
-            var insts = new List<TInst>();
+            var instances = new List<TInst>();
             TOffset offset = _annotations[annIndex].Range.GetStart(_fst.Direction);
 
             if (_startAnchor)
@@ -214,14 +212,19 @@ namespace SIL.Machine.FiniteState
                     {
                         int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
                         if (nextIndex != _annotations.Count)
-                            insts.AddRange(
-                                Initialize(ref nextIndex, (Register<TOffset>[,])registers.Clone(), cmds, initAnns)
+                            instances.AddRange(
+                                Initialize(
+                                    ref nextIndex,
+                                    (Register<TOffset>[,])registers.Clone(),
+                                    commands,
+                                    initAnnotations
+                                )
                             );
                     }
                 }
             }
 
-            ExecuteCommands(registers, cmds, new Register<TOffset>(offset, true), new Register<TOffset>());
+            ExecuteCommands(registers, commands, new Register<TOffset>(offset, true), new Register<TOffset>());
 
             for (
                 ;
@@ -229,7 +232,7 @@ namespace SIL.Machine.FiniteState
                 annIndex++
             )
             {
-                if (!initAnns.Contains(annIndex))
+                if (!initAnnotations.Contains(annIndex))
                 {
                     TInst inst = GetCachedInstance();
                     inst.State = _fst.StartState;
@@ -237,12 +240,12 @@ namespace SIL.Machine.FiniteState
                     Array.Copy(registers, inst.Registers, registers.Length);
                     if (!_fst.IgnoreVariables)
                         inst.VariableBindings = _varBindings != null ? _varBindings.Clone() : new VariableBindings();
-                    insts.Add(inst);
-                    initAnns.Add(annIndex);
+                    instances.Add(inst);
+                    initAnnotations.Add(annIndex);
                 }
             }
 
-            return insts;
+            return instances;
         }
 
         protected IEnumerable<TInst> Advance(
@@ -253,8 +256,7 @@ namespace SIL.Machine.FiniteState
             bool optional = false
         )
         {
-            if (inst.Priorities != null)
-                inst.Priorities.Add(arc.Priority);
+            inst.Priorities?.Add(arc.Priority);
             int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             TOffset nextOffset;
             bool nextStart;
@@ -272,7 +274,7 @@ namespace SIL.Machine.FiniteState
 
             if (nextIndex < _annotations.Count)
             {
-                var anns = new List<int>();
+                var annotationIndexes = new List<int>();
                 bool cloneOutputs = false;
                 for (
                     int i = nextIndex;
@@ -290,7 +292,7 @@ namespace SIL.Machine.FiniteState
                             cloneOutputs = true;
                         }
                     }
-                    anns.Add(i);
+                    annotationIndexes.Add(i);
                 }
 
                 ExecuteCommands(
@@ -313,7 +315,7 @@ namespace SIL.Machine.FiniteState
                 inst.State = arc.Target;
 
                 bool first = true;
-                foreach (int curIndex in anns)
+                foreach (int curIndex in annotationIndexes)
                 {
                     TInst ni = first ? inst : CopyInstance(inst);
                     ni.AnnotationIndex = curIndex;

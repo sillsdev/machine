@@ -19,10 +19,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             get
             {
                 foreach (MprFeature feat in this)
-                {
                     if (feat.Group != null)
                         yield return feat.Group;
-                }
             }
         }
 
@@ -33,10 +31,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (group.Output == MprFeatureGroupOutput.Overwrite)
                 {
                     foreach (MprFeature mprFeat in group.MprFeatures)
-                    {
                         if (!mprFeats.Contains(mprFeat))
                             Remove(mprFeat);
-                    }
                 }
             }
 

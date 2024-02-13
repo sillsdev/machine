@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology
 
         protected IEnumerable<AffixInfo> ComputeAffixes(ICollection<TSeq> sequences, AffixType type)
         {
-            var dir = Direction.LeftToRight;
+            Direction dir = Direction.LeftToRight;
             switch (type)
             {
                 case AffixType.Prefix:

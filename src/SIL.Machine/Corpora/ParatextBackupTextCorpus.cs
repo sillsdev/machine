@@ -20,7 +20,6 @@ namespace SIL.Machine.Corpora
                 );
 
                 foreach (ZipArchiveEntry sfmEntry in archive.Entries.Where(e => regex.IsMatch(e.FullName)))
-                {
                     AddText(
                         new UsfmZipText(
                             settings.Stylesheet,
@@ -31,7 +30,6 @@ namespace SIL.Machine.Corpora
                             includeMarkers
                         )
                     );
-                }
             }
         }
     }

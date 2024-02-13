@@ -1,18 +1,12 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ThotSmtModelFactory : ISmtModelFactory
+public class ThotSmtModelFactory(
+    IOptionsMonitor<ThotSmtModelOptions> options,
+    IOptionsMonitor<SmtTransferEngineOptions> engineOptions
+) : ISmtModelFactory
 {
-    private readonly IOptionsMonitor<ThotSmtModelOptions> _options;
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
-
-    public ThotSmtModelFactory(
-        IOptionsMonitor<ThotSmtModelOptions> options,
-        IOptionsMonitor<SmtTransferEngineOptions> engineOptions
-    )
-    {
-        _options = options;
-        _engineOptions = engineOptions;
-    }
+    private readonly IOptionsMonitor<ThotSmtModelOptions> _options = options;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
 
     public IInteractiveTranslationModel Create(
         string engineId,

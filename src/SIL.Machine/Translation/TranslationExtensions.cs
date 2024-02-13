@@ -130,7 +130,6 @@ namespace SIL.Machine.Translation
         {
             var newArcs = new List<WordGraphArc>();
             foreach (WordGraphArc arc in wordGraph.Arcs)
-            {
                 newArcs.Add(
                     new WordGraphArc(
                         arc.PrevState,
@@ -143,7 +142,6 @@ namespace SIL.Machine.Translation
                         arc.Confidences
                     )
                 );
-            }
             return new WordGraph(wordGraph.SourceTokens, newArcs, wordGraph.FinalStates, wordGraph.InitialStateScore);
         }
 

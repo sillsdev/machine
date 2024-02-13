@@ -117,8 +117,8 @@ namespace SIL.Machine.Annotations
                 dest.Add(newNode);
             }
 
-            Range<ShapeNode> destRange = Range<ShapeNode>.Create(startNode, endNode);
-            Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcRange)
+            var destRange = Range<ShapeNode>.Create(startNode, endNode);
+            var mapping = GetNodes(srcRange)
                 .Zip(dest.GetNodes(destRange))
                 .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
             foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcRange))
@@ -134,9 +134,7 @@ namespace SIL.Machine.Annotations
         )
         {
             if (ann.Range.Start.Annotation == ann)
-            {
                 destList.Add(mapping[ann.Range.Start].Annotation, false);
-            }
             else
             {
                 var newAnn = new Annotation<ShapeNode>(
@@ -145,10 +143,8 @@ namespace SIL.Machine.Annotations
                 );
                 destList.Add(newAnn, false);
                 if (!ann.IsLeaf)
-                {
                     foreach (Annotation<ShapeNode> child in ann.Children)
                         CopyAnnotations(newAnn.Children, child, mapping);
-                }
             }
         }
 
@@ -184,9 +180,7 @@ namespace SIL.Machine.Annotations
                 throw new ArgumentException("node is not a member of this collection.", "node");
 
             if (Count == 0)
-            {
                 newNode.Tag = 0;
-            }
             else
             {
                 ShapeNode curNode = node;
@@ -204,21 +198,14 @@ namespace SIL.Machine.Annotations
                         RelabelMinimumSparseEnclosingRange(curNode);
                 }
                 else if (curNode.Tag + 1 == curNode.Next.Tag)
-                {
                     RelabelMinimumSparseEnclosingRange(curNode);
-                }
-
                 if (curNode != null && curNode.Next == null)
-                {
                     newNode.Tag = Average(curNode.Tag, int.MaxValue);
-                }
                 else
-                {
                     newNode.Tag = Average(
                         curNode == null ? int.MinValue : curNode.Tag,
                         curNode == null ? First.Tag : curNode.Next.Tag
                     );
-                }
             }
 
             base.AddAfter(node, newNode, dir);
@@ -266,9 +253,7 @@ namespace SIL.Machine.Annotations
                     UpdateAnnotations(ann.Children, node);
 
                 if (ann.Range.Start == node && ann.Range.End == node)
-                {
                     annList.Remove(ann);
-                }
                 else if (ann.Range.Start == node || ann.Range.End == node)
                 {
                     Range<ShapeNode> range =
@@ -280,10 +265,8 @@ namespace SIL.Machine.Annotations
                         Optional = ann.Optional
                     };
                     if (!ann.IsLeaf)
-                    {
                         foreach (Annotation<ShapeNode> child in ann.Children.ToArray())
                             newAnn.Children.Add(child, false);
-                    }
                     annList.Remove(ann, false);
                     annList.Add(newAnn, false);
                 }
@@ -308,7 +291,7 @@ namespace SIL.Machine.Annotations
 
         private void RelabelMinimumSparseEnclosingRange(ShapeNode node)
         {
-            double T = Math.Pow(Math.Pow(2, NumBits) / Count, 1.0 / NumBits);
+            double t = Math.Pow(Math.Pow(2, NumBits) / Count, 1.0 / NumBits);
 
             double elementCount = 1.0;
 
@@ -324,7 +307,7 @@ namespace SIL.Machine.Annotations
             do
             {
                 int toggleBit = 1 << level++;
-                overflowThreshold /= T;
+                overflowThreshold /= t;
                 range <<= 1;
 
                 bool expandToLeft = (tag & toggleBit) != 0;
@@ -340,7 +323,7 @@ namespace SIL.Machine.Annotations
                 else
                 {
                     high ^= toggleBit;
-                    while (right == null || (right.Tag < high && (right.Next != null && right.Next.Tag > right.Tag)))
+                    while (right == null || (right.Tag < high && right.Next != null && right.Next.Tag > right.Tag))
                     {
                         right = right == null ? First : right.Next;
                         elementCount++;
@@ -348,7 +331,7 @@ namespace SIL.Machine.Annotations
                 }
             } while (elementCount >= (range * overflowThreshold) && level < NumBits);
 
-            var count = (int)elementCount; //elementCount always fits into an int, size() is an int too
+            int count = (int)elementCount; //elementCount always fits into an int, size() is an int too
 
             //note that the base itself can be relabeled, but always gets the same label! (int.MIN_VALUE)
             int pos = low;
@@ -401,12 +384,9 @@ namespace SIL.Machine.Annotations
         public int GetFrozenHashCode()
         {
             if (!IsFrozen)
-            {
                 throw new InvalidOperationException(
                     "The shape does not have a valid hash code, because it is mutable."
                 );
-            }
-
             return _hashCode;
         }
 

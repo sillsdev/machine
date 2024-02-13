@@ -85,11 +85,9 @@ public class InMemoryStorage : DisposableBase, IFileStorage
     {
         path = string.IsNullOrEmpty(path) ? "" : Normalize(path, includeTrailingSlash: true);
         if (recurse)
-        {
             return Task.FromResult<IReadOnlyCollection<string>>(
                 _memoryStreams.Keys.Where(p => p.StartsWith(path)).ToList()
             );
-        }
 
         return Task.FromResult<IReadOnlyCollection<string>>(
             _memoryStreams.Keys.Where(p => p.StartsWith(path) && !p[path.Length..].Contains('/')).ToList()
@@ -121,9 +119,7 @@ public class InMemoryStorage : DisposableBase, IFileStorage
     public async Task DeleteAsync(string path, bool recurse, CancellationToken cancellationToken = default)
     {
         if (_memoryStreams.ContainsKey(Normalize(path)))
-        {
             _memoryStreams.Remove(Normalize(path), out _);
-        }
         else
         {
             IEnumerable<string> filesToRemove = await ListFilesAsync(path, recurse, cancellationToken);

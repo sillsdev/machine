@@ -65,7 +65,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 else if (mruleOutWord.HasRemainingRulesFromStratum(_stratum))
                 {
                     if (_morpher.TraceManager.IsTracing)
-                    {
                         _morpher.TraceManager.Failed(
                             _morpher.Language,
                             mruleOutWord,
@@ -73,7 +72,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                             null,
                             null
                         );
-                    }
                 }
                 else
                 {
@@ -96,14 +94,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word mruleOutWord in _mrulesRule.Apply(input))
             {
                 if (mruleOutWord.IsLastAppliedRuleFinal ?? false)
-                {
                     yield return mruleOutWord;
-                }
                 else
-                {
                     foreach (Word tempOutWord in ApplyTemplates(mruleOutWord))
                         yield return tempOutWord;
-                }
             }
         }
 
@@ -119,10 +113,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                     case MorphologicalRuleOrder.Unordered:
                         if (!FreezableEqualityComparer<Word>.Default.Equals(input, tempOutWord))
-                        {
                             foreach (Word outWord in ApplyMorphologicalRules(tempOutWord))
                                 yield return outWord;
-                        }
                         yield return tempOutWord;
                         break;
                 }

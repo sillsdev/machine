@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public class InsertSimpleContext : MorphologicalOutputAction
     {
-        private readonly SimpleContext _simpleCtxt;
+        private readonly SimpleContext _simpleContext;
 
         internal InsertSimpleContext(FeatureStruct fs, params SymbolicFeatureValue[] variables)
             : this(new SimpleContext(new NaturalClass(fs), variables)) { }
@@ -17,15 +17,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public InsertSimpleContext(NaturalClass nc, IEnumerable<SymbolicFeatureValue> variables)
             : this(new SimpleContext(nc, variables)) { }
 
-        public InsertSimpleContext(SimpleContext simpleCtxt)
+        public InsertSimpleContext(SimpleContext simpleContext)
             : base(null)
         {
-            _simpleCtxt = simpleCtxt;
+            _simpleContext = simpleContext;
         }
 
         public SimpleContext SimpleContext
         {
-            get { return _simpleCtxt; }
+            get { return _simpleContext; }
         }
 
         public override void GenerateAnalysisLhs(
@@ -34,12 +34,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             IDictionary<string, int> capturedParts
         )
         {
-            analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(_simpleCtxt.FeatureStruct.Clone()));
+            analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(_simpleContext.FeatureStruct.Clone()));
         }
 
         public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
         {
-            FeatureStruct fs = _simpleCtxt.FeatureStruct.Clone();
+            FeatureStruct fs = _simpleContext.FeatureStruct.Clone();
             fs.ReplaceVariables(match.VariableBindings);
             ShapeNode newNode = output.Shape.Add(fs);
             return Tuple.Create((ShapeNode)null, newNode).ToEnumerable();
@@ -47,7 +47,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public override string ToString()
         {
-            return _simpleCtxt.FeatureStruct.ToString();
+            return _simpleContext.FeatureStruct.ToString();
         }
     }
 }

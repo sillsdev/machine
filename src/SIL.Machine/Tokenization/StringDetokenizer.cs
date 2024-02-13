@@ -17,8 +17,8 @@ namespace SIL.Machine.Tokenization
         public string Detokenize(IEnumerable<string> tokens)
         {
             string[] tokenArray = tokens.ToArray();
-            object ctxt = CreateContext();
-            DetokenizeOperation[] ops = tokenArray.Select(t => GetOperation(ctxt, t)).ToArray();
+            object context = CreateContext();
+            DetokenizeOperation[] ops = tokenArray.Select(t => GetOperation(context, t)).ToArray();
             var sb = new StringBuilder();
             for (int i = 0; i < tokenArray.Length; i++)
             {
@@ -43,7 +43,7 @@ namespace SIL.Machine.Tokenization
             return null;
         }
 
-        protected abstract DetokenizeOperation GetOperation(object ctxt, string token);
+        protected abstract DetokenizeOperation GetOperation(object context, string token);
 
         protected virtual string GetSeparator(
             IReadOnlyList<string> tokens,

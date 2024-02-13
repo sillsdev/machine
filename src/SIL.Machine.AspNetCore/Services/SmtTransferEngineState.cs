@@ -1,29 +1,21 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferEngineState : AsyncDisposableBase
+public class SmtTransferEngineState(
+    ISmtModelFactory smtModelFactory,
+    ITransferEngineFactory transferEngineFactory,
+    ITruecaserFactory truecaserFactory,
+    string engineId
+) : AsyncDisposableBase
 {
-    private readonly ISmtModelFactory _smtModelFactory;
-    private readonly ITransferEngineFactory _transferEngineFactory;
-    private readonly ITruecaserFactory _truecaserFactory;
+    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
+    private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly AsyncLock _lock = new();
 
     private IInteractiveTranslationModel? _smtModel;
     private HybridTranslationEngine? _hybridEngine;
 
-    public SmtTransferEngineState(
-        ISmtModelFactory smtModelFactory,
-        ITransferEngineFactory transferEngineFactory,
-        ITruecaserFactory truecaserFactory,
-        string engineId
-    )
-    {
-        _smtModelFactory = smtModelFactory;
-        _transferEngineFactory = transferEngineFactory;
-        _truecaserFactory = truecaserFactory;
-        EngineId = engineId;
-    }
-
-    public string EngineId { get; }
+    public string EngineId { get; } = engineId;
 
     public bool IsUpdated { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
@@ -50,9 +42,14 @@ public class SmtTransferEngineState : AsyncDisposableBase
             {
                 var tokenizer = new LatinWordTokenizer();
                 var detokenizer = new LatinWordDetokenizer();
-                var truecaser = await _truecaserFactory.CreateAsync(EngineId);
+                ITruecaser truecaser = await _truecaserFactory.CreateAsync(EngineId);
                 _smtModel = _smtModelFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
-                var transferEngine = _transferEngineFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
+                ITranslationEngine? transferEngine = _transferEngineFactory.Create(
+                    EngineId,
+                    tokenizer,
+                    detokenizer,
+                    truecaser
+                );
                 _hybridEngine = new HybridTranslationEngine(_smtModel, transferEngine)
                 {
                     TargetDetokenizer = detokenizer
@@ -88,13 +85,9 @@ public class SmtTransferEngineState : AsyncDisposableBase
             CurrentBuildRevision = buildRevision;
         }
         else if (DateTime.Now - LastUsedTime > inactiveTimeout)
-        {
             await UnloadAsync(cancellationToken);
-        }
         else
-        {
             await SaveModelAsync(cancellationToken);
-        }
     }
 
     private async Task SaveModelAsync(CancellationToken cancellationToken = default)

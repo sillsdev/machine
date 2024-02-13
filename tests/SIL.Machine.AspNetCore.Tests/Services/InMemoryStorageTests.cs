@@ -85,7 +85,7 @@ public class InMemoryStorageTests
             sw.WriteLine(input2);
         }
         await fs.DeleteAsync("test", recurse: true);
-        var files = await fs.ListFilesAsync("test", recurse: true);
+        IReadOnlyCollection<string> files = await fs.ListFilesAsync("test", recurse: true);
         Assert.That(files, Is.Empty);
     }
 }

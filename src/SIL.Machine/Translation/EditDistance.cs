@@ -18,7 +18,7 @@ namespace SIL.Machine.Translation
             int xCount = GetCount(x);
             int yCount = GetCount(y);
             int dim = Math.Max(xCount, yCount);
-            var distMatrix = new double[dim + 1, dim + 1];
+            double[,] distMatrix = new double[dim + 1, dim + 1];
             return distMatrix;
         }
 
@@ -38,9 +38,6 @@ namespace SIL.Machine.Translation
             {
                 for (int j = 0; j <= yCount; j++)
                 {
-                    int iPred,
-                        jPred;
-                    EditOperation op;
                     distMatrix[i, j] = ProcessDistMatrixCell(
                         x,
                         y,
@@ -49,9 +46,9 @@ namespace SIL.Machine.Translation
                         j != yCount || isLastItemComplete,
                         i,
                         j,
-                        out iPred,
-                        out jPred,
-                        out op
+                        out int _,
+                        out int _,
+                        out EditOperation _
                     );
                 }
             }

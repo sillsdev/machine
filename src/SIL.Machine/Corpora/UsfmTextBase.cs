@@ -87,9 +87,7 @@ namespace SIL.Machine.Corpora
             )
             {
                 if (_verseRef.IsDefault)
-                {
                     _verseRef = state.VerseRef;
-                }
                 else if (state.VerseRef.Equals(_verseRef))
                 {
                     VerseCompleted();
@@ -98,10 +96,8 @@ namespace SIL.Machine.Corpora
                     _verseRef = default;
                 }
                 else if (VerseRef.AreOverlappingVersesRanges(number, _verseRef.Verse))
-                {
                     // merge overlapping verse ranges in to one range
                     _verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _verseRef.Verse);
-                }
                 else
                 {
                     VerseCompleted();
@@ -132,14 +128,9 @@ namespace SIL.Machine.Corpora
                     return;
 
                 if (_text._includeMarkers)
-                {
                     OutputMarker(state);
-                }
-                else
-                {
-                    if (_verseText.Length > 0 && !char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
-                        _verseText.Append(" ");
-                }
+                else if (_verseText.Length > 0 && !char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                    _verseText.Append(" ");
             }
 
             public override void Ref(UsfmParserState state, string marker, string display, string target)
@@ -208,9 +199,7 @@ namespace SIL.Machine.Corpora
                             _nextParaTextStarted = true;
                         }
                         if (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
-                        {
                             text = text.TrimStart();
-                        }
                         _verseText.Append(text);
                     }
                 }

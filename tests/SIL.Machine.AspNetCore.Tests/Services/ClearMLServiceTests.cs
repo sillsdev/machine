@@ -17,15 +17,15 @@ public class ClearMLServiceTests
             .WithPartialContent("\\u0027src_lang\\u0027: \\u0027spa_Latn\\u0027")
             .WithPartialContent("\\u0027trg_lang\\u0027: \\u0027eng_Latn\\u0027")
             .Respond("application/json", "{ \"data\": { \"id\": \"projectId\" } }");
-        HttpClient httpClient = mockHttp.ToHttpClient();
+        var httpClient = mockHttp.ToHttpClient();
         httpClient.BaseAddress = new Uri(ApiServer);
 
-        var options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+        IOptionsMonitor<ClearMLOptions> options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
         options.CurrentValue.Returns(new ClearMLOptions { AccessKey = AccessKey, SecretKey = SecretKey });
-        var authService = Substitute.For<IClearMLAuthenticationService>();
+        IClearMLAuthenticationService authService = Substitute.For<IClearMLAuthenticationService>();
         authService.GetAuthTokenAsync().Returns(Task.FromResult("accessToken"));
         var env = new HostingEnvironment { EnvironmentName = Environments.Development };
-        var httpClientFactory = Substitute.For<IHttpClientFactory>();
+        IHttpClientFactory httpClientFactory = Substitute.For<IHttpClientFactory>();
         httpClientFactory.CreateClient("ClearML").Returns(httpClient);
         var service = new ClearMLService(httpClientFactory, options, authService, env);
 

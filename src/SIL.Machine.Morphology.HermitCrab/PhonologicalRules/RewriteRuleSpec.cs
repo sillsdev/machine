@@ -80,19 +80,21 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 }
 
                 VariableBindings varBindings = match.VariableBindings;
-                Match<Word, ShapeNode> leftEnvMatch =
-                    subruleSpec.LeftEnvironmentMatcher == null
-                        ? null
-                        : subruleSpec.LeftEnvironmentMatcher.Match(match.Input, leftNode, varBindings);
+                Match<Word, ShapeNode> leftEnvMatch = subruleSpec.LeftEnvironmentMatcher?.Match(
+                    match.Input,
+                    leftNode,
+                    varBindings
+                );
                 if (leftEnvMatch == null || leftEnvMatch.Success)
                 {
                     if (leftEnvMatch != null && leftEnvMatch.VariableBindings != null)
                         varBindings = leftEnvMatch.VariableBindings;
 
-                    Match<Word, ShapeNode> rightEnvMatch =
-                        subruleSpec.RightEnvironmentMatcher == null
-                            ? null
-                            : subruleSpec.RightEnvironmentMatcher.Match(match.Input, rightNode, varBindings);
+                    Match<Word, ShapeNode> rightEnvMatch = subruleSpec.RightEnvironmentMatcher?.Match(
+                        match.Input,
+                        rightNode,
+                        varBindings
+                    );
                     if (rightEnvMatch == null || rightEnvMatch.Success)
                     {
                         if (rightEnvMatch != null && rightEnvMatch.VariableBindings != null)

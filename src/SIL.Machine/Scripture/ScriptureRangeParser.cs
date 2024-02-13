@@ -8,12 +8,12 @@ using SIL.Scripture;
 public class ScriptureRangeParser
 {
     private readonly Dictionary<string, int> _bookLengths = new Dictionary<string, int>();
-    private static readonly Regex CommaSeparatedBooks = new Regex(
+    private static readonly Regex s_commaSeparatedBooks = new Regex(
         @"^([A-Z\d]{3}|OT|NT)(, ?([A-Z\d]{3}|OT|NT))*$",
         RegexOptions.Compiled
     );
-    private static readonly Regex BookRange = new Regex(@"^-?[A-Z\d]{3}-[A-Z\d]{3}$", RegexOptions.Compiled);
-    private static readonly Regex ChapterSelection = new Regex(
+    private static readonly Regex s_bookRange = new Regex(@"^-?[A-Z\d]{3}-[A-Z\d]{3}$", RegexOptions.Compiled);
+    private static readonly Regex s_chapterSelection = new Regex(
         @"^-?[A-Z\d]{3} ?(\d+|\d+-\d+)(, ?(\d+|\d+-\d+))*$",
         RegexOptions.Compiled
     );
@@ -28,15 +28,13 @@ public class ScriptureRangeParser
         if (versification == null)
             versification = ScrVers.Original;
         foreach ((string bookId, int bookNum) in Canon.AllBookIds.Zip(Canon.AllBookNumbers))
-        {
             _bookLengths[bookId] = versification.GetLastChapter(bookNum);
-        }
     }
 
     private Dictionary<string, List<int>> ParseSection(string section)
     {
         section = section.Trim();
-        Dictionary<string, List<int>> chaptersPerBook = new Dictionary<string, List<int>>();
+        var chaptersPerBook = new Dictionary<string, List<int>>();
 
         //*Specific chapters from one book*
         if (char.IsDigit(section.Last()))
@@ -47,7 +45,7 @@ public class ScriptureRangeParser
                 throw new ArgumentException($"{bookName} is an invalid book ID.");
             }
 
-            HashSet<int> chapters = new HashSet<int>();
+            var chapters = new HashSet<int>();
 
             int lastChapter = _bookLengths[bookName];
             string[] chapterRangeStrings = section.Substring(3).Split(',');
@@ -86,9 +84,7 @@ public class ScriptureRangeParser
                 }
             }
             if (chapters.Count() == lastChapter)
-            {
                 chaptersPerBook[bookName] = new List<int>();
-            }
             else
             {
                 chaptersPerBook[bookName] = chapters.ToList();
@@ -148,7 +144,7 @@ public class ScriptureRangeParser
 
     public Dictionary<string, List<int>> GetChapters(string chapterSelections)
     {
-        Dictionary<string, List<int>> chaptersPerBook = new Dictionary<string, List<int>>();
+        var chaptersPerBook = new Dictionary<string, List<int>>();
         chapterSelections = chapterSelections.Trim();
 
         char delimiter = ';';
@@ -156,16 +152,12 @@ public class ScriptureRangeParser
         {
             delimiter = ';';
         }
-        else if (CommaSeparatedBooks.IsMatch(chapterSelections))
-        {
+        else if (s_commaSeparatedBooks.IsMatch(chapterSelections))
             delimiter = ',';
-        }
-        else if (!BookRange.IsMatch(chapterSelections) && !ChapterSelection.IsMatch(chapterSelections))
-        {
+        else if (!s_bookRange.IsMatch(chapterSelections) && !s_chapterSelection.IsMatch(chapterSelections))
             throw new ArgumentException(
                 "Invalid syntax. If you are providing multiple selections, e.g. a range of books followed by a selection of chapters from a book, separate each selection with a semicolon."
             );
-        }
         string[] selections = chapterSelections.Split(delimiter);
         foreach (string section in selections.Select(s => s.Trim()))
         {
@@ -183,14 +175,10 @@ public class ScriptureRangeParser
                     }
 
                     if (sectionChapters[bookName].Count() == 0)
-                    {
                         sectionChapters[bookName] = Enumerable.Range(1, _bookLengths[bookName]).ToList();
-                    }
 
                     if (chaptersPerBook[bookName].Count() == 0)
-                    {
                         chaptersPerBook[bookName] = Enumerable.Range(1, _bookLengths[bookName]).ToList();
-                    }
 
                     foreach (int chapterNumber in sectionChapters[bookName])
                     {
@@ -203,9 +191,7 @@ public class ScriptureRangeParser
                     }
 
                     if (chaptersPerBook[bookName].Count() == 0)
-                    {
                         chaptersPerBook.Remove(bookName);
-                    }
                 }
             }
             //*Addition*
@@ -227,14 +213,10 @@ public class ScriptureRangeParser
                             .ToList();
                         chaptersPerBook[bookName].Sort();
                         if (chaptersPerBook[bookName].Count() == _bookLengths[bookName])
-                        {
                             chaptersPerBook[bookName] = new List<int>();
-                        }
                     }
                     else
-                    {
                         chaptersPerBook[bookName] = sectionChapters[bookName];
-                    }
                 }
             }
         }

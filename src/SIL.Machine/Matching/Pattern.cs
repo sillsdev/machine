@@ -100,8 +100,7 @@ namespace SIL.Machine.Matching
 
         public override bool ValueEquals(PatternNode<TData, TOffset> other)
         {
-            var otherPattern = other as Pattern<TData, TOffset>;
-            return otherPattern != null && ValueEquals(otherPattern);
+            return other is Pattern<TData, TOffset> otherPattern && ValueEquals(otherPattern);
         }
 
         protected override int FreezeImpl()

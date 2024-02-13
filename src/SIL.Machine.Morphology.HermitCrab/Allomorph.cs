@@ -107,7 +107,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (Environments.Count > 0 && !Environments.Any(e => e.IsWordValid(word, morph)))
                 {
                     if (morpher.TraceManager.IsTracing)
-                    {
                         morpher.TraceManager.Failed(
                             morpher.Language,
                             word,
@@ -115,7 +114,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                             this,
                             Environments
                         );
-                    }
                     return false;
                 }
 
@@ -133,7 +131,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                     )
                     {
                         if (morpher.TraceManager.IsTracing)
-                        {
                             morpher.TraceManager.Failed(
                                 morpher.Language,
                                 word,
@@ -141,7 +138,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 this,
                                 disjunctiveAllomorph
                             );
-                        }
                         return false;
                     }
                 }
@@ -158,7 +154,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             )
             {
                 if (morpher != null && morpher.TraceManager.IsTracing)
-                {
                     morpher.TraceManager.Failed(
                         morpher.Language,
                         word,
@@ -166,7 +161,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         this,
                         AllomorphCoOccurrenceRules
                     );
-                }
                 return false;
             }
 
@@ -176,7 +170,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             )
             {
                 if (morpher != null && morpher.TraceManager.IsTracing)
-                {
                     morpher.TraceManager.Failed(
                         morpher.Language,
                         word,
@@ -184,7 +177,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         this,
                         Morpheme.MorphemeCoOccurrenceRules
                     );
-                }
                 return false;
             }
 

@@ -20,7 +20,7 @@ namespace SIL.Machine.Clusterers
             var unclassified = new HashSet<T>(dataObjects);
             HashSet<T> currentCluster = null;
             var clusters = new List<Cluster<T>>();
-            Dictionary<T, Tuple<double, List<T>>> pointInfos = unclassified.ToDictionary(
+            var pointInfos = unclassified.ToDictionary(
                 point => point,
                 point =>
                 {

@@ -1,27 +1,18 @@
 ﻿namespace SIL.Machine.AspNetCore.Utils;
 
-public abstract class RecurrentTask : BackgroundService
+public abstract class RecurrentTask(
+    string serviceName,
+    IServiceProvider services,
+    TimeSpan period,
+    ILogger<RecurrentTask> logger,
+    bool enable = true
+) : BackgroundService
 {
-    private readonly bool _enable;
-    private readonly string _serviceName;
-    private readonly IServiceProvider _services;
-    private readonly TimeSpan _period;
-    private readonly ILogger<RecurrentTask> _logger;
-
-    protected RecurrentTask(
-        string serviceName,
-        IServiceProvider services,
-        TimeSpan period,
-        ILogger<RecurrentTask> logger,
-        bool enable = true
-    )
-    {
-        _enable = enable;
-        _serviceName = serviceName;
-        _services = services;
-        _period = period;
-        _logger = logger;
-    }
+    private readonly bool _enable = enable;
+    private readonly string _serviceName = serviceName;
+    private readonly IServiceProvider _services = services;
+    private readonly TimeSpan _period = period;
+    private readonly ILogger<RecurrentTask> _logger = logger;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -30,7 +21,7 @@ public abstract class RecurrentTask : BackgroundService
 
         using PeriodicTimer timer = new(_period);
 
-        _logger.LogInformation($"{_serviceName} started.");
+        _logger.LogInformation("{serviceName} started.", _serviceName);
 
         try
         {
@@ -42,7 +33,7 @@ public abstract class RecurrentTask : BackgroundService
         }
         catch (OperationCanceledException) { }
 
-        _logger.LogInformation($"{_serviceName} stopped.");
+        _logger.LogInformation("{serviceName} stopped.", _serviceName);
     }
 
     protected abstract Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken);

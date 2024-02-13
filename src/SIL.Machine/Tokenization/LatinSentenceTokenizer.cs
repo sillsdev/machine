@@ -7,7 +7,7 @@ namespace SIL.Machine.Tokenization
 {
     public class LatinSentenceTokenizer : LatinWordTokenizer
     {
-        private static readonly LineSegmentTokenizer LineTokenizer = new LineSegmentTokenizer();
+        private static readonly LineSegmentTokenizer s_lineTokenizer = new LineSegmentTokenizer();
 
         public LatinSentenceTokenizer()
             : this(Enumerable.Empty<string>()) { }
@@ -17,7 +17,7 @@ namespace SIL.Machine.Tokenization
 
         public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
         {
-            foreach (Range<int> lineRange in LineTokenizer.TokenizeAsRanges(data, range))
+            foreach (Range<int> lineRange in s_lineTokenizer.TokenizeAsRanges(data, range))
             {
                 foreach (Range<int> sentenceRange in TokenizeLine(data, lineRange))
                     yield return sentenceRange;
@@ -43,9 +43,7 @@ namespace SIL.Machine.Tokenization
                 else
                 {
                     if (word.IsDelayedSentenceEnd())
-                    {
                         hasEndQuotesBrackets = true;
-                    }
                     else if (hasEndQuotesBrackets && char.IsLower(word[0]))
                     {
                         inEnd = false;

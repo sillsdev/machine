@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
 {
     public class UsxFileAlignmentCollection : IAlignmentCollection
     {
-        private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer();
+        private static readonly VerseRefComparer s_verseRefComparer = new VerseRefComparer();
 
         private readonly IRangeTokenizer<string, int, string> _srcWordTokenizer;
         private readonly IRangeTokenizer<string, int, string> _trgWordTokenizer;
@@ -77,15 +77,11 @@ namespace SIL.Machine.Corpora
                         var srcVerseRef = new VerseRef(Id, srcVerse.Chapter, srcVerse.Verse, _srcVersification);
                         var trgVerseRef = new VerseRef(Id, trgVerse.Chapter, trgVerse.Verse, _trgVersification);
 
-                        int compare = VerseRefComparer.Compare(srcVerseRef, trgVerseRef);
+                        int compare = s_verseRefComparer.Compare(srcVerseRef, trgVerseRef);
                         if (compare < 0)
-                        {
                             srcCompleted = !srcEnumerator.MoveNext();
-                        }
                         else if (compare > 0)
-                        {
                             trgCompleted = !trgEnumerator.MoveNext();
-                        }
                         else
                         {
                             if (srcVerseRef.HasMultiple || trgVerseRef.HasMultiple)
@@ -186,7 +182,7 @@ namespace SIL.Machine.Corpora
         {
             XElement prevParaElem = null;
             var sb = new StringBuilder();
-            var linkStrs = new List<(Range<int>, string)>();
+            var linkStrings = new List<(Range<int>, string)>();
             foreach (UsxToken token in tokens)
             {
                 if (token.ParaElement != prevParaElem && sb.Length > 0)
@@ -195,7 +191,7 @@ namespace SIL.Machine.Corpora
                 int start = sb.Length;
                 sb.Append(token);
                 if (token.Element is XElement e && e.Name == "wg")
-                    linkStrs.Add((Range<int>.Create(start, sb.Length), (string)e.Attribute("target_links")));
+                    linkStrings.Add((Range<int>.Create(start, sb.Length), (string)e.Attribute("target_links")));
                 prevParaElem = token.ParaElement;
             }
             string text = sb.ToString().Trim();
@@ -203,7 +199,7 @@ namespace SIL.Machine.Corpora
             int i = 0;
             var segmentLinks = new Dictionary<string, HashSet<int>>();
             using (IEnumerator<Range<int>> tokenEnumerator = wordTokenizer.TokenizeAsRanges(text).GetEnumerator())
-            using (IEnumerator<(Range<int>, string)> linkStrEnumerator = linkStrs.GetEnumerator())
+            using (IEnumerator<(Range<int>, string)> linkStrEnumerator = linkStrings.GetEnumerator())
             {
                 bool tokensCompleted = !tokenEnumerator.MoveNext();
                 bool linksCompleted = !linkStrEnumerator.MoveNext();
@@ -217,10 +213,8 @@ namespace SIL.Machine.Corpora
                     if (compare < 0)
                     {
                         if (tokenRange.Contains(linkRange))
-                        {
                             foreach (string link in links)
                                 segmentLinks.GetOrCreate(link).Add(i);
-                        }
                         else
                         {
                             tokensCompleted = !tokenEnumerator.MoveNext();
@@ -230,14 +224,10 @@ namespace SIL.Machine.Corpora
                     else if (compare > 0)
                     {
                         if (linkRange.Contains(tokenRange))
-                        {
                             foreach (string link in links)
                                 segmentLinks.GetOrCreate(link).Add(i);
-                        }
                         else
-                        {
                             linksCompleted = !linkStrEnumerator.MoveNext();
-                        }
                     }
                     else
                     {

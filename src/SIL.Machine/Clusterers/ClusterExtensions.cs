@@ -29,30 +29,27 @@ namespace SIL.Machine.Clusterers
             out Cluster<T> firstCluster
         )
         {
-            Cluster<T> cluster1;
-            IEnumerable<ClusterEdge<T>> path;
             GetLongestPath(
                 tree,
                 null,
                 tree.Vertices.First(),
                 0,
                 Enumerable.Empty<ClusterEdge<T>>(),
-                out cluster1,
-                out path
+                out Cluster<T> cluster,
+                out IEnumerable<ClusterEdge<T>> _
             );
-            Cluster<T> cluster2;
             double deepestLen = GetLongestPath(
                 tree,
                 null,
-                cluster1,
+                cluster,
                 0,
                 Enumerable.Empty<ClusterEdge<T>>(),
-                out cluster2,
-                out path
+                out Cluster<T> _,
+                out IEnumerable<ClusterEdge<T>> path
             );
             double midpoint = deepestLen / 2;
 
-            firstCluster = cluster1;
+            firstCluster = cluster;
             double totalLen = 0;
             midpointEdge = null;
             foreach (ClusterEdge<T> edge in path)

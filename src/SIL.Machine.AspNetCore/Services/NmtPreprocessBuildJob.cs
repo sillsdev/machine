@@ -1,27 +1,19 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class NmtPreprocessBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    ILogger<NmtPreprocessBuildJob> logger,
+    IBuildJobService buildJobService,
+    ISharedFileService sharedFileService,
+    ICorpusService corpusService,
+    ILanguageTagService languageTagService
+) : HangfireBuildJob<IReadOnlyList<Corpus>>(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly ISharedFileService _sharedFileService;
-    private readonly ICorpusService _corpusService;
-    private readonly ILanguageTagService _languageTagService;
-
-    public NmtPreprocessBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        ILogger<NmtPreprocessBuildJob> logger,
-        IBuildJobService buildJobService,
-        ISharedFileService sharedFileService,
-        ICorpusService corpusService,
-        ILanguageTagService languageTagService
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
-    {
-        _sharedFileService = sharedFileService;
-        _corpusService = corpusService;
-        _languageTagService = languageTagService;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ICorpusService _corpusService = corpusService;
+    private readonly ILanguageTagService _languageTagService = languageTagService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -35,7 +27,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IDictionary<string, int> counts = await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
 
         // Log summary of build data
-        JsonObject _buildPreprocessSummary =
+        JsonObject buildPreprocessSummary =
             new()
             {
                 { "Event", "BuildPreprocess" },
@@ -43,18 +35,16 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 { "BuildId", buildId }
             };
         foreach (KeyValuePair<string, int> kvp in counts)
-        {
-            _buildPreprocessSummary.Add(kvp.Key, kvp.Value);
-        }
+            buildPreprocessSummary.Add(kvp.Key, kvp.Value);
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
         _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
-        _buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
+        buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
         _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
-        _buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
-        Logger.LogInformation("{summary}", _buildPreprocessSummary.ToJsonString());
+        buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
+        Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
 
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
@@ -81,9 +71,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
     {
         JsonObject? buildOptionsObject = null;
         if (buildOptions is not null)
-        {
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
-        }
         await using var sourceTrainWriter = new StreamWriter(
             await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
         );
@@ -91,10 +79,13 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken)
         );
 
-        Dictionary<string, int> counts = new();
-        counts["CorpusSize"] = 0;
-        counts["NumTrainRows"] = 0;
-        counts["NumPretranslateRows"] = 0;
+        Dictionary<string, int> counts =
+            new()
+            {
+                ["CorpusSize"] = 0,
+                ["NumTrainRows"] = 0,
+                ["NumPretranslateRows"] = 0
+            };
         async IAsyncEnumerable<Pretranslation> ProcessRowsAsync()
         {
             foreach (Corpus corpus in corpora)
@@ -160,13 +151,9 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     {
                         IReadOnlyList<object> refs;
                         if (row.TargetRefs.Count == 0)
-                        {
                             refs = row.SourceRefs;
-                        }
                         else
-                        {
                             refs = row.TargetRefs;
-                        }
                         counts["NumPretranslateRows"] += 1;
                         yield return new Pretranslation
                         {
@@ -182,7 +169,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             }
         }
 
-        await using var sourcePretranslateStream = await _sharedFileService.OpenWriteAsync(
+        await using Stream sourcePretranslateStream = await _sharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );

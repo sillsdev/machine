@@ -48,10 +48,8 @@ namespace SIL.Machine.DataStructures
         public virtual void SymmetricExceptWith(IEnumerable<T> other)
         {
             foreach (T item in other.Distinct())
-            {
                 if (!Remove(item))
                     Add(item);
-            }
         }
 
         public bool Overlaps(IEnumerable<T> items)

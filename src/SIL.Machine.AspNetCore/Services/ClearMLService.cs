@@ -1,32 +1,24 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLService : IClearMLService
+public class ClearMLService(
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options,
+    IClearMLAuthenticationService clearMLAuthService,
+    IHostEnvironment env
+) : IClearMLService
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly IHostEnvironment _env;
-    private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly IHostEnvironment _env = env;
+    private static readonly JsonNamingPolicy s_jsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions =
         new()
         {
-            PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
+            PropertyNamingPolicy = s_jsonNamingPolicy,
+            Converters = { new CustomEnumConverterFactory(s_jsonNamingPolicy) }
         };
 
-    private readonly IClearMLAuthenticationService _clearMLAuthService;
-
-    public ClearMLService(
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options,
-        IClearMLAuthenticationService clearMLAuthService,
-        IHostEnvironment env
-    )
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML");
-        _options = options;
-        _clearMLAuthService = clearMLAuthService;
-        _env = env;
-    }
+    private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -57,7 +49,7 @@ public class ClearMLService : IClearMLService
         if (description != null)
             body["description"] = description;
         JsonObject? result = await CallAsync("projects", "create", body, cancellationToken);
-        var projectId = (string?)result?["data"]?["id"];
+        string? projectId = (string?)result?["data"]?["id"];
         if (projectId is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return projectId;
@@ -72,7 +64,7 @@ public class ClearMLService : IClearMLService
             ["force"] = true // needed if there are tasks already in that project.
         };
         JsonObject? result = await CallAsync("projects", "delete", body, cancellationToken);
-        var deleted = (int?)result?["data"]?["deleted"];
+        int? deleted = (int?)result?["data"]?["deleted"];
         if (deleted is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return deleted == 1;
@@ -85,7 +77,7 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        var snakeCaseEnvironment = JsonNamingPolicy.ConvertName(_env.EnvironmentName);
+        string snakeCaseEnvironment = s_jsonNamingPolicy.ConvertName(_env.EnvironmentName);
         var body = new JsonObject
         {
             ["name"] = buildId,
@@ -99,7 +91,7 @@ public class ClearMLService : IClearMLService
             ["type"] = "training"
         };
         JsonObject? result = await CallAsync("tasks", "create", body, cancellationToken);
-        var taskId = (string?)result?["data"]?["id"];
+        string? taskId = (string?)result?["data"]?["id"];
         if (taskId is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return taskId;
@@ -109,7 +101,7 @@ public class ClearMLService : IClearMLService
     {
         var body = new JsonObject { ["task"] = id };
         JsonObject? result = await CallAsync("tasks", "delete", body, cancellationToken);
-        var deleted = (bool?)result?["data"]?["deleted"];
+        bool? deleted = (bool?)result?["data"]?["deleted"];
         if (deleted is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return deleted.Value;
@@ -119,7 +111,7 @@ public class ClearMLService : IClearMLService
     {
         var body = new JsonObject { ["task"] = id, ["queue_name"] = _options.CurrentValue.Queue };
         JsonObject? result = await CallAsync("tasks", "enqueue", body, cancellationToken);
-        var queued = (int?)result?["data"]?["queued"];
+        int? queued = (int?)result?["data"]?["queued"];
         if (queued is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return queued == 1;
@@ -129,7 +121,7 @@ public class ClearMLService : IClearMLService
     {
         var body = new JsonObject { ["task"] = id };
         JsonObject? result = await CallAsync("tasks", "dequeue", body, cancellationToken);
-        var dequeued = (int?)result?["data"]?["dequeued"];
+        int? dequeued = (int?)result?["data"]?["dequeued"];
         if (dequeued is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return dequeued == 1;
@@ -139,7 +131,7 @@ public class ClearMLService : IClearMLService
     {
         var body = new JsonObject { ["task"] = id, ["force"] = true };
         JsonObject? result = await CallAsync("tasks", "stop", body, cancellationToken);
-        var updated = (int?)result?["data"]?["updated"];
+        int? updated = (int?)result?["data"]?["updated"];
         if (updated is null)
             throw new InvalidOperationException("Malformed response from ClearML server.");
         return updated == 1;
@@ -191,8 +183,7 @@ public class ClearMLService : IClearMLService
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
-        return tasks?.Select(t => t.Deserialize<ClearMLTask>(JsonSerializerOptions)!).ToArray()
-            ?? Array.Empty<ClearMLTask>();
+        return tasks?.Select(t => t.Deserialize<ClearMLTask>(s_jsonSerializerOptions)!).ToArray() ?? [];
     }
 
     private async Task<JsonObject?> CallAsync(

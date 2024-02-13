@@ -498,7 +498,7 @@ namespace SIL.Machine.Translation.Thot
         public static IntPtr ConvertStringToNativeUtf8(string managedString)
         {
             int len = Encoding.UTF8.GetByteCount(managedString);
-            var buffer = new byte[len + 1];
+            byte[] buffer = new byte[len + 1];
             Encoding.UTF8.GetBytes(managedString, 0, managedString.Length, buffer, 0);
             IntPtr nativeUtf8 = Marshal.AllocHGlobal(buffer.Length);
             Marshal.Copy(buffer, 0, nativeUtf8, buffer.Length);
@@ -521,7 +521,7 @@ namespace SIL.Machine.Translation.Thot
 
         public static string ConvertNativeUtf8ToString(IntPtr nativeUtf8, uint len)
         {
-            var buffer = new byte[len];
+            byte[] buffer = new byte[len];
             Marshal.Copy(nativeUtf8, buffer, 0, buffer.Length);
             return Encoding.UTF8.GetString(buffer, 0, buffer.Length);
         }

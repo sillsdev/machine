@@ -1,8 +1,7 @@
 using Hangfire;
 using OpenTelemetry.Trace;
-using SIL.Machine.AspNetCore.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder
@@ -27,7 +26,7 @@ if (builder.Environment.IsDevelopment())
                 .AddConsoleExporter();
         });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.UseHttpsRedirection();
 

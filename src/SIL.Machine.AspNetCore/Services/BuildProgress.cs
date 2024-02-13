@@ -1,20 +1,14 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class BuildProgress : IProgress<ProgressStatus>
+public class BuildProgress(IPlatformService platformService, string buildId) : IProgress<ProgressStatus>
 {
-    private readonly IPlatformService _platformService;
-    private readonly string _buildId;
+    private readonly IPlatformService _platformService = platformService;
+    private readonly string _buildId = buildId;
     private ProgressStatus _prevStatus;
 
     private DateTime _lastReportTime = DateTime.Now;
 
     private const float ThrottleTimeSeconds = 1;
-
-    public BuildProgress(IPlatformService platformService, string buildId)
-    {
-        _platformService = platformService;
-        _buildId = buildId;
-    }
 
     public void Report(ProgressStatus value)
     {

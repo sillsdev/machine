@@ -588,7 +588,7 @@ namespace SIL.Machine.Translation.Thot
         {
             CheckDisposed();
 
-            var trainer = string.IsNullOrEmpty(ConfigFileName)
+            Trainer trainer = string.IsNullOrEmpty(ConfigFileName)
                 ? new Trainer(this, corpus, Parameters)
                 : new Trainer(this, corpus, ConfigFileName);
             trainer.SourceTokenizer = SourceTokenizer;

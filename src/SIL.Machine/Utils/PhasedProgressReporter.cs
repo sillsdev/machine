@@ -43,10 +43,10 @@ namespace SIL.Machine.Utils
             {
                 if (_currentPhaseIndex == -1)
                     return 0;
-                double pcnt = CurrentPhase.Percentage;
-                if (pcnt == 0)
-                    pcnt = _defaultPercentage;
-                return pcnt;
+                double percent = CurrentPhase.Percentage;
+                if (percent == 0)
+                    percent = _defaultPercentage;
+                return percent;
             }
         }
 

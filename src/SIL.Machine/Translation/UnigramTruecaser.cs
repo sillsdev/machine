@@ -133,7 +133,7 @@ namespace SIL.Machine.Translation
 
         public IReadOnlyList<string> Truecase(IReadOnlyList<string> segment)
         {
-            var result = new string[segment.Count];
+            string[] result = new string[segment.Count];
             for (int i = 0; i < segment.Count; i++)
             {
                 string token = segment[i];

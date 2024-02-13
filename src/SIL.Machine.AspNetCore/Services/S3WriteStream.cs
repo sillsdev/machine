@@ -1,31 +1,26 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-public class S3WriteStream : Stream
+[SuppressMessage(
+    "Usage",
+    "CA1844: Provide memory-based overrides of async methods when subclassing 'Stream'",
+    Justification = "Acceleration not possible."
+)]
+public class S3WriteStream(
+    AmazonS3Client client,
+    string key,
+    string bucketName,
+    string uploadId,
+    ILoggerFactory loggerFactory
+) : Stream
 {
-    private readonly AmazonS3Client _client;
-    private readonly string _key;
-    private readonly string _uploadId;
-    private readonly string _bucketName;
-    private readonly List<UploadPartResponse> _uploadResponses;
-    private readonly ILogger<S3WriteStream> _logger;
+    private readonly AmazonS3Client _client = client;
+    private readonly string _key = key;
+    private readonly string _uploadId = uploadId;
+    private readonly string _bucketName = bucketName;
+    private readonly List<UploadPartResponse> _uploadResponses = [];
+    private readonly ILogger<S3WriteStream> _logger = loggerFactory.CreateLogger<S3WriteStream>();
 
     public const int MaxPartSize = 5 * 1024 * 1024;
-
-    public S3WriteStream(
-        AmazonS3Client client,
-        string key,
-        string bucketName,
-        string uploadId,
-        ILoggerFactory loggerFactory
-    )
-    {
-        _client = client;
-        _key = key;
-        _bucketName = bucketName;
-        _uploadId = uploadId;
-        _logger = loggerFactory.CreateLogger<S3WriteStream>();
-        _uploadResponses = new List<UploadPartResponse>();
-    }
 
     public override bool CanRead => false;
 
@@ -74,10 +69,14 @@ public class S3WriteStream : Stream
                 request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
                     (_, e) =>
                     {
-                        _logger.LogDebug($"Transferred {e.TransferredBytes}/{e.TotalBytes}");
+                        _logger.LogDebug(
+                            "Transferred {TransferredBytes}/{TotalBytes}",
+                            e.TransferredBytes,
+                            e.TotalBytes
+                        );
                     }
                 );
-                UploadPartResponse response = await _client.UploadPartAsync(request);
+                UploadPartResponse response = await _client.UploadPartAsync(request, cancellationToken);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
                     throw new HttpRequestException(
                         $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
@@ -128,7 +127,9 @@ public class S3WriteStream : Stream
                         .CompleteMultipartUploadAsync(request)
                         .WaitAndUnwrapException();
                     Dispose(disposing: false);
+#pragma warning disable CA1816 // This is needed here.
                     GC.SuppressFinalize(this);
+#pragma warning restore CA1816
                     if (response.HttpStatusCode != HttpStatusCode.OK)
                         throw new HttpRequestException(
                             $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
@@ -158,9 +159,12 @@ public class S3WriteStream : Stream
                 };
             PutObjectResponse response = await _client.PutObjectAsync(request);
             if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
                 throw new HttpRequestException(
                     $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                 );
+            }
+
             return;
         }
         try
@@ -190,7 +194,7 @@ public class S3WriteStream : Stream
     private async Task AbortAsync(Exception? e = null)
     {
         if (e is not null)
-            _logger.LogError(e, $"Aborted upload {_uploadId} to {_bucketName}/{_key}");
+            _logger.LogError(e, "Aborted upload {uploadId} to {bucketName}/{key}", _uploadId, _bucketName, _key);
         AbortMultipartUploadRequest abortMPURequest =
             new()
             {

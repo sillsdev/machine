@@ -57,10 +57,8 @@ namespace SIL.Machine.Corpora
                     {
                         VerseRef vref = CreateVerseRef(c.ToString(), v.ToString());
                         if (!Versification.IsExcluded(vref.BBBCCCVVV))
-                        {
                             foreach (TextRow row in CreateRows(vref))
                                 yield return row;
-                        }
                     }
                 }
             }

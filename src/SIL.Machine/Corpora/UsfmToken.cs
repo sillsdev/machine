@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
     public class UsfmToken
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
-        private static readonly Regex AttributeRegex = new Regex(
+        private static readonly Regex s_attributeRegex = new Regex(
             @"(" + FullAttributeStr + @"(\s*" + FullAttributeStr + @")*|(?<default>[^\\=|]*))",
             RegexOptions.Compiled
         );
@@ -82,10 +82,10 @@ namespace SIL.Machine.Corpora
                 return false;
 
             // for figures, convert 2.0 format to 3.0 format. Will need to write this as the 2.0 format
-            // if the project is not upgrated.
+            // if the project is not upgraded.
             if (NestlessMarker == "fig" && attributesValue.Count(c => c == '|') == 6)
             {
-                List<UsfmAttribute> attributeList = new List<UsfmAttribute>(6);
+                var attributeList = new List<UsfmAttribute>(6);
                 string[] parts = attributesValue.Split('|');
                 AppendAttribute(attributeList, "alt", adjustedText);
                 AppendAttribute(attributeList, "src", parts[0]);
@@ -101,7 +101,7 @@ namespace SIL.Machine.Corpora
                 return true;
             }
 
-            Match match = AttributeRegex.Match(attributesValue);
+            Match match = s_attributeRegex.Match(attributesValue);
             if (!match.Success || match.Length != attributesValue.Length)
                 return false; // must match entire string
 
@@ -124,13 +124,16 @@ namespace SIL.Machine.Corpora
                 return false;
 
             _defaultAttributeName = defaultAttributeName;
-            UsfmAttribute[] attributes = new UsfmAttribute[attributeNames.Count];
+            var attributes = new UsfmAttribute[attributeNames.Count];
             for (int i = 0; i < attributeNames.Count; i++)
+            {
                 attributes[i] = new UsfmAttribute(
                     attributeNames[i].Value,
                     attributeValues[i].Value,
                     attributeValues[i].Index
                 );
+            }
+
             Attributes = attributes;
             return true;
         }
@@ -154,9 +157,7 @@ namespace SIL.Machine.Corpora
 
             int totalLength = (Text != null) ? Text.Length : 0;
             if (Type == UsfmTokenType.Attribute)
-            {
                 totalLength += ToAttributeString().Length;
-            }
             else if (Marker != null)
             {
                 if (
@@ -183,14 +184,10 @@ namespace SIL.Machine.Corpora
                 {
                     string attributes = ToAttributeString();
                     if (attributes != "")
-                    {
                         totalLength += attributes.Length;
-                    }
                     else
-                    {
                         // remove space that was put after marker - not needed when there are no attributes.
                         totalLength--;
-                    }
 
                     totalLength += 2; // End of the milestone
                 }
@@ -204,12 +201,10 @@ namespace SIL.Machine.Corpora
 
             string toReturn = Text ?? "";
             if (Type == UsfmTokenType.Attribute)
-            {
                 toReturn += ToAttributeString();
-            }
             else if (Marker != null)
             {
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 if (
                     includeNewlines
                     && (Type == UsfmTokenType.Paragraph || Type == UsfmTokenType.Chapter || Type == UsfmTokenType.Verse)
@@ -236,14 +231,10 @@ namespace SIL.Machine.Corpora
                 {
                     string attributes = ToAttributeString();
                     if (attributes != "")
-                    {
                         sb.Append(attributes);
-                    }
                     else
-                    {
                         // remove space that was put after marker - not needed when there are no attributes.
                         sb.Length--;
-                    }
                     sb.Append(@"\*");
                 }
                 toReturn += sb.ToString();

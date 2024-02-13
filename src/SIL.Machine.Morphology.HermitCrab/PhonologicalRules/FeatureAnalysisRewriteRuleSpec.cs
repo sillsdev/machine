@@ -86,9 +86,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             }
                         }
                         else if (!nodeSfv.IsSupersetOf(sfv))
-                        {
                             return true;
-                        }
                     }
                 }
                 i++;

@@ -37,9 +37,7 @@ namespace SIL.Machine.FiniteState
                         code = code * 31 + obj[i, j].IsStart.GetHashCode();
                     }
                     else
-                    {
                         code = code * 31 + 0;
-                    }
                 }
             }
             return code;

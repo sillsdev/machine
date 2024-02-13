@@ -65,7 +65,7 @@ namespace SIL.Machine.Corpora
             CollectTokens(state);
         }
 
-        public override void StartCell(UsfmParserState state, string marker, string align, int colspan)
+        public override void StartCell(UsfmParserState state, string marker, string align, int colSpan)
         {
             CollectTokens(state);
         }
@@ -123,7 +123,7 @@ namespace SIL.Machine.Corpora
 
             while (_rowIndex < _rows.Count)
             {
-                var (verseRefs, text) = _rows[_rowIndex];
+                (IReadOnlyList<VerseRef> verseRefs, string text) = _rows[_rowIndex];
                 bool stop = false;
                 foreach (VerseRef verseRef in verseRefs)
                 {
@@ -219,7 +219,7 @@ namespace SIL.Machine.Corpora
 
         public override void OptBreak(UsfmParserState state)
         {
-            // strip out optbreaks in verses that are being replaced
+            // strip out optBreaks in verses that are being replaced
             if (_stripAllText || (_replaceText && state.IsVersePara))
                 SkipTokens(state);
             else

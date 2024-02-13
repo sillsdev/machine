@@ -75,9 +75,7 @@ namespace SIL.Machine.Clusterers
                                     succ = scan.Successor.Reachability;
                                 }
                                 else if (scan.Index - endSteep > Optics.MinPoints)
-                                {
                                     break;
-                                }
                             }
                         }
                         var sua = new SteepArea(startSteep, endSteep, succ);

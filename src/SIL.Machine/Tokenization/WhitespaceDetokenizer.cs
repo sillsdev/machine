@@ -4,7 +4,7 @@
     {
         public static WhitespaceDetokenizer Instance { get; } = new WhitespaceDetokenizer();
 
-        protected override DetokenizeOperation GetOperation(object ctxt, string token)
+        protected override DetokenizeOperation GetOperation(object context, string token)
         {
             return DetokenizeOperation.NoOperation;
         }

@@ -137,14 +137,12 @@ namespace SIL.Machine.Translation.Thot
 
             string[] lines = wordGraphStr.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
             if (lines.Length == 0)
-            {
                 return new WordGraph(
                     sourceTokens,
                     Enumerable.Empty<WordGraphArc>(),
                     Enumerable.Empty<int>(),
                     initialStateScore
                 );
-            }
 
             int i = 0;
             if (lines[i].StartsWith("#"))
@@ -183,8 +181,8 @@ namespace SIL.Machine.Translation.Thot
 
                 var sourceSegmentRange = Range<int>.Create(srcStartIndex, srcEndIndex + 1);
                 int trgPhraseLen = arcParts.Length - j;
-                var normalizedTokens = new string[trgPhraseLen];
-                var confidences = new double[trgPhraseLen];
+                string[] normalizedTokens = new string[trgPhraseLen];
+                double[] confidences = new double[trgPhraseLen];
                 for (int k = 0; k < trgPhraseLen; k++)
                 {
                     normalizedTokens[k] = Thot.UnescapeToken(arcParts[j + k]);
@@ -199,7 +197,7 @@ namespace SIL.Machine.Translation.Thot
                 }
                 else
                 {
-                    var srcPhrase = new string[srcPhraseLen];
+                    string[] srcPhrase = new string[srcPhraseLen];
                     Array.Copy(normalizedSourceTokensArray, srcStartIndex, srcPhrase, 0, srcPhraseLen);
                     waMatrix = _smtModel.WordAligner.Align(srcPhrase, normalizedTokens);
                 }
@@ -332,10 +330,10 @@ namespace SIL.Machine.Translation.Thot
                 }
                 else
                 {
-                    var srcPhrase = new string[srcPhraseLen];
+                    string[] srcPhrase = new string[srcPhraseLen];
                     for (int i = 0; i < srcPhraseLen; i++)
                         srcPhrase[i] = normalizedSourceTokens[sourceStartIndex + i];
-                    var trgPhrase = new string[trgPhraseLen];
+                    string[] trgPhrase = new string[trgPhraseLen];
                     for (int j = 0; j < trgPhraseLen; j++)
                         trgPhrase[j] = normalizedTargetTokens[trgPhraseStartIndex + j];
                     waMatrix = _smtModel.WordAligner.Align(srcPhrase, trgPhrase);
@@ -389,7 +387,7 @@ namespace SIL.Machine.Translation.Thot
             try
             {
                 Thot.tdata_getTargetSegmentCuts(data, nativeTargetSegmentCuts, phraseCount);
-                var targetSegmentCuts = new int[phraseCount];
+                int[] targetSegmentCuts = new int[phraseCount];
                 for (int i = 0; i < phraseCount; i++)
                     targetSegmentCuts[i] = Marshal.ReadInt32(nativeTargetSegmentCuts, i * sizeOfUInt);
                 return targetSegmentCuts;

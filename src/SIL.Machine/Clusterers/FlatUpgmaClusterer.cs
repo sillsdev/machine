@@ -30,7 +30,7 @@ namespace SIL.Machine.Clusterers
                 {
                     for (int j = i + 1; j < clusters.Count; j++)
                     {
-                        double[] dists = clusters[i]
+                        double[] distances = clusters[i]
                             .DataObjects.SelectMany(
                                 o => clusters[j].DataObjects,
                                 (o1, o2) =>
@@ -46,10 +46,10 @@ namespace SIL.Machine.Clusterers
                             )
                             .ToArray();
 
-                        double mean = dists.Average();
-                        double sum = dists.Select(d => (d - mean) * (d - mean)).Sum();
-                        double stddev = Math.Sqrt(sum / dists.Length);
-                        double score = mean - 0.25 * stddev;
+                        double mean = distances.Average();
+                        double sum = distances.Select(d => (d - mean) * (d - mean)).Sum();
+                        double standardDeviation = Math.Sqrt(sum / distances.Length);
+                        double score = mean - 0.25 * standardDeviation;
                         if (score < minScore)
                         {
                             minScore = score;

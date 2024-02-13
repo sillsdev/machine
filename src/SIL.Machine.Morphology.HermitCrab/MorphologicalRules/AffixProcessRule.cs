@@ -44,10 +44,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             }
 
             if (e.NewItems != null)
-            {
                 foreach (AffixProcessAllomorph allo in e.NewItems)
                     allo.Morpheme = this;
-            }
 
             int index = Math.Min(
                 e.NewStartingIndex == -1 ? int.MaxValue : e.NewStartingIndex,

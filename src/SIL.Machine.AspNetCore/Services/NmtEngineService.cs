@@ -140,12 +140,12 @@ public class NmtEngineService(
             throw new FileNotFoundException(
                 $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
             );
-        var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
+        DateTime expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
         var modelInfo = new ModelDownloadUrl
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
-            ExipiresAt = expiresAt
+            ExpiresAt = expiresAt
         };
         return modelInfo;
     }

@@ -22,10 +22,8 @@ namespace SIL.Machine.Clusterers
             var clusterOrder = new List<ClusterOrderEntry<T>>();
             var processed = new HashSet<T>();
             foreach (T dataObject in dataObjects)
-            {
                 if (!processed.Contains(dataObject))
                     ExpandClusterOrder(clusterOrder, processed, dataObject);
-            }
             return clusterOrder;
         }
 
@@ -44,7 +42,7 @@ namespace SIL.Machine.Clusterers
                 T current = node.Item;
                 processed.Add(current);
 
-                List<Tuple<T, double>> neighbors = _getNeighbors(current).OrderBy(n => n.Item2).ToList();
+                var neighbors = _getNeighbors(current).OrderBy(n => n.Item2).ToList();
                 double coreDistance = double.PositiveInfinity;
                 if (neighbors.Count >= MinPoints)
                 {

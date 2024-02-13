@@ -220,9 +220,7 @@ namespace SIL.Machine.Translation.Thot
                 foreach (string word in row.TargetSegment.Select(Thot.EscapeToken))
                 {
                     if (vocab.Contains(word))
-                    {
                         words.Add(word);
-                    }
                     else
                     {
                         vocab.Add(word);
@@ -375,7 +373,7 @@ namespace SIL.Machine.Translation.Thot
             using (var reader = new BinaryReader(File.Open(fileName, FileMode.Open)))
             {
                 int pos = 0;
-                var length = (int)reader.BaseStream.Length;
+                int length = (int)reader.BaseStream.Length;
                 while (pos < length)
                 {
                     uint srcIndex = reader.ReadUInt32();
@@ -458,9 +456,7 @@ namespace SIL.Machine.Translation.Thot
                 HmmAlignmentSmoothingFactor = 0.3
             };
             if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
-            {
                 parameters.FastAlignIterationCount = (int)Parameters.LearningEMIters;
-            }
             else
             {
                 parameters.Ibm1IterationCount = (int)Parameters.LearningEMIters;

@@ -40,9 +40,9 @@ namespace SIL.Machine.FiniteState
             State<TData, TOffset> source,
             Input input,
             State<TData, TOffset> target,
-            IEnumerable<TagMapCommand> cmds
+            IEnumerable<TagMapCommand> commands
         )
-            : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target, cmds) { }
+            : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target, commands) { }
 
         internal Arc(State<TData, TOffset> source, Input input, State<TData, TOffset> target)
             : this(source, input, Enumerable.Empty<Output<TData, TOffset>>(), target) { }
@@ -60,7 +60,7 @@ namespace SIL.Machine.FiniteState
             Input input,
             IEnumerable<Output<TData, TOffset>> output,
             State<TData, TOffset> target,
-            IEnumerable<TagMapCommand> cmds
+            IEnumerable<TagMapCommand> commands
         )
         {
             _source = source;
@@ -69,7 +69,7 @@ namespace SIL.Machine.FiniteState
             Target = target;
             _priorityType = ArcPriorityType.Medium;
             Priority = -1;
-            _commands = cmds.ToList();
+            _commands = commands.ToList();
         }
 
         public State<TData, TOffset> Source
@@ -112,9 +112,7 @@ namespace SIL.Machine.FiniteState
                 sb.Append(_tag);
             }
             else
-            {
                 sb.Append(Input);
-            }
 
             if (_outputs.Count > 0)
             {

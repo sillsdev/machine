@@ -281,7 +281,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             string morphID
         )
         {
-            Annotation<ShapeNode> ann = new Annotation<ShapeNode>(
+            var ann = new Annotation<ShapeNode>(
                 morph.Range,
                 FeatureStruct
                     .New()
@@ -299,7 +299,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal void RemoveMorph(Annotation<ShapeNode> morphAnn)
         {
-            var alloID = (string)morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+            string alloID = (string)morphAnn.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
             _allomorphs.Remove(alloID);
             foreach (ShapeNode node in _shape.GetNodes(morphAnn.Range).ToArray())
                 node.Remove();
@@ -398,7 +398,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
         {
-            var alloID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
+            string alloID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.Allomorph);
             return _allomorphs[alloID];
         }
 
@@ -409,7 +409,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Annotation<ShapeNode> morph)
         {
-            var morphID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
+            string morphID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
             if (_disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices))
                 return indices;
             return null;

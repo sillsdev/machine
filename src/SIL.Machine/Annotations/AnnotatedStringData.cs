@@ -64,7 +64,7 @@ namespace SIL.Machine.Annotations
 
         public void Remove(int index, int length)
         {
-            Range<int> removedRange = Range<int>.Create(index, index + length);
+            var removedRange = Range<int>.Create(index, index + length);
             _str.Remove(index, length);
             var toRemove = new List<Annotation<int>>();
             foreach (Annotation<int> ann in Annotations)
@@ -81,10 +81,8 @@ namespace SIL.Machine.Annotations
             }
 
             foreach (Annotation<int> ann in toRemove)
-            {
                 if (ann.List != null)
                     ann.Remove(false);
-            }
             Range = Range<int>.Create(0, _str.Length);
         }
 

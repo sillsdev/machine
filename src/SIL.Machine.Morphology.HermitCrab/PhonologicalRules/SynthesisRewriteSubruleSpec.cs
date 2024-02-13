@@ -33,12 +33,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             if (!_subrule.RequiredSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
             {
                 if (input.CurrentRuleResults != null)
-                {
                     input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
                         FailureReason.RequiredSyntacticFeatureStruct,
                         _subrule.RequiredSyntacticFeatureStruct
                     );
-                }
                 return false;
             }
 
@@ -49,12 +47,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             )
             {
                 if (input.CurrentRuleResults != null)
-                {
                     input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
                         FailureReason.RequiredMprFeatures,
                         group
                     );
-                }
                 return false;
             }
 
@@ -64,12 +60,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             )
             {
                 if (input.CurrentRuleResults != null)
-                {
                     input.CurrentRuleResults[_index] = new Tuple<FailureReason, object>(
                         FailureReason.ExcludedMprFeatures,
                         group
                     );
-                }
                 return false;
             }
 

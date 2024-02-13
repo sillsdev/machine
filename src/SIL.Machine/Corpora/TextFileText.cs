@@ -24,9 +24,7 @@ namespace SIL.Machine.Corpora
                 while ((line = reader.ReadLine()) != null)
                 {
                     if (includeEmpty)
-                    {
                         count++;
-                    }
                     else if (line.Length > 0)
                     {
                         string[] columns = line.Split('\t');
@@ -50,7 +48,7 @@ namespace SIL.Machine.Corpora
                 {
                     string[] columns = line.Split('\t');
                     object rowRef;
-                    var flags = TextRowFlags.SentenceStart;
+                    TextRowFlags flags = TextRowFlags.SentenceStart;
                     if (columns.Length > 1)
                     {
                         string[] keys = columns[0].Trim().Split('_');
@@ -84,9 +82,7 @@ namespace SIL.Machine.Corpora
                         }
                     }
                     else
-                    {
                         rowRef = new MultiKeyRef(Id, lineNum);
-                    }
                     yield return CreateRow(line, rowRef, flags);
                     lineNum++;
                 }

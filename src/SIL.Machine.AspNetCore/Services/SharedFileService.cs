@@ -12,9 +12,7 @@ public class SharedFileService : ISharedFileService
         _loggerFactory = loggerFactory;
 
         if (options?.Value.Uri is null)
-        {
             _fileStorage = new InMemoryStorage();
-        }
         else
         {
             string baseUri = options.Value.Uri;
@@ -92,9 +90,7 @@ public class SharedFileService : ISharedFileService
                 await _fileStorage.DeleteAsync(file, cancellationToken: cancellationToken);
         }
         else
-        {
             await _fileStorage.DeleteAsync(path, recurse: true, cancellationToken: cancellationToken);
-        }
     }
 
     public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)

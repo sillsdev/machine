@@ -132,7 +132,7 @@ public class NmtEngineServiceTests
                 .When(x => x.EnqueueTaskAsync("job1", Arg.Any<CancellationToken>()))
                 .Do(_ => TrainJobTask = Task.Run(TrainJobFunc));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            IOptionsMonitor<ClearMLOptions> clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
             BuildJobService = new BuildJobService(
                 new IBuildJobRunner[]
@@ -154,7 +154,7 @@ public class NmtEngineServiceTests
                 Engines,
                 new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
             );
-            var clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
+            IOptions<ClearMLOptions> clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
             clearMLOptionsMonitor.Value.Returns(new ClearMLOptions());
             ClearMLMonitorService = new ClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
@@ -193,7 +193,7 @@ public class NmtEngineServiceTests
             var jobServerOptions = new BackgroundJobServerOptions
             {
                 Activator = new EnvActivator(this),
-                Queues = new[] { "nmt" },
+                Queues = ["nmt"],
                 CancellationCheckInterval = TimeSpan.FromMilliseconds(50),
             };
             return new BackgroundJobServer(jobServerOptions, _memoryStorage);
@@ -243,7 +243,7 @@ public class NmtEngineServiceTests
         {
             await BuildJobService.BuildJobStartedAsync("engine1", "build1");
 
-            await using (var stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json"))
+            await using (Stream stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json"))
             {
                 await JsonSerializer.SerializeAsync(stream, Array.Empty<Pretranslation>());
             }
@@ -263,19 +263,13 @@ public class NmtEngineServiceTests
             _jobServer.Dispose();
         }
 
-        private class EnvActivator : JobActivator
+        private class EnvActivator(NmtEngineServiceTests.TestEnvironment env) : JobActivator
         {
-            private readonly TestEnvironment _env;
-
-            public EnvActivator(TestEnvironment env)
-            {
-                _env = env;
-            }
+            private readonly TestEnvironment _env = env;
 
             public override object ActivateJob(Type jobType)
             {
                 if (jobType == typeof(NmtPreprocessBuildJob))
-                {
                     return new NmtPreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -286,9 +280,7 @@ public class NmtEngineServiceTests
                         Substitute.For<ICorpusService>(),
                         new LanguageTagService()
                     );
-                }
                 if (jobType == typeof(NmtPostprocessBuildJob))
-                {
                     return new NmtPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
@@ -297,7 +289,6 @@ public class NmtEngineServiceTests
                         Substitute.For<ILogger<NmtPostprocessBuildJob>>(),
                         _env.SharedFileService
                     );
-                }
                 return base.ActivateJob(jobType);
             }
         }

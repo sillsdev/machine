@@ -23,7 +23,7 @@ namespace SIL.Machine.FiniteState
             {
                 _hasOffset = value;
                 if (!_hasOffset)
-                    _offset = default(TOffset);
+                    _offset = default;
             }
         }
 

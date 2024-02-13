@@ -22,7 +22,7 @@ namespace SIL.Machine.Translation
         private WordGraphConfidences ComputeWordGraphConfidences(WordGraph wordGraph)
         {
             double normalizationFactor = LogSpace.Zero;
-            var backwardProbs = new double[wordGraph.Arcs.Count];
+            double[] backwardProbs = new double[wordGraph.Arcs.Count];
             for (int i = wordGraph.Arcs.Count - 1; i >= 0; i--)
             {
                 WordGraphArc arc = wordGraph.Arcs[i];
@@ -38,12 +38,10 @@ namespace SIL.Machine.Translation
                 }
                 backwardProbs[i] = sum;
                 if (arc.PrevState == WordGraph.InitialState)
-                {
                     normalizationFactor = LogSpace.Add(
                         normalizationFactor,
                         LogSpace.Multiply(arc.Score, backwardProbs[i])
                     );
-                }
             }
 
             var rawWpps = new Dictionary<string, Dictionary<int, double>>();

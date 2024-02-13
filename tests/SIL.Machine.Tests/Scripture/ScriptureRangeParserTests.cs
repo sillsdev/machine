@@ -12,9 +12,7 @@ public class ScriptureRangeParserTests
     {
         var parser = new ScriptureRangeParser();
         if (!throwsException)
-        {
             Assert.That(parser.GetChapters(rangeString), Is.EquivalentTo(expectedOutput));
-        }
         else
         {
             Assert.Throws<ArgumentException>(() =>
@@ -156,16 +154,12 @@ public class ScriptureRangeParserTests
                 .Select(i =>
                 {
                     if (i == 40)
-                    {
                         return (
                             Canon.BookNumberToId(i),
                             Enumerable.Range(1, 28).Where(c => !(c == 3 || c == 4 || c == 5 || c == 17)).ToList()
                         );
-                    }
                     if (i == 66)
-                    {
                         return (Canon.BookNumberToId(i), Enumerable.Range(1, 20).ToList());
-                    }
                     return (Canon.BookNumberToId(i), new List<int>());
                 })
                 .ToDictionary(),

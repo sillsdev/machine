@@ -63,15 +63,11 @@ public class LocalStorage : DisposableBase, IFileStorage
         Uri pathUri = new(_basePath, Normalize(path));
 
         if (File.Exists(pathUri.LocalPath))
-        {
             File.Delete(pathUri.LocalPath);
-        }
         else if (Directory.Exists(pathUri.LocalPath))
         {
             foreach (string filePath in await ListFilesAsync(path, recurse, cancellationToken))
-            {
                 await DeleteAsync(filePath, false, cancellationToken);
-            }
         }
     }
 }

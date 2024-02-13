@@ -28,18 +28,12 @@ namespace SIL.Machine.Clusterers
                         curCluster = new HashSet<T> { oe.DataObject };
                     }
                     else
-                    {
                         noise.Add(oe.DataObject);
-                    }
                 }
                 else if (curCluster != null)
-                {
                     curCluster.Add(oe.DataObject);
-                }
                 else
-                {
                     noise.Add(oe.DataObject);
-                }
             }
             if (curCluster != null)
                 clusters.Add(new Cluster<T>(curCluster));

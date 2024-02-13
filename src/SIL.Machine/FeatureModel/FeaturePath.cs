@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
 {
@@ -48,8 +47,7 @@ namespace SIL.Machine.FeatureModel
 
         public override bool Equals(object obj)
         {
-            var other = obj as FeaturePath;
-            return other != null && Equals(other);
+            return obj is FeaturePath other && Equals(other);
         }
 
         public override int GetHashCode()

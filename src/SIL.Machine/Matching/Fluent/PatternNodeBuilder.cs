@@ -70,9 +70,7 @@ namespace SIL.Machine.Matching.Fluent
                 _inAlternation = false;
             }
             else
-            {
                 _nodes.Add(node);
-            }
         }
 
         private void CheckEndAlternation()

@@ -37,10 +37,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             if (e.NewItems != null)
-            {
                 foreach (RootAllomorph allo in e.NewItems)
                     allo.Morpheme = this;
-            }
 
             int index = Math.Min(
                 e.NewStartingIndex == -1 ? int.MaxValue : e.NewStartingIndex,

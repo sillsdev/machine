@@ -25,7 +25,7 @@ namespace SIL.Machine.Corpora
             string name = settingsDoc.Root.Element("Name").Value;
             string fullName = settingsDoc.Root.Element("FullName").Value;
 
-            var encodingStr = (string)settingsDoc.Root.Element("Encoding") ?? "65001";
+            string encodingStr = (string)settingsDoc.Root.Element("Encoding") ?? "65001";
             if (!int.TryParse(encodingStr, out int codePage))
             {
                 throw new NotImplementedException(
@@ -34,16 +34,14 @@ namespace SIL.Machine.Corpora
             }
             var encoding = Encoding.GetEncoding(codePage);
 
-            var scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
+            int scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
             var versification = new ScrVers((ScrVersType)scrVersType);
             if (Exists("custom.vrs"))
             {
-                var guid = (string)settingsDoc.Root.Element("Guid");
+                string guid = (string)settingsDoc.Root.Element("Guid");
                 string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
                 if (Versification.Table.Implementation.Exists(versName))
-                {
                     versification = new ScrVers(versName);
-                }
                 else
                 {
                     using (var reader = new StreamReader(Open("custom.vrs")))
@@ -58,7 +56,7 @@ namespace SIL.Machine.Corpora
                 }
             }
 
-            var stylesheetFileName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
+            string stylesheetFileName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
             if (!Exists(stylesheetFileName) && stylesheetFileName != "usfm_sb.sty")
                 stylesheetFileName = "usfm.sty";
             UsfmStylesheet stylesheet = CreateStylesheet(stylesheetFileName);
@@ -69,15 +67,15 @@ namespace SIL.Machine.Corpora
             XElement namingElem = settingsDoc.Root.Element("Naming");
             if (namingElem != null)
             {
-                var prePart = (string)namingElem.Attribute("PrePart");
+                string prePart = (string)namingElem.Attribute("PrePart");
                 if (!string.IsNullOrEmpty(prePart))
                     prefix = prePart;
 
-                var bookNameForm = (string)namingElem.Attribute("BookNameForm");
+                string bookNameForm = (string)namingElem.Attribute("BookNameForm");
                 if (!string.IsNullOrEmpty(bookNameForm))
                     form = bookNameForm;
 
-                var postPart = (string)namingElem.Attribute("PostPart");
+                string postPart = (string)namingElem.Attribute("PostPart");
                 if (!string.IsNullOrEmpty(postPart))
                     suffix = postPart;
             }

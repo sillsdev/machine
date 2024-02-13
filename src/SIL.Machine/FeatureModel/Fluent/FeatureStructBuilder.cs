@@ -206,10 +206,8 @@ namespace SIL.Machine.FeatureModel.Fluent
                     _ids[id] = value;
             }
             else if (_lastFeature is SymbolicFeature)
-            {
                 if (!AddSymbols(_lastFeature, strings, id))
                     return false;
-            }
             return true;
         }
 
@@ -253,7 +251,6 @@ namespace SIL.Machine.FeatureModel.Fluent
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
-
             return this;
         }
 
@@ -274,7 +271,6 @@ namespace SIL.Machine.FeatureModel.Fluent
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
-
             return this;
         }
 
@@ -294,7 +290,6 @@ namespace SIL.Machine.FeatureModel.Fluent
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
-
             return this;
         }
 
@@ -315,7 +310,6 @@ namespace SIL.Machine.FeatureModel.Fluent
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
-
             return this;
         }
 

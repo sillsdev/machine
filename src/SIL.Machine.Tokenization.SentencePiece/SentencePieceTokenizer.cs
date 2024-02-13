@@ -27,7 +27,7 @@ namespace SIL.Machine.Tokenization.SentencePiece
         public IEnumerable<string> Tokenize(string data, Range<int> range)
         {
             IntPtr inputPtr = SentencePieceApi.ConvertStringToNativeUtf8(data.Substring(range.Start, range.Length));
-            var capacity = (uint)range.Length * 2;
+            uint capacity = (uint)range.Length * 2;
             IntPtr outputPtr = Marshal.AllocHGlobal((int)capacity);
             try
             {

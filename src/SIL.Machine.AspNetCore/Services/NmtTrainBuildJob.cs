@@ -2,25 +2,18 @@
 
 // TODO: The Hangfire implementation of the NMT train stage is not complete, DO NOT USE
 // see https://github.com/sillsdev/machine/issues/103
-public class NmtTrainBuildJob : HangfireBuildJob
+public class NmtTrainBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<NmtTrainBuildJob> logger,
+    ISharedFileService sharedFileService,
+    IOptionsMonitor<ClearMLOptions> options
+) : HangfireBuildJob(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly ISharedFileService _sharedFileService;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-
-    public NmtTrainBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<NmtTrainBuildJob> logger,
-        ISharedFileService sharedFileService,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
-    {
-        _sharedFileService = sharedFileService;
-        _options = options;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -89,7 +82,7 @@ public class NmtTrainBuildJob : HangfireBuildJob
 
     private void Log(string message)
     {
-        Logger.LogInformation(message);
+        Logger.LogInformation("{message}", message);
     }
 
     private static string ConvertLanguageTag(string languageTag)
@@ -125,13 +118,9 @@ public class NmtTrainBuildJob : HangfireBuildJob
                 string text = Path.Combine(Python.Deployment.Installer.EmbeddedPythonHome, "Scripts", "pip");
                 string text2 = (force ? " --force-reinstall" : "");
                 if (version.Length > 0)
-                {
                     version = "==" + version;
-                }
                 if (indexUrl.Length > 0)
-                {
                     text2 += " --index-url " + indexUrl;
-                }
 
                 await Python.Deployment.Installer.RunCommand(
                     text + " install " + module_name + version + " " + text2,

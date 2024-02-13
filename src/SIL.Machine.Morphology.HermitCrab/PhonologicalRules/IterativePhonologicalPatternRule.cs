@@ -29,9 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     start = targetMatch.Range.GetEnd(Matcher.Direction).GetNext(Matcher.Direction);
                 }
                 else
-                {
                     start = targetMatch.Range.GetStart(Matcher.Direction).GetNext(Matcher.Direction);
-                }
 
                 if (start == null)
                     break;

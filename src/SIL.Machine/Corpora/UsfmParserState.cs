@@ -161,12 +161,9 @@ namespace SIL.Machine.Corpora
 
                 // All character tags must be verse text
                 foreach (UsfmTag charTag in CharTags)
-                {
                     // Not specified text type is verse text
                     if (charTag.TextType != UsfmTextType.VerseText && charTag.TextType != 0)
                         return false;
-                }
-
                 return true;
             }
         }

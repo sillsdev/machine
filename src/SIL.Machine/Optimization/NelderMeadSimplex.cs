@@ -1,4 +1,4 @@
-﻿// Converted from code relased with a MIT liscense available at https://code.google.com/p/nelder-mead-simplex/
+﻿// Converted from code released with a MIT license available at https://code.google.com/p/nelder-mead-simplex/
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ namespace SIL.Machine.Optimization
         }
 
         /// <summary>
-        /// Finds the minimum of the objective function with an intial pertubation
+        /// Finds the minimum of the objective function with an initial perturbation
         /// </summary>
         public MinimizationResult FindMinimum(
             Func<Vector, int, double> objectiveFunction,
@@ -151,7 +151,7 @@ namespace SIL.Machine.Optimization
         /// </summary>
         private static ErrorProfile EvaluateSimplex(double[] errorValues)
         {
-            ErrorProfile errorProfile = new ErrorProfile();
+            var errorProfile = new ErrorProfile();
             if (errorValues[0] > errorValues[1])
             {
                 errorProfile.HighestIndex = 0;
@@ -167,9 +167,7 @@ namespace SIL.Machine.Optimization
             {
                 double errorValue = errorValues[index];
                 if (errorValue <= errorValues[errorProfile.LowestIndex])
-                {
                     errorProfile.LowestIndex = index;
-                }
                 if (errorValue > errorValues[errorProfile.HighestIndex])
                 {
                     // downgrade the current highest to next highest
@@ -177,9 +175,7 @@ namespace SIL.Machine.Optimization
                     errorProfile.HighestIndex = index;
                 }
                 else if (errorValue > errorValues[errorProfile.NextHighestIndex] && index != errorProfile.HighestIndex)
-                {
                     errorProfile.NextHighestIndex = index;
-                }
             }
 
             return errorProfile;
@@ -192,7 +188,7 @@ namespace SIL.Machine.Optimization
         private Vector[] InitializeVertices(Vector initialGuess)
         {
             int numDimensions = initialGuess.Count;
-            Vector[] vertices = new Vector[numDimensions + 1];
+            var vertices = new Vector[numDimensions + 1];
 
             double pn = Scale * (Math.Sqrt(numDimensions + 1) - 1 + numDimensions) / (numDimensions * Math.Sqrt(2));
             double qn = Scale * (Math.Sqrt(numDimensions + 1) - 1) / (numDimensions * Math.Sqrt(2));

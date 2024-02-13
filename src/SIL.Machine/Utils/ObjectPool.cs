@@ -106,10 +106,8 @@ namespace SIL.Machine.Utils
         {
             _bufferBlock.TryReceiveAll(out _);
             foreach (T obj in _objs)
-            {
                 if (obj is IDisposable disposable)
                     disposable.Dispose();
-            }
             _objs.Clear();
             Count = 0;
         }

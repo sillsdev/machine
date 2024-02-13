@@ -2,7 +2,7 @@
 
 public class LanguageTagService : ILanguageTagService
 {
-    private static readonly Dictionary<string, string> StandardLanguages =
+    private static readonly Dictionary<string, string> s_standardLanguages =
         new()
         {
             { "ar", "arb" },
@@ -13,20 +13,18 @@ public class LanguageTagService : ILanguageTagService
             { "cmn", "zh" }
         };
 
-    private static readonly Dictionary<string, string> StandardScripts = new() { { "Kore", "Hang" } };
+    private static readonly Dictionary<string, string> s_standardScripts = new() { { "Kore", "Hang" } };
 
     private readonly Dictionary<string, string> _defaultScripts;
 
     private readonly Dictionary<string, string> _flores200Languages;
 
-    private static readonly Regex LangTagPattern = new Regex(
-        "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
-        RegexOptions.ExplicitCapture
-    );
+    private static readonly Regex s_langTagPattern =
+        new("(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?", RegexOptions.ExplicitCapture);
 
     public LanguageTagService()
     {
-        // initialise SLDR language tags to retrieve latest langtags.json file
+        // initialize SLDR language tags to retrieve latest langtags.json file
         _defaultScripts = InitializeDefaultScripts();
         _flores200Languages = InitializeFlores200Languages();
     }
@@ -34,7 +32,7 @@ public class LanguageTagService : ILanguageTagService
     private static Dictionary<string, string> InitializeDefaultScripts()
     {
         Sldr.InitializeLanguageTags();
-        var cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
+        string cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
         using var stream = new FileStream(cachedAllTagsPath, FileMode.Open);
 
         var json = JsonNode.Parse(stream);
@@ -44,14 +42,14 @@ public class LanguageTagService : ILanguageTagService
             if (entry is null)
                 continue;
 
-            var script = (string?)entry["script"];
+            string? script = (string?)entry["script"];
             if (script is null)
                 continue;
 
             JsonNode? tags = entry["tags"];
             if (tags is not null)
             {
-                foreach (var t in tags.AsArray().Select(v => (string?)v))
+                foreach (string? t in tags.AsArray().Select(v => (string?)v))
                 {
                     if (
                         t is not null
@@ -64,7 +62,7 @@ public class LanguageTagService : ILanguageTagService
                 }
             }
 
-            var tag = (string?)entry["tag"];
+            string? tag = (string?)entry["tag"];
             if (tag is not null)
                 tempDefaultScripts[tag] = script;
         }
@@ -74,12 +72,12 @@ public class LanguageTagService : ILanguageTagService
     private static Dictionary<string, string> InitializeFlores200Languages()
     {
         var tempFlores200Languages = new Dictionary<string, string>();
-        using var floresStream = Assembly
+        using Stream? floresStream = Assembly
             .GetExecutingAssembly()
             .GetManifestResourceStream("SIL.Machine.AspNetCore.data.flores200languages.csv");
         Debug.Assert(floresStream is not null);
         var reader = new StreamReader(floresStream);
-        var firstLine = reader.ReadLine();
+        string? firstLine = reader.ReadLine();
         Debug.Assert(firstLine == "language, code");
         while (!reader.EndOfStream)
         {
@@ -96,7 +94,7 @@ public class LanguageTagService : ILanguageTagService
      * Converts a language tag to a Flores 200 code
      * @param {string} languageTag - The language tag to convert
      * @param out {string} flores200Code - The converted Flores 200 code
-     * @returns {bool} is the langauge is the Flores 200 list
+     * @returns {bool} is the language is the Flores 200 list
      */
     public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
     {
@@ -107,7 +105,7 @@ public class LanguageTagService : ILanguageTagService
     private string ResolveLanguageTag(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
-        Match langTagMatch = LangTagPattern.Match(languageTag);
+        Match langTagMatch = s_langTagPattern.Match(languageTag);
         if (!langTagMatch.Success)
             return languageTag;
         string parsedLanguage = langTagMatch.Groups["language"].Value;
@@ -122,7 +120,7 @@ public class LanguageTagService : ILanguageTagService
             languageSubtag = tempSubtag.Code;
 
         // There are a few extra conversions not in SIL Writing Systems that we need to handle
-        if (StandardLanguages.TryGetValue(languageSubtag, out string? tempName))
+        if (s_standardLanguages.TryGetValue(languageSubtag, out string? tempName))
             languageSubtag = tempName;
 
         if (StandardSubtags.RegisteredLanguages.TryGet(languageSubtag, out LanguageSubtag? languageSubtagObj))
@@ -140,7 +138,7 @@ public class LanguageTagService : ILanguageTagService
             script = tempScript;
 
         // There are a few extra conversions not in SIL Writing Systems that we need to handle
-        if (script is not null && StandardScripts.TryGetValue(script, out string? tempScript3))
+        if (script is not null && s_standardScripts.TryGetValue(script, out string? tempScript3))
             script = tempScript3;
 
         if (script is not null)

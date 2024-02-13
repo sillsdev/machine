@@ -44,26 +44,22 @@ namespace SIL.Machine.Corpora
                 {
                     if (firstVerse)
                     {
-                        var flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        TextRowFlags flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
                         if (isSentenceStart)
                             flags |= TextRowFlags.SentenceStart;
                         yield return CreateRow(text, vref, flags);
                         firstVerse = false;
                     }
                     else
-                    {
                         yield return CreateEmptyRow(vref, TextRowFlags.InRange);
-                    }
                 }
             }
             else
-            {
                 yield return CreateRow(
                     text,
                     verseRef,
                     isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 );
-            }
         }
 
         protected VerseRef CreateVerseRef(string chapter, string verse)

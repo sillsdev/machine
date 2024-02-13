@@ -58,13 +58,9 @@ namespace SIL.Machine.Statistics
                 return newCount;
             }
             else if (count == 0)
-            {
                 return 0;
-            }
             else
-            {
                 throw new ArgumentException("The specified sample cannot be decremented.", "sample");
-            }
         }
 
         public int this[TSample sample]

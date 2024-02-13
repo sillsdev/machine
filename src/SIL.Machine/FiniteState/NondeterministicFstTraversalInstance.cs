@@ -43,7 +43,7 @@ namespace SIL.Machine.FiniteState
             var otherNfst = (NondeterministicFstTraversalInstance<TData, TOffset>)other;
 
             otherNfst._visited.UnionWith(_visited);
-            Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = Output
+            var outputMappings = Output
                 .Annotations.SelectMany(a => a.GetNodesBreadthFirst())
                 .Zip(Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()))
                 .ToDictionary(t => t.Item1, t => t.Item2);

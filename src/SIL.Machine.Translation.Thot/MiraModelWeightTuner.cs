@@ -63,9 +63,7 @@ namespace SIL.Machine.Translation.Thot
                         break;
 
                     if (curNBestLists == null)
-                    {
                         curNBestLists = nbestLists.Select(nbl => new HashSet<TranslationInfo>(nbl)).ToArray();
-                    }
                     else
                     {
                         for (int i = 0; i < nbestLists.Length; i++)
@@ -146,7 +144,7 @@ namespace SIL.Machine.Translation.Thot
             int sizeOfDouble = Marshal.SizeOf<double>();
             IntPtr nativeNBestLists = Marshal.AllocHGlobal(nbestLists.Length * sizeOfPtr);
             IntPtr nativeScoreComps = Marshal.AllocHGlobal(nbestLists.Length * sizeOfPtr);
-            var nativeNBestListLens = new uint[nbestLists.Length];
+            uint[] nativeNBestListLens = new uint[nbestLists.Length];
             for (int i = 0; i < nbestLists.Length; i++)
             {
                 IntPtr nativeNBestList = Marshal.AllocHGlobal(nbestLists[i].Count * sizeOfPtr);
@@ -219,8 +217,7 @@ namespace SIL.Machine.Translation.Thot
 
             public override bool Equals(object obj)
             {
-                var other = obj as TranslationInfo;
-                return other != null && Equals(other);
+                return obj is TranslationInfo other && Equals(other);
             }
 
             public bool Equals(TranslationInfo other)
@@ -241,7 +238,7 @@ namespace SIL.Machine.Translation.Thot
 
         private static TranslationInfo CreateTranslationInfo(IReadOnlyList<string> normalizedTargetTokens, IntPtr data)
         {
-            var scoreComps = new double[8];
+            double[] scoreComps = new double[8];
             Thot.tdata_getScoreComponents(data, scoreComps, (uint)scoreComps.Length);
             return new TranslationInfo(scoreComps, normalizedTargetTokens);
         }
@@ -258,9 +255,7 @@ namespace SIL.Machine.Translation.Thot
                     decrStreakLen = 1;
                 }
                 else
-                {
                     decrStreakLen++;
-                }
             }
 
             return decrStreakLen >= 4;

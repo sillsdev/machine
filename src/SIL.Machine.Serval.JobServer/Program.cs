@@ -1,6 +1,6 @@
 using OpenTelemetry.Trace;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder
     .Services.AddMachine(builder.Configuration)
@@ -23,6 +23,6 @@ if (builder.Environment.IsDevelopment())
                 .AddConsoleExporter();
         });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.Run();

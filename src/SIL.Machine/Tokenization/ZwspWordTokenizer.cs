@@ -7,68 +7,66 @@ namespace SIL.Machine.Tokenization
         protected override (Range<int>, Range<int>) ProcessCharacter(
             string data,
             Range<int> range,
-            TokenizeContext ctxt
+            TokenizeContext context
         )
         {
-            if (char.IsWhiteSpace(data[ctxt.Index]))
+            if (char.IsWhiteSpace(data[context.Index]))
             {
-                int endIndex = ctxt.Index + 1;
+                int endIndex = context.Index + 1;
                 while (endIndex != range.End && char.IsWhiteSpace(data[endIndex]))
                     endIndex++;
-                var tokenRanges = (Range<int>.Null, Range<int>.Null);
+                (Range<int>, Range<int>) tokenRanges = (Range<int>.Null, Range<int>.Null);
                 // ignore whitespace that is followed by whitespace or punctuation
                 if (
-                    ctxt.Index != range.End - 1
+                    context.Index != range.End - 1
                     && (char.IsPunctuation(data[endIndex]) || char.IsWhiteSpace(data[endIndex]))
                 )
                 {
-                    if (ctxt.WordStart != -1)
+                    if (context.WordStart != -1)
                     {
-                        tokenRanges = (Range<int>.Create(ctxt.WordStart, ctxt.Index), Range<int>.Null);
-                        ctxt.WordStart = -1;
+                        tokenRanges = (Range<int>.Create(context.WordStart, context.Index), Range<int>.Null);
+                        context.WordStart = -1;
                     }
                 }
                 // ignore whitespace that is preceded by whitespace or punctuation
                 else if (
-                    ctxt.Index != range.Start
-                    && (char.IsPunctuation(data[ctxt.Index - 1]) || char.IsWhiteSpace(data[ctxt.Index - 1]))
+                    context.Index != range.Start
+                    && (char.IsPunctuation(data[context.Index - 1]) || char.IsWhiteSpace(data[context.Index - 1]))
                 )
                 {
-                    if (ctxt.InnerWordPunct != -1)
+                    if (context.InnerWordPunct != -1)
                     {
                         tokenRanges = (
-                            Range<int>.Create(ctxt.WordStart, ctxt.InnerWordPunct),
-                            Range<int>.Create(ctxt.InnerWordPunct)
+                            Range<int>.Create(context.WordStart, context.InnerWordPunct),
+                            Range<int>.Create(context.InnerWordPunct)
                         );
-                        ctxt.WordStart = -1;
+                        context.WordStart = -1;
                     }
                 }
-                else if (ctxt.WordStart == -1)
-                {
-                    tokenRanges = (Range<int>.Create(ctxt.Index, endIndex), Range<int>.Null);
-                }
-                else if (ctxt.InnerWordPunct != -1)
+                else if (context.WordStart == -1)
+                    tokenRanges = (Range<int>.Create(context.Index, endIndex), Range<int>.Null);
+                else if (context.InnerWordPunct != -1)
                 {
                     tokenRanges = (
-                        Range<int>.Create(ctxt.WordStart, ctxt.InnerWordPunct),
-                        Range<int>.Create(ctxt.InnerWordPunct, ctxt.Index)
+                        Range<int>.Create(context.WordStart, context.InnerWordPunct),
+                        Range<int>.Create(context.InnerWordPunct, context.Index)
                     );
-                    ctxt.WordStart = ctxt.Index;
+                    context.WordStart = context.Index;
                 }
                 else
                 {
                     tokenRanges = (
-                        Range<int>.Create(ctxt.WordStart, ctxt.Index),
-                        Range<int>.Create(ctxt.Index, endIndex)
+                        Range<int>.Create(context.WordStart, context.Index),
+                        Range<int>.Create(context.Index, endIndex)
                     );
-                    ctxt.WordStart = -1;
+                    context.WordStart = -1;
                 }
-                ctxt.InnerWordPunct = -1;
-                ctxt.Index = endIndex;
+                context.InnerWordPunct = -1;
+                context.Index = endIndex;
                 return tokenRanges;
             }
 
-            return base.ProcessCharacter(data, range, ctxt);
+            return base.ProcessCharacter(data, range, context);
         }
 
         protected override bool IsWhitespace(char c)

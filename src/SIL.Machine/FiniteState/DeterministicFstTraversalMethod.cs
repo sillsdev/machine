@@ -25,15 +25,15 @@ namespace SIL.Machine.FiniteState
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
-            IList<TagMapCommand> initCmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> initCommands,
+            ISet<int> initAnnotations
         )
         {
             Stack<DeterministicFstTraversalInstance<TData, TOffset>> instStack = InitializeStack(
                 ref annIndex,
                 initRegisters,
-                initCmds,
-                initAnns
+                initCommands,
+                initAnnotations
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
@@ -51,9 +51,7 @@ namespace SIL.Machine.FiniteState
                     {
                         DeterministicFstTraversalInstance<TData, TOffset> ti;
                         if (isInstReusable)
-                        {
                             ti = inst;
-                        }
                         else
                         {
                             ti = CopyInstance(inst);
@@ -86,7 +84,9 @@ namespace SIL.Machine.FiniteState
                                     curResults
                                 )
                             )
+                            {
                                 instStack.Push(ni);
+                            }
                             releaseInstance = false;
                             break;
                         }
@@ -118,9 +118,7 @@ namespace SIL.Machine.FiniteState
             {
                 Annotation<TOffset> outputAnn;
                 if (outputAction.UsePrevNewAnnotation && prevNewAnn != null)
-                {
                     outputAnn = prevNewAnn;
-                }
                 else
                 {
                     Annotation<TOffset> inputAnn = queue.Dequeue();
@@ -133,8 +131,8 @@ namespace SIL.Machine.FiniteState
         private Stack<DeterministicFstTraversalInstance<TData, TOffset>> InitializeStack(
             ref int annIndex,
             Register<TOffset>[,] registers,
-            IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            IList<TagMapCommand> commands,
+            ISet<int> initAnnotations
         )
         {
             var instStack = new Stack<DeterministicFstTraversalInstance<TData, TOffset>>();
@@ -142,8 +140,8 @@ namespace SIL.Machine.FiniteState
                 DeterministicFstTraversalInstance<TData, TOffset> inst in Initialize(
                     ref annIndex,
                     registers,
-                    cmds,
-                    initAnns
+                    commands,
+                    initAnnotations
                 )
             )
             {
