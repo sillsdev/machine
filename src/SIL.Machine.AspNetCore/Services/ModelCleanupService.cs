@@ -5,12 +5,12 @@ public class ModelCleanupService(
     ISharedFileService sharedFileService,
     IRepository<TranslationEngine> engines,
     ILogger<ModelCleanupService> logger
-) : RecurrentTask("Model Cleanup Service", services, RefreshPeriod, logger)
+) : RecurrentTask("Model Cleanup Service", services, s_refreshPeriod, logger)
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILogger<ModelCleanupService> _logger = logger;
     private readonly IRepository<TranslationEngine> _engines = engines;
-    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromDays(1);
+    private static readonly TimeSpan s_refreshPeriod = TimeSpan.FromDays(1);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {

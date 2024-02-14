@@ -1,44 +1,43 @@
 ﻿using NUnit.Framework;
 using SIL.ObjectModel;
 
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.Corpora;
+
+[TestFixture]
+public class ParatextBackupTextCorpusTests
 {
-    [TestFixture]
-    public class ParatextBackupTextCorpusTests
+    [Test]
+    public void Texts()
     {
-        [Test]
-        public void Texts()
+        using var env = new TestEnvironment();
+        Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "LEV", "1CH", "MAT", "MRK" }));
+    }
+
+    [Test]
+    public void TryGetText()
+    {
+        using var env = new TestEnvironment();
+        Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
+        Assert.That(mat.GetRows(), Is.Not.Empty);
+        Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
+    }
+
+    private class TestEnvironment : DisposableBase
+    {
+        private readonly string _backupPath;
+
+        public TestEnvironment()
         {
-            using var env = new TestEnvironment();
-            Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "LEV", "1CH", "MAT", "MRK" }));
+            _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
+            Corpus = new ParatextBackupTextCorpus(_backupPath);
         }
 
-        [Test]
-        public void TryGetText()
+        public ParatextBackupTextCorpus Corpus { get; }
+
+        protected override void DisposeManagedResources()
         {
-            using var env = new TestEnvironment();
-            Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
-            Assert.That(mat.GetRows(), Is.Not.Empty);
-            Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
-        }
-
-        private class TestEnvironment : DisposableBase
-        {
-            private readonly string _backupPath;
-
-            public TestEnvironment()
-            {
-                _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-                Corpus = new ParatextBackupTextCorpus(_backupPath);
-            }
-
-            public ParatextBackupTextCorpus Corpus { get; }
-
-            protected override void DisposeManagedResources()
-            {
-                if (File.Exists(_backupPath))
-                    File.Delete(_backupPath);
-            }
+            if (File.Exists(_backupPath))
+                File.Delete(_backupPath);
         }
     }
 }

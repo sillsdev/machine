@@ -1,13 +1,8 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class UnigramTruecaserFactory : ITruecaserFactory
+public class UnigramTruecaserFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions) : ITruecaserFactory
 {
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
-
-    public UnigramTruecaserFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions)
-    {
-        _engineOptions = engineOptions;
-    }
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
 
     public async Task<ITruecaser> CreateAsync(string engineId)
     {

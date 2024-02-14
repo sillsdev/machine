@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
             parser.ProcessTokens();
         }
 
-        private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
+        private static readonly Regex s_optBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
 
         public UsfmParser(
             IReadOnlyList<UsfmToken> tokens,
@@ -280,8 +280,7 @@ namespace SIL.Machine.Corpora
 
                     // Unmatched end marker
                     if (unmatched)
-                        if (Handler != null)
-                            Handler.Unmatched(State, token.Marker);
+                        Handler?.Unmatched(State, token.Marker);
                     break;
             }
 
@@ -306,8 +305,7 @@ namespace SIL.Machine.Corpora
                     State.VerseOffset = 0;
 
                     // Book start.
-                    if (Handler != null)
-                        Handler.StartBook(State, token.Marker, code);
+                    Handler?.StartBook(State, token.Marker, code);
                     break;
                 case UsfmTokenType.Chapter:
                     // Get alternate chapter number
@@ -352,8 +350,7 @@ namespace SIL.Machine.Corpora
                     if (State.VerseRef.ChapterNum != 1)
                         State.VerseOffset = 0;
 
-                    if (Handler != null)
-                        Handler.Chapter(State, token.Data, token.Marker, altChapter, pubChapter);
+                    Handler?.Chapter(State, token.Data, token.Marker, altChapter, pubChapter);
                     break;
                 case UsfmTokenType.Verse:
                     string pubVerse = null;
@@ -387,8 +384,7 @@ namespace SIL.Machine.Corpora
                     State.VerseRef = vref;
                     State.VerseOffset = 0;
 
-                    if (Handler != null)
-                        Handler.Verse(State, token.Data, token.Marker, altVerse, pubVerse);
+                    Handler?.Verse(State, token.Data, token.Marker, altVerse, pubVerse);
                     break;
                 case UsfmTokenType.Paragraph:
                     // Handle special case of table rows
@@ -398,15 +394,13 @@ namespace SIL.Machine.Corpora
                         if (State.Stack.All(e => e.Type != UsfmElementType.Table))
                         {
                             State.Push(new UsfmParserElement(UsfmElementType.Table, null));
-                            if (Handler != null)
-                                Handler.StartTable(State);
+                            Handler?.StartTable(State);
                         }
 
                         State.Push(new UsfmParserElement(UsfmElementType.Row, token.Marker));
 
                         // Row start
-                        if (Handler != null)
-                            Handler.StartRow(State, token.Marker);
+                        Handler?.StartRow(State, token.Marker);
                         break;
                     }
 
@@ -429,8 +423,7 @@ namespace SIL.Machine.Corpora
                             State.SpecialTokenCount += 3;
                         }
 
-                        if (Handler != null)
-                            Handler.StartSidebar(State, token.Marker, sidebarCategory);
+                        Handler?.StartSidebar(State, token.Marker, sidebarCategory);
                         break;
                     }
 
@@ -442,9 +435,9 @@ namespace SIL.Machine.Corpora
                             while (State.Stack.Count > 0)
                                 CloseElement(State.Peek().Type == UsfmElementType.Sidebar);
                         }
-                        else if (Handler != null)
+                        else
                         {
-                            Handler.Unmatched(State, token.Marker);
+                            Handler?.Unmatched(State, token.Marker);
                         }
                         break;
                     }
@@ -452,8 +445,7 @@ namespace SIL.Machine.Corpora
                     State.Push(new UsfmParserElement(UsfmElementType.Para, token.Marker));
 
                     // Paragraph opening
-                    if (Handler != null)
-                        Handler.StartPara(State, token.Marker, token.Type == UsfmTokenType.Unknown, token.Attributes);
+                    Handler?.StartPara(State, token.Marker, token.Type == UsfmTokenType.Unknown, token.Attributes);
                     break;
                 case UsfmTokenType.Character:
                     // Handle special case of table cells (treated as special character style)
@@ -468,8 +460,7 @@ namespace SIL.Machine.Corpora
                         UsfmStylesheet.IsCellRange(token.Marker, out string baseMarker, out int colspan);
                         State.Push(new UsfmParserElement(UsfmElementType.Cell, baseMarker));
 
-                        if (Handler != null)
-                            Handler.StartCell(State, baseMarker, align, colspan);
+                        Handler?.StartCell(State, baseMarker, align, colspan);
                         break;
                     }
 
@@ -482,8 +473,7 @@ namespace SIL.Machine.Corpora
 
                         State.SpecialTokenCount += 2;
 
-                        if (Handler != null)
-                            Handler.Ref(State, token.Marker, display, target);
+                        Handler?.Ref(State, token.Marker, display, target);
                         break;
                     }
 
@@ -500,15 +490,12 @@ namespace SIL.Machine.Corpora
                         actualMarker = token.Marker;
 
                     State.Push(new UsfmParserElement(UsfmElementType.Char, actualMarker, token.Attributes));
-                    if (Handler != null)
-                    {
-                        Handler.StartChar(
-                            State,
-                            actualMarker,
-                            token.Type == UsfmTokenType.Unknown || invalidMarker,
-                            token.Attributes
-                        );
-                    }
+                    Handler?.StartChar(
+                        State,
+                        actualMarker,
+                        token.Type == UsfmTokenType.Unknown || invalidMarker,
+                        token.Attributes
+                    );
                     break;
                 case UsfmTokenType.Note:
                     // Look for category
@@ -527,8 +514,7 @@ namespace SIL.Machine.Corpora
 
                     State.Push(new UsfmParserElement(UsfmElementType.Note, token.Marker));
 
-                    if (Handler != null)
-                        Handler.StartNote(State, token.Marker, token.Data, noteCategory);
+                    Handler?.StartNote(State, token.Marker, token.Data, noteCategory);
                     break;
                 case UsfmTokenType.Text:
                     string text = token.Text;
@@ -556,7 +542,7 @@ namespace SIL.Machine.Corpora
                         text = text.Replace('~', '\u00A0');
 
                         // Replace // with <optbreak/>
-                        foreach (string str in OptBreakSplitter.Split(text))
+                        foreach (string str in s_optBreakSplitter.Split(text))
                         {
                             if (str == "//")
                                 Handler.OptBreak(State);
@@ -632,36 +618,28 @@ namespace SIL.Machine.Corpora
             switch (element.Type)
             {
                 case UsfmElementType.Book:
-                    if (Handler != null)
-                        Handler.EndBook(State, element.Marker);
+                    Handler?.EndBook(State, element.Marker);
                     break;
                 case UsfmElementType.Para:
-                    if (Handler != null)
-                        Handler.EndPara(State, element.Marker);
+                    Handler?.EndPara(State, element.Marker);
                     break;
                 case UsfmElementType.Char:
-                    if (Handler != null)
-                        Handler.EndChar(State, element.Marker, element.Attributes, closed);
+                    Handler?.EndChar(State, element.Marker, element.Attributes, closed);
                     break;
                 case UsfmElementType.Note:
-                    if (Handler != null)
-                        Handler.EndNote(State, element.Marker, closed);
+                    Handler?.EndNote(State, element.Marker, closed);
                     break;
                 case UsfmElementType.Table:
-                    if (Handler != null)
-                        Handler.EndTable(State);
+                    Handler?.EndTable(State);
                     break;
                 case UsfmElementType.Row:
-                    if (Handler != null)
-                        Handler.EndRow(State, element.Marker);
+                    Handler?.EndRow(State, element.Marker);
                     break;
                 case UsfmElementType.Cell:
-                    if (Handler != null)
-                        Handler.EndCell(State, element.Marker);
+                    Handler?.EndCell(State, element.Marker);
                     break;
                 case UsfmElementType.Sidebar:
-                    if (Handler != null)
-                        Handler.EndSidebar(State, element.Marker, closed);
+                    Handler?.EndSidebar(State, element.Marker, closed);
                     break;
             }
         }

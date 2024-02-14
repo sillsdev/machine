@@ -9,6 +9,9 @@
 		<AssemblyName>machine</AssemblyName>
 		<Description>A command-line tool for natural language processing using the Machine library.</Description>
 		<PackageId>SIL.Machine.Tool</PackageId>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
 	<Import Project="../AssemblyInfo.props" />

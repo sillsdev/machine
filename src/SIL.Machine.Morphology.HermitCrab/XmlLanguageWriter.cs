@@ -218,8 +218,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WriteFeature(Feature feature)
         {
-            var symbolicFeature = feature as SymbolicFeature;
-            if (symbolicFeature != null)
+            if (feature is SymbolicFeature symbolicFeature)
             {
                 var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", Normalize(symbolicFeature.ID)));
                 if (symbolicFeature.DefaultValue != null)
@@ -376,8 +375,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             string id = "nc" + _nextNaturalClassIndex++;
             _naturalClasses[nc] = id;
 
-            var segmentNC = nc as SegmentNaturalClass;
-            if (segmentNC != null)
+            if (nc is SegmentNaturalClass segmentNC)
             {
                 return new XElement(
                     "SegmentNaturalClass",
@@ -404,8 +402,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WritePhonologicalRule(IPhonologicalRule prule)
         {
-            var rewriteRule = prule as RewriteRule;
-            if (rewriteRule != null)
+            if (prule is RewriteRule rewriteRule)
                 return WritePhonologicalRule(rewriteRule);
 
             return WriteMetathesisRule((MetathesisRule)prule);
@@ -522,8 +519,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             )
             {
                 var fvElem = new XElement("FeatureValue", new XAttribute("feature", Normalize(feature.ID)));
-                var symbolicFeature = feature as SymbolicFeature;
-                if (symbolicFeature != null)
+                if (feature is SymbolicFeature symbolicFeature)
                 {
                     SymbolicFeatureValue value = fs.GetValue(symbolicFeature);
                     fvElem.Add(
@@ -583,12 +579,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private XElement WriteMorphologicalRule(IMorphologicalRule mrule, Dictionary<IMorphologicalRule, string> mrules)
         {
-            var affixProcessRule = mrule as AffixProcessRule;
-            if (affixProcessRule != null)
+            if (mrule is AffixProcessRule affixProcessRule)
                 return WriteMorphologicalRule(affixProcessRule, mrules);
 
-            var realRule = mrule as RealizationalAffixProcessRule;
-            if (realRule != null)
+            if (mrule is RealizationalAffixProcessRule realRule)
                 return WriteRealizationalRule(realRule, mrules);
 
             return WriteCompoundingRule((CompoundingRule)mrule, mrules);
@@ -866,14 +860,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             CharacterDefinitionTable defaultTable
         )
         {
-            var copy = action as CopyFromInput;
-            if (copy != null)
+            if (action is CopyFromInput copy)
             {
                 return new XElement("CopyFromInput", new XAttribute("index", Normalize(prefix + copy.PartName)));
             }
 
-            var insertShapeNode = action as InsertSimpleContext;
-            if (insertShapeNode != null)
+            if (action is InsertSimpleContext insertShapeNode)
             {
                 return new XElement(
                     "InsertSimpleContext",
@@ -881,8 +873,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 );
             }
 
-            var modify = action as ModifyFromInput;
-            if (modify != null)
+            if (action is ModifyFromInput modify)
             {
                 return new XElement(
                     "ModifyFromInput",
@@ -1084,8 +1075,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private bool IsAnchor(PatternNode<Word, ShapeNode> node, FeatureSymbol type)
         {
-            var constraint = node as Constraint<Word, ShapeNode>;
-            if (constraint != null)
+            if (node is Constraint<Word, ShapeNode> constraint)
                 return constraint.Type() == HCFeatureSystem.Anchor
                     && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
             return false;
@@ -1114,14 +1104,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             string id
         )
         {
-            var constraint = node as Constraint<Word, ShapeNode>;
-            if (constraint != null)
+            if (node is Constraint<Word, ShapeNode> constraint)
             {
                 if (constraint.Tag == null)
                     yield break;
 
-                var charDef = constraint.Tag as CharacterDefinition;
-                if (charDef != null)
+                if (constraint.Tag is CharacterDefinition charDef)
                     yield return charDef.Type == HCFeatureSystem.Segment
                         ? WriteSegment(charDef, id)
                         : WriteBoundaryMarker(charDef, id);
@@ -1130,15 +1118,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 yield break;
             }
 
-            var quantifier = node as Quantifier<Word, ShapeNode>;
-            if (quantifier != null)
+            if (node is Quantifier<Word, ShapeNode> quantifier)
             {
                 yield return WriteOptionalSegmentSequence(quantifier, variables, defaultTable, id);
                 yield break;
             }
 
-            var group = node as Group<Word, ShapeNode>;
-            if (group != null)
+            if (node is Group<Word, ShapeNode> group)
             {
                 if (!string.IsNullOrEmpty(group.Name))
                 {

@@ -263,14 +263,9 @@ public class NmtEngineServiceTests
             _jobServer.Dispose();
         }
 
-        private class EnvActivator : JobActivator
+        private class EnvActivator(NmtEngineServiceTests.TestEnvironment env) : JobActivator
         {
-            private readonly TestEnvironment _env;
-
-            public EnvActivator(TestEnvironment env)
-            {
-                _env = env;
-            }
+            private readonly TestEnvironment _env = env;
 
             public override object ActivateJob(Type jobType)
             {

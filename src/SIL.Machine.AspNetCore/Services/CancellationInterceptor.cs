@@ -1,13 +1,8 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-public class CancellationInterceptor : Interceptor
+public class CancellationInterceptor(ILogger<CancellationInterceptor> logger) : Interceptor
 {
-    private readonly ILogger<CancellationInterceptor> _logger;
-
-    public CancellationInterceptor(ILogger<CancellationInterceptor> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<CancellationInterceptor> _logger = logger;
 
     public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(
         TRequest request,

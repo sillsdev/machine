@@ -521,14 +521,14 @@ namespace SIL.Machine.Corpora
 
         private class DefaultRowRefComparer : IComparer<object>
         {
-            private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer(compareSegments: false);
+            private static readonly VerseRefComparer s_verseRefComparer = new VerseRefComparer(compareSegments: false);
 
             public int Compare(object x, object y)
             {
                 // Do not use the default comparer for VerseRef, since we want to compare all verses in a range or
                 // sequence
                 if (x is VerseRef vx && y is VerseRef vy)
-                    return VerseRefComparer.Compare(vx, vy);
+                    return s_verseRefComparer.Compare(vx, vy);
 
                 return Comparer<object>.Default.Compare(x, y);
             }
@@ -539,7 +539,7 @@ namespace SIL.Machine.Corpora
             private readonly IEnumerator<TextRow> _enumerator;
             private bool _isScripture = false;
             private bool _isEnumerating = false;
-            private Queue<TextRow> _verseRows;
+            private readonly Queue<TextRow> _verseRows;
             private TextRow _current;
 
             public TargetCorpusEnumerator(IEnumerator<TextRow> enumerator)

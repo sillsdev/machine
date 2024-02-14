@@ -61,8 +61,7 @@ namespace SIL.Machine.Matching
 
         public override bool ValueEquals(PatternNode<TData, TOffset> other)
         {
-            var otherAlter = other as Alternation<TData, TOffset>;
-            return otherAlter != null && ValueEquals(otherAlter);
+            return other is Alternation<TData, TOffset> otherAlter && ValueEquals(otherAlter);
         }
 
         public bool ValueEquals(Alternation<TData, TOffset> other)

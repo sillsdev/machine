@@ -182,8 +182,7 @@ namespace SIL.Machine.Annotations
                 return;
             IsFrozen = true;
             _fs.Freeze();
-            if (_children != null)
-                _children.Freeze();
+            _children?.Freeze();
 
             _hashCode = 23;
             _hashCode = _hashCode * 31 + _fs.GetFrozenHashCode();

@@ -145,7 +145,7 @@ public class NmtEngineService(
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
-            ExipiresAt = expiresAt
+            ExpiresAt = expiresAt
         };
         return modelInfo;
     }

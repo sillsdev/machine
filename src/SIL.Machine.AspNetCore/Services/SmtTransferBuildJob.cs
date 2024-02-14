@@ -1,30 +1,21 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class SmtTransferBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<SmtTransferBuildJob> logger,
+    IRepository<TrainSegmentPair> trainSegmentPairs,
+    ITruecaserFactory truecaserFactory,
+    ISmtModelFactory smtModelFactory,
+    ICorpusService corpusService
+) : HangfireBuildJob<IReadOnlyList<Corpus>>(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs;
-    private readonly ITruecaserFactory _truecaserFactory;
-    private readonly ISmtModelFactory _smtModelFactory;
-    private readonly ICorpusService _corpusService;
-
-    public SmtTransferBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<SmtTransferBuildJob> logger,
-        IRepository<TrainSegmentPair> trainSegmentPairs,
-        ITruecaserFactory truecaserFactory,
-        ISmtModelFactory smtModelFactory,
-        ICorpusService corpusService
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
-    {
-        _trainSegmentPairs = trainSegmentPairs;
-        _truecaserFactory = truecaserFactory;
-        _smtModelFactory = smtModelFactory;
-        _corpusService = corpusService;
-    }
+    private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
+    private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
+    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly ICorpusService _corpusService = corpusService;
 
     protected override Task InitializeAsync(
         string engineId,

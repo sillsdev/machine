@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
@@ -115,8 +114,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override bool Equals(object other)
         {
-            var otherEnv = other as AllomorphEnvironment;
-            return otherEnv != null && Equals(otherEnv);
+            return other is AllomorphEnvironment otherEnv && Equals(otherEnv);
         }
 
         public override int GetHashCode()

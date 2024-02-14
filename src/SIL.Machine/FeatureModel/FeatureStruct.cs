@@ -106,8 +106,7 @@ namespace SIL.Machine.FeatureModel
 
             foreach (FeatureValue value in _definite.Values)
             {
-                var childFS = value as FeatureStruct;
-                if (childFS != null)
+                if (value is FeatureStruct childFS)
                 {
                     if (childFS.DetermineHasVariables(visited))
                         return true;
@@ -233,8 +232,7 @@ namespace SIL.Machine.FeatureModel
             foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
             {
                 FeatureValue value = Dereference(featVal.Value);
-                var sfv = value as SimpleFeatureValue;
-                if (sfv != null)
+                if (value is SimpleFeatureValue sfv)
                 {
                     if (sfv.IsVariable)
                     {
@@ -270,8 +268,7 @@ namespace SIL.Machine.FeatureModel
             foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite.ToArray())
             {
                 FeatureValue value = Dereference(featVal.Value);
-                var sfv = value as SimpleFeatureValue;
-                if (sfv != null)
+                if (value is SimpleFeatureValue sfv)
                 {
                     if (sfv.IsVariable)
                         _definite.Remove(featVal.Key);
@@ -317,12 +314,10 @@ namespace SIL.Machine.FeatureModel
                 if (other._definite.TryGetValue(featVal.Key, out otherValue))
                 {
                     otherValue = Dereference(otherValue);
-                    var otherFS = otherValue as FeatureStruct;
-                    if (otherFS != null && !copies.ContainsKey(otherFS))
+                    if (otherValue is FeatureStruct otherFS && !copies.ContainsKey(otherFS))
                     {
                         var thisFS = thisValue as FeatureStruct;
-                        if (thisFS != null)
-                            thisFS.PriorityUnion(otherFS, varBindings, copies);
+                        thisFS?.PriorityUnion(otherFS, varBindings, copies);
                     }
                 }
             }
@@ -334,8 +329,7 @@ namespace SIL.Machine.FeatureModel
                 if (_definite.TryGetValue(featVal.Key, out thisValue))
                 {
                     otherValue = Dereference(otherValue);
-                    var otherFS = otherValue as FeatureStruct;
-                    if (otherFS != null)
+                    if (otherValue is FeatureStruct otherFS)
                     {
                         if (thisValue is FeatureStruct)
                         {
@@ -829,11 +823,10 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings definiteVarBindings = varBindings == null ? null : varBindings.Clone();
+            VariableBindings definiteVarBindings = varBindings?.Clone();
             if (IsUnifiableImpl(other, useDefaults, definiteVarBindings))
             {
-                if (varBindings != null)
-                    varBindings.Replace(definiteVarBindings);
+                varBindings?.Replace(definiteVarBindings);
                 return true;
             }
             return false;
@@ -886,7 +879,7 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings tempVarBindings = varBindings == null ? null : varBindings.Clone();
+            VariableBindings tempVarBindings = varBindings?.Clone();
             FeatureValue newFV;
             if (!UnifyImpl(other, useDefaults, tempVarBindings, out newFV))
             {
@@ -894,8 +887,7 @@ namespace SIL.Machine.FeatureModel
                 return false;
             }
 
-            if (varBindings != null)
-                varBindings.Replace(tempVarBindings);
+            varBindings?.Replace(tempVarBindings);
             output = (FeatureStruct)newFV;
             return true;
         }
@@ -922,11 +914,10 @@ namespace SIL.Machine.FeatureModel
 
             other = Dereference(other);
 
-            VariableBindings tempVarBindings = varBindings == null ? null : varBindings.Clone();
+            VariableBindings tempVarBindings = varBindings?.Clone();
             if (SubsumesImpl(other, useDefaults, tempVarBindings))
             {
-                if (varBindings != null)
-                    varBindings.Replace(tempVarBindings);
+                varBindings?.Replace(tempVarBindings);
                 return true;
             }
             return false;
@@ -1185,8 +1176,7 @@ namespace SIL.Machine.FeatureModel
 
         public override bool ValueEquals(FeatureValue other)
         {
-            var otherFS = other as FeatureStruct;
-            return otherFS != null && ValueEquals(otherFS);
+            return other is FeatureStruct otherFS && ValueEquals(otherFS);
         }
 
         public bool IsFrozen { get; private set; }

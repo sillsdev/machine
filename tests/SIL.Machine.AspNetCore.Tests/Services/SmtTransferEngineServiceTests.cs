@@ -55,11 +55,11 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(ct =>
+            Arg.Do<CancellationToken>(cancellationToken =>
             {
                 while (true)
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     Thread.Sleep(100);
                 }
             })
@@ -91,11 +91,11 @@ public class SmtTransferEngineServiceTests
 
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(ct =>
+            Arg.Do<CancellationToken>(cancellationToken =>
             {
                 while (true)
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     Thread.Sleep(100);
                 }
             })
@@ -124,11 +124,11 @@ public class SmtTransferEngineServiceTests
         using var env = new TestEnvironment();
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(ct =>
+            Arg.Do<CancellationToken>(cancellationToken =>
             {
                 while (true)
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     Thread.Sleep(100);
                 }
             })
@@ -153,11 +153,11 @@ public class SmtTransferEngineServiceTests
         bool training = true;
         await env.SmtBatchTrainer.TrainAsync(
             Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(ct =>
+            Arg.Do<CancellationToken>(cancellationToken =>
             {
                 while (training)
                 {
-                    ct.ThrowIfCancellationRequested();
+                    cancellationToken.ThrowIfCancellationRequested();
                     Thread.Sleep(100);
                 }
             })
@@ -529,14 +529,9 @@ public class SmtTransferEngineServiceTests
             _jobServer.Dispose();
         }
 
-        private class EnvActivator : JobActivator
+        private class EnvActivator(SmtTransferEngineServiceTests.TestEnvironment env) : JobActivator
         {
-            private readonly TestEnvironment _env;
-
-            public EnvActivator(TestEnvironment env)
-            {
-                _env = env;
-            }
+            private readonly TestEnvironment _env = env;
 
             public override object ActivateJob(Type jobType)
             {

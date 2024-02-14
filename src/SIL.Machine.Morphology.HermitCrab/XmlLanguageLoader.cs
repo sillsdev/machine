@@ -1312,8 +1312,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var slot = new AffixTemplateSlot(rules) { Name = (string)slotElem.Element("Name") };
 
                 var optionalStr = (string)slotElem.Attribute("optional") ?? "false";
-                var realRule = lastRule as RealizationalAffixProcessRule;
-                if (string.IsNullOrEmpty(optionalStr) && realRule != null)
+                if (string.IsNullOrEmpty(optionalStr) && lastRule is RealizationalAffixProcessRule realRule)
                     slot.Optional = !realRule.RealizationalFeatureStruct.IsEmpty;
                 else
                     slot.Optional = optionalStr == "true";

@@ -1,32 +1,24 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLService : IClearMLService
+public class ClearMLService(
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options,
+    IClearMLAuthenticationService clearMLAuthService,
+    IHostEnvironment env
+) : IClearMLService
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly IHostEnvironment _env;
-    private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
-    private static readonly JsonSerializerOptions JsonSerializerOptions =
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly IHostEnvironment _env = env;
+    private static readonly JsonNamingPolicy s_jsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions =
         new()
         {
-            PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
+            PropertyNamingPolicy = s_jsonNamingPolicy,
+            Converters = { new CustomEnumConverterFactory(s_jsonNamingPolicy) }
         };
 
-    private readonly IClearMLAuthenticationService _clearMLAuthService;
-
-    public ClearMLService(
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options,
-        IClearMLAuthenticationService clearMLAuthService,
-        IHostEnvironment env
-    )
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML");
-        _options = options;
-        _clearMLAuthService = clearMLAuthService;
-        _env = env;
-    }
+    private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -85,7 +77,7 @@ public class ClearMLService : IClearMLService
         CancellationToken cancellationToken = default
     )
     {
-        var snakeCaseEnvironment = JsonNamingPolicy.ConvertName(_env.EnvironmentName);
+        var snakeCaseEnvironment = s_jsonNamingPolicy.ConvertName(_env.EnvironmentName);
         var body = new JsonObject
         {
             ["name"] = buildId,
@@ -191,7 +183,7 @@ public class ClearMLService : IClearMLService
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
-        return tasks?.Select(t => t.Deserialize<ClearMLTask>(JsonSerializerOptions)!).ToArray()
+        return tasks?.Select(t => t.Deserialize<ClearMLTask>(s_jsonSerializerOptions)!).ToArray()
             ?? Array.Empty<ClearMLTask>();
     }
 

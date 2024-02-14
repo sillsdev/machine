@@ -14,7 +14,7 @@ namespace SIL.Machine.Tokenization
             SingleAngle
         }
 
-        private static readonly Dictionary<char, QuoteType> QuotationMarks = new Dictionary<char, QuoteType>
+        private static readonly Dictionary<char, QuoteType> s_quotationMarks = new Dictionary<char, QuoteType>
         {
             { '"', QuoteType.DoubleQuotation },
             { '“', QuoteType.DoubleQuotation },
@@ -48,9 +48,9 @@ namespace SIL.Machine.Tokenization
             {
                 return DetokenizeOperation.MergeRight;
             }
-            else if (QuotationMarks.ContainsKey(c))
+            else if (s_quotationMarks.ContainsKey(c))
             {
-                if (quotes.Count == 0 || QuotationMarks[c] != QuotationMarks[quotes.Peek()])
+                if (quotes.Count == 0 || s_quotationMarks[c] != s_quotationMarks[quotes.Peek()])
                 {
                     quotes.Push(c);
                     return DetokenizeOperation.MergeRight;

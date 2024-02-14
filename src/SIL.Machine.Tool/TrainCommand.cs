@@ -1,14 +1,13 @@
-﻿namespace SIL.Machine
-{
-    public class TrainCommand : CommandBase
-    {
-        public TrainCommand()
-        {
-            Name = "train";
-            Description = "Trains a model.";
+﻿namespace SIL.Machine;
 
-            AddCommand(new TrainTranslationModelCommand());
-            AddCommand(new TrainAlignmentModelCommand());
-        }
+public class TrainCommand : CommandBase
+{
+    public TrainCommand()
+    {
+        Name = "train";
+        Description = "Trains a model.";
+
+        AddCommand(new TrainTranslationModelCommand());
+        AddCommand(new TrainAlignmentModelCommand());
     }
 }

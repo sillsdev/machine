@@ -31,8 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         protected override bool ConstraintsEqual(Allomorph other)
         {
-            var otherAllo = other as RootAllomorph;
-            if (otherAllo == null)
+            if (!(other is RootAllomorph otherAllo))
                 return false;
 
             return base.ConstraintsEqual(other) && IsBound == otherAllo.IsBound;

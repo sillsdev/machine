@@ -1,8 +1,7 @@
-﻿namespace SIL.Machine.AspNetCore.Services
+﻿namespace SIL.Machine.AspNetCore.Services;
+
+public enum TranslationEngineType
 {
-    public enum TranslationEngineType
-    {
-        SmtTransfer,
-        Nmt
-    }
+    SmtTransfer,
+    Nmt
 }

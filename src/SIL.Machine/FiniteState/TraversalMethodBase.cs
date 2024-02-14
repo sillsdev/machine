@@ -148,8 +148,7 @@ namespace SIL.Machine.FiniteState
                     foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
                     {
                         TData resOutput = output;
-                        var cloneable = resOutput as ICloneable<TData>;
-                        if (cloneable != null)
+                        if (resOutput is ICloneable<TData> cloneable)
                             resOutput = cloneable.Clone();
 
                         var candidate = new FstResult<TData, TOffset>(
@@ -157,11 +156,11 @@ namespace SIL.Machine.FiniteState
                             acceptInfo.ID,
                             matchRegisters,
                             resOutput,
-                            varBindings == null ? null : varBindings.Clone(),
+                            varBindings?.Clone(),
                             acceptInfo.Priority,
                             arc.Target.IsLazy,
                             ann,
-                            priorities == null ? null : priorities.ToArray(),
+                            priorities?.ToArray(),
                             curResults.Count
                         );
                         if (acceptInfo.Acceptable == null || acceptInfo.Acceptable(_data, candidate))
@@ -171,8 +170,7 @@ namespace SIL.Machine.FiniteState
                 else
                 {
                     TData resOutput = output;
-                    var cloneable = resOutput as ICloneable<TData>;
-                    if (cloneable != null)
+                    if (resOutput is ICloneable<TData> cloneable)
                         resOutput = cloneable.Clone();
                     curResults.Add(
                         new FstResult<TData, TOffset>(
@@ -180,11 +178,11 @@ namespace SIL.Machine.FiniteState
                             null,
                             matchRegisters,
                             resOutput,
-                            varBindings == null ? null : varBindings.Clone(),
+                            varBindings?.Clone(),
                             -1,
                             arc.Target.IsLazy,
                             ann,
-                            priorities == null ? null : priorities.ToArray(),
+                            priorities?.ToArray(),
                             curResults.Count
                         )
                     );
@@ -253,8 +251,7 @@ namespace SIL.Machine.FiniteState
             bool optional = false
         )
         {
-            if (inst.Priorities != null)
-                inst.Priorities.Add(arc.Priority);
+            inst.Priorities?.Add(arc.Priority);
             int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             TOffset nextOffset;
             bool nextStart;

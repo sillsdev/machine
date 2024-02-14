@@ -1,15 +1,13 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLBuildJobRunner : IBuildJobRunner
+public class ClearMLBuildJobRunner(
+    IClearMLService clearMLService,
+    IEnumerable<IClearMLBuildJobFactory> buildJobFactories
+) : IBuildJobRunner
 {
-    private readonly IClearMLService _clearMLService;
-    private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories;
-
-    public ClearMLBuildJobRunner(IClearMLService clearMLService, IEnumerable<IClearMLBuildJobFactory> buildJobFactories)
-    {
-        _clearMLService = clearMLService;
-        _buildJobFactories = buildJobFactories.ToDictionary(f => f.EngineType);
-    }
+    private readonly IClearMLService _clearMLService = clearMLService;
+    private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories =
+        buildJobFactories.ToDictionary(f => f.EngineType);
 
     public BuildJobRunner Type => BuildJobRunner.ClearML;
 
@@ -40,8 +38,7 @@ public class ClearMLBuildJobRunner : IBuildJobRunner
     )
     {
         string? projectId = await _clearMLService.GetProjectIdAsync(engineId, cancellationToken);
-        if (projectId is null)
-            projectId = await _clearMLService.CreateProjectAsync(engineId, cancellationToken: cancellationToken);
+        projectId ??= await _clearMLService.CreateProjectAsync(engineId, cancellationToken: cancellationToken);
 
         ClearMLTask? task = await _clearMLService.GetTaskByNameAsync(buildId, cancellationToken);
         if (task is not null)

@@ -10,7 +10,7 @@ namespace SIL.Machine.Translation
 {
     public class WordGraph
     {
-        private static readonly int[] EmptyArcIndices = new int[0];
+        private static readonly int[] s_emptyArcIndices = new int[0];
 
         public const int InitialState = 0;
 
@@ -64,7 +64,7 @@ namespace SIL.Machine.Translation
             StateInfo stateInfo;
             if (_states.TryGetValue(state, out stateInfo))
                 return stateInfo.PrevArcIndices;
-            return EmptyArcIndices;
+            return s_emptyArcIndices;
         }
 
         public IReadOnlyList<int> GetNextArcIndices(int state)
@@ -72,7 +72,7 @@ namespace SIL.Machine.Translation
             StateInfo stateInfo;
             if (_states.TryGetValue(state, out stateInfo))
                 return stateInfo.NextArcIndices;
-            return EmptyArcIndices;
+            return s_emptyArcIndices;
         }
 
         public IEnumerable<double> ComputeRestScores()

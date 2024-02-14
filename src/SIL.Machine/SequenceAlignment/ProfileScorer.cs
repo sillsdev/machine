@@ -42,7 +42,7 @@ namespace SIL.Machine.SequenceAlignment
                         sum += (int)(
                             _scorer.GetInsertionScore(
                                 sequence1.Alignment.Sequences[i],
-                                p == null ? default(TItem) : p[i][0],
+                                p == null ? default : p[i][0],
                                 sequence2.Alignment.Sequences[j],
                                 q[j][0]
                             )
@@ -75,7 +75,7 @@ namespace SIL.Machine.SequenceAlignment
                                 sequence1.Alignment.Sequences[i],
                                 p[i][0],
                                 sequence2.Alignment.Sequences[j],
-                                q == null ? default(TItem) : q[j][0]
+                                q == null ? default : q[j][0]
                             )
                             * sequence1.Weights[i]
                             * sequence2.Weights[j]

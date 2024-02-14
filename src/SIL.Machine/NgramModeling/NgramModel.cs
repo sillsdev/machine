@@ -4,7 +4,6 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.DataStructures;
 using SIL.Machine.Statistics;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.NgramModeling
 {

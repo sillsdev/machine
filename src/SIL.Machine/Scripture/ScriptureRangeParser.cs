@@ -8,12 +8,12 @@ using SIL.Scripture;
 public class ScriptureRangeParser
 {
     private readonly Dictionary<string, int> _bookLengths = new Dictionary<string, int>();
-    private static readonly Regex CommaSeparatedBooks = new Regex(
+    private static readonly Regex s_commaSeparatedBooks = new Regex(
         @"^([A-Z\d]{3}|OT|NT)(, ?([A-Z\d]{3}|OT|NT))*$",
         RegexOptions.Compiled
     );
-    private static readonly Regex BookRange = new Regex(@"^-?[A-Z\d]{3}-[A-Z\d]{3}$", RegexOptions.Compiled);
-    private static readonly Regex ChapterSelection = new Regex(
+    private static readonly Regex s_bookRange = new Regex(@"^-?[A-Z\d]{3}-[A-Z\d]{3}$", RegexOptions.Compiled);
+    private static readonly Regex s_chapterSelection = new Regex(
         @"^-?[A-Z\d]{3} ?(\d+|\d+-\d+)(, ?(\d+|\d+-\d+))*$",
         RegexOptions.Compiled
     );
@@ -156,11 +156,11 @@ public class ScriptureRangeParser
         {
             delimiter = ';';
         }
-        else if (CommaSeparatedBooks.IsMatch(chapterSelections))
+        else if (s_commaSeparatedBooks.IsMatch(chapterSelections))
         {
             delimiter = ',';
         }
-        else if (!BookRange.IsMatch(chapterSelections) && !ChapterSelection.IsMatch(chapterSelections))
+        else if (!s_bookRange.IsMatch(chapterSelections) && !s_chapterSelection.IsMatch(chapterSelections))
         {
             throw new ArgumentException(
                 "Invalid syntax. If you are providing multiple selections, e.g. a range of books followed by a selection of chapters from a book, separate each selection with a semicolon."

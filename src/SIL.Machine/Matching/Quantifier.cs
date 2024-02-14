@@ -171,8 +171,7 @@ namespace SIL.Machine.Matching
 
         public override bool ValueEquals(PatternNode<TData, TOffset> other)
         {
-            var otherQuant = other as Quantifier<TData, TOffset>;
-            return otherQuant != null && ValueEquals(otherQuant);
+            return other is Quantifier<TData, TOffset> otherQuant && ValueEquals(otherQuant);
         }
 
         public bool ValueEquals(Quantifier<TData, TOffset> other)

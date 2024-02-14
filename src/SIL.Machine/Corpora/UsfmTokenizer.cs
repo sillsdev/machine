@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
     {
         private const char ZeroWidthSpace = '\u200B';
 
-        private static readonly Regex RtlVerseRegex = new Regex(
+        private static readonly Regex s_rtlVerseRegex = new Regex(
             @"[\u200E\u200F]*(\d+\w?)[\u200E\u200F]*([\p{P}\p{S}])[\u200E\u200F]*(?=\d)",
             RegexOptions.Compiled
         );
@@ -228,7 +228,7 @@ namespace SIL.Machine.Corpora
                         break;
                     case UsfmStyleType.Milestone:
                     case UsfmStyleType.MilestoneEnd:
-                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the begining. Instead create at
+                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the beginning. Instead create at
                         // text token for all the text up to the beginning of the next marker. This will make typing of milestones easiest since
                         // the partially typed milestone more be reformatted to have a normal ending even if it hasn't been typed yet.
                         if (!MilestoneEnded(usfm, index))
@@ -345,7 +345,7 @@ namespace SIL.Machine.Corpora
                         {
                             string directionMarker =
                                 RtlReferenceOrder == RtlReferenceOrder.BookVerseChapter ? "\u200e" : "\u200f";
-                            tokenUsfm = RtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
+                            tokenUsfm = s_rtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
                         }
                         break;
                     case UsfmTokenType.Text:

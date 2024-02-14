@@ -11,7 +11,7 @@ using SIL.ObjectModel;
 namespace SIL.Machine.FiniteState
 {
     /// <summary>
-    /// A finite state transducer that works withs annotations with feature structures.
+    /// A finite state transducer that works with annotations with feature structures.
     ///
     /// Note: Deterministic FSTs do not work properly with input annotations that have feature structures with
     /// underspecified feature values, i.e. symbolic or string feature values with more than one symbol or string.
@@ -138,8 +138,8 @@ namespace SIL.Machine.FiniteState
                 return true;
             }
 
-            start = default(TOffset);
-            end = default(TOffset);
+            start = default;
+            end = default;
             return false;
         }
 
@@ -561,8 +561,7 @@ namespace SIL.Machine.FiniteState
 
             public override bool Equals(object obj)
             {
-                var other = obj as SubsetState;
-                return other != null && Equals(other);
+                return obj is SubsetState other && Equals(other);
             }
 
             public bool Equals(SubsetState other)

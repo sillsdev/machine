@@ -1,6 +1,9 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class HangfireBuildJobRunner : IBuildJobRunner
+public class HangfireBuildJobRunner(
+    IBackgroundJobClient jobClient,
+    IEnumerable<IHangfireBuildJobFactory> buildJobFactories
+) : IBuildJobRunner
 {
     public static Job CreateJob<TJob, TData>(
         string engineId,
@@ -11,8 +14,7 @@ public class HangfireBuildJobRunner : IBuildJobRunner
     )
         where TJob : HangfireBuildJob<TData>
     {
-        if (data is null)
-            throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
         // Token "None" is used here because hangfire injects the proper cancellation token
         return Job.FromExpression<TJob>(
             j => j.RunAsync(engineId, buildId, (TData)data, buildOptions, CancellationToken.None),
@@ -30,17 +32,9 @@ public class HangfireBuildJobRunner : IBuildJobRunner
         );
     }
 
-    private readonly IBackgroundJobClient _jobClient;
-    private readonly Dictionary<TranslationEngineType, IHangfireBuildJobFactory> _buildJobFactories;
-
-    public HangfireBuildJobRunner(
-        IBackgroundJobClient jobClient,
-        IEnumerable<IHangfireBuildJobFactory> buildJobFactories
-    )
-    {
-        _jobClient = jobClient;
-        _buildJobFactories = buildJobFactories.ToDictionary(f => f.EngineType);
-    }
+    private readonly IBackgroundJobClient _jobClient = jobClient;
+    private readonly Dictionary<TranslationEngineType, IHangfireBuildJobFactory> _buildJobFactories =
+        buildJobFactories.ToDictionary(f => f.EngineType);
 
     public BuildJobRunner Type => BuildJobRunner.Hangfire;
 

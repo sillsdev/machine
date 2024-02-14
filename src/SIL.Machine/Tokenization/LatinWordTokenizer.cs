@@ -7,10 +7,10 @@ namespace SIL.Machine.Tokenization
 {
     public class LatinWordTokenizer : WhitespaceTokenizer
     {
-        private static readonly Regex InnerWordPunctRegex = new Regex(
+        private static readonly Regex s_innerWordPunctRegex = new Regex(
             @"\G[&\-.:=,?@\xAD\xB7\u2010\u2011\u2019\u2027]|['_]+"
         );
-        private static readonly Regex UrlRegex = new Regex(
+        private static readonly Regex s_urlRegex = new Regex(
             @"^(?:[\w-]+://?|www[.])[^\s()<>]+(?:[\w\d]+|(?:[^\p{P}\s]|/))",
             RegexOptions.IgnoreCase
         );
@@ -24,14 +24,14 @@ namespace SIL.Machine.Tokenization
             _abbreviations = new HashSet<string>(abbreviations.Select(a => a.ToLowerInvariant()));
         }
 
-        public bool TreatApostropheAsSingleQuote = false;
+        public bool _treatApostropheAsSingleQuote = false;
 
         public override IEnumerable<Range<int>> TokenizeAsRanges(string data, Range<int> range)
         {
             var ctxt = new TokenizeContext();
             foreach (Range<int> charRange in base.TokenizeAsRanges(data, range))
             {
-                Match urlMatch = UrlRegex.Match(data.Substring(charRange.Start, charRange.Length));
+                Match urlMatch = s_urlRegex.Match(data.Substring(charRange.Start, charRange.Length));
                 if (urlMatch.Success)
                 {
                     yield return Range<int>.Create(charRange.Start, charRange.Start + urlMatch.Length);
@@ -60,7 +60,7 @@ namespace SIL.Machine.Tokenization
                         string innerPunctStr = data.Substring(ctxt.InnerWordPunct, charRange.End - ctxt.InnerWordPunct);
                         if (
                             (innerPunctStr == "." && IsAbbreviation(data, ctxt.WordStart, ctxt.InnerWordPunct))
-                            || (innerPunctStr == "'" && !TreatApostropheAsSingleQuote)
+                            || (innerPunctStr == "'" && !_treatApostropheAsSingleQuote)
                         )
                         {
                             yield return Range<int>.Create(ctxt.WordStart, charRange.End);
@@ -90,7 +90,7 @@ namespace SIL.Machine.Tokenization
                     endIndex++;
                 if (ctxt.WordStart == -1)
                 {
-                    if (c == '\'' && !TreatApostropheAsSingleQuote)
+                    if (c == '\'' && !_treatApostropheAsSingleQuote)
                         ctxt.WordStart = ctxt.Index;
                     else
                         tokenRanges = (Range<int>.Create(ctxt.Index, endIndex), Range<int>.Null);
@@ -98,7 +98,7 @@ namespace SIL.Machine.Tokenization
                 else if (ctxt.InnerWordPunct != -1)
                 {
                     string innerPunctStr = data.Substring(ctxt.InnerWordPunct, ctxt.Index - ctxt.InnerWordPunct);
-                    if (innerPunctStr == "'" && !TreatApostropheAsSingleQuote)
+                    if (innerPunctStr == "'" && !_treatApostropheAsSingleQuote)
                     {
                         tokenRanges = (Range<int>.Create(ctxt.WordStart, ctxt.Index), Range<int>.Null);
                     }
@@ -113,7 +113,7 @@ namespace SIL.Machine.Tokenization
                 }
                 else
                 {
-                    Match match = InnerWordPunctRegex.Match(data, ctxt.Index);
+                    Match match = s_innerWordPunctRegex.Match(data, ctxt.Index);
                     if (match.Success)
                     {
                         ctxt.InnerWordPunct = ctxt.Index;

@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
     public class UsfmToken
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
-        private static readonly Regex AttributeRegex = new Regex(
+        private static readonly Regex s_attributeRegex = new Regex(
             @"(" + FullAttributeStr + @"(\s*" + FullAttributeStr + @")*|(?<default>[^\\=|]*))",
             RegexOptions.Compiled
         );
@@ -82,7 +82,7 @@ namespace SIL.Machine.Corpora
                 return false;
 
             // for figures, convert 2.0 format to 3.0 format. Will need to write this as the 2.0 format
-            // if the project is not upgrated.
+            // if the project is not upgraded.
             if (NestlessMarker == "fig" && attributesValue.Count(c => c == '|') == 6)
             {
                 List<UsfmAttribute> attributeList = new List<UsfmAttribute>(6);
@@ -101,7 +101,7 @@ namespace SIL.Machine.Corpora
                 return true;
             }
 
-            Match match = AttributeRegex.Match(attributesValue);
+            Match match = s_attributeRegex.Match(attributesValue);
             if (!match.Success || match.Length != attributesValue.Length)
                 return false; // must match entire string
 

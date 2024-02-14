@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
 {
     public class UsxVerseParser
     {
-        private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
+        private static readonly HashSet<string> s_nonVerseParaStyles = new HashSet<string>
         {
             "ms",
             "mr",
@@ -136,7 +136,7 @@ namespace SIL.Machine.Corpora
         private static bool IsVersePara(XElement paraElem)
         {
             var style = (string)paraElem.Attribute("style");
-            if (NonVerseParaStyles.Contains(style))
+            if (s_nonVerseParaStyles.Contains(style))
                 return false;
 
             if (IsNumberedStyle("ms", style))
@@ -155,7 +155,7 @@ namespace SIL.Machine.Corpora
 
         private class ParseContext
         {
-            private List<UsxToken> _tokens = new List<UsxToken>();
+            private readonly List<UsxToken> _tokens = new List<UsxToken>();
 
             public string Chapter { get; set; }
             public string Verse { get; set; }

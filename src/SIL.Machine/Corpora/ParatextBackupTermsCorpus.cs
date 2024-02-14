@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTermsCorpus : DictionaryTextCorpus
     {
-        private static readonly List<string> PredefinedTermsListTypes = new List<string>()
+        private static readonly List<string> s_predefinedTermsListTypes = new List<string>()
         {
             "Major",
             "All",
@@ -41,7 +41,7 @@ namespace SIL.Machine.Corpora
 
                 XDocument biblicalTermsDoc;
                 IDictionary<string, string> termIdToCategoryDictionary;
-                if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
+                if (s_predefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
                 {
                     using (
                         Stream keyTermsFile = Assembly
@@ -98,7 +98,7 @@ namespace SIL.Machine.Corpora
 
         public static IReadOnlyList<string> GetRenderings(string rendering)
         {
-            //If entire term rednering is surrounded in square brackets, remove them
+            //If entire term rendering is surrounded in square brackets, remove them
             Regex rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
             Match match = rx.Match(rendering);
             if (match.Success)
