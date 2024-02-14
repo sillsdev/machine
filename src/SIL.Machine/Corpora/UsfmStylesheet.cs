@@ -10,12 +10,9 @@ namespace SIL.Machine.Corpora
 {
     public class UsfmStylesheet
     {
-        private static readonly Regex s_cellRangeRegex = new Regex(
-            @"^(t[ch][cr]?[1-5])-([2-5])$",
-            RegexOptions.Compiled
-        );
+        private static readonly Regex CellRangeRegex = new Regex(@"^(t[ch][cr]?[1-5])-([2-5])$", RegexOptions.Compiled);
 
-        private static readonly Dictionary<string, UsfmJustification> s_justificationMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmJustification> JustificationMappings = new Dictionary<
             string,
             UsfmJustification
         >(StringComparer.OrdinalIgnoreCase)
@@ -26,10 +23,9 @@ namespace SIL.Machine.Corpora
             { "both", UsfmJustification.Both }
         };
 
-        private static readonly Dictionary<string, UsfmStyleType> s_styleMappings = new Dictionary<
-            string,
-            UsfmStyleType
-        >(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, UsfmStyleType> StyleMappings = new Dictionary<string, UsfmStyleType>(
+            StringComparer.OrdinalIgnoreCase
+        )
         {
             { "character", UsfmStyleType.Character },
             { "paragraph", UsfmStyleType.Paragraph },
@@ -37,7 +33,7 @@ namespace SIL.Machine.Corpora
             { "milestone", UsfmStyleType.Milestone }
         };
 
-        private static readonly Dictionary<string, UsfmTextType> s_textTypeMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmTextType> TextTypeMappings = new Dictionary<
             string,
             UsfmTextType
         >(StringComparer.OrdinalIgnoreCase)
@@ -53,7 +49,7 @@ namespace SIL.Machine.Corpora
             { "chapternumber", UsfmTextType.Other }
         };
 
-        private static readonly Dictionary<string, UsfmTextProperties> s_textPropertyMappings = new Dictionary<
+        private static readonly Dictionary<string, UsfmTextProperties> TextPropertyMappings = new Dictionary<
             string,
             UsfmTextProperties
         >(StringComparer.OrdinalIgnoreCase)
@@ -101,7 +97,7 @@ namespace SIL.Machine.Corpora
 
         public static bool IsCellRange(string tag, out string baseMarker, out int colSpan)
         {
-            var match = s_cellRangeRegex.Match(tag);
+            var match = CellRangeRegex.Match(tag);
             if (match.Success)
             {
                 baseMarker = match.Groups[1].Value;
@@ -346,13 +342,13 @@ namespace SIL.Machine.Corpora
 
                     case "justification":
                         UsfmJustification justification;
-                        if (s_justificationMappings.TryGetValue(entry.Text, out justification))
+                        if (JustificationMappings.TryGetValue(entry.Text, out justification))
                             tag.Justification = justification;
                         break;
 
                     case "styletype":
                         UsfmStyleType styleType;
-                        if (s_styleMappings.TryGetValue(entry.Text, out styleType))
+                        if (StyleMappings.TryGetValue(entry.Text, out styleType))
                             tag.StyleType = styleType;
                         break;
 
@@ -445,7 +441,7 @@ namespace SIL.Machine.Corpora
                 tag.TextProperties |= UsfmTextProperties.Verse;
 
             UsfmTextType textType;
-            if (s_textTypeMappings.TryGetValue(entry.Text, out textType))
+            if (TextTypeMappings.TryGetValue(entry.Text, out textType))
                 tag.TextType = textType;
         }
 
@@ -460,7 +456,7 @@ namespace SIL.Machine.Corpora
                     continue;
 
                 UsfmTextProperties textProperty;
-                if (s_textPropertyMappings.TryGetValue(part, out textProperty))
+                if (TextPropertyMappings.TryGetValue(part, out textProperty))
                     tag.TextProperties |= textProperty;
             }
 

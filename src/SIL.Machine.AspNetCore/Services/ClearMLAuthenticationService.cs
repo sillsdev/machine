@@ -5,7 +5,7 @@ public class ClearMLAuthenticationService(
     IHttpClientFactory httpClientFactory,
     IOptionsMonitor<ClearMLOptions> options,
     ILogger<ClearMLAuthenticationService> logger
-) : RecurrentTask("ClearML authentication service", services, s_refreshPeriod, logger), IClearMLAuthenticationService
+) : RecurrentTask("ClearML authentication service", services, RefreshPeriod, logger), IClearMLAuthenticationService
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
     private readonly IOptionsMonitor<ClearMLOptions> _options = options;
@@ -14,7 +14,7 @@ public class ClearMLAuthenticationService(
 
     // technically, the token should be good for 30 days, but let's refresh each hour
     // to know well ahead of time if something is wrong.
-    private static readonly TimeSpan s_refreshPeriod = TimeSpan.FromSeconds(3600);
+    private static readonly TimeSpan RefreshPeriod = TimeSpan.FromSeconds(3600);
     private string _authToken = "";
 
     public async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)

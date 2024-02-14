@@ -5,13 +5,13 @@ public class ModelCleanupServiceTests
 {
     private readonly ISharedFileService _sharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
     private readonly MemoryRepository<TranslationEngine> _engines = new MemoryRepository<TranslationEngine>();
-    private static readonly List<string> s_validFiles =
+    private static readonly List<string> ValidFiles =
     [
         "models/engineId1_1.tar.gz",
         "models/engineId2_2.tar.gz",
         "models/engineId2_3.tar.gz" // only one build ahead - keep
     ];
-    private static readonly List<string> s_invalidFiles =
+    private static readonly List<string> InvalidFiles =
     [
         "models/engineId2_1.tar.gz", // 1 build behind
         "models/engineId2_4.tar.gz", // 2 builds ahead
@@ -51,11 +51,11 @@ public class ModelCleanupServiceTests
                 new(await _sharedFileService.OpenWriteAsync(path, CancellationToken.None));
             await streamWriter.WriteAsync(content);
         }
-        foreach (string path in s_validFiles)
+        foreach (string path in ValidFiles)
         {
             await WriteFileStub(path, "content");
         }
-        foreach (string path in s_invalidFiles)
+        foreach (string path in InvalidFiles)
         {
             await WriteFileStub(path, "content");
         }
@@ -85,13 +85,13 @@ public class ModelCleanupServiceTests
         );
         Assert.That(
             _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
-            Is.EquivalentTo(s_validFiles.Concat(s_invalidFiles).ToHashSet())
+            Is.EquivalentTo(ValidFiles.Concat(InvalidFiles).ToHashSet())
         );
         await cleanupJob.DoWorkAsync();
         // only valid files exist after running service
         Assert.That(
             _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
-            Is.EquivalentTo(s_validFiles.ToHashSet())
+            Is.EquivalentTo(ValidFiles.ToHashSet())
         );
     }
 }

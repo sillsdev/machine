@@ -6,7 +6,7 @@ namespace SIL.Machine.Utils
 {
     public static class StringExtensions
     {
-        private static readonly HashSet<char> s_sentenceTerminals = new HashSet<char>
+        private static readonly HashSet<char> SentenceTerminals = new HashSet<char>
         {
             '.',
             '!',
@@ -25,7 +25,7 @@ namespace SIL.Machine.Utils
             '\uFF61'
         };
 
-        private static readonly HashSet<char> s_quotationMarks = new HashSet<char>
+        private static readonly HashSet<char> QuotationMarks = new HashSet<char>
         {
             '"',
             '“',
@@ -43,7 +43,7 @@ namespace SIL.Machine.Utils
             '›'
         };
 
-        private static readonly HashSet<char> s_delayedSentenceStart = new HashSet<char>(s_quotationMarks)
+        private static readonly HashSet<char> DelayedSentenceStart = new HashSet<char>(QuotationMarks)
         {
             '(',
             '[',
@@ -51,7 +51,7 @@ namespace SIL.Machine.Utils
             '{'
         };
 
-        private static readonly HashSet<char> s_delayedSentenceEnd = new HashSet<char>(s_quotationMarks)
+        private static readonly HashSet<char> DelayedSentenceEnd = new HashSet<char>(QuotationMarks)
         {
             ')',
             ']',
@@ -61,32 +61,32 @@ namespace SIL.Machine.Utils
 
         public static bool IsSentenceTerminal(this char c)
         {
-            return s_sentenceTerminals.Contains(c);
+            return SentenceTerminals.Contains(c);
         }
 
         public static bool IsSentenceTerminal(this string str)
         {
-            return str.Length > 0 && str.All(c => s_sentenceTerminals.Contains(c));
+            return str.Length > 0 && str.All(c => SentenceTerminals.Contains(c));
         }
 
         public static bool IsDelayedSentenceStart(this char c)
         {
-            return s_delayedSentenceStart.Contains(c);
+            return DelayedSentenceStart.Contains(c);
         }
 
         public static bool IsDelayedSentenceStart(this string str)
         {
-            return str.Length > 0 && str.All(c => s_delayedSentenceStart.Contains(c));
+            return str.Length > 0 && str.All(c => DelayedSentenceStart.Contains(c));
         }
 
         public static bool IsDelayedSentenceEnd(this char c)
         {
-            return s_delayedSentenceEnd.Contains(c);
+            return DelayedSentenceEnd.Contains(c);
         }
 
         public static bool IsDelayedSentenceEnd(this string str)
         {
-            return str.Length > 0 && str.All(c => s_delayedSentenceEnd.Contains(c));
+            return str.Length > 0 && str.All(c => DelayedSentenceEnd.Contains(c));
         }
 
         public static bool HasSentenceEnding(this string str)

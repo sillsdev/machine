@@ -8,7 +8,7 @@ public class ServalTranslationEngineServiceV1(
     HealthCheckService healthCheckService
 ) : TranslationEngineApi.TranslationEngineApiBase
 {
-    private static readonly Empty s_empty = new();
+    private static readonly Empty Empty = new();
 
     private readonly Dictionary<TranslationEngineType, ITranslationEngineService> _engineServices =
         engineServices.ToDictionary(es => es.Type);
@@ -33,7 +33,7 @@ public class ServalTranslationEngineServiceV1(
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
         await engineService.DeleteAsync(request.EngineId, context.CancellationToken);
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<TranslateResponse> Translate(TranslateRequest request, ServerCallContext context)
@@ -89,7 +89,7 @@ public class ServalTranslationEngineServiceV1(
             request.SentenceStart,
             context.CancellationToken
         );
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> StartBuild(StartBuildRequest request, ServerCallContext context)
@@ -110,7 +110,7 @@ public class ServalTranslationEngineServiceV1(
         {
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<Empty> CancelBuild(CancelBuildRequest request, ServerCallContext context)
@@ -124,7 +124,7 @@ public class ServalTranslationEngineServiceV1(
         {
             throw new RpcException(new Status(StatusCode.Aborted, e.Message, e));
         }
-        return s_empty;
+        return Empty;
     }
 
     public override async Task<GetModelDownloadUrlResponse> GetModelDownloadUrl(

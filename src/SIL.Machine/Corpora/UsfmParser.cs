@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
             parser.ProcessTokens();
         }
 
-        private static readonly Regex s_optBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
+        private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
 
         public UsfmParser(
             IReadOnlyList<UsfmToken> tokens,
@@ -542,7 +542,7 @@ namespace SIL.Machine.Corpora
                         text = text.Replace('~', '\u00A0');
 
                         // Replace // with <optbreak/>
-                        foreach (string str in s_optBreakSplitter.Split(text))
+                        foreach (string str in OptBreakSplitter.Split(text))
                         {
                             if (str == "//")
                                 Handler.OptBreak(State);

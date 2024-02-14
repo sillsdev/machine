@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
     {
         private const char ZeroWidthSpace = '\u200B';
 
-        private static readonly Regex s_rtlVerseRegex = new Regex(
+        private static readonly Regex RtlVerseRegex = new Regex(
             @"[\u200E\u200F]*(\d+\w?)[\u200E\u200F]*([\p{P}\p{S}])[\u200E\u200F]*(?=\d)",
             RegexOptions.Compiled
         );
@@ -345,7 +345,7 @@ namespace SIL.Machine.Corpora
                         {
                             string directionMarker =
                                 RtlReferenceOrder == RtlReferenceOrder.BookVerseChapter ? "\u200e" : "\u200f";
-                            tokenUsfm = s_rtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
+                            tokenUsfm = RtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
                         }
                         break;
                     case UsfmTokenType.Text:

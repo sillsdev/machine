@@ -521,14 +521,14 @@ namespace SIL.Machine.Corpora
 
         private class DefaultRowRefComparer : IComparer<object>
         {
-            private static readonly VerseRefComparer s_verseRefComparer = new VerseRefComparer(compareSegments: false);
+            private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer(compareSegments: false);
 
             public int Compare(object x, object y)
             {
                 // Do not use the default comparer for VerseRef, since we want to compare all verses in a range or
                 // sequence
                 if (x is VerseRef vx && y is VerseRef vy)
-                    return s_verseRefComparer.Compare(vx, vy);
+                    return VerseRefComparer.Compare(vx, vy);
 
                 return Comparer<object>.Default.Compare(x, y);
             }

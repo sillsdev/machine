@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
     public class UsfmToken
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
-        private static readonly Regex s_attributeRegex = new Regex(
+        private static readonly Regex AttributeRegex = new Regex(
             @"(" + FullAttributeStr + @"(\s*" + FullAttributeStr + @")*|(?<default>[^\\=|]*))",
             RegexOptions.Compiled
         );
@@ -101,7 +101,7 @@ namespace SIL.Machine.Corpora
                 return true;
             }
 
-            Match match = s_attributeRegex.Match(attributesValue);
+            Match match = AttributeRegex.Match(attributesValue);
             if (!match.Success || match.Length != attributesValue.Length)
                 return false; // must match entire string
 

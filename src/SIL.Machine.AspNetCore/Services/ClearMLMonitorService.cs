@@ -15,12 +15,12 @@ public class ClearMLMonitorService(
         options.Value.BuildPollingEnabled
     )
 {
-    private static readonly string s_evalMetric = CreateMD5("eval");
-    private static readonly string s_bleuVariant = CreateMD5("bleu");
+    private static readonly string EvalMetric = CreateMD5("eval");
+    private static readonly string BleuVariant = CreateMD5("bleu");
 
-    private static readonly string s_summaryMetric = CreateMD5("Summary");
-    private static readonly string s_corpusSizeVariant = CreateMD5("corpus_size");
-    private static readonly string s_progressVariant = CreateMD5("progress");
+    private static readonly string SummaryMetric = CreateMD5("Summary");
+    private static readonly string CorpusSizeVariant = CreateMD5("corpus_size");
+    private static readonly string ProgressVariant = CreateMD5("progress");
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -111,7 +111,7 @@ public class ClearMLMonitorService(
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(
                                     task.LastIteration,
-                                    percentCompleted: GetMetric(task, s_summaryMetric, s_progressVariant)
+                                    percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
                                 ),
                                 0,
                                 cancellationToken
@@ -131,8 +131,8 @@ public class ClearMLMonitorService(
                                 buildJobService,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
-                                (int)GetMetric(task, s_summaryMetric, s_corpusSizeVariant),
-                                GetMetric(task, s_evalMetric, s_bleuVariant),
+                                (int)GetMetric(task, SummaryMetric, CorpusSizeVariant),
+                                GetMetric(task, EvalMetric, BleuVariant),
                                 engine.CurrentBuild.Options,
                                 cancellationToken
                             );

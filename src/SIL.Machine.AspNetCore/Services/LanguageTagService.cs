@@ -2,7 +2,7 @@
 
 public class LanguageTagService : ILanguageTagService
 {
-    private static readonly Dictionary<string, string> s_standardLanguages =
+    private static readonly Dictionary<string, string> StandardLanguages =
         new()
         {
             { "ar", "arb" },
@@ -13,13 +13,13 @@ public class LanguageTagService : ILanguageTagService
             { "cmn", "zh" }
         };
 
-    private static readonly Dictionary<string, string> s_standardScripts = new() { { "Kore", "Hang" } };
+    private static readonly Dictionary<string, string> StandardScripts = new() { { "Kore", "Hang" } };
 
     private readonly Dictionary<string, string> _defaultScripts;
 
     private readonly Dictionary<string, string> _flores200Languages;
 
-    private static readonly Regex s_langTagPattern = new Regex(
+    private static readonly Regex LangTagPattern = new Regex(
         "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
         RegexOptions.ExplicitCapture
     );
@@ -107,7 +107,7 @@ public class LanguageTagService : ILanguageTagService
     private string ResolveLanguageTag(string languageTag)
     {
         // Try to find a pattern of {language code}_{script}
-        Match langTagMatch = s_langTagPattern.Match(languageTag);
+        Match langTagMatch = LangTagPattern.Match(languageTag);
         if (!langTagMatch.Success)
             return languageTag;
         string parsedLanguage = langTagMatch.Groups["language"].Value;
@@ -122,7 +122,7 @@ public class LanguageTagService : ILanguageTagService
             languageSubtag = tempSubtag.Code;
 
         // There are a few extra conversions not in SIL Writing Systems that we need to handle
-        if (s_standardLanguages.TryGetValue(languageSubtag, out string? tempName))
+        if (StandardLanguages.TryGetValue(languageSubtag, out string? tempName))
             languageSubtag = tempName;
 
         if (StandardSubtags.RegisteredLanguages.TryGet(languageSubtag, out LanguageSubtag? languageSubtagObj))
@@ -140,7 +140,7 @@ public class LanguageTagService : ILanguageTagService
             script = tempScript;
 
         // There are a few extra conversions not in SIL Writing Systems that we need to handle
-        if (script is not null && s_standardScripts.TryGetValue(script, out string? tempScript3))
+        if (script is not null && StandardScripts.TryGetValue(script, out string? tempScript3))
             script = tempScript3;
 
         if (script is not null)

@@ -12,7 +12,7 @@ namespace SIL.Machine;
 public class ConsoleProgressBar : IDisposable, IProgress<ProgressStatus>
 {
     private const int BlockCount = 10;
-    private static readonly TimeSpan s_animationInterval = TimeSpan.FromSeconds(1.0 / 8);
+    private static readonly TimeSpan AnimationInterval = TimeSpan.FromSeconds(1.0 / 8);
     private const string Animation = @"|/-\";
 
     private readonly Timer _timer;
@@ -91,7 +91,7 @@ public class ConsoleProgressBar : IDisposable, IProgress<ProgressStatus>
 
     private void ResetTimer()
     {
-        _timer.Change(s_animationInterval, TimeSpan.FromMilliseconds(-1));
+        _timer.Change(AnimationInterval, TimeSpan.FromMilliseconds(-1));
     }
 
     public void Dispose()

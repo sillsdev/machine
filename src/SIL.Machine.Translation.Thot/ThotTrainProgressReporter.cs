@@ -6,7 +6,7 @@ namespace SIL.Machine.Translation.Thot
 {
     public class ThotTrainProgressReporter : PhasedProgressReporter
     {
-        private static readonly Phase[] s_trainPhases =
+        private static readonly Phase[] TrainPhases =
         {
             new Phase("Training language model", 0.01),
             new Phase("Training direct alignment model", 0.2),
@@ -23,7 +23,7 @@ namespace SIL.Machine.Translation.Thot
         private readonly CancellationToken _cancellationToken;
 
         public ThotTrainProgressReporter(IProgress<ProgressStatus> progress, CancellationToken cancellationToken)
-            : base(progress, s_trainPhases)
+            : base(progress, TrainPhases)
         {
             _cancellationToken = cancellationToken;
         }

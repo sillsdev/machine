@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
         {
-            // TODO: handle reentrancy properly
+            // TODO: handle reentrance properly
 
             var result = new FeatureStruct();
             foreach (Feature feature in fs.Features)

@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTermsCorpus : DictionaryTextCorpus
     {
-        private static readonly List<string> s_predefinedTermsListTypes = new List<string>()
+        private static readonly List<string> PredefinedTermsListTypes = new List<string>()
         {
             "Major",
             "All",
@@ -41,7 +41,7 @@ namespace SIL.Machine.Corpora
 
                 XDocument biblicalTermsDoc;
                 IDictionary<string, string> termIdToCategoryDictionary;
-                if (s_predefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
+                if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
                 {
                     using (
                         Stream keyTermsFile = Assembly
