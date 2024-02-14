@@ -4,7 +4,6 @@ using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.DataStructures;
 using SIL.Machine.Statistics;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.NgramModeling
 {
@@ -60,9 +59,11 @@ namespace SIL.Machine.NgramModeling
             {
                 models[i] = model;
                 if (i > 0)
+                {
                     model =
                         model.Smoother.LowerOrderModel
                         ?? new NgramModel<TSeq, TItem>(i, seqArray, itemsSelector, dir, smootherFactory());
+                }
             }
             return models;
         }

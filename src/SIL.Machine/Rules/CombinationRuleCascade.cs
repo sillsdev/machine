@@ -39,11 +39,14 @@ namespace SIL.Machine.Rules
                     {
                         // avoid infinite loop
                         if (!Comparer.Equals(input, result))
+                        {
                             ApplyRules(
                                 result,
                                 rulesApplied == null ? null : new HashSet<int>(rulesApplied) { i },
                                 output
                             );
+                        }
+
                         output.Add(result);
                     }
                 }

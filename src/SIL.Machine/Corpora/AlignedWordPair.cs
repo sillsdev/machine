@@ -52,8 +52,7 @@ namespace SIL.Machine.Corpora
 
         public override bool Equals(object obj)
         {
-            var other = obj as AlignedWordPair;
-            return other != null && Equals(other);
+            return obj is AlignedWordPair other && Equals(other);
         }
 
         public override int GetHashCode()

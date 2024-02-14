@@ -50,9 +50,8 @@ namespace SIL.Machine.FiniteState
         public virtual void Clear()
         {
             State = null;
-            Output = default(TData);
-            if (_priorities != null)
-                _priorities.Clear();
+            Output = default;
+            _priorities?.Clear();
             VariableBindings = null;
         }
     }

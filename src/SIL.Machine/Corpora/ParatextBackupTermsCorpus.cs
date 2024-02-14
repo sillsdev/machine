@@ -98,7 +98,7 @@ namespace SIL.Machine.Corpora
 
         public static IReadOnlyList<string> GetRenderings(string rendering)
         {
-            //If entire term rednering is surrounded in square brackets, remove them
+            //If entire term rendering is surrounded in square brackets, remove them
             Regex rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
             Match match = rx.Match(rendering);
             if (match.Success)

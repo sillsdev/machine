@@ -1,11 +1,8 @@
-public sealed class CustomEnumConverterFactory : JsonConverterFactory
-{
-    private readonly JsonNamingPolicy _namingPolicy;
+namespace SIL.Machine.AspNetCore.Utils;
 
-    public CustomEnumConverterFactory(JsonNamingPolicy namingPolicy)
-    {
-        _namingPolicy = namingPolicy;
-    }
+public sealed class CustomEnumConverterFactory(JsonNamingPolicy namingPolicy) : JsonConverterFactory
+{
+    private readonly JsonNamingPolicy _namingPolicy = namingPolicy;
 
     public override bool CanConvert(Type typeToConvert) => typeToConvert.IsEnum;
 
@@ -118,7 +115,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
 
     private JsonEncodedText FormatAndAddToCaches(T value, JavaScriptEncoder? encoder)
     {
-        (string valueFormattedToStr, JsonEncodedText valueEncoded) = FormatEnumValue(
+        (string valueFormattedToStr, JsonEncodedText valueEncoded) = CustomEnumConverter<T>.FormatEnumValue(
             value.ToString(),
             _namingPolicy,
             encoder
@@ -128,7 +125,7 @@ public sealed class CustomEnumConverter<T> : JsonConverter<T>
         return valueEncoded;
     }
 
-    private ValueTuple<string, JsonEncodedText> FormatEnumValue(
+    private static ValueTuple<string, JsonEncodedText> FormatEnumValue(
         string value,
         JsonNamingPolicy namingPolicy,
         JavaScriptEncoder? encoder

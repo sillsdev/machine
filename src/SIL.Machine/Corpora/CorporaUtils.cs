@@ -92,7 +92,9 @@ namespace SIL.Machine.Corpora
                         && !File.Exists(filePattern)
                         && !Directory.Exists(filePattern)
                     )
+                    {
                         throw new FileNotFoundException("The specified path does not exist.", filePattern);
+                    }
 
                     string path = filePattern;
                     string searchPattern = "*";

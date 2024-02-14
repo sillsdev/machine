@@ -1,32 +1,24 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ClearMLService : IClearMLService
+public class ClearMLService(
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options,
+    IClearMLAuthenticationService clearMLAuthService,
+    IHostEnvironment env
+) : IClearMLService
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly IHostEnvironment _env;
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly IHostEnvironment _env = env;
     private static readonly JsonNamingPolicy JsonNamingPolicy = new SnakeCaseJsonNamingPolicy();
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new()
         {
             PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
+            Converters = { new Utils.CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
-    private readonly IClearMLAuthenticationService _clearMLAuthService;
-
-    public ClearMLService(
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options,
-        IClearMLAuthenticationService clearMLAuthService,
-        IHostEnvironment env
-    )
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML");
-        _options = options;
-        _clearMLAuthService = clearMLAuthService;
-        _env = env;
-    }
+    private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
 
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {

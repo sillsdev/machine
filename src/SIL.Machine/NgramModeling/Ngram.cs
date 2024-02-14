@@ -203,8 +203,7 @@ namespace SIL.Machine.NgramModeling
 
         public override bool Equals(object obj)
         {
-            var other = obj as Ngram<TItem>;
-            return other != null && Equals(other);
+            return obj is Ngram<TItem> other && Equals(other);
         }
 
         public override int GetHashCode()
@@ -222,8 +221,7 @@ namespace SIL.Machine.NgramModeling
             if (other == null)
                 return false;
 
-            var ngram = other as Ngram<TItem>;
-            return ngram != null && _items.SequenceEqual(ngram._items, comparer.ToTypesafe<TItem>());
+            return other is Ngram<TItem> ngram && _items.SequenceEqual(ngram._items, comparer.ToTypesafe<TItem>());
         }
 
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)

@@ -4,94 +4,93 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
-namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
+namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
+
+public class MetathesisRuleTests : HermitCrabTestBase
 {
-    public class MetathesisRuleTests : HermitCrabTestBase
+    [Test]
+    public void SimpleRule()
     {
-        [Test]
-        public void SimpleRule()
+        var rule1 = new MetathesisRule
         {
-            var rule1 = new MetathesisRule
-            {
-                Name = "rule1",
-                Pattern = Pattern<Word, ShapeNode>
-                    .New()
-                    .Group("1", group => group.Annotation(Char(Table3, "i")))
-                    .Group("2", group => group.Annotation(Char(Table3, "u")))
-                    .Value,
-                LeftSwitchName = "2",
-                RightSwitchName = "1"
-            };
-            Morphophonemic.PhonologicalRules.Add(rule1);
+            Name = "rule1",
+            Pattern = Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
+                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Value,
+            LeftSwitchName = "2",
+            RightSwitchName = "1"
+        };
+        _morphophonemic.PhonologicalRules.Add(rule1);
 
-            var morpher = new Morpher(TraceManager, Language);
-            AssertMorphsEqual(morpher.ParseWord("mui"), "51");
-        }
+        var morpher = new Morpher(_traceManager, _language);
+        AssertMorphsEqual(morpher.ParseWord("mui"), "51");
+    }
 
-        [Test]
-        public void ComplexRule()
+    [Test]
+    public void ComplexRule()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var rule1 = new MetathesisRule
         {
-            var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+            Name = "rule1",
+            Pattern = Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
+                .Group("middle", group => group.Annotation(GetFeatureFromChar(_table3, "+")))
+                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor))
+                .Value,
+            LeftSwitchName = "2",
+            RightSwitchName = "1"
+        };
+        _morphophonemic.PhonologicalRules.Add(rule1);
 
-            var rule1 = new MetathesisRule
+        var uSuffix = new AffixProcessRule { Name = "u_suffix", Gloss = "3SG" };
+        _morphophonemic.MorphologicalRules.Add(uSuffix);
+        uSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
             {
-                Name = "rule1",
-                Pattern = Pattern<Word, ShapeNode>
-                    .New()
-                    .Group("1", group => group.Annotation(Char(Table3, "i")))
-                    .Group("middle", group => group.Annotation(Char(Table3, "+")))
-                    .Group("2", group => group.Annotation(Char(Table3, "u")))
-                    .Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor))
-                    .Value,
-                LeftSwitchName = "2",
-                RightSwitchName = "1"
-            };
-            Morphophonemic.PhonologicalRules.Add(rule1);
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+u") }
+            }
+        );
 
-            var uSuffix = new AffixProcessRule { Name = "u_suffix", Gloss = "3SG" };
-            Morphophonemic.MorphologicalRules.Add(uSuffix);
-            uSuffix.Allomorphs.Add(
-                new AffixProcessAllomorph
-                {
-                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                    Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+u") }
-                }
-            );
+        var morpher = new Morpher(_traceManager, _language);
+        AssertMorphsEqual(morpher.ParseWord("mui"), "53 3SG");
+    }
 
-            var morpher = new Morpher(TraceManager, Language);
-            AssertMorphsEqual(morpher.ParseWord("mui"), "53 3SG");
-        }
+    [Test]
+    public void SimpleRuleNotUnapplied()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
 
-        [Test]
-        public void SimpleRuleNotUnapplied()
+        var prule = new MetathesisRule
         {
-            var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+            Name = "rule1",
+            Pattern = Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
+                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Value,
+            LeftSwitchName = "2",
+            RightSwitchName = "1"
+        };
+        _morphophonemic.PhonologicalRules.Add(prule);
 
-            var prule = new MetathesisRule
+        var iSuffix = new AffixProcessRule { Name = "i_suffix", Gloss = "3SG" };
+        _morphophonemic.MorphologicalRules.Add(iSuffix);
+        iSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
             {
-                Name = "rule1",
-                Pattern = Pattern<Word, ShapeNode>
-                    .New()
-                    .Group("1", group => group.Annotation(Char(Table3, "i")))
-                    .Group("2", group => group.Annotation(Char(Table3, "u")))
-                    .Value,
-                LeftSwitchName = "2",
-                RightSwitchName = "1"
-            };
-            Morphophonemic.PhonologicalRules.Add(prule);
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "i") }
+            }
+        );
 
-            var iSuffix = new AffixProcessRule { Name = "i_suffix", Gloss = "3SG" };
-            Morphophonemic.MorphologicalRules.Add(iSuffix);
-            iSuffix.Allomorphs.Add(
-                new AffixProcessAllomorph
-                {
-                    Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                    Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "i") }
-                }
-            );
-
-            var morpher = new Morpher(TraceManager, Language);
-            AssertMorphsEqual(morpher.ParseWord("pui"), "52 3SG");
-        }
+        var morpher = new Morpher(_traceManager, _language);
+        AssertMorphsEqual(morpher.ParseWord("pui"), "52 3SG");
     }
 }

@@ -11,6 +11,7 @@ builder
     .AddBuildJobService()
     .AddClearMLService();
 if (builder.Environment.IsDevelopment())
+{
     builder
         .Services.AddOpenTelemetry()
         .WithTracing(builder =>
@@ -22,6 +23,7 @@ if (builder.Environment.IsDevelopment())
                 .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
                 .AddConsoleExporter();
         });
+}
 
 var app = builder.Build();
 

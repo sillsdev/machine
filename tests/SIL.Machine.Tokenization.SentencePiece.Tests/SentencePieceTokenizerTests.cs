@@ -1,52 +1,50 @@
 ﻿using NUnit.Framework;
 using SIL.Machine.Utils;
 
-namespace SIL.Machine.Tokenization.SentencePiece
+namespace SIL.Machine.Tokenization.SentencePiece;
+
+[TestFixture]
+public class SentencePieceTokenizerTests
 {
-    [TestFixture]
-    public class SentencePieceTokenizerTests
+    private static string TestFilename => Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "data", "test.txt");
+
+    private string _tempDir;
+
+    private string ModelFilename => Path.Combine(_tempDir, "sp.model");
+
+    [OneTimeSetUp]
+    public void CreateModel()
     {
-        private static string TestFilename =>
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "data", "test.txt");
+        _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        DirectoryHelper.DeleteDirectoryRobust(_tempDir);
+        Directory.CreateDirectory(_tempDir);
+        var trainer = new SentencePieceTrainer { VocabSize = 100 };
+        trainer.Train(TestFilename, Path.Combine(_tempDir, "sp"));
+    }
 
-        private string _tempDir;
+    [OneTimeTearDown]
+    public void DeleteModel()
+    {
+        DirectoryHelper.DeleteDirectoryRobust(_tempDir);
+    }
 
-        private string ModelFilename => Path.Combine(_tempDir, "sp.model");
-
-        [OneTimeSetUp]
-        public void CreateModel()
+    [Test]
+    public void Tokenize()
+    {
+        using (var processor = new SentencePieceTokenizer(ModelFilename))
         {
-            _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            DirectoryHelper.DeleteDirectoryRobust(_tempDir);
-            Directory.CreateDirectory(_tempDir);
-            var trainer = new SentencePieceTrainer { VocabSize = 100 };
-            trainer.Train(TestFilename, Path.Combine(_tempDir, "sp"));
+            string[] tokens = processor.Tokenize("Other travelling salesmen live a life of luxury.").ToArray();
+            Assert.That(tokens.Length, Is.EqualTo(30));
         }
+    }
 
-        [OneTimeTearDown]
-        public void DeleteModel()
+    [Test]
+    public void Tokenize_Empty()
+    {
+        using (var processor = new SentencePieceTokenizer(ModelFilename))
         {
-            DirectoryHelper.DeleteDirectoryRobust(_tempDir);
-        }
-
-        [Test]
-        public void Tokenize()
-        {
-            using (var processor = new SentencePieceTokenizer(ModelFilename))
-            {
-                string[] tokens = processor.Tokenize("Other travelling salesmen live a life of luxury.").ToArray();
-                Assert.That(tokens.Length, Is.EqualTo(30));
-            }
-        }
-
-        [Test]
-        public void Tokenize_Empty()
-        {
-            using (var processor = new SentencePieceTokenizer(ModelFilename))
-            {
-                string[] tokens = processor.Tokenize("").ToArray();
-                Assert.That(tokens.Length, Is.EqualTo(0));
-            }
+            string[] tokens = processor.Tokenize("").ToArray();
+            Assert.That(tokens.Length, Is.EqualTo(0));
         }
     }
 }

@@ -40,8 +40,7 @@ namespace SIL.Machine.Morphology
 
         public override bool Equals(object obj)
         {
-            var other = obj as WordAnalysis;
-            return other != null && Equals(other);
+            return obj is WordAnalysis other && Equals(other);
         }
 
         public bool Equals(WordAnalysis other)

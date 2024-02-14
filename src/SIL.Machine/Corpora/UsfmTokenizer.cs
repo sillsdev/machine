@@ -171,6 +171,7 @@ namespace SIL.Machine.Corpora
                     case UsfmStyleType.Paragraph:
                         // Handle chapter special case
                         if ((tag.TextProperties & UsfmTextProperties.Chapter) > 0)
+                        {
                             tokens.Add(
                                 new UsfmToken(
                                     UsfmTokenType.Chapter,
@@ -180,7 +181,9 @@ namespace SIL.Machine.Corpora
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
+                        }
                         else if ((tag.TextProperties & UsfmTextProperties.Book) > 0)
+                        {
                             tokens.Add(
                                 new UsfmToken(
                                     UsfmTokenType.Book,
@@ -190,8 +193,12 @@ namespace SIL.Machine.Corpora
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
+                        }
                         else
+                        {
                             tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker));
+                        }
+
                         break;
                     case UsfmStyleType.Note:
                         tokens.Add(
@@ -228,7 +235,7 @@ namespace SIL.Machine.Corpora
                         break;
                     case UsfmStyleType.Milestone:
                     case UsfmStyleType.MilestoneEnd:
-                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the begining. Instead create at
+                        // if a milestone is not followed by a ending \* treat don't create a milestone token for the beginning. Instead create at
                         // text token for all the text up to the beginning of the next marker. This will make typing of milestones easiest since
                         // the partially typed milestone more be reformatted to have a normal ending even if it hasn't been typed yet.
                         if (!MilestoneEnded(usfm, index))
@@ -244,9 +251,14 @@ namespace SIL.Machine.Corpora
                             index = endOfText;
                         }
                         else if (tag.StyleType == UsfmStyleType.Milestone)
+                        {
                             tokens.Add(new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker));
+                        }
                         else
+                        {
                             tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null));
+                        }
+
                         break;
                 }
             }
@@ -396,7 +408,10 @@ namespace SIL.Machine.Corpora
                 && usfm[usfm.Length - 2] == '\r'
                 && usfm[usfm.Length - 1] == '\n'
             )
+            {
                 usfm.Remove(usfm.Length - 3, 1);
+            }
+
             return usfm.ToString();
         }
 
@@ -533,14 +548,18 @@ namespace SIL.Machine.Corpora
                 expectedStartMarker == ""
                 && (tokens.Last().Type == UsfmTokenType.Milestone || tokens.Last().Type == UsfmTokenType.MilestoneEnd)
             )
+            {
                 return tokens.Last();
+            }
 
             int nestingLevel = 0;
             for (int i = tokens.Count - 1; i >= 0; i--)
             {
                 UsfmToken token = tokens[i];
                 if (token.Type == UsfmTokenType.End)
+                {
                     nestingLevel++;
+                }
                 else if (token.Type != UsfmTokenType.Text && token.Type != UsfmTokenType.Attribute)
                 {
                     if (nestingLevel > 0)

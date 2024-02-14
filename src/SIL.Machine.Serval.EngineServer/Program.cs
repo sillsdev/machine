@@ -1,6 +1,5 @@
 using Hangfire;
 using OpenTelemetry.Trace;
-using SIL.Machine.AspNetCore.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +14,7 @@ builder
     .AddClearMLService();
 
 if (builder.Environment.IsDevelopment())
+{
     builder
         .Services.AddOpenTelemetry()
         .WithTracing(builder =>
@@ -26,6 +26,7 @@ if (builder.Environment.IsDevelopment())
                 .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
                 .AddConsoleExporter();
         });
+}
 
 var app = builder.Build();
 

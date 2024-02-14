@@ -66,7 +66,7 @@ namespace SIL.Machine.FeatureModel
                 return true;
             }
 
-            value = default(T);
+            value = default;
             return false;
         }
 

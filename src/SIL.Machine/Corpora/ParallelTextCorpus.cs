@@ -436,7 +436,9 @@ namespace SIL.Machine.Corpora
                         forceTargetInRange: forceTargetInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 
@@ -465,7 +467,9 @@ namespace SIL.Machine.Corpora
                         forceSourceInRange: forceSourceInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 
@@ -539,7 +543,7 @@ namespace SIL.Machine.Corpora
             private readonly IEnumerator<TextRow> _enumerator;
             private bool _isScripture = false;
             private bool _isEnumerating = false;
-            private Queue<TextRow> _verseRows;
+            private readonly Queue<TextRow> _verseRows;
             private TextRow _current;
 
             public TargetCorpusEnumerator(IEnumerator<TextRow> enumerator)

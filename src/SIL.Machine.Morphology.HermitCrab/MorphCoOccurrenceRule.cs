@@ -181,8 +181,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override bool Equals(object other)
         {
-            var otherRule = other as MorphCoOccurrenceRule<T>;
-            return otherRule != null && Equals(otherRule);
+            return other is MorphCoOccurrenceRule<T> otherRule && Equals(otherRule);
         }
 
         public override int GetHashCode()

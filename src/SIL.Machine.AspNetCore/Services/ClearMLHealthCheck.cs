@@ -1,23 +1,16 @@
-public class ClearMLHealthCheck : IHealthCheck
-{
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-    private readonly IClearMLAuthenticationService _clearMLAuthenticationService;
-    private int _numConsecutiveFailures;
-    private readonly AsyncLock _lock;
+namespace SIL.Machine.AspNetCore.Services;
 
-    public ClearMLHealthCheck(
-        IClearMLAuthenticationService clearMLAuthenticationService,
-        IHttpClientFactory httpClientFactory,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-    {
-        _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
-        _options = options;
-        _clearMLAuthenticationService = clearMLAuthenticationService;
-        _numConsecutiveFailures = 0;
-        _lock = new AsyncLock();
-    }
+public class ClearMLHealthCheck(
+    IClearMLAuthenticationService clearMLAuthenticationService,
+    IHttpClientFactory httpClientFactory,
+    IOptionsMonitor<ClearMLOptions> options
+) : IHealthCheck
+{
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
+    private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
+    private int _numConsecutiveFailures = 0;
+    private readonly AsyncLock _lock = new AsyncLock();
 
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
@@ -29,9 +22,12 @@ public class ClearMLHealthCheck : IHealthCheck
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
+            {
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
                 );
+            }
+
             using (await _lock.LockAsync())
                 _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");

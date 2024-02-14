@@ -223,10 +223,13 @@ namespace SIL.Machine.SequenceAlignment
             double lengthPart = length / tree.OutDegree(edge.Target);
             double maxWeight = double.MinValue;
             foreach (ClusterEdge<TSeq> childEdge in tree.OutEdges(edge.Target))
+            {
                 maxWeight = Math.Max(
                     maxWeight,
                     CalcSequenceWeights(tree, childEdge, curWeight + lengthPart, nodeStack, profiles)
                 );
+            }
+
             return maxWeight;
         }
 

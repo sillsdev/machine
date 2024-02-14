@@ -1,142 +1,139 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
-namespace SIL.Machine.Morphology
+namespace SIL.Machine.Morphology;
+
+[TestFixture]
+public class PoorMansAffixIdentifierTests
 {
-    [TestFixture]
-    public class PoorMansAffixIdentifierTests
+    [Test]
+    public void IdentifySuffixes()
     {
-        [Test]
-        public void IdentifySuffixes()
+        var words = new[]
         {
-            var words = new[]
-            {
-                "calls",
-                "fixes",
-                "coughs",
-                "begs",
-                "explains",
-                "jams",
-                "kisses",
-                "learns",
-                "whips",
-                "visits",
-                "rushes",
-                "traces",
-                "attends",
-                "detects",
-                "extends",
-                "explains",
-                "forces",
-                "frames",
-                "cycles",
-                "notices",
-                "turns",
-                "uses",
-                "excites",
-                "damages",
-                "boils",
-                "avoids",
-                "allows",
-                "jokes",
-                "murders",
-                "sucks",
-                "called",
-                "fixed",
-                "coughed",
-                "begged",
-                "explained",
-                "jammed",
-                "kissed",
-                "learned",
-                "whipped",
-                "visited",
-                "rushed",
-                "traced",
-                "attended",
-                "detected",
-                "extended",
-                "explained",
-                "forced",
-                "framed",
-                "cycled",
-                "noticed",
-                "turned",
-                "used",
-                "excited",
-                "damaged",
-                "boiled",
-                "avoided",
-                "allowed",
-                "joked",
-                "murdered",
-                "sucked",
-                "call",
-                "fix",
-                "cough",
-                "beg",
-                "explain",
-                "jam",
-                "kiss",
-                "learn",
-                "whip",
-                "visit",
-                "rush",
-                "trace",
-                "attend",
-                "detect",
-                "extend",
-                "explain",
-                "force",
-                "frame",
-                "cycle",
-                "notice",
-                "turn",
-                "use",
-                "excite",
-                "damage",
-                "boil",
-                "avoid",
-                "allow",
-                "joke",
-                "murder",
-                "suck",
-            };
+            "calls",
+            "fixes",
+            "coughs",
+            "begs",
+            "explains",
+            "jams",
+            "kisses",
+            "learns",
+            "whips",
+            "visits",
+            "rushes",
+            "traces",
+            "attends",
+            "detects",
+            "extends",
+            "explains",
+            "forces",
+            "frames",
+            "cycles",
+            "notices",
+            "turns",
+            "uses",
+            "excites",
+            "damages",
+            "boils",
+            "avoids",
+            "allows",
+            "jokes",
+            "murders",
+            "sucks",
+            "called",
+            "fixed",
+            "coughed",
+            "begged",
+            "explained",
+            "jammed",
+            "kissed",
+            "learned",
+            "whipped",
+            "visited",
+            "rushed",
+            "traced",
+            "attended",
+            "detected",
+            "extended",
+            "explained",
+            "forced",
+            "framed",
+            "cycled",
+            "noticed",
+            "turned",
+            "used",
+            "excited",
+            "damaged",
+            "boiled",
+            "avoided",
+            "allowed",
+            "joked",
+            "murdered",
+            "sucked",
+            "call",
+            "fix",
+            "cough",
+            "beg",
+            "explain",
+            "jam",
+            "kiss",
+            "learn",
+            "whip",
+            "visit",
+            "rush",
+            "trace",
+            "attend",
+            "detect",
+            "extend",
+            "explain",
+            "force",
+            "frame",
+            "cycle",
+            "notice",
+            "turn",
+            "use",
+            "excite",
+            "damage",
+            "boil",
+            "avoid",
+            "allow",
+            "joke",
+            "murder",
+            "suck",
+        };
 
-            var affixIdentifier = new PoorMansAffixIdentifier<string, char>(w => w);
-            IEnumerable<Affix<char>> suffixes = affixIdentifier.IdentifyAffixes(words, AffixType.Suffix);
-            Assert.That(suffixes.Select(a => a.Ngram.ToString()), Is.EquivalentTo(new[] { "ed", "es", "s" }));
-        }
+        var affixIdentifier = new PoorMansAffixIdentifier<string, char>(w => w);
+        IEnumerable<Affix<char>> suffixes = affixIdentifier.IdentifyAffixes(words, AffixType.Suffix);
+        Assert.That(suffixes.Select(a => a.Ngram.ToString()), Is.EquivalentTo(new[] { "ed", "es", "s" }));
+    }
 
-        [Test]
-        public void IdentifyPrefixes()
+    [Test]
+    public void IdentifyPrefixes()
+    {
+        var words = new[]
         {
-            var words = new[]
-            {
-                "unamazing",
-                "unbias",
-                "uncertain",
-                "unapt",
-                "uneloquent",
-                "unfair",
-                "ungenial",
-                "unangry",
-                "decent",
-                "expensive",
-                "wealthy",
-                "united",
-                "archaic",
-                "silly",
-                "remote",
-                "asleep",
-                "crazy",
-                "stupid"
-            };
+            "unamazing",
+            "unbias",
+            "uncertain",
+            "unapt",
+            "uneloquent",
+            "unfair",
+            "ungenial",
+            "unangry",
+            "decent",
+            "expensive",
+            "wealthy",
+            "united",
+            "archaic",
+            "silly",
+            "remote",
+            "asleep",
+            "crazy",
+            "stupid"
+        };
 
-            var affixIdentifier = new PoorMansAffixIdentifier<string, char>(w => w);
-            IEnumerable<Affix<char>> prefixes = affixIdentifier.IdentifyAffixes(words, AffixType.Prefix);
-            Assert.That(prefixes.Select(a => a.Ngram.ToString()), Is.EquivalentTo(new[] { "un" }));
-        }
+        var affixIdentifier = new PoorMansAffixIdentifier<string, char>(w => w);
+        IEnumerable<Affix<char>> prefixes = affixIdentifier.IdentifyAffixes(words, AffixType.Prefix);
+        Assert.That(prefixes.Select(a => a.Ngram.ToString()), Is.EquivalentTo(new[] { "un" }));
     }
 }

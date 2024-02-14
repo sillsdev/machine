@@ -2,25 +2,18 @@
 
 // TODO: The Hangfire implementation of the NMT train stage is not complete, DO NOT USE
 // see https://github.com/sillsdev/machine/issues/103
-public class NmtTrainBuildJob : HangfireBuildJob
+public class NmtTrainBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<NmtTrainBuildJob> logger,
+    ISharedFileService sharedFileService,
+    IOptionsMonitor<ClearMLOptions> options
+) : HangfireBuildJob(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly ISharedFileService _sharedFileService;
-    private readonly IOptionsMonitor<ClearMLOptions> _options;
-
-    public NmtTrainBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<NmtTrainBuildJob> logger,
-        ISharedFileService sharedFileService,
-        IOptionsMonitor<ClearMLOptions> options
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
-    {
-        _sharedFileService = sharedFileService;
-        _options = options;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -103,7 +96,9 @@ public class NmtTrainBuildJob : HangfireBuildJob
                 out _
             )
         )
+        {
             return languageTag;
+        }
 
         // Convert to NLLB language codes
         return $"{languageSubtag.Iso3Code}_{scriptSubtag.Code}";

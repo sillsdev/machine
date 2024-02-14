@@ -49,8 +49,11 @@ namespace SIL.Machine.FiniteState
         public bool Matches(FeatureStruct fs, bool unification, bool useDefaults, VariableBindings varBindings)
         {
             if (unification)
+            {
                 return fs.IsUnifiable(_fs, useDefaults, varBindings)
                     && _negatedFSs.All(nfs => !fs.IsUnifiable(nfs, useDefaults));
+            }
+
             return _fs.Subsumes(fs, useDefaults, varBindings) && _negatedFSs.All(nfs => !nfs.Subsumes(fs, useDefaults));
         }
 

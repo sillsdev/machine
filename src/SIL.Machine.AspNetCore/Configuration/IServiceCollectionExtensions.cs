@@ -15,7 +15,10 @@ public static class IServiceCollectionExtensions
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddSingleton<ICorpusService, CorpusService>();
-        services.AddStartupTask((sp, ct) => sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(ct));
+        services.AddStartupTask(
+            (sp, cancellationToken) =>
+                sp.GetRequiredService<IDistributedReaderWriterLockFactory>().InitAsync(cancellationToken)
+        );
 
         var builder = new MachineBuilder(services, configuration);
         if (configuration is null)

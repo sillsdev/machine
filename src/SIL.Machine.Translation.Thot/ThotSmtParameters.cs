@@ -47,35 +47,47 @@ namespace SIL.Machine.Translation.Thot
                 {
                     case "tm":
                         if (string.IsNullOrEmpty(value))
+                        {
                             throw new ArgumentException(
                                 "The -tm parameter does not have a value.",
                                 nameof(cfgFileName)
                             );
+                        }
+
                         parameters.TranslationModelFileNamePrefix = value;
                         if (
                             !Path.IsPathRooted(parameters.TranslationModelFileNamePrefix)
                             && !string.IsNullOrEmpty(cfgDirPath)
                         )
+                        {
                             parameters.TranslationModelFileNamePrefix = Path.Combine(
                                 cfgDirPath,
                                 parameters.TranslationModelFileNamePrefix
                             );
+                        }
+
                         break;
                     case "lm":
                         if (string.IsNullOrEmpty(value))
+                        {
                             throw new ArgumentException(
                                 "The -lm parameter does not have a value.",
                                 nameof(cfgFileName)
                             );
+                        }
+
                         parameters.LanguageModelFileNamePrefix = value;
                         if (
                             !Path.IsPathRooted(parameters.LanguageModelFileNamePrefix)
                             && !string.IsNullOrEmpty(cfgDirPath)
                         )
+                        {
                             parameters.LanguageModelFileNamePrefix = Path.Combine(
                                 cfgDirPath,
                                 parameters.LanguageModelFileNamePrefix
                             );
+                        }
+
                         break;
                     case "W":
                         if (string.IsNullOrEmpty(value))
@@ -99,10 +111,13 @@ namespace SIL.Machine.Translation.Thot
                         break;
                     case "nomon":
                         if (string.IsNullOrEmpty(value))
+                        {
                             throw new ArgumentException(
                                 "The -nomon parameter does not have a value.",
                                 nameof(cfgFileName)
                             );
+                        }
+
                         parameters.ModelNonMonotonicity = uint.Parse(value);
                         break;
                     case "be":
@@ -120,10 +135,13 @@ namespace SIL.Machine.Translation.Thot
                         break;
                     case "olp":
                         if (string.IsNullOrEmpty(value))
+                        {
                             throw new ArgumentException(
                                 "The -olp parameter does not have a value.",
                                 nameof(cfgFileName)
                             );
+                        }
+
                         string[] tokens = value.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                         if (tokens.Length >= 1)
                             parameters.LearningAlgorithm = (LearningAlgorithm)uint.Parse(tokens[0]);
@@ -140,10 +158,12 @@ namespace SIL.Machine.Translation.Thot
                         break;
                     case "tmw":
                         if (string.IsNullOrEmpty(value))
+                        {
                             throw new ArgumentException(
                                 "The -tmw parameter does not have a value.",
                                 nameof(cfgFileName)
                             );
+                        }
 
                         parameters.ModelWeights = value
                             .Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries)

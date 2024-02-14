@@ -520,8 +520,7 @@ namespace SIL.Machine.FeatureModel
 
         public override bool ValueEquals(FeatureValue other)
         {
-            var otherSfv = other as SimpleFeatureValue;
-            return otherSfv != null && ValueEquals(otherSfv);
+            return other is SimpleFeatureValue otherSfv && ValueEquals(otherSfv);
         }
 
         public override string ToString()

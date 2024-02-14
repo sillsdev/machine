@@ -1,31 +1,26 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-public class S3WriteStream : Stream
+[SuppressMessage(
+    "Usage",
+    "CA1844: Provide memory-based overrides of async methods when subclassing 'Stream'",
+    Justification = "Data would have to be copied anyway"
+)]
+public class S3WriteStream(
+    AmazonS3Client client,
+    string key,
+    string bucketName,
+    string uploadId,
+    ILoggerFactory loggerFactory
+) : Stream
 {
-    private readonly AmazonS3Client _client;
-    private readonly string _key;
-    private readonly string _uploadId;
-    private readonly string _bucketName;
-    private readonly List<UploadPartResponse> _uploadResponses;
-    private readonly ILogger<S3WriteStream> _logger;
+    private readonly AmazonS3Client _client = client;
+    private readonly string _key = key;
+    private readonly string _uploadId = uploadId;
+    private readonly string _bucketName = bucketName;
+    private readonly List<UploadPartResponse> _uploadResponses = new List<UploadPartResponse>();
+    private readonly ILogger<S3WriteStream> _logger = loggerFactory.CreateLogger<S3WriteStream>();
 
     public const int MaxPartSize = 5 * 1024 * 1024;
-
-    public S3WriteStream(
-        AmazonS3Client client,
-        string key,
-        string bucketName,
-        string uploadId,
-        ILoggerFactory loggerFactory
-    )
-    {
-        _client = client;
-        _key = key;
-        _bucketName = bucketName;
-        _uploadId = uploadId;
-        _logger = loggerFactory.CreateLogger<S3WriteStream>();
-        _uploadResponses = new List<UploadPartResponse>();
-    }
 
     public override bool CanRead => false;
 
@@ -79,9 +74,12 @@ public class S3WriteStream : Stream
                 );
                 UploadPartResponse response = await _client.UploadPartAsync(request);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
+                {
                     throw new HttpRequestException(
                         $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
+                }
+
                 _uploadResponses.Add(response);
             }
             catch (Exception e)
@@ -108,9 +106,11 @@ public class S3WriteStream : Stream
                     };
                 PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
                 if (response.HttpStatusCode != HttpStatusCode.OK)
+                {
                     throw new HttpRequestException(
                         $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
+                }
             }
             else
             {
@@ -130,9 +130,11 @@ public class S3WriteStream : Stream
                     Dispose(disposing: false);
                     GC.SuppressFinalize(this);
                     if (response.HttpStatusCode != HttpStatusCode.OK)
+                    {
                         throw new HttpRequestException(
                             $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                         );
+                    }
                 }
                 catch (Exception e)
                 {
@@ -158,9 +160,12 @@ public class S3WriteStream : Stream
                 };
             PutObjectResponse response = await _client.PutObjectAsync(request);
             if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
                 throw new HttpRequestException(
                     $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                 );
+            }
+
             return;
         }
         try
@@ -177,9 +182,11 @@ public class S3WriteStream : Stream
             Dispose(disposing: false);
             GC.SuppressFinalize(this);
             if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
                 throw new HttpRequestException(
                     $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                 );
+            }
         }
         catch (Exception e)
         {

@@ -1,29 +1,21 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferEngineState : AsyncDisposableBase
+public class SmtTransferEngineState(
+    ISmtModelFactory smtModelFactory,
+    ITransferEngineFactory transferEngineFactory,
+    ITruecaserFactory truecaserFactory,
+    string engineId
+) : AsyncDisposableBase
 {
-    private readonly ISmtModelFactory _smtModelFactory;
-    private readonly ITransferEngineFactory _transferEngineFactory;
-    private readonly ITruecaserFactory _truecaserFactory;
+    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
+    private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly AsyncLock _lock = new();
 
     private IInteractiveTranslationModel? _smtModel;
     private HybridTranslationEngine? _hybridEngine;
 
-    public SmtTransferEngineState(
-        ISmtModelFactory smtModelFactory,
-        ITransferEngineFactory transferEngineFactory,
-        ITruecaserFactory truecaserFactory,
-        string engineId
-    )
-    {
-        _smtModelFactory = smtModelFactory;
-        _transferEngineFactory = transferEngineFactory;
-        _truecaserFactory = truecaserFactory;
-        EngineId = engineId;
-    }
-
-    public string EngineId { get; }
+    public string EngineId { get; } = engineId;
 
     public bool IsUpdated { get; set; }
     public int CurrentBuildRevision { get; set; } = -1;
