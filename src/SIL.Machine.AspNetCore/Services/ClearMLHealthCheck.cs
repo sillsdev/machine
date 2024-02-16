@@ -22,9 +22,12 @@ public class ClearMLHealthCheck(
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
             if (!await WorkersAreAssignedToQueue(cancellationToken))
+            {
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
                 );
+            }
+
             using (await _lock.LockAsync())
                 _numConsecutiveFailures = 0;
             return HealthCheckResult.Healthy("ClearML is available");

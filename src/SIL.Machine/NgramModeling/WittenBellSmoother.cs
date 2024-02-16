@@ -22,6 +22,7 @@ namespace SIL.Machine.NgramModeling
             _cfd = cfd;
             _dir = dir;
             if (ngramSize > 1)
+            {
                 _lowerOrderModel = new NgramModel<TSeq, TItem>(
                     ngramSize - 1,
                     sequences,
@@ -29,6 +30,7 @@ namespace SIL.Machine.NgramModeling
                     dir,
                     new WittenBellSmoother<TSeq, TItem>()
                 );
+            }
         }
 
         public double GetProbability(TItem item, Ngram<TItem> context)

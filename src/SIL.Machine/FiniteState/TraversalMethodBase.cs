@@ -212,9 +212,11 @@ namespace SIL.Machine.FiniteState
                     {
                         int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
                         if (nextIndex != _annotations.Count)
+                        {
                             insts.AddRange(
                                 Initialize(ref nextIndex, (Register<TOffset>[,])registers.Clone(), cmds, initAnns)
                             );
+                        }
                     }
                 }
             }
@@ -297,6 +299,7 @@ namespace SIL.Machine.FiniteState
                     new Register<TOffset>(end, false)
                 );
                 if (!optional || _endAnchor)
+                {
                     CheckAccepting(
                         nextIndex,
                         inst.Registers,
@@ -306,6 +309,7 @@ namespace SIL.Machine.FiniteState
                         curResults,
                         inst.Priorities
                     );
+                }
 
                 inst.State = arc.Target;
 

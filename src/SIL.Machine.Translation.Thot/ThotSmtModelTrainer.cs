@@ -129,6 +129,7 @@ namespace SIL.Machine.Translation.Thot
                 TuneTranslationModel(tuneTMPrefix, trainLMPrefix, tuneSourceCorpus, tuneTargetCorpus, phaseProgress);
 
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+            {
                 await TrainTuneCorpusAsync(
                         trainTMPrefix,
                         trainLMPrefix,
@@ -137,6 +138,7 @@ namespace SIL.Machine.Translation.Thot
                         phaseProgress
                     )
                     .ConfigureAwait(false);
+            }
 
             Stats.TrainCorpusSize = trainCount + testCount;
         }
@@ -325,8 +327,10 @@ namespace SIL.Machine.Translation.Thot
         )
         {
             using (PhaseProgress phaseProgress = reporter.StartNextPhase())
+            {
                 await TrainWordAlignmentModelAsync(swmPrefix, trainCorpus, phaseProgress, cancellationToken)
                     .ConfigureAwait(false);
+            }
 
             reporter.CheckCanceled();
 

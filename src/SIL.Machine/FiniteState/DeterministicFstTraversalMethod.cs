@@ -86,7 +86,10 @@ namespace SIL.Machine.FiniteState
                                     curResults
                                 )
                             )
+                            {
                                 instStack.Push(ni);
+                            }
+
                             releaseInstance = false;
                             break;
                         }

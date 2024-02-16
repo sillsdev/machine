@@ -59,9 +59,11 @@ namespace SIL.Machine.NgramModeling
             {
                 models[i] = model;
                 if (i > 0)
+                {
                     model =
                         model.Smoother.LowerOrderModel
                         ?? new NgramModel<TSeq, TItem>(i, seqArray, itemsSelector, dir, smootherFactory());
+                }
             }
             return models;
         }

@@ -316,6 +316,7 @@ namespace SIL.Machine.FiniteState
             if (_operations != null)
             {
                 if (IsDeterministic)
+                {
                     traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(
                         this,
                         data,
@@ -324,7 +325,9 @@ namespace SIL.Machine.FiniteState
                         endAnchor,
                         useDefaults
                     );
+                }
                 else
+                {
                     traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(
                         this,
                         data,
@@ -333,10 +336,12 @@ namespace SIL.Machine.FiniteState
                         endAnchor,
                         useDefaults
                     );
+                }
             }
             else
             {
                 if (IsDeterministic)
+                {
                     traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(
                         this,
                         data,
@@ -345,7 +350,9 @@ namespace SIL.Machine.FiniteState
                         endAnchor,
                         useDefaults
                     );
+                }
                 else
+                {
                     traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(
                         this,
                         data,
@@ -354,6 +361,7 @@ namespace SIL.Machine.FiniteState
                         endAnchor,
                         useDefaults
                     );
+                }
             }
             List<FstResult<TData, TOffset>> resultList = null;
 
@@ -368,10 +376,14 @@ namespace SIL.Machine.FiniteState
                 foreach (TagMapCommand cmd in _initializers)
                 {
                     if (cmd.Dest == 0)
+                    {
                         initRegisters[cmd.Dest, 0]
                             .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
+                    }
                     else
+                    {
                         cmds.Add(cmd);
+                    }
                 }
 
                 List<FstResult<TData, TOffset>> curResults = traversalMethod
@@ -612,7 +624,9 @@ namespace SIL.Machine.FiniteState
                 {
                     FeatureStruct newCond;
                     if (preprocessedCond.Item1 == null)
+                    {
                         newCond = cond.Key.FeatureStruct;
+                    }
                     else if (
                         !preprocessedCond.Item1.Unify(
                             cond.Key.FeatureStruct,
@@ -621,11 +635,15 @@ namespace SIL.Machine.FiniteState
                             out newCond
                         )
                     )
+                    {
                         newCond = null;
+                    }
+
                     if (newCond != null)
                         temp.Add(Tuple.Create(newCond, preprocessedCond.Item2, preprocessedCond.Item3.Concat(cond)));
 
                     if (!cond.Key.FeatureStruct.IsEmpty)
+                    {
                         temp.Add(
                             Tuple.Create(
                                 preprocessedCond.Item1,
@@ -633,6 +651,7 @@ namespace SIL.Machine.FiniteState
                                 preprocessedCond.Item3
                             )
                         );
+                    }
                 }
                 preprocessedConditions = temp;
             }
@@ -660,7 +679,9 @@ namespace SIL.Machine.FiniteState
                                 int
                             > arc in GetAllArcsForInput(input, from, groups, 0, Enumerable.Empty<NfaStateInfo>())
                         )
+                        {
                             yield return arc;
+                        }
                     }
                 }
             }
@@ -744,7 +765,9 @@ namespace SIL.Machine.FiniteState
                             states.Concat(state)
                         )
                     )
+                    {
                         yield return arc;
+                    }
                 }
             }
         }
@@ -848,6 +871,7 @@ namespace SIL.Machine.FiniteState
                         curSubsetState
                     )
                 )
+                {
                     CreateOptimizedArc(
                         newFst,
                         subsetStates,
@@ -859,6 +883,7 @@ namespace SIL.Machine.FiniteState
                         t.Item3,
                         t.Item4
                     );
+                }
             }
 
             var regNums = new Dictionary<int, int>();
@@ -1012,11 +1037,13 @@ namespace SIL.Machine.FiniteState
                     if (remaining.Count > 0)
                     {
                         foreach (NfaStateInfo state in remaining)
+                        {
                             subsetState.State.Arcs.Add(
                                 new Input(0),
                                 state.Outputs,
                                 newFst.CreateAcceptingState(acceptInfos, finishers, isLazy)
                             );
+                        }
                     }
                 }
             }
@@ -1087,7 +1114,9 @@ namespace SIL.Machine.FiniteState
                                     && state.LastPriority <= fromState.LastPriority
                                 )
                             )
+                            {
                                 continue;
+                            }
 
                             int src = GetRegisterIndex(registerIndices, fromTag.Key, index);
                             int dest = GetRegisterIndex(registerIndices, fromTag.Key, tagIndex.Item2);
@@ -1703,7 +1732,9 @@ namespace SIL.Machine.FiniteState
                         || !_state.AcceptInfos.SequenceEqual(other._state.AcceptInfos)
                     )
                 )
+                {
                     return false;
+                }
 
                 if (_arc == null)
                     return other._arc == null;
@@ -1792,6 +1823,7 @@ namespace SIL.Machine.FiniteState
                 }
 
                 foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.IsEpsilon))
+                {
                     newArcs.Add(
                         Tuple.Create(
                             p.Item1,
@@ -1801,6 +1833,7 @@ namespace SIL.Machine.FiniteState
                             arc2.PriorityType
                         )
                     );
+                }
 
                 foreach (
                     Tuple<
@@ -1958,6 +1991,7 @@ namespace SIL.Machine.FiniteState
                 }
 
                 foreach (Arc<TData, TOffset> arc2 in p.Item2.Arcs.Where(a => a.Input.IsEpsilon))
+                {
                     newArcs.Add(
                         Tuple.Create(
                             p.Item1,
@@ -1968,6 +2002,7 @@ namespace SIL.Machine.FiniteState
                             arc2.PriorityType
                         )
                     );
+                }
 
                 foreach (
                     Tuple<

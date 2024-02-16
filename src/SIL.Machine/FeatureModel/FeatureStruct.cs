@@ -351,9 +351,13 @@ namespace SIL.Machine.FeatureModel
                             && varBindings != null
                             && varBindings.TryGetValue(otherSfv.VariableName, out binding)
                         )
+                        {
                             _definite[featVal.Key] = binding.GetVariableValue(otherSfv.Agree);
+                        }
                         else
+                        {
                             _definite[featVal.Key] = otherSfv.CloneImpl(copies);
+                        }
                     }
                 }
                 else
@@ -1166,9 +1170,12 @@ namespace SIL.Machine.FeatureModel
         public int GetFrozenHashCode()
         {
             if (!IsFrozen)
+            {
                 throw new InvalidOperationException(
                     "The feature structure does not have a valid hash code, because it is mutable."
                 );
+            }
+
             if (!_hashCode.HasValue)
                 _hashCode = FreezeImpl(new HashSet<FeatureValue>());
             return _hashCode.Value;

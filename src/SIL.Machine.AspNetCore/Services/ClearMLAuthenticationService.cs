@@ -47,7 +47,9 @@ public class ClearMLAuthenticationService(
                 throw;
             }
             else
+            {
                 _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
+            }
         }
     }
 

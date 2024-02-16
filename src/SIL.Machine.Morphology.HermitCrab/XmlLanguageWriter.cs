@@ -139,18 +139,25 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
 
             if (_language.PhonologicalFeatureSystem.Count > 0)
+            {
                 langElem.Add(
                     new XElement("PhonologicalFeatureSystem", _language.PhonologicalFeatureSystem.Select(WriteFeature))
                 );
+            }
 
             if (_language.SyntacticFeatureSystem.HeadFeature != null)
+            {
                 langElem.Add(
                     new XElement("HeadFeatures", _language.SyntacticFeatureSystem.HeadFeatures.Select(WriteFeature))
                 );
+            }
+
             if (_language.SyntacticFeatureSystem.FootFeature != null)
+            {
                 langElem.Add(
                     new XElement("FootFeatures", _language.SyntacticFeatureSystem.FootFeatures.Select(WriteFeature))
                 );
+            }
 
             if (_language.MprFeatures.Count > 0)
             {
@@ -175,12 +182,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 langElem.Add(new XElement("Families", _language.Families.Select(WriteFamily)));
 
             if (_language.PhonologicalRules.Count > 0)
+            {
                 langElem.Add(
                     new XElement(
                         "PhonologicalRuleDefinitions",
                         _language.PhonologicalRules.Select(WritePhonologicalRule)
                     )
                 );
+            }
 
             langElem.Add(new XElement("Strata", _language.Strata.Select(WriteStratum)));
 
@@ -222,12 +231,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 var symFeatElem = new XElement("SymbolicFeature", new XAttribute("id", Normalize(symbolicFeature.ID)));
                 if (symbolicFeature.DefaultValue != null)
+                {
                     symFeatElem.Add(
                         new XAttribute(
                             "defaultSymbol",
                             Normalize(((SymbolicFeatureValue)symbolicFeature.DefaultValue).Values.First().ID)
                         )
                     );
+                }
+
                 symFeatElem.Add(new XElement("Name", Normalize(symbolicFeature.Description)));
                 symFeatElem.Add(
                     new XElement(
@@ -466,13 +478,19 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 var envElem = new XElement("Environment");
                 if (!subrule.LeftEnvironment.IsEmpty)
+                {
                     envElem.Add(
                         new XElement("LeftEnvironment", WritePhoneticTemplate(subrule.LeftEnvironment, variables))
                     );
+                }
+
                 if (!subrule.RightEnvironment.IsEmpty)
+                {
                     envElem.Add(
                         new XElement("RightEnvironment", WritePhoneticTemplate(subrule.RightEnvironment, variables))
                     );
+                }
+
                 subruleElem.Add(envElem);
             }
 
@@ -559,17 +577,21 @@ namespace SIL.Machine.Morphology.HermitCrab
             stratumElem.Add(new XElement("Name", Normalize(stratum.Name)));
 
             if (mrules.Count > 0)
+            {
                 stratumElem.Add(
                     new XElement(
                         "MorphologicalRuleDefinitions",
                         mrules.Keys.Select(mrule => WriteMorphologicalRule(mrule, mrules))
                     )
                 );
+            }
 
             if (stratum.AffixTemplates.Count > 0)
+            {
                 stratumElem.Add(
                     new XElement("AffixTemplates", stratum.AffixTemplates.Select(t => WriteAffixTemplate(t, mrules)))
                 );
+            }
 
             if (stratum.Entries.Count > 0)
                 stratumElem.Add(new XElement("LexicalEntries", stratum.Entries.Select(WriteLexicalEntry)));
@@ -615,12 +637,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             WritePartsOfSpeechIfPresent(ruleElem, "outputPartOfSpeech", affixProcessRule.OutSyntacticFeatureStruct);
 
             if (affixProcessRule.ObligatorySyntacticFeatures.Count > 0)
+            {
                 ruleElem.Add(
                     new XAttribute(
                         "outputObligatoryFeatures",
                         string.Join(" ", affixProcessRule.ObligatorySyntacticFeatures.Select(f => Normalize(f.ID)))
                     )
                 );
+            }
 
             if (affixProcessRule.IsPartial)
                 ruleElem.Add(new XAttribute("partial", "true"));
@@ -766,12 +790,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             WritePartsOfSpeechIfPresent(ruleElem, "outputPartOfSpeech", crule.OutSyntacticFeatureStruct);
 
             if (crule.ObligatorySyntacticFeatures.Count > 0)
+            {
                 ruleElem.Add(
                     new XAttribute(
                         "outputObligatoryFeatures",
                         string.Join(" ", crule.ObligatorySyntacticFeatures.Select(f => Normalize(f.ID)))
                     )
                 );
+            }
 
             ruleElem.Add(new XElement("Name", Normalize(crule.Name)));
 
@@ -885,12 +911,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             var insertSegments = (InsertSegments)action;
             var insertSegmentsElem = new XElement("InsertSegments");
             if (insertSegments.Segments.CharacterDefinitionTable != defaultTable)
+            {
                 insertSegmentsElem.Add(
                     new XAttribute(
                         "characterDefinitionTable",
                         _tables[insertSegments.Segments.CharacterDefinitionTable]
                     )
                 );
+            }
+
             insertSegmentsElem.Add(new XElement("PhoneticShape", Normalize(insertSegments.Segments.Representation)));
             return insertSegmentsElem;
         }
@@ -1003,16 +1032,22 @@ namespace SIL.Machine.Morphology.HermitCrab
                 .Environments.Where(e => e.Type == ConstraintType.Require)
                 .ToArray();
             if (requiredEnvs.Length > 0)
+            {
                 alloElem.Add(
                     new XElement("RequiredEnvironments", requiredEnvs.Select(e => WriteEnvironment(e, defaultTable)))
                 );
+            }
+
             AllomorphEnvironment[] excludedEnvs = allomorph
                 .Environments.Where(e => e.Type == ConstraintType.Exclude)
                 .ToArray();
             if (excludedEnvs.Length > 0)
+            {
                 alloElem.Add(
                     new XElement("ExcludedEnvironments", excludedEnvs.Select(e => WriteEnvironment(e, defaultTable)))
                 );
+            }
+
             if (allomorph.Properties.Count > 0)
                 alloElem.Add(WriteProperties(allomorph.Properties));
         }
@@ -1021,13 +1056,19 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             var envElem = new XElement("Environment");
             if (env.LeftEnvironment != null)
+            {
                 envElem.Add(
                     new XElement("LeftEnvironment", WritePhoneticTemplate(env.LeftEnvironment, null, defaultTable))
                 );
+            }
+
             if (env.RightEnvironment != null)
+            {
                 envElem.Add(
                     new XElement("RightEnvironment", WritePhoneticTemplate(env.RightEnvironment, null, defaultTable))
                 );
+            }
+
             return envElem;
         }
 
@@ -1076,8 +1117,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool IsAnchor(PatternNode<Word, ShapeNode> node, FeatureSymbol type)
         {
             if (node is Constraint<Word, ShapeNode> constraint)
+            {
                 return constraint.Type() == HCFeatureSystem.Anchor
                     && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
+            }
+
             return false;
         }
 
@@ -1110,11 +1154,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                     yield break;
 
                 if (constraint.Tag is CharacterDefinition charDef)
+                {
                     yield return charDef.Type == HCFeatureSystem.Segment
                         ? WriteSegment(charDef, id)
                         : WriteBoundaryMarker(charDef, id);
+                }
                 else
+                {
                     yield return WriteSimpleContext((SimpleContext)constraint.Tag, variables, id);
+                }
+
                 yield break;
             }
 
@@ -1138,7 +1187,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                             prefix + group.Name
                         )
                     )
+                    {
                         yield return elem;
+                    }
                 }
                 else if (group.Tag != null)
                 {

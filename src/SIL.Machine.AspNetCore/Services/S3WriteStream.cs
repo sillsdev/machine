@@ -74,9 +74,12 @@ public class S3WriteStream(
                 );
                 UploadPartResponse response = await _client.UploadPartAsync(request);
                 if (response.HttpStatusCode != HttpStatusCode.OK)
+                {
                     throw new HttpRequestException(
                         $"Tried to upload part {partNumber} of upload {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
+                }
+
                 _uploadResponses.Add(response);
             }
             catch (Exception e)
@@ -103,9 +106,11 @@ public class S3WriteStream(
                     };
                 PutObjectResponse response = _client.PutObjectAsync(request).WaitAndUnwrapException();
                 if (response.HttpStatusCode != HttpStatusCode.OK)
+                {
                     throw new HttpRequestException(
                         $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                     );
+                }
             }
             else
             {
@@ -125,9 +130,11 @@ public class S3WriteStream(
                     Dispose(disposing: false);
                     GC.SuppressFinalize(this);
                     if (response.HttpStatusCode != HttpStatusCode.OK)
+                    {
                         throw new HttpRequestException(
                             $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                         );
+                    }
                 }
                 catch (Exception e)
                 {
@@ -153,9 +160,12 @@ public class S3WriteStream(
                 };
             PutObjectResponse response = await _client.PutObjectAsync(request);
             if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
                 throw new HttpRequestException(
                     $"Tried to upload empty file to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                 );
+            }
+
             return;
         }
         try
@@ -172,9 +182,11 @@ public class S3WriteStream(
             Dispose(disposing: false);
             GC.SuppressFinalize(this);
             if (response.HttpStatusCode != HttpStatusCode.OK)
+            {
                 throw new HttpRequestException(
                     $"Tried to complete {_uploadId} to {_bucketName}/{_key} but received response code {response.HttpStatusCode}"
                 );
+            }
         }
         catch (Exception e)
         {

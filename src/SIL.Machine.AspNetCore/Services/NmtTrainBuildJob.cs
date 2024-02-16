@@ -96,7 +96,9 @@ public class NmtTrainBuildJob(
                 out _
             )
         )
+        {
             return languageTag;
+        }
 
         // Convert to NLLB language codes
         return $"{languageSubtag.Iso3Code}_{scriptSubtag.Code}";

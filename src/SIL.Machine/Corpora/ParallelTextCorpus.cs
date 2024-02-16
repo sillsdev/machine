@@ -436,7 +436,9 @@ namespace SIL.Machine.Corpora
                         forceTargetInRange: forceTargetInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 
@@ -465,7 +467,9 @@ namespace SIL.Machine.Corpora
                         forceSourceInRange: forceSourceInRange
                     )
                 )
+                {
                     yield return row;
+                }
             }
         }
 

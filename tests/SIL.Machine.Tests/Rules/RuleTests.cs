@@ -109,9 +109,11 @@ public class RuleTests : PhoneticTestsBase
             {
                 GroupCapture<int> target = match.GroupCaptures["target"];
                 foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Range))
+                {
                     ann.FeatureStruct.PriorityUnion(
                         FeatureStruct.New(_phoneticFeatSys).Symbol("low-").Symbol("mid-").Value
                     );
+                }
                 return match.Input;
             },
             input =>
@@ -126,9 +128,11 @@ public class RuleTests : PhoneticTestsBase
             {
                 GroupCapture<int> target = match.GroupCaptures["target"];
                 foreach (Annotation<int> ann in match.Input.Annotations.GetNodes(target.Range))
+                {
                     ann.FeatureStruct.PriorityUnion(
                         FeatureStruct.New(_phoneticFeatSys).Symbol("low-").Symbol("mid+").Value
                     );
+                }
                 return match.Input;
             }
         );

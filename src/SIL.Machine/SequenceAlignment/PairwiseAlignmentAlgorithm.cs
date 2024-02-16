@@ -181,7 +181,9 @@ namespace SIL.Machine.SequenceAlignment
                                 threshold
                             )
                         )
+                        {
                             yield return alignment;
+                        }
                     }
                     break;
 
@@ -204,7 +206,9 @@ namespace SIL.Machine.SequenceAlignment
                                         threshold
                                     )
                                 )
+                                {
                                     yield return alignment;
+                                }
                             }
 
                             for (int j = 1; j < _sim.GetLength(1) - 1; j++)
@@ -216,7 +220,9 @@ namespace SIL.Machine.SequenceAlignment
                                         threshold
                                     )
                                 )
+                                {
                                     yield return alignment;
+                                }
                             }
                         }
                     }

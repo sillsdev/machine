@@ -50,7 +50,10 @@ namespace SIL.Machine.FiniteState
                                 curResults
                             )
                         )
+                        {
                             instStack.Push(ni);
+                        }
+
                         releaseInstance = false;
                         break;
                     }
@@ -84,7 +87,10 @@ namespace SIL.Machine.FiniteState
                     initAnns
                 )
             )
+            {
                 instStack.Push(inst);
+            }
+
             return instStack;
         }
     }

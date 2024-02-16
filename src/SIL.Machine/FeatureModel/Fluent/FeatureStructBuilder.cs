@@ -84,10 +84,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol ID should be specified.", "symbolIDs");
 
             if (!AddSymbols(symbolIDs, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbolIDs"
                 );
+            }
+
             return this;
         }
 
@@ -101,10 +104,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol ID should be specified.", "symbolIDs");
 
             if (!AddSymbols(symbolIDsArray, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbolIDs"
                 );
+            }
+
             return this;
         }
 
@@ -117,10 +123,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol ID should be specified.", "symbolIDs");
 
             if (!AddSymbols(symbolIDs, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbolIDs"
                 );
+            }
+
             return this;
         }
 
@@ -134,10 +143,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol ID should be specified.", "symbolIDs");
 
             if (!AddSymbols(symbolIDsArray, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbolIDs"
                 );
+            }
+
             return this;
         }
 
@@ -147,10 +159,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(symbols[0].Feature, symbols, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -161,10 +176,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(symbolsArray[0].Feature, symbolsArray, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -174,10 +192,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(symbols[0].Feature, symbols, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -188,10 +209,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(symbolsArray[0].Feature, symbolsArray, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -249,10 +273,12 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one string should be specified.", "strings");
 
             if (!Add(strings, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
+            }
 
             return this;
         }
@@ -270,10 +296,12 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one string should be specified.", "strings");
 
             if (!Add(stringsArray, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
+            }
 
             return this;
         }
@@ -290,10 +318,12 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one string should be specified.", "strings");
 
             if (!Add(strings, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
+            }
 
             return this;
         }
@@ -311,10 +341,12 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one string should be specified.", "strings");
 
             if (!Add(stringsArray, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "strings"
                 );
+            }
 
             return this;
         }
@@ -325,10 +357,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(_lastFeature, symbols, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -339,10 +374,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(_lastFeature, symbolsArray, -1))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -352,10 +390,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(_lastFeature, symbols, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 
@@ -366,10 +407,13 @@ namespace SIL.Machine.FeatureModel.Fluent
                 throw new ArgumentException("At least one symbol should be specified.", "symbols");
 
             if (!AddSymbols(_lastFeature, symbolsArray, id))
+            {
                 throw new ArgumentException(
                     "All specified symbols must be associated with the same feature.",
                     "symbols"
                 );
+            }
+
             return this;
         }
 

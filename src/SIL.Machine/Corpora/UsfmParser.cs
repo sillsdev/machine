@@ -195,7 +195,10 @@ namespace SIL.Machine.Corpora
                             && State.Peek().Type != UsfmElementType.Table
                             && State.Peek().Type != UsfmElementType.Sidebar
                         )
+                        {
                             CloseElement();
+                        }
+
                         break;
                     }
 
@@ -327,7 +330,9 @@ namespace SIL.Machine.Corpora
                             && State.Tokens[State.Index + State.SpecialTokenCount + 1].Text != null
                             && State.Tokens[State.Index + State.SpecialTokenCount + 1].Text.Trim().Length == 0
                         )
+                        {
                             State.SpecialTokenCount++;
+                        }
                     }
 
                     // Get publishable chapter number
@@ -487,7 +492,9 @@ namespace SIL.Machine.Corpora
                         invalidMarker = charTag == null;
                     }
                     else
+                    {
                         actualMarker = token.Marker;
+                    }
 
                     State.Push(new UsfmParserElement(UsfmElementType.Char, actualMarker, token.Attributes));
                     Handler?.StartChar(

@@ -125,9 +125,12 @@ namespace SIL.Machine.Annotations
         public int GetFrozenHashCode()
         {
             if (!IsFrozen)
+            {
                 throw new InvalidOperationException(
                     "The shape node does not have a valid hash code, because it is mutable."
                 );
+            }
+
             return _tag;
         }
     }

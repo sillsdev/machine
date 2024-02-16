@@ -175,7 +175,10 @@ namespace SIL.Machine.FiniteState
                     initAnns
                 )
             )
+            {
                 instStack.Push(inst);
+            }
+
             return instStack;
         }
     }

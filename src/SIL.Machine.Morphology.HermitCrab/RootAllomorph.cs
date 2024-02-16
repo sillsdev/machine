@@ -60,6 +60,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!otherAllo.StemName.IsExcludedMatch(word.SyntacticFeatureStruct, StemName))
                 {
                     if (morpher != null && morpher.TraceManager.IsTracing)
+                    {
                         morpher.TraceManager.Failed(
                             morpher.Language,
                             word,
@@ -67,6 +68,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                             this,
                             otherAllo.StemName
                         );
+                    }
+
                     return false;
                 }
             }

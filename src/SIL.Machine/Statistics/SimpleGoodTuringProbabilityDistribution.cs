@@ -76,7 +76,9 @@ namespace SIL.Machine.Statistics
             {
                 double smoothRstar = (r[j] + 1) * GetSmoothedSamplesCount(r[j] + 1) / GetSmoothedSamplesCount(r[j]);
                 if (r.Count == j + 1 || r[j + 1] != r[j] + 1)
+                {
                     rstar[j] = smoothRstar;
+                }
                 else
                 {
                     double unsmoothRstar = (double)(r[j] + 1) * nr[j + 1] / nr[j];

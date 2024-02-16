@@ -126,11 +126,14 @@ namespace SIL.Machine.Corpora
             _defaultAttributeName = defaultAttributeName;
             UsfmAttribute[] attributes = new UsfmAttribute[attributeNames.Count];
             for (int i = 0; i < attributeNames.Count; i++)
+            {
                 attributes[i] = new UsfmAttribute(
                     attributeNames[i].Value,
                     attributeValues[i].Value,
                     attributeValues[i].Index
                 );
+            }
+
             Attributes = attributes;
             return true;
         }
