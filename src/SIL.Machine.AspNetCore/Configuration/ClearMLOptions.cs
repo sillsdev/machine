@@ -13,4 +13,5 @@ public class ClearMLOptions
     public string RootProject { get; set; } = "Machine";
     public string Project { get; set; } = "dev";
     public string DockerImage { get; set; } = "";
+    public string[] AllowedQueues { get; set; } = [];
 }

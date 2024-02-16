@@ -64,9 +64,9 @@ public class ClearMLBuildJobRunner : IBuildJobRunner
         return _clearMLService.DeleteTaskAsync(jobId, cancellationToken);
     }
 
-    public Task<bool> EnqueueJobAsync(string jobId, CancellationToken cancellationToken = default)
+    public Task<bool> EnqueueJobAsync(string jobId, string? queue = null, CancellationToken cancellationToken = default)
     {
-        return _clearMLService.EnqueueTaskAsync(jobId, cancellationToken);
+        return _clearMLService.EnqueueTaskAsync(jobId, queue, cancellationToken);
     }
 
     public Task<bool> StopJobAsync(string jobId, CancellationToken cancellationToken = default)

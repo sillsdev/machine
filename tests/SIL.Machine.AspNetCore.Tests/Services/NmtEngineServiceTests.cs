@@ -125,7 +125,7 @@ public class NmtEngineServiceTests
                 .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult("job1"));
             ClearMLService
-                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<CancellationToken>()))
+                .When(x => x.EnqueueTaskAsync("job1", null, Arg.Any<CancellationToken>()))
                 .Do(_ => TrainJobTask = Task.Run(TrainJobFunc));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();

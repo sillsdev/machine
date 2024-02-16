@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using QuickGraph;
 
 namespace SIL.Machine.AspNetCore.Services;
 
@@ -50,28 +51,65 @@ public class ClearMLMonitorService : RecurrentTask
             if (trainingEngines.Count == 0)
                 return;
 
-            Dictionary<string, ClearMLTask> tasks = (
+            HashSet<ClearMLTask> tasks = (
                 await _clearMLService.GetTasksByIdAsync(
                     trainingEngines.Select(e => e.CurrentBuild!.JobId),
                     cancellationToken
                 )
-            )
-                .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
-                .ToDictionary(t => t.Id);
+            ).ToHashSet();
 
-            Dictionary<string, int> queuePositions = tasks
-                .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
-                .OrderBy(t => t.Created)
-                .Select((t, i) => (Position: i, Task: t))
-                .ToDictionary(e => e.Task.Name, e => e.Position);
+            Dictionary<string, IReadOnlyList<ClearMLTask>> tasksPerQueue =
+                await _clearMLService.GetTasksForAllowedQueuesAsync(cancellationToken);
 
-            QueueSize = queuePositions.Count;
+            Dictionary<string, string> queuePerTask = tasksPerQueue
+                .SelectMany(kvp => kvp.Value.Zip(Enumerable.Repeat(kvp.Key, kvp.Value.Count)))
+                .ToDictionary(tup => tup.First.Id, tup => tup.Second);
 
+            tasks = tasks
+                .UnionBy(tasksPerQueue.Values.SelectMany(s => s), t => t.Id)
+                .Where(s =>
+                    s.Status
+                        is ClearMLTaskStatus.Created
+                            or ClearMLTaskStatus.Queued
+                            or ClearMLTaskStatus.InProgress
+                            or ClearMLTaskStatus.Stopped
+                            or ClearMLTaskStatus.Failed
+                            or ClearMLTaskStatus.Completed
+                )
+                .ToHashSet();
+
+            Dictionary<string, Dictionary<string, int>> taskPositionsPerQueue = tasks
+                .Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
+                .GroupBy(t => queuePerTask.GetValueOrDefault(t.Id, "unknown"))
+                .ToDictionary(
+                    group => queuePerTask.GetValueOrDefault(group.First().Id, "unknown"),
+                    group =>
+                        group
+                            .OrderBy(t => t.Created)
+                            .Select((t, i) => (Position: i, Task: t))
+                            .ToDictionary(e => e.Task.Name, e => e.Position)
+                );
+
+            Dictionary<string, int> queuePositions = tasks.ToDictionary(
+                t => t.Name,
+                t =>
+                    taskPositionsPerQueue
+                        .GetValueOrDefault(queuePerTask.GetValueOrDefault(t.Id, "unknown"), new())
+                        .GetValueOrDefault(t.Id, 0)
+            );
+            QueueSize = taskPositionsPerQueue.GetValueOrDefault(_clearMLService.DefaultQueue(), new()).Count;
+            _logger.LogCritical(
+                $"||||| {JsonSerializer.Serialize(tasksPerQueue.Keys)} || {JsonSerializer.Serialize(taskPositionsPerQueue)} |||||"
+            );
+            Dictionary<string, ClearMLTask> taskPerId = tasks.ToDictionary(t => t.Id, t => t);
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             foreach (TranslationEngine engine in trainingEngines)
             {
-                if (engine.CurrentBuild is null || !tasks.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task))
+                if (
+                    engine.CurrentBuild is null
+                    || !taskPerId.TryGetValue(engine.CurrentBuild.JobId, out ClearMLTask? task)
+                )
                     continue;
 
                 if (

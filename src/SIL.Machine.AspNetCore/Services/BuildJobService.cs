@@ -127,7 +127,13 @@ public class BuildJobService : IBuildJobService
                     ),
                 cancellationToken: cancellationToken
             );
-            await runner.EnqueueJobAsync(jobId, cancellationToken);
+            await runner.EnqueueJobAsync(
+                jobId,
+                buildOptions is null
+                    ? null
+                    : JsonSerializer.Deserialize<JsonObject>(buildOptions)?["queue"]?.ToString(),
+                cancellationToken
+            );
             return true;
         }
         catch

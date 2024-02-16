@@ -2,6 +2,7 @@
 
 public interface IClearMLService
 {
+    string DefaultQueue();
     Task<string> CreateProjectAsync(
         string name,
         string? description = null,
@@ -17,10 +18,13 @@ public interface IClearMLService
         CancellationToken cancellationToken = default
     );
     Task<bool> DeleteTaskAsync(string id, CancellationToken cancellationToken = default);
-    Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default);
+    Task<bool> EnqueueTaskAsync(string id, string? queueName = null, CancellationToken cancellationToken = default);
     Task<bool> DequeueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> StopTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ClearMLTask>> GetTasksForCurrentQueueAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<string, IReadOnlyList<ClearMLTask>>> GetTasksForAllowedQueuesAsync(
+        CancellationToken cancellationToken = default
+    );
     Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ClearMLTask>> GetTasksByIdAsync(
         IEnumerable<string> ids,

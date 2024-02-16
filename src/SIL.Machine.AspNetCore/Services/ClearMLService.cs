@@ -28,6 +28,8 @@ public class ClearMLService : IClearMLService
         _env = env;
     }
 
+    public string DefaultQueue() => _options.CurrentValue.Queue;
+
     public async Task<string?> GetProjectIdAsync(string name, CancellationToken cancellationToken = default)
     {
         var body = new JsonObject
@@ -115,9 +117,15 @@ public class ClearMLService : IClearMLService
         return deleted.Value;
     }
 
-    public async Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<bool> EnqueueTaskAsync(
+        string id,
+        string? queueName = null,
+        CancellationToken cancellationToken = default
+    )
     {
-        var body = new JsonObject { ["task"] = id, ["queue_name"] = _options.CurrentValue.Queue };
+        if (queueName is not null && !_options.CurrentValue.AllowedQueues.Contains(queueName))
+            throw new InvalidOperationException($"Queue {queueName} is not an allowed queue or does not exist");
+        var body = new JsonObject { ["task"] = id, ["queue_name"] = queueName ?? _options.CurrentValue.Queue };
         JsonObject? result = await CallAsync("tasks", "enqueue", body, cancellationToken);
         var queued = (int?)result?["data"]?["queued"];
         if (queued is null)
@@ -154,6 +162,23 @@ public class ClearMLService : IClearMLService
         var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
         IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
         return await GetTasksByIdAsync(taskIds, cancellationToken);
+    }
+
+    public async Task<Dictionary<string, IReadOnlyList<ClearMLTask>>> GetTasksForAllowedQueuesAsync(
+        CancellationToken cancellationToken = default
+    )
+    {
+        Dictionary<string, IReadOnlyList<ClearMLTask>> queues = new();
+        foreach (string queueName in _options.CurrentValue.AllowedQueues)
+        {
+            var body = new JsonObject { ["name"] = queueName };
+            JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
+            JsonArray? queueObjects = (JsonArray?)result?["data"]?["queues"];
+            var tasks = queueObjects?.Count > 0 ? (JsonArray?)queueObjects?[0]?["entries"] : null;
+            IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
+            queues[queueName] = await GetTasksByIdAsync(taskIds, cancellationToken);
+        }
+        return queues;
     }
 
     public async Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default)
