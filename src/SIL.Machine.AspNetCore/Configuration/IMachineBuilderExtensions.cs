@@ -336,6 +336,7 @@ public static class IMachineBuilderExtensions
         {
             options.Interceptors.Add<CancellationInterceptor>();
             options.Interceptors.Add<UnimplementedInterceptor>();
+            options.Interceptors.Add<InvalidOperationInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
         engineTypes ??=

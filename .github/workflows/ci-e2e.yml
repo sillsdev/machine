@@ -25,6 +25,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+        # get version of machine.py - MACHINE_PY_IMAGE will force the docker compose to use the proper version of machine.py
+      - name: Install regctl
+        uses: iarekylew00t/regctl-installer@v1
+
+      - name: Getr Version of Machine.py
+        run: echo "MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]")" >> $GITHUB_ENV
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
