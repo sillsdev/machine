@@ -150,6 +150,10 @@ public class ServalTranslationEngineServiceV1(
         {
             throw new RpcException(new Status(StatusCode.Aborted, e.Message));
         }
+        catch (FileNotFoundException e)
+        {
+            throw new RpcException(new Status(StatusCode.DataLoss, e.Message));
+        }
     }
 
     public override async Task<GetQueueSizeResponse> GetQueueSize(

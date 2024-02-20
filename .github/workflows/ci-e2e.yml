@@ -25,6 +25,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+        # get version of machine.py - MACHINE_PY_IMAGE will force the docker compose to use the proper version of machine.py
+      - name: Install regctl
+        uses: iarekylew00t/regctl-installer@v1
+
+      - name: Getr Version of Machine.py
+        run: echo "MACHINE_PY_IMAGE=ghcr.io/sillsdev/machine.py:$(regctl image config ghcr.io/sillsdev/machine.py | jq -r ".config.Labels[\"org.opencontainers.image.version\"]")" >> $GITHUB_ENV
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -58,6 +65,10 @@ jobs:
         if: ${{ failure() }}
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
-      - name: Stop containers
-        if: ${{ success() || failure() }}
+      - name: Stop containers branch
+        if: ${{ success() || failure() }} and steps.find_matching_branch.outcome != 'success'
         run: docker compose -f "../tmp/serval/docker-compose.yml" down
+
+      - name: Stop containers main
+        if: ${{ success() || failure() }} and steps.find_matching_branch.outcome == 'success'
+        run: docker compose -f "../serval/docker-compose.yml" down
