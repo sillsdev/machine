@@ -1,4 +1,6 @@
-﻿namespace SIL.Machine.AspNetCore.Utils;
+﻿using SIL.ObjectModel;
+
+namespace SIL.Machine.AspNetCore.Utils;
 
 public class AsyncDisposableBase : DisposableBase, IAsyncDisposable
 {

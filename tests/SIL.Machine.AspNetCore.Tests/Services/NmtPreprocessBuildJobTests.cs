@@ -3,26 +3,6 @@ namespace SIL.Machine.AspNetCore.Services;
 [TestFixture]
 public class NmtPreprocessBuildJobTests
 {
-    [SetUp]
-    public void SetUp()
-    {
-        ZipFile.CreateFromDirectory(
-            Path.Combine("..", "..", "..", "Services", "data", "paratext"),
-            Path.Combine(Path.GetTempPath(), "Project.zip")
-        );
-        ZipFile.CreateFromDirectory(
-            Path.Combine("..", "..", "..", "Services", "data", "paratext2"),
-            Path.Combine(Path.GetTempPath(), "Project2.zip")
-        );
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        File.Delete(Path.Combine(Path.GetTempPath(), "Project.zip"));
-        File.Delete(Path.Combine(Path.GetTempPath(), "Project2.zip"));
-    }
-
     [Test]
     [TestCase(false, false, null, null, 0, 0)]
     [TestCase(false, true, null, null, 5, 0)]
@@ -39,7 +19,7 @@ public class NmtPreprocessBuildJobTests
         int numEntriesWrittenToPretranslate
     )
     {
-        using var env = new TestEnvironment();
+        using TestEnvironment env = new();
         var corpus1 = new Corpus
         {
             Id = "corpusId1",
@@ -47,45 +27,41 @@ public class NmtPreprocessBuildJobTests
             TargetLanguage = "en",
             PretranslateAll = pTAll,
             TrainOnAll = tOAll,
-            PretranslateTextIds = pTTextIds is null ? new HashSet<string>() : pTTextIds.ToHashSet(),
-            TrainOnTextIds = tOTextIds is null ? new HashSet<string>() : tOTextIds.ToHashSet(),
-            SourceFiles = new List<CorpusFile>
-            {
-                new CorpusFile
+            PretranslateTextIds = pTTextIds?.ToHashSet() ?? [],
+            TrainOnTextIds = tOTextIds?.ToHashSet() ?? [],
+            SourceFiles =
+            [
+                new()
                 {
                     TextId = "textId1",
                     Format = FileFormat.Text,
                     Location = Path.Combine("..", "..", "..", "Services", "data", "source1.txt")
                 }
-            },
-            TargetFiles = new List<CorpusFile>
-            {
-                new CorpusFile
+            ],
+            TargetFiles =
+            [
+                new()
                 {
                     TextId = "textId1",
                     Format = FileFormat.Text,
                     Location = Path.Combine("..", "..", "..", "Services", "data", "target1.txt")
                 }
-            }
+            ]
         };
-        var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
-        await env.BuildJob.RunAsync("engine1", "build1", corpora, null, default);
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
+        await env.BuildJob.RunAsync("engine1", "build1", [corpus1], null, default);
+        using (StreamReader reader = new(await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt")))
         {
-            using (var reader = new StreamReader(stream))
-            {
-                //Split yields one more segment that there are new lines; thus, the "- 1"
-                Assert.That(reader.ReadToEnd().Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain));
-            }
+            //Split yields one more segment that there are new lines; thus, the "- 1"
+            Assert.That(reader.ReadToEnd().Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain));
         }
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+
+        using (
+            StreamReader reader = new(await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+        )
         {
-            using (var reader = new StreamReader(stream))
-            {
-                JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
-                Assert.NotNull(pretranslationJsonObject);
-                Assert.That(pretranslationJsonObject!.ToList().Count, Is.EqualTo(numEntriesWrittenToPretranslate));
-            }
+            JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
+            Assert.That(pretranslationJsonObject, Is.Not.Null);
+            Assert.That(pretranslationJsonObject, Has.Count.EqualTo(numEntriesWrittenToPretranslate));
         }
     }
 
@@ -98,7 +74,7 @@ public class NmtPreprocessBuildJobTests
         int numEntriesWrittenToPretranslate
     )
     {
-        using var env = new TestEnvironment();
+        using TestEnvironment env = new();
         var corpus1 = new Corpus
         {
             Id = "corpusId1",
@@ -108,43 +84,39 @@ public class NmtPreprocessBuildJobTests
             TrainOnAll = false,
             PretranslateTextIds = new HashSet<string>(),
             TrainOnTextIds = new HashSet<string>(),
-            SourceFiles = new List<CorpusFile>
-            {
-                new CorpusFile
+            SourceFiles =
+            [
+                new()
                 {
                     TextId = "textId1",
                     Format = FileFormat.Paratext,
                     Location = Path.Combine(Path.GetTempPath(), "Project.zip")
                 }
-            },
-            TargetFiles = new List<CorpusFile>
-            {
-                new CorpusFile
+            ],
+            TargetFiles =
+            [
+                new()
                 {
                     TextId = "textId1",
                     Format = FileFormat.Paratext,
                     Location = Path.Combine(Path.GetTempPath(), "Project.zip")
                 }
-            }
+            ]
         };
-        var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
-        await env.BuildJob.RunAsync("engine1", "build1", corpora, buildOptions, default);
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
+        await env.BuildJob.RunAsync("engine1", "build1", [corpus1], buildOptions, default);
+        using (StreamReader reader = new(await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt")))
         {
-            using (var reader = new StreamReader(stream))
-            {
-                //Split yields one more segment that there are new lines; thus, the "- 1"
-                Assert.That(reader.ReadToEnd().Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain));
-            }
+            //Split yields one more segment that there are new lines; thus, the "- 1"
+            Assert.That(reader.ReadToEnd().Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain));
         }
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+
+        using (
+            StreamReader reader = new(await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+        )
         {
-            using (var reader = new StreamReader(stream))
-            {
-                JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
-                Assert.NotNull(pretranslationJsonObject);
-                Assert.That(pretranslationJsonObject!.ToList().Count, Is.EqualTo(numEntriesWrittenToPretranslate));
-            }
+            JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
+            Assert.That(pretranslationJsonObject, Is.Not.Null);
+            Assert.That(pretranslationJsonObject, Has.Count.EqualTo(numEntriesWrittenToPretranslate));
         }
     }
 
@@ -161,10 +133,10 @@ public class NmtPreprocessBuildJobTests
         bool throwsException = false
     )
     {
-        using var env = new TestEnvironment();
+        using TestEnvironment env = new();
         var parser = new ScriptureRangeParser();
 
-        Corpus corpus1 = new Corpus();
+        Corpus corpus1;
         if (throwsException)
         {
             Assert.Throws<ArgumentException>(() =>
@@ -178,32 +150,30 @@ public class NmtPreprocessBuildJobTests
                     TrainOnAll = false,
                     PretranslateChapters = parser
                         .GetChapters(pretranslateBiblicalRangeChapters)
-                        .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
-                        .ToDictionary(),
+                        .ToDictionary(kvp => kvp.Key, kvp => (IReadOnlySet<int>)kvp.Value.ToHashSet()),
                     TrainOnChapters = parser
                         .GetChapters(trainOnBiblicalRangeChapters)
-                        .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
-                        .ToDictionary(),
+                        .ToDictionary(kvp => kvp.Key, kvp => (IReadOnlySet<int>)kvp.Value.ToHashSet()),
                     PretranslateTextIds = new HashSet<string>(),
                     TrainOnTextIds = new HashSet<string>(),
-                    SourceFiles = new List<CorpusFile>
-                    {
-                        new CorpusFile
+                    SourceFiles =
+                    [
+                        new()
                         {
                             TextId = "textId1",
                             Format = FileFormat.Paratext,
                             Location = Path.Combine(Path.GetTempPath(), "Project.zip")
                         }
-                    },
-                    TargetFiles = new List<CorpusFile>
-                    {
-                        new CorpusFile
+                    ],
+                    TargetFiles =
+                    [
+                        new()
                         {
                             TextId = "textId1",
                             Format = FileFormat.Paratext,
                             Location = Path.Combine(Path.GetTempPath(), "Project2.zip")
                         }
-                    }
+                    ]
                 };
             });
             return;
@@ -219,61 +189,54 @@ public class NmtPreprocessBuildJobTests
                 TrainOnAll = false,
                 PretranslateChapters = parser
                     .GetChapters(pretranslateBiblicalRangeChapters)
-                    .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
-                    .ToDictionary(),
+                    .ToDictionary(kvp => kvp.Key, kvp => (IReadOnlySet<int>)kvp.Value.ToHashSet()),
                 TrainOnChapters = parser
                     .GetChapters(trainOnBiblicalRangeChapters)
-                    .Select(kvp => (kvp.Key, kvp.Value.ToHashSet()))
-                    .ToDictionary(),
+                    .ToDictionary(kvp => kvp.Key, kvp => (IReadOnlySet<int>)kvp.Value.ToHashSet()),
                 PretranslateTextIds = new HashSet<string>(),
                 TrainOnTextIds = new HashSet<string>(),
-                SourceFiles = new List<CorpusFile>
-                {
-                    new CorpusFile
+                SourceFiles =
+                [
+                    new()
                     {
                         TextId = "textId1",
                         Format = FileFormat.Paratext,
                         Location = Path.Combine(Path.GetTempPath(), "Project.zip")
                     }
-                },
-                TargetFiles = new List<CorpusFile>
-                {
-                    new CorpusFile
+                ],
+                TargetFiles =
+                [
+                    new()
                     {
                         TextId = "textId1",
                         Format = FileFormat.Paratext,
                         Location = Path.Combine(Path.GetTempPath(), "Project2.zip")
                     }
-                }
+                ]
             };
         }
-        var corpora = new ReadOnlyList<Corpus>(new List<Corpus> { corpus1 });
-        await env.BuildJob.RunAsync("engine1", "build1", corpora, "{\"use_key_terms\":false}", default);
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt"))
+        await env.BuildJob.RunAsync("engine1", "build1", [corpus1], "{\"use_key_terms\":false}", default);
+        using (StreamReader reader = new(await env.SharedFileService.OpenReadAsync("builds/build1/train.src.txt")))
         {
-            using (var reader = new StreamReader(stream))
-            {
-                //Split yields one more segment that there are new lines; thus, the "- 1"
-                string text = reader.ReadToEnd();
-                Assert.That(text.Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain), text);
-            }
+            //Split yields one more segment that there are new lines; thus, the "- 1"
+            string text = reader.ReadToEnd();
+            Assert.That(text.Split("\n").Length - 1, Is.EqualTo(numLinesWrittenToTrain), text);
         }
-        using (var stream = await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+
+        using (Stream stream = await env.SharedFileService.OpenReadAsync("builds/build1/pretranslate.src.json"))
+        using (StreamReader reader = new(stream))
         {
-            using (var reader = new StreamReader(stream))
-            {
-                JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
-                Assert.NotNull(pretranslationJsonObject);
-                Assert.That(
-                    pretranslationJsonObject!.ToList().Count,
-                    Is.EqualTo(numEntriesWrittenToPretranslate),
-                    JsonSerializer.Serialize(pretranslationJsonObject)
-                );
-            }
+            JsonArray? pretranslationJsonObject = JsonSerializer.Deserialize<JsonArray>(reader.ReadToEnd());
+            Assert.That(pretranslationJsonObject, Is.Not.Null);
+            Assert.That(
+                pretranslationJsonObject,
+                Has.Count.EqualTo(numEntriesWrittenToPretranslate),
+                JsonSerializer.Serialize(pretranslationJsonObject)
+            );
         }
     }
 
-    private class TestEnvironment : DisposableBase
+    private class TestEnvironment : ObjectModel.DisposableBase
     {
         public ISharedFileService SharedFileService { get; }
         public ICorpusService CorpusService { get; }
@@ -288,6 +251,19 @@ public class NmtPreprocessBuildJobTests
 
         public TestEnvironment()
         {
+            if (!Sldr.IsInitialized)
+                Sldr.Initialize(offlineMode: true);
+
+            CleanupProjectFiles();
+            ZipFile.CreateFromDirectory(
+                Path.Combine("..", "..", "..", "Services", "data", "paratext"),
+                Path.Combine(Path.GetTempPath(), "Project.zip")
+            );
+            ZipFile.CreateFromDirectory(
+                Path.Combine("..", "..", "..", "Services", "data", "paratext2"),
+                Path.Combine(Path.GetTempPath(), "Project2.zip")
+            );
+
             Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
                 new TranslationEngine
@@ -297,7 +273,15 @@ public class NmtPreprocessBuildJobTests
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    CurrentBuild = new Build { BuildId = "build1", JobState = BuildJobState.Pending }
+                    IsModelPersisted = false,
+                    CurrentBuild = new()
+                    {
+                        BuildId = "build1",
+                        JobId = "job1",
+                        JobState = BuildJobState.Pending,
+                        JobRunner = BuildJobRunner.Hangfire,
+                        Stage = NmtBuildStages.Preprocess
+                    }
                 }
             );
             CorpusService = new CorpusService();
@@ -351,6 +335,17 @@ public class NmtPreprocessBuildJobTests
                 CorpusService,
                 new LanguageTagService()
             );
+        }
+
+        protected override void DisposeManagedResources()
+        {
+            CleanupProjectFiles();
+        }
+
+        private static void CleanupProjectFiles()
+        {
+            File.Delete(Path.Combine(Path.GetTempPath(), "Project.zip"));
+            File.Delete(Path.Combine(Path.GetTempPath(), "Project2.zip"));
         }
     }
 }

@@ -6,12 +6,14 @@ public class DistributedReaderWriterLockFactoryTests
     [Test]
     public async Task InitAsync_ReleaseWriterLocks()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         env.Locks.Add(
             new RWLock
             {
                 Id = "resource1",
-                WriterLock = new Lock { Id = "lock1", HostId = "this_service" }
+                WriterLock = new() { Id = "lock1", HostId = "this_service" },
+                ReaderLocks = [],
+                WriterQueue = []
             }
         );
 
@@ -24,15 +26,13 @@ public class DistributedReaderWriterLockFactoryTests
     [Test]
     public async Task InitAsync_ReleaseReaderLocks()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         env.Locks.Add(
             new RWLock
             {
                 Id = "resource1",
-                ReaderLocks =
-                {
-                    new Lock { Id = "lock1", HostId = "this_service" }
-                }
+                ReaderLocks = [new() { Id = "lock1", HostId = "this_service" }],
+                WriterQueue = []
             }
         );
 
@@ -45,16 +45,14 @@ public class DistributedReaderWriterLockFactoryTests
     [Test]
     public async Task InitAsync_RemoveWaiters()
     {
-        var env = new TestEnvironment();
+        TestEnvironment env = new();
         env.Locks.Add(
             new RWLock
             {
                 Id = "resource1",
-                WriterLock = new Lock { Id = "lock1", HostId = "other_service" },
-                WriterQueue =
-                {
-                    new Lock { Id = "lock2", HostId = "this_service" }
-                }
+                WriterLock = new() { Id = "lock1", HostId = "other_service" },
+                ReaderLocks = [],
+                WriterQueue = [new() { Id = "lock2", HostId = "this_service" }]
             }
         );
 
@@ -69,7 +67,7 @@ public class DistributedReaderWriterLockFactoryTests
         public TestEnvironment()
         {
             Locks = new MemoryRepository<RWLock>();
-            var serviceOptions = new ServiceOptions { ServiceId = "this_service" };
+            ServiceOptions serviceOptions = new() { ServiceId = "this_service" };
             Factory = new DistributedReaderWriterLockFactory(
                 new OptionsWrapper<ServiceOptions>(serviceOptions),
                 Locks,

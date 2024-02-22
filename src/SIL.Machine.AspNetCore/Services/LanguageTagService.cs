@@ -19,10 +19,8 @@ public class LanguageTagService : ILanguageTagService
 
     private readonly Dictionary<string, string> _flores200Languages;
 
-    private static readonly Regex LangTagPattern = new Regex(
-        "(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?",
-        RegexOptions.ExplicitCapture
-    );
+    private static readonly Regex LangTagPattern =
+        new("(?'language'[a-zA-Z]{2,8})([_-](?'script'[a-zA-Z]{4}))?", RegexOptions.ExplicitCapture);
 
     public LanguageTagService()
     {

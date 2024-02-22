@@ -24,7 +24,15 @@ public class DistributedReaderWriterLockFactory(
     {
         try
         {
-            await _locks.InsertAsync(new RWLock { Id = id }, cancellationToken);
+            await _locks.InsertAsync(
+                new RWLock
+                {
+                    Id = id,
+                    ReaderLocks = [],
+                    WriterQueue = []
+                },
+                cancellationToken
+            );
         }
         catch (DuplicateKeyException)
         {

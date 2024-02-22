@@ -1,13 +1,13 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class TranslationEngine : IEntity
+public record TranslationEngine : IEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string EngineId { get; set; } = default!;
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public bool IsModelPersisted { get; set; }
-    public int BuildRevision { get; set; }
-    public Build? CurrentBuild { get; set; }
+    public required string EngineId { get; init; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
+    public required bool IsModelPersisted { get; init; }
+    public int BuildRevision { get; init; }
+    public Build? CurrentBuild { get; init; }
 }

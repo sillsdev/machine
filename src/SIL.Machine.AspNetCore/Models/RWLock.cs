@@ -1,12 +1,12 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class RWLock : IEntity
+public record RWLock : IEntity
 {
-    public string Id { get; set; } = default!;
-    public int Revision { get; set; }
-    public Lock? WriterLock { get; set; }
-    public List<Lock> ReaderLocks { get; set; } = new List<Lock>();
-    public List<Lock> WriterQueue { get; set; } = new List<Lock>();
+    public string Id { get; set; } = "";
+    public int Revision { get; set; } = 1;
+    public Lock? WriterLock { get; init; }
+    public required IReadOnlyList<Lock> ReaderLocks { get; init; }
+    public required IReadOnlyList<Lock> WriterQueue { get; init; }
 
     public bool IsAvailableForReading()
     {

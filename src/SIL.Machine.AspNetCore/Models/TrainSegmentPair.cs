@@ -1,11 +1,11 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class TrainSegmentPair : IEntity
+public record TrainSegmentPair : IEntity
 {
-    public string Id { get; set; } = default!;
+    public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
-    public string TranslationEngineRef { get; set; } = default!;
-    public string Source { get; set; } = default!;
-    public string Target { get; set; } = default!;
-    public bool SentenceStart { get; set; }
+    public required string TranslationEngineRef { get; init; }
+    public required string Source { get; init; }
+    public required string Target { get; init; }
+    public required bool SentenceStart { get; init; }
 }

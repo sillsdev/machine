@@ -1,16 +1,16 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class Corpus
+public record Corpus
 {
-    public string Id { get; set; } = default!;
-    public string SourceLanguage { get; set; } = default!;
-    public string TargetLanguage { get; set; } = default!;
-    public bool TrainOnAll { get; set; }
-    public bool PretranslateAll { get; set; }
-    public Dictionary<string, HashSet<int>>? TrainOnChapters { get; set; }
-    public Dictionary<string, HashSet<int>>? PretranslateChapters { get; set; }
-    public HashSet<string> TrainOnTextIds { get; set; } = default!;
-    public HashSet<string> PretranslateTextIds { get; set; } = default!;
-    public List<CorpusFile> SourceFiles { get; set; } = default!;
-    public List<CorpusFile> TargetFiles { get; set; } = default!;
+    public required string Id { get; init; }
+    public required string SourceLanguage { get; init; }
+    public required string TargetLanguage { get; init; }
+    public required bool TrainOnAll { get; init; }
+    public required bool PretranslateAll { get; init; }
+    public IReadOnlyDictionary<string, IReadOnlySet<int>>? TrainOnChapters { get; init; }
+    public IReadOnlyDictionary<string, IReadOnlySet<int>>? PretranslateChapters { get; init; }
+    public required IReadOnlySet<string> TrainOnTextIds { get; init; }
+    public required IReadOnlySet<string> PretranslateTextIds { get; init; }
+    public required IReadOnlyList<CorpusFile> SourceFiles { get; init; }
+    public required IReadOnlyList<CorpusFile> TargetFiles { get; init; }
 }

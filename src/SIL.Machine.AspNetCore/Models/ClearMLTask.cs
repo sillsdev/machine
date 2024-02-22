@@ -14,16 +14,19 @@ public enum ClearMLTaskStatus
     Unknown
 }
 
-public class ClearMLTask
+public record ClearMLTask
 {
-    public string Id { get; set; } = default!;
-    public string Name { get; set; } = default!;
-    public ClearMLProject Project { get; set; } = default!;
-    public ClearMLTaskStatus Status { get; set; }
-    public string StatusReason { get; set; } = default!;
-    public string StatusMessage { get; set; } = default!;
-    public DateTime Created { get; set; }
-    public int LastIteration { get; set; }
-    public int ActiveDuration { get; set; }
-    public Dictionary<string, Dictionary<string, ClearMLMetricsEvent>> LastMetrics { get; set; } = default!;
+    public required string Id { get; init; }
+    public required string Name { get; init; }
+    public required ClearMLProject Project { get; init; }
+    public required ClearMLTaskStatus Status { get; init; }
+    public required string StatusReason { get; init; }
+    public required string StatusMessage { get; init; }
+    public required DateTime Created { get; init; }
+    public required int LastIteration { get; init; }
+    public required int ActiveDuration { get; init; }
+    public required IReadOnlyDictionary<
+        string,
+        IReadOnlyDictionary<string, ClearMLMetricsEvent>
+    > LastMetrics { get; init; }
 }

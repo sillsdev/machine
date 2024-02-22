@@ -1,12 +1,12 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class ClearMLMetricsEvent
+public record ClearMLMetricsEvent
 {
-    public string Metric { get; set; } = default!;
-    public string Variant { get; set; } = default!;
-    public double Value { get; set; }
-    public double MinValue { get; set; }
-    public int MinValueIteration { get; set; }
-    public double MaxValue { get; set; }
-    public int MaxValueIteration { get; set; }
+    public required string Metric { get; init; }
+    public required string Variant { get; init; }
+    public required double Value { get; init; }
+    public required double MinValue { get; init; }
+    public required int MinValueIteration { get; init; }
+    public required double MaxValue { get; init; }
+    public required int MaxValueIteration { get; init; }
 }

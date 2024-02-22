@@ -1,6 +1,6 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class ClearMLProject
+public record ClearMLProject
 {
-    public string Id { get; set; } = default!;
+    public required string Id { get; init; }
 }

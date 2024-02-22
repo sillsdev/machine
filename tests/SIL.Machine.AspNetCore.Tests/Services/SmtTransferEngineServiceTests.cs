@@ -215,7 +215,7 @@ public class SmtTransferEngineServiceTests
         );
     }
 
-    private class TestEnvironment : DisposableBase
+    private class TestEnvironment : ObjectModel.DisposableBase
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
         private readonly BackgroundJobClient _jobClient;
@@ -234,7 +234,8 @@ public class SmtTransferEngineServiceTests
                     EngineId = "engine1",
                     SourceLanguage = "es",
                     TargetLanguage = "en",
-                    BuildRevision = 1
+                    BuildRevision = 1,
+                    IsModelPersisted = false
                 }
             );
             TrainSegmentPairs = new MemoryRepository<TrainSegmentPair>();

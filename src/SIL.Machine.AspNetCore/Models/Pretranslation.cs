@@ -1,9 +1,9 @@
 ﻿namespace SIL.Machine.AspNetCore.Models;
 
-public class Pretranslation
+public record Pretranslation
 {
-    public string CorpusId { get; set; } = default!;
-    public string TextId { get; set; } = default!;
-    public List<string> Refs { get; set; } = default!;
-    public string Translation { get; set; } = default!;
+    public required string CorpusId { get; init; }
+    public required string TextId { get; init; }
+    public required IReadOnlyList<string> Refs { get; init; }
+    public required string Translation { get; init; }
 }

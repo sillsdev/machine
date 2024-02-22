@@ -327,7 +327,7 @@ public class ClearMLMonitorService(
 
     private static double GetMetric(ClearMLTask task, string metric, string variant)
     {
-        if (!task.LastMetrics.TryGetValue(metric, out Dictionary<string, ClearMLMetricsEvent>? metricVariants))
+        if (!task.LastMetrics.TryGetValue(metric, out IReadOnlyDictionary<string, ClearMLMetricsEvent>? metricVariants))
             return 0;
 
         if (!metricVariants.TryGetValue(variant, out ClearMLMetricsEvent? metricEvent))

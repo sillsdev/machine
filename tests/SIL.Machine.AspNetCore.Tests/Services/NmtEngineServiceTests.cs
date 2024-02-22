@@ -89,7 +89,7 @@ public class NmtEngineServiceTests
         Assert.That(env.Engines.Contains("engine1"), Is.False);
     }
 
-    private class TestEnvironment : DisposableBase
+    private class TestEnvironment : ObjectModel.DisposableBase
     {
         private readonly Hangfire.InMemory.InMemoryStorage _memoryStorage;
         private readonly BackgroundJobClient _jobClient;
@@ -110,7 +110,8 @@ public class NmtEngineServiceTests
                     EngineId = "engine1",
                     SourceLanguage = "es",
                     TargetLanguage = "en",
-                    BuildRevision = 1
+                    BuildRevision = 1,
+                    IsModelPersisted = false
                 }
             );
             _memoryStorage = new Hangfire.InMemory.InMemoryStorage();
