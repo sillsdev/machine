@@ -44,9 +44,11 @@ namespace SIL.Machine.Morphology
                         )
                     )
                 )
+                {
                     results.Add(
                         new Affix<TItem>(type, affix.Ngram, NormalizeScores ? affix.NormalizedZScore : affix.ZScore)
                     );
+                }
             }
 
             return results;

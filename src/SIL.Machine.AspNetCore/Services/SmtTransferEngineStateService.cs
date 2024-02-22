@@ -1,24 +1,17 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferEngineStateService : AsyncDisposableBase
+public class SmtTransferEngineStateService(
+    ISmtModelFactory smtModelFactory,
+    ITransferEngineFactory transferEngineFactory,
+    ITruecaserFactory truecaserFactory
+) : AsyncDisposableBase
 {
-    private readonly ISmtModelFactory _smtModelFactory;
-    private readonly ITransferEngineFactory _transferEngineFactory;
-    private readonly ITruecaserFactory _truecaserFactory;
+    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
+    private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
 
-    private readonly ConcurrentDictionary<string, SmtTransferEngineState> _engineStates;
-
-    public SmtTransferEngineStateService(
-        ISmtModelFactory smtModelFactory,
-        ITransferEngineFactory transferEngineFactory,
-        ITruecaserFactory truecaserFactory
-    )
-    {
-        _smtModelFactory = smtModelFactory;
-        _transferEngineFactory = transferEngineFactory;
-        _truecaserFactory = truecaserFactory;
-        _engineStates = new ConcurrentDictionary<string, SmtTransferEngineState>();
-    }
+    private readonly ConcurrentDictionary<string, SmtTransferEngineState> _engineStates =
+        new ConcurrentDictionary<string, SmtTransferEngineState>();
 
     public SmtTransferEngineState Get(string engineId)
     {

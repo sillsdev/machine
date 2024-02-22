@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -52,7 +50,10 @@ namespace SIL.Machine.FiniteState
                                 curResults
                             )
                         )
+                        {
                             instStack.Push(ni);
+                        }
+
                         releaseInstance = false;
                         break;
                     }
@@ -86,7 +87,10 @@ namespace SIL.Machine.FiniteState
                     initAnns
                 )
             )
+            {
                 instStack.Push(inst);
+            }
+
             return instStack;
         }
     }

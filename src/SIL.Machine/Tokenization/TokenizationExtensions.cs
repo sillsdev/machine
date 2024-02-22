@@ -19,10 +19,13 @@ namespace SIL.Machine.Tokenization
             {
                 int index = str.IndexOf(token, start);
                 if (index == -1)
+                {
                     throw new ArgumentException(
                         $"The string does not contain the specified token: {token}.",
                         nameof(tokens)
                     );
+                }
+
                 yield return Range<int>.Create(index, index + token.Length);
                 start = index + token.Length;
             }

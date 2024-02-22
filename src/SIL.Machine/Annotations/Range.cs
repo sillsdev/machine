@@ -202,7 +202,7 @@ namespace SIL.Machine.Annotations
 
         public override bool Equals(object obj)
         {
-            return obj is Range<TOffset> && Equals((Range<TOffset>)obj);
+            return obj is Range<TOffset> range && Equals(range);
         }
 
         public bool Equals(Range<TOffset> other)

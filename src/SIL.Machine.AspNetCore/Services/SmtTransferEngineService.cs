@@ -37,10 +37,13 @@ public class SmtTransferEngineService(
     )
     {
         if (isModelPersisted == false)
+        {
             throw new NotSupportedException(
                 "SMT transfer engines do not support non-persisted models."
                     + "Please remove the isModelPersisted parameter or set it to true."
             );
+        }
+
         await _dataAccessContext.BeginTransactionAsync(cancellationToken);
         var translationEngine = new TranslationEngine
         {

@@ -128,24 +128,30 @@ public class NmtEngineService(
     {
         TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
         if (engine.IsModelPersisted != true)
+        {
             throw new NotSupportedException(
                 "The model cannot be downloaded. "
                     + "To enable downloading the model, recreate the engine with IsModelPersisted property to true."
             );
+        }
+
         if (engine.BuildRevision == 0)
             throw new InvalidOperationException("The engine has not been built yet.");
         string filepath = GetModelPath(engineId, engine.BuildRevision);
         bool fileExists = await _sharedFileService.ExistsAsync(filepath, cancellationToken);
         if (!fileExists)
+        {
             throw new FileNotFoundException(
                 $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
             );
+        }
+
         var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
         var modelInfo = new ModelDownloadUrl
         {
             Url = await _sharedFileService.GetDownloadUrlAsync(filepath, expiresAt),
             ModelRevision = engine.BuildRevision,
-            ExipiresAt = expiresAt
+            ExpiresAt = expiresAt
         };
         return modelInfo;
     }

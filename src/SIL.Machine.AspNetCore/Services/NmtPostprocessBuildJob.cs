@@ -1,21 +1,15 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class NmtPostprocessBuildJob : HangfireBuildJob<(int, double)>
+public class NmtPostprocessBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<NmtPostprocessBuildJob> logger,
+    ISharedFileService sharedFileService
+) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly ISharedFileService _sharedFileService;
-
-    public NmtPostprocessBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<NmtPostprocessBuildJob> logger,
-        ISharedFileService sharedFileService
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
-    {
-        _sharedFileService = sharedFileService;
-    }
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
 
     protected override async Task DoWorkAsync(
         string engineId,

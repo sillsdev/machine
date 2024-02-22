@@ -1,13 +1,8 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class TransferEngineFactory : ITransferEngineFactory
+public class TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions) : ITransferEngineFactory
 {
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions;
-
-    public TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions)
-    {
-        _engineOptions = engineOptions;
-    }
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
 
     public ITranslationEngine? Create(
         string engineId,

@@ -115,8 +115,10 @@ public class S3FileStorage : DisposableBase, IFileStorage
         DeleteObjectRequest request = new() { BucketName = _bucketName, Key = _basePath + Normalize(path) };
         DeleteObjectResponse response = await _client.DeleteObjectAsync(request, cancellationToken);
         if (!response.HttpStatusCode.Equals(HttpStatusCode.NoContent))
+        {
             throw new HttpRequestException(
                 $"Received status code {response.HttpStatusCode} when attempting to delete {path}"
             );
+        }
     }
 }

@@ -69,7 +69,7 @@ namespace SIL.Machine.SequenceAlignment
                     _sim[i, 0] =
                         _sim[i - 1, 0]
                         + _gapPenalty
-                        + _scorer.GetDeletionScore(_sequence1, Get1(i), _sequence2, default(TItem));
+                        + _scorer.GetDeletionScore(_sequence1, Get1(i), _sequence2, default);
                 }
 
                 for (int j = 1; j < _sim.GetLength(1); j++)
@@ -77,7 +77,7 @@ namespace SIL.Machine.SequenceAlignment
                     _sim[0, j] =
                         _sim[0, j - 1]
                         + _gapPenalty
-                        + _scorer.GetInsertionScore(_sequence1, default(TItem), _sequence2, Get2(j));
+                        + _scorer.GetInsertionScore(_sequence1, default, _sequence2, Get2(j));
                 }
             }
 
@@ -146,14 +146,14 @@ namespace SIL.Machine.SequenceAlignment
         private TItem Get1(int i)
         {
             if (i == 0)
-                return default(TItem);
+                return default;
             return _items1[_startIndex1 + i - 1];
         }
 
         private TItem Get2(int j)
         {
             if (j == 0)
-                return default(TItem);
+                return default;
             return _items2[_startIndex2 + j - 1];
         }
 
@@ -181,7 +181,9 @@ namespace SIL.Machine.SequenceAlignment
                                 threshold
                             )
                         )
+                        {
                             yield return alignment;
+                        }
                     }
                     break;
 
@@ -204,7 +206,9 @@ namespace SIL.Machine.SequenceAlignment
                                         threshold
                                     )
                                 )
+                                {
                                     yield return alignment;
+                                }
                             }
 
                             for (int j = 1; j < _sim.GetLength(1) - 1; j++)
@@ -216,7 +220,9 @@ namespace SIL.Machine.SequenceAlignment
                                         threshold
                                     )
                                 )
+                                {
                                     yield return alignment;
+                                }
                             }
                         }
                     }

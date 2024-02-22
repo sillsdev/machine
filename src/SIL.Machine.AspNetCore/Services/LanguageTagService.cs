@@ -26,7 +26,7 @@ public class LanguageTagService : ILanguageTagService
 
     public LanguageTagService()
     {
-        // initialise SLDR language tags to retrieve latest langtags.json file
+        // initialize SLDR language tags to retrieve latest langtags.json file
         _defaultScripts = InitializeDefaultScripts();
         _flores200Languages = InitializeFlores200Languages();
     }
@@ -96,7 +96,7 @@ public class LanguageTagService : ILanguageTagService
      * Converts a language tag to a Flores 200 code
      * @param {string} languageTag - The language tag to convert
      * @param out {string} flores200Code - The converted Flores 200 code
-     * @returns {bool} is the langauge is the Flores 200 list
+     * @returns {bool} is the language is the Flores 200 list
      */
     public bool ConvertToFlores200Code(string languageTag, out string flores200Code)
     {

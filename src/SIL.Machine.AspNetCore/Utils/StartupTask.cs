@@ -1,15 +1,10 @@
 ﻿namespace SIL.Machine.AspNetCore.Utils;
 
-public class StartupTask : IHostedService
+public class StartupTask(IServiceProvider services, Func<IServiceProvider, CancellationToken, Task> task)
+    : IHostedService
 {
-    private readonly IServiceProvider _services;
-    private readonly Func<IServiceProvider, CancellationToken, Task> _task;
-
-    public StartupTask(IServiceProvider services, Func<IServiceProvider, CancellationToken, Task> task)
-    {
-        _services = services;
-        _task = task;
-    }
+    private readonly IServiceProvider _services = services;
+    private readonly Func<IServiceProvider, CancellationToken, Task> _task = task;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

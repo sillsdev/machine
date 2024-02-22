@@ -192,8 +192,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             else
             {
-                var entry = morphemes[index] as LexEntry;
-                if (entry != null)
+                if (morphemes[index] is LexEntry entry)
                 {
                     foreach (RootAllomorph allo in entry.Allomorphs)
                     {

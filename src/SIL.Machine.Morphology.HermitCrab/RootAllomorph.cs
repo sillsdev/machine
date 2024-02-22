@@ -31,8 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         protected override bool ConstraintsEqual(Allomorph other)
         {
-            var otherAllo = other as RootAllomorph;
-            if (otherAllo == null)
+            if (!(other is RootAllomorph otherAllo))
                 return false;
 
             return base.ConstraintsEqual(other) && IsBound == otherAllo.IsBound;
@@ -61,6 +60,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!otherAllo.StemName.IsExcludedMatch(word.SyntacticFeatureStruct, StemName))
                 {
                     if (morpher != null && morpher.TraceManager.IsTracing)
+                    {
                         morpher.TraceManager.Failed(
                             morpher.Language,
                             word,
@@ -68,6 +68,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                             this,
                             otherAllo.StemName
                         );
+                    }
+
                     return false;
                 }
             }

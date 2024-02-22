@@ -46,9 +46,13 @@ namespace SIL.Machine.NgramModeling
                 foreach (TItem item in freqDist.ObservedSamples)
                 {
                     if (freqDist[item] == 1)
+                    {
                         n1++;
+                    }
                     else if (freqDist[item] == 2)
+                    {
                         n2++;
+                    }
                     else if (freqDist[item] > 2)
                     {
                         if (freqDist[item] == 3)
@@ -82,6 +86,7 @@ namespace SIL.Machine.NgramModeling
                 _discount3 = 3 - (4 * y * ((double)totalN4 / totalN3));
 
             if (ngramSize > 1)
+            {
                 LowerOrderModel = new NgramModel<TSeq, TItem>(
                     ngramSize - 1,
                     sequences,
@@ -89,6 +94,7 @@ namespace SIL.Machine.NgramModeling
                     dir,
                     new ModifiedKneserNeySmoother<TSeq, TItem>()
                 );
+            }
         }
 
         public double GetProbability(TItem item, Ngram<TItem> context)

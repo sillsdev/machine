@@ -1,63 +1,56 @@
 ﻿using System.IO;
 
-namespace SIL.Machine.Morphology.HermitCrab
+namespace SIL.Machine.Morphology.HermitCrab;
+
+internal class HCContext(Language language, TextWriter outWriter)
 {
-    internal class HCContext
+    private readonly Language _language = language;
+    private Morpher _morpher;
+    private readonly TextWriter _outWriter = outWriter;
+
+    public void Compile()
     {
-        private readonly Language _language;
-        private Morpher _morpher;
-        private readonly TextWriter _outWriter;
+        _morpher = new Morpher(new TraceManager(), _language);
+    }
 
-        public HCContext(Language language, TextWriter outWriter)
-        {
-            _language = language;
-            _outWriter = outWriter;
-        }
+    public Language Language
+    {
+        get { return _language; }
+    }
 
-        public void Compile()
-        {
-            _morpher = new Morpher(new TraceManager(), _language);
-        }
+    public Morpher Morpher
+    {
+        get { return _morpher; }
+    }
 
-        public Language Language
-        {
-            get { return _language; }
-        }
+    public TextWriter Out
+    {
+        get { return _outWriter; }
+    }
 
-        public Morpher Morpher
-        {
-            get { return _morpher; }
-        }
+    public int ParseCount { get; set; }
+    public int SuccessfulParseCount { get; set; }
+    public int FailedParseCount { get; set; }
+    public int ErrorParseCount { get; set; }
 
-        public TextWriter Out
-        {
-            get { return _outWriter; }
-        }
+    public int TestCount { get; set; }
+    public int PassedTestCount { get; set; }
+    public int FailedTestCount { get; set; }
+    public int ErrorTestCount { get; set; }
 
-        public int ParseCount { get; set; }
-        public int SuccessfulParseCount { get; set; }
-        public int FailedParseCount { get; set; }
-        public int ErrorParseCount { get; set; }
+    public void ResetParseStats()
+    {
+        ParseCount = 0;
+        SuccessfulParseCount = 0;
+        FailedParseCount = 0;
+        ErrorParseCount = 0;
+    }
 
-        public int TestCount { get; set; }
-        public int PassedTestCount { get; set; }
-        public int FailedTestCount { get; set; }
-        public int ErrorTestCount { get; set; }
-
-        public void ResetParseStats()
-        {
-            ParseCount = 0;
-            SuccessfulParseCount = 0;
-            FailedParseCount = 0;
-            ErrorParseCount = 0;
-        }
-
-        public void ResetTestStats()
-        {
-            TestCount = 0;
-            PassedTestCount = 0;
-            FailedTestCount = 0;
-            ErrorTestCount = 0;
-        }
+    public void ResetTestStats()
+    {
+        TestCount = 0;
+        PassedTestCount = 0;
+        FailedTestCount = 0;
+        ErrorTestCount = 0;
     }
 }

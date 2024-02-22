@@ -68,7 +68,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                                 true
                             )
                         )
+                        {
                             continue;
+                        }
 
                         // check to see if this is a duplicate of another output analysis, this is not strictly necessary, but
                         // it helps to reduce the search space

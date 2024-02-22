@@ -93,9 +93,12 @@ namespace SIL.Machine.Matching
         public int GetFrozenHashCode()
         {
             if (!IsFrozen)
+            {
                 throw new InvalidOperationException(
                     "The pattern node does not have a valid hash code, because it is mutable."
                 );
+            }
+
             return _hashCode;
         }
 

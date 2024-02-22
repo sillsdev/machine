@@ -219,8 +219,7 @@ namespace SIL.Machine.Translation.Thot
 
             public override bool Equals(object obj)
             {
-                var other = obj as TranslationInfo;
-                return other != null && Equals(other);
+                return obj is TranslationInfo other && Equals(other);
             }
 
             public bool Equals(TranslationInfo other)

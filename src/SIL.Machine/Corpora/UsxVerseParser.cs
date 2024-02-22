@@ -155,7 +155,7 @@ namespace SIL.Machine.Corpora
 
         private class ParseContext
         {
-            private List<UsxToken> _tokens = new List<UsxToken>();
+            private readonly List<UsxToken> _tokens = new List<UsxToken>();
 
             public string Chapter { get; set; }
             public string Verse { get; set; }

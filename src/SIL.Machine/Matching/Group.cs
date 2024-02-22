@@ -93,8 +93,7 @@ namespace SIL.Machine.Matching
 
         public override bool ValueEquals(PatternNode<TData, TOffset> other)
         {
-            var otherGroup = other as Group<TData, TOffset>;
-            return otherGroup != null && ValueEquals(otherGroup);
+            return other is Group<TData, TOffset> otherGroup && ValueEquals(otherGroup);
         }
 
         public bool ValueEquals(Group<TData, TOffset> other)

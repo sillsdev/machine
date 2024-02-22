@@ -1,15 +1,10 @@
-public class S3HealthCheck : IHealthCheck
-{
-    private readonly IOptions<SharedFileOptions> _options;
-    private int _numConsecutiveFailures;
-    private readonly AsyncLock _lock;
+namespace SIL.Machine.AspNetCore.Services;
 
-    public S3HealthCheck(IOptions<SharedFileOptions> options)
-    {
-        _options = options;
-        _numConsecutiveFailures = 0;
-        _lock = new AsyncLock();
-    }
+public class S3HealthCheck(IOptions<SharedFileOptions> options) : IHealthCheck
+{
+    private readonly IOptions<SharedFileOptions> _options = options;
+    private int _numConsecutiveFailures = 0;
+    private readonly AsyncLock _lock = new AsyncLock();
 
     public async Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,

@@ -37,10 +37,13 @@ namespace SIL.Machine.Clusterers
                                 {
                                     double distance = _getDistance(o1, o2);
                                     if (double.IsNaN(distance) || double.IsInfinity(distance) || distance < 0)
+                                    {
                                         throw new ArgumentException(
                                             "Invalid distance between data objects.",
                                             "dataObjects"
                                         );
+                                    }
+
                                     return distance;
                                 }
                             )

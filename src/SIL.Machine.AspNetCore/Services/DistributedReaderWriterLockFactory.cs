@@ -1,21 +1,14 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class DistributedReaderWriterLockFactory : IDistributedReaderWriterLockFactory
+public class DistributedReaderWriterLockFactory(
+    IOptions<ServiceOptions> serviceOptions,
+    IRepository<RWLock> locks,
+    IIdGenerator idGenerator
+) : IDistributedReaderWriterLockFactory
 {
-    private readonly ServiceOptions _serviceOptions;
-    private readonly IIdGenerator _idGenerator;
-    private readonly IRepository<RWLock> _locks;
-
-    public DistributedReaderWriterLockFactory(
-        IOptions<ServiceOptions> serviceOptions,
-        IRepository<RWLock> locks,
-        IIdGenerator idGenerator
-    )
-    {
-        _serviceOptions = serviceOptions.Value;
-        _locks = locks;
-        _idGenerator = idGenerator;
-    }
+    private readonly ServiceOptions _serviceOptions = serviceOptions.Value;
+    private readonly IIdGenerator _idGenerator = idGenerator;
+    private readonly IRepository<RWLock> _locks = locks;
 
     public async Task InitAsync(CancellationToken cancellationToken = default)
     {

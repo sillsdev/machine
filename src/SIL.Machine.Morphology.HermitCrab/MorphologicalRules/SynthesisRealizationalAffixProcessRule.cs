@@ -182,8 +182,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 if (!syntacticFS.ContainsFeature(f))
                     return false;
 
-                var cf = f as ComplexFeature;
-                if (cf != null)
+                if (f is ComplexFeature cf)
                 {
                     FeatureStruct realFS = realizationalFS.GetValue(cf);
                     FeatureStruct synFS = syntacticFS.GetValue(cf);

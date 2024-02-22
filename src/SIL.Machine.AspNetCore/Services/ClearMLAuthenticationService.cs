@@ -42,12 +42,14 @@ public class ClearMLAuthenticationService(
         {
             if (_authToken is "")
             {
-                _logger.LogError(e, "Error occurred while aquiring ClearML authentication token for the first time.");
+                _logger.LogError(e, "Error occurred while acquiring ClearML authentication token for the first time.");
                 // The ClearML token never was set.  We can't continue without it.
                 throw;
             }
             else
+            {
                 _logger.LogError(e, "Error occurred while refreshing ClearML authentication token.");
+            }
         }
     }
 

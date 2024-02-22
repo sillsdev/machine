@@ -117,8 +117,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            if (otherSfv == null)
+            if (!(other is SymbolicFeatureValue otherSfv))
                 return false;
 
             if (!not && !notOther)
@@ -133,8 +132,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            if (otherSfv == null)
+            if (!(other is SymbolicFeatureValue otherSfv))
                 return false;
 
             if (!not && !notOther)
@@ -148,8 +146,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            if (otherSfv == null)
+            if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
             if (!not && !notOther)
@@ -165,8 +162,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void UnionWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            if (otherSfv == null)
+            if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
             if (!not && !notOther)
@@ -182,8 +178,7 @@ namespace SIL.Machine.FeatureModel
 
         protected override void ExceptWith(bool not, SimpleFeatureValue other, bool notOther)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            if (otherSfv == null)
+            if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
             if (!not && !notOther)
@@ -210,8 +205,7 @@ namespace SIL.Machine.FeatureModel
 
         public override bool ValueEquals(SimpleFeatureValue other)
         {
-            var otherSfv = other as SymbolicFeatureValue;
-            return otherSfv != null && ValueEquals(otherSfv);
+            return other is SymbolicFeatureValue otherSfv && ValueEquals(otherSfv);
         }
 
         public bool ValueEquals(SymbolicFeatureValue other)

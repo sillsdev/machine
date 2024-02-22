@@ -2,14 +2,9 @@
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class ServalPlatformService : IPlatformService
+public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client) : IPlatformService
 {
-    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client;
-
-    public ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client)
-    {
-        _client = client;
-    }
+    private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {

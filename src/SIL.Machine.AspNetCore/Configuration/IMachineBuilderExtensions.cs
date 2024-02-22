@@ -382,7 +382,9 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
     {
         if (builder.Configuration is null)
+        {
             builder.AddBuildJobService(o => { });
+        }
         else
         {
             builder.AddBuildJobService(builder.Configuration.GetSection(BuildJobOptions.Key));

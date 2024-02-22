@@ -26,8 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 outputAction.GenerateAnalysisLhs(_pattern, partLookup, _capturedParts);
 
-                var modifyFromInput = outputAction as ModifyFromInput;
-                if (modifyFromInput != null)
+                if (outputAction is ModifyFromInput modifyFromInput)
                 {
                     _modifyFromInfos[modifyFromInput.PartName] = Tuple.Create(
                         _capturedParts[modifyFromInput.PartName] - 1,
@@ -115,8 +114,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         {
             foreach (PatternNode<Word, ShapeNode> node in patternNode.Children)
             {
-                var constraint = node as Constraint<Word, ShapeNode>;
-                if (constraint != null && constraint.Type() == HCFeatureSystem.Segment)
+                if (node is Constraint<Word, ShapeNode> constraint && constraint.Type() == HCFeatureSystem.Segment)
                 {
                     FeatureStruct fs = constraint.FeatureStruct.Clone();
                     fs.ReplaceVariables(varBindings);
@@ -124,8 +122,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
                 else
                 {
-                    var quantifier = node as Quantifier<Word, ShapeNode>;
-                    if (quantifier != null)
+                    if (node is Quantifier<Word, ShapeNode> quantifier)
                     {
                         for (int i = 0; i < quantifier.MaxOccur; i++)
                             Untruncate(quantifier, output, i >= quantifier.MinOccur, varBindings);

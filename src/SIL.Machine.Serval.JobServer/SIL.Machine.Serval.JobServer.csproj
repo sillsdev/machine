@@ -5,6 +5,10 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UserSecretsId>aa9e7440-5a04-4de6-ba51-bab9ef4a62e1</UserSecretsId>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
 	</PropertyGroup>
 
 	<Target BeforeTargets="Build" Name="EnforceAppSettingsName">

@@ -308,7 +308,7 @@ namespace SIL.Machine.Annotations
 
         private void RelabelMinimumSparseEnclosingRange(ShapeNode node)
         {
-            double T = Math.Pow(Math.Pow(2, NumBits) / Count, 1.0 / NumBits);
+            double t = Math.Pow(Math.Pow(2, NumBits) / Count, 1.0 / NumBits);
 
             double elementCount = 1.0;
 
@@ -324,7 +324,7 @@ namespace SIL.Machine.Annotations
             do
             {
                 int toggleBit = 1 << level++;
-                overflowThreshold /= T;
+                overflowThreshold /= t;
                 range <<= 1;
 
                 bool expandToLeft = (tag & toggleBit) != 0;

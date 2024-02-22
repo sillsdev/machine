@@ -84,8 +84,7 @@ namespace SIL.Machine.Matching
 
         public override bool ValueEquals(PatternNode<TData, TOffset> other)
         {
-            var otherCons = other as Constraint<TData, TOffset>;
-            return otherCons != null && ValueEquals(otherCons);
+            return other is Constraint<TData, TOffset> otherCons && ValueEquals(otherCons);
         }
 
         public bool ValueEquals(Constraint<TData, TOffset> other)

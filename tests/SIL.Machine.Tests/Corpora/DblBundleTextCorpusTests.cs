@@ -1,27 +1,25 @@
-﻿using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.Corpora;
+
+[TestFixture]
+public class DblBundleTextCorpusTests
 {
-    [TestFixture]
-    public class DblBundleTextCorpusTests
+    [Test]
+    public void Texts()
     {
-        [Test]
-        public void Texts()
-        {
-            using (var env = new DblBundleTestEnvironment())
-                Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
-        }
+        using (var env = new DblBundleTestEnvironment())
+            Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "MAT", "MRK" }));
+    }
 
-        [Test]
-        public void TryGetText()
+    [Test]
+    public void TryGetText()
+    {
+        using (var env = new DblBundleTestEnvironment())
         {
-            using (var env = new DblBundleTestEnvironment())
-            {
-                Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
-                Assert.That(mat.GetRows(), Is.Not.Empty);
-                Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
-            }
+            Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
+            Assert.That(mat.GetRows(), Is.Not.Empty);
+            Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
         }
     }
 }

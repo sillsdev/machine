@@ -1,16 +1,13 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public abstract class HangfireBuildJob : HangfireBuildJob<object?>
+public abstract class HangfireBuildJob(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<HangfireBuildJob> logger
+) : HangfireBuildJob<object?>(platformService, engines, lockFactory, buildJobService, logger)
 {
-    protected HangfireBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<HangfireBuildJob> logger
-    )
-        : base(platformService, engines, lockFactory, buildJobService, logger) { }
-
     public virtual Task RunAsync(
         string engineId,
         string buildId,
@@ -22,28 +19,19 @@ public abstract class HangfireBuildJob : HangfireBuildJob<object?>
     }
 }
 
-public abstract class HangfireBuildJob<T>
+public abstract class HangfireBuildJob<T>(
+    IPlatformService platformService,
+    IRepository<TranslationEngine> engines,
+    IDistributedReaderWriterLockFactory lockFactory,
+    IBuildJobService buildJobService,
+    ILogger<HangfireBuildJob<T>> logger
+)
 {
-    protected HangfireBuildJob(
-        IPlatformService platformService,
-        IRepository<TranslationEngine> engines,
-        IDistributedReaderWriterLockFactory lockFactory,
-        IBuildJobService buildJobService,
-        ILogger<HangfireBuildJob<T>> logger
-    )
-    {
-        PlatformService = platformService;
-        Engines = engines;
-        LockFactory = lockFactory;
-        BuildJobService = buildJobService;
-        Logger = logger;
-    }
-
-    protected IPlatformService PlatformService { get; }
-    protected IRepository<TranslationEngine> Engines { get; }
-    protected IDistributedReaderWriterLockFactory LockFactory { get; }
-    protected IBuildJobService BuildJobService { get; }
-    protected ILogger<HangfireBuildJob<T>> Logger { get; }
+    protected IPlatformService PlatformService { get; } = platformService;
+    protected IRepository<TranslationEngine> Engines { get; } = engines;
+    protected IDistributedReaderWriterLockFactory LockFactory { get; } = lockFactory;
+    protected IBuildJobService BuildJobService { get; } = buildJobService;
+    protected ILogger<HangfireBuildJob<T>> Logger { get; } = logger;
 
     public virtual async Task RunAsync(
         string engineId,

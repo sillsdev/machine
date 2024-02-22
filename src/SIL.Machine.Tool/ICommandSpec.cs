@@ -1,10 +1,9 @@
 ﻿using System.IO;
 
-namespace SIL.Machine
+namespace SIL.Machine;
+
+public interface ICommandSpec
 {
-    public interface ICommandSpec
-    {
-        void AddParameters(CommandBase command);
-        bool Validate(TextWriter outWriter);
-    }
+    void AddParameters(CommandBase command);
+    bool Validate(TextWriter outWriter);
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using SIL.Collections;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState

@@ -1,8 +1,19 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
-namespace SIL.Machine.AspNetCore.Services;
-
-public class ClearMLMonitorService : RecurrentTask
+public class ClearMLMonitorService(
+    IServiceProvider services,
+    IClearMLService clearMLService,
+    ISharedFileService sharedFileService,
+    IOptions<ClearMLOptions> options,
+    ILogger<ClearMLMonitorService> logger
+)
+    : RecurrentTask(
+        "ClearML monitor service",
+        services,
+        options.Value.BuildPollingTimeout,
+        logger,
+        options.Value.BuildPollingEnabled
+    )
 {
     private static readonly string EvalMetric = CreateMD5("eval");
     private static readonly string BleuVariant = CreateMD5("bleu");
@@ -11,32 +22,12 @@ public class ClearMLMonitorService : RecurrentTask
     private static readonly string CorpusSizeVariant = CreateMD5("corpus_size");
     private static readonly string ProgressVariant = CreateMD5("progress");
 
-    private readonly IClearMLService _clearMLService;
-    private readonly ISharedFileService _sharedFileService;
-    private readonly ILogger<ClearMLMonitorService> _logger;
+    private readonly IClearMLService _clearMLService = clearMLService;
+    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly ILogger<ClearMLMonitorService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
     public int QueueSize { get; private set; }
-
-    public ClearMLMonitorService(
-        IServiceProvider services,
-        IClearMLService clearMLService,
-        ISharedFileService sharedFileService,
-        IOptions<ClearMLOptions> options,
-        ILogger<ClearMLMonitorService> logger
-    )
-        : base(
-            "ClearML monitor service",
-            services,
-            options.Value.BuildPollingTimeout,
-            logger,
-            options.Value.BuildPollingEnabled
-        )
-    {
-        _clearMLService = clearMLService;
-        _sharedFileService = sharedFileService;
-        _logger = logger;
-    }
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {

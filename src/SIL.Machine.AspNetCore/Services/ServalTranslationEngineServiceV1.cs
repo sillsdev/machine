@@ -143,7 +143,7 @@ public class ServalTranslationEngineServiceV1(
             {
                 Url = modelDownloadUrl.Url,
                 ModelRevision = modelDownloadUrl.ModelRevision,
-                ExpiresAt = modelDownloadUrl.ExipiresAt.ToTimestamp()
+                ExpiresAt = modelDownloadUrl.ExpiresAt.ToTimestamp()
             };
         }
         catch (InvalidOperationException e)
