@@ -482,7 +482,7 @@ namespace SIL.Machine.Corpora
             public List<string> TargetSegment { get; } = new List<string>();
             public bool IsSourceSentenceStart { get; set; } = false;
             public bool IsTargetSentenceStart { get; set; } = false;
-            public bool IsInRange => SourceRefs.Count > 0 && TargetRefs.Count > 0;
+            public bool IsInRange => SourceRefs.Count > 0 || TargetRefs.Count > 0;
             public bool IsSourceEmpty => SourceSegment.Count == 0;
             public bool IsTargetEmpty => TargetSegment.Count == 0;
 
@@ -490,7 +490,7 @@ namespace SIL.Machine.Corpora
 
             public ParallelTextRow CreateRow()
             {
-                var trgRefs = TargetRefs.ToArray();
+                object[] trgRefs = TargetRefs.ToArray();
                 if (TargetRefs.Count == 0 && Versification != null)
                 {
                     trgRefs = SourceRefs
@@ -498,7 +498,7 @@ namespace SIL.Machine.Corpora
                         .Cast<VerseRef>()
                         .Select(r =>
                         {
-                            var t = r.Clone();
+                            VerseRef t = r.Clone();
                             t.ChangeVersification(Versification);
                             return t;
                         })
