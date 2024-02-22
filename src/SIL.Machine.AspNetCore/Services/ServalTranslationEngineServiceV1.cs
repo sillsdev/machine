@@ -152,7 +152,7 @@ public class ServalTranslationEngineServiceV1(
         }
         catch (FileNotFoundException e)
         {
-            throw new RpcException(new Status(StatusCode.DataLoss, e.Message));
+            throw new RpcException(new Status(StatusCode.NotFound, e.Message));
         }
     }
 
