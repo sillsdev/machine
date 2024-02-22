@@ -1,8 +1,8 @@
-﻿namespace SIL.Machine.AspNetCore.Models;
+namespace SIL.Machine.AspNetCore.Models;
 
-public class ModelDownloadUrl
+public record ModelDownloadUrl
 {
-    public string Url { get; set; } = default!;
-    public int ModelRevision { get; set; } = default!;
-    public DateTime ExpiresAt { get; set; } = default!;
+    public required string Url { get; init; }
+    public required int ModelRevision { get; init; }
+    public required DateTime ExpiresAt { get; init; }
 }

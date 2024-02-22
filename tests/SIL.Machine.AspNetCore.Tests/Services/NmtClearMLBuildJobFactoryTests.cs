@@ -78,7 +78,15 @@ run(args)
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
-                    CurrentBuild = new Build { BuildId = "build1", JobState = BuildJobState.Pending }
+                    IsModelPersisted = false,
+                    CurrentBuild = new()
+                    {
+                        BuildId = "build1",
+                        JobId = "job1",
+                        JobRunner = BuildJobRunner.ClearML,
+                        Stage = NmtBuildStages.Train,
+                        JobState = BuildJobState.Pending
+                    }
                 }
             );
             Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();

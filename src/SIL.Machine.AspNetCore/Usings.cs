@@ -53,6 +53,5 @@ global using SIL.Machine.Tokenization;
 global using SIL.Machine.Translation;
 global using SIL.Machine.Translation.Thot;
 global using SIL.Machine.Utils;
-global using SIL.ObjectModel;
 global using SIL.Scripture;
 global using SIL.WritingSystems;

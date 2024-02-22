@@ -6,9 +6,9 @@ public enum FileFormat
     Paratext = 1
 }
 
-public class CorpusFile
+public record CorpusFile
 {
-    public string Location { get; set; } = default!;
-    public FileFormat Format { get; set; }
-    public string TextId { get; set; } = default!;
+    public required string Location { get; init; }
+    public required FileFormat Format { get; init; }
+    public required string TextId { get; init; }
 }

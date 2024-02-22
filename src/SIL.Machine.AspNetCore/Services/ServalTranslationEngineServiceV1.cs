@@ -288,12 +288,14 @@ public class ServalTranslationEngineServiceV1(
             TargetLanguage = source.TargetLanguage,
             TrainOnAll = source.TrainOnAll,
             PretranslateAll = source.PretranslateAll,
-            TrainOnChapters = source
-                .TrainOnChapters.Select(kvp => (kvp.Key, kvp.Value.Chapters.ToHashSet()))
-                .ToDictionary(),
-            PretranslateChapters = source
-                .PretranslateChapters.Select(kvp => (kvp.Key, kvp.Value.Chapters.ToHashSet()))
-                .ToDictionary(),
+            TrainOnChapters = source.TrainOnChapters.ToDictionary(
+                kvp => kvp.Key,
+                kvp => (IReadOnlySet<int>)kvp.Value.Chapters.ToHashSet()
+            ),
+            PretranslateChapters = source.PretranslateChapters.ToDictionary(
+                kvp => kvp.Key,
+                kvp => (IReadOnlySet<int>)kvp.Value.Chapters.ToHashSet()
+            ),
             TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
             PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
             SourceFiles = source.SourceFiles.Select(Map).ToList(),

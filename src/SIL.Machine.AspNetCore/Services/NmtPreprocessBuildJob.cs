@@ -11,6 +11,9 @@ public class NmtPreprocessBuildJob(
     ILanguageTagService languageTagService
 ) : HangfireBuildJob<IReadOnlyList<Corpus>>(platformService, engines, lockFactory, buildJobService, logger)
 {
+    private static readonly JsonSerializerOptions PretranslateSerializerOptions =
+        new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ICorpusService _corpusService = corpusService;
     private readonly ILanguageTagService _languageTagService = languageTagService;
@@ -24,7 +27,12 @@ public class NmtPreprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        IDictionary<string, int> counts = await WriteDataFilesAsync(buildId, data, buildOptions, cancellationToken);
+        (int trainCount, int pretranslateCount) = await WriteDataFilesAsync(
+            buildId,
+            data,
+            buildOptions,
+            cancellationToken
+        );
 
         // Log summary of build data
         JsonObject buildPreprocessSummary =
@@ -32,12 +40,10 @@ public class NmtPreprocessBuildJob(
             {
                 { "Event", "BuildPreprocess" },
                 { "EngineId", engineId },
-                { "BuildId", buildId }
+                { "BuildId", buildId },
+                { "NumTrainRows", trainCount },
+                { "NumPretranslateRows", pretranslateCount }
             };
-        foreach (KeyValuePair<string, int> kvp in counts)
-        {
-            buildPreprocessSummary.Add(kvp.Key, kvp.Value);
-        }
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
@@ -64,7 +70,7 @@ public class NmtPreprocessBuildJob(
         }
     }
 
-    private async Task<IDictionary<string, int>> WriteDataFilesAsync(
+    private async Task<(int TrainCount, int PretranslateCount)> WriteDataFilesAsync(
         string buildId,
         IReadOnlyList<Corpus> corpora,
         string? buildOptions,
@@ -76,17 +82,13 @@ public class NmtPreprocessBuildJob(
         {
             buildOptionsObject = JsonSerializer.Deserialize<JsonObject>(buildOptions);
         }
-        await using var sourceTrainWriter = new StreamWriter(
-            await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken)
-        );
-        await using var targetTrainWriter = new StreamWriter(
-            await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken)
-        );
+        await using StreamWriter sourceTrainWriter =
+            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.src.txt", cancellationToken));
+        await using StreamWriter targetTrainWriter =
+            new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
-        Dictionary<string, int> counts = new();
-        counts["CorpusSize"] = 0;
-        counts["NumTrainRows"] = 0;
-        counts["NumPretranslateRows"] = 0;
+        int trainCount = 0;
+        int pretranslateCount = 0;
         async IAsyncEnumerable<Pretranslation> ProcessRowsAsync()
         {
             foreach (Corpus corpus in corpora)
@@ -98,35 +100,19 @@ public class NmtPreprocessBuildJob(
                     corpus.TargetFiles
                 );
 
-                var parallelCorpora = new List<IParallelTextCorpus>();
-
                 IParallelTextCorpus parallelTextCorpus = sourceCorpora[CorpusType.Text]
                     .AlignRows(targetCorpora[CorpusType.Text], allSourceRows: true, allTargetRows: true);
-                parallelCorpora.Add(parallelTextCorpus);
-                if (
-                    (bool?)buildOptionsObject?["use_key_terms"]
-                    ?? true && sourceCorpora.ContainsKey(CorpusType.Term) && targetCorpora.ContainsKey(CorpusType.Term)
-                )
-                {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term]
-                        .AlignRows(targetCorpora[CorpusType.Term]);
-                    IEnumerable<string> keyTermsTextIds = parallelKeyTermsCorpus.Select(r => r.TextId).Distinct();
-                    if (keyTermsTextIds.Count() == 1)
-                        corpus.TrainOnTextIds.Add(keyTermsTextIds.First()); //Should only be one textId for key terms
-                    parallelCorpora.Add(parallelKeyTermsCorpus);
-                }
-
-                foreach (ParallelTextRow row in parallelCorpora.Flatten())
+                foreach (ParallelTextRow row in parallelTextCorpus)
                 {
                     bool isInTrainOnChapters = false;
                     bool isInPretranslateChapters = false;
                     if (targetCorpora[CorpusType.Text] is ScriptureTextCorpus stc)
                     {
-                        bool IsInChapters(Dictionary<string, HashSet<int>> bookChapters, object rowRef)
+                        bool IsInChapters(IReadOnlyDictionary<string, IReadOnlySet<int>> bookChapters, object rowRef)
                         {
                             if (rowRef is not VerseRef vr)
                                 return false;
-                            return bookChapters.TryGetValue(vr.Book, out HashSet<int>? chapters)
+                            return bookChapters.TryGetValue(vr.Book, out IReadOnlySet<int>? chapters)
                                 && (chapters.Contains(vr.ChapterNum) || chapters.Count == 0);
                         }
                         if (corpus.TrainOnChapters is not null)
@@ -138,7 +124,8 @@ public class NmtPreprocessBuildJob(
                     {
                         await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                        counts["NumTrainRows"] += 1;
+                        if (!row.IsEmpty)
+                            trainCount++;
                     }
                     if (
                         (
@@ -159,17 +146,30 @@ public class NmtPreprocessBuildJob(
                         {
                             refs = row.TargetRefs;
                         }
-                        counts["NumPretranslateRows"] += 1;
                         yield return new Pretranslation
                         {
                             CorpusId = corpus.Id,
                             TextId = row.TextId,
-                            Refs = refs.Select(r => r.ToString()!).ToList(),
+                            Refs = refs.Select(r => r.ToString() ?? "").ToList(),
                             Translation = row.SourceText
                         };
+                        pretranslateCount++;
                     }
-                    if (!row.IsEmpty)
-                        counts["CorpusSize"]++;
+                }
+
+                if (
+                    (bool?)buildOptionsObject?["use_key_terms"]
+                    ?? true && sourceCorpora.ContainsKey(CorpusType.Term) && targetCorpora.ContainsKey(CorpusType.Term)
+                )
+                {
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceCorpora[CorpusType.Term]
+                        .AlignRows(targetCorpora[CorpusType.Term]);
+                    foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                    {
+                        await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
+                        await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                        trainCount++;
+                    }
                 }
             }
         }
@@ -182,11 +182,11 @@ public class NmtPreprocessBuildJob(
         await JsonSerializer.SerializeAsync(
             sourcePretranslateStream,
             ProcessRowsAsync(),
-            new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+            PretranslateSerializerOptions,
             cancellationToken: cancellationToken
         );
 
-        return counts;
+        return (trainCount, pretranslateCount);
     }
 
     protected override async Task CleanupAsync(

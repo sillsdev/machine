@@ -14,12 +14,12 @@ public enum BuildJobRunner
     ClearML
 }
 
-public class Build
+public record Build
 {
-    public string BuildId { get; set; } = default!;
-    public BuildJobState JobState { get; set; }
-    public string JobId { get; set; } = default!;
-    public BuildJobRunner JobRunner { get; set; }
-    public string Stage { get; set; } = default!;
-    public string? Options { get; set; } = default;
+    public required string BuildId { get; init; }
+    public required BuildJobState JobState { get; init; }
+    public required string JobId { get; init; }
+    public required BuildJobRunner JobRunner { get; init; }
+    public required string Stage { get; init; }
+    public string? Options { get; set; }
 }

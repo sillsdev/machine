@@ -21,5 +21,4 @@ global using SIL.Machine.Corpora;
 global using SIL.Machine.Tokenization;
 global using SIL.Machine.Translation;
 global using SIL.Machine.Utils;
-global using SIL.ObjectModel;
 global using SIL.WritingSystems;
