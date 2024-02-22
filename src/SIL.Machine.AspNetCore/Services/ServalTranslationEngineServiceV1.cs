@@ -294,11 +294,11 @@ public class ServalTranslationEngineServiceV1(
             PretranslateAll = source.PretranslateAll,
             TrainOnChapters = source.TrainOnChapters.ToDictionary(
                 kvp => kvp.Key,
-                kvp => (IReadOnlySet<int>)kvp.Value.Chapters.ToHashSet()
+                kvp => kvp.Value.Chapters.ToHashSet()
             ),
             PretranslateChapters = source.PretranslateChapters.ToDictionary(
                 kvp => kvp.Key,
-                kvp => (IReadOnlySet<int>)kvp.Value.Chapters.ToHashSet()
+                kvp => kvp.Value.Chapters.ToHashSet()
             ),
             TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
             PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
