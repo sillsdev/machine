@@ -351,6 +351,11 @@ namespace SIL.Machine.Corpora
                 yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef.Value);
         }
 
+        public static bool IsScripture(this ITextCorpus textCorpus)
+        {
+            return textCorpus is ScriptureTextCorpus;
+        }
+
         private class TransformTextCorpus : TextCorpusBase
         {
             private readonly ITextCorpus _corpus;

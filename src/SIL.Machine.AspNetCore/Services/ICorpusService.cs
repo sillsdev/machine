@@ -2,5 +2,6 @@
 
 public interface ICorpusService
 {
-    IDictionary<CorpusType, ITextCorpus> CreateTextCorpus(IReadOnlyList<CorpusFile> files);
+    IEnumerable<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files);
+    IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files);
 }
