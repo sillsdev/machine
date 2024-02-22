@@ -16,15 +16,15 @@ public class MetathesisRuleTests : HermitCrabTestBase
             Name = "rule1",
             Pattern = Pattern<Word, ShapeNode>
                 .New()
-                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
-                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Group("1", group => group.Annotation(Character(Table3, "i")))
+                .Group("2", group => group.Annotation(Character(Table3, "u")))
                 .Value,
             LeftSwitchName = "2",
             RightSwitchName = "1"
         };
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Add(rule1);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mui"), "51");
     }
 
@@ -38,27 +38,27 @@ public class MetathesisRuleTests : HermitCrabTestBase
             Name = "rule1",
             Pattern = Pattern<Word, ShapeNode>
                 .New()
-                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
-                .Group("middle", group => group.Annotation(GetFeatureFromChar(_table3, "+")))
-                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Group("1", group => group.Annotation(Character(Table3, "i")))
+                .Group("middle", group => group.Annotation(Character(Table3, "+")))
+                .Group("2", group => group.Annotation(Character(Table3, "u")))
                 .Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor))
                 .Value,
             LeftSwitchName = "2",
             RightSwitchName = "1"
         };
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Add(rule1);
 
         var uSuffix = new AffixProcessRule { Name = "u_suffix", Gloss = "3SG" };
-        _morphophonemic.MorphologicalRules.Add(uSuffix);
+        Morphophonemic.MorphologicalRules.Add(uSuffix);
         uSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+u") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+u") }
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mui"), "53 3SG");
     }
 
@@ -72,25 +72,25 @@ public class MetathesisRuleTests : HermitCrabTestBase
             Name = "rule1",
             Pattern = Pattern<Word, ShapeNode>
                 .New()
-                .Group("1", group => group.Annotation(GetFeatureFromChar(_table3, "i")))
-                .Group("2", group => group.Annotation(GetFeatureFromChar(_table3, "u")))
+                .Group("1", group => group.Annotation(Character(Table3, "i")))
+                .Group("2", group => group.Annotation(Character(Table3, "u")))
                 .Value,
             LeftSwitchName = "2",
             RightSwitchName = "1"
         };
-        _morphophonemic.PhonologicalRules.Add(prule);
+        Morphophonemic.PhonologicalRules.Add(prule);
 
         var iSuffix = new AffixProcessRule { Name = "i_suffix", Gloss = "3SG" };
-        _morphophonemic.MorphologicalRules.Add(iSuffix);
+        Morphophonemic.MorphologicalRules.Add(iSuffix);
         iSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "i") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "i") }
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pui"), "52 3SG");
     }
 }

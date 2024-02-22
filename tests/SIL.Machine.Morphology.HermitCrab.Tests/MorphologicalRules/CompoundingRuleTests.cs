@@ -12,17 +12,17 @@ public class CompoundingRuleTests : HermitCrabTestBase
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
         var rule1 = new CompoundingRule { Name = "rule1" };
-        _allophonic.MorphologicalRules.Add(rule1);
+        Allophonic.MorphologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new CompoundingSubrule
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(_table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         List<Word> output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 8", "5 9");
         AssertRootAllomorphsEquals(output, "5");
@@ -35,11 +35,11 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(_table3, "+"), new CopyFromInput("head") }
+                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") }
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 8", "5 9");
         AssertRootAllomorphsEquals(output, "8", "9");
@@ -50,28 +50,28 @@ public class CompoundingRuleTests : HermitCrabTestBase
         {
             Name = "prefix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value,
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
             OutSyntacticFeatureStruct = FeatureStruct
-                .New(_language.SyntacticFeatureSystem)
-                .Feature(_head)
+                .New(Language.SyntacticFeatureSystem)
+                .Feature(Head)
                 .EqualTo(head => head.Feature("tense").EqualTo("past"))
                 .Value
         };
-        _allophonic.MorphologicalRules.Insert(0, prefix);
+        Allophonic.MorphologicalRules.Insert(0, prefix);
         prefix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(_table3, "di+"), new CopyFromInput("1") }
+                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") }
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         output = morpher.ParseWord("pʰutdidat").ToList();
         AssertMorphsEqual(output, "5 PAST 9");
         AssertRootAllomorphsEquals(output, "9");
 
-        _allophonic.MorphologicalRules.RemoveAt(0);
+        Allophonic.MorphologicalRules.RemoveAt(0);
 
         rule1.MaxApplicationCount = 2;
         rule1.Subrules.Clear();
@@ -80,11 +80,11 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(_table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
             }
         );
 
-        morpher = new Morpher(_traceManager, _language) { MaxStemCount = 3 };
+        morpher = new Morpher(TraceManager, Language) { MaxStemCount = 3 };
         output = morpher.ParseWord("pʰutdatpip").ToList();
         AssertMorphsEqual(output, "5 8 41", "5 9 41");
         AssertRootAllomorphsEquals(output, "5");
@@ -92,17 +92,17 @@ public class CompoundingRuleTests : HermitCrabTestBase
         rule1.MaxApplicationCount = 1;
 
         var rule2 = new CompoundingRule { Name = "rule2" };
-        _allophonic.MorphologicalRules.Add(rule2);
+        Allophonic.MorphologicalRules.Add(rule2);
         rule2.Subrules.Add(
             new CompoundingSubrule
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(_table3, "+"), new CopyFromInput("head") }
+                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") }
             }
         );
 
-        morpher = new Morpher(_traceManager, _language) { MaxStemCount = 3 };
+        morpher = new Morpher(TraceManager, Language) { MaxStemCount = 3 };
         output = morpher.ParseWord("pʰutdatpip").ToList();
         AssertMorphsEqual(output, "5 8 41", "5 9 41");
         AssertRootAllomorphsEquals(output, "8", "9");
@@ -115,58 +115,55 @@ public class CompoundingRuleTests : HermitCrabTestBase
         var rule1 = new CompoundingRule
         {
             Name = "rule1",
-            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct
-                .New(_language.SyntacticFeatureSystem)
-                .Symbol("V")
-                .Value
+            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         };
-        _allophonic.MorphologicalRules.Add(rule1);
+        Allophonic.MorphologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new CompoundingSubrule
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(_table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         List<Word> output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 9");
         AssertRootAllomorphsEquals(output, "5");
         AssertSyntacticFeatureStructsEqual(
             output,
-            FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("N").Value
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
         );
         Assert.That(morpher.ParseWord("pʰutbupu"), Is.Empty);
 
         Assert.That(
-            morpher.GenerateWords(_entries["5"], new Morpheme[] { _entries["9"] }, new FeatureStruct()),
+            morpher.GenerateWords(Entries["5"], new Morpheme[] { Entries["9"] }, new FeatureStruct()),
             Is.EquivalentTo(new[] { "pʰutdat" })
         );
 
-        rule1.OutSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value;
+        rule1.OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value;
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 9");
         AssertRootAllomorphsEquals(output, "5");
         AssertSyntacticFeatureStructsEqual(
             output,
-            FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         );
 
-        _allophonic.MorphologicalRules.Clear();
-        _morphophonemic.MorphologicalRules.Add(rule1);
+        Allophonic.MorphologicalRules.Clear();
+        Morphophonemic.MorphologicalRules.Add(rule1);
         rule1.HeadRequiredSyntacticFeatureStruct = FeatureStruct
-            .New(_language.SyntacticFeatureSystem)
+            .New(Language.SyntacticFeatureSystem)
             .Symbol("V")
-            .Feature(_head)
+            .Feature(Head)
             .EqualTo(head => head.Feature("pers").EqualTo("2"))
             .Value;
         rule1.NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         output = morpher.ParseWord("ssagabba").ToList();
         AssertMorphsEqual(output, "Perc0 39", "Perc0 40", "Perc3 39", "Perc3 40");
         AssertRootAllomorphsEquals(output, "Perc0", "Perc3");

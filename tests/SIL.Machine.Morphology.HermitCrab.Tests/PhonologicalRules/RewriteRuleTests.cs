@@ -12,12 +12,12 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void SimpleRules()
     {
         var asp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp+")
             .Value;
         var nonCons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Value;
@@ -25,9 +25,9 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "t")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value
         };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -39,10 +39,10 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule2 = new RewriteRule
         {
             Name = "rule2",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "p")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value
         };
-        _allophonic.PhonologicalRules.Add(rule2);
-        _morphophonemic.PhonologicalRules.Add(rule2);
+        Allophonic.PhonologicalRules.Add(rule2);
+        Morphophonemic.PhonologicalRules.Add(rule2);
         rule2.Subrules.Add(
             new RewriteSubrule
             {
@@ -51,7 +51,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pʰitʰ"), "1", "2");
         AssertMorphsEqual(morpher.ParseWord("datʰ"), "8", "9");
         AssertMorphsEqual(morpher.ParseWord("gab"), "11", "12");
@@ -61,39 +61,39 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void LongDistanceRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var rndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("round+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Value;
         var lowVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("low+")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -104,7 +104,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule3",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule3);
+        Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
             new RewriteSubrule
             {
@@ -119,7 +119,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14");
 
         rule3.Subrules.Clear();
@@ -137,7 +137,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "15");
 
         rule3.Subrules.Clear();
@@ -149,14 +149,14 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(highVowel)
                     .Annotation(cons)
-                    .Optional.Annotation(GetFeatureFromChar(_table3, "+"))
+                    .Optional.Annotation(Character(Table3, "+"))
                     .Annotation(cons)
                     .Optional.Annotation(vowel)
                     .Optional.Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mimuu"), "55");
     }
 
@@ -164,19 +164,19 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void AnchorRules()
     {
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var vlUnasp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("vd-")
             .Symbol("asp-")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -190,9 +190,9 @@ public class RewriteRuleTests : HermitCrabTestBase
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
             }
         );
-        _allophonic.PhonologicalRules.Add(rule3);
+        Allophonic.PhonologicalRules.Add(rule3);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
 
         rule3.Subrules.Clear();
@@ -209,7 +209,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
         rule3.Subrules.Clear();
@@ -221,7 +221,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("kab"), "11", "12");
 
         rule3.Subrules.Clear();
@@ -238,7 +238,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("gap"), "10", "11", "12");
     }
 
@@ -246,39 +246,39 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void QuantifierRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Value;
         var lowVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("low+")
             .Value;
         var rndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("round+")
             .Value;
         var backRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -291,7 +291,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule3",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule3);
+        Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
             new RewriteSubrule
             {
@@ -311,7 +311,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule4",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule4);
+        Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
             new RewriteSubrule
             {
@@ -326,20 +326,20 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "19");
         AssertMorphsEqual(morpher.ParseWord("bubabu"), "13", "14", "15");
         AssertMorphsEqual(morpher.ParseWord("bubababu"), "20", "21");
         Assert.That(morpher.ParseWord("bubabababu"), Is.Empty);
 
-        _allophonic.PhonologicalRules.Clear();
+        Allophonic.PhonologicalRules.Clear();
 
         var rule1 = new RewriteRule
         {
             Name = "rule1",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -353,7 +353,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
     }
 
@@ -361,20 +361,20 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void MultipleSegmentRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var backRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -382,7 +382,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var t = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("alveolar")
@@ -397,7 +397,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule1",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -406,16 +406,16 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
 
         var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value };
-        _allophonic.PhonologicalRules.Add(rule2);
+        Allophonic.PhonologicalRules.Add(rule2);
         rule2.Subrules.Add(
             new RewriteSubrule { RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buuubuuu"), "27");
     }
 
@@ -423,14 +423,14 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void BoundaryRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -438,19 +438,19 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var unbackUnrnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back-")
             .Symbol("round-")
             .Value;
         var unbackUnrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -458,53 +458,53 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var backVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("back+")
             .Value;
         var unrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("round-")
             .Value;
         var lowBack = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("low+")
             .Symbol("high-")
             .Value;
         var bilabialCons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Symbol("bilabial")
             .Value;
         var unvdUnasp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("vd-")
             .Symbol("asp-")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var asp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp+")
             .Value;
@@ -514,7 +514,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule1",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -522,12 +522,12 @@ public class RewriteRuleTests : HermitCrabTestBase
                 LeftEnvironment = Pattern<Word, ShapeNode>
                     .New()
                     .Annotation(backRndVowel)
-                    .Annotation(GetFeatureFromChar(_table3, "+"))
+                    .Annotation(Character(Table3, "+"))
                     .Value
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buub"), "30");
 
         rule1.Subrules.Clear();
@@ -537,13 +537,13 @@ public class RewriteRuleTests : HermitCrabTestBase
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>
                     .New()
-                    .Annotation(GetFeatureFromChar(_table3, "+"))
+                    .Annotation(Character(Table3, "+"))
                     .Annotation(unbackUnrndVowel)
                     .Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biib"), "30");
 
         rule1.Subrules.Clear();
@@ -555,7 +555,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buub"), "30", "31");
 
         rule1.Subrules.Clear();
@@ -567,15 +567,15 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biib"), "30", "31");
 
-        rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "i")).Value;
+        rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "i")).Value;
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "b")).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value
             }
         );
 
@@ -587,26 +587,24 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule2.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "a")).Value,
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "a")).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>
                     .New()
-                    .Group(group =>
-                        group.Annotation(GetFeatureFromChar(_table3, "+")).Annotation(GetFeatureFromChar(_table3, "b"))
-                    )
+                    .Group(group => group.Annotation(Character(Table3, "+")).Annotation(Character(Table3, "b")))
                     .Value
             }
         );
-        _morphophonemic.PhonologicalRules.Add(rule2);
+        Morphophonemic.PhonologicalRules.Add(rule2);
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
-        rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "u")).Value;
+        rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "u")).Value;
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "b")).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value
             }
         );
 
@@ -618,21 +616,21 @@ public class RewriteRuleTests : HermitCrabTestBase
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(lowBack).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>
                     .New()
-                    .Annotation(GetFeatureFromChar(_table3, "b"))
-                    .Annotation(GetFeatureFromChar(_table3, "+"))
+                    .Annotation(Character(Table3, "b"))
+                    .Annotation(Character(Table3, "+"))
                     .Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bab"), "30");
 
-        _morphophonemic.PhonologicalRules.Remove(rule2);
+        Morphophonemic.PhonologicalRules.Remove(rule2);
 
         rule1.Lhs = Pattern<Word, ShapeNode>
             .New()
             .Annotation(bilabialCons)
-            .Annotation(GetFeatureFromChar(_table3, "+"))
+            .Annotation(Character(Table3, "+"))
             .Annotation(bilabialCons)
             .Value;
         rule1.Subrules.Add(
@@ -641,7 +639,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                 Rhs = Pattern<Word, ShapeNode>
                     .New()
                     .Annotation(unvdUnasp)
-                    .Annotation(GetFeatureFromChar(_table3, "+"))
+                    .Annotation(Character(Table3, "+"))
                     .Annotation(unvdUnasp)
                     .Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
@@ -649,7 +647,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("appa"), "39");
 
         rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(bilabialCons).Annotation(bilabialCons).Value;
@@ -663,7 +661,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("appa"), "40");
 
         rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(cons).Value;
@@ -672,24 +670,24 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "+")).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         Assert.That(morpher.ParseWord("pʰipʰ"), Is.Empty);
 
-        _morphophonemic.PhonologicalRules.Clear();
+        Morphophonemic.PhonologicalRules.Clear();
 
         rule1 = new RewriteRule { Name = "rule1" };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>
                     .New()
-                    .Annotation(GetFeatureFromChar(_table1, "t"))
-                    .Annotation(GetFeatureFromChar(_table1, "a"))
+                    .Annotation(Character(Table1, "t"))
+                    .Annotation(Character(Table1, "a"))
                     .Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>
@@ -698,25 +696,25 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(vowel)
                     .Annotation(HCFeatureSystem.RightSideAnchor)
                     .Value,
-                RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("N").Value
+                RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
         AssertMorphsEqual(morpher.ParseWord("ba"), "pos1");
 
         RewriteSubrule subrule = rule1.Subrules[0];
         subrule.RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
-        subrule.RequiredMprFeatures.Add(_latinate);
+        subrule.RequiredMprFeatures.Add(Latinate);
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("taba"), "pos1");
 
         subrule.RequiredMprFeatures.Clear();
-        subrule.ExcludedMprFeatures.Add(_latinate);
+        subrule.ExcludedMprFeatures.Add(Latinate);
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("taba"), "pos2");
     }
 
@@ -724,13 +722,13 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void CommonFeatureRules()
     {
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var vdLabFric = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("labiodental")
             .Symbol("vd+")
@@ -741,9 +739,9 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "p")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "p")).Value
         };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -753,20 +751,20 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
 
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "v")).Value,
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "v")).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buvu"), "46");
     }
 
@@ -774,50 +772,50 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void AlphaVariableRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var nasalCons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Symbol("nasal+")
             .Value;
         var voicelessStop = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("vd-")
             .Symbol("cont-")
             .Value;
         var asp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp+")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var unasp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp-")
             .Value;
         var k = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
@@ -827,7 +825,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("nasal-")
             .Value;
         var g = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
@@ -842,7 +840,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule1",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
         };
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -850,7 +848,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem)
+                            .New(Language.PhonologicalFeatureSystem)
                             .Symbol(HCFeatureSystem.Segment)
                             .Feature("back")
                             .EqualToVariable("a")
@@ -863,7 +861,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, highVowel)
+                            .New(Language.PhonologicalFeatureSystem, highVowel)
                             .Feature("back")
                             .EqualToVariable("a")
                             .Feature("round")
@@ -875,7 +873,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
         rule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(nasalCons).Value;
@@ -887,7 +885,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem)
+                            .New(Language.PhonologicalFeatureSystem)
                             .Symbol(HCFeatureSystem.Segment)
                             .Feature("poa")
                             .EqualToVariable("a")
@@ -898,7 +896,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, cons)
+                            .New(Language.PhonologicalFeatureSystem, cons)
                             .Feature("poa")
                             .EqualToVariable("a")
                             .Value
@@ -907,17 +905,17 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("mbindiŋg"), "45");
 
-        _morphophonemic.PhonologicalRules.Clear();
-        _allophonic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Clear();
+        Allophonic.PhonologicalRules.Add(rule1);
 
         rule1.Lhs = Pattern<Word, ShapeNode>
             .New()
             .Annotation(
                 FeatureStruct
-                    .New(_language.PhonologicalFeatureSystem, voicelessStop)
+                    .New(Language.PhonologicalFeatureSystem, voicelessStop)
                     .Feature("poa")
                     .EqualToVariable("a")
                     .Value
@@ -932,7 +930,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, voicelessStop)
+                            .New(Language.PhonologicalFeatureSystem, voicelessStop)
                             .Feature("poa")
                             .EqualToVariable("a")
                             .Value
@@ -943,7 +941,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         );
         rule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value, });
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pipʰ"), "41");
 
         rule1.Lhs = Pattern<Word, ShapeNode>.New().Value;
@@ -951,12 +949,12 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "f")).Value,
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "f")).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, vowel)
+                            .New(Language.PhonologicalFeatureSystem, vowel)
                             .Feature("high")
                             .EqualToVariable("a")
                             .Feature("back")
@@ -970,7 +968,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, vowel)
+                            .New(Language.PhonologicalFeatureSystem, vowel)
                             .Feature("high")
                             .EqualToVariable("a")
                             .Feature("back")
@@ -983,11 +981,11 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buifibuifi"), "27");
 
-        _allophonic.PhonologicalRules.Clear();
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Clear();
+        Morphophonemic.PhonologicalRules.Add(rule1);
 
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
@@ -997,7 +995,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, k)
+                            .New(Language.PhonologicalFeatureSystem, k)
                             .Feature("asp")
                             .EqualToVariable("a")
                             .Value
@@ -1007,7 +1005,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, g)
+                            .New(Language.PhonologicalFeatureSystem, g)
                             .Feature("asp")
                             .EqualToVariable("a")
                             .Value
@@ -1017,7 +1015,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         Assert.That(morpher.ParseWord("sagk"), Is.Empty);
     }
 
@@ -1025,14 +1023,14 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void EpenthesisRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var highFrontUnrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1041,7 +1039,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var highBackRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1050,19 +1048,19 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var highBackRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("high+")
             .Symbol("back+")
@@ -1070,7 +1068,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Value;
 
         var rule4 = new RewriteRule { Name = "rule4", ApplicationMode = RewriteApplicationMode.Simultaneous };
-        _allophonic.PhonologicalRules.Add(rule4);
+        Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
             new RewriteSubrule
             {
@@ -1079,19 +1077,19 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("buibui"), "19");
 
         rule4.Subrules.Clear();
         rule4.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "i")).Value,
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
         rule4.ApplicationMode = RewriteApplicationMode.Iterative;
@@ -1105,7 +1103,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("ipʰit"), "1");
 
         rule4.Subrules.Clear();
@@ -1118,7 +1116,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pʰiti"), "1");
 
         rule4.Subrules.Clear();
@@ -1131,7 +1129,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
 
         rule4.ApplicationMode = RewriteApplicationMode.Simultaneous;
@@ -1143,7 +1141,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, highVowel)
+                            .New(Language.PhonologicalFeatureSystem, highVowel)
                             .Feature("back")
                             .EqualToVariable("a")
                             .Feature("round")
@@ -1155,7 +1153,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, highVowel)
+                            .New(Language.PhonologicalFeatureSystem, highVowel)
                             .Feature("back")
                             .EqualToVariable("a")
                             .Feature("round")
@@ -1166,7 +1164,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biibuu"), "18");
 
         rule4.Subrules.Clear();
@@ -1182,7 +1180,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("biiibuii"), "18");
 
         rule4.ApplicationMode = RewriteApplicationMode.Iterative;
@@ -1196,13 +1194,13 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         Assert.That(() => morpher.ParseWord("ipʰit"), Throws.TypeOf<InfiniteLoopException>());
 
-        _allophonic.PhonologicalRules.Clear();
+        Allophonic.PhonologicalRules.Clear();
 
         var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value };
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -1212,17 +1210,17 @@ public class RewriteRuleTests : HermitCrabTestBase
         );
 
         var rule2 = new RewriteRule { Name = "rule2" };
-        _allophonic.PhonologicalRules.Add(rule2);
+        Allophonic.PhonologicalRules.Add(rule2);
         rule2.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table1, "t")).Value,
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("butubu"), "25");
     }
 
@@ -1230,7 +1228,7 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void DeletionRules()
     {
         var highFrontUnrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1240,20 +1238,20 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var highBackRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1262,23 +1260,23 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var asp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp+")
             .Value;
         var nonCons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var voiced = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("vd+")
             .Value;
@@ -1288,15 +1286,15 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule4",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value
         };
-        _allophonic.PhonologicalRules.Add(rule4);
+        Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
             new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value }
         );
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "19");
 
-        morpher = new Morpher(_traceManager, _language) { DeletionReapplications = 1 };
+        morpher = new Morpher(TraceManager, Language) { DeletionReapplications = 1 };
         AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "27", "19");
 
         rule4.Subrules.Clear();
@@ -1304,7 +1302,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule { RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "25", "19");
 
         rule4.Lhs = Pattern<Word, ShapeNode>
@@ -1313,7 +1311,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Annotation(highFrontUnrndVowel)
             .Value;
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "29", "19");
 
         rule4.Subrules.Clear();
@@ -1321,19 +1319,19 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "27", "19");
 
-        _allophonic.PhonologicalRules.Clear();
-        _morphophonemic.PhonologicalRules.Add(rule4);
+        Allophonic.PhonologicalRules.Clear();
+        Morphophonemic.PhonologicalRules.Add(rule4);
 
-        rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "b")).Value;
+        rule4.Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value;
         rule4.Subrules.Clear();
         rule4.Subrules.Add(
             new RewriteSubrule
             {
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "+")).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value
             }
         );
 
@@ -1342,16 +1340,16 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "rule5",
             Lhs = Pattern<Word, ShapeNode>
                 .New()
-                .Annotation(GetFeatureFromChar(_table3, "u"))
-                .Annotation(GetFeatureFromChar(_table3, "b"))
-                .Annotation(GetFeatureFromChar(_table3, "u"))
+                .Annotation(Character(Table3, "u"))
+                .Annotation(Character(Table3, "b"))
+                .Annotation(Character(Table3, "u"))
                 .Value
         };
-        _morphophonemic.PhonologicalRules.Add(rule5);
+        Morphophonemic.PhonologicalRules.Add(rule5);
         rule5.Subrules.Add(
             new RewriteSubrule
             {
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "+")).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
             }
         );
@@ -1359,9 +1357,9 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(GetFeatureFromChar(_table3, "t")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "t")).Value
         };
-        _morphophonemic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -1370,36 +1368,36 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         Assert.That(morpher.ParseWord("b"), Is.Empty);
 
-        _morphophonemic.PhonologicalRules.Clear();
-        _allophonic.PhonologicalRules.Add(rule4);
-        _allophonic.PhonologicalRules.Add(rule5);
-        _allophonic.PhonologicalRules.Add(rule1);
+        Morphophonemic.PhonologicalRules.Clear();
+        Allophonic.PhonologicalRules.Add(rule4);
+        Allophonic.PhonologicalRules.Add(rule5);
+        Allophonic.PhonologicalRules.Add(rule1);
 
         rule4.Subrules[0].LeftEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
         rule5.Lhs = Pattern<Word, ShapeNode>
             .New()
-            .Annotation(GetFeatureFromChar(_table3, "u"))
-            .Annotation(GetFeatureFromChar(_table3, "b"))
-            .Annotation(GetFeatureFromChar(_table3, "i"))
+            .Annotation(Character(Table3, "u"))
+            .Annotation(Character(Table3, "b"))
+            .Annotation(Character(Table3, "i"))
             .Value;
         rule5.Subrules[0].RightEnvironment = Pattern<Word, ShapeNode>.New().Value;
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         Assert.That(morpher.ParseWord("b"), Is.Empty);
 
-        _allophonic.PhonologicalRules.Clear();
-        _allophonic.PhonologicalRules.Add(rule4);
-        _morphophonemic.PhonologicalRules.Add(rule5);
+        Allophonic.PhonologicalRules.Clear();
+        Allophonic.PhonologicalRules.Add(rule4);
+        Morphophonemic.PhonologicalRules.Add(rule5);
 
         rule4.Lhs = Pattern<Word, ShapeNode>
             .New()
             .Annotation(
                 FeatureStruct
-                    .New(_language.PhonologicalFeatureSystem, cons)
+                    .New(Language.PhonologicalFeatureSystem, cons)
                     .Feature("poa")
                     .EqualToVariable("a")
                     .Feature("vd")
@@ -1419,7 +1417,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(
                         FeatureStruct
-                            .New(_language.PhonologicalFeatureSystem, cons)
+                            .New(Language.PhonologicalFeatureSystem, cons)
                             .Feature("poa")
                             .EqualToVariable("a")
                             .Feature("vd")
@@ -1445,7 +1443,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("aba"), "39", "40");
     }
 
@@ -1453,36 +1451,36 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void DisjunctiveRules()
     {
         var stop = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("cont-")
             .Value;
         var asp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp+")
             .Value;
         var unasp = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("asp-")
             .Value;
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var backRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1490,13 +1488,13 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
             .Value;
         var highFrontVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1504,13 +1502,13 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("back-")
             .Value;
         var frontRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back-")
             .Symbol("round+")
             .Value;
         var frontRndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1518,13 +1516,13 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
         var backUnrnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round-")
             .Value;
         var backUnrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1532,13 +1530,13 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var frontUnrnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back-")
             .Symbol("round-")
             .Value;
         var frontUnrndVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1546,7 +1544,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var p = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("cont-")
@@ -1555,18 +1553,18 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("bilabial")
             .Value;
         var vd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("vd+")
             .Value;
         var vowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Value;
         var voicelessStop = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("vd-")
@@ -1578,7 +1576,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "disrule1",
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value
         };
-        _allophonic.PhonologicalRules.Add(disrule1);
+        Allophonic.PhonologicalRules.Add(disrule1);
         disrule1.Subrules.Add(
             new RewriteSubrule
             {
@@ -1588,7 +1586,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         );
         disrule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value });
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
         disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value;
@@ -1642,7 +1640,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bububu"), "42", "43");
 
         disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value;
@@ -1662,7 +1660,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pʰip"), "41");
 
         disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(p).Value;
@@ -1682,7 +1680,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "46", "19");
 
         disrule1.Lhs = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value;
@@ -1696,7 +1694,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         );
         disrule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value });
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("ktʰb"), "49");
     }
 
@@ -1704,20 +1702,20 @@ public class RewriteRuleTests : HermitCrabTestBase
     public void MultipleApplicationRules()
     {
         var highVowel = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
         var backRnd = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("back+")
             .Symbol("round+")
             .Value;
         var i = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons-")
             .Symbol("voc+")
@@ -1726,7 +1724,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round-")
             .Value;
         var cons = FeatureStruct
-            .New(_language.PhonologicalFeatureSystem)
+            .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
             .Symbol("cons+")
             .Symbol("voc-")
@@ -1745,14 +1743,14 @@ public class RewriteRuleTests : HermitCrabTestBase
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value
             }
         );
-        _allophonic.PhonologicalRules.Add(rule1);
+        Allophonic.PhonologicalRules.Add(rule1);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("gigugu"), "44");
 
         rule1.ApplicationMode = RewriteApplicationMode.Iterative;
 
-        morpher = new Morpher(_traceManager, _language);
+        morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("gigugi"), "44");
     }
 }

@@ -19,22 +19,22 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
             }
         );
-        _morphophonemic.MorphologicalRules.Add(edSuffix);
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
 
         Assert.That(
             morpher.AnalyzeWord("sagd"),
-            Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { _entries["32"], edSuffix }, 0, "V") })
+            Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
         );
     }
 
@@ -48,18 +48,18 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
             }
         );
-        _morphophonemic.MorphologicalRules.Add(edSuffix);
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
 
         Assert.That(morpher.AnalyzeWord("sagt"), Is.Empty);
     }
@@ -74,36 +74,36 @@ public class MorpherTests : HermitCrabTestBase
             Id = "3SG",
             Name = "si_prefix",
             Gloss = "3SG",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         };
         siPrefix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(_table3, "si+"), new CopyFromInput("1") }
+                Rhs = { new InsertSegments(Table3, "si+"), new CopyFromInput("1") }
             }
         );
-        _morphophonemic.MorphologicalRules.Add(siPrefix);
+        Morphophonemic.MorphologicalRules.Add(siPrefix);
 
         var edSuffix = new AffixProcessRule
         {
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+ɯd") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
             }
         );
-        _morphophonemic.MorphologicalRules.Add(edSuffix);
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
 
-        var analysis = new WordAnalysis(new IMorpheme[] { siPrefix, _entries["33"], edSuffix }, 1, "V");
+        var analysis = new WordAnalysis(new IMorpheme[] { siPrefix, Entries["33"], edSuffix }, 1, "V");
 
         string[] words = morpher.GenerateWords(analysis).ToArray();
         Assert.That(words, Is.EquivalentTo(new[] { "sisasɯd" }));
@@ -119,20 +119,20 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PL",
             Name = "ed_suffix",
             Gloss = "PL",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(_language.SyntacticFeatureSystem).Symbol("N").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(_table3, "+ɯd") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
             }
         );
-        _morphophonemic.MorphologicalRules.Add(edSuffix);
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        var morpher = new Morpher(_traceManager, _language);
+        var morpher = new Morpher(TraceManager, Language);
 
-        var analysis = new WordAnalysis(new IMorpheme[] { _entries["32"], edSuffix }, 0, "V");
+        var analysis = new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V");
         Assert.That(morpher.GenerateWords(analysis), Is.Empty);
     }
 }
