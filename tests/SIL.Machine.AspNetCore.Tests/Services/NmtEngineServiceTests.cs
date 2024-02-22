@@ -244,7 +244,7 @@ public class NmtEngineServiceTests
         {
             await BuildJobService.BuildJobStartedAsync("engine1", "build1");
 
-            await using (var stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json"))
+            await using (Stream stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json"))
             {
                 await JsonSerializer.SerializeAsync(stream, Array.Empty<Pretranslation>());
             }
@@ -264,7 +264,7 @@ public class NmtEngineServiceTests
             _jobServer.Dispose();
         }
 
-        private class EnvActivator(NmtEngineServiceTests.TestEnvironment env) : JobActivator
+        private class EnvActivator(TestEnvironment env) : JobActivator
         {
             private readonly TestEnvironment _env = env;
 

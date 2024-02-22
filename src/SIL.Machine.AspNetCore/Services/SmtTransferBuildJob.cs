@@ -54,24 +54,24 @@ public class SmtTransferBuildJob(
         var parallelCorpora = new List<IParallelTextCorpus>();
         foreach (Corpus corpus in data)
         {
-            IDictionary<CorpusType, ITextCorpus> scs = _corpusService.CreateTextCorpus(corpus.SourceFiles);
-            IDictionary<CorpusType, ITextCorpus> tcs = _corpusService.CreateTextCorpus(corpus.TargetFiles);
+            ITextCorpus? sourceTextCorpus = _corpusService.CreateTextCorpora(corpus.SourceFiles).FirstOrDefault();
+            ITextCorpus? targetTextCorpus = _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault();
+            if (sourceTextCorpus is null || targetTextCorpus is null)
+                continue;
 
-            if (
-                (bool?)buildOptionsObject?["use_key_terms"]
-                ?? true
-                    && scs.ContainsKey(CorpusType.Term)
-                    && scs[CorpusType.Term] is not null
-                    && tcs.ContainsKey(CorpusType.Term)
-                    && tcs[CorpusType.Term] is not null
-            )
+            targetCorpora.Add(targetTextCorpus);
+            parallelCorpora.Add(sourceTextCorpus.AlignRows(targetTextCorpus));
+
+            if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
             {
-                IParallelTextCorpus parallelKeyTermsCorpus = scs[CorpusType.Term].AlignRows(scs[CorpusType.Term]);
-                parallelCorpora.Add(parallelKeyTermsCorpus);
+                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
+                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
+                if (sourceTermCorpus is not null && targetTermCorpus is not null)
+                {
+                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
+                    parallelCorpora.Add(parallelKeyTermsCorpus);
+                }
             }
-
-            targetCorpora.Add(tcs[CorpusType.Text]);
-            parallelCorpora.Add(scs[CorpusType.Text].AlignRows(tcs[CorpusType.Text]));
         }
 
         IParallelTextCorpus parallelCorpus = parallelCorpora.Flatten();
