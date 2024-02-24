@@ -66,9 +66,9 @@ jobs:
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
       - name: Stop containers branch
-        if: ${{ success() || failure() }} and steps.find_matching_branch.outcome != 'success'
+        if: (${{ success() || failure() }} && steps.find_matching_branch.outcome != 'success')
         run: docker compose -f "../tmp/serval/docker-compose.yml" down
 
       - name: Stop containers main
-        if: ${{ success() || failure() }} and steps.find_matching_branch.outcome == 'success'
+        if: (${{ success() || failure() }} && steps.find_matching_branch.outcome == 'success')
         run: docker compose -f "../serval/docker-compose.yml" down
