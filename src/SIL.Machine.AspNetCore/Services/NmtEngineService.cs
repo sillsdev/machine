@@ -26,7 +26,6 @@ public class NmtEngineService(
     private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
     private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
-
     public const string ModelDirectory = "models/";
 
     public static string GetModelPath(string engineId, int buildRevision)
@@ -140,12 +139,7 @@ public class NmtEngineService(
         string filepath = GetModelPath(engineId, engine.BuildRevision);
         bool fileExists = await _sharedFileService.ExistsAsync(filepath, cancellationToken);
         if (!fileExists)
-        {
-            throw new FileNotFoundException(
-                $"The model should exist to be downloaded but is not there for BuildRevision {engine.BuildRevision}."
-            );
-        }
-
+            throw new FileNotFoundException($"The model for build revision , {engine.BuildRevision}, does not exist.");
         var expiresAt = DateTime.UtcNow.AddMinutes(MinutesToExpire);
         var modelInfo = new ModelDownloadUrl
         {
