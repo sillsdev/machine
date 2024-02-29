@@ -24,7 +24,7 @@ public record ClearMLTask
     public required string StatusMessage { get; init; }
     public required DateTime Created { get; init; }
     public required int LastIteration { get; init; }
-    public required int ActiveDuration { get; init; }
+    public int? ActiveDuration { get; init; }
     public required IReadOnlyDictionary<
         string,
         IReadOnlyDictionary<string, ClearMLMetricsEvent>
