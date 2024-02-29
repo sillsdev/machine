@@ -20,11 +20,11 @@ public record ClearMLTask
     public required string Name { get; init; }
     public required ClearMLProject Project { get; init; }
     public required ClearMLTaskStatus Status { get; init; }
-    public required string StatusReason { get; init; }
-    public required string StatusMessage { get; init; }
+    public string? StatusReason { get; init; }
+    public string? StatusMessage { get; init; }
     public required DateTime Created { get; init; }
-    public required int LastIteration { get; init; }
-    public required int ActiveDuration { get; init; }
+    public int? LastIteration { get; init; }
+    public int ActiveDuration { get; init; }
     public required IReadOnlyDictionary<
         string,
         IReadOnlyDictionary<string, ClearMLMetricsEvent>
