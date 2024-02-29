@@ -110,7 +110,7 @@ public class ClearMLMonitorService(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
                                 new ProgressStatus(
-                                    task.LastIteration,
+                                    task.LastIteration ?? 0,
                                     percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
                                 ),
                                 0,
@@ -122,7 +122,7 @@ public class ClearMLMonitorService(
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration, percentCompleted: 1.0),
+                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0),
                                 0,
                                 cancellationToken
                             );
