@@ -1,35 +1,51 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public enum CorpusType
-{
-    Text,
-    Term
-}
-
 public class CorpusService : ICorpusService
 {
-    public IDictionary<CorpusType, ITextCorpus> CreateTextCorpus(IReadOnlyList<CorpusFile> files)
+    public IEnumerable<ITextCorpus> CreateTextCorpora(IReadOnlyList<CorpusFile> files)
     {
-        IDictionary<CorpusType, ITextCorpus> corpora = new Dictionary<CorpusType, ITextCorpus>();
-        if (files.Count == 1 && files[0].Format == FileFormat.Paratext)
+        List<ITextCorpus> corpora = [];
+
+        List<Dictionary<string, IText>> textFileCorpora = [];
+        foreach (CorpusFile file in files)
         {
-            corpora[CorpusType.Text] = new ParatextBackupTextCorpus(files[0].Location);
-            corpora[CorpusType.Term] = new ParatextBackupTermsCorpus(files[0].Location, new string[] { "PN" });
-        }
-        else
-        {
-            var texts = new List<IText>();
-            foreach (CorpusFile file in files)
+            switch (file.Format)
             {
-                switch (file.Format)
-                {
-                    case FileFormat.Text:
-                        texts.Add(new TextFileText(file.TextId, file.Location));
-                        break;
-                }
+                case FileFormat.Text:
+                    // if there are multiple texts with the same id, then add it to a new corpus or the first
+                    // corpus that doesn't contain a text with that id
+                    Dictionary<string, IText>? corpus = textFileCorpora.FirstOrDefault(c =>
+                        !c.ContainsKey(file.TextId)
+                    );
+                    if (corpus is null)
+                    {
+                        corpus = [];
+                        textFileCorpora.Add(corpus);
+                    }
+                    corpus[file.TextId] = new TextFileText(file.TextId, file.Location);
+                    break;
+
+                case FileFormat.Paratext:
+                    corpora.Add(new ParatextBackupTextCorpus(file.Location));
+                    break;
             }
-            corpora[CorpusType.Text] = new DictionaryTextCorpus(texts);
         }
+        foreach (Dictionary<string, IText> corpus in textFileCorpora)
+            corpora.Add(new DictionaryTextCorpus(corpus.Values));
+
         return corpora;
+    }
+
+    public IEnumerable<ITextCorpus> CreateTermCorpora(IReadOnlyList<CorpusFile> files)
+    {
+        foreach (CorpusFile file in files)
+        {
+            switch (file.Format)
+            {
+                case FileFormat.Paratext:
+                    yield return new ParatextBackupTermsCorpus(file.Location, ["PN"]);
+                    break;
+            }
+        }
     }
 }

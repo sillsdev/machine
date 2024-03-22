@@ -4,12 +4,12 @@
   <LanguageIsoCode>en:::</LanguageIsoCode>
   <Language>English</Language>
   <MinParatextVersion>8.0.100.76</MinParatextVersion>
-  <FullName>Test2</FullName>
+  <FullName>Test3</FullName>
   <Encoding>65001</Encoding>
   <Editable>T</Editable>
   <Copyright />
   <NormalizationForm>NFC</NormalizationForm>
-  <Name>Ten</Name>
+  <Name>Te3</Name>
   <Guid>a7e0b3ce0200736062f9f810a444dbfbe64aca35</Guid>
   <DefaultFont>Charis SIL</DefaultFont>
   <DefaultFontSize>12</DefaultFontSize>
@@ -18,8 +18,8 @@
   <AssociatedLexicalProject />
   <FileNameBookNameForm>41MAT</FileNameBookNameForm>
   <FileNamePrePart />
-  <FileNamePostPart>Ten.SFM</FileNamePostPart>
-  <BiblicalTermsListSetting>Project:Ten:ProjectBiblicalTerms.xml</BiblicalTermsListSetting>
+  <FileNamePostPart>Tes.SFM</FileNamePostPart>
+  <BiblicalTermsListSetting>Major::BiblicalTerms.xml</BiblicalTermsListSetting>
   <MatchBasedOnStems>F</MatchBasedOnStems>
   <AllowReadAccess>F</AllowReadAccess>
   <AllowSharingWithSLDR>F</AllowSharingWithSLDR>
@@ -30,5 +30,5 @@
   <ParallelPassagesBooks>000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000</ParallelPassagesBooks>
   <BooksPresent>000000000000000000000000000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000</BooksPresent>
   <BibleModuleAssociations />
-  <Naming PrePart="" PostPart="Ten.SFM" BookNameForm="41MAT" />
+  <Naming PrePart="" PostPart="Te3.SFM" BookNameForm="41MAT" />
 </ScriptureText>
