@@ -26,7 +26,7 @@ public class CorpusService : ICorpusService
                     break;
 
                 case FileFormat.Paratext:
-                    corpora.Add(new ParatextBackupTextCorpus(file.Location));
+                    corpora.Add(new ParatextBackupTextCorpus(file.Location, includeAllText: true));
                     break;
             }
         }

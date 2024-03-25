@@ -6,7 +6,7 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextBackupTextCorpus : ScriptureTextCorpus
     {
-        public ParatextBackupTextCorpus(string fileName, bool includeMarkers = false)
+        public ParatextBackupTextCorpus(string fileName, bool includeMarkers = false, bool includeAllText = false)
         {
             using (ZipArchive archive = ZipFile.OpenRead(fileName))
             {
@@ -28,7 +28,8 @@ namespace SIL.Machine.Corpora
                             fileName,
                             sfmEntry.FullName,
                             Versification,
-                            includeMarkers
+                            includeMarkers,
+                            includeAllText
                         )
                     );
                 }

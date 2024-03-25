@@ -1,0 +1,125 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using SIL.Extensions;
+using SIL.Scripture;
+
+namespace SIL.Machine.Corpora
+{
+    public class ScriptureRef : IEquatable<ScriptureRef>, IComparable<ScriptureRef>, IComparable
+    {
+        public static ScriptureRef Empty { get; } = new ScriptureRef();
+
+        public static ScriptureRef Parse(string str, ScrVers versification = null)
+        {
+            string[] parts = str.Split('/');
+            if (parts.Length == 1)
+                return new ScriptureRef(new VerseRef(parts[0], versification ?? ScrVers.English));
+
+            string vref = parts[0];
+            var path = new List<ScriptureElement>();
+            foreach (string part in parts.Skip(1))
+            {
+                string[] elem = part.Split(':');
+                if (elem.Length == 1)
+                    path.Add(new ScriptureElement(0, elem[0]));
+                else
+                    path.Add(new ScriptureElement(int.Parse(elem[0], CultureInfo.InvariantCulture), elem[1]));
+            }
+
+            return new ScriptureRef(new VerseRef(vref, versification ?? ScrVers.English), path);
+        }
+
+        public ScriptureRef(VerseRef verseRef = default, IEnumerable<ScriptureElement> path = null)
+        {
+            VerseRef = verseRef;
+            Path = path?.ToArray() ?? Array.Empty<ScriptureElement>();
+        }
+
+        public VerseRef VerseRef { get; }
+        public IReadOnlyList<ScriptureElement> Path { get; }
+        public int BookNum => VerseRef.BookNum;
+        public int ChapterNum => VerseRef.ChapterNum;
+        public int VerseNum => VerseRef.VerseNum;
+        public string Book => VerseRef.Book;
+        public string Chapter => VerseRef.Chapter;
+        public string Verse => VerseRef.Verse;
+        public ScrVers Versification => VerseRef.Versification;
+        public bool IsEmpty => VerseRef.IsDefault;
+        public bool IsVerse => VerseRef.VerseNum != 0 && Path.Count == 0;
+
+        public ScriptureRef ChangeVersification(ScrVers versification)
+        {
+            VerseRef vr = VerseRef.Clone();
+            vr.ChangeVersification(versification);
+            return new ScriptureRef(vr, Path);
+        }
+
+        public bool Overlaps(ScriptureRef other)
+        {
+            if (!VerseRef.AreOverlappingVersesRanges(VerseRef, other.VerseRef))
+                return false;
+
+            return Path.SequenceEqual(other.Path);
+        }
+
+        int IComparable<ScriptureRef>.CompareTo(ScriptureRef other)
+        {
+            return CompareTo(other, compareSegments: true);
+        }
+
+        public int CompareTo(ScriptureRef other, bool compareSegments = true, bool strict = true)
+        {
+            IComparer<VerseRef> comparer = compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments;
+            int res = comparer.Compare(VerseRef, other.VerseRef);
+            if (res != 0)
+                return res;
+
+            foreach ((ScriptureElement se1, ScriptureElement se2) in Path.Zip(other.Path))
+            {
+                res = se1.CompareTo(se2, strict);
+                if (res != 0)
+                    return res;
+            }
+
+            return Path.Count - other.Path.Count;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (!(obj is ScriptureRef sr))
+                throw new ArgumentException("obj is not a ScriptureRef.");
+
+            return CompareTo(sr);
+        }
+
+        public bool Equals(ScriptureRef other)
+        {
+            return VerseRef.Equals(other.VerseRef) && Path.SequenceEqual(other.Path);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ScriptureRef sr && Equals(sr);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 23;
+            hashCode = hashCode * 31 + VerseRef.GetHashCode();
+            hashCode = hashCode * 31 + Path.GetSequenceHashCode();
+            return hashCode;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            sb.Append(VerseRef);
+            foreach (ScriptureElement se in Path)
+                sb.Append($"/{se}");
+            return sb.ToString();
+        }
+    }
+}
