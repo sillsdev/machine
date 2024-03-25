@@ -43,7 +43,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_TrainOnTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = new HashSet<string> { "textId1" } };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = ["textId1"] };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -72,7 +72,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_PretranslateTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = new HashSet<string> { "textId1" } };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"] };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -178,7 +178,7 @@ public class NmtPreprocessBuildJobTests
             Assert.That(trgCount, Is.EqualTo(1));
             Assert.That(termCount, Is.EqualTo(0));
         });
-        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(8));
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(12));
     }
 
     [Test]
@@ -247,8 +247,8 @@ public class NmtPreprocessBuildJobTests
                 TargetLanguage = "en",
                 PretranslateAll = false,
                 TrainOnAll = false,
-                PretranslateTextIds = new HashSet<string>(),
-                TrainOnTextIds = new HashSet<string>(),
+                PretranslateTextIds = [],
+                TrainOnTextIds = [],
                 SourceFiles = [TextFile("source1")],
                 TargetFiles = [TextFile("target1")]
             };
@@ -260,8 +260,8 @@ public class NmtPreprocessBuildJobTests
                 TargetLanguage = "en",
                 PretranslateAll = false,
                 TrainOnAll = false,
-                PretranslateTextIds = new HashSet<string>(),
-                TrainOnTextIds = new HashSet<string>(),
+                PretranslateTextIds = [],
+                TrainOnTextIds = [],
                 SourceFiles = [TextFile("source1"), TextFile("source2")],
                 TargetFiles = [TextFile("target1")]
             };
@@ -273,8 +273,8 @@ public class NmtPreprocessBuildJobTests
                 TargetLanguage = "en",
                 PretranslateAll = false,
                 TrainOnAll = false,
-                PretranslateTextIds = new HashSet<string>(),
-                TrainOnTextIds = new HashSet<string>(),
+                PretranslateTextIds = [],
+                TrainOnTextIds = [],
                 SourceFiles = [ParatextFile("pt-source1")],
                 TargetFiles = [ParatextFile("pt-target1")]
             };
@@ -286,8 +286,8 @@ public class NmtPreprocessBuildJobTests
                 TargetLanguage = "en",
                 PretranslateAll = false,
                 TrainOnAll = false,
-                PretranslateTextIds = new HashSet<string>(),
-                TrainOnTextIds = new HashSet<string>(),
+                PretranslateTextIds = [],
+                TrainOnTextIds = [],
                 SourceFiles = [ParatextFile("pt-source1"), ParatextFile("pt-source2")],
                 TargetFiles = [ParatextFile("pt-target1")]
             };

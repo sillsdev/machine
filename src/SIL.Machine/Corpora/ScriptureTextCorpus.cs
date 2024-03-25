@@ -39,9 +39,10 @@ namespace SIL.Machine.Corpora
             Versification = versification;
         }
 
-        protected ScriptureTextCorpus() { }
-
-        public ScrVers Versification { get; protected set; } = ScrVers.English;
+        protected ScriptureTextCorpus()
+        {
+            Versification = ScrVers.English;
+        }
 
         private class VersificationRefCorpusText : ScriptureText
         {

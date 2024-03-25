@@ -1,7 +1,7 @@
 \id MAT - Test
 \h Matthew
 \mt Matthew
-\ip An introduction to Matthew
+\ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
 \c 1
 \s Chapter One
 \v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
@@ -15,13 +15,15 @@
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
 \c 2
-\s1 Chapter Two
+\tr \tc1 Row one, column one. \tc2 Row one, column two.
+\tr \tc1 Row two, column one. \tc2 Row two, column two.
+\s1 Chapter \it Two \it*
 \p
 \v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
 \v 2-3 Chapter two, // verse \fm ∆\fm*two.
 \esb
 \ms This is a sidebar
-\p Here is some sidebar content.
+\p Here is some sidebar // content.
 \esbe
 \v 3-4a Chapter two, verse \w three|lemma\w*.
 \v 4b Chapter two, verse four.

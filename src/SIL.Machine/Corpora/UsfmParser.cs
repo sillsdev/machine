@@ -141,6 +141,7 @@ namespace SIL.Machine.Corpora
             // If past end
             if (State.Index >= State.Tokens.Count - 1)
             {
+                CloseAll();
                 Handler?.EndUsfm(State);
                 return false;
             }

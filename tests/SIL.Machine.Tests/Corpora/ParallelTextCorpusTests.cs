@@ -892,37 +892,45 @@ public class ParallelTextCorpusTests
                 "MAT",
                 new[]
                 {
-                    TextRow("MAT", new VerseRef("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
-                    TextRow("MAT", new VerseRef("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
-                    TextRow("MAT", new VerseRef("MAT 1:3", ScrVers.Original), "source chapter one, verse three .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:3", ScrVers.Original), "source chapter one, verse three .")
                 }
             )
-        );
+        )
+        {
+            Versification = ScrVers.Original
+        };
         var targetCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "MAT",
                 new[]
                 {
-                    TextRow("MAT", new VerseRef("MAT 1:1", versification), "target chapter one, verse one ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:1", versification), "target chapter one, verse one ."),
                     TextRow(
                         "MAT",
-                        new VerseRef("MAT 1:2", versification),
+                        ScriptureRef.Parse("MAT 1:2", versification),
                         "target chapter one, verse two . target chapter one, verse three .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("MAT", new VerseRef("MAT 1:3", versification), flags: TextRowFlags.InRange),
-                    TextRow("MAT", new VerseRef("MAT 1:4", versification), "target chapter one, verse four .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:3", versification), flags: TextRowFlags.InRange),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", versification), "target chapter one, verse four .")
                 }
             )
-        );
+        )
+        {
+            Versification = versification
+        };
 
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
         ParallelTextRow[] rows = parallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(3));
-        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:2", ScrVers.Original) }));
+        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:2", ScrVers.Original) }));
         Assert.That(
             rows[1].TargetRefs,
-            Is.EqualTo(new[] { new VerseRef("MAT 1:2", versification), new VerseRef("MAT 1:3", versification) })
+            Is.EqualTo(
+                new[] { ScriptureRef.Parse("MAT 1:2", versification), ScriptureRef.Parse("MAT 1:3", versification) }
+            )
         );
         Assert.That(rows[1].SourceSegment, Is.EqualTo("source chapter one, verse two .".Split()));
         Assert.That(
@@ -947,45 +955,57 @@ public class ParallelTextCorpusTests
                 "MAT",
                 new[]
                 {
-                    TextRow("MAT", new VerseRef("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
-                    TextRow("MAT", new VerseRef("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
-                    TextRow("MAT", new VerseRef("MAT 1:3", ScrVers.Original), "source chapter one, verse three ."),
-                    TextRow("MAT", new VerseRef("MAT 1:4", ScrVers.Original), "source chapter one, verse four .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
+                    TextRow(
+                        "MAT",
+                        ScriptureRef.Parse("MAT 1:3", ScrVers.Original),
+                        "source chapter one, verse three ."
+                    ),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", ScrVers.Original), "source chapter one, verse four .")
                 }
             )
-        );
+        )
+        {
+            Versification = ScrVers.Original
+        };
         var targetCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "MAT",
                 new[]
                 {
-                    TextRow("MAT", new VerseRef("MAT 1:1", versification), "target chapter one, verse one ."),
-                    TextRow("MAT", new VerseRef("MAT 1:2", versification), "target chapter one, verse two ."),
-                    TextRow("MAT", new VerseRef("MAT 1:3", versification), "target chapter one, verse three ."),
-                    TextRow("MAT", new VerseRef("MAT 1:4", versification), "target chapter one, verse four ."),
-                    TextRow("MAT", new VerseRef("MAT 1:5", versification), "target chapter one, verse five .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:1", versification), "target chapter one, verse one ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:2", versification), "target chapter one, verse two ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:3", versification), "target chapter one, verse three ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", versification), "target chapter one, verse four ."),
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:5", versification), "target chapter one, verse five .")
                 }
             )
-        );
+        )
+        {
+            Versification = versification
+        };
 
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
         ParallelTextRow[] rows = parallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(4));
 
-        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:2", ScrVers.Original) }));
-        Assert.That(rows[1].TargetRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:3", versification) }));
+        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:2", ScrVers.Original) }));
+        Assert.That(rows[1].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:3", versification) }));
         Assert.That(rows[1].SourceSegment, Is.EqualTo("source chapter one, verse two .".Split()));
         Assert.That(rows[1].TargetSegment, Is.EqualTo("target chapter one, verse three .".Split()));
 
-        Assert.That(rows[2].SourceRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:3", ScrVers.Original) }));
-        Assert.That(rows[2].TargetRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:2", versification) }));
+        Assert.That(rows[2].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:3", ScrVers.Original) }));
+        Assert.That(rows[2].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:2", versification) }));
         Assert.That(rows[2].SourceSegment, Is.EqualTo("source chapter one, verse three .".Split()));
         Assert.That(rows[2].TargetSegment, Is.EqualTo("target chapter one, verse two .".Split()));
 
-        Assert.That(rows[3].SourceRefs, Is.EqualTo(new[] { new VerseRef("MAT 1:4", ScrVers.Original) }));
+        Assert.That(rows[3].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("MAT 1:4", ScrVers.Original) }));
         Assert.That(
             rows[3].TargetRefs,
-            Is.EqualTo(new[] { new VerseRef("MAT 1:4", versification), new VerseRef("MAT 1:5", versification) })
+            Is.EqualTo(
+                new[] { ScriptureRef.Parse("MAT 1:4", versification), ScriptureRef.Parse("MAT 1:5", versification) }
+            )
         );
         Assert.That(rows[3].SourceSegment, Is.EqualTo("source chapter one, verse four .".Split()));
         Assert.That(

@@ -128,7 +128,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 continue;
 
             int skipCount = 0;
-            foreach (Row?[] rows in AlignCorpora(sourceTextCorpora, targetTextCorpus))
+            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
             {
                 if (skipCount > 0)
                 {
@@ -153,26 +153,6 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
                         trainCount++;
                 }
-
-                Row? pretranslateRow = rows[0];
-                if (
-                    pretranslateRow is not null
-                    && IsInPretranslate(pretranslateRow, corpus)
-                    && pretranslateRow.SourceSegment.Length > 0
-                    && pretranslateRow.TargetSegment.Length == 0
-                )
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
-                    pretranslateWriter.WriteString("textId", pretranslateRow.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in pretranslateRow.Refs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", pretranslateRow.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                }
             }
 
             if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
@@ -188,6 +168,23 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                         await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
                         trainCount++;
                     }
+                }
+            }
+
+            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            {
+                if (IsInPretranslate(row, corpus) && row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                {
+                    pretranslateWriter.WriteStartObject();
+                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("textId", row.TextId);
+                    pretranslateWriter.WriteStartArray("refs");
+                    foreach (object rowRef in row.Refs)
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteString("translation", row.SourceSegment);
+                    pretranslateWriter.WriteEndObject();
+                    pretranslateCount++;
                 }
             }
         }
@@ -244,13 +241,13 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
     {
-        if (rowRef is not VerseRef vr)
+        if (rowRef is not ScriptureRef sr)
             return false;
-        return bookChapters.TryGetValue(vr.Book, out HashSet<int>? chapters)
-            && (chapters.Contains(vr.ChapterNum) || chapters.Count == 0);
+        return bookChapters.TryGetValue(sr.Book, out HashSet<int>? chapters)
+            && (chapters.Contains(sr.ChapterNum) || chapters.Count == 0);
     }
 
-    private static IEnumerable<Row?[]> AlignCorpora(IReadOnlyList<ITextCorpus> srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row?[]> AlignTrainCorpus(IReadOnlyList<ITextCorpus> srcCorpora, ITextCorpus trgCorpus)
     {
         if (trgCorpus.IsScripture())
         {
@@ -332,7 +329,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 {
                     yield return new(
                         vrefs.First().Book,
-                        vrefs.Order().Cast<object>().ToArray(),
+                        vrefs.Order().Select(v => new ScriptureRef(v)).Cast<object>().ToArray(),
                         srcSegBuffer.ToString(),
                         trgSegBuffer.ToString(),
                         rowCount
@@ -355,7 +352,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         {
             yield return new(
                 vrefs.First().Book,
-                vrefs.Order().Cast<object>().ToArray(),
+                vrefs.Order().Select(v => new ScriptureRef(v)).Cast<object>().ToArray(),
                 srcSegBuffer.ToString(),
                 trgSegBuffer.ToString(),
                 rowCount
@@ -363,6 +360,50 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             for (int i = 0; i < rowCount - 1; i++)
                 yield return null;
         }
+    }
+
+    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    {
+        int rowCount = 0;
+        StringBuilder srcSegBuffer = new();
+        StringBuilder trgSegBuffer = new();
+        List<object> refs = [];
+        string textId = "";
+        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true))
+        {
+            if (!row.IsTargetRangeStart && row.IsTargetInRange)
+            {
+                refs.AddRange(row.Refs);
+                if (row.SourceText.Length > 0)
+                {
+                    if (srcSegBuffer.Length > 0)
+                        srcSegBuffer.Append(' ');
+                    srcSegBuffer.Append(row.SourceText);
+                }
+                rowCount++;
+            }
+            else
+            {
+                if (rowCount > 0)
+                {
+                    yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
+                    textId = "";
+                    srcSegBuffer.Clear();
+                    trgSegBuffer.Clear();
+                    refs.Clear();
+                    rowCount = 0;
+                }
+
+                textId = row.TextId;
+                refs.AddRange(row.Refs);
+                srcSegBuffer.Append(row.SourceText);
+                trgSegBuffer.Append(row.TargetText);
+                rowCount++;
+            }
+        }
+
+        if (rowCount > 0)
+            yield return new(textId, refs, srcSegBuffer.ToString(), trgSegBuffer.ToString(), 1);
     }
 
     private record Row(
