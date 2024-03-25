@@ -8,6 +8,9 @@ namespace SIL.Machine.Corpora
     {
         public ParallelTextRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
         {
+            if (string.IsNullOrEmpty(textId))
+                throw new ArgumentNullException(nameof(textId));
+
             if (sourceRefs.Count == 0 && targetRefs.Count == 0)
                 throw new ArgumentNullException("Either a source or target ref must be provided.");
 

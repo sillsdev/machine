@@ -17,23 +17,58 @@ namespace SIL.Machine.Corpora
         {
             var rowList = new List<TextRow>();
             bool outOfOrder = false;
-            var prevVerseRef = new VerseRef();
+            var prevScrRef = new ScriptureRef();
             foreach (TextRow r in GetVersesInDocOrder())
             {
                 TextRow row = r;
-                var verseRef = (VerseRef)row.Ref;
+                var scrRef = (ScriptureRef)row.Ref;
                 rowList.Add(row);
-                if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
+                if (!outOfOrder && scrRef.CompareTo(prevScrRef) < 0)
                     outOfOrder = true;
-                prevVerseRef = verseRef;
+                prevScrRef = scrRef;
             }
 
             if (outOfOrder)
-                rowList.Sort((x, y) => ((VerseRef)x.Ref).CompareTo(y.Ref));
+                rowList.Sort((x, y) => ((ScriptureRef)x.Ref).CompareTo(y.Ref));
             return rowList;
         }
 
         protected abstract IEnumerable<TextRow> GetVersesInDocOrder();
+
+        protected IEnumerable<TextRow> CreateRows(
+            IReadOnlyList<ScriptureRef> scriptureRefs,
+            string text = "",
+            bool isSentenceStart = true
+        )
+        {
+            if (scriptureRefs.Count > 1)
+            {
+                bool firstVerse = true;
+                foreach (ScriptureRef scriptureRef in scriptureRefs)
+                {
+                    if (firstVerse)
+                    {
+                        TextRowFlags flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        if (isSentenceStart)
+                            flags |= TextRowFlags.SentenceStart;
+                        yield return CreateRow(text, scriptureRef, flags);
+                        firstVerse = false;
+                    }
+                    else
+                    {
+                        yield return CreateEmptyRow(scriptureRef, TextRowFlags.InRange);
+                    }
+                }
+            }
+            else
+            {
+                yield return CreateRow(
+                    text,
+                    scriptureRefs[0],
+                    isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
+                );
+            }
+        }
 
         protected IEnumerable<TextRow> CreateRows(VerseRef verseRef, string text = "", bool isSentenceStart = true)
         {
@@ -44,15 +79,15 @@ namespace SIL.Machine.Corpora
                 {
                     if (firstVerse)
                     {
-                        var flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        TextRowFlags flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
                         if (isSentenceStart)
                             flags |= TextRowFlags.SentenceStart;
-                        yield return CreateRow(text, vref, flags);
+                        yield return CreateRow(text, new ScriptureRef(vref), flags);
                         firstVerse = false;
                     }
                     else
                     {
-                        yield return CreateEmptyRow(vref, TextRowFlags.InRange);
+                        yield return CreateEmptyRow(new ScriptureRef(vref), TextRowFlags.InRange);
                     }
                 }
             }
@@ -60,10 +95,29 @@ namespace SIL.Machine.Corpora
             {
                 yield return CreateRow(
                     text,
-                    verseRef,
+                    new ScriptureRef(verseRef),
                     isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 );
             }
+        }
+
+        protected TextRow CreateRow(
+            VerseRef verseRef,
+            IEnumerable<ScriptureElement> elements,
+            string text = "",
+            bool isSentenceStart = true
+        )
+        {
+            return CreateRow(
+                text,
+                new ScriptureRef(verseRef, elements),
+                isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
+            );
+        }
+
+        protected TextRow CreateRow(ScriptureRef scriptureRef, string text = "", bool isSentenceStart = true)
+        {
+            return CreateRow(text, scriptureRef, isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None);
         }
 
         protected VerseRef CreateVerseRef(string chapter, string verse)

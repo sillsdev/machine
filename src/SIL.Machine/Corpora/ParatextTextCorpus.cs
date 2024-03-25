@@ -4,7 +4,7 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextTextCorpus : ScriptureTextCorpus
     {
-        public ParatextTextCorpus(string projectDir, bool includeMarkers = false)
+        public ParatextTextCorpus(string projectDir, bool includeMarkers = false, bool includeAllText = false)
         {
             var parser = new FileParatextProjectSettingsParser(projectDir);
             ParatextProjectSettings settings = parser.Parse();
@@ -19,7 +19,14 @@ namespace SIL.Machine.Corpora
             )
             {
                 AddText(
-                    new UsfmFileText(settings.Stylesheet, settings.Encoding, sfmFileName, Versification, includeMarkers)
+                    new UsfmFileText(
+                        settings.Stylesheet,
+                        settings.Encoding,
+                        sfmFileName,
+                        Versification,
+                        includeMarkers,
+                        includeAllText
+                    )
                 );
             }
         }

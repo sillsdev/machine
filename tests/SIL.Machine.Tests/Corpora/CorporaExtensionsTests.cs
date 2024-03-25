@@ -9,13 +9,12 @@ public class CorporaExtensionsTests
     [Test]
     public void ExtractScripture()
     {
-        var corpus = new ParatextTextCorpus(CorporaTestHelpers.UsfmTestProjectPath);
+        var corpus = new ParatextTextCorpus(CorporaTestHelpers.UsfmTestProjectPath, includeAllText: true);
 
         var lines = corpus.ExtractScripture().ToList();
-        Assert.That(lines.Count, Is.EqualTo(41899));
+        Assert.That(lines, Has.Count.EqualTo(41899));
 
         (string text, VerseRef origRef, VerseRef? corpusRef) = lines[0];
-
         Assert.That(text, Is.EqualTo(""));
         Assert.That(origRef, Is.EqualTo(new VerseRef("GEN 1:1", ScrVers.Original)));
         Assert.That(corpusRef, Is.EqualTo(new VerseRef("GEN 1:1", corpus.Versification)));
