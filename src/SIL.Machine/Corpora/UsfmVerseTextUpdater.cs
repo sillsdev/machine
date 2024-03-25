@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,7 +10,7 @@ namespace SIL.Machine.Corpora
      */
     public class UsfmVerseTextUpdater : UsfmParserHandlerBase
     {
-        private readonly IReadOnlyList<(IReadOnlyList<VerseRef>, string)> _rows;
+        private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
         private readonly string _idText;
         private readonly bool _stripAllText;
@@ -20,12 +19,12 @@ namespace SIL.Machine.Corpora
         private bool _replaceText;
 
         public UsfmVerseTextUpdater(
-            IReadOnlyList<(IReadOnlyList<VerseRef>, string)> rows = null,
+            IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             bool stripAllText = false
         )
         {
-            _rows = rows ?? Array.Empty<(IReadOnlyList<VerseRef>, string)>();
+            _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
             _tokens = new List<UsfmToken>();
             _idText = idText;
             _stripAllText = stripAllText;
@@ -123,11 +122,11 @@ namespace SIL.Machine.Corpora
 
             while (_rowIndex < _rows.Count)
             {
-                var (verseRefs, text) = _rows[_rowIndex];
+                (IReadOnlyList<ScriptureRef> scrRefs, string text) = _rows[_rowIndex];
                 bool stop = false;
-                foreach (VerseRef verseRef in verseRefs)
+                foreach (ScriptureRef scrRef in scrRefs)
                 {
-                    int compare = verseRef.CompareTo(state.VerseRef, compareAllVerses: true);
+                    int compare = scrRef.VerseRef.CompareTo(state.VerseRef, compareAllVerses: true);
                     if (compare == 0)
                     {
                         _tokens.Add(new UsfmToken(text + " "));
@@ -136,7 +135,7 @@ namespace SIL.Machine.Corpora
                     }
                     else
                     {
-                        if (state.VerseRef.AllVerses().Any(v => v.Equals(verseRef)))
+                        if (state.VerseRef.AllVerses().Any(v => v.Equals(scrRef.VerseRef)))
                         {
                             _tokens.Add(new UsfmToken(text + " "));
                             _replaceText = true;

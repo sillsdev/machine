@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using SIL.Extensions;
 using SIL.Machine.Utils;
 using SIL.Scripture;
 
@@ -12,19 +13,22 @@ namespace SIL.Machine.Corpora
         private readonly UsfmStylesheet _stylesheet;
         private readonly Encoding _encoding;
         private readonly bool _includeMarkers;
+        private readonly bool _includeAllText;
 
         protected UsfmTextBase(
             string id,
             UsfmStylesheet stylesheet,
             Encoding encoding,
             ScrVers versification,
-            bool includeMarkers
+            bool includeMarkers,
+            bool includeAllText
         )
             : base(id, versification)
         {
             _stylesheet = stylesheet;
             _encoding = encoding;
             _includeMarkers = includeMarkers;
+            _includeAllText = includeAllText;
         }
 
         protected override IEnumerable<TextRow> GetVersesInDocOrder()
@@ -52,16 +56,21 @@ namespace SIL.Machine.Corpora
             private readonly List<TextRow> _rows;
             private VerseRef _verseRef;
             private readonly StringBuilder _verseText;
+            private readonly StringBuilder _nonVerseText;
             private bool _sentenceStart;
             private readonly List<UsfmToken> _nextParaTokens;
             private bool _nextParaTextStarted = false;
+            private bool _inNonVerse = false;
+            private readonly List<int> _positions;
 
             public TextRowCollector(UsfmTextBase text)
             {
                 _text = text;
                 _rows = new List<TextRow>();
                 _verseText = new StringBuilder();
+                _nonVerseText = new StringBuilder();
                 _nextParaTokens = new List<UsfmToken>();
+                _positions = new List<int> { 0 };
             }
 
             public IEnumerable<TextRow> Rows => _rows;
@@ -124,6 +133,35 @@ namespace SIL.Machine.Corpora
             public override void StartRow(UsfmParserState state, string marker)
             {
                 HandlePara(state);
+            }
+
+            public override void StartSidebar(UsfmParserState state, string marker, string category)
+            {
+                _positions[_positions.Count - 1]++;
+                _positions.Add(0);
+            }
+
+            public override void EndSidebar(UsfmParserState state, string marker, bool closed)
+            {
+                _positions.RemoveAt(_positions.Count - 1);
+            }
+
+            public override void EndPara(UsfmParserState state, string marker)
+            {
+                if (_verseRef.IsDefault || !_text._includeAllText || !_inNonVerse)
+                    return;
+
+                string text = _nonVerseText.ToString();
+                _rows.Add(
+                    _text.CreateRow(
+                        _verseRef.AllVerses().Last(),
+                        _positions.Zip(state.Stack.Select(e => e.Marker).Concat(marker), (p, m) => (p, m)),
+                        text,
+                        _sentenceStart
+                    )
+                );
+                _nonVerseText.Clear();
+                _inNonVerse = false;
             }
 
             public override void StartCell(UsfmParserState state, string marker, string align, int colspan)
@@ -192,29 +230,44 @@ namespace SIL.Machine.Corpora
 
             public override void Text(UsfmParserState state, string text)
             {
-                if (_verseRef.IsDefault || !state.IsVersePara)
+                if (_verseRef.IsDefault)
                     return;
 
-                if (_text._includeMarkers)
+                if (state.IsVersePara)
                 {
-                    text = text.TrimEnd('\r', '\n');
-                    if (text.Length > 0 && !state.Stack.Any(e => e.Type == UsfmElementType.Sidebar))
+                    if (_text._includeMarkers)
                     {
-                        if (!text.IsWhiteSpace())
+                        text = text.TrimEnd('\r', '\n');
+                        if (text.Length > 0 && !state.Stack.Any(e => e.Type == UsfmElementType.Sidebar))
                         {
-                            foreach (UsfmToken token in _nextParaTokens)
-                                _verseText.Append(token);
-                            _nextParaTokens.Clear();
-                            _nextParaTextStarted = true;
+                            if (!text.IsWhiteSpace())
+                            {
+                                foreach (UsfmToken token in _nextParaTokens)
+                                    _verseText.Append(token);
+                                _nextParaTokens.Clear();
+                                _nextParaTextStarted = true;
+                            }
+                            if (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                            {
+                                text = text.TrimStart();
+                            }
+                            _verseText.Append(text);
                         }
-                        if (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                    }
+                    else if (state.IsVerseText && text.Length > 0)
+                    {
+                        if (
+                            state.PrevToken?.Type == UsfmTokenType.End
+                            && (_verseText.Length == 0 || char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
+                        )
                         {
                             text = text.TrimStart();
                         }
                         _verseText.Append(text);
                     }
                 }
-                else if (state.IsVerseText && text.Length > 0)
+
+                if (_text._includeAllText && _inNonVerse && text.Length > 0)
                 {
                     if (
                         state.PrevToken?.Type == UsfmTokenType.End
@@ -223,7 +276,7 @@ namespace SIL.Machine.Corpora
                     {
                         text = text.TrimStart();
                     }
-                    _verseText.Append(text);
+                    _nonVerseText.Append(text);
                 }
             }
 
@@ -245,26 +298,34 @@ namespace SIL.Machine.Corpora
 
             private void VerseCompleted(bool? nextSentenceStart = null)
             {
-                if (_verseRef.IsDefault)
+                if (_verseRef.VerseNum == 0)
                     return;
 
                 string text = _verseText.ToString();
                 _rows.AddRange(_text.CreateRows(_verseRef, text, _sentenceStart));
                 _sentenceStart = nextSentenceStart ?? text.HasSentenceEnding();
                 _verseText.Clear();
+                _positions.Clear();
+                _positions.Add(0);
             }
 
             private void HandlePara(UsfmParserState state)
             {
-                if (_verseRef.IsDefault)
-                    return;
-
-                if (state.IsVersePara)
+                if (_verseRef.VerseNum != 0)
                 {
                     if (_verseText.Length > 0 && !char.IsWhiteSpace(_verseText[_verseText.Length - 1]))
                         _verseText.Append(" ");
                     _nextParaTokens.Add(state.Token);
                     _nextParaTextStarted = false;
+                }
+
+                if (!state.IsVerseText && _text._includeAllText)
+                {
+                    if (_verseRef.IsDefault)
+                        _verseRef = state.VerseRef;
+                    _positions[_positions.Count - 1]++;
+                    _inNonVerse = true;
+                    _sentenceStart = true;
                 }
             }
         }

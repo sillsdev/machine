@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
@@ -9,9 +8,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_CharStyle()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 1:1", ScrVers.English) }, "First verse of the first chapter.")
+            (new[] { ScriptureRef.Parse("MAT 1:1") }, "First verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -38,9 +37,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_Notes()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:1", ScrVers.English) }, "First verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:1") }, "First verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -50,9 +49,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_RowVerseSegment()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:1a", ScrVers.English) }, "First verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:1a") }, "First verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -62,9 +61,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_UsfmVerseSegment()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:7", ScrVers.English) }, "Seventh verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:7") }, "Seventh verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -74,9 +73,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_MultipleParas()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 1:2", ScrVers.English) }, "Second verse of the first chapter.")
+            (new[] { ScriptureRef.Parse("MAT 1:2") }, "Second verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -86,9 +85,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_Table()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:9", ScrVers.English) }, "Ninth verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:9") }, "Ninth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -98,10 +97,10 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_RangeSingleRowMultipleVerses()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
             (
-                new[] { new VerseRef("MAT 2:11", ScrVers.English), new VerseRef("MAT 2:12", ScrVers.English) },
+                new[] { ScriptureRef.Parse("MAT 2:11"), ScriptureRef.Parse("MAT 2:12") },
                 "Eleventh verse of the second chapter. Twelfth verse of the second chapter."
             )
         };
@@ -118,9 +117,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_RangeSingleRowSingleVerse()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:11", ScrVers.English) }, "Eleventh verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:11") }, "Eleventh verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -130,10 +129,10 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_RangeMultipleRowsSingleVerse()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:11", ScrVers.English) }, "Eleventh verse of the second chapter."),
-            (new[] { new VerseRef("MAT 2:12", ScrVers.English) }, "Twelfth verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:11") }, "Eleventh verse of the second chapter."),
+            (new[] { ScriptureRef.Parse("MAT 2:12") }, "Twelfth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -148,10 +147,10 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_OptBreak()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:2", ScrVers.English) }, "Second verse of the second chapter."),
-            (new[] { new VerseRef("MAT 2:3", ScrVers.English) }, "Third verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:2") }, "Second verse of the second chapter."),
+            (new[] { ScriptureRef.Parse("MAT 2:3") }, "Third verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -164,9 +163,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_Milestone()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 2:10", ScrVers.English) }, "Tenth verse of the second chapter.")
+            (new[] { ScriptureRef.Parse("MAT 2:10") }, "Tenth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -179,9 +178,9 @@ public class UsfmVerseTextUpdaterTests
     [Test]
     public void GetUsfm_Unmatched()
     {
-        var rows = new List<(IReadOnlyList<VerseRef>, string)>
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (new[] { new VerseRef("MAT 1:3", ScrVers.English) }, "Third verse of the first chapter.")
+            (new[] { ScriptureRef.Parse("MAT 1:3") }, "Third verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -189,7 +188,7 @@ public class UsfmVerseTextUpdaterTests
     }
 
     private static string UpdateUsfm(
-        IReadOnlyList<(IReadOnlyList<VerseRef>, string)>? rows = null,
+        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
         string? idText = null,
         bool stripAllText = false
     )

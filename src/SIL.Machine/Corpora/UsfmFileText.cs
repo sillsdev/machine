@@ -14,9 +14,10 @@ namespace SIL.Machine.Corpora
             Encoding encoding,
             string fileName,
             ScrVers versification = null,
-            bool includeMarkers = false
+            bool includeMarkers = false,
+            bool includeAllText = false
         )
-            : base(GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers)
+            : base(GetId(fileName, encoding), stylesheet, encoding, versification, includeMarkers, includeAllText)
         {
             _fileName = fileName;
         }

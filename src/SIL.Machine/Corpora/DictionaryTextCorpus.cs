@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -20,6 +21,8 @@ namespace SIL.Machine.Corpora
         public IText this[string id] => TextDictionary[id];
 
         public bool IsTokenized { get; set; }
+
+        public ScrVers Versification { get; set; }
 
         public override int Count(bool includeEmpty = true)
         {

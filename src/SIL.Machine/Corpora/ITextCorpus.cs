@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -9,5 +10,7 @@ namespace SIL.Machine.Corpora
         IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
 
         bool IsTokenized { get; }
+
+        ScrVers Versification { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -17,19 +18,19 @@ namespace SIL.Machine.Corpora
         {
             var rowList = new List<TextRow>();
             bool outOfOrder = false;
-            var prevVerseRef = new VerseRef();
+            var prevScrRef = new ScriptureRef();
             foreach (TextRow r in GetVersesInDocOrder())
             {
                 TextRow row = r;
-                var verseRef = (VerseRef)row.Ref;
+                var scrRef = (ScriptureRef)row.Ref;
                 rowList.Add(row);
-                if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
+                if (!outOfOrder && scrRef.CompareTo(prevScrRef) < 0)
                     outOfOrder = true;
-                prevVerseRef = verseRef;
+                prevScrRef = scrRef;
             }
 
             if (outOfOrder)
-                rowList.Sort((x, y) => ((VerseRef)x.Ref).CompareTo(y.Ref));
+                rowList.Sort((x, y) => ((ScriptureRef)x.Ref).CompareTo(y.Ref));
             return rowList;
         }
 
@@ -44,15 +45,15 @@ namespace SIL.Machine.Corpora
                 {
                     if (firstVerse)
                     {
-                        var flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
+                        TextRowFlags flags = TextRowFlags.InRange | TextRowFlags.RangeStart;
                         if (isSentenceStart)
                             flags |= TextRowFlags.SentenceStart;
-                        yield return CreateRow(text, vref, flags);
+                        yield return CreateRow(text, new ScriptureRef(vref), flags);
                         firstVerse = false;
                     }
                     else
                     {
-                        yield return CreateEmptyRow(vref, TextRowFlags.InRange);
+                        yield return CreateEmptyRow(new ScriptureRef(vref), TextRowFlags.InRange);
                     }
                 }
             }
@@ -60,10 +61,24 @@ namespace SIL.Machine.Corpora
             {
                 yield return CreateRow(
                     text,
-                    verseRef,
+                    new ScriptureRef(verseRef),
                     isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
                 );
             }
+        }
+
+        protected TextRow CreateRow(
+            VerseRef verseRef,
+            IEnumerable<(int Position, string Marker)> markers,
+            string text = "",
+            bool isSentenceStart = true
+        )
+        {
+            return CreateRow(
+                text,
+                new ScriptureRef(verseRef, markers.Select(m => new ScriptureElement(m.Position, m.Marker))),
+                isSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None
+            );
         }
 
         protected VerseRef CreateVerseRef(string chapter, string verse)

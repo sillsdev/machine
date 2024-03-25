@@ -8,6 +8,9 @@ namespace SIL.Machine.Corpora
 {
     public class VerseRefComparer : IComparer<VerseRef>
     {
+        public static IComparer<VerseRef> Default { get; } = new VerseRefComparer(compareSegments: true);
+        public static IComparer<VerseRef> IgnoreSegments { get; } = new VerseRefComparer(compareSegments: false);
+
         private readonly bool _compareSegments;
 
         public VerseRefComparer(bool compareSegments = true)

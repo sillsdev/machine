@@ -284,7 +284,7 @@ namespace SIL.Machine.Corpora
             bool curTrgLineRange = true;
             foreach (ParallelTextRow row in parallelCorpus)
             {
-                var vref = (VerseRef)row.Ref;
+                VerseRef vref = ((ScriptureRef)row.Ref).VerseRef;
                 if (
                     curRef.HasValue
                     && vref.CompareTo(curRef.Value, null, compareAllVerses: true, compareSegments: false) != 0
@@ -299,14 +299,14 @@ namespace SIL.Machine.Corpora
                 curRef = vref;
                 if (!curTrgRef.HasValue && row.TargetRefs.Count > 0)
                 {
-                    curTrgRef = (VerseRef)row.TargetRefs[0];
+                    curTrgRef = ((ScriptureRef)row.TargetRefs[0]).VerseRef;
                 }
                 else if (curTrgRef.HasValue && row.TargetRefs.Count > 0 && !curTrgRef.Value.Equals(row.TargetRefs[0]))
                 {
                     curTrgRef.Value.Simplify();
-                    var trgRef = (VerseRef)row.TargetRefs[0];
-                    VerseRef startRef,
-                        endRef;
+                    VerseRef trgRef = ((ScriptureRef)row.TargetRefs[0]).VerseRef;
+                    VerseRef startRef;
+                    VerseRef endRef;
                     if (curTrgRef.Value < trgRef)
                     {
                         startRef = curTrgRef.Value;
@@ -353,7 +353,7 @@ namespace SIL.Machine.Corpora
 
         public static bool IsScripture(this ITextCorpus textCorpus)
         {
-            return textCorpus is ScriptureTextCorpus;
+            return textCorpus.Versification != null;
         }
 
         private class TransformTextCorpus : TextCorpusBase
@@ -371,6 +371,8 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<IText> Texts => _corpus.Texts;
 
             public override bool IsTokenized { get; }
+
+            public override ScrVers Versification => _corpus.Versification;
 
             public override int Count(bool includeEmpty = true)
             {
@@ -398,6 +400,8 @@ namespace SIL.Machine.Corpora
 
             public override bool IsTokenized => _corpus.IsTokenized;
 
+            public override ScrVers Versification => _corpus.Versification;
+
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds).Where(_predicate);
@@ -418,6 +422,8 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<IText> Texts => _corpus.Texts.Where(_predicate);
 
             public override bool IsTokenized => _corpus.IsTokenized;
+
+            public override ScrVers Versification => _corpus.Versification;
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
@@ -440,6 +446,8 @@ namespace SIL.Machine.Corpora
 
             public override bool IsTokenized => _corpus.IsTokenized;
 
+            public override ScrVers Versification => _corpus.Versification;
+
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds).Take(_count);
@@ -458,6 +466,8 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<IText> Texts => _corpora.SelectMany(corpus => corpus.Texts);
 
             public override bool IsTokenized => _corpora.All(corpus => corpus.IsTokenized);
+
+            public override ScrVers Versification => _corpora.Length > 0 ? _corpora[0].Versification : null;
 
             public override int Count(bool includeEmpty = true)
             {
