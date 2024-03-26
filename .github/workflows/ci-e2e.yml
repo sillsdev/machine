@@ -40,7 +40,7 @@ jobs:
       - name: Check if there is a corresponding branch in Serval
         id: find_matching_branch
         continue-on-error: true
-        if: ${{ github.ref_name }} != "main"
+        if: ${{ github.ref_name }} != "master"
         run: cd .. && git clone https://github.com/sillsdev/serval.git --branch ${{ github.ref_name }} && dotnet build machine && dotnet build serval && docker compose -f "serval/docker-compose.yml" up -d && sleep 20
 
       - name: Get Serval and start containers
