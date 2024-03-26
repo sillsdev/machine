@@ -37,7 +37,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Check if there is a corresponding branch in Machine
+      - name: Check if there is a corresponding branch in Serval
         id: find_matching_branch
         continue-on-error: true
         if: ${{ github.ref_name }} != "main"
@@ -65,10 +65,10 @@ jobs:
         if: ${{ failure() }}
         run: docker ps -a && docker logs --since 10m serval_cntr && docker logs --since 10m echo_cntr && docker logs --since 10m machine-engine-cntr && docker logs --since 10m serval-mongo-1 && docker logs --since 10m machine-job-cntr
 
-      - name: Stop containers branch
-        if: (${{ success() || failure() }} && steps.find_matching_branch.outcome != 'success')
+      - name: Stop containers main
+        if: (${{ success() || failure() }} && (steps.find_matching_branch.outcome != 'success'))
         run: docker compose -f "../tmp/serval/docker-compose.yml" down
 
-      - name: Stop containers main
-        if: (${{ success() || failure() }} && steps.find_matching_branch.outcome == 'success')
+      - name: Stop containers branch
+        if: (${{ success() || failure() }} && (steps.find_matching_branch.outcome == 'success'))
         run: docker compose -f "../serval/docker-compose.yml" down
