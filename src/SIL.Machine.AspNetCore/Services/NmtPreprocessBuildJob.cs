@@ -121,7 +121,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         foreach (Corpus corpus in corpora)
         {
             ITextCorpus[] sourceTextCorpora = _corpusService.CreateTextCorpora(corpus.SourceFiles).ToArray();
-            ITextCorpus? targetTextCorpus =
+            ITextCorpus targetTextCorpus =
                 _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault() ?? new DictionaryTextCorpus();
 
             if (sourceTextCorpora.Length == 0)
