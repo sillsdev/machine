@@ -82,8 +82,12 @@ namespace SIL.Machine.Corpora
                     suffix = postPart;
             }
 
-            string biblicalTerms = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
-            string[] parts = biblicalTerms.Split(new[] { ':' }, 3);
+            string biblicalTerms = settingsDoc.Root.Element("BiblicalTermsListSetting")?.Value;
+            if (biblicalTerms == null)
+                // Default to Major::BiblicalTerms.xml to mirror Paratext behavior
+                biblicalTerms = "Major::BiblicalTerms.xml";
+
+            string[] parts = biblicalTerms?.Split(new[] { ':' }, 3);
 
             return new ParatextProjectSettings(
                 name,
