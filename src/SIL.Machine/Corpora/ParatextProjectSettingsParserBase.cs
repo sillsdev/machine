@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using SIL.Scripture;
@@ -82,12 +83,19 @@ namespace SIL.Machine.Corpora
                     suffix = postPart;
             }
 
-            string biblicalTerms = settingsDoc.Root.Element("BiblicalTermsListSetting")?.Value;
-            if (biblicalTerms == null)
+            string biblicalTermsListSetting = settingsDoc.Root.Element("BiblicalTermsListSetting")?.Value;
+            if (biblicalTermsListSetting == null)
                 // Default to Major::BiblicalTerms.xml to mirror Paratext behavior
-                biblicalTerms = "Major::BiblicalTerms.xml";
+                biblicalTermsListSetting = "Major::BiblicalTerms.xml";
 
-            string[] parts = biblicalTerms?.Split(new[] { ':' }, 3);
+            if (biblicalTermsListSetting.Count(c => c == ':') != 2)
+            {
+                throw new InvalidOperationException(
+                    $"The BiblicalTermsListSetting element in Settings.xml in project {fullName}"
+                        + $" is not in the expected format (i.e., Major::BiblicalTerms.xml) but is {biblicalTermsListSetting}."
+                );
+            }
+            string[] parts = biblicalTermsListSetting.Split(new[] { ':' }, 3);
 
             return new ParatextProjectSettings(
                 name,
