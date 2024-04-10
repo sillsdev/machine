@@ -82,8 +82,19 @@ namespace SIL.Machine.Corpora
                     suffix = postPart;
             }
 
-            string biblicalTerms = settingsDoc.Root.Element("BiblicalTermsListSetting").Value;
-            string[] parts = biblicalTerms.Split(new[] { ':' }, 3);
+            string biblicalTermsListSetting = settingsDoc.Root.Element("BiblicalTermsListSetting")?.Value;
+            if (biblicalTermsListSetting == null)
+                // Default to Major::BiblicalTerms.xml to mirror Paratext behavior
+                biblicalTermsListSetting = "Major::BiblicalTerms.xml";
+
+            string[] parts = biblicalTermsListSetting.Split(new[] { ':' }, 3);
+            if (parts.Length != 3)
+            {
+                throw new InvalidOperationException(
+                    $"The BiblicalTermsListSetting element in Settings.xml in project {fullName}"
+                        + $" is not in the expected format (i.e., Major::BiblicalTerms.xml) but is {biblicalTermsListSetting}."
+                );
+            }
 
             return new ParatextProjectSettings(
                 name,
