@@ -90,7 +90,7 @@ namespace SIL.Machine.Corpora
             string[] parts = biblicalTermsListSetting.Split(new[] { ':' }, 3);
             if (parts.Length != 3)
             {
-                throw new ArgumentException(
+                throw new InvalidOperationException(
                     $"The BiblicalTermsListSetting element in Settings.xml in project {fullName}"
                         + $" is not in the expected format (i.e., Major::BiblicalTerms.xml) but is {biblicalTermsListSetting}."
                 );
