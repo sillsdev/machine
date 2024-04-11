@@ -1,7 +1,6 @@
 {
   "cmake.sourceDirectory": "${workspaceFolder}/src/sentencepiece4c",
   "cmake.buildDirectory": "${workspaceFolder}/src/sentencepiece4c/build",
-  "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
   "editor.formatOnSave": true,
   "[csharp]": {
     "editor.defaultFormatter": "csharpier.csharpier-vscode"
@@ -175,5 +174,13 @@
     "xmltag",
     "zwsp"
   ],
-  "dotnet.defaultSolution": "Machine.sln"
+  "dotnet.defaultSolution": "Machine.sln",
+  "coverage-gutters.coverageFileNames": [
+    "coverage.info",
+    "lcov.info",
+    "cov.xml",
+    "coverage.xml",
+    "jacoco.xml",
+    "coverage.cobertura.xml"
+  ]
 }

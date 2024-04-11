@@ -20,6 +20,25 @@
                 "reveal": "silent"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "test with coverage",
+            "dependsOn": [],
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutputFormat=lcov%2cjson",
+                "/p:CoverletOutput=../CoverageResults/",
+                "/p:MergeWith=../CoverageResults/coverage.json",
+                "-m:1"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
         }
     ]
 }
