@@ -12,13 +12,18 @@ namespace SIL.Machine.Corpora
             string projectPath,
             ScrVers versification = null,
             bool includeMarkers = false,
-            string filePattern = "*.SFM"
+            string filePattern = "*.SFM",
+            bool includeAllText = false
         )
         {
             Versification = versification ?? ScrVers.English;
             var stylesheet = new UsfmStylesheet(stylesheetFileName);
             foreach (string sfmFileName in Directory.EnumerateFiles(projectPath, filePattern))
-                AddText(new UsfmFileText(stylesheet, encoding, sfmFileName, Versification, includeMarkers));
+            {
+                AddText(
+                    new UsfmFileText(stylesheet, encoding, sfmFileName, Versification, includeMarkers, includeAllText)
+                );
+            }
         }
     }
 }

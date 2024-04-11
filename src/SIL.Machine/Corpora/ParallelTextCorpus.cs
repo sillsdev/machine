@@ -64,20 +64,20 @@ namespace SIL.Machine.Corpora
                 textIds = targetTextIds;
 
             using (IEnumerator<TextRow> srcEnumerator = SourceCorpus.GetRows(textIds).GetEnumerator())
-            using (var trgEnumerator = new TargetCorpusEnumerator(TargetCorpus.GetRows(textIds).GetEnumerator()))
+            using (
+                var trgEnumerator = new TargetCorpusEnumerator(
+                    TargetCorpus.GetRows(textIds).GetEnumerator(),
+                    SourceCorpus.Versification,
+                    TargetCorpus.Versification
+                )
+            )
             using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(textIds).GetEnumerator())
             {
-                var rangeInfo = new RangeInfo();
-                rangeInfo.Versification =
-                    TargetCorpus is ScriptureTextCorpus tc && SourceCorpus is ScriptureTextCorpus
-                        ? tc.Versification
-                        : null;
+                var rangeInfo = new RangeInfo { TargetVersification = TargetCorpus.Versification };
                 var sourceSameRefRows = new List<TextRow>();
                 var targetSameRefRows = new List<TextRow>();
 
                 bool srcCompleted = !srcEnumerator.MoveNext();
-                if (!srcCompleted && srcEnumerator.Current.Ref is VerseRef verseRef)
-                    trgEnumerator.SourceVersification = verseRef.Versification;
                 bool trgCompleted = !trgEnumerator.MoveNext();
                 while (!srcCompleted && !trgCompleted)
                 {
@@ -105,6 +105,7 @@ namespace SIL.Machine.Corpora
                             {
                                 yield return rangeInfo.CreateRow();
                             }
+                            rangeInfo.TextId = srcEnumerator.Current.TextId;
                             rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
                             targetSameRefRows.Clear();
                             if (rangeInfo.IsSourceEmpty)
@@ -143,6 +144,7 @@ namespace SIL.Machine.Corpora
                             {
                                 yield return rangeInfo.CreateRow();
                             }
+                            rangeInfo.TextId = trgEnumerator.Current.TextId;
                             rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
                             sourceSameRefRows.Clear();
                             if (rangeInfo.IsTargetEmpty)
@@ -359,18 +361,13 @@ namespace SIL.Machine.Corpora
             else
                 throw new ArgumentNullException("Either a source or target must be specified.");
 
-            var sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
-            var targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
+            object[] sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
+            object[] targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
             if (targetRefs.Length == 0 && TargetCorpus is ScriptureTextCorpus stc)
             {
                 targetRefs = sourceRefs
-                    .Cast<VerseRef>()
-                    .Select(r =>
-                    {
-                        var t = r.Clone();
-                        t.ChangeVersification(stc.Versification);
-                        return t;
-                    })
+                    .Cast<ScriptureRef>()
+                    .Select(r => r.ChangeVersification(stc.Versification))
                     .Cast<object>()
                     .ToArray();
             }
@@ -486,22 +483,17 @@ namespace SIL.Machine.Corpora
             public bool IsSourceEmpty => SourceSegment.Count == 0;
             public bool IsTargetEmpty => TargetSegment.Count == 0;
 
-            public ScrVers Versification { get; set; } = null;
+            public ScrVers TargetVersification { get; set; } = null;
 
             public ParallelTextRow CreateRow()
             {
                 object[] trgRefs = TargetRefs.ToArray();
-                if (TargetRefs.Count == 0 && Versification != null)
+                if (TargetRefs.Count == 0 && TargetVersification != null)
                 {
                     trgRefs = SourceRefs
                         .ToArray()
-                        .Cast<VerseRef>()
-                        .Select(r =>
-                        {
-                            VerseRef t = r.Clone();
-                            t.ChangeVersification(Versification);
-                            return t;
-                        })
+                        .Cast<ScriptureRef>()
+                        .Select(r => r.ChangeVersification(TargetVersification))
                         .Cast<object>()
                         .ToArray();
                 }
@@ -525,14 +517,11 @@ namespace SIL.Machine.Corpora
 
         private class DefaultRowRefComparer : IComparer<object>
         {
-            private static readonly VerseRefComparer VerseRefComparer = new VerseRefComparer(compareSegments: false);
-
             public int Compare(object x, object y)
             {
-                // Do not use the default comparer for VerseRef, since we want to compare all verses in a range or
-                // sequence
-                if (x is VerseRef vx && y is VerseRef vy)
-                    return VerseRefComparer.Compare(vx, vy);
+                // Do not use the default comparer for ScriptureRef, since we want to ignore segments
+                if (x is ScriptureRef sx && y is ScriptureRef sy)
+                    return sx.CompareTo(sy, compareSegments: false);
 
                 return Comparer<object>.Default.Compare(x, y);
             }
@@ -541,18 +530,26 @@ namespace SIL.Machine.Corpora
         private class TargetCorpusEnumerator : DisposableBase, IEnumerator<TextRow>
         {
             private readonly IEnumerator<TextRow> _enumerator;
-            private bool _isScripture = false;
-            private bool _isEnumerating = false;
+            private readonly bool _isScripture = false;
             private readonly Queue<TextRow> _verseRows;
+            private readonly ScrVers _sourceVersification;
             private TextRow _current;
+            private bool _isEnumerating = false;
 
-            public TargetCorpusEnumerator(IEnumerator<TextRow> enumerator)
+            public TargetCorpusEnumerator(
+                IEnumerator<TextRow> enumerator,
+                ScrVers sourceVersification,
+                ScrVers targetVersification
+            )
             {
                 _enumerator = enumerator;
+                _sourceVersification = sourceVersification;
+                _isScripture =
+                    sourceVersification != null
+                    && targetVersification != null
+                    && sourceVersification != targetVersification;
                 _verseRows = new Queue<TextRow>();
             }
-
-            public ScrVers SourceVersification { get; set; }
 
             public TextRow Current => _current;
 
@@ -560,29 +557,13 @@ namespace SIL.Machine.Corpora
 
             public bool MoveNext()
             {
-                bool result;
-                if (!_isEnumerating)
-                {
-                    _isEnumerating = true;
-                    result = _enumerator.MoveNext();
-                    if (
-                        result
-                        && _enumerator.Current.Ref is VerseRef verseRef
-                        && SourceVersification != null
-                        && SourceVersification != verseRef.Versification
-                    )
-                    {
-                        _isScripture = true;
-                    }
-                    else
-                    {
-                        _current = _enumerator.Current;
-                        return result;
-                    }
-                }
-
                 if (_isScripture)
                 {
+                    if (!_isEnumerating)
+                    {
+                        _enumerator.MoveNext();
+                        _isEnumerating = true;
+                    }
                     if (_verseRows.Count == 0 && _enumerator.Current != null)
                         CollectVerses();
                     if (_verseRows.Count > 0)
@@ -594,7 +575,7 @@ namespace SIL.Machine.Corpora
                     return false;
                 }
 
-                result = _enumerator.MoveNext();
+                bool result = _enumerator.MoveNext();
                 _current = _enumerator.Current;
                 return result;
             }
@@ -603,7 +584,6 @@ namespace SIL.Machine.Corpora
             {
                 _enumerator.Reset();
                 _isEnumerating = false;
-                _isScripture = false;
             }
 
             protected override void DisposeManagedResources()
@@ -613,23 +593,25 @@ namespace SIL.Machine.Corpora
 
             private void CollectVerses()
             {
-                var rowList = new List<(VerseRef Ref, TextRow Row)>();
+                var rowList = new List<(ScriptureRef Ref, TextRow Row)>();
                 bool outOfOrder = false;
-                var prevVerseRef = new VerseRef();
+                ScriptureRef prevScrRef = ScriptureRef.Empty;
                 int rangeStartOffset = -1;
                 do
                 {
                     TextRow row = _enumerator.Current;
-                    var verseRef = (VerseRef)row.Ref;
-                    if (!prevVerseRef.IsDefault && verseRef.BookNum != prevVerseRef.BookNum)
+                    var scrRef = (ScriptureRef)row.Ref;
+                    if (!prevScrRef.IsEmpty && scrRef.BookNum != prevScrRef.BookNum)
                         break;
 
-                    verseRef.ChangeVersification(SourceVersification);
+                    scrRef = scrRef.ChangeVersification(_sourceVersification);
                     // convert one-to-many versification mapping to a verse range
-                    if (verseRef.Equals(prevVerseRef))
+                    if (scrRef.Equals(prevScrRef))
                     {
-                        var (rangeStartVerseRef, rangeStartRow) = rowList[rowList.Count + rangeStartOffset];
-                        var flags = TextRowFlags.InRange;
+                        (ScriptureRef rangeStartVerseRef, TextRow rangeStartRow) = rowList[
+                            rowList.Count + rangeStartOffset
+                        ];
+                        TextRowFlags flags = TextRowFlags.InRange;
                         if (rangeStartRow.IsSentenceStart)
                             flags |= TextRowFlags.SentenceStart;
                         if (rangeStartOffset == -1 && (!rangeStartRow.IsInRange || rangeStartRow.IsRangeStart))
@@ -649,16 +631,16 @@ namespace SIL.Machine.Corpora
                     {
                         rangeStartOffset = -1;
                     }
-                    rowList.Add((verseRef, row));
-                    if (!outOfOrder && verseRef.CompareTo(prevVerseRef) < 0)
+                    rowList.Add((scrRef, row));
+                    if (!outOfOrder && scrRef.CompareTo(prevScrRef) < 0)
                         outOfOrder = true;
-                    prevVerseRef = verseRef;
+                    prevScrRef = scrRef;
                 } while (_enumerator.MoveNext());
 
                 if (outOfOrder)
                     rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
 
-                foreach (var (_, row) in rowList)
+                foreach ((ScriptureRef _, TextRow row) in rowList)
                     _verseRows.Enqueue(row);
             }
         }
