@@ -9,6 +9,7 @@
         "tim-koehler.helm-intellisense",
         "ms-dotnettools.vscodeintellicode-csharp",
         "redhat.vscode-yaml",
-        "wycliffeassociates.usfmvscode"
+        "wycliffeassociates.usfmvscode",
+        "ryanluker.vscode-coverage-gutters"
     ]
 }
