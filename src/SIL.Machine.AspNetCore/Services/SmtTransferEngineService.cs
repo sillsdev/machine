@@ -44,17 +44,22 @@ public class SmtTransferEngineService(
             );
         }
 
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        var translationEngine = new TranslationEngine
-        {
-            EngineId = engineId,
-            SourceLanguage = sourceLanguage,
-            TargetLanguage = targetLanguage,
-            IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
-        };
-        await _engines.InsertAsync(translationEngine, cancellationToken);
-        await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, cancellationToken);
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+        var translationEngine = await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                var translationEngine = new TranslationEngine
+                {
+                    EngineId = engineId,
+                    SourceLanguage = sourceLanguage,
+                    TargetLanguage = targetLanguage,
+                    IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
+                };
+                await _engines.InsertAsync(translationEngine, cancellationToken);
+                await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, cancellationToken);
+                return translationEngine;
+            },
+            cancellationToken: cancellationToken
+        );
 
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, CancellationToken.None);
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
@@ -72,10 +77,14 @@ public class SmtTransferEngineService(
         {
             await CancelBuildJobAsync(engineId, cancellationToken);
 
-            await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-            await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-            await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
-            await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+            await _dataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
+                    await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+                },
+                cancellationToken: cancellationToken
+            );
 
             if (_stateService.TryRemove(engineId, out SmtTransferEngineState? state))
             {
@@ -135,27 +144,42 @@ public class SmtTransferEngineService(
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
-            if (engine.CurrentBuild?.JobState is BuildJobState.Active)
+
+            async Task<SmtTransferEngineState> TrainSubroutineAsync()
             {
-                await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-                await _trainSegmentPairs.InsertAsync(
-                    new TrainSegmentPair
-                    {
-                        TranslationEngineRef = engineId,
-                        Source = sourceSegment,
-                        Target = targetSegment,
-                        SentenceStart = sentenceStart
-                    },
-                    cancellationToken
-                );
+                SmtTransferEngineState state = _stateService.Get(engineId);
+                HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
+                await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
+                await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
+                return state;
             }
 
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
-            await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
-            await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
+            SmtTransferEngineState state;
             if (engine.CurrentBuild?.JobState is BuildJobState.Active)
-                await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
+            {
+                state = await _dataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await _trainSegmentPairs.InsertAsync(
+                            new TrainSegmentPair
+                            {
+                                TranslationEngineRef = engineId,
+                                Source = sourceSegment,
+                                Target = targetSegment,
+                                SentenceStart = sentenceStart
+                            },
+                            cancellationToken
+                        );
+                        return await TrainSubroutineAsync();
+                    },
+                    cancellationToken: cancellationToken
+                );
+            }
+            else
+            {
+                state = await TrainSubroutineAsync();
+            }
+
             state.IsUpdated = true;
             state.LastUsedTime = DateTime.Now;
         }
