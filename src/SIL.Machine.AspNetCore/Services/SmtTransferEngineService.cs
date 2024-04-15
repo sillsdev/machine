@@ -169,7 +169,6 @@ public class SmtTransferEngineService(
                             ct
                         );
                         await TrainSubroutineAsync(state, ct);
-                        return;
                     },
                     cancellationToken: CancellationToken.None
                 );
