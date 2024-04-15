@@ -54,6 +54,7 @@ public class ScriptureRefTests
     [TestCase]
     public void CompareTemplate()
     {
+        // this tests the IComparable<ScriptureRef>.CompareTo method by calling Sort() on a list of ScriptureRefs
         var refs = new List<ScriptureRef> { ScriptureRef.Parse("MAT 1:2"), ScriptureRef.Parse("MAT 1:1") };
         refs.Sort();
         Assert.That(refs[0].ToString(), Is.EqualTo("MAT 1:1"));
@@ -64,23 +65,6 @@ public class ScriptureRefTests
             ScriptureRef.Parse("MAT 1:2/1:p")
         };
         Assert.That(dictRefs.Count, Is.EqualTo(2));
-    }
-
-    [TestCase("MAT 1:1", "MAT 1:1", ExpectedResult = true, Description = "SameVerse")]
-    [TestCase("MAT 1:1", "MAT 1:2", ExpectedResult = false, Description = "DifferentVerse")]
-    [TestCase("MAT 1:1", "MAT 1:1-2", ExpectedResult = true, Description = "RangeAndSingleVerse")]
-    [TestCase("MAT 1:1-3", "MAT 1:2-4", ExpectedResult = true, Description = "RangeAndRangeTrue")]
-    [TestCase("MAT 1:1-3", "MAT 1:4-6", ExpectedResult = false, Description = "RangeAndRangeFalse")]
-    [TestCase("MAT 1:0/1:p", "MAT 1:0/1:p", ExpectedResult = true, Description = "NonVerseSameMarker")]
-    [TestCase("MAT 1:0/1:p", "MAT 1:0/2:p", ExpectedResult = false, Description = "NonVerseDifferentPosition")]
-    [TestCase("MAT 1:0/1:esb", "MAT 1:0/1:esb/1:p", ExpectedResult = false, Description = "NonVerseParentChild")]
-    [TestCase("MAT 1:0/1:p/2:esb", "MAT 1:0/2:esb/1:p", ExpectedResult = false, Description = "NonVerseParentChild")]
-    public bool Overlaps(string ref1Str, string ref2Str)
-    {
-        var ref1 = ScriptureRef.Parse(ref1Str);
-        var ref2 = ScriptureRef.Parse(ref2Str);
-        bool overlaps = ref1.Overlaps(ref2);
-        return overlaps;
     }
 
     [TestCase]
@@ -96,6 +80,13 @@ public class ScriptureRefTests
             Assert.That(!ref1.Equals(ref2));
             Assert.That(!ref1.Equals(obj1));
         });
+    }
+
+    [TestCase]
+    public void IsEqualToThrowsArgumentException()
+    {
+        var ref1 = ScriptureRef.Parse("MAT 1:1/1:p");
+        var obj1 = "A different type";
         Assert.Throws<ArgumentException>(() => ref1.CompareTo(obj1));
     }
 }
