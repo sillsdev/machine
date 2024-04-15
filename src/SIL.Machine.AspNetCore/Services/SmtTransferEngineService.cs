@@ -54,8 +54,8 @@ public class SmtTransferEngineService(
                     TargetLanguage = targetLanguage,
                     IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
                 };
-                await _engines.InsertAsync(translationEngine, cancellationToken);
-                await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, cancellationToken);
+                await _engines.InsertAsync(translationEngine, ct);
+                await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, ct);
                 return translationEngine;
             },
             cancellationToken: cancellationToken
@@ -80,8 +80,8 @@ public class SmtTransferEngineService(
             await _dataAccessContext.WithTransactionAsync(
                 async (ct) =>
                 {
-                    await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-                    await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+                    await _engines.DeleteAsync(e => e.EngineId == engineId, ct);
+                    await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, ct);
                 },
                 cancellationToken: cancellationToken
             );
@@ -145,19 +145,17 @@ public class SmtTransferEngineService(
         {
             TranslationEngine engine = await GetEngineAsync(engineId, cancellationToken);
 
-            async Task<SmtTransferEngineState> TrainSubroutineAsync()
+            async Task TrainSubroutineAsync(SmtTransferEngineState state, CancellationToken ct)
             {
-                SmtTransferEngineState state = _stateService.Get(engineId);
                 HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
-                await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, cancellationToken);
+                await hybridEngine.TrainSegmentAsync(sourceSegment, targetSegment, sentenceStart, ct);
                 await _platformService.IncrementTrainSizeAsync(engineId, cancellationToken: CancellationToken.None);
-                return state;
             }
 
-            SmtTransferEngineState state;
+            SmtTransferEngineState state = _stateService.Get(engineId);
             if (engine.CurrentBuild?.JobState is BuildJobState.Active)
             {
-                state = await _dataAccessContext.WithTransactionAsync(
+                await _dataAccessContext.WithTransactionAsync(
                     async (ct) =>
                     {
                         await _trainSegmentPairs.InsertAsync(
@@ -168,16 +166,17 @@ public class SmtTransferEngineService(
                                 Target = targetSegment,
                                 SentenceStart = sentenceStart
                             },
-                            cancellationToken
+                            ct
                         );
-                        return await TrainSubroutineAsync();
+                        await TrainSubroutineAsync(state, ct);
+                        return;
                     },
-                    cancellationToken: cancellationToken
+                    cancellationToken: CancellationToken.None
                 );
             }
             else
             {
-                state = await TrainSubroutineAsync();
+                await TrainSubroutineAsync(state, cancellationToken);
             }
 
             state.IsUpdated = true;

@@ -56,12 +56,12 @@ public class NmtEngineService(
                     TargetLanguage = targetLanguage,
                     IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
                 };
-                await _engines.InsertAsync(translationEngine, cancellationToken);
+                await _engines.InsertAsync(translationEngine, ct);
                 await _buildJobService.CreateEngineAsync(
                     [BuildJobType.Cpu, BuildJobType.Gpu],
                     engineId,
                     engineName,
-                    cancellationToken
+                    ct
                 );
                 return translationEngine;
             },
