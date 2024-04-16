@@ -68,14 +68,6 @@ namespace SIL.Machine.Corpora
             return new ScriptureRef(vr, Path);
         }
 
-        public bool Overlaps(ScriptureRef other)
-        {
-            if (!VerseRef.AreOverlappingVersesRanges(VerseRef, other.VerseRef))
-                return false;
-
-            return Path.SequenceEqual(other.Path);
-        }
-
         int IComparable<ScriptureRef>.CompareTo(ScriptureRef other)
         {
             return CompareTo(other, compareSegments: true);
