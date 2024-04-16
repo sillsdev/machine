@@ -24,6 +24,10 @@ public class ScriptureRefTests
 
         int result = ref1.CompareTo(ref2);
 
+        // this tests the IComparable<ScriptureRef>.CompareTo method responds the same as the ScriptureRef.CompareTo method.
+        int result2 = ((IComparable<ScriptureRef>)ref1).CompareTo(ref2);
+        Assert.That(result, Is.EqualTo(result2));
+
         if (result < 0)
             result = -1;
         else if (result > 0)
@@ -49,22 +53,6 @@ public class ScriptureRefTests
         else if (result > 0)
             result = 1;
         return result;
-    }
-
-    [TestCase]
-    public void CompareTemplate()
-    {
-        // this tests the IComparable<ScriptureRef>.CompareTo method by calling Sort() on a list of ScriptureRefs
-        var refs = new List<ScriptureRef> { ScriptureRef.Parse("MAT 1:2"), ScriptureRef.Parse("MAT 1:1") };
-        refs.Sort();
-        Assert.That(refs[0].ToString(), Is.EqualTo("MAT 1:1"));
-        var dictRefs = new HashSet<ScriptureRef>
-        {
-            ScriptureRef.Parse("MAT 1:1/1:p"),
-            ScriptureRef.Parse("MAT 1:2/1:p"),
-            ScriptureRef.Parse("MAT 1:2/1:p")
-        };
-        Assert.That(dictRefs.Count, Is.EqualTo(2));
     }
 
     [TestCase]
