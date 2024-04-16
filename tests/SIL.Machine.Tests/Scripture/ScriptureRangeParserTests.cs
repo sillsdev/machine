@@ -27,6 +27,7 @@ public class ScriptureRangeParserTests
     public static IEnumerable<TestCaseData> GetCases()
     {
         yield return new TestCaseData("MAL", new Dictionary<string, List<int>> { { "MAL", new List<int>() } }, false);
+        yield return new TestCaseData("PS2", new Dictionary<string, List<int>> { { "PS2", new List<int>() } }, false);
         yield return new TestCaseData(
             "GEN,EXO",
             new Dictionary<string, List<int>> { { "GEN", new List<int>() }, { "EXO", new List<int>() } },
