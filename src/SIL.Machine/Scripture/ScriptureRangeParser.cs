@@ -39,7 +39,7 @@ public class ScriptureRangeParser
         Dictionary<string, List<int>> chaptersPerBook = new Dictionary<string, List<int>>();
 
         //*Specific chapters from one book*
-        if (char.IsDigit(section.Last()))
+        if (char.IsDigit(section.Last()) && section.Length > 3)
         {
             string bookName = section.Substring(0, 3);
             if (!_bookLengths.ContainsKey(bookName))
