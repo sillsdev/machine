@@ -46,22 +46,27 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
-        await _dataAccessContext.BeginTransactionAsync(cancellationToken);
-        var translationEngine = new TranslationEngine
-        {
-            EngineId = engineId,
-            SourceLanguage = sourceLanguage,
-            TargetLanguage = targetLanguage,
-            IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
-        };
-        await _engines.InsertAsync(translationEngine, cancellationToken);
-        await _buildJobService.CreateEngineAsync(
-            [BuildJobType.Cpu, BuildJobType.Gpu],
-            engineId,
-            engineName,
-            cancellationToken
+        var translationEngine = await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                var translationEngine = new TranslationEngine
+                {
+                    EngineId = engineId,
+                    SourceLanguage = sourceLanguage,
+                    TargetLanguage = targetLanguage,
+                    IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
+                };
+                await _engines.InsertAsync(translationEngine, ct);
+                await _buildJobService.CreateEngineAsync(
+                    [BuildJobType.Cpu, BuildJobType.Gpu],
+                    engineId,
+                    engineName,
+                    ct
+                );
+                return translationEngine;
+            },
+            cancellationToken: cancellationToken
         );
-        await _dataAccessContext.CommitTransactionAsync(CancellationToken.None);
         return translationEngine;
     }
 
