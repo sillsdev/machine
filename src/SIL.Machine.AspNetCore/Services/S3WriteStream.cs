@@ -50,11 +50,14 @@ public class S3WriteStream(
 
     public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        if (count > 0)
+        try
         {
-            try
+            using MemoryStream ms = new(buffer, offset, count);
+
+            int bytesWritten = 0;
+
+            while (count > bytesWritten)
             {
-                using MemoryStream ms = new(buffer, offset, count);
                 int partNumber = _uploadResponses.Count + 1;
                 UploadPartRequest request =
                     new()
@@ -69,7 +72,11 @@ public class S3WriteStream(
                 request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
                     (_, e) =>
                     {
-                        _logger.LogDebug($"Transferred {e.TransferredBytes}/{e.TotalBytes}");
+                        _logger.LogDebug(
+                            "Transferred {e.TransferredBytes}/{e.TotalBytes}",
+                            e.TransferredBytes,
+                            e.TotalBytes
+                        );
                     }
                 );
                 UploadPartResponse response = await _client.UploadPartAsync(request);
@@ -81,12 +88,14 @@ public class S3WriteStream(
                 }
 
                 _uploadResponses.Add(response);
+
+                bytesWritten += MaxPartSize;
             }
-            catch (Exception e)
-            {
-                await AbortAsync(e);
-                throw;
-            }
+        }
+        catch (Exception e)
+        {
+            await AbortAsync(e);
+            throw;
         }
     }
 
