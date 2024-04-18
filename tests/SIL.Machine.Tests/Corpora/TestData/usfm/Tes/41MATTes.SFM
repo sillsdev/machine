@@ -14,6 +14,9 @@
 \li2 verse four,
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
+\v 6 Verse 6 content.
+\v 7
+\v 8
 \c 2
 \tr \tc1 Row one, column one. \tc2 Row one, column two.
 \tr \tc1 Row two, column one. \tc2 Row two, column two.
