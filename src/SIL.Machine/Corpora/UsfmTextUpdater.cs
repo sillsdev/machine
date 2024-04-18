@@ -12,9 +12,11 @@ namespace SIL.Machine.Corpora
     {
         private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
+        private readonly List<UsfmToken> _newTokens;
         private readonly string _idText;
         private readonly bool _stripAllText;
         private readonly bool _strictComparison;
+        private readonly bool _preferExistingText;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -23,34 +25,36 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             bool stripAllText = false,
-            bool strictComparison = true
+            bool strictComparison = true,
+            bool preferExistingText = false
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
             _tokens = new List<UsfmToken>();
+            _newTokens = new List<UsfmToken>();
             _idText = idText;
             _stripAllText = stripAllText;
             _strictComparison = strictComparison;
             _replace = new Stack<bool>();
+            _preferExistingText = preferExistingText;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
 
-        private bool ReplaceText => _stripAllText || (_replace.Count > 0 && _replace.Peek());
-
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
             CollectTokens(state);
+            var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
-                _tokens.Add(new UsfmToken(_idText + " "));
-            _replace.Push(_idText != null);
+                startBookTokens.Add(new UsfmToken(_idText + " "));
+            PushNewTokens(startBookTokens);
 
             base.StartBook(state, marker, code);
         }
 
         public override void EndBook(UsfmParserState state, string marker)
         {
-            _replace.Pop();
+            PopNewTokens();
 
             base.EndBook(state, marker);
         }
@@ -149,7 +153,7 @@ namespace SIL.Machine.Corpora
         )
         {
             // strip out char-style markers in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -165,7 +169,7 @@ namespace SIL.Machine.Corpora
         )
         {
             // strip out char-style markers in verses that are being replaced
-            if (closed && ReplaceText)
+            if (closed && ReplaceWithNewTokens(state))
                 SkipTokens(state);
 
             base.EndChar(state, marker, attributes, closed);
@@ -174,7 +178,7 @@ namespace SIL.Machine.Corpora
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
             // strip out notes in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -185,7 +189,7 @@ namespace SIL.Machine.Corpora
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
             // strip out notes in verses that are being replaced
-            if (closed && ReplaceText)
+            if (closed && ReplaceWithNewTokens(state))
                 SkipTokens(state);
 
             base.EndNote(state, marker, closed);
@@ -194,7 +198,7 @@ namespace SIL.Machine.Corpora
         public override void Ref(UsfmParserState state, string marker, string display, string target)
         {
             // strip out ref in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -205,7 +209,7 @@ namespace SIL.Machine.Corpora
         public override void Text(UsfmParserState state, string text)
         {
             // strip out text in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -216,7 +220,7 @@ namespace SIL.Machine.Corpora
         public override void OptBreak(UsfmParserState state)
         {
             // strip out optbreaks in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -227,7 +231,7 @@ namespace SIL.Machine.Corpora
         public override void Unmatched(UsfmParserState state, string marker)
         {
             // strip out unmatched end markers in verses that are being replaced
-            if (ReplaceText)
+            if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
@@ -238,53 +242,52 @@ namespace SIL.Machine.Corpora
         protected override void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
             IReadOnlyList<string> rowTexts = AdvanceRows(scriptureRefs);
-            _tokens.AddRange(rowTexts.Select(t => new UsfmToken(t + " ")));
-            _replace.Push(rowTexts.Count > 0);
+            PushNewTokens(rowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
         protected override void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
-            _replace.Pop();
+            PopNewTokens();
         }
 
         protected override void StartNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
         {
             IReadOnlyList<string> rowTexts = AdvanceRows(new[] { scriptureRef });
-            _tokens.AddRange(rowTexts.Select(t => new UsfmToken(t + " ")));
-            _replace.Push(rowTexts.Count > 0);
+            PushNewTokens(rowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
         protected override void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
         {
-            _replace.Pop();
+            PopNewTokens();
         }
 
         protected override void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef)
         {
             IReadOnlyList<string> rowTexts = AdvanceRows(new[] { scriptureRef });
+            var newTokens = new List<UsfmToken>();
             if (rowTexts.Count > 0)
             {
-                _tokens.Add(state.Token);
-                _tokens.Add(new UsfmToken(UsfmTokenType.Character, "ft", null, "ft*"));
+                newTokens.Add(state.Token);
+                newTokens.Add(new UsfmToken(UsfmTokenType.Character, "ft", null, "ft*"));
                 for (int i = 0; i < rowTexts.Count; i++)
                 {
                     string text = rowTexts[i];
                     if (i < rowTexts.Count - 1)
                         text += " ";
-                    _tokens.Add(new UsfmToken(text));
+                    newTokens.Add(new UsfmToken(text));
                 }
-                _tokens.Add(new UsfmToken(UsfmTokenType.End, state.Token.EndMarker, null, null));
-                _replace.Push(true);
+                newTokens.Add(new UsfmToken(UsfmTokenType.End, state.Token.EndMarker, null, null));
+                PushNewTokens(newTokens);
             }
             else
             {
-                _replace.Push(_replace.Peek());
+                PushTokensAsPrevious();
             }
         }
 
         protected override void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef)
         {
-            _replace.Pop();
+            PopNewTokens();
         }
 
         public string GetUsfm(string stylesheetFileName = "usfm.sty")
@@ -339,6 +342,8 @@ namespace SIL.Machine.Corpora
 
         private void CollectTokens(UsfmParserState state)
         {
+            _tokens.AddRange(_newTokens);
+            _newTokens.Clear();
             while (_tokenIndex <= state.Index + state.SpecialTokenCount)
             {
                 _tokens.Add(state.Tokens[_tokenIndex]);
@@ -349,6 +354,44 @@ namespace SIL.Machine.Corpora
         private void SkipTokens(UsfmParserState state)
         {
             _tokenIndex = state.Index + 1 + state.SpecialTokenCount;
+        }
+
+        private bool ReplaceWithNewTokens(UsfmParserState state)
+        {
+            bool newText = _replace.Count > 0 && _replace.Peek();
+            int tokenEnd = state.Index + state.SpecialTokenCount + 1;
+            bool existingText = false;
+            for (int index = _tokenIndex; index <= tokenEnd; index++)
+            {
+                if (state.Tokens[index].Type == UsfmTokenType.Text && state.Tokens[index].Text.Length > 0)
+                {
+                    existingText = true;
+                    break;
+                }
+            }
+            bool useNewTokens = _stripAllText || (newText && !existingText) || (newText && !_preferExistingText);
+
+            if (useNewTokens)
+                _tokens.AddRange(_newTokens);
+
+            _newTokens.Clear();
+            return useNewTokens;
+        }
+
+        private void PushNewTokens(IEnumerable<UsfmToken> tokens)
+        {
+            _replace.Push(tokens.Any());
+            _newTokens.AddRange(tokens);
+        }
+
+        private void PushTokensAsPrevious()
+        {
+            _replace.Push(_replace.Peek());
+        }
+
+        private void PopNewTokens()
+        {
+            _replace.Pop();
         }
     }
 }

@@ -58,10 +58,10 @@ public class NmtPreprocessBuildJobTests
     }
 
     [Test]
-    public async Task RunAsync_PretranslateAll()
+    public async Task RunAsync_TrainAndPretranslateAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateAll = true };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateAll = true, TrainOnAll = true };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -69,10 +69,21 @@ public class NmtPreprocessBuildJobTests
     }
 
     [Test]
+    public async Task RunAsync_PretranslateAll()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateAll = true };
+
+        await env.RunBuildJobAsync(corpus1);
+
+        Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(4));
+    }
+
+    [Test]
     public async Task RunAsync_PretranslateTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"] };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"], TrainOnAll = true };
 
         await env.RunBuildJobAsync(corpus1);
 
