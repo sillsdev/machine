@@ -173,7 +173,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
             foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
             {
-                if (IsInPretranslate(row, corpus) && row.SourceSegment.Length > 0 && row.TargetSegment.Length == 0)
+                if (
+                    IsInPretranslate(row, corpus)
+                    && row.SourceSegment.Length > 0
+                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
+                )
                 {
                     pretranslateWriter.WriteStartObject();
                     pretranslateWriter.WriteString("corpusId", corpus.Id);
