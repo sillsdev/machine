@@ -50,7 +50,7 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
-    public void GetUsfm_PreferPretranslated()
+    public void GetUsfm_PreferRows()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {

@@ -26,7 +26,7 @@ namespace SIL.Machine.Corpora
             string idText = null,
             bool stripAllText = false,
             bool strictComparison = true,
-            bool preferExistingText = true
+            bool preferExistingText = false
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -359,11 +359,16 @@ namespace SIL.Machine.Corpora
         private bool ReplaceWithNewTokens(UsfmParserState state)
         {
             bool newText = _replace.Count > 0 && _replace.Peek();
-            bool existingText = state
-                .Tokens.Skip(_tokenIndex)
-                .Take(state.Index + state.SpecialTokenCount - _tokenIndex + 1)
-                .Where(t => t.Type == UsfmTokenType.Text)
-                .Any(t => t.Text.Length > 0);
+            int tokenEnd = state.Index + state.SpecialTokenCount + 1;
+            bool existingText = false;
+            for (int index = _tokenIndex; index <= tokenEnd; index++)
+            {
+                if (state.Tokens[index].Type == UsfmTokenType.Text && state.Tokens[index].Text.Length > 0)
+                {
+                    existingText = true;
+                    break;
+                }
+            }
             bool useNewTokens = _stripAllText || (newText && !existingText) || (newText && !_preferExistingText);
 
             if (useNewTokens)
