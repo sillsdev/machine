@@ -36,6 +36,34 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
+    public void GetUsfm_PreferExisting()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:6"), "Text 6"),
+            (ScrRef("MAT 1:7"), "Text 7"),
+        };
+        string target = UpdateUsfm(rows, preferExistingText: true);
+        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
+        Assert.That(target, Contains.Substring("\\v 6 Verse 6 content.\r\n"));
+        Assert.That(target, Contains.Substring("\\v 7 Text 7\r\n"));
+    }
+
+    [Test]
+    public void GetUsfm_PreferRows()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:6"), "Text 6"),
+            (ScrRef("MAT 1:7"), "Text 7"),
+        };
+        string target = UpdateUsfm(rows, preferExistingText: false);
+        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
+        Assert.That(target, Contains.Substring("\\v 6 Text 6\r\n"));
+        Assert.That(target, Contains.Substring("\\v 7 Text 7\r\n"));
+    }
+
+    [Test]
     public void GetUsfm_Verse_SkipNote()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
@@ -340,11 +368,18 @@ public class UsfmTextUpdaterTests
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
         string? idText = null,
         bool stripAllText = false,
-        bool strictComparison = true
+        bool strictComparison = true,
+        bool preferExistingText = false
     )
     {
         string source = ReadUsfm();
-        var updater = new UsfmTextUpdater(rows, idText, stripAllText, strictComparison);
+        var updater = new UsfmTextUpdater(
+            rows,
+            idText,
+            stripAllText: stripAllText,
+            strictComparison: strictComparison,
+            preferExistingText: preferExistingText
+        );
         UsfmParser.Parse(source, updater);
         return updater.GetUsfm();
     }
