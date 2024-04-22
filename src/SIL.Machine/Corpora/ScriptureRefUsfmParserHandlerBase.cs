@@ -83,7 +83,7 @@ namespace SIL.Machine.Corpora
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
-            if (!state.IsVerseText)
+            if (!state.IsVerseText || CurrentTextType == ScriptureTextType.NonVerse)
             {
                 StartParentElement(marker);
                 StartNonVerseText(state);
