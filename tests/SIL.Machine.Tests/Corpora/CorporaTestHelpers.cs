@@ -13,6 +13,8 @@ internal static class CorporaTestHelpers
         "TestData"
     );
     public static readonly string UsfmTestProjectPath = Path.Combine(TestDataPath, "usfm", "Tes");
+    public static readonly string UsfmTargetProjectPath = Path.Combine(TestDataPath, "usfm", "target");
+    public static readonly string UsfmSourceProjectPath = Path.Combine(TestDataPath, "usfm", "source");
     public static readonly string UsxTestProjectPath = Path.Combine(TestDataPath, "usx", "Tes");
     public static readonly string TextTestProjectPath = Path.Combine(TestDataPath, "txt");
 

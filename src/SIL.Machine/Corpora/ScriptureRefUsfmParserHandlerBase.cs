@@ -83,7 +83,7 @@ namespace SIL.Machine.Corpora
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
-            if (!state.IsVerseText)
+            if (!state.IsVerseText || CurrentTextType == ScriptureTextType.NonVerse)
             {
                 StartParentElement(marker);
                 StartNonVerseText(state);
@@ -173,7 +173,7 @@ namespace SIL.Machine.Corpora
 
         private void EndVerseText(UsfmParserState state)
         {
-            if (!_duplicateVerse && _curVerseRef.VerseNum != 0)
+            if (!_duplicateVerse && _curVerseRef.VerseNum > 0)
             {
                 EndVerseText(state, CreateVerseRefs());
                 _curTextType.Pop();
