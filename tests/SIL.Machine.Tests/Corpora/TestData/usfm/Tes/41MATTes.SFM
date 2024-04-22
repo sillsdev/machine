@@ -47,3 +47,14 @@
 \v 10 \tc3-4 \qt-s |Jesus\*Chapter 2 verse 10\qt-e\*
 \v 11-12
 \restore restore information
+\c 3
+\cl PSALM 3
+\s1 Section 1
+\mt1 Major Title 1
+\d \va (1)\va* Description
+\q1
+\v 1 \va 2\va* \vp 1 (2)\vp* Chapter 3 verse 1.
+\q1 3.1 part 2
+\b
+\q1 3.1 part 3
+\q1 3.1 part 4
