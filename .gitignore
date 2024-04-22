@@ -50,3 +50,6 @@ src/sentencepiece4cbuild/
 !samples/**/release
 **/*.feature.cs
 tests/CoverageResults/*
+tests/SIL.Machine.Tests/Corpora/TestData/usfm/source/*
+tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
+
