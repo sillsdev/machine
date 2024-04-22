@@ -45,6 +45,48 @@ namespace SIL.Machine.Corpora
         public string BiblicalTermsProjectName { get; }
         public string BiblicalTermsFileName { get; }
 
+        public bool IsBookFileName(string fileName, out string bookId)
+        {
+            bookId = null;
+
+            if (!fileName.StartsWith(FileNamePrefix) || !fileName.EndsWith(FileNameSuffix))
+                return false;
+
+            string bookPart = fileName.Substring(
+                FileNamePrefix.Length,
+                fileName.Length - FileNamePrefix.Length - FileNameSuffix.Length
+            );
+            if (FileNameForm == "MAT")
+            {
+                if (bookPart.Length != 3)
+                    return false;
+
+                bookId = bookPart;
+            }
+            else if (FileNameForm == "40" || FileNameForm == "41")
+            {
+                if (bookPart != "100" && bookPart.Length != 2)
+                    return false;
+
+                bookId = Canon.BookNumberToId(GetBookNumber(bookPart));
+            }
+            else
+            {
+                if (bookPart.StartsWith("100"))
+                {
+                    if (bookPart.Length != 6)
+                        return false;
+                }
+                else if (bookPart.Length != 5)
+                {
+                    return false;
+                }
+
+                bookId = bookPart.Length == 5 ? bookPart.Substring(2) : bookPart.Substring(3);
+            }
+            return true;
+        }
+
         public string GetBookFileName(string bookId)
         {
             string bookPart;
@@ -72,6 +114,21 @@ namespace SIL.Machine.Corpora
             if (bookNum < 120)
                 return "B" + (bookNum - 110);
             return "C" + (bookNum - 120);
+        }
+
+        private static int GetBookNumber(string bookFileNameDigits)
+        {
+            if (bookFileNameDigits.StartsWith("A"))
+                return 100 + int.Parse(bookFileNameDigits.Substring(1), CultureInfo.InvariantCulture);
+            if (bookFileNameDigits.StartsWith("B"))
+                return 110 + int.Parse(bookFileNameDigits.Substring(1), CultureInfo.InvariantCulture);
+            if (bookFileNameDigits.StartsWith("C"))
+                return 120 + int.Parse(bookFileNameDigits.Substring(1), CultureInfo.InvariantCulture);
+
+            int bookNum = int.Parse(bookFileNameDigits, CultureInfo.InvariantCulture);
+            if (bookNum >= 40)
+                return bookNum - 1;
+            return bookNum;
         }
     }
 }

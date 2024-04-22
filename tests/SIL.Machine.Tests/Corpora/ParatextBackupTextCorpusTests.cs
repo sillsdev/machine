@@ -10,7 +10,7 @@ public class ParatextBackupTextCorpusTests
     public void Texts()
     {
         using var env = new TestEnvironment();
-        Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "LEV", "1CH", "MAT", "MRK" }));
+        Assert.That(env.Corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "LEV", "1CH", "MAT", "MRK", "JHN" }));
     }
 
     [Test]
@@ -20,6 +20,8 @@ public class ParatextBackupTextCorpusTests
         Assert.That(env.Corpus.TryGetText("MAT", out IText mat), Is.True);
         Assert.That(mat.GetRows(), Is.Not.Empty);
         Assert.That(env.Corpus.TryGetText("LUK", out _), Is.False);
+        Assert.That(env.Corpus.TryGetText("JHN", out IText jhn), Is.True);
+        Assert.That(jhn.GetRows(), Is.Empty);
     }
 
     private class TestEnvironment : DisposableBase
