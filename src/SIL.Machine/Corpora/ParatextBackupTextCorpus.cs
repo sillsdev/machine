@@ -1,6 +1,4 @@
 ﻿using System.IO.Compression;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace SIL.Machine.Corpora
 {
@@ -15,23 +13,23 @@ namespace SIL.Machine.Corpora
 
                 Versification = settings.Versification;
 
-                var regex = new Regex(
-                    $"^{Regex.Escape(settings.FileNamePrefix)}.*{Regex.Escape(settings.FileNameSuffix)}$"
-                );
-
-                foreach (ZipArchiveEntry sfmEntry in archive.Entries.Where(e => regex.IsMatch(e.FullName)))
+                foreach (ZipArchiveEntry sfmEntry in archive.Entries)
                 {
-                    AddText(
-                        new UsfmZipText(
-                            settings.Stylesheet,
-                            settings.Encoding,
-                            fileName,
-                            sfmEntry.FullName,
-                            Versification,
-                            includeMarkers,
-                            includeAllText
-                        )
-                    );
+                    if (settings.IsBookFileName(sfmEntry.FullName, out string bookId))
+                    {
+                        AddText(
+                            new UsfmZipText(
+                                settings.Stylesheet,
+                                settings.Encoding,
+                                bookId,
+                                fileName,
+                                sfmEntry.FullName,
+                                Versification,
+                                includeMarkers,
+                                includeAllText
+                            )
+                        );
+                    }
                 }
             }
         }

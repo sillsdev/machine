@@ -20,10 +20,43 @@ namespace SIL.Machine.Corpora
             var stylesheet = new UsfmStylesheet(stylesheetFileName);
             foreach (string sfmFileName in Directory.EnumerateFiles(projectPath, filePattern))
             {
-                AddText(
-                    new UsfmFileText(stylesheet, encoding, sfmFileName, Versification, includeMarkers, includeAllText)
-                );
+                string id = GetId(sfmFileName, encoding);
+                if (id != null)
+                {
+                    AddText(
+                        new UsfmFileText(
+                            stylesheet,
+                            encoding,
+                            id,
+                            sfmFileName,
+                            Versification,
+                            includeMarkers,
+                            includeAllText
+                        )
+                    );
+                }
             }
+        }
+
+        private static string GetId(string fileName, Encoding encoding)
+        {
+            using (var reader = new StreamReader(fileName, encoding))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    if (line.StartsWith("\\id "))
+                    {
+                        string id = line.Substring(4);
+                        int index = id.IndexOf(" ");
+                        if (index != -1)
+                            id = id.Substring(0, index);
+                        return id.Trim();
+                    }
+                }
+            }
+            return null;
         }
     }
 }
