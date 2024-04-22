@@ -45,7 +45,13 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
-            throw new InvalidOperationException("The USFM does not contain an 'id' marker.");
+            // It's not in the file contents, let's just pull it from the filename
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            if (name.Length < 6)
+                throw new InvalidOperationException("The USFM does not contain an 'id' marker.");
+            string book = name.Substring(2, 3);
+            string tag = name.Substring(5, name.Length - 5);
+            return $"{book} - {tag}";
         }
     }
 }
