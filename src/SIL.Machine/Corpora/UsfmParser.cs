@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
@@ -130,25 +129,7 @@ namespace SIL.Machine.Corpora
         /// </summary>
         public void ProcessTokens()
         {
-            try
-            {
-                while (ProcessToken()) { }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("USFM Parser Error: " + e.Message);
-                Console.WriteLine("Current Verse: " + State.VerseRef.ToString());
-                Console.WriteLine("Current Stack: " + string.Join(", ", State.Stack.Select(s => s.Marker)));
-                Console.WriteLine("Current Token: " + State.Tokens[State.Index].ToString());
-                // print surrounding 20 tokens
-                Console.WriteLine("Surrounding Tokens:");
-                for (int i = Math.Max(0, State.Index - 20); i < Math.Min(State.Tokens.Count, State.Index + 20); i++)
-                {
-                    Console.Write(State.Tokens[i].ToString() + " ");
-                }
-                Console.WriteLine();
-                throw;
-            }
+            while (ProcessToken()) { }
         }
 
         /// <summary>

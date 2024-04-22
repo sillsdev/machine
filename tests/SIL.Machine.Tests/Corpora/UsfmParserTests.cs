@@ -6,17 +6,9 @@ namespace SIL.Machine.Corpora;
 public class UsfmParserTests
 {
     [Test]
+    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     public void ParseParallelCorpus()
     {
-        // To test the parsing of a set of USFM files, place them in the target and source paths and run this test.
-        if (
-            !Directory.EnumerateFiles(CorporaTestHelpers.UsfmTargetProjectPath).Any()
-            || !Directory.EnumerateFiles(CorporaTestHelpers.UsfmSourceProjectPath).Any()
-        )
-        {
-            Assert.Ignore("No files found in the target project directory.");
-        }
-
         var tCorpus = new ParatextTextCorpus(
             projectDir: CorporaTestHelpers.UsfmTargetProjectPath,
             includeAllText: true,
