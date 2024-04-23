@@ -93,6 +93,12 @@ namespace SIL.Machine.Corpora
                     if (ch == '*')
                     {
                         index++;
+                        if (IsNonSemanticWhiteSpace(usfm[index]))
+                        {
+                            // Preserve whitespace if needed, otherwise skip
+                            if (!preserveWhitespace)
+                                index++;
+                        }
                         break;
                     }
 
