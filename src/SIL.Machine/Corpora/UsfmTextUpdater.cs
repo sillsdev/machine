@@ -304,38 +304,41 @@ namespace SIL.Machine.Corpora
         private IReadOnlyList<string> AdvanceRows(IReadOnlyList<ScriptureRef> segScrRefs)
         {
             var rowTexts = new List<string>();
-            int i = 0;
-            while (_rowIndex < _rows.Count && i < segScrRefs.Count)
+            int sourceIndex = 0;
+            // search the sorted rows with updated text, starting from where we left off last.
+            while (_rowIndex < _rows.Count && sourceIndex < segScrRefs.Count)
             {
+                // get the set of references for the current row
+                int compare = 0;
                 (IReadOnlyList<ScriptureRef> rowScrRefs, string text) = _rows[_rowIndex];
-                bool stop = false;
                 foreach (ScriptureRef rowScrRef in rowScrRefs)
                 {
-                    bool found = false;
-                    for (; i < segScrRefs.Count; i++)
+                    while (sourceIndex < segScrRefs.Count)
                     {
-                        int compare = rowScrRef.CompareTo(segScrRefs[i], compareSegments: false, _strictComparison);
-                        if (compare == 0)
-                        {
-                            rowTexts.Add(text);
-                            i++;
-                            found = true;
+                        compare = rowScrRef.CompareTo(
+                            segScrRefs[sourceIndex],
+                            compareSegments: false,
+                            _strictComparison
+                        );
+                        if (compare > 0)
+                            // source is ahead of row, increment source
+                            sourceIndex++;
+                        else
                             break;
-                        }
-                        else if (compare > 0)
-                        {
-                            stop = true;
-                            break;
-                        }
                     }
-                    if (stop || found)
-                        break;
+                    if (compare == 0)
+                    {
+                        // source and row match
+                        // grab the text and increment both
+                        rowTexts.Add(text);
+                        sourceIndex++;
+                    }
                 }
-
-                if (stop)
-                    break;
-                else
+                if (compare <= 0)
+                {
+                    // row is ahead of source, increment row
                     _rowIndex++;
+                }
             }
             return rowTexts;
         }
