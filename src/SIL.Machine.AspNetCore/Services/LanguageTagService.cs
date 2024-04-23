@@ -38,12 +38,12 @@ public class LanguageTagService : ILanguageTagService
         if (!File.Exists(cachedAllTagsPath))
         {
             using var client = new HttpClient();
-            using var response = client
-                .Send("https://raw.githubusercontent.com/silnrsi/langtags/master/pub/langtags.json")
-                .Result;
+            HttpRequestMessage request =
+                new(HttpMethod.Get, "https://raw.githubusercontent.com/silnrsi/langtags/master/pub/langtags.json");
+            using var response = client.Send(request);
             response.EnsureSuccessStatusCode();
             using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Create);
-            response.Content.CopyTo(stream);
+            response.Content.CopyTo(stream, null, CancellationToken.None);
             json = JsonNode.Parse(stream);
         }
         else
