@@ -332,6 +332,7 @@ namespace SIL.Machine.Corpora
                         // grab the text and increment both
                         rowTexts.Add(text);
                         sourceIndex++;
+                        break;
                     }
                 }
                 if (compare <= 0)
