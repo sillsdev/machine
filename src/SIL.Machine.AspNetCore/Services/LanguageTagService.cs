@@ -33,9 +33,25 @@ public class LanguageTagService : ILanguageTagService
     {
         Sldr.InitializeLanguageTags();
         var cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
-        using var stream = new FileStream(cachedAllTagsPath, FileMode.Open);
+        JsonNode? json;
 
-        var json = JsonNode.Parse(stream);
+        if (!File.Exists(cachedAllTagsPath))
+        {
+            using var client = new HttpClient();
+            var response = client
+                .GetAsync("https://raw.githubusercontent.com/silnrsi/langtags/master/pub/langtags.json")
+                .Result;
+            response.EnsureSuccessStatusCode();
+            using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Create);
+            response.Content.CopyToAsync(stream);
+            json = JsonNode.Parse(stream);
+        }
+        else
+        {
+            using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Open);
+            json = JsonNode.Parse(stream);
+        }
+
         var tempDefaultScripts = new Dictionary<string, string>();
         foreach (JsonNode? entry in json!.AsArray())
         {
