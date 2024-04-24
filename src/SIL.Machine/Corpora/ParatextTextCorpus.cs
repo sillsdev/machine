@@ -18,16 +18,20 @@ namespace SIL.Machine.Corpora
                 )
             )
             {
-                AddText(
-                    new UsfmFileText(
-                        settings.Stylesheet,
-                        settings.Encoding,
-                        sfmFileName,
-                        Versification,
-                        includeMarkers,
-                        includeAllText
-                    )
-                );
+                if (settings.IsBookFileName(Path.GetFileName(sfmFileName), out string bookId))
+                {
+                    AddText(
+                        new UsfmFileText(
+                            settings.Stylesheet,
+                            settings.Encoding,
+                            bookId,
+                            sfmFileName,
+                            Versification,
+                            includeMarkers,
+                            includeAllText
+                        )
+                    );
+                }
             }
         }
     }
