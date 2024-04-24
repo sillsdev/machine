@@ -50,16 +50,10 @@ public class LanguageTagService : ILanguageTagService
                 )
             );
             response.EnsureSuccessStatusCode();
-            using FileStream stream = new(cachedAllTagsPath, FileMode.Create);
-            response.Content.CopyTo(stream, null, CancellationToken.None);
-            stream.Position = 0;
-            json = JsonNode.Parse(stream);
+            File.WriteAllBytes(cachedAllTagsPath, response.Content.ReadAsByteArrayAsync().Result);
         }
-        else
-        {
-            using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Open);
-            json = JsonNode.Parse(stream);
-        }
+        using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Open);
+        json = JsonNode.Parse(stream);
 
         var tempDefaultScripts = new Dictionary<string, string>();
         foreach (JsonNode? entry in json!.AsArray())
