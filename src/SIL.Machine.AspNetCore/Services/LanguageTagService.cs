@@ -29,21 +29,30 @@ public class LanguageTagService : ILanguageTagService
         _flores200Languages = InitializeFlores200Languages();
     }
 
-    private static Dictionary<string, string> InitializeDefaultScripts()
+    protected virtual void InitializeSldrLanguageTags()
     {
         Sldr.InitializeLanguageTags();
+    }
+
+    private Dictionary<string, string> InitializeDefaultScripts()
+    {
+        InitializeSldrLanguageTags();
         var cachedAllTagsPath = Path.Combine(Sldr.SldrCachePath, "langtags.json");
         JsonNode? json;
 
         if (!File.Exists(cachedAllTagsPath))
         {
-            using var client = new HttpClient();
-            HttpRequestMessage request =
-                new(HttpMethod.Get, "https://raw.githubusercontent.com/silnrsi/langtags/master/pub/langtags.json");
-            using var response = client.Send(request);
+            using HttpClient client = new();
+            using HttpResponseMessage response = client.Send(
+                new HttpRequestMessage(
+                    HttpMethod.Get,
+                    "https://raw.githubusercontent.com/silnrsi/langtags/master/pub/langtags.json"
+                )
+            );
             response.EnsureSuccessStatusCode();
-            using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Create);
+            using FileStream stream = new(cachedAllTagsPath, FileMode.Create);
             response.Content.CopyTo(stream, null, CancellationToken.None);
+            stream.Position = 0;
             json = JsonNode.Parse(stream);
         }
         else
