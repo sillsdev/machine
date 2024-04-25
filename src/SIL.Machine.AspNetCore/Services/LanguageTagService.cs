@@ -51,13 +51,13 @@ public class LanguageTagService : ILanguageTagService
             );
             response.EnsureSuccessStatusCode();
             using Stream responseStream = response.Content.ReadAsStream();
-            using FileStream fileStream = new FileStream(cachedAllTagsPath, FileMode.Create);
+            using FileStream fileStream = new(cachedAllTagsPath, FileMode.Create);
             responseStream.CopyTo(fileStream);
         }
-        using FileStream stream = new FileStream(cachedAllTagsPath, FileMode.Open);
+        using FileStream stream = new(cachedAllTagsPath, FileMode.Open);
         json = JsonNode.Parse(stream);
 
-        var tempDefaultScripts = new Dictionary<string, string>();
+        Dictionary<string, string> tempDefaultScripts = new();
         foreach (JsonNode? entry in json!.AsArray())
         {
             if (entry is null)
