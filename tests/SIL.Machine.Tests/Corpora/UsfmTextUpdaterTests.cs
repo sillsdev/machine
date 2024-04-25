@@ -359,6 +359,39 @@ public class UsfmTextUpdaterTests
         );
     }
 
+    [Test]
+    public void GetUsfm_Verse_DoubleVaVp()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 3:1"), "Updating later in the book to start.")
+        };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
+        Assert.That(
+            target,
+            Contains.Substring("\\v 1 \\va 2\\va*\\vp 1 (2)\\vp*Updating later in the book to start.\r\n")
+        );
+    }
+
+    [Test]
+    public void GetUsfm_Verse_PretranslationsBeforeText()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("GEN 1:1"), "Pretranslations before the start"),
+            (ScrRef("GEN 1:2"), "Pretranslations before the start"),
+            (ScrRef("GEN 1:3"), "Pretranslations before the start"),
+            (ScrRef("GEN 1:4"), "Pretranslations before the start"),
+            (ScrRef("GEN 1:5"), "Pretranslations before the start"),
+            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
+        };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(target, Contains.Substring("\\ip The introductory paragraph.\r\n"));
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
