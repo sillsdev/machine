@@ -53,7 +53,7 @@
 \mt1 Major Title 1
 \d \va (1)\va* Description
 \q1
-\v 1 \va 2\va* \vp 1 (2)\vp* Chapter 3 verse 1.
+\v 1 \va 2\va*\vp 1 (2)\vp* Chapter 3 verse 1.
 \q1 3.1 part 2
 \b
 \q1 3.1 part 3
