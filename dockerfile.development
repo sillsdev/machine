@@ -2,3 +2,5 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-jammy
 # libgomp needed for thot
 RUN apt update && apt install -y unzip libgomp1 && \
     curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l /remote_debugger
+RUN dotnet tool install --global dotnet-counters
+ENV PATH="${PATH}:~/.dotnet/tools"
