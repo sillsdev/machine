@@ -267,6 +267,7 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
+                o.AddRepository<OutboxMessage>("outbox_messages");
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -284,6 +285,9 @@ public static class IMachineBuilderExtensions
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
+
+        builder.Services.AddSingleton<IMessageOutboxService, MessageOutboxService>();
+
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
@@ -338,6 +342,9 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
+
+        builder.Services.AddHostedService<MessageOutboxHandlerService>();
+
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];

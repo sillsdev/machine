@@ -368,6 +368,7 @@ public class NmtPreprocessBuildJobTests
                 PlatformService,
                 Engines,
                 LockFactory,
+                new MemoryDataAccessContext(),
                 Logger,
                 BuildJobService,
                 SharedFileService,

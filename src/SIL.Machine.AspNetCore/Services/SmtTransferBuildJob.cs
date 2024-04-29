@@ -4,13 +4,22 @@ public class SmtTransferBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<SmtTransferBuildJob> logger,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ICorpusService corpusService
-) : HangfireBuildJob<IReadOnlyList<Corpus>>(platformService, engines, lockFactory, buildJobService, logger)
+)
+    : HangfireBuildJob<IReadOnlyList<Corpus>>(
+        platformService,
+        engines,
+        lockFactory,
+        dataAccessContext,
+        buildJobService,
+        logger
+    )
 {
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
@@ -122,13 +131,24 @@ public class SmtTransferBuildJob(
                 }
             }
 
-            await PlatformService.BuildCompletedAsync(
-                buildId,
-                smtModelTrainer.Stats.TrainCorpusSize + segmentPairs.Count,
-                smtModelTrainer.Stats.Metrics["bleu"] * 100.0,
-                CancellationToken.None
+            await DataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    await PlatformService.BuildCompletedAsync(
+                        buildId,
+                        smtModelTrainer.Stats.TrainCorpusSize + segmentPairs.Count,
+                        smtModelTrainer.Stats.Metrics["bleu"] * 100.0,
+                        CancellationToken.None
+                    );
+                    await BuildJobService.BuildJobFinishedAsync(
+                        engineId,
+                        buildId,
+                        buildComplete: true,
+                        CancellationToken.None
+                    );
+                },
+                cancellationToken: CancellationToken.None
             );
-            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
         }
 
         stopwatch.Stop();
