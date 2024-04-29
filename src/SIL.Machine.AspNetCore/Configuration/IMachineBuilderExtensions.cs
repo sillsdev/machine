@@ -180,7 +180,7 @@ public static class IMachineBuilderExtensions
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseMongoStorage(connectionString, GetMongoStorageOptions())
-                .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
+                .UseFilter(new AutomaticRetryAttribute { Attempts = 3 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
         return builder;
@@ -267,6 +267,7 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
+                o.AddRepository<PlatformMessage>("platform_message_outbox");
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -284,6 +285,11 @@ public static class IMachineBuilderExtensions
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
+
+        // workaround register satisfying the interface and as a hosted service.
+        builder.Services.AddSingleton<IPlatformMessageOutboxService, PlatformMessageOutboxService>();
+        builder.Services.AddHostedService(p => p.GetRequiredService<IPlatformMessageOutboxService>());
+
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
