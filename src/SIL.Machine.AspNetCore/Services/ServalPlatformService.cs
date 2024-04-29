@@ -2,15 +2,21 @@
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApiClient client) : IPlatformService
+public class ServalPlatformService(
+    TranslationPlatformApi.TranslationPlatformApiClient client,
+    IMessageOutboxService outboxService
+) : IPlatformService
 {
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
+    private readonly IMessageOutboxService _outboxService = outboxService;
 
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _client.BuildStartedAsync(
-            new BuildStartedRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.BuildStarted,
+            buildId,
+            JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
+            cancellationToken
         );
     }
 
@@ -21,38 +27,48 @@ public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApi
         CancellationToken cancellationToken = default
     )
     {
-        await _client.BuildCompletedAsync(
-            new BuildCompletedRequest
-            {
-                BuildId = buildId,
-                CorpusSize = trainSize,
-                Confidence = confidence
-            },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.BuildCompleted,
+            buildId,
+            JsonSerializer.Serialize(
+                new BuildCompletedRequest
+                {
+                    BuildId = buildId,
+                    CorpusSize = trainSize,
+                    Confidence = confidence
+                }
+            ),
+            cancellationToken
         );
     }
 
     public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _client.BuildCanceledAsync(
-            new BuildCanceledRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.BuildCanceled,
+            buildId,
+            JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
+            cancellationToken
         );
     }
 
     public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
-        await _client.BuildFaultedAsync(
-            new BuildFaultedRequest { BuildId = buildId, Message = message },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.BuildFaulted,
+            buildId,
+            JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
+            cancellationToken
         );
     }
 
     public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
-        await _client.BuildRestartingAsync(
-            new BuildRestartingRequest { BuildId = buildId },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.BuildRestarting,
+            buildId,
+            JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
+            cancellationToken
         );
     }
 
@@ -71,11 +87,13 @@ public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApi
         if (queueDepth is not null)
             request.QueueDepth = queueDepth.Value;
 
+        // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(request, cancellationToken: cancellationToken);
     }
 
     public async Task UpdateBuildStatusAsync(string buildId, int step, CancellationToken cancellationToken = default)
     {
+        // just try to send it - if it fails, it fails.
         await _client.UpdateBuildStatusAsync(
             new UpdateBuildStatusRequest { BuildId = buildId, Step = step },
             cancellationToken: cancellationToken
@@ -88,10 +106,10 @@ public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApi
         CancellationToken cancellationToken = default
     )
     {
-        using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
+        IList<InsertPretranslationRequest> requests = new List<InsertPretranslationRequest>();
         await foreach (Pretranslation? pretranslation in pretranslations)
         {
-            await call.RequestStream.WriteAsync(
+            requests.Add(
                 new InsertPretranslationRequest
                 {
                     EngineId = engineId,
@@ -99,12 +117,15 @@ public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApi
                     TextId = pretranslation.TextId,
                     Refs = { pretranslation.Refs },
                     Translation = pretranslation.Translation
-                },
-                cancellationToken
+                }
             );
         }
-        await call.RequestStream.CompleteAsync();
-        await call;
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.InsertPretranslations,
+            engineId,
+            JsonSerializer.Serialize(requests),
+            cancellationToken
+        );
     }
 
     public async Task IncrementTrainSizeAsync(
@@ -113,9 +134,13 @@ public class ServalPlatformService(TranslationPlatformApi.TranslationPlatformApi
         CancellationToken cancellationToken = default
     )
     {
-        await _client.IncrementTranslationEngineCorpusSizeAsync(
-            new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count },
-            cancellationToken: cancellationToken
+        await _outboxService.EnqueueMessageAsync(
+            OutboxMessageMethod.IncrementTranslationEngineCorpusSize,
+            engineId,
+            JsonSerializer.Serialize(
+                new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count }
+            ),
+            cancellationToken
         );
     }
 }

@@ -567,6 +567,7 @@ public class SmtTransferEngineServiceTests
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
+                        new MemoryDataAccessContext(),
                         _env._buildJobService,
                         Substitute.For<ILogger<SmtTransferBuildJob>>(),
                         _env.TrainSegmentPairs,
