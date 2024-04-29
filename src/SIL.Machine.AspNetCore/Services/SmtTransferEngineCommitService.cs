@@ -29,10 +29,6 @@ public class SmtTransferEngineCommitService(
                 _engineOptions.CurrentValue.InactiveEngineTimeout,
                 cancellationToken
             );
-            // We've just cleared some things out of memory, so let's do a garbage collection.
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
         }
         catch (Exception e)
         {

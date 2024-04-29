@@ -56,10 +56,6 @@ public abstract class HangfireBuildJob<T>(
             }
 
             await DoWorkAsync(engineId, buildId, data, buildOptions, @lock, cancellationToken);
-            // actively clear out memory when the job is complete.
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
         }
         catch (OperationCanceledException)
         {
