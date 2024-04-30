@@ -11,7 +11,7 @@ public class PlatformMessageOutboxService(
     : RecurrentTask(
         "Platform Message Outbox Service",
         services,
-        period: TimeSpan.FromSeconds(30),
+        period: TimeSpan.FromSeconds(10),
         logger: logger,
         enable: true
     ),
@@ -48,8 +48,21 @@ public class PlatformMessageOutboxService(
             _processingMessages = true;
         }
 
+        try
+        {
+            await ProcessMessagesInternalAsync(cancellationToken);
+        }
+        finally
+        {
+            _processingMessages = false;
+        }
+    }
+
+    private async Task ProcessMessagesInternalAsync(CancellationToken cancellationToken = default)
+    {
         if (!_messagesInOutbox)
             return;
+
         bool allMessagesSuccessfullySent = true;
         IReadOnlyList<PlatformMessage> messages = await _messages.GetAllAsync();
 
@@ -170,7 +183,6 @@ public class PlatformMessageOutboxService(
         {
             _messagesInOutbox = false;
         }
-        _processingMessages = false;
     }
 
     async Task PermanentlyFailedMessage(PlatformMessage message, Exception e)
