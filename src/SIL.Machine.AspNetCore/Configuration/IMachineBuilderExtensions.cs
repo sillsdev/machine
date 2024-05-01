@@ -180,7 +180,7 @@ public static class IMachineBuilderExtensions
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseMongoStorage(connectionString, GetMongoStorageOptions())
-                .UseFilter(new AutomaticRetryAttribute { Attempts = 3 })
+                .UseFilter(new AutomaticRetryAttribute { Attempts = 0 })
         );
         builder.Services.AddHealthChecks().AddCheck<HangfireHealthCheck>(name: "Hangfire");
         return builder;
