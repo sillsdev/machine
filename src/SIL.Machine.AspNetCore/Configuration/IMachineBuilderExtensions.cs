@@ -267,7 +267,7 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
-                o.AddRepository<PlatformMessage>("platform_message_outbox");
+                o.AddRepository<OutboxMessage>("outbox_messages");
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -286,9 +286,7 @@ public static class IMachineBuilderExtensions
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
 
-        // workaround register satisfying the interface and as a hosted service.
-        builder.Services.AddSingleton<IPlatformMessageOutboxService, PlatformMessageOutboxService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<IPlatformMessageOutboxService>());
+        builder.Services.AddSingleton<IMessageOutboxService, MessageOutboxService>();
 
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
@@ -344,6 +342,9 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
+
+        builder.Services.AddHostedService<MessageOutboxHandlerService>();
+
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];

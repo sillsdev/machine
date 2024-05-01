@@ -2,120 +2,85 @@
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class PlatformMessageOutboxService(
+public class MessageOutboxHandlerService(
     TranslationPlatformApi.TranslationPlatformApiClient client,
-    IServiceProvider services,
-    IRepository<PlatformMessage> messages,
-    ILogger<PlatformMessageOutboxService> logger
-)
-    : RecurrentTask(
-        "Platform Message Outbox Service",
-        services,
-        period: TimeSpan.FromSeconds(10),
-        logger: logger,
-        enable: true
-    ),
-        IPlatformMessageOutboxService
+    IRepository<OutboxMessage> messages,
+    ILogger<MessageOutboxHandlerService> logger
+) : BackgroundService
 {
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
-    private readonly IRepository<PlatformMessage> _messages = messages;
-    private readonly ILogger<PlatformMessageOutboxService> _logger = logger;
-    private bool _messagesInOutbox = true;
-    private bool _processingMessages = false;
-    private readonly object _lock = new();
+    private readonly IRepository<OutboxMessage> _messages = messages;
+    private readonly ILogger<MessageOutboxHandlerService> _logger = logger;
 
-    public async Task EnqueueMessageAsync(string method, string requestContent, CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _messages.InsertAsync(
-            new PlatformMessage { Method = method, RequestContent = requestContent },
-            cancellationToken: cancellationToken
-        );
-        _messagesInOutbox = true;
-        await ProcessMessagesAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
-    {
-        await ProcessMessagesAsync(cancellationToken);
+        using ISubscription<OutboxMessage> subscription = await _messages.SubscribeAsync(e => true);
+        while (true)
+        {
+            await subscription.WaitForChangeAsync(timeout: TimeSpan.FromSeconds(10), cancellationToken: stoppingToken);
+            if (stoppingToken.IsCancellationRequested)
+                break;
+            await ProcessMessagesAsync();
+        }
     }
 
     private async Task ProcessMessagesAsync(CancellationToken cancellationToken = default)
     {
-        lock (_lock)
-        {
-            if (_processingMessages == true)
-                return;
-            _processingMessages = true;
-        }
-
-        try
-        {
-            await ProcessMessagesInternalAsync(cancellationToken);
-        }
-        finally
-        {
-            _processingMessages = false;
-        }
-    }
-
-    private async Task ProcessMessagesInternalAsync(CancellationToken cancellationToken = default)
-    {
-        if (!_messagesInOutbox)
+        bool anyMessages = await _messages.ExistsAsync(m => true);
+        if (!anyMessages)
             return;
 
-        bool allMessagesSuccessfullySent = true;
-        IReadOnlyList<PlatformMessage> messages = await _messages.GetAllAsync();
+        IReadOnlyList<OutboxMessage> messages = await _messages.GetAllAsync();
 
-        async Task FailedMessageAttempt(PlatformMessage message, Exception e)
+        async Task FailedMessageAttempt(OutboxMessage message, Exception e)
         {
-            if (message.Attempts > 5)
+            if (message.Attempts > 3) // will fail the 5th time
             {
                 await PermanentlyFailedMessage(message, e);
             }
             else
             {
                 await LogFailedAttempt(message, e);
-                allMessagesSuccessfullySent = false;
             }
         }
 
-        foreach (PlatformMessage message in messages)
+        foreach (OutboxMessage message in messages)
         {
             try
             {
                 switch (message.Method)
                 {
-                    case "BuildStartedAsync":
+                    case OutboxMessageMethod.BuildStarted:
                         await _client.BuildStartedAsync(
                             JsonSerializer.Deserialize<BuildStartedRequest>(message.RequestContent),
                             cancellationToken: cancellationToken
                         );
                         break;
-                    case "BuildCompletedAsync":
+                    case OutboxMessageMethod.BuildCompleted:
                         await _client.BuildCompletedAsync(
                             JsonSerializer.Deserialize<BuildCompletedRequest>(message.RequestContent),
                             cancellationToken: cancellationToken
                         );
                         break;
-                    case "BuildCanceledAsync":
+                    case OutboxMessageMethod.BuildCanceled:
                         await _client.BuildCanceledAsync(
                             JsonSerializer.Deserialize<BuildCanceledRequest>(message.RequestContent),
                             cancellationToken: cancellationToken
                         );
                         break;
-                    case "BuildFaultedAsync":
+                    case OutboxMessageMethod.BuildFaulted:
                         await _client.BuildFaultedAsync(
                             JsonSerializer.Deserialize<BuildFaultedRequest>(message.RequestContent),
                             cancellationToken: cancellationToken
                         );
                         break;
-                    case "BuildRestartingAsync":
+                    case OutboxMessageMethod.BuildRestarting:
                         await _client.BuildRestartingAsync(
                             JsonSerializer.Deserialize<BuildRestartingRequest>(message.RequestContent),
                             cancellationToken: cancellationToken
                         );
                         break;
-                    case "InsertPretranslations":
+                    case OutboxMessageMethod.InsertPretranslations:
 
                         {
                             using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
@@ -132,7 +97,7 @@ public class PlatformMessageOutboxService(
                             await call.RequestStream.CompleteAsync();
                         }
                         break;
-                    case "IncrementTranslationEngineCorpusSizeAsync":
+                    case OutboxMessageMethod.IncrementTranslationEngineCorpusSize:
                         await _client.IncrementTranslationEngineCorpusSizeAsync(
                             JsonSerializer.Deserialize<IncrementTranslationEngineCorpusSizeRequest>(
                                 message.RequestContent
@@ -144,7 +109,7 @@ public class PlatformMessageOutboxService(
                         await _messages.DeleteAsync(message.Id);
                         _logger.LogWarning(
                             "Unknown method: {message.Method}.  Deleting the message from the list.",
-                            message.Method
+                            message.Method.ToString()
                         );
                         break;
                 }
@@ -179,13 +144,9 @@ public class PlatformMessageOutboxService(
                 return;
             }
         }
-        if (allMessagesSuccessfullySent)
-        {
-            _messagesInOutbox = false;
-        }
     }
 
-    async Task PermanentlyFailedMessage(PlatformMessage message, Exception e)
+    async Task PermanentlyFailedMessage(OutboxMessage message, Exception e)
     {
         // log error
         _logger.LogError(
@@ -198,15 +159,14 @@ public class PlatformMessageOutboxService(
         await _messages.DeleteAsync(message.Id);
     }
 
-    async Task LogFailedAttempt(PlatformMessage message, Exception e)
+    async Task LogFailedAttempt(OutboxMessage message, Exception e)
     {
         // log error
-        message.Attempts++;
-        await _messages.UpdateAsync(m => m.Id == message.Id, b => b.Set(m => m.Attempts, message.Attempts));
+        await _messages.UpdateAsync(m => m.Id == message.Id, b => b.Inc(m => m.Attempts, 1));
         _logger.LogError(
             e,
             "Attempt {message.Attempts}.  Failed to process message {message.Id}: {message.Method} with content {message.RequestContent}",
-            message.Attempts,
+            message.Attempts + 1,
             message.Id,
             message.Method,
             message.RequestContent
