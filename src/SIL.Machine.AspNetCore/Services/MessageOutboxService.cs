@@ -6,12 +6,18 @@ public class MessageOutboxService(IRepository<OutboxMessage> messages) : IMessag
 
     public async Task EnqueueMessageAsync(
         OutboxMessageMethod method,
+        string groupId,
         string requestContent,
         CancellationToken cancellationToken
     )
     {
         await _messages.InsertAsync(
-            new OutboxMessage { Method = method, RequestContent = requestContent },
+            new OutboxMessage
+            {
+                Method = method,
+                GroupId = groupId,
+                RequestContent = requestContent
+            },
             cancellationToken: cancellationToken
         );
     }

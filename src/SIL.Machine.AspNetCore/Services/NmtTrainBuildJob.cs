@@ -6,11 +6,12 @@ public class NmtTrainBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<NmtTrainBuildJob> logger,
     ISharedFileService sharedFileService,
     IOptionsMonitor<ClearMLOptions> options
-) : HangfireBuildJob(platformService, engines, lockFactory, buildJobService, logger)
+) : HangfireBuildJob(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly IOptionsMonitor<ClearMLOptions> _options = options;

@@ -4,6 +4,7 @@ public interface IMessageOutboxService
 {
     public Task EnqueueMessageAsync(
         OutboxMessageMethod method,
+        string groupId,
         string requestContent,
         CancellationToken cancellationToken
     );

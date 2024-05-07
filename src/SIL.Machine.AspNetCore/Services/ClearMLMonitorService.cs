@@ -4,6 +4,7 @@ public class ClearMLMonitorService(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
+    IDataAccessContext dataAccessContext,
     IOptions<ClearMLOptions> options,
     ILogger<ClearMLMonitorService> logger
 )
@@ -24,6 +25,7 @@ public class ClearMLMonitorService(
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<ClearMLMonitorService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
@@ -191,16 +193,22 @@ public class ClearMLMonitorService(
     )
     {
         IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            if (!await buildJobService.BuildJobStartedAsync(engineId, buildId, cancellationToken))
-                return false;
-        }
-        await platformService.BuildStartedAsync(buildId, CancellationToken.None);
+        return await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                await using (await @lock.WriterLockAsync(cancellationToken: ct))
+                {
+                    if (!await buildJobService.BuildJobStartedAsync(engineId, buildId, ct))
+                        return false;
+                }
+                await platformService.BuildStartedAsync(buildId, CancellationToken.None);
 
-        await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
-        _logger.LogInformation("Build started ({0})", buildId);
-        return true;
+                await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, ct);
+                _logger.LogInformation("Build started ({0})", buildId);
+                return true;
+            },
+            cancellationToken: cancellationToken
+        );
     }
 
     private async Task<bool> TrainJobCompletedAsync(
@@ -252,12 +260,18 @@ public class ClearMLMonitorService(
             IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                await platformService.BuildFaultedAsync(buildId, message, cancellationToken);
-                await buildJobService.BuildJobFinishedAsync(
-                    engineId,
-                    buildId,
-                    buildComplete: false,
-                    CancellationToken.None
+                await _dataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await platformService.BuildFaultedAsync(buildId, message, ct);
+                        await buildJobService.BuildJobFinishedAsync(
+                            engineId,
+                            buildId,
+                            buildComplete: false,
+                            CancellationToken.None
+                        );
+                    },
+                    cancellationToken: cancellationToken
                 );
             }
             _logger.LogError("Build faulted ({0}). Error: {1}", buildId, message);
@@ -282,12 +296,18 @@ public class ClearMLMonitorService(
             IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                await platformService.BuildCanceledAsync(buildId, cancellationToken);
-                await buildJobService.BuildJobFinishedAsync(
-                    engineId,
-                    buildId,
-                    buildComplete: false,
-                    CancellationToken.None
+                await _dataAccessContext.WithTransactionAsync(
+                    async (ct) =>
+                    {
+                        await platformService.BuildCanceledAsync(buildId, ct);
+                        await buildJobService.BuildJobFinishedAsync(
+                            engineId,
+                            buildId,
+                            buildComplete: false,
+                            CancellationToken.None
+                        );
+                    },
+                    cancellationToken: cancellationToken
                 );
             }
             _logger.LogInformation("Build canceled ({0})", buildId);

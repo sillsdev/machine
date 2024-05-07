@@ -14,13 +14,14 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IPlatformService platformService,
         IRepository<TranslationEngine> engines,
         IDistributedReaderWriterLockFactory lockFactory,
+        IDataAccessContext dataAccessContext,
         ILogger<NmtPreprocessBuildJob> logger,
         IBuildJobService buildJobService,
         ISharedFileService sharedFileService,
         ICorpusService corpusService,
         ILanguageTagService languageTagService
     )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
+        : base(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;

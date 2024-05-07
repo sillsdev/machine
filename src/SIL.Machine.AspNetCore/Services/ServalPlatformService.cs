@@ -14,6 +14,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.BuildStarted,
+            buildId,
             JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
             cancellationToken
         );
@@ -28,6 +29,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.BuildCompleted,
+            buildId,
             JsonSerializer.Serialize(
                 new BuildCompletedRequest
                 {
@@ -44,6 +46,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.BuildCanceled,
+            buildId,
             JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
             cancellationToken
         );
@@ -53,6 +56,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.BuildFaulted,
+            buildId,
             JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
             cancellationToken
         );
@@ -62,6 +66,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.BuildRestarting,
+            buildId,
             JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
             cancellationToken
         );
@@ -117,6 +122,7 @@ public class ServalPlatformService(
         }
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.InsertPretranslations,
+            engineId,
             JsonSerializer.Serialize(requests),
             cancellationToken
         );
@@ -130,6 +136,7 @@ public class ServalPlatformService(
     {
         await _outboxService.EnqueueMessageAsync(
             OutboxMessageMethod.IncrementTranslationEngineCorpusSize,
+            engineId,
             JsonSerializer.Serialize(
                 new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count }
             ),

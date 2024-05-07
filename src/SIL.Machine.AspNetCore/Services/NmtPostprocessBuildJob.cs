@@ -4,10 +4,11 @@ public class NmtPostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<NmtPostprocessBuildJob> logger,
     ISharedFileService sharedFileService
-) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, buildJobService, logger)
+) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
 
@@ -27,13 +28,24 @@ public class NmtPostprocessBuildJob(
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
-            await PlatformService.BuildCompletedAsync(
-                buildId,
-                corpusSize,
-                Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
-                CancellationToken.None
+            await DataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    await PlatformService.BuildCompletedAsync(
+                        buildId,
+                        corpusSize,
+                        Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
+                        CancellationToken.None
+                    );
+                    await BuildJobService.BuildJobFinishedAsync(
+                        engineId,
+                        buildId,
+                        buildComplete: true,
+                        CancellationToken.None
+                    );
+                },
+                cancellationToken: CancellationToken.None
             );
-            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
         }
 
         Logger.LogInformation("Build completed ({0}).", buildId);

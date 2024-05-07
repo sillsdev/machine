@@ -32,117 +32,134 @@ public class MessageOutboxHandlerService(
 
         IReadOnlyList<OutboxMessage> messages = await _messages.GetAllAsync();
 
-        async Task FailedMessageAttempt(OutboxMessage message, Exception e)
+        IEnumerable<List<OutboxMessage>> groupedMessages = messages.GroupBy(
+            m => m.GroupId,
+            m => m,
+            (key, element) => element.OrderBy(m => m.Created).ToList()
+        );
+
+        foreach (List<OutboxMessage> group in groupedMessages)
         {
-            if (message.Attempts > 3) // will fail the 5th time
+            bool abortMessageGroup = false;
+            foreach (OutboxMessage message in messages)
             {
-                await PermanentlyFailedMessage(message, e);
-            }
-            else
-            {
-                await LogFailedAttempt(message, e);
+                try
+                {
+                    await ProcessGroupMessagesAsync(message, cancellationToken);
+                }
+                catch (RpcException e)
+                {
+                    switch (e.StatusCode)
+                    {
+                        case StatusCode.Unavailable:
+                        case StatusCode.Unauthenticated:
+                        case StatusCode.PermissionDenied:
+                        case StatusCode.Cancelled:
+                            _logger.LogWarning(e, "Platform Message sending failure: {statusCode}", e.StatusCode);
+                            return;
+                        case StatusCode.Aborted:
+                        case StatusCode.DeadlineExceeded:
+                        case StatusCode.Internal:
+                        case StatusCode.ResourceExhausted:
+                        case StatusCode.Unknown:
+                            abortMessageGroup = await CheckIfFinalMessageAttempt(message, e);
+                            break;
+                        default:
+                            // log error
+                            await PermanentlyFailedMessage(message, e);
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Unspecified platform Message sending failure.");
+                    return;
+                }
+                if (abortMessageGroup)
+                    break;
             }
         }
+    }
 
-        foreach (OutboxMessage message in messages)
+    async Task ProcessGroupMessagesAsync(OutboxMessage message, CancellationToken cancellationToken = default)
+    {
+        switch (message.Method)
         {
-            try
-            {
-                switch (message.Method)
-                {
-                    case OutboxMessageMethod.BuildStarted:
-                        await _client.BuildStartedAsync(
-                            JsonSerializer.Deserialize<BuildStartedRequest>(message.RequestContent),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    case OutboxMessageMethod.BuildCompleted:
-                        await _client.BuildCompletedAsync(
-                            JsonSerializer.Deserialize<BuildCompletedRequest>(message.RequestContent),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    case OutboxMessageMethod.BuildCanceled:
-                        await _client.BuildCanceledAsync(
-                            JsonSerializer.Deserialize<BuildCanceledRequest>(message.RequestContent),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    case OutboxMessageMethod.BuildFaulted:
-                        await _client.BuildFaultedAsync(
-                            JsonSerializer.Deserialize<BuildFaultedRequest>(message.RequestContent),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    case OutboxMessageMethod.BuildRestarting:
-                        await _client.BuildRestartingAsync(
-                            JsonSerializer.Deserialize<BuildRestartingRequest>(message.RequestContent),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    case OutboxMessageMethod.InsertPretranslations:
+            case OutboxMessageMethod.BuildStarted:
+                await _client.BuildStartedAsync(
+                    JsonSerializer.Deserialize<BuildStartedRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            case OutboxMessageMethod.BuildCompleted:
+                await _client.BuildCompletedAsync(
+                    JsonSerializer.Deserialize<BuildCompletedRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            case OutboxMessageMethod.BuildCanceled:
+                await _client.BuildCanceledAsync(
+                    JsonSerializer.Deserialize<BuildCanceledRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            case OutboxMessageMethod.BuildFaulted:
+                await _client.BuildFaultedAsync(
+                    JsonSerializer.Deserialize<BuildFaultedRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            case OutboxMessageMethod.BuildRestarting:
+                await _client.BuildRestartingAsync(
+                    JsonSerializer.Deserialize<BuildRestartingRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            case OutboxMessageMethod.InsertPretranslations:
 
-                        {
-                            using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
-                            var requests = JsonSerializer.Deserialize<List<InsertPretranslationRequest>>(
-                                message.RequestContent
-                            );
-                            foreach (
-                                var request in requests?.Where(r => r != null)
-                                    ?? Enumerable.Empty<InsertPretranslationRequest>()
-                            )
-                            {
-                                await call.RequestStream.WriteAsync(request, cancellationToken: cancellationToken);
-                            }
-                            await call.RequestStream.CompleteAsync();
-                        }
-                        break;
-                    case OutboxMessageMethod.IncrementTranslationEngineCorpusSize:
-                        await _client.IncrementTranslationEngineCorpusSizeAsync(
-                            JsonSerializer.Deserialize<IncrementTranslationEngineCorpusSizeRequest>(
-                                message.RequestContent
-                            ),
-                            cancellationToken: cancellationToken
-                        );
-                        break;
-                    default:
-                        await _messages.DeleteAsync(message.Id);
-                        _logger.LogWarning(
-                            "Unknown method: {message.Method}.  Deleting the message from the list.",
-                            message.Method.ToString()
-                        );
-                        break;
-                }
-                await _messages.DeleteAsync(message.Id);
-            }
-            catch (RpcException e)
-            {
-                switch (e.StatusCode)
                 {
-                    case StatusCode.Unavailable:
-                    case StatusCode.Unauthenticated:
-                    case StatusCode.PermissionDenied:
-                    case StatusCode.Cancelled:
-                        _logger.LogWarning(e, "Platform Message sending failure: {statusCode}", e.StatusCode);
-                        return;
-                    case StatusCode.Aborted:
-                    case StatusCode.DeadlineExceeded:
-                    case StatusCode.Internal:
-                    case StatusCode.ResourceExhausted:
-                    case StatusCode.Unknown:
-                        await FailedMessageAttempt(message, e);
-                        break;
-                    default:
-                        // log error
-                        await PermanentlyFailedMessage(message, e);
-                        break;
+                    using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
+                    var requests = JsonSerializer.Deserialize<List<InsertPretranslationRequest>>(
+                        message.RequestContent
+                    );
+                    foreach (
+                        var request in requests?.Where(r => r != null)
+                            ?? System.Linq.Enumerable.Empty<InsertPretranslationRequest>()
+                    )
+                    {
+                        await call.RequestStream.WriteAsync(request, cancellationToken: cancellationToken);
+                    }
+                    await call.RequestStream.CompleteAsync();
                 }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Unspecified platform Message sending failure.");
-                return;
-            }
+                break;
+            case OutboxMessageMethod.IncrementTranslationEngineCorpusSize:
+                await _client.IncrementTranslationEngineCorpusSizeAsync(
+                    JsonSerializer.Deserialize<IncrementTranslationEngineCorpusSizeRequest>(message.RequestContent),
+                    cancellationToken: cancellationToken
+                );
+                break;
+            default:
+                await _messages.DeleteAsync(message.Id);
+                _logger.LogWarning(
+                    "Unknown method: {message.Method}.  Deleting the message from the list.",
+                    message.Method.ToString()
+                );
+                break;
+        }
+        await _messages.DeleteAsync(message.Id);
+    }
+
+    async Task<bool> CheckIfFinalMessageAttempt(OutboxMessage message, Exception e)
+    {
+        if (message.Attempts > 3) // will fail the 5th time
+        {
+            await PermanentlyFailedMessage(message, e);
+            return true;
+        }
+        else
+        {
+            await LogFailedAttempt(message, e);
+            return false;
         }
     }
 
