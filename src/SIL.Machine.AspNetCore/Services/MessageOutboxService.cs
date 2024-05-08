@@ -7,15 +7,16 @@ public class MessageOutboxService(IRepository<OutboxMessage> messages, ISharedFi
 {
     private readonly IRepository<OutboxMessage> _messages = messages;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
+    protected int MaxDocumentSize { get; set; } = 1_000_000;
 
-    public async Task EnqueueMessageAsync(
+    public async Task<string> EnqueueMessageAsync(
         OutboxMessageMethod method,
         string groupId,
         string requestContent,
         CancellationToken cancellationToken
     )
     {
-        var id = ObjectId.GenerateNewId().ToString();
+        string id = ObjectId.GenerateNewId().ToString();
         OutboxMessage outboxMessage = new OutboxMessage
         {
             Id = id,
@@ -23,7 +24,7 @@ public class MessageOutboxService(IRepository<OutboxMessage> messages, ISharedFi
             GroupId = groupId,
             RequestContent = requestContent
         };
-        if (requestContent.Length > 1_000_000)
+        if (requestContent.Length > MaxDocumentSize)
         {
             // The file is too large - save it to disk and send a reference.
             // MongoDB has a 16MB document size limit - let's keep below that.
@@ -33,5 +34,6 @@ public class MessageOutboxService(IRepository<OutboxMessage> messages, ISharedFi
             outboxMessage.RequestContent = null;
         }
         await _messages.InsertAsync(outboxMessage, cancellationToken: cancellationToken);
+        return id;
     }
 }

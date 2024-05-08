@@ -13,20 +13,22 @@ public class MessageOutboxHandlerService(
     private readonly IRepository<OutboxMessage> _messages = messages;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILogger<MessageOutboxHandlerService> _logger = logger;
+    protected TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
+    protected TimeSpan MessageExpiration { get; set; } = TimeSpan.FromDays(4);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using ISubscription<OutboxMessage> subscription = await _messages.SubscribeAsync(e => true);
         while (true)
         {
-            await subscription.WaitForChangeAsync(timeout: TimeSpan.FromSeconds(10), cancellationToken: stoppingToken);
+            await subscription.WaitForChangeAsync(timeout: Timeout, cancellationToken: stoppingToken);
             if (stoppingToken.IsCancellationRequested)
                 break;
             await ProcessMessagesAsync();
         }
     }
 
-    private async Task ProcessMessagesAsync(CancellationToken cancellationToken = default)
+    protected async Task ProcessMessagesAsync(CancellationToken cancellationToken = default)
     {
         bool anyMessages = await _messages.ExistsAsync(m => true);
         if (!anyMessages)
@@ -171,8 +173,7 @@ public class MessageOutboxHandlerService(
 
     async Task<bool> CheckIfFinalMessageAttempt(OutboxMessage message, Exception e)
     {
-        // if the message is older than 4 days, permanently fail it
-        if (message.Created < DateTimeOffset.UtcNow.AddDays(-4))
+        if (message.Created < DateTimeOffset.UtcNow.Subtract(MessageExpiration))
         {
             await PermanentlyFailedMessage(message, e);
             return true;

@@ -2,7 +2,7 @@
 
 public interface IMessageOutboxService
 {
-    public Task EnqueueMessageAsync(
+    public Task<string> EnqueueMessageAsync(
         OutboxMessageMethod method,
         string groupId,
         string requestContent,
