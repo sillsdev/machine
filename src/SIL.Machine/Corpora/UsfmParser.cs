@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
@@ -129,7 +130,19 @@ namespace SIL.Machine.Corpora
         /// </summary>
         public void ProcessTokens()
         {
-            while (ProcessToken()) { }
+            try
+            {
+                while (ProcessToken()) { }
+            }
+            catch (Exception ex)
+            {
+                throw new UsfmParserException(
+                    $"An error occurred while parsing USFM. Verse: {State.VerseRef}, offset: {State.VerseOffset}, error: '{ex.Message}'",
+                    ex,
+                    State.VerseRef,
+                    State.VerseOffset
+                );
+            }
         }
 
         /// <summary>

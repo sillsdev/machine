@@ -120,76 +120,90 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         pretranslateWriter.WriteStartArray();
         foreach (Corpus corpus in corpora)
         {
-            ITextCorpus[] sourceTextCorpora = _corpusService.CreateTextCorpora(corpus.SourceFiles).ToArray();
-            ITextCorpus targetTextCorpus =
-                _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault() ?? new DictionaryTextCorpus();
-
-            if (sourceTextCorpora.Length == 0)
-                continue;
-
-            int skipCount = 0;
-            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
+            try
             {
-                if (skipCount > 0)
-                {
-                    skipCount--;
+                ITextCorpus[] sourceTextCorpora = _corpusService.CreateTextCorpora(corpus.SourceFiles).ToArray();
+                ITextCorpus targetTextCorpus =
+                    _corpusService.CreateTextCorpora(corpus.TargetFiles).FirstOrDefault() ?? new DictionaryTextCorpus();
+
+                if (sourceTextCorpora.Length == 0)
                     continue;
-                }
 
-                Row[] trainRows = rows.Where(r => r is not null && IsInTrain(r, corpus)).Cast<Row>().ToArray();
-                if (trainRows.Length > 0)
+                int skipCount = 0;
+                foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
                 {
-                    Row row = trainRows[0];
-                    if (rows.Length > 1)
+                    if (skipCount > 0)
                     {
-                        Row[] nonEmptyRows = trainRows.Where(r => r.SourceSegment.Length > 0).ToArray();
-                        if (nonEmptyRows.Length > 0)
-                            row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
+                        skipCount--;
+                        continue;
                     }
 
-                    await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
-                    await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
-                    skipCount = row.RowCount - 1;
-                    if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                        trainCount++;
-                }
-            }
-
-            if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
-            {
-                ITextCorpus? sourceTermCorpus = _corpusService.CreateTermCorpora(corpus.SourceFiles).FirstOrDefault();
-                ITextCorpus? targetTermCorpus = _corpusService.CreateTermCorpora(corpus.TargetFiles).FirstOrDefault();
-                if (sourceTermCorpus is not null && targetTermCorpus is not null)
-                {
-                    IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
-                    foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                    Row[] trainRows = rows.Where(r => r is not null && IsInTrain(r, corpus)).Cast<Row>().ToArray();
+                    if (trainRows.Length > 0)
                     {
-                        await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
-                        await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
-                        trainCount++;
+                        Row row = trainRows[0];
+                        if (rows.Length > 1)
+                        {
+                            Row[] nonEmptyRows = trainRows.Where(r => r.SourceSegment.Length > 0).ToArray();
+                            if (nonEmptyRows.Length > 0)
+                                row = nonEmptyRows[_random.Next(nonEmptyRows.Length)];
+                        }
+
+                        await sourceTrainWriter.WriteAsync($"{row.SourceSegment}\n");
+                        await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
+                        skipCount = row.RowCount - 1;
+                        if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
+                            trainCount++;
+                    }
+                }
+
+                if ((bool?)buildOptionsObject?["use_key_terms"] ?? true)
+                {
+                    ITextCorpus? sourceTermCorpus = _corpusService
+                        .CreateTermCorpora(corpus.SourceFiles)
+                        .FirstOrDefault();
+                    ITextCorpus? targetTermCorpus = _corpusService
+                        .CreateTermCorpora(corpus.TargetFiles)
+                        .FirstOrDefault();
+                    if (sourceTermCorpus is not null && targetTermCorpus is not null)
+                    {
+                        IParallelTextCorpus parallelKeyTermsCorpus = sourceTermCorpus.AlignRows(targetTermCorpus);
+                        foreach (ParallelTextRow row in parallelKeyTermsCorpus)
+                        {
+                            await sourceTrainWriter.WriteAsync($"{row.SourceText}\n");
+                            await targetTrainWriter.WriteAsync($"{row.TargetText}\n");
+                            trainCount++;
+                        }
+                    }
+                }
+
+                foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+                {
+                    if (
+                        IsInPretranslate(row, corpus)
+                        && row.SourceSegment.Length > 0
+                        && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
+                    )
+                    {
+                        pretranslateWriter.WriteStartObject();
+                        pretranslateWriter.WriteString("corpusId", corpus.Id);
+                        pretranslateWriter.WriteString("textId", row.TextId);
+                        pretranslateWriter.WriteStartArray("refs");
+                        foreach (object rowRef in row.Refs)
+                            pretranslateWriter.WriteStringValue(rowRef.ToString());
+                        pretranslateWriter.WriteEndArray();
+                        pretranslateWriter.WriteString("translation", row.SourceSegment);
+                        pretranslateWriter.WriteEndObject();
+                        pretranslateCount++;
                     }
                 }
             }
-
-            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            catch (Exception ex)
             {
-                if (
-                    IsInPretranslate(row, corpus)
-                    && row.SourceSegment.Length > 0
-                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
-                )
-                {
-                    pretranslateWriter.WriteStartObject();
-                    pretranslateWriter.WriteString("corpusId", corpus.Id);
-                    pretranslateWriter.WriteString("textId", row.TextId);
-                    pretranslateWriter.WriteStartArray("refs");
-                    foreach (object rowRef in row.Refs)
-                        pretranslateWriter.WriteStringValue(rowRef.ToString());
-                    pretranslateWriter.WriteEndArray();
-                    pretranslateWriter.WriteString("translation", row.SourceSegment);
-                    pretranslateWriter.WriteEndObject();
-                    pretranslateCount++;
-                }
+                throw new InvalidOperationException(
+                    $"Error occurred while preprocessing the corpus {corpus.Id}. Error: {ex.Message}",
+                    ex
+                );
             }
         }
         pretranslateWriter.WriteEndArray();
