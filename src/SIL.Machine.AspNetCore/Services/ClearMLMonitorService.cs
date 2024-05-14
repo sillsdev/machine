@@ -35,7 +35,7 @@ public class ClearMLMonitorService(
         {
             var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
             IReadOnlyList<TranslationEngine> trainingEngines = await buildJobService.GetBuildingEnginesAsync(
-                BuildJobRunner.ClearML,
+                JobRunnerType.ClearML,
                 cancellationToken
             );
             if (trainingEngines.Count == 0)
@@ -80,7 +80,7 @@ public class ClearMLMonitorService(
                     );
                 }
 
-                if (engine.CurrentBuild.Stage == NmtBuildStages.Train)
+                if (engine.CurrentBuild.Stage == BuildStage.Train)
                 {
                     if (
                         engine.CurrentBuild.JobState is BuildJobState.Pending
@@ -220,11 +220,10 @@ public class ClearMLMonitorService(
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 return await buildJobService.StartBuildJobAsync(
-                    BuildJobType.Cpu,
-                    TranslationEngineType.Nmt,
+                    JobRunnerType.Hangfire,
                     engineId,
                     buildId,
-                    NmtBuildStages.Postprocess,
+                    BuildStage.Postprocess,
                     (corpusSize, confidence),
                     buildOptions,
                     cancellationToken

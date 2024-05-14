@@ -281,9 +281,9 @@ public class SmtTransferEngineServiceTests
                 new OptionsWrapper<BuildJobOptions>(
                     new BuildJobOptions
                     {
-                        Runners = new Dictionary<BuildJobType, BuildJobRunner>
+                        Runners = new Dictionary<JobRunnerType, JobRunnerType>
                         {
-                            { BuildJobType.Cpu, BuildJobRunner.Hangfire }
+                            { JobRunnerType.Cpu, JobRunnerType.Hangfire }
                         }
                     }
                 )

@@ -10,7 +10,7 @@ public class NmtClearMLBuildJobFactoryTests
         string script = await env.BuildJobFactory.CreateJobScriptAsync(
             "engine1",
             "build1",
-            NmtBuildStages.Train,
+            BuildStage.Train,
             buildOptions: "{ \"max_steps\": \"10\" }"
         );
         Assert.That(
@@ -38,7 +38,7 @@ run(args)
     public async Task CreateJobScriptAsync_NoBuildOptions()
     {
         var env = new TestEnvironment();
-        string script = await env.BuildJobFactory.CreateJobScriptAsync("engine1", "build1", NmtBuildStages.Train);
+        string script = await env.BuildJobFactory.CreateJobScriptAsync("engine1", "build1", BuildStage.Train);
         Assert.That(
             script,
             Is.EqualTo(
@@ -83,8 +83,8 @@ run(args)
                     {
                         BuildId = "build1",
                         JobId = "job1",
-                        JobRunner = BuildJobRunner.ClearML,
-                        Stage = NmtBuildStages.Train,
+                        JobRunner = JobRunnerType.ClearML,
+                        Stage = BuildStage.Train,
                         JobState = BuildJobState.Pending
                     }
                 }

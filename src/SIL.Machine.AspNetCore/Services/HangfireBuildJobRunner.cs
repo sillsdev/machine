@@ -36,7 +36,7 @@ public class HangfireBuildJobRunner(
     private readonly Dictionary<TranslationEngineType, IHangfireBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
 
-    public BuildJobRunner Type => BuildJobRunner.Hangfire;
+    public JobRunnerType Type => JobRunnerType.Hangfire;
 
     public Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default)
     {
@@ -52,7 +52,7 @@ public class HangfireBuildJobRunner(
         TranslationEngineType engineType,
         string engineId,
         string buildId,
-        string stage,
+        BuildStage stage,
         object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default

@@ -222,7 +222,7 @@ public class NmtEngineServiceTests
         public Task WaitForBuildToStartAsync()
         {
             return WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == NmtBuildStages.Train
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == BuildStage.Train
             );
         }
 
@@ -250,11 +250,11 @@ public class NmtEngineServiceTests
             }
 
             await BuildJobService.StartBuildJobAsync(
-                BuildJobType.Cpu,
+                JobRunnerType.Cpu,
                 TranslationEngineType.Nmt,
                 "engine1",
                 "build1",
-                NmtBuildStages.Postprocess,
+                BuildStage.Postprocess,
                 (0, 0.0)
             );
         }

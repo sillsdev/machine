@@ -1,39 +1,23 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public enum BuildJobType
-{
-    Cpu,
-    Gpu
-}
-
 public interface IBuildJobService
 {
     Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
-        BuildJobRunner runner,
+        JobRunnerType runner,
         CancellationToken cancellationToken = default
     );
 
     Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default);
 
-    Task CreateEngineAsync(
-        IEnumerable<BuildJobType> jobTypes,
-        string engineId,
-        string? name = null,
-        CancellationToken cancellationToken = default
-    );
+    Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default);
 
-    Task DeleteEngineAsync(
-        IEnumerable<BuildJobType> jobTypes,
-        string engineId,
-        CancellationToken cancellationToken = default
-    );
+    Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<bool> StartBuildJobAsync(
-        BuildJobType jobType,
-        TranslationEngineType engineType,
+        JobRunnerType jobType,
         string engineId,
         string buildId,
-        string stage,
+        BuildStage stage,
         object? data = default,
         string? buildOptions = default,
         CancellationToken cancellationToken = default

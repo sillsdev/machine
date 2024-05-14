@@ -1,10 +1,5 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public static class SmtTransferBuildStages
-{
-    public const string Train = "train";
-}
-
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
     IPlatformService platformService,
@@ -52,10 +47,11 @@ public class SmtTransferEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
+                    Type = TranslationEngineType.SmtTransfer,
                     IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
-                await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, ct);
+                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
                 return translationEngine;
             },
             cancellationToken: cancellationToken
@@ -85,6 +81,7 @@ public class SmtTransferEngineService(
                 },
                 cancellationToken: cancellationToken
             );
+            await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
 
             if (_stateService.TryRemove(engineId, out SmtTransferEngineState? state))
             {
@@ -199,11 +196,10 @@ public class SmtTransferEngineService(
                 throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
-                BuildJobType.Cpu,
-                TranslationEngineType.SmtTransfer,
+                JobRunnerType.Hangfire,
                 engineId,
                 buildId,
-                SmtTransferBuildStages.Train,
+                BuildStage.Preprocess,
                 corpora,
                 buildOptions,
                 cancellationToken

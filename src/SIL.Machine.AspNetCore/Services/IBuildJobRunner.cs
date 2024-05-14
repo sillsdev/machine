@@ -2,7 +2,7 @@
 
 public interface IBuildJobRunner
 {
-    BuildJobRunner Type { get; }
+    JobRunnerType Type { get; }
 
     Task CreateEngineAsync(string engineId, string? name = null, CancellationToken cancellationToken = default);
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
@@ -11,7 +11,7 @@ public interface IBuildJobRunner
         TranslationEngineType engineType,
         string engineId,
         string buildId,
-        string stage,
+        BuildStage stage,
         object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default

@@ -318,8 +318,8 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = BuildJobRunner.Hangfire,
-                        Stage = NmtBuildStages.Preprocess
+                        JobRunner = JobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
                     }
                 }
             );

@@ -1,23 +1,10 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class BuildJobService : IBuildJobService
+public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<TranslationEngine> engines)
+    : IBuildJobService
 {
-    private readonly Dictionary<BuildJobType, IBuildJobRunner> _runnersByJobType;
-    private readonly Dictionary<BuildJobRunner, IBuildJobRunner> _runners;
-    private readonly IRepository<TranslationEngine> _engines;
-
-    public BuildJobService(
-        IEnumerable<IBuildJobRunner> runners,
-        IRepository<TranslationEngine> engines,
-        IOptions<BuildJobOptions> options
-    )
-    {
-        _runners = runners.ToDictionary(r => r.Type);
-        _runnersByJobType = new Dictionary<BuildJobType, IBuildJobRunner>();
-        foreach (KeyValuePair<BuildJobType, BuildJobRunner> kvp in options.Value.Runners)
-            _runnersByJobType.Add(kvp.Key, _runners[kvp.Value]);
-        _engines = engines;
-    }
+    private readonly Dictionary<JobRunnerType, IBuildJobRunner> _runners = runners.ToDictionary(r => r.Type);
+    private readonly IRepository<TranslationEngine> _engines = engines;
 
     public Task<bool> IsEngineBuilding(string engineId, CancellationToken cancellationToken = default)
     {
@@ -25,7 +12,7 @@ public class BuildJobService : IBuildJobService
     }
 
     public Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
-        BuildJobRunner runner,
+        JobRunnerType runner,
         CancellationToken cancellationToken = default
     )
     {
@@ -49,38 +36,32 @@ public class BuildJobService : IBuildJobService
     }
 
     public async Task CreateEngineAsync(
-        IEnumerable<BuildJobType> jobTypes,
         string engineId,
         string? name = null,
         CancellationToken cancellationToken = default
     )
     {
-        foreach (BuildJobType jobType in jobTypes)
+        foreach (JobRunnerType runnerType in _runners.Keys)
         {
-            IBuildJobRunner runner = _runnersByJobType[jobType];
+            IBuildJobRunner runner = _runners[runnerType];
             await runner.CreateEngineAsync(engineId, name, cancellationToken);
         }
     }
 
-    public async Task DeleteEngineAsync(
-        IEnumerable<BuildJobType> jobTypes,
-        string engineId,
-        CancellationToken cancellationToken = default
-    )
+    public async Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default)
     {
-        foreach (BuildJobType jobType in jobTypes)
+        foreach (JobRunnerType runnerType in _runners.Keys)
         {
-            IBuildJobRunner runner = _runnersByJobType[jobType];
+            IBuildJobRunner runner = _runners[runnerType];
             await runner.DeleteEngineAsync(engineId, cancellationToken);
         }
     }
 
     public async Task<bool> StartBuildJobAsync(
-        BuildJobType jobType,
-        TranslationEngineType engineType,
+        JobRunnerType runnerType,
         string engineId,
         string buildId,
-        string stage,
+        BuildStage stage,
         object? data = null,
         string? buildOptions = null,
         CancellationToken cancellationToken = default
@@ -97,10 +78,10 @@ public class BuildJobService : IBuildJobService
         {
             return false;
         }
-
-        IBuildJobRunner runner = _runnersByJobType[jobType];
+        TranslationEngine engine = (await _engines.GetAsync(e => e.EngineId == engineId, cancellationToken))!;
+        IBuildJobRunner runner = _runners[runnerType];
         string jobId = await runner.CreateJobAsync(
-            engineType,
+            engine.Type,
             engineId,
             buildId,
             stage,
