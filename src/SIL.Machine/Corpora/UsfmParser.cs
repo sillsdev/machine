@@ -129,7 +129,25 @@ namespace SIL.Machine.Corpora
         /// </summary>
         public void ProcessTokens()
         {
-            while (ProcessToken()) { }
+            try
+            {
+                while (ProcessToken()) { }
+            }
+            catch
+            {
+                int context_start_ind = System.Math.Max(0, State.Index - 10);
+                int context_end_ind = System.Math.Min(State.Tokens.Count - 1, State.Index + 10);
+                string context = string.Join(
+                    " ",
+                    State
+                        .Tokens.Skip(context_start_ind)
+                        .Take(context_end_ind - context_start_ind + 1)
+                        .Select(t => t.ToString())
+                );
+                throw new System.IO.InvalidDataException(
+                    $"USFM Parsing error at verse reference {State.VerseRef} at symbol {State.Tokens[State.Index]}.  The surrounding context is: {context}"
+                );
+            }
         }
 
         /// <summary>
