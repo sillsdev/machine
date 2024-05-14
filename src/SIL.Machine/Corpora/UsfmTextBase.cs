@@ -33,14 +33,7 @@ namespace SIL.Machine.Corpora
         {
             string usfm = ReadUsfm();
             var rowCollector = new TextRowCollector(this);
-            try
-            {
-                UsfmParser.Parse(usfm, rowCollector, _stylesheet, Versification, preserveWhitespace: _includeMarkers);
-            }
-            catch (InvalidDataException e)
-            {
-                throw new InvalidDataException($"Error parsing file with id '{Id}'. {e.Message}");
-            }
+            UsfmParser.Parse(usfm, rowCollector, _stylesheet, Versification, preserveWhitespace: _includeMarkers);
             return rowCollector.Rows;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
@@ -133,19 +134,13 @@ namespace SIL.Machine.Corpora
             {
                 while (ProcessToken()) { }
             }
-            catch
+            catch (Exception ex)
             {
-                int context_start_ind = System.Math.Max(0, State.Index - 10);
-                int context_end_ind = System.Math.Min(State.Tokens.Count - 1, State.Index + 10);
-                string context = string.Join(
-                    " ",
-                    State
-                        .Tokens.Skip(context_start_ind)
-                        .Take(context_end_ind - context_start_ind + 1)
-                        .Select(t => t.ToString())
-                );
-                throw new System.IO.InvalidDataException(
-                    $"USFM Parsing error at verse reference {State.VerseRef} at symbol {State.Tokens[State.Index]}.  The surrounding context is: {context}"
+                throw new UsfmParserException(
+                    $"An error occurred while parsing USFM. Verse: {State.VerseRef}, offset: {State.VerseOffset}, error: '{ex.Message}'",
+                    ex,
+                    State.VerseRef,
+                    State.VerseOffset
                 );
             }
         }
