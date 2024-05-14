@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using SIL.Scripture;
 
-namespace SIL.Machine;
+namespace SIL.Machine.Scripture;
 
 [TestFixture]
 public class ScriptureRangeParserTests
