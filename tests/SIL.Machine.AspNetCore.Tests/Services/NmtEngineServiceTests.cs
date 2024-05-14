@@ -108,6 +108,7 @@ public class NmtEngineServiceTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -127,41 +128,66 @@ public class NmtEngineServiceTests
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
-                .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.FromResult("job1"));
             ClearMLService
-                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<CancellationToken>()))
+                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<string>(), Arg.Any<CancellationToken>()))
                 .Do(_ => TrainJobTask = Task.Run(TrainJobFunc));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            BuildJobService = new BuildJobService(
-                new IBuildJobRunner[]
+            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            buildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions
                 {
-                    new HangfireBuildJobRunner(_jobClient, new[] { new NmtHangfireBuildJobFactory() }),
+                    ClearML =
+                    [
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "hmm",
+                            DockerImage = "default",
+                            Queue = "default"
+                        }
+                    ]
+                }
+            );
+            BuildJobService = new BuildJobService(
+                [
+                    new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[]
-                        {
+                        [
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
-                                Engines,
-                                clearMLOptions
+                                Engines
                             )
-                        }
+                        ],
+                        buildJobOptions
                     )
-                },
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
+                ],
+                Engines
             );
-            var clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
-            clearMLOptionsMonitor.Value.Returns(new ClearMLOptions());
-            ClearMLMonitorService = new ClearMLMonitorService(
+            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
+            ClearMLQueueService = new ClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
-                clearMLOptionsMonitor,
+                clearMLOptions,
+                buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             _jobServer = CreateJobServer();
@@ -169,7 +195,7 @@ public class NmtEngineServiceTests
         }
 
         public NmtEngineService Service { get; private set; }
-        public ClearMLMonitorService ClearMLMonitorService { get; }
+        public IClearMLQueueService ClearMLQueueService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
@@ -209,7 +235,7 @@ public class NmtEngineServiceTests
                 Engines,
                 BuildJobService,
                 new LanguageTagService(),
-                ClearMLMonitorService,
+                ClearMLQueueService,
                 SharedFileService
             );
         }
@@ -222,7 +248,7 @@ public class NmtEngineServiceTests
         public Task WaitForBuildToStartAsync()
         {
             return WaitForBuildState(e =>
-                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == NmtBuildStages.Train
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == BuildStage.Train
             );
         }
 
@@ -250,11 +276,10 @@ public class NmtEngineServiceTests
             }
 
             await BuildJobService.StartBuildJobAsync(
-                BuildJobType.Cpu,
-                TranslationEngineType.Nmt,
+                BuildJobRunnerType.Hangfire,
                 "engine1",
                 "build1",
-                NmtBuildStages.Postprocess,
+                BuildStage.Postprocess,
                 (0, 0.0)
             );
         }

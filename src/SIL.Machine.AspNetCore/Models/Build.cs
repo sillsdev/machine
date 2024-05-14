@@ -8,10 +8,17 @@ public enum BuildJobState
     Canceling
 }
 
-public enum BuildJobRunner
+public enum BuildJobRunnerType
 {
     Hangfire,
     ClearML
+}
+
+public enum BuildStage
+{
+    Preprocess,
+    Train,
+    Postprocess
 }
 
 public record Build
@@ -19,7 +26,7 @@ public record Build
     public required string BuildId { get; init; }
     public required BuildJobState JobState { get; init; }
     public required string JobId { get; init; }
-    public required BuildJobRunner JobRunner { get; init; }
-    public required string Stage { get; init; }
+    public required BuildJobRunnerType BuildJobRunner { get; init; }
+    public required BuildStage Stage { get; init; }
     public string? Options { get; set; }
 }
