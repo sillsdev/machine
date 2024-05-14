@@ -64,6 +64,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddBuildJobOptions(
+        this IMachineBuilder builder,
+        Action<BuildJobOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddBuildJobOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<BuildJobOptions>(config);
+        return builder;
+    }
+
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         if (builder.Configuration is null)
@@ -131,26 +146,6 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    private static IMachineBuilder AddClearMLBuildJobRunner(this IMachineBuilder builder)
-    {
-        builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
-        builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
-        builder.Services.AddSingleton<ClearMLMonitorService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
-
-        return builder;
-    }
-
-    private static IMachineBuilder AddHangfireBuildJobRunner(this IMachineBuilder builder)
-    {
-        builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
-
-        builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
-        builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
-
-        return builder;
-    }
-
     private static MongoStorageOptions GetMongoStorageOptions()
     {
         var mongoStorageOptions = new MongoStorageOptions
@@ -200,6 +195,7 @@ public static class IMachineBuilderExtensions
             switch (engineType)
             {
                 case TranslationEngineType.SmtTransfer:
+                    builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
                     queues.Add("smt_transfer");
                     break;
@@ -360,34 +356,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
-    public static IMachineBuilder AddBuildJobService(
-        this IMachineBuilder builder,
-        Action<BuildJobOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        var options = new BuildJobOptions();
-        configureOptions(options);
-        return builder.AddBuildJobService(options);
-    }
-
-    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, IConfiguration config)
-    {
-        builder.Services.Configure<BuildJobOptions>(config);
-        var buildJobOptions = new BuildJobOptions();
-        config.GetSection(BuildJobOptions.Key).Bind(buildJobOptions);
-        return builder.AddBuildJobService(buildJobOptions);
-    }
-
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
     {
-        if (builder.Configuration is null)
+        if (builder.Configuration is not null)
         {
-            builder.AddBuildJobService(o => { });
-        }
-        else
-        {
-            builder.AddBuildJobService(builder.Configuration.GetSection(BuildJobOptions.Key));
+            builder.Services.AddScoped<IBuildJobService, BuildJobService>();
+
+            builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
+            builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
+            builder.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
+            builder.Services.AddSingleton<ClearMLMonitorService>();
+            builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
+
+            builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
+            builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
+            builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
 
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
             builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);
@@ -410,25 +393,6 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
         builder.Services.AddHostedService<ModelCleanupService>();
-        return builder;
-    }
-
-    private static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, BuildJobOptions options)
-    {
-        builder.Services.AddScoped<IBuildJobService, BuildJobService>();
-
-        foreach (BuildJobRunner runnerType in options.Runners.Values.Distinct())
-        {
-            switch (runnerType)
-            {
-                case BuildJobRunner.ClearML:
-                    builder.AddClearMLBuildJobRunner();
-                    break;
-                case BuildJobRunner.Hangfire:
-                    builder.AddHangfireBuildJobRunner();
-                    break;
-            }
-        }
         return builder;
     }
 }

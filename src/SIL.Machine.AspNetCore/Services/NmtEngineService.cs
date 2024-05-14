@@ -1,12 +1,5 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public static class NmtBuildStages
-{
-    public const string Preprocess = "preprocess";
-    public const string Train = "train";
-    public const string Postprocess = "postprocess";
-}
-
 public class NmtEngineService(
     IPlatformService platformService,
     IDistributedReaderWriterLockFactory lockFactory,
@@ -54,15 +47,11 @@ public class NmtEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
+                    Type = TranslationEngineType.Nmt,
                     IsModelPersisted = isModelPersisted ?? false // models are not persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
-                await _buildJobService.CreateEngineAsync(
-                    [BuildJobType.Cpu, BuildJobType.Gpu],
-                    engineId,
-                    engineName,
-                    ct
-                );
+                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
                 return translationEngine;
             },
             cancellationToken: cancellationToken
@@ -78,11 +67,7 @@ public class NmtEngineService(
             await CancelBuildJobAsync(engineId, cancellationToken);
 
             await _engines.DeleteAsync(e => e.EngineId == engineId, cancellationToken);
-            await _buildJobService.DeleteEngineAsync(
-                new[] { BuildJobType.Cpu, BuildJobType.Gpu },
-                engineId,
-                CancellationToken.None
-            );
+            await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
         }
         await _lockFactory.DeleteAsync(engineId, CancellationToken.None);
     }
@@ -103,11 +88,10 @@ public class NmtEngineService(
                 throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
-                BuildJobType.Cpu,
-                TranslationEngineType.Nmt,
+                JobRunnerType.Hangfire,
                 engineId,
                 buildId,
-                NmtBuildStages.Preprocess,
+                BuildStage.Preprocess,
                 corpora,
                 buildOptions,
                 cancellationToken
@@ -187,7 +171,7 @@ public class NmtEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.QueueSize);
+        return Task.FromResult(_clearMLMonitorService.QueueSizePerEngineType[Type]);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

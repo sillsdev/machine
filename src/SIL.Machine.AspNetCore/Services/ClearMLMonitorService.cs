@@ -4,15 +4,16 @@ public class ClearMLMonitorService(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
-    IOptions<ClearMLOptions> options,
+    IOptionsMonitor<ClearMLOptions> clearMLOptions,
+    IOptionsMonitor<BuildJobOptions> buildJobOptions,
     ILogger<ClearMLMonitorService> logger
 )
     : RecurrentTask(
         "ClearML monitor service",
         services,
-        options.Value.BuildPollingTimeout,
+        clearMLOptions.CurrentValue.BuildPollingTimeout,
         logger,
-        options.Value.BuildPollingEnabled
+        clearMLOptions.CurrentValue.BuildPollingEnabled
     )
 {
     private static readonly string EvalMetric = CreateMD5("eval");
@@ -27,7 +28,11 @@ public class ClearMLMonitorService(
     private readonly ILogger<ClearMLMonitorService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
-    public int QueueSize { get; private set; }
+    private readonly IReadOnlyDictionary<TranslationEngineType, string> _queuePerEngineType =
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => x.Queue);
+
+    public IDictionary<TranslationEngineType, int> QueueSizePerEngineType { get; private set; } =
+        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
@@ -35,28 +40,41 @@ public class ClearMLMonitorService(
         {
             var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
             IReadOnlyList<TranslationEngine> trainingEngines = await buildJobService.GetBuildingEnginesAsync(
-                BuildJobRunner.ClearML,
+                JobRunnerType.ClearML,
                 cancellationToken
             );
             if (trainingEngines.Count == 0)
                 return;
 
-            Dictionary<string, ClearMLTask> tasks = (
-                await _clearMLService.GetTasksByIdAsync(
-                    trainingEngines.Select(e => e.CurrentBuild!.JobId),
-                    cancellationToken
+            Dictionary<string, ClearMLTask> tasks = new();
+            Dictionary<string, int> queuePositions = new();
+
+            foreach (TranslationEngineType engineType in _queuePerEngineType.Keys)
+            {
+                Dictionary<string, ClearMLTask> tasksPerEngineType = (
+                    await _clearMLService.GetTasksByIdAsync(
+                        trainingEngines.Select(e => e.CurrentBuild!.JobId),
+                        cancellationToken
+                    )
                 )
-            )
-                .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
-                .ToDictionary(t => t.Id);
+                    .UnionBy(
+                        await _clearMLService.GetTasksForQueueAsync(_queuePerEngineType[engineType], cancellationToken),
+                        t => t.Id
+                    )
+                    .ToDictionary(t => t.Id);
+                // add new keys to dictionary
+                tasksPerEngineType.ToList().ForEach(x => tasks.TryAdd(x.Key, x.Value));
 
-            Dictionary<string, int> queuePositions = tasks
-                .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
-                .OrderBy(t => t.Created)
-                .Select((t, i) => (Position: i, Task: t))
-                .ToDictionary(e => e.Task.Name, e => e.Position);
+                Dictionary<string, int> queuePositionsPerEngineType = tasksPerEngineType
+                    .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
+                    .OrderBy(t => t.Created)
+                    .Select((t, i) => (Position: i, Task: t))
+                    .ToDictionary(e => e.Task.Name, e => e.Position);
+                // add new keys to dictionary
+                queuePositionsPerEngineType.ToList().ForEach(x => queuePositions.TryAdd(x.Key, x.Value));
 
-            QueueSize = queuePositions.Count;
+                QueueSizePerEngineType[engineType] = queuePositionsPerEngineType.Count;
+            }
 
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
@@ -80,7 +98,7 @@ public class ClearMLMonitorService(
                     );
                 }
 
-                if (engine.CurrentBuild.Stage == NmtBuildStages.Train)
+                if (engine.CurrentBuild.Stage == BuildStage.Train)
                 {
                     if (
                         engine.CurrentBuild.JobState is BuildJobState.Pending
@@ -220,11 +238,10 @@ public class ClearMLMonitorService(
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 return await buildJobService.StartBuildJobAsync(
-                    BuildJobType.Cpu,
-                    TranslationEngineType.Nmt,
+                    JobRunnerType.Hangfire,
                     engineId,
                     buildId,
-                    NmtBuildStages.Postprocess,
+                    BuildStage.Postprocess,
                     (corpusSize, confidence),
                     buildOptions,
                     cancellationToken
