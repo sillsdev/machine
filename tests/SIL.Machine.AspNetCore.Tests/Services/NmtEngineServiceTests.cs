@@ -108,6 +108,7 @@ public class NmtEngineServiceTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -136,8 +137,7 @@ public class NmtEngineServiceTests
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
             BuildJobService = new BuildJobService(
-                new IBuildJobRunner[]
-                {
+                [
                     new HangfireBuildJobRunner(_jobClient, new[] { new NmtHangfireBuildJobFactory() }),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
@@ -151,9 +151,8 @@ public class NmtEngineServiceTests
                             )
                         }
                     )
-                },
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
+                ],
+                Engines
             );
             var clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
             clearMLOptionsMonitor.Value.Returns(new ClearMLOptions());
@@ -250,8 +249,7 @@ public class NmtEngineServiceTests
             }
 
             await BuildJobService.StartBuildJobAsync(
-                JobRunnerType.Cpu,
-                TranslationEngineType.Nmt,
+                JobRunnerType.Hangfire,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,

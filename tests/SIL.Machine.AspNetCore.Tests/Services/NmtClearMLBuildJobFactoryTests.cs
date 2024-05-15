@@ -75,6 +75,7 @@ run(args)
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,

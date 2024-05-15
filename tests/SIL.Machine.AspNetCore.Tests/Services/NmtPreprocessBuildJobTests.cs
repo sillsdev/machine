@@ -309,6 +309,7 @@ public class NmtPreprocessBuildJobTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -361,8 +362,7 @@ public class NmtPreprocessBuildJobTests
                         }
                     )
                 },
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
+                Engines
             );
             BuildJob = new NmtPreprocessBuildJob(
                 PlatformService,

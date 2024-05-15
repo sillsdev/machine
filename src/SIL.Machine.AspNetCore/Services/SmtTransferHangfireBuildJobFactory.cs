@@ -26,6 +26,8 @@ public class SmtTransferHangfireBuildJobFactory : IHangfireBuildJobFactory
                     data,
                     buildOptions
                 ),
+            BuildStage.Train
+                => CreateJob<SmtTransferTrainBuildJob, object?>(engineId, buildId, "smt_transfer", data, buildOptions),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }

@@ -4,6 +4,7 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
+    public JobRunnerType TrainJobRunnerType = JobRunnerType.ClearML;
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
     private int _seed = 1234;
@@ -79,10 +80,11 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             bool canceling = !await BuildJobService.StartBuildJobAsync(
-                JobRunnerType.ClearML,
+                TrainJobRunnerType,
                 engineId,
                 buildId,
                 BuildStage.Train,
+                data: new object(),
                 buildOptions: buildOptions,
                 cancellationToken: cancellationToken
             );
