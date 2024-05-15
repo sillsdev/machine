@@ -77,6 +77,8 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
         buildPreprocessSummary.Add("TargetLanguageResolved", ResolveLanguageCode(engine.TargetLanguage));
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             bool canceling = !await BuildJobService.StartBuildJobAsync(

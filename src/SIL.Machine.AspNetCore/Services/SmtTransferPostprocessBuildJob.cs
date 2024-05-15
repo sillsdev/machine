@@ -28,15 +28,18 @@ public class SmtTransferPostprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        int corpusSize = data.Item1;
         await DownloadBuiltEngineAsync(engineId, cancellationToken);
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, @lock, cancellationToken);
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         await base.DoWorkAsync(
             engineId,
             buildId,
-            (corpusSize + segmentPairsSize, data.Item2),
+            (data.Item1 + segmentPairsSize, data.Item2),
             buildOptions,
             @lock,
             cancellationToken

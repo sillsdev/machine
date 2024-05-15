@@ -123,6 +123,7 @@ public class SmtTransferEngineServiceTests
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        await Task.Delay(200);
         env.StopServer();
         await env.WaitForBuildToRestartAsync();
         engine = env.Engines.Get(EngineId1);

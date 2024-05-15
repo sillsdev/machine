@@ -61,6 +61,8 @@ public class SmtTransferTrainBuildJob(
         ZipFile.CreateFromDirectory(modelDir, modelDst);
         modelDst.Close();
 
+        cancellationToken.ThrowIfCancellationRequested();
+
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             bool canceling = !await BuildJobService.StartBuildJobAsync(
