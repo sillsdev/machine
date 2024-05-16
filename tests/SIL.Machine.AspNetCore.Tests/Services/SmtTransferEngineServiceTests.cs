@@ -191,6 +191,7 @@ public class SmtTransferEngineServiceTests
         await env.WaitForBuildToFinishAsync();
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
+        Assert.That(engine.BuildRevision, Is.EqualTo(2));
         await env.SmtModel.Received(2).TrainSegmentAsync("esto es una prueba.", "this is a test.", true);
     }
 

@@ -48,32 +48,13 @@ public class SmtTransferPostprocessBuildJob(
 
     private async Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
     {
-        // copy SMT engine locally
+        // extract SMT engine locally
         string sharedFilePath = $"models/{engineId}.tar.gz";
-        string localZipPath = Path.GetTempFileName();
         using Stream sharedStream = await SharedFileService.OpenReadAsync(sharedFilePath, cancellationToken);
-        using FileStream fileStream = File.Create(localZipPath);
-        await sharedStream.CopyToAsync(fileStream, cancellationToken);
-        fileStream.Close();
-
-        // extract files from SMT engine
         string extractDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         Directory.CreateDirectory(extractDir);
-        using ZipArchive archive = ZipFile.OpenRead(localZipPath);
-        foreach (ZipArchiveEntry entry in archive.Entries)
-        {
-            string entryPath = Path.Combine(extractDir, entry.FullName);
-            // create intermediate directories if necessary
-            string? parentDirectory = Path.GetDirectoryName(entryPath);
-            if (parentDirectory != null)
-                Directory.CreateDirectory(parentDirectory);
-            entry.ExtractToFile(entryPath, overwrite: true);
-        }
-
-        // delete file from S3 bucket
+        ZipFile.ExtractToDirectory(sharedStream, extractDir, overwriteFiles: true);
         await SharedFileService.DeleteAsync(sharedFilePath);
-        // delete local zip file
-        File.Delete(localZipPath);
     }
 
     private async Task<int> TrainOnNewSegmentPairs(
