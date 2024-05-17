@@ -7,6 +7,7 @@ public interface IClearMLBuildJobFactory
     Task<string> CreateJobScriptAsync(
         string engineId,
         string buildId,
+        string modelType,
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,

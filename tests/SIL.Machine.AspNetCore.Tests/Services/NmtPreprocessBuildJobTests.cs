@@ -233,7 +233,7 @@ public class NmtPreprocessBuildJobTests
         public ILogger<NmtPreprocessBuildJob> Logger { get; }
         public IClearMLService ClearMLService { get; }
         public NmtPreprocessBuildJob BuildJob { get; }
-        public IOptionsMonitor<ClearMLOptions> Options { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public Corpus DefaultTextFileCorpus { get; }
         public Corpus DefaultMixedSourceTextFileCorpus { get; }
@@ -331,37 +331,43 @@ public class NmtPreprocessBuildJobTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            Options.CurrentValue.Returns(new ClearMLOptions { ModelType = "test_model" });
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions { NmtOptions = new(), SmtTransferOptions = new() }
+            );
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
-                .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             Logger = Substitute.For<ILogger<NmtPreprocessBuildJob>>();
             BuildJobService = new BuildJobService(
-                new IBuildJobRunner[]
-                {
+                [
                     new HangfireBuildJobRunner(
                         Substitute.For<IBackgroundJobClient>(),
-                        new[] { new NmtHangfireBuildJobFactory() }
+                        [new NmtHangfireBuildJobFactory()]
                     ),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[]
-                        {
+                        [
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
-                                Engines,
-                                Options
+                                Engines
                             )
-                        }
+                        ],
+                        BuildJobOptions
                     )
-                },
+                ],
                 Engines
             );
             BuildJob = new NmtPreprocessBuildJob(

@@ -289,16 +289,19 @@ public class SmtTransferEngineServiceTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             ClearMLService = Substitute.For<IClearMLService>();
-            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
+            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            buildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions { NmtOptions = new(), SmtTransferOptions = new() }
+            );
             BuildJobService = new BuildJobService(
                 [
-                    new HangfireBuildJobRunner(_jobClient, new[] { new SmtTransferHangfireBuildJobFactory() }),
+                    new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[] { new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines, clearMLOptions) }
+                        [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
+                        buildJobOptions
                     )
                 ],
                 Engines

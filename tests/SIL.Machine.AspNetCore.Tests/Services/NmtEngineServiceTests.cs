@@ -128,39 +128,47 @@ public class NmtEngineServiceTests
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
-                .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.FromResult("job1"));
             ClearMLService
-                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<CancellationToken>()))
+                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<string>(), Arg.Any<CancellationToken>()))
                 .Do(_ => TrainJobTask = Task.Run(TrainJobFunc));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
+            var buildJobOptionsMonitor = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            buildJobOptionsMonitor.CurrentValue.Returns(new BuildJobOptions());
             BuildJobService = new BuildJobService(
                 [
-                    new HangfireBuildJobRunner(_jobClient, new[] { new NmtHangfireBuildJobFactory() }),
+                    new HangfireBuildJobRunner(_jobClient, [new NmtHangfireBuildJobFactory()]),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[]
-                        {
+                        [
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
-                                Engines,
-                                clearMLOptions
+                                Engines
                             )
-                        }
+                        ],
+                        buildJobOptionsMonitor
                     )
                 ],
                 Engines
             );
-            var clearMLOptionsMonitor = Substitute.For<IOptions<ClearMLOptions>>();
-            clearMLOptionsMonitor.Value.Returns(new ClearMLOptions());
+            var clearMLOptions = Substitute.For<IOptions<ClearMLOptions>>();
+            clearMLOptions.Value.Returns(new ClearMLOptions());
+            var buildJobOptions = Substitute.For<IOptions<BuildJobOptions>>();
+            buildJobOptions.Value.Returns(new BuildJobOptions());
             ClearMLMonitorService = new ClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
-                clearMLOptionsMonitor,
+                clearMLOptions,
+                buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             _jobServer = CreateJobServer();

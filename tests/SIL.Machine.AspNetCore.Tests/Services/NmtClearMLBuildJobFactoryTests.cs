@@ -10,6 +10,7 @@ public class NmtClearMLBuildJobFactoryTests
         string script = await env.BuildJobFactory.CreateJobScriptAsync(
             "engine1",
             "build1",
+            "test_model",
             BuildStage.Train,
             buildOptions: "{ \"max_steps\": \"10\" }"
         );
@@ -38,7 +39,12 @@ run(args)
     public async Task CreateJobScriptAsync_NoBuildOptions()
     {
         var env = new TestEnvironment();
-        string script = await env.BuildJobFactory.CreateJobScriptAsync("engine1", "build1", BuildStage.Train);
+        string script = await env.BuildJobFactory.CreateJobScriptAsync(
+            "engine1",
+            "build1",
+            "test_model",
+            BuildStage.Train
+        );
         Assert.That(
             script,
             Is.EqualTo(
@@ -91,7 +97,7 @@ run(args)
                 }
             );
             Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            Options.CurrentValue.Returns(new ClearMLOptions { ModelType = "test_model" });
+            Options.CurrentValue.Returns(new ClearMLOptions { });
             SharedFileService = Substitute.For<ISharedFileService>();
             SharedFileService.GetBaseUri().Returns(new Uri("s3://bucket/folder1/folder2"));
             LanguageTagService = Substitute.For<ILanguageTagService>();
@@ -111,7 +117,7 @@ run(args)
                     x[1] = "eng_Latn";
                     return true;
                 });
-            BuildJobFactory = new NmtClearMLBuildJobFactory(SharedFileService, LanguageTagService, Engines, Options);
+            BuildJobFactory = new NmtClearMLBuildJobFactory(SharedFileService, LanguageTagService, Engines);
         }
     }
 }

@@ -4,15 +4,16 @@ public class ClearMLMonitorService(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
-    IOptions<ClearMLOptions> options,
+    IOptions<ClearMLOptions> clearMLOptions,
+    IOptions<BuildJobOptions> buildJobOptions,
     ILogger<ClearMLMonitorService> logger
 )
     : RecurrentTask(
         "ClearML monitor service",
         services,
-        options.Value.BuildPollingTimeout,
+        clearMLOptions.Value.BuildPollingTimeout,
         logger,
-        options.Value.BuildPollingEnabled
+        clearMLOptions.Value.BuildPollingEnabled
     )
 {
     private static readonly string EvalMetric = CreateMD5("eval");
@@ -26,6 +27,12 @@ public class ClearMLMonitorService(
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILogger<ClearMLMonitorService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
+
+    private readonly IReadOnlyList<string> _queuesMonitored =
+    [
+        buildJobOptions.Value.NmtOptions.Queue,
+        buildJobOptions.Value.SmtTransferOptions.Queue
+    ];
 
     public int QueueSize { get; private set; }
 
@@ -47,7 +54,7 @@ public class ClearMLMonitorService(
                     cancellationToken
                 )
             )
-                .UnionBy(await _clearMLService.GetTasksForCurrentQueueAsync(cancellationToken), t => t.Id)
+                .UnionBy(await _clearMLService.GetTasksForQueuesAsync(_queuesMonitored, cancellationToken), t => t.Id)
                 .ToDictionary(t => t.Id);
 
             Dictionary<string, int> queuePositions = tasks

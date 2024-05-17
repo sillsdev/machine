@@ -68,7 +68,11 @@ public class HangfireBuildJobRunner(
         return Task.FromResult(_jobClient.Delete(jobId));
     }
 
-    public Task<bool> EnqueueJobAsync(string jobId, CancellationToken cancellationToken = default)
+    public Task<bool> EnqueueJobAsync(
+        string jobId,
+        TranslationEngineType engineType,
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult(_jobClient.Requeue(jobId));
     }

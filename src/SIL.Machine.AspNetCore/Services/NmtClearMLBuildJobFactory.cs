@@ -3,20 +3,19 @@
 public class NmtClearMLBuildJobFactory(
     ISharedFileService sharedFileService,
     ILanguageTagService languageTagService,
-    IRepository<TranslationEngine> engines,
-    IOptionsMonitor<ClearMLOptions> options
+    IRepository<TranslationEngine> engines
 ) : IClearMLBuildJobFactory
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly IRepository<TranslationEngine> _engines = engines;
-    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     public TranslationEngineType EngineType => TranslationEngineType.Nmt;
 
     public async Task<string> CreateJobScriptAsync(
         string engineId,
         string buildId,
+        string modelType,
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
@@ -36,7 +35,7 @@ public class NmtClearMLBuildJobFactory(
             _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
             return "from machine.jobs.build_nmt_engine import run\n"
                 + "args = {\n"
-                + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
+                + $"    'model_type': '{modelType}',\n"
                 + $"    'engine_id': '{engineId}',\n"
                 + $"    'build_id': '{buildId}',\n"
                 + $"    'src_lang': '{srcLang}',\n"

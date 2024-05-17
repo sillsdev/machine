@@ -108,7 +108,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
                     ),
                 cancellationToken: cancellationToken
             );
-            await runner.EnqueueJobAsync(jobId, cancellationToken);
+            await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
             return true;
         }
         catch

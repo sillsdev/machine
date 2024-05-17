@@ -2,19 +2,18 @@
 
 public class SmtTransferClearMLBuildJobFactory(
     ISharedFileService sharedFileService,
-    IRepository<TranslationEngine> engines,
-    IOptionsMonitor<ClearMLOptions> options
+    IRepository<TranslationEngine> engines
 ) : IClearMLBuildJobFactory
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly IRepository<TranslationEngine> _engines = engines;
-    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
 
     public TranslationEngineType EngineType => TranslationEngineType.SmtTransfer;
 
     public async Task<string> CreateJobScriptAsync(
         string engineId,
         string buildId,
+        string modelType,
         BuildStage stage,
         object? data = null,
         string? buildOptions = null,
@@ -32,7 +31,7 @@ public class SmtTransferClearMLBuildJobFactory(
             string folder = sharedFileUri.GetComponents(UriComponents.Path, UriFormat.Unescaped);
             return "from machine.jobs.build_smt_engine import run\n"
                 + "args = {\n"
-                + $"    'model_type': '{_options.CurrentValue.ModelType}',\n"
+                + $"    'model_type': '{modelType}',\n"
                 + $"    'engine_id': '{engineId}',\n"
                 + $"    'build_id': '{buildId}',\n"
                 + $"    'shared_file_uri': '{baseUri}',\n"

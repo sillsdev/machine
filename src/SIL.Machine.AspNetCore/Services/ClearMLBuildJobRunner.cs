@@ -2,12 +2,20 @@
 
 public class ClearMLBuildJobRunner(
     IClearMLService clearMLService,
-    IEnumerable<IClearMLBuildJobFactory> buildJobFactories
+    IEnumerable<IClearMLBuildJobFactory> buildJobFactories,
+    IOptionsMonitor<BuildJobOptions> options
 ) : IBuildJobRunner
 {
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
+
+    private readonly Dictionary<TranslationEngineType, ClearMLBuildJobOptions> _options =
+        new()
+        {
+            { TranslationEngineType.SmtTransfer, options.CurrentValue.SmtTransferOptions },
+            { TranslationEngineType.Nmt, options.CurrentValue.NmtOptions }
+        };
 
     public JobRunnerType Type => JobRunnerType.ClearML;
 
@@ -48,12 +56,19 @@ public class ClearMLBuildJobRunner(
         string script = await buildJobFactory.CreateJobScriptAsync(
             engineId,
             buildId,
+            _options[engineType].ModelType,
             stage,
             data,
             buildOptions,
             cancellationToken
         );
-        return await _clearMLService.CreateTaskAsync(buildId, projectId, script, cancellationToken);
+        return await _clearMLService.CreateTaskAsync(
+            buildId,
+            projectId,
+            script,
+            _options[engineType].DockerImage,
+            cancellationToken
+        );
     }
 
     public Task<bool> DeleteJobAsync(string jobId, CancellationToken cancellationToken = default)
@@ -61,9 +76,13 @@ public class ClearMLBuildJobRunner(
         return _clearMLService.DeleteTaskAsync(jobId, cancellationToken);
     }
 
-    public Task<bool> EnqueueJobAsync(string jobId, CancellationToken cancellationToken = default)
+    public Task<bool> EnqueueJobAsync(
+        string jobId,
+        TranslationEngineType engineType,
+        CancellationToken cancellationToken = default
+    )
     {
-        return _clearMLService.EnqueueTaskAsync(jobId, cancellationToken);
+        return _clearMLService.EnqueueTaskAsync(jobId, _options[engineType].Queue, cancellationToken);
     }
 
     public Task<bool> StopJobAsync(string jobId, CancellationToken cancellationToken = default)

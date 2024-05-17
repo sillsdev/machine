@@ -74,6 +74,7 @@ public class ClearMLService(
         string buildId,
         string projectId,
         string script,
+        string dockerImage,
         CancellationToken cancellationToken = default
     )
     {
@@ -85,7 +86,7 @@ public class ClearMLService(
             ["script"] = new JsonObject { ["diff"] = script },
             ["container"] = new JsonObject
             {
-                ["image"] = _options.CurrentValue.DockerImage,
+                ["image"] = dockerImage,
                 ["arguments"] = "--env ENV_FOR_DYNACONF=" + snakeCaseEnvironment,
             },
             ["type"] = "training"
@@ -107,9 +108,9 @@ public class ClearMLService(
         return deleted.Value;
     }
 
-    public async Task<bool> EnqueueTaskAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<bool> EnqueueTaskAsync(string id, string queue, CancellationToken cancellationToken = default)
     {
-        var body = new JsonObject { ["task"] = id, ["queue_name"] = _options.CurrentValue.Queue };
+        var body = new JsonObject { ["task"] = id, ["queue_name"] = queue };
         JsonObject? result = await CallAsync("tasks", "enqueue", body, cancellationToken);
         var queued = (int?)result?["data"]?["queued"];
         if (queued is null)
@@ -137,14 +138,19 @@ public class ClearMLService(
         return updated == 1;
     }
 
-    public async Task<IReadOnlyList<ClearMLTask>> GetTasksForCurrentQueueAsync(
+    public async Task<IReadOnlyList<ClearMLTask>> GetTasksForQueuesAsync(
+        IEnumerable<string> queues,
         CancellationToken cancellationToken = default
     )
     {
-        var body = new JsonObject { ["name"] = _options.CurrentValue.Queue };
-        JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
-        var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
-        IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
+        IEnumerable<string> taskIds = Array.Empty<string>();
+        foreach (string queue in queues)
+        {
+            var body = new JsonObject { ["name"] = queue };
+            JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
+            var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
+            taskIds = taskIds.Concat(tasks?.Select(t => (string)t?["id"]!) ?? new List<string>());
+        }
         return await GetTasksByIdAsync(taskIds, cancellationToken);
     }
 

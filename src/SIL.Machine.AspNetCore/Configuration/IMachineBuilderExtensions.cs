@@ -372,9 +372,8 @@ public static class IMachineBuilderExtensions
             builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
 
             builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();
-
-            builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
             builder.Services.AddScoped<IHangfireBuildJobFactory, NmtHangfireBuildJobFactory>();
+            builder.Services.AddScoped<IHangfireBuildJobFactory, SmtTransferHangfireBuildJobFactory>();
 
             var smtTransferEngineOptions = new SmtTransferEngineOptions();
             builder.Configuration.GetSection(SmtTransferEngineOptions.Key).Bind(smtTransferEngineOptions);

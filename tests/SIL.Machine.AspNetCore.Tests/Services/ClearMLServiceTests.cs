@@ -43,7 +43,7 @@ public class ClearMLServiceTests
             + "}\n"
             + "run(args)\n";
 
-        string projectId = await service.CreateTaskAsync("build1", "project1", script);
+        string projectId = await service.CreateTaskAsync("build1", "project1", "dockerImage", script);
         Assert.That(projectId, Is.EqualTo("projectId"));
         mockHttp.VerifyNoOutstandingExpectation();
     }
