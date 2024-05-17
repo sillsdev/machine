@@ -64,6 +64,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddBuildJobOptions(
+        this IMachineBuilder builder,
+        Action<BuildJobOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddBuildJobOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<BuildJobOptions>(config);
+        return builder;
+    }
+
     public static IMachineBuilder AddThotSmtModel(this IMachineBuilder builder)
     {
         if (builder.Configuration is null)
@@ -180,6 +195,7 @@ public static class IMachineBuilderExtensions
             switch (engineType)
             {
                 case TranslationEngineType.SmtTransfer:
+                    builder.Services.AddSingleton<SmtTransferEngineStateService>();
                     builder.AddThotSmtModel().AddTransferEngine().AddUnigramTruecaser();
                     queues.Add("smt_transfer");
                     break;
@@ -338,25 +354,6 @@ public static class IMachineBuilderExtensions
         }
 
         return builder;
-    }
-
-    public static IMachineBuilder AddBuildJobService(
-        this IMachineBuilder builder,
-        Action<BuildJobOptions> configureOptions
-    )
-    {
-        builder.Services.Configure(configureOptions);
-        var options = new BuildJobOptions();
-        configureOptions(options);
-        return builder.AddBuildJobService();
-    }
-
-    public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder, IConfiguration config)
-    {
-        builder.Services.Configure<BuildJobOptions>(config);
-        var buildJobOptions = new BuildJobOptions();
-        config.GetSection(BuildJobOptions.Key).Bind(buildJobOptions);
-        return builder.AddBuildJobService();
     }
 
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)

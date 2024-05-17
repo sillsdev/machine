@@ -1,6 +1,4 @@
-﻿using SIL.Extensions;
-
-namespace SIL.Machine.AspNetCore.Services;
+﻿namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLMonitorService(
     IServiceProvider services,
@@ -64,14 +62,16 @@ public class ClearMLMonitorService(
                         t => t.Id
                     )
                     .ToDictionary(t => t.Id);
-                tasks.AddRange(tasksPerEngineType);
+                // add new keys to dictionary
+                tasksPerEngineType.ToList().ForEach(x => tasks.TryAdd(x.Key, x.Value));
 
                 Dictionary<string, int> queuePositionsPerEngineType = tasksPerEngineType
                     .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
                     .OrderBy(t => t.Created)
                     .Select((t, i) => (Position: i, Task: t))
                     .ToDictionary(e => e.Task.Name, e => e.Position);
-                queuePositions.AddRange(queuePositionsPerEngineType);
+                // add new keys to dictionary
+                queuePositionsPerEngineType.ToList().ForEach(x => queuePositions.TryAdd(x.Key, x.Value));
 
                 QueueSizePerEngineType[engineType] = queuePositionsPerEngineType.Count;
             }
