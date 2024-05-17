@@ -21,10 +21,7 @@ public interface IClearMLService
     Task<bool> EnqueueTaskAsync(string id, string queue, CancellationToken cancellationToken = default);
     Task<bool> DequeueTaskAsync(string id, CancellationToken cancellationToken = default);
     Task<bool> StopTaskAsync(string id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<ClearMLTask>> GetTasksForQueuesAsync(
-        IEnumerable<string> queues,
-        CancellationToken cancellationToken = default
-    );
+    Task<IReadOnlyList<ClearMLTask>> GetTasksForQueueAsync(string queue, CancellationToken cancellationToken = default);
     Task<ClearMLTask?> GetTaskByNameAsync(string name, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ClearMLTask>> GetTasksByIdAsync(
         IEnumerable<string> ids,

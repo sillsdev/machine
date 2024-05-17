@@ -171,7 +171,7 @@ public class NmtEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.QueueSize);
+        return Task.FromResult(_clearMLMonitorService.QueueSizePerEngineType[Type]);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

@@ -11,11 +11,7 @@ public class ClearMLBuildJobRunner(
         buildJobFactories.ToDictionary(f => f.EngineType);
 
     private readonly Dictionary<TranslationEngineType, ClearMLBuildJobOptions> _options =
-        new()
-        {
-            { TranslationEngineType.SmtTransfer, options.CurrentValue.SmtTransferOptions },
-            { TranslationEngineType.Nmt, options.CurrentValue.NmtOptions }
-        };
+        options.CurrentValue.ClearML.ToDictionary(o => o.TranslationEngineType);
 
     public JobRunnerType Type => JobRunnerType.ClearML;
 

@@ -333,7 +333,26 @@ public class NmtPreprocessBuildJobTests
             );
             BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
             BuildJobOptions.CurrentValue.Returns(
-                new BuildJobOptions { NmtOptions = new(), SmtTransferOptions = new() }
+                new BuildJobOptions
+                {
+                    ClearML =
+                    [
+                        new ClearMLBuildJobOptions()
+                        {
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildJobOptions()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "hmm",
+                            DockerImage = "default",
+                            Queue = "default"
+                        }
+                    ]
+                }
             );
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService

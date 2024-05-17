@@ -138,19 +138,15 @@ public class ClearMLService(
         return updated == 1;
     }
 
-    public async Task<IReadOnlyList<ClearMLTask>> GetTasksForQueuesAsync(
-        IEnumerable<string> queues,
+    public async Task<IReadOnlyList<ClearMLTask>> GetTasksForQueueAsync(
+        string queue,
         CancellationToken cancellationToken = default
     )
     {
-        IEnumerable<string> taskIds = Array.Empty<string>();
-        foreach (string queue in queues)
-        {
-            var body = new JsonObject { ["name"] = queue };
-            JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
-            var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
-            taskIds = taskIds.Concat(tasks?.Select(t => (string)t?["id"]!) ?? new List<string>());
-        }
+        var body = new JsonObject { ["name"] = queue };
+        JsonObject? result = await CallAsync("queues", "get_all_ex", body, cancellationToken);
+        var tasks = (JsonArray?)result?["data"]?["queues"]?[0]?["entries"];
+        IEnumerable<string> taskIds = tasks?.Select(t => (string)t?["id"]!) ?? new List<string>();
         return await GetTasksByIdAsync(taskIds, cancellationToken);
     }
 

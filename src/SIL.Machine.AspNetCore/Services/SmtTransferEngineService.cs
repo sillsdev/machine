@@ -8,7 +8,7 @@ public class SmtTransferEngineService(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     SmtTransferEngineStateService stateService,
     IBuildJobService buildJobService,
-    JobStorage jobStorage
+    ClearMLMonitorService clearMLMonitorService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
@@ -18,7 +18,7 @@ public class SmtTransferEngineService(
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly JobStorage _jobStorage = jobStorage;
+    private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
@@ -223,7 +223,7 @@ public class SmtTransferEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
+        return Task.FromResult(_clearMLMonitorService.QueueSizePerEngineType[Type]);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

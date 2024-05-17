@@ -290,10 +290,39 @@ public class SmtTransferEngineServiceTests
                 new ObjectIdGenerator()
             );
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            ClearMLService = Substitute.For<IClearMLService>();
+            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
             var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
             buildJobOptions.CurrentValue.Returns(
-                new BuildJobOptions { NmtOptions = new(), SmtTransferOptions = new() }
+                new BuildJobOptions
+                {
+                    ClearML =
+                    [
+                        new ClearMLBuildJobOptions()
+                        {
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildJobOptions()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "hmm",
+                            DockerImage = "default",
+                            Queue = "default"
+                        }
+                    ]
+                }
+            );
+            ClearMLService = Substitute.For<IClearMLService>();
+            ClearMLMonitorService = new ClearMLMonitorService(
+                Substitute.For<IServiceProvider>(),
+                ClearMLService,
+                SharedFileService,
+                clearMLOptions,
+                buildJobOptions,
+                Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService(
                 [
@@ -324,6 +353,7 @@ public class SmtTransferEngineServiceTests
         public IPlatformService PlatformService { get; }
 
         public IClearMLService ClearMLService { get; }
+        public ClearMLMonitorService ClearMLMonitorService { get; }
 
         public ISharedFileService SharedFileService { get; }
         public IOptionsMonitor<SmtTransferEngineOptions> EngineOptions { get; }
@@ -377,7 +407,7 @@ public class SmtTransferEngineServiceTests
                 TrainSegmentPairs,
                 StateService,
                 BuildJobService,
-                _memoryStorage
+                ClearMLMonitorService
             );
         }
 

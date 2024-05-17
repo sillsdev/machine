@@ -8,11 +8,11 @@ public class ClearMLHealthCheck(
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
-    private readonly IReadOnlyList<string> _queuesMonitored =
-    [
-        buildJobOptions.CurrentValue.NmtOptions.Queue,
-        buildJobOptions.CurrentValue.SmtTransferOptions.Queue
-    ];
+    private readonly IReadOnlyList<string> _queuesMonitored = buildJobOptions
+        .CurrentValue.ClearML.Select(x => x.Queue)
+        .Distinct()
+        .ToList();
+
     private int _numConsecutiveFailures = 0;
     private readonly AsyncLock _lock = new AsyncLock();
 
