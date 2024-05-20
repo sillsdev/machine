@@ -32,7 +32,9 @@
 \v 4b Chapter two, verse four.
 \p
 \v 6 Chapter two, verse \w six|strong="12345" \w*.
+\p
 \v 6 Bad verse.
+\p
 \v 5 Chapter two, verse five \rq (MAT 3:1)\rq*.
 \v 7a Chapter two, verse seven A,
 \s Section header \ts-s\*

@@ -54,7 +54,7 @@ namespace SIL.Machine.Corpora
         {
             if (state.VerseRef.Equals(_curVerseRef))
             {
-                EndVerseText(state);
+                EndVerseText(state, CreateVerseRefs());
                 // ignore duplicate verses
                 _duplicateVerse = true;
             }
@@ -83,7 +83,7 @@ namespace SIL.Machine.Corpora
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
-            if (!state.IsVerseText || CurrentTextType == ScriptureTextType.NonVerse)
+            if (!state.IsVerseText || marker == "d")
             {
                 StartParentElement(marker);
                 StartNonVerseText(state);
@@ -174,10 +174,9 @@ namespace SIL.Machine.Corpora
         private void EndVerseText(UsfmParserState state)
         {
             if (!_duplicateVerse && _curVerseRef.VerseNum > 0)
-            {
                 EndVerseText(state, CreateVerseRefs());
+            if (_curVerseRef.VerseNum > 0)
                 _curTextType.Pop();
-            }
         }
 
         private void StartNonVerseText(UsfmParserState state)
