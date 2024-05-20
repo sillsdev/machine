@@ -10,10 +10,10 @@ public class ClearMLBuildJobRunner(
     private readonly Dictionary<TranslationEngineType, IClearMLBuildJobFactory> _buildJobFactories =
         buildJobFactories.ToDictionary(f => f.EngineType);
 
-    private readonly Dictionary<TranslationEngineType, ClearMLBuildJobOptions> _options =
+    private readonly Dictionary<TranslationEngineType, ClearMLBuildQueue> _options =
         options.CurrentValue.ClearML.ToDictionary(o => o.TranslationEngineType);
 
-    public JobRunnerType Type => JobRunnerType.ClearML;
+    public BuildJobRunnerType Type => BuildJobRunnerType.ClearML;
 
     public async Task CreateEngineAsync(
         string engineId,

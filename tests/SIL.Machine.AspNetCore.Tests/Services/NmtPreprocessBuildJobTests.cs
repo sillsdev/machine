@@ -319,7 +319,7 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = JobRunnerType.Hangfire,
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
                         Stage = BuildStage.Preprocess
                     }
                 }
@@ -337,14 +337,14 @@ public class NmtPreprocessBuildJobTests
                 {
                     ClearML =
                     [
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.SmtTransfer,
                             ModelType = "hmm",

@@ -14,7 +14,8 @@ public class ClearMLMonitorService(
         clearMLOptions.CurrentValue.BuildPollingTimeout,
         logger,
         clearMLOptions.CurrentValue.BuildPollingEnabled
-    )
+    ),
+        IClearMLQueueService
 {
     private static readonly string EvalMetric = CreateMD5("eval");
     private static readonly string BleuVariant = CreateMD5("bleu");
@@ -25,14 +26,16 @@ public class ClearMLMonitorService(
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
-    private readonly ILogger<ClearMLMonitorService> _logger = logger;
+    private readonly ILogger<IClearMLQueueService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
     private readonly IReadOnlyDictionary<TranslationEngineType, string> _queuePerEngineType =
         buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => x.Queue);
 
     public IDictionary<TranslationEngineType, int> QueueSizePerEngineType { get; private set; } =
-        buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0);
+        new ConcurrentDictionary<TranslationEngineType, int>(
+            buildJobOptions.CurrentValue.ClearML.ToDictionary(x => x.TranslationEngineType, x => 0)
+        );
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
@@ -40,7 +43,7 @@ public class ClearMLMonitorService(
         {
             var buildJobService = scope.ServiceProvider.GetRequiredService<IBuildJobService>();
             IReadOnlyList<TranslationEngine> trainingEngines = await buildJobService.GetBuildingEnginesAsync(
-                JobRunnerType.ClearML,
+                BuildJobRunnerType.ClearML,
                 cancellationToken
             );
             if (trainingEngines.Count == 0)
@@ -63,7 +66,8 @@ public class ClearMLMonitorService(
                     )
                     .ToDictionary(t => t.Id);
                 // add new keys to dictionary
-                tasksPerEngineType.ToList().ForEach(x => tasks.TryAdd(x.Key, x.Value));
+                foreach (string key in tasksPerEngineType.Keys.Except(tasks.Keys))
+                    tasks.Add(key, tasksPerEngineType[key]);
 
                 Dictionary<string, int> queuePositionsPerEngineType = tasksPerEngineType
                     .Values.Where(t => t.Status is ClearMLTaskStatus.Queued or ClearMLTaskStatus.Created)
@@ -71,7 +75,8 @@ public class ClearMLMonitorService(
                     .Select((t, i) => (Position: i, Task: t))
                     .ToDictionary(e => e.Task.Name, e => e.Position);
                 // add new keys to dictionary
-                queuePositionsPerEngineType.ToList().ForEach(x => queuePositions.TryAdd(x.Key, x.Value));
+                foreach (string key in queuePositionsPerEngineType.Keys.Except(queuePositions.Keys))
+                    queuePositions.Add(key, queuePositionsPerEngineType[key]);
 
                 QueueSizePerEngineType[engineType] = queuePositionsPerEngineType.Count;
             }
@@ -238,7 +243,7 @@ public class ClearMLMonitorService(
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
                 return await buildJobService.StartBuildJobAsync(
-                    JobRunnerType.Hangfire,
+                    BuildJobRunnerType.Hangfire,
                     engineId,
                     buildId,
                     BuildStage.Postprocess,

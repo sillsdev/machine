@@ -4,5 +4,5 @@ public class BuildJobOptions
 {
     public const string Key = "BuildJob";
 
-    public IList<ClearMLBuildJobOptions> ClearML { get; set; } = new List<ClearMLBuildJobOptions>();
+    public IList<ClearMLBuildQueue> ClearML { get; set; } = new List<ClearMLBuildQueue>();
 }

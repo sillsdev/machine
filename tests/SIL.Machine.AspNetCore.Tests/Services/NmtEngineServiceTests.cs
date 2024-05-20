@@ -146,14 +146,14 @@ public class NmtEngineServiceTests
                 {
                     ClearML =
                     [
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.SmtTransfer,
                             ModelType = "hmm",
@@ -182,20 +182,20 @@ public class NmtEngineServiceTests
             );
             var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
             clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
-            ClearMLMonitorService = new ClearMLMonitorService(
+            ClearMLMonitorService = new IClearMLQueueService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 buildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService>>()
+                Substitute.For<ILogger<IClearMLQueueService>>()
             );
             _jobServer = CreateJobServer();
             Service = CreateService();
         }
 
         public NmtEngineService Service { get; private set; }
-        public ClearMLMonitorService ClearMLMonitorService { get; }
+        public IClearMLQueueService ClearMLMonitorService { get; }
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IPlatformService PlatformService { get; }
         public IClearMLService ClearMLService { get; }
@@ -276,7 +276,7 @@ public class NmtEngineServiceTests
             }
 
             await BuildJobService.StartBuildJobAsync(
-                JobRunnerType.Hangfire,
+                BuildJobRunnerType.Hangfire,
                 "engine1",
                 "build1",
                 BuildStage.Postprocess,

@@ -7,7 +7,7 @@ public class NmtEngineService(
     IRepository<TranslationEngine> engines,
     IBuildJobService buildJobService,
     ILanguageTagService languageTagService,
-    ClearMLMonitorService clearMLMonitorService,
+    IClearMLQueueService clearMLQueueService,
     ISharedFileService sharedFileService
 ) : ITranslationEngineService
 {
@@ -16,7 +16,7 @@ public class NmtEngineService(
     private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly IRepository<TranslationEngine> _engines = engines;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
+    private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
     private readonly ILanguageTagService _languageTagService = languageTagService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     public const string ModelDirectory = "models/";
@@ -88,7 +88,7 @@ public class NmtEngineService(
                 throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
-                JobRunnerType.Hangfire,
+                BuildJobRunnerType.Hangfire,
                 engineId,
                 buildId,
                 BuildStage.Preprocess,
@@ -171,7 +171,7 @@ public class NmtEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.QueueSizePerEngineType[Type]);
+        return Task.FromResult(_clearMLQueueService.QueueSizePerEngineType[Type]);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

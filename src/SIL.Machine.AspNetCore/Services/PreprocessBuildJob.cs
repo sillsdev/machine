@@ -4,15 +4,15 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
-    public JobRunnerType TrainJobRunnerType = JobRunnerType.ClearML;
+    public BuildJobRunnerType TrainJobRunnerType = BuildJobRunnerType.ClearML;
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
     private int _seed = 1234;
     private Random _random;
 
-    public abstract TranslationEngineType GetEngineType();
+    public TranslationEngineType EngineType { get; protected set; }
 
-    public abstract bool GetPretranslationEnabled();
+    public bool PretranslationEnabled { get; protected set; }
 
     public PreprocessBuildJob(
         IPlatformService platformService,
@@ -113,7 +113,7 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
         Utf8JsonWriter? pretranslateWriter = null;
-        if (GetPretranslationEnabled())
+        if (PretranslationEnabled)
         {
             await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
                 $"builds/{buildId}/pretranslate.src.json",

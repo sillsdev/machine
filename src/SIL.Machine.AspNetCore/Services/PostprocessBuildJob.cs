@@ -11,37 +11,6 @@ public abstract class PostprocessBuildJob(
 {
     protected readonly ISharedFileService SharedFileService = sharedFileService;
 
-    public abstract bool GetPretranslationEnabled();
-
-    protected override async Task DoWorkAsync(
-        string engineId,
-        string buildId,
-        (int, double) data,
-        string? buildOptions,
-        IDistributedReaderWriterLock @lock,
-        CancellationToken cancellationToken
-    )
-    {
-        (int corpusSize, double confidence) = data;
-
-        if (GetPretranslationEnabled())
-            // The NMT job has successfully completed, so insert the generated pretranslations into the database.
-            await InsertPretranslationsAsync(engineId, buildId, cancellationToken);
-
-        await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
-        {
-            await PlatformService.BuildCompletedAsync(
-                buildId,
-                corpusSize,
-                Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
-                CancellationToken.None
-            );
-            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
-        }
-
-        Logger.LogInformation("Build completed ({0}).", buildId);
-    }
-
     protected override async Task CleanupAsync(
         string engineId,
         string buildId,
@@ -64,7 +33,11 @@ public abstract class PostprocessBuildJob(
         }
     }
 
-    private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    protected async Task InsertPretranslationsAsync(
+        string engineId,
+        string buildId,
+        CancellationToken cancellationToken
+    )
     {
         await using var targetPretranslateStream = await SharedFileService.OpenReadAsync(
             $"builds/{buildId}/pretranslate.trg.json",

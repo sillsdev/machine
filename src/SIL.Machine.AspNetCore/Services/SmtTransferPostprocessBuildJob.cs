@@ -17,8 +17,6 @@ public class SmtTransferPostprocessBuildJob(
     private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
 
-    public override bool GetPretranslationEnabled() => false;
-
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
@@ -28,22 +26,22 @@ public class SmtTransferPostprocessBuildJob(
         CancellationToken cancellationToken
     )
     {
-        await DownloadBuiltEngineAsync(engineId, cancellationToken);
-
         cancellationToken.ThrowIfCancellationRequested();
 
-        int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, @lock, cancellationToken);
+        await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
+        {
+            await DownloadBuiltEngineAsync(engineId, cancellationToken);
+            int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, @lock, cancellationToken);
+            await PlatformService.BuildCompletedAsync(
+                buildId,
+                trainSize: data.Item1 + segmentPairsSize,
+                confidence: Math.Round(data.Item2, 2, MidpointRounding.AwayFromZero),
+                cancellationToken: CancellationToken.None
+            );
+            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
+        }
 
-        cancellationToken.ThrowIfCancellationRequested();
-
-        await base.DoWorkAsync(
-            engineId,
-            buildId,
-            (data.Item1 + segmentPairsSize, data.Item2),
-            buildOptions,
-            @lock,
-            cancellationToken
-        );
+        Logger.LogInformation("Build completed ({0}).", buildId);
     }
 
     private async Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)

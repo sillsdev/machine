@@ -248,7 +248,7 @@ public static class IMachineBuilderExtensions
                         );
                         await c.Indexes.CreateOrUpdateAsync(
                             new CreateIndexModel<TranslationEngine>(
-                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.JobRunner)
+                                Builders<TranslationEngine>.IndexKeys.Ascending(e => e.CurrentBuild!.BuildJobRunner)
                             )
                         );
                     }
@@ -358,14 +358,14 @@ public static class IMachineBuilderExtensions
 
     public static IMachineBuilder AddBuildJobService(this IMachineBuilder builder)
     {
+        builder.Services.AddScoped<IBuildJobService, BuildJobService>();
+
         if (builder.Configuration is not null)
         {
-            builder.Services.AddScoped<IBuildJobService, BuildJobService>();
-
             builder.Services.AddScoped<IBuildJobRunner, ClearMLBuildJobRunner>();
             builder.Services.AddScoped<IClearMLBuildJobFactory, NmtClearMLBuildJobFactory>();
             builder.Services.AddScoped<IClearMLBuildJobFactory, SmtTransferClearMLBuildJobFactory>();
-            builder.Services.AddSingleton<ClearMLMonitorService>();
+            builder.Services.AddSingleton<IClearMLQueueService, ClearMLMonitorService>();
             builder.Services.AddHostedService(p => p.GetRequiredService<ClearMLMonitorService>());
 
             builder.Services.AddScoped<IBuildJobRunner, HangfireBuildJobRunner>();

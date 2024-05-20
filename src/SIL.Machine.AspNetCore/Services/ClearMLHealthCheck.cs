@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+
 namespace SIL.Machine.AspNetCore.Services;
 
 public class ClearMLHealthCheck(
@@ -8,10 +10,10 @@ public class ClearMLHealthCheck(
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
-    private readonly IReadOnlyList<string> _queuesMonitored = buildJobOptions
+    private readonly ISet<string> _queuesMonitored = buildJobOptions
         .CurrentValue.ClearML.Select(x => x.Queue)
         .Distinct()
-        .ToList();
+        .ToHashSet();
 
     private int _numConsecutiveFailures = 0;
     private readonly AsyncLock _lock = new AsyncLock();
@@ -25,8 +27,8 @@ public class ClearMLHealthCheck(
         {
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
-            IEnumerable<string> queuesWithoutWorkers = await QueuesWithoutWorkers(cancellationToken);
-            if (queuesWithoutWorkers.Any())
+            IReadOnlySet<string> queuesWithoutWorkers = await QueuesWithoutWorkers(cancellationToken);
+            if (queuesWithoutWorkers.Count > 0)
             {
                 return HealthCheckResult.Unhealthy(
                     $"No ClearML agents are available for configured queues: {string.Join(", ", queuesWithoutWorkers)}"
@@ -75,7 +77,7 @@ public class ClearMLHealthCheck(
         return result is not null;
     }
 
-    public async Task<IEnumerable<string>> QueuesWithoutWorkers(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlySet<string>> QueuesWithoutWorkers(CancellationToken cancellationToken = default)
     {
         ISet<string> queuesWithoutWorkers = _queuesMonitored.ToHashSet();
         JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
@@ -96,6 +98,6 @@ public class ClearMLHealthCheck(
                     queuesWithoutWorkers.Remove(currentQueueName);
             }
         }
-        return queuesWithoutWorkers;
+        return queuesWithoutWorkers.ToImmutableHashSet();
     }
 }

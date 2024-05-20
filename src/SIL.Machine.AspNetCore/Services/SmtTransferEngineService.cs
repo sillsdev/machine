@@ -8,7 +8,7 @@ public class SmtTransferEngineService(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     SmtTransferEngineStateService stateService,
     IBuildJobService buildJobService,
-    ClearMLMonitorService clearMLMonitorService
+    IClearMLQueueService clearMLQueueService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
@@ -18,7 +18,7 @@ public class SmtTransferEngineService(
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly ClearMLMonitorService _clearMLMonitorService = clearMLMonitorService;
+    private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
@@ -203,7 +203,7 @@ public class SmtTransferEngineService(
                 throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
-                JobRunnerType.Hangfire,
+                BuildJobRunnerType.Hangfire,
                 engineId,
                 buildId,
                 BuildStage.Preprocess,
@@ -230,7 +230,7 @@ public class SmtTransferEngineService(
 
     public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_clearMLMonitorService.QueueSizePerEngineType[Type]);
+        return Task.FromResult(_clearMLQueueService.QueueSizePerEngineType[Type]);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

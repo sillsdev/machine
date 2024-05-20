@@ -90,7 +90,7 @@ run(args)
                     {
                         BuildId = "build1",
                         JobId = "job1",
-                        JobRunner = JobRunnerType.ClearML,
+                        BuildJobRunner = BuildJobRunnerType.ClearML,
                         Stage = BuildStage.Train,
                         JobState = BuildJobState.Pending
                     }

@@ -1,16 +1,19 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class SmtTransferPreprocessBuildJob(
-    IPlatformService platformService,
-    IRepository<TranslationEngine> engines,
-    IDistributedReaderWriterLockFactory lockFactory,
-    ILogger<SmtTransferPreprocessBuildJob> logger,
-    IBuildJobService buildJobService,
-    ISharedFileService sharedFileService,
-    ICorpusService corpusService
-) : PreprocessBuildJob(platformService, engines, lockFactory, logger, buildJobService, sharedFileService, corpusService)
+public class SmtTransferPreprocessBuildJob : PreprocessBuildJob
 {
-    public override TranslationEngineType GetEngineType() => TranslationEngineType.SmtTransfer;
-
-    public override bool GetPretranslationEnabled() => false;
+    public SmtTransferPreprocessBuildJob(
+        IPlatformService platformService,
+        IRepository<TranslationEngine> engines,
+        IDistributedReaderWriterLockFactory lockFactory,
+        ILogger<SmtTransferPreprocessBuildJob> logger,
+        IBuildJobService buildJobService,
+        ISharedFileService sharedFileService,
+        ICorpusService corpusService
+    )
+        : base(platformService, engines, lockFactory, logger, buildJobService, sharedFileService, corpusService)
+    {
+        EngineType = TranslationEngineType.SmtTransfer;
+        PretranslationEnabled = false;
+    }
 }

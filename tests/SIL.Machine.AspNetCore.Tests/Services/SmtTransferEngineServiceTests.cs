@@ -298,14 +298,14 @@ public class SmtTransferEngineServiceTests
                 {
                     ClearML =
                     [
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.Nmt,
                             ModelType = "huggingface",
                             DockerImage = "default",
                             Queue = "default"
                         },
-                        new ClearMLBuildJobOptions()
+                        new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.SmtTransfer,
                             ModelType = "hmm",
@@ -316,13 +316,13 @@ public class SmtTransferEngineServiceTests
                 }
             );
             ClearMLService = Substitute.For<IClearMLService>();
-            ClearMLMonitorService = new ClearMLMonitorService(
+            ClearMLMonitorService = new IClearMLQueueService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 buildJobOptions,
-                Substitute.For<ILogger<ClearMLMonitorService>>()
+                Substitute.For<ILogger<IClearMLQueueService>>()
             );
             BuildJobService = new BuildJobService(
                 [
@@ -353,7 +353,7 @@ public class SmtTransferEngineServiceTests
         public IPlatformService PlatformService { get; }
 
         public IClearMLService ClearMLService { get; }
-        public ClearMLMonitorService ClearMLMonitorService { get; }
+        public IClearMLQueueService ClearMLMonitorService { get; }
 
         public ISharedFileService SharedFileService { get; }
         public IOptionsMonitor<SmtTransferEngineOptions> EngineOptions { get; }
@@ -628,7 +628,7 @@ public class SmtTransferEngineServiceTests
                         Substitute.For<ICorpusService>()
                     )
                     {
-                        TrainJobRunnerType = JobRunnerType.Hangfire
+                        TrainJobRunnerType = BuildJobRunnerType.Hangfire
                     };
                 }
                 if (jobType == typeof(SmtTransferPostprocessBuildJob))

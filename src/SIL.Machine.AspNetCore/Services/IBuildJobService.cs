@@ -3,7 +3,7 @@
 public interface IBuildJobService
 {
     Task<IReadOnlyList<TranslationEngine>> GetBuildingEnginesAsync(
-        JobRunnerType runner,
+        BuildJobRunnerType runner,
         CancellationToken cancellationToken = default
     );
 
@@ -14,7 +14,7 @@ public interface IBuildJobService
     Task DeleteEngineAsync(string engineId, CancellationToken cancellationToken = default);
 
     Task<bool> StartBuildJobAsync(
-        JobRunnerType jobType,
+        BuildJobRunnerType jobType,
         string engineId,
         string buildId,
         BuildStage stage,

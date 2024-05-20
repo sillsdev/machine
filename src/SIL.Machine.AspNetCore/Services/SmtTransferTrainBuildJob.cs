@@ -66,7 +66,7 @@ public class SmtTransferTrainBuildJob(
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
             bool canceling = !await BuildJobService.StartBuildJobAsync(
-                JobRunnerType.Hangfire,
+                BuildJobRunnerType.Hangfire,
                 engineId,
                 buildId,
                 BuildStage.Postprocess,
