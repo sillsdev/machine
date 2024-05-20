@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -24,6 +26,21 @@ namespace SIL.Machine.Corpora
         protected override IStreamContainer CreateStreamContainer()
         {
             return new FileStreamContainer(_fileName);
+        }
+
+        protected override IEnumerable<TextRow> GetVersesInDocOrder()
+        {
+            try
+            {
+                return base.GetVersesInDocOrder();
+            }
+            catch (UsfmParserException e)
+            {
+                e.GetType()
+                    .GetField("_message", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(e, $"{_fileName}: {e.Message}");
+                throw e;
+            }
         }
     }
 }
