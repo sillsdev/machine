@@ -26,14 +26,19 @@ public class ModelCleanupService(
         );
         // Get all engine ids from the database
         IReadOnlyList<TranslationEngine>? allEngines = await _engines.GetAllAsync(cancellationToken: cancellationToken);
-        IEnumerable<string> validFilenames = allEngines.Select(e =>
-            NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision)
-        );
+        IEnumerable<string> validFilenames = allEngines
+            .Where(e => e.Type == TranslationEngineType.Nmt)
+            .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision));
         // If there is a currently running build that creates and pushes a new file, but the database has not
         // updated yet, don't delete the new file.
-        IEnumerable<string> validFilenamesForNextBuild = allEngines.Select(e =>
-            NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1)
-        );
+        IEnumerable<string> validFilenamesForNextBuild = allEngines
+            .Where(e => e.Type == TranslationEngineType.Nmt)
+            .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1));
+        // Add SMT engines
+        IEnumerable<string> validSMTModels = allEngines
+            .Where(e => e.Type == TranslationEngineType.SmtTransfer)
+            .Select(e => SmtTransferEngineService.GetModelPath(e.EngineId));
+
         HashSet<string> filenameFilter = validFilenames.Concat(validFilenamesForNextBuild).ToHashSet();
 
         foreach (string path in paths)

@@ -49,7 +49,7 @@ public class SmtTransferPostprocessBuildJob(
     private async Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
     {
         // extract SMT engine locally
-        string sharedFilePath = $"models/{engineId}.tar.gz";
+        string sharedFilePath = $"models/{engineId}.zip";
         using Stream sharedStream = await SharedFileService.OpenReadAsync(sharedFilePath, cancellationToken);
         string extractDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         Directory.CreateDirectory(extractDir);

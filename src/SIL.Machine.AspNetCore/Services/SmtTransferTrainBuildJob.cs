@@ -57,7 +57,7 @@ public class SmtTransferTrainBuildJob(
         await truecaseTrainer.SaveAsync(CancellationToken.None);
 
         // save model to S3 bucket
-        Stream modelDst = await _sharedFileService.OpenWriteAsync($"models/{engineId}.tar.gz");
+        Stream modelDst = await _sharedFileService.OpenWriteAsync($"models/{engineId}.zip");
         ZipFile.CreateFromDirectory(modelDir, modelDst);
         modelDst.Close();
 
