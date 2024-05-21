@@ -22,6 +22,7 @@
 \tr \tc1 Row two, column one. \tc2 Row two, column two.
 \s1 Chapter \it Two \it*
 \p
+\p
 \v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
 \v 2-3 Chapter two, // verse \fm ∆\fm*two.
 \esb
