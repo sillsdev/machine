@@ -229,8 +229,8 @@ namespace SIL.Machine.Corpora
                                 tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker));
                                 break;
                             }
-                            // Create unknown token with a corresponding end note
-                            tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*"));
+                            // It may just be text - so let it be so.
+                            tokens.Add(new UsfmToken(UsfmTokenType.Text, null, $"/{marker}", null));
                         }
                         break;
                     case UsfmStyleType.Milestone:

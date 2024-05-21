@@ -141,7 +141,14 @@ namespace SIL.Machine.Corpora
                 // considered verse text. This is covered by the empty stack that makes ParaTag null.
                 // Not specified text type is verse text
                 UsfmTag paraTag = ParaTag;
-                return paraTag == null || paraTag.TextType == UsfmTextType.VerseText || paraTag.TextType == 0;
+                bool paraOutsideOfVerse = false;
+                if (Tokens.Count > Index + 1)
+                {
+                    paraOutsideOfVerse = VerseRef.VerseNum == 0 && Tokens[Index + 1].Marker != "v";
+                }
+                return paraTag == null
+                    || (paraTag.TextType == UsfmTextType.VerseText && !paraOutsideOfVerse)
+                    || paraTag.TextType == UsfmTextType.NotSpecified;
             }
         }
 

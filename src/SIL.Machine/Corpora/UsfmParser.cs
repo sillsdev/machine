@@ -136,8 +136,18 @@ namespace SIL.Machine.Corpora
             }
             catch (Exception ex)
             {
+                int skipNum = Math.Max(0, State.Index - 10);
+                string previousTokens = string.Join(
+                    "",
+                    State.Tokens.Skip(skipNum).Take(State.Index - skipNum).Select(t => t.ToString())
+                );
+                string nextTokens = string.Join(
+                    "",
+                    State.Tokens.Skip(State.Index + 1).Take(10).Select(t => t.ToString())
+                );
                 throw new UsfmParserException(
-                    $"An error occurred while parsing USFM. Verse: {State.VerseRef}, offset: {State.VerseOffset}, error: '{ex.Message}'",
+                    $"An error occurred while parsing USFM. Verse: {State.VerseRef}, with token {State.Token} and error: '{ex.Message}'. "
+                        + $"The surrounding context is: {previousTokens}<<<{State.Token}>>>{nextTokens}",
                     ex,
                     State.VerseRef,
                     State.VerseOffset
