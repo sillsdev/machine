@@ -316,13 +316,13 @@ public class SmtTransferEngineServiceTests
                 }
             );
             ClearMLService = Substitute.For<IClearMLService>();
-            ClearMLMonitorService = new IClearMLQueueService(
+            ClearMLMonitorService = new ClearMLMonitorService(
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
                 clearMLOptions,
                 buildJobOptions,
-                Substitute.For<ILogger<IClearMLQueueService>>()
+                Substitute.For<ILogger<ClearMLMonitorService>>()
             );
             BuildJobService = new BuildJobService(
                 [
