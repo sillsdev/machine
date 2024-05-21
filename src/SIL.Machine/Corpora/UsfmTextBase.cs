@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using SIL.Machine.Utils;
@@ -29,11 +30,34 @@ namespace SIL.Machine.Corpora
             _includeAllText = includeAllText;
         }
 
+        public string Project { get; set; }
+
         protected override IEnumerable<TextRow> GetVersesInDocOrder()
         {
             string usfm = ReadUsfm();
             var rowCollector = new TextRowCollector(this);
-            UsfmParser.Parse(usfm, rowCollector, _stylesheet, Versification, preserveWhitespace: _includeMarkers);
+            var parser = new UsfmParser(
+                usfm,
+                rowCollector,
+                _stylesheet,
+                Versification,
+                tokensPreserveWhitespace: _includeMarkers
+            );
+            try
+            {
+                parser.ProcessTokens();
+            }
+            catch (Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"An error occurred while parsing the text '{Id}`");
+                if (!string.IsNullOrEmpty(Project))
+                    sb.Append($" in project '{Project}'");
+                sb.Append(
+                    $". Verse: {parser.State.VerseRef}, offset: {parser.State.VerseOffset}, error: '{ex.Message}'"
+                );
+                throw new InvalidOperationException(sb.ToString(), ex);
+            }
             return rowCollector.Rows;
         }
 

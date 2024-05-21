@@ -30,6 +30,9 @@ namespace SIL.Machine.Corpora
                             includeMarkers,
                             includeAllText
                         )
+                        {
+                            Project = settings.Name
+                        }
                     );
                 }
             }
