@@ -6,6 +6,7 @@ namespace SIL.Machine.Corpora
 {
     public enum ScriptureTextType
     {
+        None,
         NonVerse,
         Verse,
         Note
@@ -25,7 +26,7 @@ namespace SIL.Machine.Corpora
         }
 
         protected ScriptureTextType CurrentTextType =>
-            _curTextType.Count == 0 ? ScriptureTextType.NonVerse : _curTextType.Peek();
+            _curTextType.Count == 0 ? ScriptureTextType.None : _curTextType.Peek();
 
         public override void EndUsfm(UsfmParserState state)
         {
@@ -101,19 +102,19 @@ namespace SIL.Machine.Corpora
 
         public override void StartRow(UsfmParserState state, string marker)
         {
-            if (CurrentTextType == ScriptureTextType.NonVerse)
+            if (CurrentTextType == ScriptureTextType.NonVerse || CurrentTextType == ScriptureTextType.None)
                 StartParentElement(marker);
         }
 
         public override void EndRow(UsfmParserState state, string marker)
         {
-            if (CurrentTextType == ScriptureTextType.NonVerse)
+            if (CurrentTextType == ScriptureTextType.NonVerse || CurrentTextType == ScriptureTextType.None)
                 EndParentElement();
         }
 
         public override void StartCell(UsfmParserState state, string marker, string align, int colspan)
         {
-            if (CurrentTextType == ScriptureTextType.NonVerse)
+            if (CurrentTextType == ScriptureTextType.NonVerse || CurrentTextType == ScriptureTextType.None)
             {
                 StartParentElement(marker);
                 StartNonVerseText(state);
