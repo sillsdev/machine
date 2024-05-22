@@ -244,7 +244,7 @@ public class UsfmTextUpdaterTests
     [Test]
     public void GetUsfm_NonVerse_Paragraph()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:0/4:s"), "The first chapter.") };
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:0/8:s"), "The first chapter.") };
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s The first chapter.\r\n"));
