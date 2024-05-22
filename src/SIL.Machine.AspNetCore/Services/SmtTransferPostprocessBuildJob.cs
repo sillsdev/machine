@@ -3,18 +3,17 @@
 public class SmtTransferPostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
     IDistributedReaderWriterLockFactory lockFactory,
     IBuildJobService buildJobService,
     ILogger<SmtTransferPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
     IRepository<TrainSegmentPair> trainSegmentPairs,
-    SmtTransferEngineStateService stateService
+    ISmtModelFactory smtModelFactory,
+    ITruecaserFactory truecaserFactory
 ) : PostprocessBuildJob(platformService, engines, lockFactory, buildJobService, logger, sharedFileService)
 {
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
-
-    private readonly SmtTransferEngineStateService _stateService = stateService;
+    private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
+    private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
 
     protected override async Task DoWorkAsync(
@@ -30,7 +29,7 @@ public class SmtTransferPostprocessBuildJob(
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
-            await DownloadBuiltEngineAsync(engineId, cancellationToken);
+            await _smtModelFactory.DownloadBuiltEngineAsync(engineId, cancellationToken);
             int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, @lock, cancellationToken);
             await PlatformService.BuildCompletedAsync(
                 buildId,
@@ -42,17 +41,6 @@ public class SmtTransferPostprocessBuildJob(
         }
 
         Logger.LogInformation("Build completed ({0}).", buildId);
-    }
-
-    private async Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
-    {
-        // extract SMT engine locally
-        string sharedFilePath = $"models/{engineId}.zip";
-        using Stream sharedStream = await SharedFileService.OpenReadAsync(sharedFilePath, cancellationToken);
-        string extractDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
-        Directory.CreateDirectory(extractDir);
-        ZipFile.ExtractToDirectory(sharedStream, extractDir, overwriteFiles: true);
-        await SharedFileService.DeleteAsync(sharedFilePath);
     }
 
     private async Task<int> TrainOnNewSegmentPairs(
@@ -75,17 +63,28 @@ public class SmtTransferPostprocessBuildJob(
             if (segmentPairs.Count == 0)
                 return segmentPairs.Count;
 
-            SmtTransferEngineState state = _stateService.Get(engineId);
-            using HybridTranslationEngine hybridEngine = await state.GetHybridEngineAsync(engine.BuildRevision);
+            var tokenizer = new LatinWordTokenizer();
+            var detokenizer = new LatinWordDetokenizer();
+            ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
+
+            using (
+                IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
+                    engineId,
+                    tokenizer,
+                    detokenizer,
+                    truecaser
+                )
+            )
             {
                 foreach (TrainSegmentPair segmentPair in segmentPairs)
                 {
-                    await hybridEngine.TrainSegmentAsync(
+                    await smtModel.TrainSegmentAsync(
                         segmentPair.Source,
                         segmentPair.Target,
                         cancellationToken: CancellationToken.None
                     );
                 }
+                await smtModel.SaveAsync(CancellationToken.None);
             }
             return segmentPairs.Count;
         }

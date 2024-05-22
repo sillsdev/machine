@@ -9,6 +9,7 @@ public interface ISmtModelFactory
         ITruecaser truecaser
     );
     ITrainer CreateTrainer(string engineId, IRangeTokenizer<string, int, string> tokenizer, IParallelTextCorpus corpus);
+    Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken);
     void InitNew(string engineId);
     void Cleanup(string engineId);
 }

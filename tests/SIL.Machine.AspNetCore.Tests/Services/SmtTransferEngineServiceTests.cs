@@ -658,13 +658,13 @@ public class SmtTransferEngineServiceTests
                     return new SmtTransferPostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env.EngineOptions,
                         _env._lockFactory,
                         _env.BuildJobService,
                         Substitute.For<ILogger<SmtTransferPostprocessBuildJob>>(),
                         _env.SharedFileService,
                         _env.TrainSegmentPairs,
-                        _env.StateService
+                        _env.SmtModelFactory,
+                        _env._truecaserFactory
                     );
                 }
                 if (jobType == typeof(SmtTransferTrainBuildJob))
