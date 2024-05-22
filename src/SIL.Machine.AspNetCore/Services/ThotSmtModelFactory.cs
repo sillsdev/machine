@@ -57,6 +57,14 @@ public class ThotSmtModelFactory(
         await _sharedFileService.DeleteAsync(sharedFilePath);
     }
 
+    public async Task UploadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
+    {
+        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
+        string sharedFilePath = $"models/{engineId}.zip";
+        using Stream sharedStream = await _sharedFileService.OpenWriteAsync(sharedFilePath, cancellationToken);
+        ZipFile.CreateFromDirectory(engineDir, sharedStream);
+    }
+
     public void InitNew(string engineId)
     {
         string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);

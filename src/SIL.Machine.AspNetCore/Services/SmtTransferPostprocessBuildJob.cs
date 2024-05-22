@@ -30,7 +30,7 @@ public class SmtTransferPostprocessBuildJob(
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
             await _smtModelFactory.DownloadBuiltEngineAsync(engineId, cancellationToken);
-            int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, @lock, cancellationToken);
+            int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, cancellationToken);
             await PlatformService.BuildCompletedAsync(
                 buildId,
                 trainSize: data.Item1 + segmentPairsSize,
@@ -43,50 +43,38 @@ public class SmtTransferPostprocessBuildJob(
         Logger.LogInformation("Build completed ({0}).", buildId);
     }
 
-    private async Task<int> TrainOnNewSegmentPairs(
-        string engineId,
-        IDistributedReaderWriterLock @lock,
-        CancellationToken cancellationToken
-    )
+    private async Task<int> TrainOnNewSegmentPairs(string engineId, CancellationToken cancellationToken)
     {
         TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
         if (engine is null)
             throw new OperationCanceledException();
 
-        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
-                p => p.TranslationEngineRef == engine.Id,
-                CancellationToken.None
-            );
-            if (segmentPairs.Count == 0)
-                return segmentPairs.Count;
-
-            var tokenizer = new LatinWordTokenizer();
-            var detokenizer = new LatinWordDetokenizer();
-            ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
-
-            using (
-                IInteractiveTranslationModel smtModel = _smtModelFactory.Create(
-                    engineId,
-                    tokenizer,
-                    detokenizer,
-                    truecaser
-                )
-            )
-            {
-                foreach (TrainSegmentPair segmentPair in segmentPairs)
-                {
-                    await smtModel.TrainSegmentAsync(
-                        segmentPair.Source,
-                        segmentPair.Target,
-                        cancellationToken: CancellationToken.None
-                    );
-                }
-                await smtModel.SaveAsync(CancellationToken.None);
-            }
+        cancellationToken.ThrowIfCancellationRequested();
+        IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
+            p => p.TranslationEngineRef == engine.Id,
+            CancellationToken.None
+        );
+        if (segmentPairs.Count == 0)
             return segmentPairs.Count;
+
+        var tokenizer = new LatinWordTokenizer();
+        var detokenizer = new LatinWordDetokenizer();
+        ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
+
+        using (
+            IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId, tokenizer, detokenizer, truecaser)
+        )
+        {
+            foreach (TrainSegmentPair segmentPair in segmentPairs)
+            {
+                await smtModel.TrainSegmentAsync(
+                    segmentPair.Source,
+                    segmentPair.Target,
+                    cancellationToken: CancellationToken.None
+                );
+            }
+            await smtModel.SaveAsync(CancellationToken.None);
         }
+        return segmentPairs.Count;
     }
 }

@@ -56,6 +56,14 @@ public class SmtTransferEngineServiceTests
             ]
         );
         await env.WaitForBuildToFinishAsync();
+        await env
+            .SmtBatchTrainer.Received()
+            .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
+        await env
+            .TruecaserTrainer.Received()
+            .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
+        await env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
+        await env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
         engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
         Assert.That(engine.BuildRevision, Is.EqualTo(2));
@@ -119,11 +127,10 @@ public class SmtTransferEngineServiceTests
             })
         );
         await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
-        await env.WaitForBuildToStartAsync();
+        await env.WaitForTrainingToStartAsync();
         TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
-        await Task.Delay(200);
         env.StopServer();
         await env.WaitForBuildToRestartAsync();
         engine = env.Engines.Get(EngineId1);
@@ -270,17 +277,7 @@ public class SmtTransferEngineServiceTests
             );
             Truecaser = Substitute.For<ITruecaser>();
             TruecaserTrainer = Substitute.For<ITrainer>();
-            EngineOptions = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
-            DirectoryInfo tempDir = Directory.CreateTempSubdirectory();
-            EngineOptions.CurrentValue.Returns(new SmtTransferEngineOptions() { EnginesDir = tempDir.FullName });
 
-            Task SaveTrueCaserAsync()
-            {
-                using (File.Create(Path.Combine(tempDir.FullName, EngineId1, "unigram-casing-model.txt"))) { }
-                return Task.CompletedTask;
-            }
-
-            TruecaserTrainer.When(x => x.SaveAsync()).Do(_ => SaveTrueCaserAsync());
             SmtModelFactory = CreateSmtModelFactory();
             TransferEngineFactory = CreateTransferEngineFactory();
             _truecaserFactory = CreateTruecaserFactory();
@@ -356,7 +353,6 @@ public class SmtTransferEngineServiceTests
         public IClearMLQueueService ClearMLMonitorService { get; }
 
         public ISharedFileService SharedFileService { get; }
-        public IOptionsMonitor<SmtTransferEngineOptions> EngineOptions { get; }
 
         public IBuildJobService BuildJobService { get; }
         public Func<Task> TrainJobFunc { get; set; }
@@ -370,8 +366,8 @@ public class SmtTransferEngineServiceTests
 
         public void StopServer()
         {
-            StateService.Dispose();
             _jobServer.Dispose();
+            StateService.Dispose();
         }
 
         public void StartServer()
@@ -580,6 +576,13 @@ public class SmtTransferEngineServiceTests
             return WaitForBuildState(e => e.CurrentBuild!.JobState is BuildJobState.Active);
         }
 
+        public Task WaitForTrainingToStartAsync()
+        {
+            return WaitForBuildState(e =>
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Train
+            );
+        }
+
         public Task WaitForBuildToRestartAsync()
         {
             return WaitForBuildState(e => e.CurrentBuild!.JobState is BuildJobState.Pending);
@@ -614,44 +617,22 @@ public class SmtTransferEngineServiceTests
         {
             private readonly TestEnvironment _env = env;
 
-            public class SmtTransferPreprocessBuildJobTest : SmtTransferPreprocessBuildJob
-            {
-                public SmtTransferPreprocessBuildJobTest(
-                    IPlatformService platformService,
-                    IRepository<TranslationEngine> engines,
-                    IDistributedReaderWriterLockFactory lockFactory,
-                    ILogger<SmtTransferPreprocessBuildJob> logger,
-                    IBuildJobService buildJobService,
-                    ISharedFileService sharedFileService,
-                    ICorpusService corpusService
-                )
-                    : base(
-                        platformService,
-                        engines,
-                        lockFactory,
-                        logger,
-                        buildJobService,
-                        sharedFileService,
-                        corpusService
-                    )
-                {
-                    TrainJobRunnerType = BuildJobRunnerType.Hangfire;
-                }
-            }
-
             public override object ActivateJob(Type jobType)
             {
                 if (jobType == typeof(SmtTransferPreprocessBuildJob))
                 {
-                    return new SmtTransferPreprocessBuildJobTest(
+                    return new SmtTransferPreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
-                        Substitute.For<ILogger<SmtTransferPreprocessBuildJobTest>>(),
+                        Substitute.For<ILogger<SmtTransferPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
                         Substitute.For<ICorpusService>()
-                    );
+                    )
+                    {
+                        TrainJobRunnerType = BuildJobRunnerType.Hangfire
+                    };
                 }
                 if (jobType == typeof(SmtTransferPostprocessBuildJob))
                 {
@@ -672,7 +653,6 @@ public class SmtTransferEngineServiceTests
                     return new SmtTransferTrainBuildJob(
                         _env.PlatformService,
                         _env.Engines,
-                        _env.EngineOptions,
                         _env._lockFactory,
                         _env.BuildJobService,
                         Substitute.For<ILogger<SmtTransferTrainBuildJob>>(),

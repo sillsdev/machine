@@ -4,14 +4,14 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Models
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
-    public BuildJobRunnerType TrainJobRunnerType { get; protected init; } = BuildJobRunnerType.ClearML;
+    public BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
+    protected TranslationEngineType EngineType { get; init; }
+    protected bool PretranslationEnabled { get; init; }
+
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
     private int _seed = 1234;
     private Random _random;
-
-    protected TranslationEngineType EngineType { get; set; }
-    protected bool PretranslationEnabled { get; set; }
 
     public PreprocessBuildJob(
         IPlatformService platformService,

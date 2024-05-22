@@ -3,7 +3,6 @@
 public class SmtTransferTrainBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
-    IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
     IDistributedReaderWriterLockFactory lockFactory,
     IBuildJobService buildJobService,
     ILogger<SmtTransferTrainBuildJob> logger,
@@ -15,7 +14,6 @@ public class SmtTransferTrainBuildJob(
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -49,17 +47,12 @@ public class SmtTransferTrainBuildJob(
         await smtModelTrainer.TrainAsync(progress, cancellationToken);
         await truecaseTrainer.TrainAsync(cancellationToken: cancellationToken);
 
-        string modelDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
-        Directory.CreateDirectory(modelDir);
-
         cancellationToken.ThrowIfCancellationRequested();
+
         await smtModelTrainer.SaveAsync(CancellationToken.None);
         await truecaseTrainer.SaveAsync(CancellationToken.None);
 
-        // save model to S3 bucket
-        Stream modelDst = await _sharedFileService.OpenWriteAsync($"models/{engineId}.zip");
-        ZipFile.CreateFromDirectory(modelDir, modelDst);
-        modelDst.Close();
+        await _smtModelFactory.UploadBuiltEngineAsync(engineId, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 
