@@ -61,6 +61,11 @@ namespace SIL.Machine.Corpora
         public bool IsEmpty => VerseRef.IsDefault;
         public bool IsVerse => VerseRef.VerseNum != 0 && Path.Count == 0;
 
+        public ScriptureRef ToRelaxed()
+        {
+            return new ScriptureRef(VerseRef, Path.Select(pe => pe.ToRelaxed()));
+        }
+
         public ScriptureRef ChangeVersification(ScrVers versification)
         {
             VerseRef vr = VerseRef.Clone();
@@ -73,7 +78,7 @@ namespace SIL.Machine.Corpora
             return CompareTo(other, compareSegments: true);
         }
 
-        public int CompareTo(ScriptureRef other, bool compareSegments = true, bool strict = true)
+        public int CompareTo(ScriptureRef other, bool compareSegments = true)
         {
             IComparer<VerseRef> comparer = compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments;
             int res = comparer.Compare(VerseRef, other.VerseRef);
@@ -82,12 +87,12 @@ namespace SIL.Machine.Corpora
 
             foreach ((ScriptureElement se1, ScriptureElement se2) in Path.Zip(other.Path))
             {
-                res = se1.CompareTo(se2, strict);
+                res = se1.CompareTo(se2);
                 if (res != 0)
                     return res;
             }
 
-            return Path.Count - other.Path.Count;
+            return Path.Count.CompareTo(other.Path.Count);
         }
 
         public int CompareTo(object obj)

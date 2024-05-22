@@ -17,42 +17,16 @@ public class ScriptureRefTests
     [TestCase("MAT 1:0/2:p", "MAT 1:0/1:p", ExpectedResult = 1, Description = "NonVerseGreaterThan")]
     [TestCase("MAT 1:0/1:esb", "MAT 1:0/1:esb/1:p", ExpectedResult = -1, Description = "NonVerseParentChild")]
     [TestCase("MAT 1:0/2:esb", "MAT 1:0/1:esb/1:p", ExpectedResult = 1, Description = "NonVerseParentOtherChild")]
-    public int CompareTo_Strict(string ref1Str, string ref2Str)
+    [TestCase("MAT 1:0/p", "MAT 1:0/2:p", ExpectedResult = 0, Description = "RelaxedSameMarker")]
+    [TestCase("MAT 1:0/p", "MAT 1:0/2:esb", ExpectedResult = 1, Description = "RelaxedSameLevel")]
+    [TestCase("MAT 1:0/esb", "MAT 1:0/1:esb/1:p", ExpectedResult = -1, Description = "RelaxedParentChild")]
+    [TestCase("MAT 1:0/2:esb", "MAT 1:0/esb/p", ExpectedResult = -1, Description = "ParentRelaxedChild")]
+    public int CompareTo(string ref1Str, string ref2Str)
     {
         var ref1 = ScriptureRef.Parse(ref1Str);
         var ref2 = ScriptureRef.Parse(ref2Str);
 
-        int result = ref1.CompareTo(ref2);
-
-        // this tests the IComparable<ScriptureRef>.CompareTo method responds the same as the ScriptureRef.CompareTo method.
-        int result2 = ((IComparable<ScriptureRef>)ref1).CompareTo(ref2);
-        Assert.That(result, Is.EqualTo(result2));
-
-        if (result < 0)
-            result = -1;
-        else if (result > 0)
-            result = 1;
-        return result;
-    }
-
-    [TestCase("MAT 1:1", "MAT 1:2", ExpectedResult = -1, Description = "VerseLessThan")]
-    [TestCase("MAT 1:1", "MAT 1:1", ExpectedResult = 0, Description = "VerseEqualTo")]
-    [TestCase("MAT 1:2", "MAT 1:1", ExpectedResult = 1, Description = "VerseGreaterThan")]
-    [TestCase("MAT 1:0/1:p", "MAT 1:0/2:p", ExpectedResult = 0, Description = "NonVerseSameMarkerDifferentPosition")]
-    [TestCase("MAT 1:0/1:esb", "MAT 1:0/1:esb/1:p", ExpectedResult = -1, Description = "NonVerseParentChild")]
-    [TestCase("MAT 1:0/2:esb", "MAT 1:0/1:esb/1:p", ExpectedResult = -1, Description = "NonVerseParentOtherChild")]
-    public int CompareTo_Relaxed(string ref1Str, string ref2Str)
-    {
-        var ref1 = ScriptureRef.Parse(ref1Str);
-        var ref2 = ScriptureRef.Parse(ref2Str);
-
-        int result = ref1.CompareTo(ref2, strict: false);
-
-        if (result < 0)
-            result = -1;
-        else if (result > 0)
-            result = 1;
-        return result;
+        return ref1.CompareTo(ref2);
     }
 
     [TestCase]
@@ -64,9 +38,9 @@ public class ScriptureRefTests
         var obj1 = "A different type";
         Assert.Multiple(() =>
         {
-            Assert.That(ref1.Equals(ref1dup));
-            Assert.That(!ref1.Equals(ref2));
-            Assert.That(!ref1.Equals(obj1));
+            Assert.That(ref1.Equals(ref1dup), Is.True);
+            Assert.That(ref1.Equals(ref2), Is.False);
+            Assert.That(ref1.Equals(obj1), Is.False);
         });
     }
 

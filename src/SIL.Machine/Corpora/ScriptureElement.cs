@@ -13,28 +13,28 @@ namespace SIL.Machine.Corpora
         public int Position { get; }
         public string Name { get; }
 
-        int IComparable<ScriptureElement>.CompareTo(ScriptureElement other)
+        public ScriptureElement ToRelaxed()
         {
-            return CompareTo(other, strict: true);
+            return new ScriptureElement(0, Name);
         }
 
-        public int CompareTo(ScriptureElement other, bool strict = true)
+        public int CompareTo(ScriptureElement other)
         {
-            if (strict)
+            if (Position == 0 || other.Position == 0)
             {
-                int res = Position.CompareTo(other.Position);
-                if (res != 0)
-                    return res;
+                if (Name == other.Name)
+                    return 0;
+                // position 0 is always greater than any other position
+                if (Position == 0 && other.Position != 0)
+                    return 1;
+                if (other.Position == 0 && Position != 0)
+                    return -1;
                 return Name.CompareTo(other.Name);
             }
 
-            if (Name == other.Name)
-                return 0;
-            // position 0 is always greater than any other position
-            if (Position == 0 && other.Position != 0)
-                return 1;
-            if (other.Position == 0 && Position != 0)
-                return -1;
+            int res = Position.CompareTo(other.Position);
+            if (res != 0)
+                return res;
             return Name.CompareTo(other.Name);
         }
 

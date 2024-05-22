@@ -262,7 +262,7 @@ public class UsfmTextUpdaterTests
             (ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table.")
         };
 
-        string target = UpdateUsfm(rows, strictComparison: false);
+        string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s The first chapter.\r\n"));
         Assert.That(target, Contains.Substring("\\v 1 First verse of the first chapter.\r\n"));
         Assert.That(
@@ -401,7 +401,6 @@ public class UsfmTextUpdaterTests
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
         string? idText = null,
         bool stripAllText = false,
-        bool strictComparison = true,
         bool preferExistingText = false
     )
     {
@@ -410,7 +409,6 @@ public class UsfmTextUpdaterTests
             rows,
             idText,
             stripAllText: stripAllText,
-            strictComparison: strictComparison,
             preferExistingText: preferExistingText
         );
         UsfmParser.Parse(source, updater);
