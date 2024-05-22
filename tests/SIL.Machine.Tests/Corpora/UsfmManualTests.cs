@@ -7,7 +7,6 @@ namespace SIL.Machine.Corpora;
 public class UsfmManualTests
 {
     [Test]
-    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     public void ParseParallelCorpus()
     {
         var tCorpus = new ParatextTextCorpus(
