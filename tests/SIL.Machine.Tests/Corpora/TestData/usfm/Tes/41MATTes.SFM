@@ -2,6 +2,9 @@
 \h Matthew
 \mt Matthew
 \ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
+\p Here is another paragraph.
+\p and with a \w keyword|a special concept\w* in it.
+\p and a \weirdtaglookingthing that is not an actual tag.
 \c 1
 \s Chapter One
 \v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
@@ -21,6 +24,7 @@
 \tr \tc1 Row one, column one. \tc2 Row one, column two.
 \tr \tc1 Row two, column one. \tc2 Row two, column two.
 \s1 Chapter \it Two \it*
+\p
 \p
 \v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
 \v 2-3 Chapter two, // verse \fm ∆\fm*two.
