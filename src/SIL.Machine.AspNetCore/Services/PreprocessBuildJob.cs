@@ -4,7 +4,7 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
-    public BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
+    internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
     protected TranslationEngineType EngineType { get; init; }
     protected bool PretranslationEnabled { get; init; }
 
