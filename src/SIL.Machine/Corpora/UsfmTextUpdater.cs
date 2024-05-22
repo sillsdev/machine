@@ -15,7 +15,6 @@ namespace SIL.Machine.Corpora
         private readonly List<UsfmToken> _newTokens;
         private readonly string _idText;
         private readonly bool _stripAllText;
-        private readonly bool _strictComparison;
         private readonly bool _preferExistingText;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
@@ -25,7 +24,6 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             bool stripAllText = false,
-            bool strictComparison = true,
             bool preferExistingText = false
         )
         {
@@ -34,7 +32,6 @@ namespace SIL.Machine.Corpora
             _newTokens = new List<UsfmToken>();
             _idText = idText;
             _stripAllText = stripAllText;
-            _strictComparison = strictComparison;
             _replace = new Stack<bool>();
             _preferExistingText = preferExistingText;
         }
@@ -315,11 +312,7 @@ namespace SIL.Machine.Corpora
                 {
                     while (sourceIndex < segScrRefs.Count)
                     {
-                        compare = rowScrRef.CompareTo(
-                            segScrRefs[sourceIndex],
-                            compareSegments: false,
-                            _strictComparison
-                        );
+                        compare = rowScrRef.CompareTo(segScrRefs[sourceIndex], compareSegments: false);
                         if (compare > 0)
                             // source is ahead of row, increment source
                             sourceIndex++;
