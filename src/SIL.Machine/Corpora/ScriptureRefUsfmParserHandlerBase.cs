@@ -98,6 +98,14 @@ namespace SIL.Machine.Corpora
                 EndParentElement();
                 EndNonVerseText(state);
             }
+            else if (CurrentTextType == ScriptureTextType.None)
+            {
+                // empty verse paragraph
+                StartParentElement(marker);
+                StartNonVerseText(state);
+                EndParentElement();
+                EndNonVerseText(state);
+            }
         }
 
         public override void StartRow(UsfmParserState state, string marker)
@@ -151,7 +159,23 @@ namespace SIL.Machine.Corpora
             EndNoteText(state);
         }
 
-        public override void Ref(UsfmParserState state, string marker, string display, string target) { }
+        public override void Text(UsfmParserState state, string text)
+        {
+            // if we hit text in a verse paragraph and we aren't in a verse, then start a non-verse segment
+            UsfmTag paraTag = state.ParaTag;
+            if (
+                CurrentTextType == ScriptureTextType.None
+                && paraTag != null
+                && paraTag.Marker != "tr"
+                && state.IsVerseText
+                && _curVerseRef.VerseNum == 0
+                && text.Trim().Length > 0
+            )
+            {
+                StartParentElement(paraTag.Marker);
+                StartNonVerseText(state);
+            }
+        }
 
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
 
