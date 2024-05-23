@@ -11,22 +11,22 @@ public class UsfmTokenizerTests
         string usfm = ReadUsfm();
         var tokenizer = new UsfmTokenizer();
         IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
-        Assert.That(tokens, Has.Count.EqualTo(218));
+        Assert.That(tokens, Has.Count.EqualTo(224));
 
         Assert.That(tokens[0].Type, Is.EqualTo(UsfmTokenType.Book));
         Assert.That(tokens[0].Marker, Is.EqualTo("id"));
         Assert.That(tokens[0].Data, Is.EqualTo("MAT"));
 
-        Assert.That(tokens[28].Type, Is.EqualTo(UsfmTokenType.Text));
-        Assert.That(tokens[28].Text, Is.EqualTo("Chapter One "));
+        Assert.That(tokens[34].Type, Is.EqualTo(UsfmTokenType.Text));
+        Assert.That(tokens[34].Text, Is.EqualTo("Chapter One "));
 
-        Assert.That(tokens[29].Type, Is.EqualTo(UsfmTokenType.Verse));
-        Assert.That(tokens[29].Marker, Is.EqualTo("v"));
-        Assert.That(tokens[29].Data, Is.EqualTo("1"));
+        Assert.That(tokens[35].Type, Is.EqualTo(UsfmTokenType.Verse));
+        Assert.That(tokens[35].Marker, Is.EqualTo("v"));
+        Assert.That(tokens[35].Data, Is.EqualTo("1"));
 
-        Assert.That(tokens[38].Type, Is.EqualTo(UsfmTokenType.Note));
-        Assert.That(tokens[38].Marker, Is.EqualTo("f"));
-        Assert.That(tokens[38].Data, Is.EqualTo("+"));
+        Assert.That(tokens[44].Type, Is.EqualTo(UsfmTokenType.Note));
+        Assert.That(tokens[44].Marker, Is.EqualTo("f"));
+        Assert.That(tokens[44].Data, Is.EqualTo("+"));
     }
 
     [Test]

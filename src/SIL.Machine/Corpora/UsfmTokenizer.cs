@@ -313,6 +313,7 @@ namespace SIL.Machine.Corpora
         {
             UsfmToken prevToken = null;
             var usfm = new StringBuilder();
+            bool inBook = false;
             foreach (UsfmToken token in tokens)
             {
                 string tokenUsfm = "";
@@ -335,6 +336,7 @@ namespace SIL.Machine.Corpora
                                 usfm.Append("\r\n");
                         }
                         tokenUsfm = token.ToUsfm();
+                        inBook = token.Type == UsfmTokenType.Book;
                         break;
                     case UsfmTokenType.Verse:
                         // Add newline if after anything other than [ or (
@@ -359,6 +361,7 @@ namespace SIL.Machine.Corpora
                                 RtlReferenceOrder == RtlReferenceOrder.BookVerseChapter ? "\u200e" : "\u200f";
                             tokenUsfm = RtlVerseRegex.Replace(tokenUsfm, $"$1{directionMarker}$2");
                         }
+                        inBook = false;
                         break;
                     case UsfmTokenType.Text:
                         // Ensure spaces are preserved
@@ -383,7 +386,20 @@ namespace SIL.Machine.Corpora
                         }
                         break;
                     default:
+                        if (inBook)
+                        {
+                            if (
+                                usfm[usfm.Length - 1] == ' '
+                                && ((prevToken != null && prevToken.ToUsfm().Trim() != "") || !tokensHaveWhitespace)
+                            )
+                            {
+                                usfm.Length--;
+                            }
+                            if (!tokensHaveWhitespace)
+                                usfm.Append("\r\n");
+                        }
                         tokenUsfm = token.ToUsfm();
+                        inBook = false;
                         break;
                 }
 

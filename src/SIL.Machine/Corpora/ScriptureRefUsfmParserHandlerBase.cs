@@ -150,13 +150,17 @@ namespace SIL.Machine.Corpora
 
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
-            NextElement(marker);
-            StartNoteText(state);
+            if (CurrentTextType != ScriptureTextType.None)
+            {
+                NextElement(marker);
+                StartNoteText(state);
+            }
         }
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
-            EndNoteText(state);
+            if (CurrentTextType == ScriptureTextType.Note)
+                EndNoteText(state);
         }
 
         public override void Text(UsfmParserState state, string text)
