@@ -199,7 +199,6 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
         }
 
         pretranslateWriter.WriteEndArray();
-        await pretranslateWriter.FlushAsync(cancellationToken);
 
         return (trainCount, pretranslateCount);
     }

@@ -59,10 +59,17 @@ public class ThotSmtModelFactory(
 
     public async Task UploadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
     {
+        // create zip archive in memory stream
+        // This cannot be created directly to the shared stream because it all needs to be written at once
+        using var memoryStream = new MemoryStream();
         string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
+        ZipFile.CreateFromDirectory(engineDir, memoryStream);
+
+        // copy to shared file
+        memoryStream.Seek(0, SeekOrigin.Begin);
         string sharedFilePath = $"models/{engineId}.zip";
         using Stream sharedStream = await _sharedFileService.OpenWriteAsync(sharedFilePath, cancellationToken);
-        ZipFile.CreateFromDirectory(engineDir, sharedStream);
+        await sharedStream.WriteAsync(memoryStream.ToArray().AsMemory(0, (int)memoryStream.Length), cancellationToken);
     }
 
     public void InitNew(string engineId)
