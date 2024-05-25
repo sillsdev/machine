@@ -19,7 +19,7 @@ public class NmtHangfireBuildJobFactory : IHangfireBuildJobFactory
                     buildOptions
                 ),
             BuildStage.Postprocess
-                => CreateJob<NmtPostprocessBuildJob, (int, double)>(engineId, buildId, "nmt", data, buildOptions),
+                => CreateJob<PostprocessBuildJob, (int, double)>(engineId, buildId, "nmt", data, buildOptions),
             _ => throw new ArgumentException("Unknown build stage.", nameof(stage)),
         };
     }
