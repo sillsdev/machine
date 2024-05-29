@@ -80,7 +80,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         if (trainCount == 0 && !tagsInFlores200)
         {
             throw new OperationCanceledException(
-                $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build Canceled."
+                $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build canceled."
             );
         }
 

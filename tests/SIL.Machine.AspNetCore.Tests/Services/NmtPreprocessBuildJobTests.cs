@@ -211,6 +211,18 @@ public class NmtPreprocessBuildJobTests
         Assert.That(await env.GetPretranslateCountAsync(), Is.EqualTo(2));
     }
 
+    [Test]
+    public void RunAsync_UnknownLanguageTagsNoData()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
+
+        Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await env.RunBuildJobAsync(corpus1, engineId: "engine2");
+        });
+    }
+
     private class TestEnvironment : ObjectModel.DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
@@ -323,6 +335,25 @@ public class NmtPreprocessBuildJobTests
                     }
                 }
             );
+            Engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine2",
+                    EngineId = "engine2",
+                    SourceLanguage = "xxx",
+                    TargetLanguage = "zzz",
+                    BuildRevision = 1,
+                    IsModelPersisted = false,
+                    CurrentBuild = new()
+                    {
+                        BuildId = "build1",
+                        JobId = "job1",
+                        JobState = BuildJobState.Pending,
+                        JobRunner = BuildJobRunner.Hangfire,
+                        Stage = NmtBuildStages.Preprocess
+                    }
+                }
+            );
             CorpusService = new CorpusService();
             PlatformService = Substitute.For<IPlatformService>();
             LockFactory = new DistributedReaderWriterLockFactory(
@@ -335,6 +366,9 @@ public class NmtPreprocessBuildJobTests
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>("project1"));
+            ClearMLService
+                .GetProjectIdAsync("engine2", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
                 .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -379,10 +413,10 @@ public class NmtPreprocessBuildJobTests
             };
         }
 
-        public Task RunBuildJobAsync(Corpus corpus, bool useKeyTerms = true)
+        public Task RunBuildJobAsync(Corpus corpus, bool useKeyTerms = true, string engineId = "engine1")
         {
             return BuildJob.RunAsync(
-                "engine1",
+                engineId,
                 "build1",
                 [corpus],
                 useKeyTerms ? null : "{\"use_key_terms\":false}",
