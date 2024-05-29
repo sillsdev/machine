@@ -71,15 +71,21 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        bool tagsInFlores200 = _languageTagService.ConvertToFlores200Code(engine.SourceLanguage, out string srcLang);
+        bool sourceTagInFlores200 = _languageTagService.ConvertToFlores200Code(
+            engine.SourceLanguage,
+            out string srcLang
+        );
         buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
-        tagsInFlores200 &= _languageTagService.ConvertToFlores200Code(engine.TargetLanguage, out string trgLang);
+        bool targetTagInFlores200 = _languageTagService.ConvertToFlores200Code(
+            engine.TargetLanguage,
+            out string trgLang
+        );
         buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
 
-        if (trainCount == 0 && !tagsInFlores200)
+        if (trainCount == 0 && (!sourceTagInFlores200 || !targetTagInFlores200))
         {
-            throw new OperationCanceledException(
+            throw new InvalidOperationException(
                 $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build canceled."
             );
         }

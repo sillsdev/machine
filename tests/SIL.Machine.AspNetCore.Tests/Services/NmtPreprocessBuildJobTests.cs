@@ -217,7 +217,7 @@ public class NmtPreprocessBuildJobTests
         using TestEnvironment env = new();
         Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
 
-        Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
             await env.RunBuildJobAsync(corpus1, engineId: "engine2");
         });
