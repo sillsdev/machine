@@ -4,11 +4,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder
     .Services.AddMachine(builder.Configuration)
+    .AddBuildJobService()
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddHangfireJobServer()
     .AddServalPlatformService()
-    .AddBuildJobService()
     .AddClearMLService();
 if (builder.Environment.IsDevelopment())
 {
