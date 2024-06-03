@@ -4,12 +4,14 @@ public class SmtTransferEngineState(
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory,
     ITruecaserFactory truecaserFactory,
+    IOptionsMonitor<SmtTransferEngineOptions> options,
     string engineId
 ) : AsyncDisposableBase
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
     private readonly AsyncLock _lock = new();
 
     private IInteractiveTranslationModel? _smtModel;
@@ -22,10 +24,12 @@ public class SmtTransferEngineState(
     public DateTime LastUsedTime { get; set; } = DateTime.UtcNow;
     public bool IsLoaded => _hybridEngine != null;
 
-    public void InitNew()
+    private string EngineDir => Path.Combine(_options.CurrentValue.EnginesDir, EngineId);
+
+    public async Task InitNewAsync(CancellationToken cancellationToken = default)
     {
-        _smtModelFactory.InitNew(EngineId);
-        _transferEngineFactory.InitNew(EngineId);
+        await _smtModelFactory.InitNewAsync(EngineDir, cancellationToken);
+        await _transferEngineFactory.InitNewAsync(EngineDir, cancellationToken);
     }
 
     public async Task<HybridTranslationEngine> GetHybridEngineAsync(int buildRevision)
@@ -40,11 +44,16 @@ public class SmtTransferEngineState(
 
             if (_hybridEngine is null)
             {
-                var tokenizer = new LatinWordTokenizer();
-                var detokenizer = new LatinWordDetokenizer();
-                var truecaser = await _truecaserFactory.CreateAsync(EngineId);
-                _smtModel = _smtModelFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
-                var transferEngine = _transferEngineFactory.Create(EngineId, tokenizer, detokenizer, truecaser);
+                LatinWordTokenizer tokenizer = new();
+                LatinWordDetokenizer detokenizer = new();
+                ITruecaser truecaser = await _truecaserFactory.CreateAsync(EngineDir);
+                _smtModel = await _smtModelFactory.CreateAsync(EngineDir, tokenizer, detokenizer, truecaser);
+                ITranslationEngine? transferEngine = await _transferEngineFactory.CreateAsync(
+                    EngineDir,
+                    tokenizer,
+                    detokenizer,
+                    truecaser
+                );
                 _hybridEngine = new HybridTranslationEngine(_smtModel, transferEngine)
                 {
                     TargetDetokenizer = detokenizer
@@ -58,9 +67,9 @@ public class SmtTransferEngineState(
     public async Task DeleteDataAsync()
     {
         await UnloadAsync();
-        _smtModelFactory.Cleanup(EngineId);
-        _transferEngineFactory.Cleanup(EngineId);
-        _truecaserFactory.Cleanup(EngineId);
+        await _smtModelFactory.CleanupAsync(EngineDir);
+        await _transferEngineFactory.CleanupAsync(EngineDir);
+        await _truecaserFactory.CleanupAsync(EngineDir);
     }
 
     public async Task CommitAsync(

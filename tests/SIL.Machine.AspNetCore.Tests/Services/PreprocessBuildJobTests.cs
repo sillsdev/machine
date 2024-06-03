@@ -1,7 +1,7 @@
 namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
-public class NmtPreprocessBuildJobTests
+public class PreprocessBuildJobTests
 {
     [Test]
     public async Task RunAsync_FilterOutEverything()
@@ -242,9 +242,9 @@ public class NmtPreprocessBuildJobTests
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService BuildJobService { get; }
-        public ILogger<NmtPreprocessBuildJob> Logger { get; }
+        public ILogger<PreprocessBuildJob> Logger { get; }
         public IClearMLService ClearMLService { get; }
-        public NmtPreprocessBuildJob BuildJob { get; }
+        public PreprocessBuildJob BuildJob { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public Corpus DefaultTextFileCorpus { get; }
@@ -257,7 +257,7 @@ public class NmtPreprocessBuildJobTests
             if (!Sldr.IsInitialized)
                 Sldr.Initialize(offlineMode: true);
 
-            _tempDir = new TempDirectory("NmtPreprocessBuildJobTests");
+            _tempDir = new TempDirectory("PreprocessBuildJobTests");
 
             ZipParatextProject("pt-source1");
             ZipParatextProject("pt-source2");
@@ -447,15 +447,14 @@ public class NmtPreprocessBuildJobTests
                 ],
                 Engines
             );
-            BuildJob = new NmtPreprocessBuildJob(
+            BuildJob = new PreprocessBuildJob(
                 PlatformService,
                 Engines,
                 LockFactory,
                 Logger,
                 BuildJobService,
                 SharedFileService,
-                CorpusService,
-                new LanguageTagService()
+                CorpusService
             )
             {
                 Seed = 1234

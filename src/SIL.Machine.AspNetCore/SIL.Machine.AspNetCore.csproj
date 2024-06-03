@@ -31,6 +31,7 @@
 		<PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="6.0.2" />
 		<PackageReference Include="AspNetCore.HealthChecks.System" Version="6.0.2" />
 		<PackageReference Include="AWSSDK.S3" Version="3.7.205.8" />
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
 		<PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.57.0" />
 		<PackageReference Include="HangFire" Version="1.8.5" />

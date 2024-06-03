@@ -1,32 +1,37 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class UnigramTruecaserFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions) : ITruecaserFactory
+public class UnigramTruecaserFactory : ITruecaserFactory
 {
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
-
-    public async Task<ITruecaser> CreateAsync(string engineId)
+    public async Task<ITruecaser> CreateAsync(string engineDir, CancellationToken cancellationToken = default)
     {
         var truecaser = new UnigramTruecaser();
-        string path = GetModelPath(engineId);
+        string path = GetModelPath(engineDir);
         await truecaser.LoadAsync(path);
         return truecaser;
     }
 
-    public ITrainer CreateTrainer(string engineId, ITokenizer<string, int, string> tokenizer, ITextCorpus corpus)
+    public Task<ITrainer> CreateTrainerAsync(
+        string engineDir,
+        ITokenizer<string, int, string> tokenizer,
+        ITextCorpus corpus,
+        CancellationToken cancellationToken = default
+    )
     {
-        string path = GetModelPath(engineId);
-        return new UnigramTruecaserTrainer(path, corpus) { Tokenizer = tokenizer };
+        string path = GetModelPath(engineDir);
+        ITrainer trainer = new UnigramTruecaserTrainer(path, corpus) { Tokenizer = tokenizer };
+        return Task.FromResult(trainer);
     }
 
-    public void Cleanup(string engineId)
+    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
     {
-        string path = GetModelPath(engineId);
+        string path = GetModelPath(engineDir);
         if (File.Exists(path))
             File.Delete(path);
+        return Task.CompletedTask;
     }
 
-    private string GetModelPath(string engineId)
+    private static string GetModelPath(string engineDir)
     {
-        return Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "unigram-casing-model.txt");
+        return Path.Combine(engineDir, "unigram-casing-model.txt");
     }
 }
