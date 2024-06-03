@@ -36,13 +36,13 @@ public class ModelCleanupService(
             .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1));
 
         // Add SMT engines
-        IEnumerable<string> validSMTModels = allEngines
+        IEnumerable<string> validSmtModels = allEngines
             .Where(e => e.Type == TranslationEngineType.SmtTransfer)
             .Select(e => SmtTransferEngineService.GetModelPath(e.EngineId));
 
         HashSet<string> filenameFilter = validNmtFilenames
             .Concat(validNmtFilenamesForNextBuild)
-            .Concat(validSMTModels)
+            .Concat(validSmtModels)
             .ToHashSet();
 
         foreach (string path in paths)

@@ -76,7 +76,7 @@ public class ClearMLHealthCheck(
 
     public async Task<IReadOnlySet<string>> QueuesWithoutWorkers(CancellationToken cancellationToken = default)
     {
-        ISet<string> queuesWithoutWorkers = _queuesMonitored.ToHashSet();
+        HashSet<string> queuesWithoutWorkers = _queuesMonitored.ToHashSet();
         JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
         JsonNode? workers_node = result?["data"]?["workers"];
         if (workers_node is null)
@@ -95,6 +95,6 @@ public class ClearMLHealthCheck(
                     queuesWithoutWorkers.Remove(currentQueueName);
             }
         }
-        return (IReadOnlySet<string>)queuesWithoutWorkers;
+        return queuesWithoutWorkers;
     }
 }
