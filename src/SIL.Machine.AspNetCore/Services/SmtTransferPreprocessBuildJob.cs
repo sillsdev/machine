@@ -15,5 +15,6 @@ public class SmtTransferPreprocessBuildJob : PreprocessBuildJob
     {
         EngineType = TranslationEngineType.SmtTransfer;
         PretranslationEnabled = false;
+        TrainJobRunnerType = BuildJobRunnerType.Hangfire;
     }
 }
