@@ -43,7 +43,7 @@ public interface ITranslationEngineService
 
     Task<ModelDownloadUrl> GetModelDownloadUrlAsync(string engineId, CancellationToken cancellationToken = default);
 
-    Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default);
+    int GetQueueSize();
 
     bool IsLanguageNativeToModel(string language, out string internalCode);
 }

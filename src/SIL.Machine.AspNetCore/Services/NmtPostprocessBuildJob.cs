@@ -7,10 +7,8 @@ public class NmtPostprocessBuildJob(
     IBuildJobService buildJobService,
     ILogger<NmtPostprocessBuildJob> logger,
     ISharedFileService sharedFileService
-) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, buildJobService, logger)
+) : PostprocessBuildJob(platformService, engines, lockFactory, buildJobService, logger, sharedFileService)
 {
-    private readonly ISharedFileService _sharedFileService = sharedFileService;
-
     protected override async Task DoWorkAsync(
         string engineId,
         string buildId,
@@ -37,45 +35,5 @@ public class NmtPostprocessBuildJob(
         }
 
         Logger.LogInformation("Build completed ({0}).", buildId);
-    }
-
-    protected override async Task CleanupAsync(
-        string engineId,
-        string buildId,
-        (int, double) data,
-        IDistributedReaderWriterLock @lock,
-        JobCompletionStatus completionStatus
-    )
-    {
-        if (completionStatus is JobCompletionStatus.Restarting)
-            return;
-
-        try
-        {
-            if (completionStatus is not JobCompletionStatus.Faulted)
-                await _sharedFileService.DeleteAsync($"builds/{buildId}/");
-        }
-        catch (Exception e)
-        {
-            Logger.LogWarning(e, "Unable to to delete job data for build {0}.", buildId);
-        }
-    }
-
-    private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
-    {
-        await using var targetPretranslateStream = await _sharedFileService.OpenReadAsync(
-            $"builds/{buildId}/pretranslate.trg.json",
-            cancellationToken
-        );
-
-        IAsyncEnumerable<Pretranslation> pretranslations = JsonSerializer
-            .DeserializeAsyncEnumerable<Pretranslation>(
-                targetPretranslateStream,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
-                cancellationToken
-            )
-            .OfType<Pretranslation>();
-
-        await PlatformService.InsertPretranslationsAsync(engineId, pretranslations, cancellationToken);
     }
 }
