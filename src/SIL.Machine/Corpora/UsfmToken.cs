@@ -31,18 +31,30 @@ namespace SIL.Machine.Corpora
 
         private string _defaultAttributeName;
 
-        public UsfmToken(string text)
+        public UsfmToken(string text, int lineNumber = -1, int columnNumber = -1)
         {
             Type = UsfmTokenType.Text;
             Text = text;
+            LineNumber = lineNumber;
+            ColumnNumber = columnNumber;
         }
 
-        public UsfmToken(UsfmTokenType type, string marker, string text, string endMarker, string data = null)
+        public UsfmToken(
+            UsfmTokenType type,
+            string marker,
+            string text,
+            string endMarker,
+            int lineNumber = -1,
+            int columnNumber = -1,
+            string data = null
+        )
         {
             Type = type;
             Marker = marker;
             Text = text;
             Data = data;
+            LineNumber = lineNumber;
+            ColumnNumber = columnNumber;
             EndMarker = endMarker;
         }
 
@@ -55,6 +67,8 @@ namespace SIL.Machine.Corpora
 
         public string Data { get; }
 
+        public int LineNumber { get; }
+        public int ColumnNumber { get; }
         public IReadOnlyList<UsfmAttribute> Attributes { get; private set; }
 
         public string NestlessMarker

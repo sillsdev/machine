@@ -42,11 +42,17 @@ namespace SIL.Machine.Corpora
             List<UsfmToken> tokens = new List<UsfmToken>();
 
             int index = 0; // Current position
+            int lineNum = 1; // Current line number
+            int previousIndex = 0;
             while (index < usfm.Length)
             {
                 int nextMarkerIndex = (index < usfm.Length - 1) ? usfm.IndexOf('\\', index + 1) : -1;
                 if (nextMarkerIndex == -1)
                     nextMarkerIndex = usfm.Length;
+
+                lineNum += usfm.Substring(previousIndex, index - previousIndex).Count(c => c == '\n');
+                int colNum = index - usfm.LastIndexOf('\n', index);
+                previousIndex = index;
 
                 // If text, create text token until end or next \
                 var ch = usfm[index];
@@ -61,11 +67,13 @@ namespace SIL.Machine.Corpora
                         preserveWhitespace,
                         tokens,
                         nextMarkerIndex,
-                        ref text
+                        ref text,
+                        lineNum,
+                        colNum
                     );
 
                     if (text.Length > 0)
-                        tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null));
+                        tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null, lineNum, colNum));
 
                     if (attributeToken != null)
                         tokens.Add(attributeToken);
@@ -159,13 +167,17 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
+                                    lineNum,
+                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
                         }
                         else
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.Character, marker, null, endMarker));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.Character, marker, null, endMarker, lineNum, colNum)
+                            );
                         }
                         break;
                     case UsfmStyleType.Paragraph:
@@ -178,6 +190,8 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
+                                    lineNum,
+                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
@@ -190,13 +204,17 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
+                                    lineNum,
+                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
                             );
                         }
                         else
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker, lineNum, colNum)
+                            );
                         }
 
                         break;
@@ -207,18 +225,20 @@ namespace SIL.Machine.Corpora
                                 marker,
                                 null,
                                 endMarker,
+                                lineNum,
+                                colNum,
                                 GetNextWord(usfm, ref index, preserveWhitespace)
                             )
                         );
                         break;
                     case UsfmStyleType.End:
-                        tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null));
+                        tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null, lineNum, colNum));
                         break;
                     case UsfmStyleType.Unknown:
                         // End tokens are always end tokens, even if unknown
                         if (marker.EndsWith("*", StringComparison.Ordinal))
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null));
+                            tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null, lineNum, colNum));
                         }
                         else
                         {
@@ -226,11 +246,15 @@ namespace SIL.Machine.Corpora
                             // but are always sidebars and so should be tokenized as paragraphs
                             if (marker == "esb" || marker == "esbe")
                             {
-                                tokens.Add(new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker));
+                                tokens.Add(
+                                    new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker, lineNum, colNum)
+                                );
                                 break;
                             }
                             // Create unknown token with a corresponding end note
-                            tokens.Add(new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*"));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*", lineNum, colNum)
+                            );
                         }
                         break;
                     case UsfmStyleType.Milestone:
@@ -247,16 +271,27 @@ namespace SIL.Machine.Corpora
                             // add back space that was removed after marker
                             if (milestoneText.Length > 0 && milestoneText[0] != ' ' && milestoneText[0] != '|')
                                 milestoneText = " " + milestoneText;
-                            tokens.Add(new UsfmToken(UsfmTokenType.Text, null, @"\" + marker + milestoneText, null));
+                            tokens.Add(
+                                new UsfmToken(
+                                    UsfmTokenType.Text,
+                                    null,
+                                    @"\" + marker + milestoneText,
+                                    null,
+                                    lineNum,
+                                    colNum
+                                )
+                            );
                             index = endOfText;
                         }
                         else if (tag.StyleType == UsfmStyleType.Milestone)
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker, lineNum, colNum)
+                            );
                         }
                         else
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null));
+                            tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null, lineNum, colNum));
                         }
 
                         break;
@@ -299,7 +334,8 @@ namespace SIL.Machine.Corpora
                         else if (tokens[i - 1].Type == UsfmTokenType.End)
                         {
                             // Insert space token after * of end marker
-                            tokens.Insert(i, new UsfmToken(UsfmTokenType.Text, null, " ", null));
+                            int colNum = usfm.Length + 1 - Math.Max(usfm.LastIndexOf('\n', index), 0);
+                            tokens.Insert(i, new UsfmToken(UsfmTokenType.Text, null, " ", null, lineNum, colNum));
                             i++;
                         }
                     }
@@ -488,7 +524,9 @@ namespace SIL.Machine.Corpora
             bool preserveWhitespace,
             List<UsfmToken> tokens,
             int nextMarkerIndex,
-            ref string text
+            ref string text,
+            int lineNumber,
+            int columnNumber
         )
         {
             int attributeIndex = text.IndexOf('|');
@@ -530,6 +568,8 @@ namespace SIL.Machine.Corpora
                         matchingTag.Marker,
                         null,
                         null,
+                        lineNumber,
+                        columnNumber + attributeIndex,
                         attributesValue
                     );
                     attributeToken.CopyAttributes(matchingToken);

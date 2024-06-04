@@ -54,7 +54,7 @@ namespace SIL.Machine.Corpora
                 if (!string.IsNullOrEmpty(Project))
                     sb.Append($" in project '{Project}'");
                 sb.Append(
-                    $". Verse: {parser.State.VerseRef}, offset: {parser.State.VerseOffset}, error: '{ex.Message}'"
+                    $". Verse: {parser.State.VerseRef}, line: {parser.State.Token.LineNumber}, column: {parser.State.Token.ColumnNumber}, error: '{ex.Message}'"
                 );
                 throw new InvalidOperationException(sb.ToString(), ex);
             }
