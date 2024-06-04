@@ -5,6 +5,8 @@
 \p Here is another paragraph.
 \p and with a \w keyword|a special concept\w* in it.
 \p and a \weirdtaglookingthing that is not an actual tag.
+\m In the beginning…
+\m \rq The book of Genesis \rq*
 \c 1
 \s Chapter One
 \v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
