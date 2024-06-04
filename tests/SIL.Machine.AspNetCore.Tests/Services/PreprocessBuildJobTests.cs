@@ -223,6 +223,15 @@ public class PreprocessBuildJobTests
         });
     }
 
+    [Test]
+    public async Task RunAsync_UnknownLanguageTagsNoDataSmtTransfer()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
+
+        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+    }
+
     private class TestEnvironment : ObjectModel.DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
@@ -242,9 +251,7 @@ public class PreprocessBuildJobTests
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService BuildJobService { get; }
-        public ILogger<PreprocessBuildJob> Logger { get; }
         public IClearMLService ClearMLService { get; }
-        public PreprocessBuildJob BuildJob { get; }
         public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public Corpus DefaultTextFileCorpus { get; }
@@ -426,7 +433,6 @@ public class PreprocessBuildJobTests
                 )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            Logger = Substitute.For<ILogger<NmtPreprocessBuildJob>>();
             BuildJobService = new BuildJobService(
                 [
                     new HangfireBuildJobRunner(
@@ -447,29 +453,58 @@ public class PreprocessBuildJobTests
                 ],
                 Engines
             );
-            BuildJob = new PreprocessBuildJob(
-                PlatformService,
-                Engines,
-                LockFactory,
-                Logger,
-                BuildJobService,
-                SharedFileService,
-                CorpusService
-            )
-            {
-                Seed = 1234
-            };
         }
 
-        public Task RunBuildJobAsync(Corpus corpus, bool useKeyTerms = true, string engineId = "engine1")
+        public PreprocessBuildJob GetBuildJob(TranslationEngineType engineType)
         {
-            return BuildJob.RunAsync(
-                engineId,
-                "build1",
-                [corpus],
-                useKeyTerms ? null : "{\"use_key_terms\":false}",
-                default
-            );
+            switch (engineType)
+            {
+                case TranslationEngineType.Nmt:
+                {
+                    return new NmtPreprocessBuildJob(
+                        PlatformService,
+                        Engines,
+                        LockFactory,
+                        Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
+                        BuildJobService,
+                        SharedFileService,
+                        CorpusService,
+                        new LanguageTagService()
+                    )
+                    {
+                        Seed = 1234
+                    };
+                }
+                case TranslationEngineType.SmtTransfer:
+                {
+                    return new PreprocessBuildJob(
+                        PlatformService,
+                        Engines,
+                        LockFactory,
+                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        BuildJobService,
+                        SharedFileService,
+                        CorpusService
+                    )
+                    {
+                        Seed = 1234
+                    };
+                }
+                default:
+                    throw new InvalidOperationException("Unknown engine type.");
+            }
+            ;
+        }
+
+        public Task RunBuildJobAsync(
+            Corpus corpus,
+            bool useKeyTerms = true,
+            string engineId = "engine1",
+            TranslationEngineType engineType = TranslationEngineType.Nmt
+        )
+        {
+            return GetBuildJob(engineType)
+                .RunAsync(engineId, "build1", [corpus], useKeyTerms ? null : "{\"use_key_terms\":false}", default);
         }
 
         public async Task<(int Source1Count, int Source2Count, int TargetCount, int TermCount)> GetTrainCountAsync()
