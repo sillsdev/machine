@@ -235,13 +235,15 @@ namespace SIL.Machine.Corpora
             IAlignmentCorpus alignmentCorpus = null,
             bool allSourceRows = false,
             bool allTargetRows = false,
-            IComparer<object> rowRefComparer = null
+            IComparer<object> rowRefComparer = null,
+            IReadOnlyCollection<string> textIds = null
         )
         {
             return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus, rowRefComparer)
             {
                 AllSourceRows = allSourceRows,
-                AllTargetRows = allTargetRows
+                AllTargetRows = allTargetRows,
+                TextIds = textIds
             };
         }
 
@@ -271,13 +273,14 @@ namespace SIL.Machine.Corpora
 
         public static IEnumerable<(string Text, VerseRef RefCorpusVerseRef, VerseRef CorpusVerseRef)> ExtractScripture(
             this ITextCorpus corpus,
-            ITextCorpus refCorpus = null
+            ITextCorpus refCorpus = null,
+            IReadOnlyCollection<string> textIds = null
         )
         {
             if (refCorpus == null)
                 refCorpus = ScriptureTextCorpus.CreateVersificationRefCorpus();
 
-            IParallelTextCorpus parallelCorpus = refCorpus.AlignRows(corpus, allSourceRows: true);
+            IParallelTextCorpus parallelCorpus = refCorpus.AlignRows(corpus, allSourceRows: true, textIds: textIds);
             VerseRef? curRef = null;
             VerseRef? curTrgRef = null;
             var curTrgLine = new StringBuilder();

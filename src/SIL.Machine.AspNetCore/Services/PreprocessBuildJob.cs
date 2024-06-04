@@ -136,7 +136,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 continue;
 
             int skipCount = 0;
-            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
+            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus, GetTrainOnTextIds(corpus)))
             {
                 if (skipCount > 0)
                 {
@@ -179,7 +179,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            foreach (
+                Row row in AlignPretranslateCorpus(
+                    sourceTextCorpora[0],
+                    targetTextCorpus,
+                    GetPretranslateTextIds(corpus)
+                )
+            )
             {
                 if (
                     IsInPretranslate(row, corpus)
@@ -252,6 +258,30 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         return all || textIds.Contains(row.TextId);
     }
 
+    private static IReadOnlyCollection<string>? GetPretranslateTextIds(Corpus corpus)
+    {
+        if (corpus.PretranslateAll)
+            return null;
+        IReadOnlyCollection<string> textIds = corpus.PretranslateTextIds;
+        if (corpus.PretranslateChapters != null)
+        {
+            textIds = textIds.Intersect(corpus.PretranslateChapters.Keys).ToHashSet();
+        }
+        return textIds;
+    }
+
+    private static IReadOnlyCollection<string>? GetTrainOnTextIds(Corpus corpus)
+    {
+        if (corpus.TrainOnAll)
+            return null;
+        IReadOnlyCollection<string> textIds = corpus.TrainOnTextIds;
+        if (corpus.TrainOnChapters != null)
+        {
+            textIds = textIds.Intersect(corpus.TrainOnChapters.Keys).ToHashSet();
+        }
+        return textIds;
+    }
+
     private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
     {
         if (rowRef is not ScriptureRef sr)
@@ -260,19 +290,23 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             && (chapters.Contains(sr.ChapterNum) || chapters.Count == 0);
     }
 
-    private static IEnumerable<Row?[]> AlignTrainCorpus(IReadOnlyList<ITextCorpus> srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row?[]> AlignTrainCorpus(
+        IReadOnlyList<ITextCorpus> srcCorpora,
+        ITextCorpus trgCorpus,
+        IReadOnlyCollection<string>? textIds
+    )
     {
         if (trgCorpus.IsScripture())
         {
             return srcCorpora
-                .Select(sc => AlignScripture(sc, trgCorpus))
+                .Select(sc => AlignScripture(sc, trgCorpus, textIds: textIds))
                 .ZipMany(rows => rows.ToArray())
                 // filter out every list that only contains completely empty rows
                 .Where(rows => rows.Any(r => r is null || r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
         }
 
         IEnumerable<Row[]> sourceOnlyRows = srcCorpora
-            .Select(sc => sc.AlignRows(trgCorpus, allSourceRows: true))
+            .Select(sc => sc.AlignRows(trgCorpus, allSourceRows: true, textIds: textIds))
             .ZipMany(rows =>
                 rows.Where(r => r.TargetSegment.Count == 0)
                     .Select(r => new Row(r.TextId, r.Refs, r.SourceText, r.TargetText, 1))
@@ -280,7 +314,7 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             );
 
         IEnumerable<Row[]> targetRows = srcCorpora
-            .Select(sc => sc.AlignRows(trgCorpus, allTargetRows: true))
+            .Select(sc => sc.AlignRows(trgCorpus, allTargetRows: true, textIds: textIds))
             .ZipMany(rows =>
                 rows.Where(r => r.TargetSegment.Count > 0)
                     .Select(r => new Row(r.TextId, r.Refs, r.SourceText, r.TargetText, 1))
@@ -293,7 +327,11 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             .Where(rows => rows.Any(r => r.SourceSegment.Length > 0 || r.TargetSegment.Length > 0));
     }
 
-    private static IEnumerable<Row?> AlignScripture(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row?> AlignScripture(
+        ITextCorpus srcCorpus,
+        ITextCorpus trgCorpus,
+        IReadOnlyCollection<string>? textIds = null
+    )
     {
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
@@ -301,10 +339,10 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         HashSet<VerseRef> vrefs = [];
         foreach (
             (VerseRef vref, string srcSegment, string trgSegment) in srcCorpus
-                .ExtractScripture()
+                .ExtractScripture(textIds: textIds)
                 .Select(r => (r.CorpusVerseRef, r.Text))
                 .Zip(
-                    trgCorpus.ExtractScripture().Select(r => r.Text),
+                    trgCorpus.ExtractScripture(textIds: textIds).Select(r => r.Text),
                     (s, t) => (VerseRef: s.CorpusVerseRef, SourceSegment: s.Text, TargetSegment: t)
                 )
         )
@@ -375,14 +413,18 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(
+        ITextCorpus srcCorpus,
+        ITextCorpus trgCorpus,
+        IReadOnlyCollection<string>? textIds = null
+    )
     {
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
         List<object> refs = [];
         string textId = "";
-        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true))
+        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true, textIds: textIds))
         {
             if (!row.IsTargetRangeStart && row.IsTargetInRange)
             {

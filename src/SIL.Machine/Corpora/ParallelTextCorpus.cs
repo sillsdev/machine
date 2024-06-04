@@ -13,13 +13,15 @@ namespace SIL.Machine.Corpora
             ITextCorpus sourceCorpus,
             ITextCorpus targetCorpus,
             IAlignmentCorpus alignmentCorpus = null,
-            IComparer<object> rowRefComparer = null
+            IComparer<object> rowRefComparer = null,
+            IReadOnlyCollection<string> textIds = null
         )
         {
             SourceCorpus = sourceCorpus;
             TargetCorpus = targetCorpus;
             AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
+            TextIds = textIds;
         }
 
         public bool IsSourceTokenized => SourceCorpus.IsTokenized;
@@ -32,6 +34,8 @@ namespace SIL.Machine.Corpora
         public ITextCorpus TargetCorpus { get; }
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
+
+        public IReadOnlyCollection<string> TextIds { get; set; }
 
         public int Count(bool includeEmpty = true)
         {
@@ -62,6 +66,8 @@ namespace SIL.Machine.Corpora
                 textIds = sourceTextIds;
             else
                 textIds = targetTextIds;
+            if (TextIds != null)
+                textIds = textIds.Intersect(TextIds);
 
             using (IEnumerator<TextRow> srcEnumerator = SourceCorpus.GetRows(textIds).GetEnumerator())
             using (
