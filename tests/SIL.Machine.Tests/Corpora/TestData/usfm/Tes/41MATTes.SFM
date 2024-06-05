@@ -3,7 +3,7 @@
 \h Matthew
 \mt Matthew
 \ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
-\p Here is another paragraph.
+\p \rq MAT 1\rq* Here is another paragraph.
 \p and with a \w keyword|a special concept\w* in it.
 \p and a \weirdtaglookingthing that is not an actual tag.
 \c 1
@@ -38,7 +38,7 @@
 \p
 \v 6 Chapter two, verse \w six|strong="12345" \w*.
 \p
-\v 6 Bad verse.
+\v 6 Bad verse. \x - \xo abc\xt 123\x* and more content.
 \p
 \v 5 Chapter two, verse five \rq (MAT 3:1)\rq*.
 \v 7a Chapter two, verse seven A,

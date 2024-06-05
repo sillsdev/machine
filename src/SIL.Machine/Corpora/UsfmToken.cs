@@ -55,6 +55,8 @@ namespace SIL.Machine.Corpora
 
         public string Data { get; }
 
+        public int LineNumber { get; internal set; } = -1;
+        public int ColumnNumber { get; internal set; } = -1;
         public IReadOnlyList<UsfmAttribute> Attributes { get; private set; }
 
         public string NestlessMarker

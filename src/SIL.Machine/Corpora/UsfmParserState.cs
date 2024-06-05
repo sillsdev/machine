@@ -19,6 +19,8 @@ namespace SIL.Machine.Corpora
             _stack = new List<UsfmParserElement>();
             VerseRef = new VerseRef(versification);
             VerseOffset = 0;
+            LineNumber = 1;
+            ColumnNumber = 0;
             Tokens = tokens;
         }
 
@@ -58,6 +60,9 @@ namespace SIL.Machine.Corpora
         /// Offset of start of token in verse
         /// </summary>
         public int VerseOffset { get; internal set; }
+
+        public int LineNumber { get; internal set; }
+        public int ColumnNumber { get; internal set; }
 
         /// <summary>
         /// True if the token processed is part of a special indivisible group

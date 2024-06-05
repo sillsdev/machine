@@ -8,7 +8,7 @@ public class UsfmManualTests
 {
     [Test]
     [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
-    public void ParseParallelCorpus()
+    public async Task ParseParallelCorpusAsync()
     {
         ParatextTextCorpus tCorpus =
             new(projectDir: CorporaTestHelpers.UsfmTargetProjectPath, includeAllText: true, includeMarkers: true);
@@ -25,6 +25,30 @@ public class UsfmManualTests
 
         List<ParallelTextRow> rows = pCorpus.GetRows().ToList();
         Assert.That(rows, Has.Count.GreaterThan(0));
+
+        // insert the source into the target as pretranslations to make sure that USFM generation works
+        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = rows.Select(r =>
+                ((IReadOnlyList<ScriptureRef>)r.SourceRefs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
+            )
+            .ToList();
+
+        ParatextProjectSettings targetSettings = new FileParatextProjectSettingsParser(
+            CorporaTestHelpers.UsfmTargetProjectPath
+        ).Parse();
+
+        foreach (
+            string sfmFileName in Directory.EnumerateFiles(
+                CorporaTestHelpers.UsfmTargetProjectPath,
+                $"{targetSettings.FileNamePrefix}*{targetSettings.FileNameSuffix}"
+            )
+        )
+        {
+            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: false);
+            string usfm = await File.ReadAllTextAsync(sfmFileName);
+            UsfmParser.Parse(usfm, updater, targetSettings.Stylesheet, targetSettings.Versification);
+            string newUsfm = updater.GetUsfm(targetSettings.Stylesheet);
+            Assert.That(newUsfm, Is.Not.Null);
+        }
     }
 
     public record PretranslationDto
