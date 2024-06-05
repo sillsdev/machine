@@ -150,31 +150,40 @@ namespace SIL.Machine.Corpora
 
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
-            NextElement(marker);
-            StartNoteText(state);
+            // ignore a note in a duplicate verse
+            if (!_duplicateVerse)
+            {
+                // if we hit a note in a verse paragraph and we aren't in a verse, then start a non-verse segment
+                CheckConvertVerseParaToNonVerse(state);
+                NextElement(marker);
+                StartNoteText(state);
+            }
         }
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
-            EndNoteText(state);
+            // ignore a note in a duplicate verse
+            if (!_duplicateVerse)
+                EndNoteText(state);
         }
 
         public override void Text(UsfmParserState state, string text)
         {
             // if we hit text in a verse paragraph and we aren't in a verse, then start a non-verse segment
-            UsfmTag paraTag = state.ParaTag;
-            if (
-                CurrentTextType == ScriptureTextType.None
-                && paraTag != null
-                && paraTag.Marker != "tr"
-                && state.IsVerseText
-                && _curVerseRef.VerseNum == 0
-                && text.Trim().Length > 0
-            )
-            {
-                StartParentElement(paraTag.Marker);
-                StartNonVerseText(state);
-            }
+            if (text.Trim().Length > 0)
+                CheckConvertVerseParaToNonVerse(state);
+        }
+
+        public override void StartChar(
+            UsfmParserState state,
+            string markerWithoutPlus,
+            bool unknown,
+            IReadOnlyList<UsfmAttribute> attributes
+        )
+        {
+            // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
+            // segment
+            CheckConvertVerseParaToNonVerse(state);
         }
 
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
@@ -268,6 +277,22 @@ namespace SIL.Machine.Corpora
                 _curVerseRef.HasMultiple ? _curVerseRef.AllVerses().Last() : _curVerseRef,
                 _curElements.Where(e => e.Position > 0).Reverse()
             );
+        }
+
+        private void CheckConvertVerseParaToNonVerse(UsfmParserState state)
+        {
+            UsfmTag paraTag = state.ParaTag;
+            if (
+                CurrentTextType == ScriptureTextType.None
+                && paraTag != null
+                && paraTag.Marker != "tr"
+                && state.IsVersePara
+                && _curVerseRef.VerseNum == 0
+            )
+            {
+                StartParentElement(paraTag.Marker);
+                StartNonVerseText(state);
+            }
         }
     }
 }

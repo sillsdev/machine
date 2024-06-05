@@ -73,7 +73,15 @@ namespace SIL.Machine.Corpora
                     );
 
                     if (text.Length > 0)
-                        tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null, lineNum, colNum));
+                    {
+                        tokens.Add(
+                            new UsfmToken(UsfmTokenType.Text, null, text, null)
+                            {
+                                LineNumber = lineNum,
+                                ColumnNumber = colNum
+                            }
+                        );
+                    }
 
                     if (attributeToken != null)
                         tokens.Add(attributeToken);
@@ -167,16 +175,22 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
-                                    lineNum,
-                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         else
                         {
                             tokens.Add(
-                                new UsfmToken(UsfmTokenType.Character, marker, null, endMarker, lineNum, colNum)
+                                new UsfmToken(UsfmTokenType.Character, marker, null, endMarker)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         break;
@@ -190,10 +204,12 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
-                                    lineNum,
-                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         else if ((tag.TextProperties & UsfmTextProperties.Book) > 0)
@@ -204,16 +220,22 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
-                                    lineNum,
-                                    colNum,
                                     GetNextWord(usfm, ref index, preserveWhitespace)
                                 )
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         else
                         {
                             tokens.Add(
-                                new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker, lineNum, colNum)
+                                new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
 
@@ -225,20 +247,34 @@ namespace SIL.Machine.Corpora
                                 marker,
                                 null,
                                 endMarker,
-                                lineNum,
-                                colNum,
                                 GetNextWord(usfm, ref index, preserveWhitespace)
                             )
+                            {
+                                LineNumber = lineNum,
+                                ColumnNumber = colNum
+                            }
                         );
                         break;
                     case UsfmStyleType.End:
-                        tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null, lineNum, colNum));
+                        tokens.Add(
+                            new UsfmToken(UsfmTokenType.End, marker, null, null)
+                            {
+                                LineNumber = lineNum,
+                                ColumnNumber = colNum
+                            }
+                        );
                         break;
                     case UsfmStyleType.Unknown:
                         // End tokens are always end tokens, even if unknown
                         if (marker.EndsWith("*", StringComparison.Ordinal))
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.End, marker, null, null, lineNum, colNum));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.End, marker, null, null)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
+                            );
                         }
                         else
                         {
@@ -247,13 +283,21 @@ namespace SIL.Machine.Corpora
                             if (marker == "esb" || marker == "esbe")
                             {
                                 tokens.Add(
-                                    new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker, lineNum, colNum)
+                                    new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker)
+                                    {
+                                        LineNumber = lineNum,
+                                        ColumnNumber = colNum
+                                    }
                                 );
                                 break;
                             }
                             // Create unknown token with a corresponding end note
                             tokens.Add(
-                                new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*", lineNum, colNum)
+                                new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*")
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         break;
@@ -272,26 +316,33 @@ namespace SIL.Machine.Corpora
                             if (milestoneText.Length > 0 && milestoneText[0] != ' ' && milestoneText[0] != '|')
                                 milestoneText = " " + milestoneText;
                             tokens.Add(
-                                new UsfmToken(
-                                    UsfmTokenType.Text,
-                                    null,
-                                    @"\" + marker + milestoneText,
-                                    null,
-                                    lineNum,
-                                    colNum
-                                )
+                                new UsfmToken(UsfmTokenType.Text, null, @"\" + marker + milestoneText, null)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                             index = endOfText;
                         }
                         else if (tag.StyleType == UsfmStyleType.Milestone)
                         {
                             tokens.Add(
-                                new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker, lineNum, colNum)
+                                new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
                             );
                         }
                         else
                         {
-                            tokens.Add(new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null, lineNum, colNum));
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
+                            );
                         }
 
                         break;
@@ -335,7 +386,14 @@ namespace SIL.Machine.Corpora
                         {
                             // Insert space token after * of end marker
                             int colNum = usfm.Length + 1 - Math.Max(usfm.LastIndexOf('\n', index), 0);
-                            tokens.Insert(i, new UsfmToken(UsfmTokenType.Text, null, " ", null, lineNum, colNum));
+                            tokens.Insert(
+                                i,
+                                new UsfmToken(UsfmTokenType.Text, null, " ", null)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
+                            );
                             i++;
                         }
                     }
@@ -568,10 +626,12 @@ namespace SIL.Machine.Corpora
                         matchingTag.Marker,
                         null,
                         null,
-                        lineNumber,
-                        columnNumber + attributeIndex,
                         attributesValue
-                    );
+                    )
+                    {
+                        LineNumber = lineNumber,
+                        ColumnNumber = columnNumber + attributeIndex
+                    };
                     attributeToken.CopyAttributes(matchingToken);
                 }
             }

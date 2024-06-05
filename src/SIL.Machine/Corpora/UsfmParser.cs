@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
 
@@ -43,19 +41,7 @@ namespace SIL.Machine.Corpora
                 versification,
                 preserveWhitespace
             );
-            try
-            {
-                parser.ProcessTokens();
-            }
-            catch (Exception ex)
-            {
-                var sb = new StringBuilder();
-                sb.Append(
-                    $"An error occurred while parsing the USFM text Verse: {parser.State.VerseRef}, "
-                        + $"line: {parser.State.Token.LineNumber}, column: {parser.State.Token.ColumnNumber}, error: '{ex.Message}'"
-                );
-                throw new InvalidOperationException(sb.ToString(), ex);
-            }
+            parser.ProcessTokens();
         }
 
         private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
@@ -166,6 +152,9 @@ namespace SIL.Machine.Corpora
 
             // Move to next token
             State.Index++;
+
+            State.LineNumber = State.Token.LineNumber;
+            State.ColumnNumber = State.Token.ColumnNumber;
 
             // Update verse offset with previous token (since verse offset is from start of current token)
             if (State.PrevToken != null)

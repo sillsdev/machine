@@ -53,9 +53,8 @@ namespace SIL.Machine.Corpora
                 sb.Append($"An error occurred while parsing the text '{Id}`");
                 if (!string.IsNullOrEmpty(Project))
                     sb.Append($" in project '{Project}'");
-                sb.Append(
-                    $". Verse: {parser.State.VerseRef}, line: {parser.State.Token.LineNumber}, column: {parser.State.Token.ColumnNumber}, error: '{ex.Message}'"
-                );
+                sb.Append($". Verse: {parser.State.VerseRef}, line: {parser.State.LineNumber}, ");
+                sb.Append($"column: {parser.State.ColumnNumber}, error: '{ex.Message}'");
                 throw new InvalidOperationException(sb.ToString(), ex);
             }
             return rowCollector.Rows;
@@ -167,6 +166,9 @@ namespace SIL.Machine.Corpora
             )
             {
                 base.EndChar(state, marker, attributes, closed);
+
+                if (_rowTexts.Count == 0)
+                    return;
 
                 if (_text._includeMarkers && attributes != null && state.PrevToken?.Type == UsfmTokenType.Attribute)
                     _rowTexts.Peek().Append(state.PrevToken);

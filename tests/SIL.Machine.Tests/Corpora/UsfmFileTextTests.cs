@@ -73,7 +73,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(50));
+        Assert.That(rows, Has.Length.EqualTo(49));
 
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:h", corpus.Versification)));
         Assert.That(rows[0].Text, Is.EqualTo("Matthew"));
@@ -88,7 +88,7 @@ public class UsfmFileTextTests
         Assert.That(rows[3].Text, Is.EqualTo("This is an endnote."));
 
         Assert.That(rows[4].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/4:p", corpus.Versification)));
-        Assert.That(rows[4].Text, Is.EqualTo("Here is another paragraph."));
+        Assert.That(rows[4].Text, Is.EqualTo("MAT 1 Here is another paragraph."));
 
         Assert.That(
             rows[7].Ref,
@@ -132,11 +132,11 @@ public class UsfmFileTextTests
         Assert.That(rows[30].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/1:esb/2:p", corpus.Versification)));
         Assert.That(rows[30].Text, Is.EqualTo("Here is some sidebar content."));
 
-        Assert.That(rows[37].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:7a/1:s", corpus.Versification)));
-        Assert.That(rows[37].Text, Is.EqualTo("Section header"));
+        Assert.That(rows[36].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:7a/1:s", corpus.Versification)));
+        Assert.That(rows[36].Text, Is.EqualTo("Section header"));
 
-        Assert.That(rows[44].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:12/1:restore", corpus.Versification)));
-        Assert.That(rows[44].Text, Is.EqualTo("restore information"));
+        Assert.That(rows[43].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:12/1:restore", corpus.Versification)));
+        Assert.That(rows[43].Text, Is.EqualTo("restore information"));
     }
 
     [Test]
