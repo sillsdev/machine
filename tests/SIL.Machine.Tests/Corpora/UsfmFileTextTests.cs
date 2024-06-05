@@ -88,7 +88,7 @@ public class UsfmFileTextTests
         Assert.That(rows[3].Text, Is.EqualTo("This is an endnote."));
 
         Assert.That(rows[4].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/4:p", corpus.Versification)));
-        Assert.That(rows[4].Text, Is.EqualTo("Here is another paragraph."));
+        Assert.That(rows[4].Text, Is.EqualTo("MAT 1 Here is another paragraph."));
 
         Assert.That(
             rows[7].Ref,

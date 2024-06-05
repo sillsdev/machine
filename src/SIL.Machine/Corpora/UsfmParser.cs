@@ -153,6 +153,9 @@ namespace SIL.Machine.Corpora
             // Move to next token
             State.Index++;
 
+            State.LineNumber = State.Token.LineNumber;
+            State.ColumnNumber = State.Token.ColumnNumber;
+
             // Update verse offset with previous token (since verse offset is from start of current token)
             if (State.PrevToken != null)
                 State.VerseOffset += State.PrevToken.GetLength(addSpaces: !TokensPreserveWhitespace);
