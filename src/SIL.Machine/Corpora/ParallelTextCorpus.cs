@@ -7,7 +7,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public class ParallelTextCorpus : IParallelTextCorpus
+    public class ParallelTextCorpus : ParallelTextCorpusBase
     {
         public ParallelTextCorpus(
             ITextCorpus sourceCorpus,
@@ -22,8 +22,8 @@ namespace SIL.Machine.Corpora
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
         }
 
-        public bool IsSourceTokenized => SourceCorpus.IsTokenized;
-        public bool IsTargetTokenized => TargetCorpus.IsTokenized;
+        public override bool IsSourceTokenized => SourceCorpus.IsTokenized;
+        public override bool IsTargetTokenized => TargetCorpus.IsTokenized;
 
         public bool AllSourceRows { get; set; }
         public bool AllTargetRows { get; set; }
@@ -33,45 +33,45 @@ namespace SIL.Machine.Corpora
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
 
-        public int Count(bool includeEmpty = true)
-        {
-            return includeEmpty ? GetRows().Count() : GetRows().Count(r => !r.IsEmpty);
-        }
-
-        public IEnumerator<ParallelTextRow> GetEnumerator()
-        {
-            return GetRows().GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public IEnumerable<ParallelTextRow> GetRows()
+        public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
         {
             IEnumerable<string> sourceTextIds = SourceCorpus.Texts.Select(t => t.Id);
             IEnumerable<string> targetTextIds = TargetCorpus.Texts.Select(t => t.Id);
 
-            IEnumerable<string> textIds;
+            HashSet<string> filterTextIds;
             if (AllSourceRows && AllTargetRows)
-                textIds = sourceTextIds.Union(targetTextIds);
+            {
+                filterTextIds = new HashSet<string>(sourceTextIds);
+                filterTextIds.UnionWith(targetTextIds);
+            }
             else if (!AllSourceRows && !AllTargetRows)
-                textIds = sourceTextIds.Intersect(targetTextIds);
+            {
+                filterTextIds = new HashSet<string>(sourceTextIds);
+                filterTextIds.IntersectWith(targetTextIds);
+            }
             else if (AllSourceRows)
-                textIds = sourceTextIds;
+            {
+                filterTextIds = new HashSet<string>(sourceTextIds);
+            }
             else
-                textIds = targetTextIds;
+            {
+                filterTextIds = new HashSet<string>(targetTextIds);
+            }
 
-            using (IEnumerator<TextRow> srcEnumerator = SourceCorpus.GetRows(textIds).GetEnumerator())
+            if (textIds != null)
+                filterTextIds.IntersectWith(textIds);
+
+            using (IEnumerator<TextRow> srcEnumerator = SourceCorpus.GetRows(filterTextIds).GetEnumerator())
             using (
                 var trgEnumerator = new TargetCorpusEnumerator(
-                    TargetCorpus.GetRows(textIds).GetEnumerator(),
+                    TargetCorpus.GetRows(filterTextIds).GetEnumerator(),
                     SourceCorpus.Versification,
                     TargetCorpus.Versification
                 )
             )
-            using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(textIds).GetEnumerator())
+            using (
+                IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetRows(filterTextIds).GetEnumerator()
+            )
             {
                 var rangeInfo = new RangeInfo { TargetVersification = TargetCorpus.Versification };
                 var sourceSameRefRows = new List<TextRow>();
@@ -363,11 +363,11 @@ namespace SIL.Machine.Corpora
 
             object[] sourceRefs = srcRow != null ? new object[] { srcRow.Ref } : Array.Empty<object>();
             object[] targetRefs = trgRow != null ? new object[] { trgRow.Ref } : Array.Empty<object>();
-            if (targetRefs.Length == 0 && TargetCorpus is ScriptureTextCorpus stc)
+            if (targetRefs.Length == 0 && TargetCorpus.IsScripture())
             {
                 targetRefs = sourceRefs
                     .Cast<ScriptureRef>()
-                    .Select(r => r.ChangeVersification(stc.Versification))
+                    .Select(r => r.ChangeVersification(TargetCorpus.Versification))
                     .Cast<object>()
                     .ToArray();
             }

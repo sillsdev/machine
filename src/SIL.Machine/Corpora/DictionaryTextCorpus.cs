@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public class DictionaryTextCorpus : CorpusBase<TextRow>, ITextCorpus
+    public class DictionaryTextCorpus : ITextCorpus
     {
         public DictionaryTextCorpus(params IText[] texts)
             : this((IEnumerable<IText>)texts) { }
@@ -24,9 +25,20 @@ namespace SIL.Machine.Corpora
 
         public ScrVers Versification { get; set; }
 
-        public override int Count(bool includeEmpty = true)
+        int ICorpus<TextRow>.Count(bool includeEmpty)
         {
-            return Texts.Sum(t => t.Count(includeEmpty));
+            return Count(includeEmpty, null);
+        }
+
+        public int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
+        {
+            IEnumerable<IText> texts = Texts;
+            if (textIds != null)
+            {
+                var textIdSet = new HashSet<string>(textIds);
+                texts = texts.Where(t => textIds.Contains(t.Id));
+            }
+            return texts.Sum(t => t.Count(includeEmpty));
         }
 
         public bool TryGetText(string id, out IText text)
@@ -39,15 +51,30 @@ namespace SIL.Machine.Corpora
             TextDictionary[text.Id] = text;
         }
 
-        public override IEnumerable<TextRow> GetRows()
+        public IEnumerable<TextRow> GetRows()
         {
             return GetRows(null);
         }
 
         public IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
         {
-            var textIdSet = new HashSet<string>(textIds ?? TextDictionary.Keys);
-            return Texts.Where(t => textIdSet.Contains(t.Id)).SelectMany(t => t.GetRows());
+            IEnumerable<IText> texts = Texts;
+            if (textIds != null)
+            {
+                var textIdSet = new HashSet<string>(textIds);
+                texts = texts.Where(t => textIds.Contains(t.Id));
+            }
+            return texts.SelectMany(t => t.GetRows());
+        }
+
+        public IEnumerator<TextRow> GetEnumerator()
+        {
+            return GetRows().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

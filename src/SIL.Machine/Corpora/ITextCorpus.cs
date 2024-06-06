@@ -7,10 +7,12 @@ namespace SIL.Machine.Corpora
     {
         IEnumerable<IText> Texts { get; }
 
-        IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
-
         bool IsTokenized { get; }
 
         ScrVers Versification { get; }
+
+        int Count(bool includeEmpty = true, IEnumerable<string> textIds = null);
+
+        IEnumerable<TextRow> GetRows(IEnumerable<string> textIds);
     }
 }

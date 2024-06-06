@@ -376,25 +376,23 @@ public class NmtPreprocessBuildJobTests
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             Logger = Substitute.For<ILogger<NmtPreprocessBuildJob>>();
             BuildJobService = new BuildJobService(
-                new IBuildJobRunner[]
-                {
+                [
                     new HangfireBuildJobRunner(
                         Substitute.For<IBackgroundJobClient>(),
-                        new[] { new NmtHangfireBuildJobFactory() }
+                        [new NmtHangfireBuildJobFactory()]
                     ),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
-                        new[]
-                        {
+                        [
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
                                 Engines,
                                 Options
                             )
-                        }
+                        ]
                     )
-                },
+                ],
                 Engines,
                 new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
             );
