@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
@@ -21,7 +22,6 @@ namespace SIL.Machine.Corpora
 
         public ParatextBackupTermsCorpus(string fileName, IEnumerable<string> termCategories)
         {
-            List<TextRow> rows = new List<TextRow>();
             using (var archive = ZipFile.OpenRead(fileName))
             {
                 ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
@@ -41,24 +41,36 @@ namespace SIL.Machine.Corpora
 
                 XDocument biblicalTermsDoc;
                 IDictionary<string, string> termIdToCategoryDictionary;
-                if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
+                if (settings.BiblicalTermsListType == "Project")
+                {
+                    if (biblicalTermsFileEntry != null)
+                    {
+                        using (Stream keyTermsFile = biblicalTermsFileEntry.Open())
+                        {
+                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                            termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                        }
+                    }
+                    else
+                    {
+                        using (
+                            Stream keyTermsFile = Assembly
+                                .GetExecutingAssembly()
+                                .GetManifestResourceStream("SIL.Machine.Corpora.BiblicalTerms.xml")
+                        )
+                        {
+                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                            termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                        }
+                    }
+                }
+                else if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
                 {
                     using (
                         Stream keyTermsFile = Assembly
                             .GetExecutingAssembly()
                             .GetManifestResourceStream("SIL.Machine.Corpora." + settings.BiblicalTermsFileName)
                     )
-                    {
-                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                    }
-                }
-                else if (
-                    settings.BiblicalTermsListType == "Project"
-                    && settings.BiblicalTermsProjectName == settings.Name
-                )
-                {
-                    using (Stream keyTermsFile = biblicalTermsFileEntry.Open())
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -75,6 +87,7 @@ namespace SIL.Machine.Corpora
 
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
+                List<TextRow> rows = new List<TextRow>();
                 foreach (XElement element in termsElements)
                 {
                     string id = element.Attribute("Id").Value;
@@ -160,6 +173,7 @@ namespace SIL.Machine.Corpora
             return biblicalTermsDocument
                 .Descendants()
                 .Where(n => n.Name.LocalName == "Term")
+                .DistinctBy(e => e.Attribute("Id").Value)
                 .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
         }
     }
