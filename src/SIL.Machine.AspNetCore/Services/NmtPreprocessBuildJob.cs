@@ -149,7 +149,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     continue;
                 }
 
-                Row[] trainRows = rows.Where(r => IsIncluded(r, corpus.TrainOnChapters)).Cast<Row>().ToArray();
+                Row[] trainRows = rows.Where(row => IsInTrain(row, corpus)).Cast<Row>().ToArray();
                 if (trainRows.Length > 0)
                 {
                     Row row = trainRows[0];
@@ -187,7 +187,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             foreach (Row row in AlignPretranslateCorpus(corpus, sourceTextCorpora[0], targetTextCorpus))
             {
                 if (
-                    IsIncluded(row, corpus.PretranslateChapters)
+                    IsInPretranslate(row, corpus)
                     && row.SourceSegment.Length > 0
                     && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
                 )
@@ -231,22 +231,32 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static bool IsInTrain(Row row, Corpus corpus)
+    private static bool IsInTrain(Row? row, Corpus corpus)
     {
-        if (corpus.TrainOnChapters is not null)
-        {
-            if (row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r)))
-                return true;
-        }
-        return corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId);
+        return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
-    private static bool IsIncluded(Row? row, IReadOnlyDictionary<string, HashSet<int>>? chapters)
+    private static bool IsInPretranslate(Row? row, Corpus corpus)
+    {
+        return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
+    }
+
+    private static bool IsIncluded(
+        Row? row,
+        IReadOnlySet<string>? textIds,
+        IReadOnlyDictionary<string, HashSet<int>>? chapters
+    )
     {
         if (row is null)
             return false;
         if (chapters is not null)
+        {
             return row.Refs.Any(r => IsInChapters(chapters, r));
+        }
+        if (textIds is not null)
+        {
+            return textIds.Contains(row.TextId);
+        }
         return true;
     }
 
@@ -264,14 +274,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         ITextCorpus trgCorpus
     )
     {
-        if (!corpus.TrainOnAll)
-        {
-            IEnumerable<string> textIds = corpus.TrainOnChapters is not null
-                ? corpus.TrainOnChapters.Keys
-                : corpus.TrainOnTextIds;
-            srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
-            trgCorpus = trgCorpus.FilterTexts(textIds);
-        }
+        IEnumerable<string>? textIds = corpus.TrainOnChapters is not null
+            ? corpus.TrainOnChapters.Keys
+            : corpus.TrainOnTextIds;
+        srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
+        trgCorpus = trgCorpus.FilterTexts(textIds);
 
         if (trgCorpus.IsScripture())
         {
@@ -388,14 +395,11 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
     {
-        if (!corpus.PretranslateAll)
-        {
-            IEnumerable<string> textIds = corpus.PretranslateChapters is not null
-                ? corpus.PretranslateChapters.Keys
-                : corpus.PretranslateTextIds;
-            srcCorpus = srcCorpus.FilterTexts(textIds);
-            trgCorpus = trgCorpus.FilterTexts(textIds);
-        }
+        IEnumerable<string>? textIds = corpus.PretranslateChapters is not null
+            ? corpus.PretranslateChapters.Keys
+            : corpus.PretranslateTextIds;
+        srcCorpus = srcCorpus.FilterTexts(textIds);
+        trgCorpus = trgCorpus.FilterTexts(textIds);
 
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
