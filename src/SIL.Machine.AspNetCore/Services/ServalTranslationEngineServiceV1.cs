@@ -285,23 +285,28 @@ public class ServalTranslationEngineServiceV1(
 
     private static Models.Corpus Map(Serval.Translation.V1.Corpus source)
     {
+        var pretranslateChapters = source.PretranslateChapters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Chapters.ToHashSet()
+        );
+        FilterChoice pretranslateFilter = GetFilterChoice(source.PretranslateAll, pretranslateChapters);
+
+        var trainOnChapters = source.TrainOnChapters.ToDictionary(
+            kvp => kvp.Key,
+            kvp => kvp.Value.Chapters.ToHashSet()
+        );
+        FilterChoice trainingFilter = GetFilterChoice(source.TrainOnAll, trainOnChapters);
+
         return new Models.Corpus
         {
             Id = source.Id,
             SourceLanguage = source.SourceLanguage,
             TargetLanguage = source.TargetLanguage,
-            TrainOnAll = source.TrainOnAll,
-            PretranslateAll = source.PretranslateAll,
-            TrainOnChapters = source.TrainOnChapters.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Chapters.ToHashSet()
-            ),
-            PretranslateChapters = source.PretranslateChapters.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Chapters.ToHashSet()
-            ),
-            TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
-            PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
+            TrainOnChapters = trainingFilter == FilterChoice.Chapters ? trainOnChapters : null,
+            PretranslateChapters = pretranslateFilter == FilterChoice.Chapters ? pretranslateChapters : null,
+            TrainOnTextIds = trainingFilter == FilterChoice.TextIds ? source.TrainOnTextIds.ToHashSet() : null,
+            PretranslateTextIds =
+                pretranslateFilter == FilterChoice.TextIds ? source.PretranslateTextIds.ToHashSet() : null,
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
             TargetFiles = source.TargetFiles.Select(Map).ToList()
         };
@@ -315,5 +320,25 @@ public class ServalTranslationEngineServiceV1(
             Format = (Models.FileFormat)source.Format,
             TextId = source.TextId
         };
+    }
+
+    private enum FilterChoice
+    {
+        Chapters,
+        TextIds,
+        None
+    }
+
+    private static FilterChoice GetFilterChoice(bool all, IReadOnlyDictionary<string, HashSet<int>> chapters)
+    {
+        if (all)
+            return FilterChoice.None;
+
+        // Only either textIds or Scripture Range will be used at a time
+        // TextIds may be an empty array, so prefer that if both are empty (which applies to both scripture and text)
+        if (chapters.Count == 0)
+            return FilterChoice.TextIds;
+        else
+            return FilterChoice.Chapters;
     }
 }

@@ -233,20 +233,28 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private static bool IsInTrain(Row row, Corpus corpus)
     {
-        if (corpus.TrainOnChapters is not null)
-        {
-            if (row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r)))
-                return true;
-        }
-        return corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId);
+        return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
-    private static bool IsIncluded(Row? row, IReadOnlyDictionary<string, HashSet<int>>? chapters)
+    private static bool IsInPretranslate(Row row, Corpus corpus)
     {
-        if (row is null)
-            return false;
+        return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
+    }
+
+    private static bool IsIncluded(
+        Row row,
+        IReadOnlySet<string>? textIds,
+        IReadOnlyDictionary<string, HashSet<int>>? chapters
+    )
+    {
         if (chapters is not null)
+        {
             return row.Refs.Any(r => IsInChapters(chapters, r));
+        }
+        if (textIds is not null)
+        {
+            return textIds.Contains(row.TextId);
+        }
         return true;
     }
 
