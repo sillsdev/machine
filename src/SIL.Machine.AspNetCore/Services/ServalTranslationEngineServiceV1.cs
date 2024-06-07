@@ -292,14 +292,14 @@ public class ServalTranslationEngineServiceV1(
             TargetLanguage = source.TargetLanguage,
             TrainOnAll = source.TrainOnAll,
             PretranslateAll = source.PretranslateAll,
-            TrainOnChapters = source.TrainOnChapters.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Chapters.ToHashSet()
-            ),
-            PretranslateChapters = source.PretranslateChapters.ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value.Chapters.ToHashSet()
-            ),
+            TrainOnChapters =
+                source.TrainOnChapters.Count == 0
+                    ? null
+                    : source.TrainOnChapters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Chapters.ToHashSet()),
+            PretranslateChapters =
+                source.PretranslateChapters.Count == 0
+                    ? null
+                    : source.PretranslateChapters.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Chapters.ToHashSet()),
             TrainOnTextIds = source.TrainOnTextIds.ToHashSet(),
             PretranslateTextIds = source.PretranslateTextIds.ToHashSet(),
             SourceFiles = source.SourceFiles.Select(Map).ToList(),
