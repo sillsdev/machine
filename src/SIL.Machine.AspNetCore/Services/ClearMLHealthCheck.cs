@@ -3,12 +3,15 @@ namespace SIL.Machine.AspNetCore.Services;
 public class ClearMLHealthCheck(
     IClearMLAuthenticationService clearMLAuthenticationService,
     IHttpClientFactory httpClientFactory,
-    IOptionsMonitor<ClearMLOptions> options
+    IOptionsMonitor<BuildJobOptions> buildJobOptions
 ) : IHealthCheck
 {
     private readonly HttpClient _httpClient = httpClientFactory.CreateClient("ClearML-NoRetry");
-    private readonly IOptionsMonitor<ClearMLOptions> _options = options;
     private readonly IClearMLAuthenticationService _clearMLAuthenticationService = clearMLAuthenticationService;
+    private readonly ISet<string> _queuesMonitored = buildJobOptions
+        .CurrentValue.ClearML.Select(x => x.Queue)
+        .ToHashSet();
+
     private int _numConsecutiveFailures = 0;
     private readonly AsyncLock _lock = new AsyncLock();
 
@@ -21,10 +24,11 @@ public class ClearMLHealthCheck(
         {
             if (!await PingAsync(cancellationToken))
                 return HealthCheckResult.Unhealthy("ClearML is unresponsive");
-            if (!await WorkersAreAssignedToQueue(cancellationToken))
+            IReadOnlySet<string> queuesWithoutWorkers = await QueuesWithoutWorkers(cancellationToken);
+            if (queuesWithoutWorkers.Count > 0)
             {
                 return HealthCheckResult.Unhealthy(
-                    $"No ClearML agents are available for configured queue \"{_options.CurrentValue.Queue}\""
+                    $"No ClearML agents are available for configured queues: {string.Join(", ", queuesWithoutWorkers)}"
                 );
             }
 
@@ -70,8 +74,9 @@ public class ClearMLHealthCheck(
         return result is not null;
     }
 
-    public async Task<bool> WorkersAreAssignedToQueue(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlySet<string>> QueuesWithoutWorkers(CancellationToken cancellationToken = default)
     {
+        HashSet<string> queuesWithoutWorkers = _queuesMonitored.ToHashSet();
         JsonObject? result = await CallAsync("workers", "get_all", new JsonObject(), cancellationToken);
         JsonNode? workers_node = result?["data"]?["workers"];
         if (workers_node is null)
@@ -83,12 +88,13 @@ public class ClearMLHealthCheck(
             if (queues_node is null)
                 continue;
             JsonArray queues = (JsonArray)queues_node;
-            foreach (var queue in queues)
+            foreach (var currentQueue in queues)
             {
-                if ((string?)queue?["name"] == _options.CurrentValue.Queue)
-                    return true;
+                string? currentQueueName = (string?)currentQueue?["name"];
+                if (currentQueueName is not null)
+                    queuesWithoutWorkers.Remove(currentQueueName);
             }
         }
-        return false;
+        return queuesWithoutWorkers;
     }
 }

@@ -27,6 +27,7 @@ public static class IServiceCollectionExtensions
             builder.AddSharedFileOptions(o => { });
             builder.AddSmtTransferEngineOptions(o => { });
             builder.AddClearMLOptions(o => { });
+            builder.AddBuildJobOptions(o => { });
         }
         else
         {
@@ -34,6 +35,7 @@ public static class IServiceCollectionExtensions
             builder.AddSharedFileOptions(configuration.GetSection(SharedFileOptions.Key));
             builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
             builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
+            builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
         }
         return builder;
     }

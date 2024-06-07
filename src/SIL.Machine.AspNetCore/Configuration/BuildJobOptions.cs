@@ -4,6 +4,5 @@ public class BuildJobOptions
 {
     public const string Key = "BuildJob";
 
-    public Dictionary<BuildJobType, BuildJobRunner> Runners { get; set; } =
-        new() { { BuildJobType.Cpu, BuildJobRunner.Hangfire }, { BuildJobType.Gpu, BuildJobRunner.ClearML } };
+    public IList<ClearMLBuildQueue> ClearML { get; set; } = new List<ClearMLBuildQueue>();
 }

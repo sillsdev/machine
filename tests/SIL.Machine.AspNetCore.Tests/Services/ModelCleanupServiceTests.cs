@@ -28,6 +28,7 @@ public class ModelCleanupServiceTests
             {
                 Id = "engine1",
                 EngineId = "engineId1",
+                Type = TranslationEngineType.Nmt,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 BuildRevision = 1,
@@ -39,6 +40,7 @@ public class ModelCleanupServiceTests
             {
                 Id = "engine2",
                 EngineId = "engineId2",
+                Type = TranslationEngineType.Nmt,
                 SourceLanguage = "es",
                 TargetLanguage = "en",
                 BuildRevision = 2,
