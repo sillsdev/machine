@@ -1,24 +1,19 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class ThotSmtModelFactory(
-    IOptionsMonitor<ThotSmtModelOptions> options,
-    IOptionsMonitor<SmtTransferEngineOptions> engineOptions,
-    ISharedFileService sharedFileService
-) : ISmtModelFactory
+public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) : ISmtModelFactory
 {
     private readonly IOptionsMonitor<ThotSmtModelOptions> _options = options;
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
-    private readonly ISharedFileService _sharedFileService = sharedFileService;
 
-    public IInteractiveTranslationModel Create(
-        string engineId,
+    public Task<IInteractiveTranslationModel> CreateAsync(
+        string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser
+        ITruecaser truecaser,
+        CancellationToken cancellationToken = default
     )
     {
-        string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
-        var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName)
+        string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
+        IInteractiveTranslationModel model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, smtConfigFileName)
         {
             SourceTokenizer = tokenizer,
             TargetTokenizer = tokenizer,
@@ -27,64 +22,39 @@ public class ThotSmtModelFactory(
             LowercaseTarget = true,
             Truecaser = truecaser
         };
-        return model;
+        return Task.FromResult(model);
     }
 
-    public ITrainer CreateTrainer(
-        string engineId,
+    public Task<ITrainer> CreateTrainerAsync(
+        string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
-        IParallelTextCorpus corpus
+        IParallelTextCorpus corpus,
+        CancellationToken cancellationToken = default
     )
     {
-        string smtConfigFileName = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId, "smt.cfg");
-        return new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName)
+        string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
+        ITrainer trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, smtConfigFileName)
         {
             SourceTokenizer = tokenizer,
             TargetTokenizer = tokenizer,
             LowercaseSource = true,
             LowercaseTarget = true
         };
+        return Task.FromResult(trainer);
     }
 
-    public async Task DownloadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
+    public Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default)
     {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
-        if (!Directory.Exists(engineDir))
-            Directory.CreateDirectory(engineDir);
-        string sharedFilePath = $"models/{engineId}.zip";
-        using Stream sharedStream = await _sharedFileService.OpenReadAsync(sharedFilePath, cancellationToken);
-        ZipFile.ExtractToDirectory(sharedStream, engineDir, overwriteFiles: true);
-        await _sharedFileService.DeleteAsync(sharedFilePath);
-    }
-
-    public async Task UploadBuiltEngineAsync(string engineId, CancellationToken cancellationToken)
-    {
-        // create zip archive in memory stream
-        // This cannot be created directly to the shared stream because it all needs to be written at once
-        using var memoryStream = new MemoryStream();
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
-        ZipFile.CreateFromDirectory(engineDir, memoryStream);
-
-        // copy to shared file
-        memoryStream.Seek(0, SeekOrigin.Begin);
-        string sharedFilePath = $"models/{engineId}.zip";
-        using Stream sharedStream = await _sharedFileService.OpenWriteAsync(sharedFilePath, cancellationToken);
-        await sharedStream.WriteAsync(memoryStream.ToArray().AsMemory(0, (int)memoryStream.Length), cancellationToken);
-    }
-
-    public void InitNew(string engineId)
-    {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
             Directory.CreateDirectory(engineDir);
         ZipFile.ExtractToDirectory(_options.CurrentValue.NewModelFile, engineDir);
+        return Task.CompletedTask;
     }
 
-    public void Cleanup(string engineId)
+    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
     {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
-            return;
+            return Task.CompletedTask;
         DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "lm"));
         DirectoryHelper.DeleteDirectoryRobust(Path.Combine(engineDir, "tm"));
         string smtConfigFileName = Path.Combine(engineDir, "smt.cfg");
@@ -92,5 +62,31 @@ public class ThotSmtModelFactory(
             File.Delete(smtConfigFileName);
         if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
             Directory.Delete(engineDir);
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateEngineFromAsync(string engineDir, Stream source, CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(engineDir))
+            Directory.CreateDirectory(engineDir);
+        ZipFile.ExtractToDirectory(source, engineDir, overwriteFiles: true);
+        return Task.CompletedTask;
+    }
+
+    public async Task SaveEngineToAsync(
+        string engineDir,
+        Stream destination,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // create zip archive in memory stream
+        // This cannot be created directly to the shared stream because it all needs to be written at once
+        await using MemoryStream memoryStream = new();
+        ZipFile.CreateFromDirectory(engineDir, memoryStream);
+        memoryStream.Seek(0, SeekOrigin.Begin);
+
+        // copy to destination
+        memoryStream.Seek(0, SeekOrigin.Begin);
+        await memoryStream.CopyToAsync(destination, cancellationToken);
     }
 }

@@ -3,12 +3,14 @@
 public class SmtTransferEngineStateService(
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory,
-    ITruecaserFactory truecaserFactory
+    ITruecaserFactory truecaserFactory,
+    IOptionsMonitor<SmtTransferEngineOptions> options
 ) : AsyncDisposableBase
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITransferEngineFactory _transferEngineFactory = transferEngineFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
 
     private readonly ConcurrentDictionary<string, SmtTransferEngineState> _engineStates =
         new ConcurrentDictionary<string, SmtTransferEngineState>();
@@ -52,7 +54,13 @@ public class SmtTransferEngineStateService(
 
     private SmtTransferEngineState CreateState(string engineId)
     {
-        return new SmtTransferEngineState(_smtModelFactory, _transferEngineFactory, _truecaserFactory, engineId);
+        return new SmtTransferEngineState(
+            _smtModelFactory,
+            _transferEngineFactory,
+            _truecaserFactory,
+            _options,
+            engineId
+        );
     }
 
     protected override async ValueTask DisposeAsyncCore()
