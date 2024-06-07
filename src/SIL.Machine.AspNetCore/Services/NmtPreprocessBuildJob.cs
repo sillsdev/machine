@@ -13,9 +13,8 @@ public class NmtPreprocessBuildJob(
 {
     private readonly ILanguageTagService _languageTagService = languageTagService;
 
-    protected override string ResolveLanguageCode(string languageCode)
+    protected override bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
     {
-        _languageTagService.ConvertToFlores200Code(languageCode, out string resolvedCode);
-        return resolvedCode;
+        return _languageTagService.ConvertToFlores200Code(languageCode, out resolvedCode);
     }
 }
