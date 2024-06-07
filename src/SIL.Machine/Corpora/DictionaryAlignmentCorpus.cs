@@ -18,9 +18,15 @@ namespace SIL.Machine.Corpora
         public override IEnumerable<IAlignmentCollection> AlignmentCollections =>
             _alignmentCollections.Values.OrderBy(ac => ac.SortKey);
 
-        public override int Count(bool includeEmpty = true)
+        public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
         {
-            return AlignmentCollections.Sum(t => t.Count(includeEmpty));
+            IEnumerable<IAlignmentCollection> alignmentCollections = AlignmentCollections;
+            if (textIds != null)
+            {
+                var textIdSet = new HashSet<string>(textIds);
+                alignmentCollections = alignmentCollections.Where(t => textIds.Contains(t.Id));
+            }
+            return alignmentCollections.Sum(t => t.Count(includeEmpty));
         }
 
         public IAlignmentCollection this[string id] => _alignmentCollections[id];
@@ -35,12 +41,15 @@ namespace SIL.Machine.Corpora
             return _alignmentCollections.TryGetValue(id, out alignmentCollection);
         }
 
-        public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds)
+        public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
         {
-            var alignmentCollectionIdSet = new HashSet<string>(alignmentCollectionIds ?? _alignmentCollections.Keys);
-            return AlignmentCollections
-                .Where(ac => alignmentCollectionIdSet.Contains(ac.Id))
-                .SelectMany(c => c.GetRows());
+            IEnumerable<IAlignmentCollection> alignmentCollections = AlignmentCollections;
+            if (textIds != null)
+            {
+                var textIdSet = new HashSet<string>(textIds);
+                alignmentCollections = alignmentCollections.Where(t => textIds.Contains(t.Id));
+            }
+            return alignmentCollections.SelectMany(c => c.GetRows());
         }
     }
 }
