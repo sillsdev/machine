@@ -360,6 +360,13 @@ namespace SIL.Machine.Corpora
             return textCorpus.Versification != null;
         }
 
+        public static ITextCorpus FilterTexts(this ITextCorpus corpus, IEnumerable<string> textIds)
+        {
+            if (textIds == null)
+                return corpus;
+            return new FilterTextsTextCorpus(corpus, textIds);
+        }
+
         private class TransformTextCorpus : TextCorpusBase
         {
             private readonly ITextCorpus _corpus;
@@ -378,9 +385,9 @@ namespace SIL.Machine.Corpora
 
             public override ScrVers Versification => _corpus.Versification;
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpus.Count(includeEmpty);
+                return _corpus.Count(includeEmpty, textIds);
             }
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
@@ -473,9 +480,9 @@ namespace SIL.Machine.Corpora
 
             public override ScrVers Versification => _corpora.Length > 0 ? _corpora[0].Versification : null;
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpora.Sum(corpus => corpus.Count(includeEmpty));
+                return _corpora.Sum(corpus => corpus.Count(includeEmpty, textIds));
             }
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
@@ -483,6 +490,34 @@ namespace SIL.Machine.Corpora
                 // TODO: it is possible that rows will be returned out-of-order. This could cause issues when aligning
                 // rows to create a parallel corpus.
                 return _corpora.SelectMany(corpus => corpus.GetRows(textIds));
+            }
+        }
+
+        private class FilterTextsTextCorpus : TextCorpusBase
+        {
+            private readonly ITextCorpus _corpus;
+            private readonly HashSet<string> _textIds;
+
+            public FilterTextsTextCorpus(ITextCorpus corpus, IEnumerable<string> textIds)
+            {
+                _corpus = corpus;
+                _textIds = new HashSet<string>(textIds);
+            }
+
+            public override IEnumerable<IText> Texts => _corpus.Texts.Where(t => _textIds.Contains(t.Id));
+
+            public override bool IsTokenized => _corpus.IsTokenized;
+
+            public override ScrVers Versification => _corpus.Versification;
+
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
+            {
+                return _corpus.Count(includeEmpty, textIds == null ? _textIds : _textIds.Intersect(textIds));
+            }
+
+            public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
+            {
+                return _corpus.GetRows(textIds == null ? _textIds : _textIds.Intersect(textIds));
             }
         }
 
@@ -534,6 +569,13 @@ namespace SIL.Machine.Corpora
             return new FlattenAlignmentCorpus(corpusArray);
         }
 
+        public static IAlignmentCorpus FilterTexts(this IAlignmentCorpus corpus, IEnumerable<string> textIds)
+        {
+            if (textIds == null)
+                return corpus;
+            return new FilterTextsAlignmentCorpus(corpus, textIds);
+        }
+
         private class TransformAlignmentCorpus : AlignmentCorpusBase
         {
             private readonly IAlignmentCorpus _corpus;
@@ -547,9 +589,9 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpus.Count(includeEmpty);
+                return _corpus.Count(includeEmpty, textIds);
             }
 
             public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
@@ -571,9 +613,9 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
 
-            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds)
+            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpus.GetRows(alignmentCollectionIds).Where(_predicate);
+                return _corpus.GetRows(textIds).Where(_predicate);
             }
         }
 
@@ -613,9 +655,9 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<IAlignmentCollection> AlignmentCollections => _corpus.AlignmentCollections;
 
-            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds)
+            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
             {
-                return GetRows(alignmentCollectionIds).Take(_count);
+                return GetRows(textIds).Take(_count);
             }
         }
 
@@ -631,14 +673,39 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<IAlignmentCollection> AlignmentCollections =>
                 _corpora.SelectMany(corpus => corpus.AlignmentCollections);
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpora.Sum(corpus => corpus.Count(includeEmpty));
+                return _corpora.Sum(corpus => corpus.Count(includeEmpty, textIds));
             }
 
-            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> alignmentCollectionIds)
+            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpora.SelectMany(corpus => corpus.GetRows(alignmentCollectionIds));
+                return _corpora.SelectMany(corpus => corpus.GetRows(textIds));
+            }
+        }
+
+        private class FilterTextsAlignmentCorpus : AlignmentCorpusBase
+        {
+            private readonly IAlignmentCorpus _corpus;
+            private readonly HashSet<string> _textIds;
+
+            public FilterTextsAlignmentCorpus(IAlignmentCorpus corpus, IEnumerable<string> textIds)
+            {
+                _corpus = corpus;
+                _textIds = new HashSet<string>(textIds);
+            }
+
+            public override IEnumerable<IAlignmentCollection> AlignmentCollections =>
+                _corpus.AlignmentCollections.Where(t => _textIds.Contains(t.Id));
+
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
+            {
+                return _corpus.Count(includeEmpty, textIds == null ? _textIds : _textIds.Intersect(textIds));
+            }
+
+            public override IEnumerable<AlignmentRow> GetRows(IEnumerable<string> textIds)
+            {
+                return _corpus.GetRows(textIds == null ? _textIds : _textIds.Intersect(textIds));
             }
         }
 
@@ -1039,6 +1106,13 @@ namespace SIL.Machine.Corpora
             return new WordAlignParallelTextCorpus(corpus, aligner, batchSize);
         }
 
+        public static IParallelTextCorpus FilterTexts(this IParallelTextCorpus corpus, IEnumerable<string> textIds)
+        {
+            if (textIds == null)
+                return corpus;
+            return new FilterTextsParallelTextCorpus(corpus, textIds);
+        }
+
         private class TransformParallelTextCorpus : ParallelTextCorpusBase
         {
             private readonly IParallelTextCorpus _corpus;
@@ -1061,14 +1135,14 @@ namespace SIL.Machine.Corpora
 
             public override bool IsTargetTokenized { get; }
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpus.Count(includeEmpty);
+                return _corpus.Count(includeEmpty, textIds);
             }
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpus.GetRows().Select(_transform);
+                return _corpus.GetRows(textIds).Select(_transform);
             }
         }
 
@@ -1086,9 +1160,9 @@ namespace SIL.Machine.Corpora
             public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
             public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpus.GetRows().Where(_predicate);
+                return _corpus.GetRows(textIds).Where(_predicate);
             }
         }
 
@@ -1106,9 +1180,9 @@ namespace SIL.Machine.Corpora
             public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
             public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpus.GetRows().Take(_count);
+                return _corpus.GetRows(textIds).Take(_count);
             }
         }
 
@@ -1124,14 +1198,14 @@ namespace SIL.Machine.Corpora
             public override bool IsSourceTokenized => _corpora.All(corpus => corpus.IsSourceTokenized);
             public override bool IsTargetTokenized => _corpora.All(corpus => corpus.IsTargetTokenized);
 
-            public override int Count(bool includeEmpty = true)
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
             {
-                return _corpora.Sum(corpus => corpus.Count(includeEmpty));
+                return _corpora.Sum(corpus => corpus.Count(includeEmpty, textIds));
             }
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                return _corpora.SelectMany(corpus => corpus.GetRows());
+                return _corpora.SelectMany(corpus => corpus.GetRows(textIds));
             }
         }
 
@@ -1155,9 +1229,9 @@ namespace SIL.Machine.Corpora
             public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
             public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.GetRows(textIds).Batch(_batchSize))
                 {
                     IReadOnlyList<TranslationResult> translations;
                     if (IsSourceTokenized)
@@ -1189,9 +1263,9 @@ namespace SIL.Machine.Corpora
             public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
             public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
 
-            public override IEnumerable<ParallelTextRow> GetRows()
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
             {
-                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.Batch(_batchSize))
+                foreach (IReadOnlyList<ParallelTextRow> batch in _corpus.GetRows(textIds).Batch(_batchSize))
                 {
                     IReadOnlyList<WordAlignmentMatrix> alignments = _aligner.AlignBatch(
                         batch.Select(r => (r.SourceSegment, r.TargetSegment)).ToArray()
@@ -1215,6 +1289,31 @@ namespace SIL.Machine.Corpora
                         yield return row;
                     }
                 }
+            }
+        }
+
+        private class FilterTextsParallelTextCorpus : ParallelTextCorpusBase
+        {
+            private readonly IParallelTextCorpus _corpus;
+            private readonly HashSet<string> _textIds;
+
+            public FilterTextsParallelTextCorpus(IParallelTextCorpus corpus, IEnumerable<string> textIds)
+            {
+                _corpus = corpus;
+                _textIds = new HashSet<string>(textIds);
+            }
+
+            public override bool IsSourceTokenized => _corpus.IsSourceTokenized;
+            public override bool IsTargetTokenized => _corpus.IsTargetTokenized;
+
+            public override int Count(bool includeEmpty = true, IEnumerable<string> textIds = null)
+            {
+                return _corpus.Count(includeEmpty, textIds == null ? _textIds : _textIds.Intersect(textIds));
+            }
+
+            public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
+            {
+                return _corpus.GetRows(textIds == null ? _textIds : _textIds.Intersect(textIds));
             }
         }
 

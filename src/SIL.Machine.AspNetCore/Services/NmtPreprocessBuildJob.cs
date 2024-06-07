@@ -141,7 +141,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 continue;
 
             int skipCount = 0;
-            foreach (Row?[] rows in AlignTrainCorpus(sourceTextCorpora, targetTextCorpus))
+            foreach (Row?[] rows in AlignTrainCorpus(corpus, sourceTextCorpora, targetTextCorpus))
             {
                 if (skipCount > 0)
                 {
@@ -149,7 +149,7 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                     continue;
                 }
 
-                Row[] trainRows = rows.Where(r => r is not null && IsInTrain(r, corpus)).Cast<Row>().ToArray();
+                Row[] trainRows = rows.Where(r => IsIncluded(r, corpus.TrainOnChapters)).Cast<Row>().ToArray();
                 if (trainRows.Length > 0)
                 {
                     Row row = trainRows[0];
@@ -184,10 +184,10 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
                 }
             }
 
-            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+            foreach (Row row in AlignPretranslateCorpus(corpus, sourceTextCorpora[0], targetTextCorpus))
             {
                 if (
-                    IsInPretranslate(row, corpus)
+                    IsIncluded(row, corpus.PretranslateChapters)
                     && row.SourceSegment.Length > 0
                     && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
                 )
@@ -233,27 +233,21 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private static bool IsInTrain(Row row, Corpus corpus)
     {
-        return IsIncluded(row, corpus.TrainOnAll, corpus.TrainOnTextIds, corpus.TrainOnChapters);
-    }
-
-    private static bool IsInPretranslate(Row row, Corpus corpus)
-    {
-        return IsIncluded(row, corpus.PretranslateAll, corpus.PretranslateTextIds, corpus.PretranslateChapters);
-    }
-
-    private static bool IsIncluded(
-        Row row,
-        bool all,
-        IReadOnlySet<string> textIds,
-        IReadOnlyDictionary<string, HashSet<int>>? chapters
-    )
-    {
-        if (chapters is not null)
+        if (corpus.TrainOnChapters is not null)
         {
-            if (row.Refs.Any(r => IsInChapters(chapters, r)))
+            if (row.Refs.Any(r => IsInChapters(corpus.TrainOnChapters, r)))
                 return true;
         }
-        return all || textIds.Contains(row.TextId);
+        return corpus.TrainOnAll || corpus.TrainOnTextIds.Contains(row.TextId);
+    }
+
+    private static bool IsIncluded(Row? row, IReadOnlyDictionary<string, HashSet<int>>? chapters)
+    {
+        if (row is null)
+            return false;
+        if (chapters is not null)
+            return row.Refs.Any(r => IsInChapters(chapters, r));
+        return true;
     }
 
     private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
@@ -264,8 +258,21 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
             && (chapters.Contains(sr.ChapterNum) || chapters.Count == 0);
     }
 
-    private static IEnumerable<Row?[]> AlignTrainCorpus(IReadOnlyList<ITextCorpus> srcCorpora, ITextCorpus trgCorpus)
+    private static IEnumerable<Row?[]> AlignTrainCorpus(
+        Corpus corpus,
+        IReadOnlyList<ITextCorpus> srcCorpora,
+        ITextCorpus trgCorpus
+    )
     {
+        if (!corpus.TrainOnAll)
+        {
+            IEnumerable<string> textIds = corpus.TrainOnChapters is not null
+                ? corpus.TrainOnChapters.Keys
+                : corpus.TrainOnTextIds;
+            srcCorpora = srcCorpora.Select(sc => sc.FilterTexts(textIds)).ToArray();
+            trgCorpus = trgCorpus.FilterTexts(textIds);
+        }
+
         if (trgCorpus.IsScripture())
         {
             return srcCorpora
@@ -379,8 +386,17 @@ public class NmtPreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         }
     }
 
-    private static IEnumerable<Row> AlignPretranslateCorpus(ITextCorpus srcCorpus, ITextCorpus trgCorpus)
+    private static IEnumerable<Row> AlignPretranslateCorpus(Corpus corpus, ITextCorpus srcCorpus, ITextCorpus trgCorpus)
     {
+        if (!corpus.PretranslateAll)
+        {
+            IEnumerable<string> textIds = corpus.PretranslateChapters is not null
+                ? corpus.PretranslateChapters.Keys
+                : corpus.PretranslateTextIds;
+            srcCorpus = srcCorpus.FilterTexts(textIds);
+            trgCorpus = trgCorpus.FilterTexts(textIds);
+        }
+
         int rowCount = 0;
         StringBuilder srcSegBuffer = new();
         StringBuilder trgSegBuffer = new();
