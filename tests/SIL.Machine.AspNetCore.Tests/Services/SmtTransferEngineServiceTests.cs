@@ -41,10 +41,8 @@ public class SmtTransferEngineServiceTests
                     TargetLanguage = "en",
                     SourceFiles = [],
                     TargetFiles = [],
-                    TrainOnAll = true,
-                    PretranslateAll = true,
-                    TrainOnTextIds = [],
-                    PretranslateTextIds = []
+                    TrainOnTextIds = null,
+                    PretranslateTextIds = null
                 }
             }
         );
