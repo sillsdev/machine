@@ -25,7 +25,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_TrainOnAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnAll = true };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { TrainOnTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -61,7 +61,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_TrainAndPretranslateAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateAll = true, TrainOnAll = true };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = null, TrainOnTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -72,7 +72,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_PretranslateAll()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateAll = true };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -83,7 +83,7 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_PretranslateTextIds()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"], TrainOnAll = true };
+        Corpus corpus1 = env.DefaultTextFileCorpus with { PretranslateTextIds = ["textId1"], TrainOnTextIds = null };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -177,7 +177,11 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Paratext()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultMixedSourceParatextCorpus with { TrainOnAll = true, PretranslateAll = true };
+        Corpus corpus1 = env.DefaultMixedSourceParatextCorpus with
+        {
+            TrainOnTextIds = null,
+            PretranslateTextIds = null
+        };
 
         await env.RunBuildJobAsync(corpus1, useKeyTerms: false);
 
@@ -196,7 +200,13 @@ public class NmtPreprocessBuildJobTests
     public async Task RunAsync_MixedSource_Text()
     {
         using TestEnvironment env = new();
-        Corpus corpus1 = env.DefaultMixedSourceTextFileCorpus with { TrainOnAll = true, PretranslateAll = true };
+        Corpus corpus1 = env.DefaultMixedSourceTextFileCorpus with
+        {
+            TrainOnTextIds = null,
+            PretranslateTextIds = null,
+            TrainOnChapters = null,
+            PretranslateChapters = null
+        };
 
         await env.RunBuildJobAsync(corpus1);
 
@@ -268,8 +278,6 @@ public class NmtPreprocessBuildJobTests
                 Id = "corpusId1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                PretranslateAll = false,
-                TrainOnAll = false,
                 PretranslateTextIds = [],
                 TrainOnTextIds = [],
                 SourceFiles = [TextFile("source1")],
@@ -281,8 +289,6 @@ public class NmtPreprocessBuildJobTests
                 Id = "corpusId1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                PretranslateAll = false,
-                TrainOnAll = false,
                 PretranslateTextIds = [],
                 TrainOnTextIds = [],
                 SourceFiles = [TextFile("source1"), TextFile("source2")],
@@ -294,8 +300,6 @@ public class NmtPreprocessBuildJobTests
                 Id = "corpusId1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                PretranslateAll = false,
-                TrainOnAll = false,
                 PretranslateTextIds = [],
                 TrainOnTextIds = [],
                 SourceFiles = [ParatextFile("pt-source1")],
@@ -307,8 +311,6 @@ public class NmtPreprocessBuildJobTests
                 Id = "corpusId1",
                 SourceLanguage = "es",
                 TargetLanguage = "en",
-                PretranslateAll = false,
-                TrainOnAll = false,
                 PretranslateTextIds = [],
                 TrainOnTextIds = [],
                 SourceFiles = [ParatextFile("pt-source1"), ParatextFile("pt-source2")],
