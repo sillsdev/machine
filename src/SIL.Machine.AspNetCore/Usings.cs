@@ -20,6 +20,7 @@ global using Amazon;
 global using Amazon.Runtime;
 global using Amazon.S3;
 global using Amazon.S3.Model;
+global using CommunityToolkit.HighPerformance;
 global using Grpc.Core;
 global using Grpc.Core.Interceptors;
 global using Grpc.Net.Client.Configuration;

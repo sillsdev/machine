@@ -1,5 +1,3 @@
-using CommunityToolkit.HighPerformance;
-
 namespace SIL.Machine.AspNetCore.Services;
 
 public class S3WriteStream(
