@@ -229,27 +229,31 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 
     private static bool IsInTrain(Row row, Corpus corpus)
     {
-        return IsIncluded(row, corpus.TrainOnAll, corpus.TrainOnTextIds, corpus.TrainOnChapters);
+        return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
     private static bool IsInPretranslate(Row row, Corpus corpus)
     {
-        return IsIncluded(row, corpus.PretranslateAll, corpus.PretranslateTextIds, corpus.PretranslateChapters);
+        return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
     }
 
     private static bool IsIncluded(
-        Row row,
-        bool all,
-        IReadOnlySet<string> textIds,
+        Row? row,
+        IReadOnlySet<string>? textIds,
         IReadOnlyDictionary<string, HashSet<int>>? chapters
     )
     {
+        if (row is null)
+            return false;
         if (chapters is not null)
         {
-            if (row.Refs.Any(r => IsInChapters(chapters, r)))
-                return true;
+            return row.Refs.Any(r => IsInChapters(chapters, r));
         }
-        return all || textIds.Contains(row.TextId);
+        if (textIds is not null)
+        {
+            return textIds.Contains(row.TextId);
+        }
+        return true;
     }
 
     private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
