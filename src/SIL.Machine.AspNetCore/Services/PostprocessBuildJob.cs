@@ -30,7 +30,7 @@ public class PostprocessBuildJob(
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
-            int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
+            int additionalCorpusSize = await SaveModelAsync(engineId);
             await PlatformService.BuildCompletedAsync(
                 buildId,
                 corpusSize + additionalCorpusSize,
@@ -43,7 +43,7 @@ public class PostprocessBuildJob(
         Logger.LogInformation("Build completed ({0}).", buildId);
     }
 
-    protected virtual Task<int> SaveModelAsync(string engineId, string buildId)
+    protected virtual Task<int> SaveModelAsync(string engineId)
     {
         return Task.FromResult(0);
     }

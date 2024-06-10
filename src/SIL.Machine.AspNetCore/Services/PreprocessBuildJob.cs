@@ -70,9 +70,18 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        buildPreprocessSummary.Add("SourceLanguageResolved", ResolveLanguageCode(engine.SourceLanguage));
-        buildPreprocessSummary.Add("TargetLanguageResolved", ResolveLanguageCode(engine.TargetLanguage));
+        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
+        buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
+        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
+        buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
+
+        if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
+        {
+            throw new InvalidOperationException(
+                $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build canceled."
+            );
+        }
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -418,8 +427,9 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         int RowCount
     );
 
-    protected virtual string ResolveLanguageCode(string languageCode)
+    protected virtual bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
     {
-        return languageCode;
+        resolvedCode = languageCode;
+        return true;
     }
 }
