@@ -37,9 +37,6 @@ public class SmtTransferClearMLBuildJobFactory(
                 + $"    'shared_file_uri': '{baseUri}',\n"
                 + $"    'shared_file_folder': '{folder}',\n"
                 + (buildOptions is not null ? $"    'build_options': '''{buildOptions}''',\n" : "")
-                // buildRevision + 1 because the build revision is incremented after the build job
-                // is finished successfully but the file should be saved with the new revision number
-                + (engine.IsModelPersisted ? $"    'save_model': '{engineId}',\n" : $"")
                 + $"    'clearml': True\n"
                 + "}\n"
                 + "run(args)\n";

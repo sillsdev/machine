@@ -18,11 +18,11 @@ public class SmtTransferPostprocessBuildJob(
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
 
-    protected override async Task<int> SaveModelAsync(string engineId)
+    protected override async Task<int> SaveModelAsync(string engineId, string buildId)
     {
         await using (
             Stream engineStream = await SharedFileService.OpenReadAsync(
-                $"models/{engineId}.zip",
+                $"builds/{buildId}/model.zip",
                 CancellationToken.None
             )
         )
