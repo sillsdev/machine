@@ -255,7 +255,7 @@ public class NmtPreprocessBuildJobTests
         public ILogger<NmtPreprocessBuildJob> Logger { get; }
         public IClearMLService ClearMLService { get; }
         public NmtPreprocessBuildJob BuildJob { get; }
-        public IOptionsMonitor<ClearMLOptions> Options { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public Corpus DefaultTextFileCorpus { get; }
         public Corpus DefaultMixedSourceTextFileCorpus { get; }
@@ -323,6 +323,7 @@ public class NmtPreprocessBuildJobTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -332,8 +333,8 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = BuildJobRunner.Hangfire,
-                        Stage = NmtBuildStages.Preprocess
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
                     }
                 }
             );
@@ -342,6 +343,7 @@ public class NmtPreprocessBuildJobTests
                 {
                     Id = "engine2",
                     EngineId = "engine2",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -351,8 +353,28 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = BuildJobRunner.Hangfire,
-                        Stage = NmtBuildStages.Preprocess
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
+                    }
+                }
+            );
+            Engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine2",
+                    EngineId = "engine2",
+                    Type = TranslationEngineType.Nmt,
+                    SourceLanguage = "xxx",
+                    TargetLanguage = "zzz",
+                    BuildRevision = 1,
+                    IsModelPersisted = false,
+                    CurrentBuild = new()
+                    {
+                        BuildId = "build1",
+                        JobId = "job1",
+                        JobState = BuildJobState.Pending,
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
                     }
                 }
             );
@@ -363,8 +385,29 @@ public class NmtPreprocessBuildJobTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            Options.CurrentValue.Returns(new ClearMLOptions { ModelType = "test_model" });
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions
+                {
+                    ClearML =
+                    [
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "hmm",
+                            DockerImage = "default",
+                            Queue = "default"
+                        }
+                    ]
+                }
+            );
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
@@ -373,30 +416,41 @@ public class NmtPreprocessBuildJobTests
                 .GetProjectIdAsync("engine2", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
-                .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .GetProjectIdAsync("engine2", Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>("project1"));
+            ClearMLService
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             Logger = Substitute.For<ILogger<NmtPreprocessBuildJob>>();
             BuildJobService = new BuildJobService(
                 [
+                [
                     new HangfireBuildJobRunner(
                         Substitute.For<IBackgroundJobClient>(),
+                        [new NmtHangfireBuildJobFactory()]
                         [new NmtHangfireBuildJobFactory()]
                     ),
                     new ClearMLBuildJobRunner(
                         ClearMLService,
                         [
+                        [
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
-                                Engines,
-                                Options
+                                Engines
                             )
-                        ]
+                        ],
+                        BuildJobOptions
                     )
                 ],
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
+                Engines
             );
             BuildJob = new NmtPreprocessBuildJob(
                 PlatformService,

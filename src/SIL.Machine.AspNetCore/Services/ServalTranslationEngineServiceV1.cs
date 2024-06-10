@@ -156,13 +156,10 @@ public class ServalTranslationEngineServiceV1(
         }
     }
 
-    public override async Task<GetQueueSizeResponse> GetQueueSize(
-        GetQueueSizeRequest request,
-        ServerCallContext context
-    )
+    public override Task<GetQueueSizeResponse> GetQueueSize(GetQueueSizeRequest request, ServerCallContext context)
     {
         ITranslationEngineService engineService = GetEngineService(request.EngineType);
-        return new GetQueueSizeResponse { Size = await engineService.GetQueueSizeAsync(context.CancellationToken) };
+        return Task.FromResult(new GetQueueSizeResponse { Size = engineService.GetQueueSize() });
     }
 
     public override Task<GetLanguageInfoResponse> GetLanguageInfo(
