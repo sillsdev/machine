@@ -657,7 +657,7 @@ public class SmtTransferEngineServiceTests
                 await truecaseTrainer.SaveAsync(_cancellationTokenSource.Token);
 
                 await using Stream engineStream = await SharedFileService.OpenWriteAsync(
-                    $"builds/{BuildId1}/model.zip",
+                    $"builds/{BuildId1}/model.tar.gz",
                     _cancellationTokenSource.Token
                 );
 

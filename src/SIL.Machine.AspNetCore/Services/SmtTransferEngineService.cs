@@ -22,13 +22,6 @@ public class SmtTransferEngineService(
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
-    public const string ModelDirectory = "models/";
-
-    public static string GetModelPath(string engineId)
-    {
-        return $"{ModelDirectory}{engineId}.zip";
-    }
-
     public async Task<TranslationEngine> CreateAsync(
         string engineId,
         string? engineName,

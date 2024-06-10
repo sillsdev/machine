@@ -42,6 +42,8 @@ global using MongoDB.Driver.Linq;
 global using Nito.AsyncEx;
 global using Nito.AsyncEx.Synchronous;
 global using Polly;
+global using SharpCompress.Common;
+global using SharpCompress.Readers;
 global using SIL.DataAccess;
 global using SIL.Machine.AspNetCore.Configuration;
 global using SIL.Machine.AspNetCore.Models;

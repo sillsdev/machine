@@ -22,7 +22,7 @@ public class SmtTransferPostprocessBuildJob(
     {
         await using (
             Stream engineStream = await SharedFileService.OpenReadAsync(
-                $"builds/{buildId}/model.zip",
+                $"builds/{buildId}/model.tar.gz",
                 CancellationToken.None
             )
         )

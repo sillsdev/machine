@@ -69,7 +69,16 @@ public class ThotSmtModelFactory(IOptionsMonitor<ThotSmtModelOptions> options) :
     {
         if (!Directory.Exists(engineDir))
             Directory.CreateDirectory(engineDir);
-        ZipFile.ExtractToDirectory(source, engineDir, overwriteFiles: true);
+
+        IReader reader = ReaderFactory.Open(source);
+        while (reader.MoveToNextEntry())
+        {
+            if (!reader.Entry.IsDirectory)
+            {
+                ExtractionOptions opt = new ExtractionOptions { ExtractFullPath = true, Overwrite = true };
+                reader.WriteEntryToDirectory(engineDir, opt);
+            }
+        }
         return Task.CompletedTask;
     }
 

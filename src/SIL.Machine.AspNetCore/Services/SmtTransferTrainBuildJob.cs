@@ -148,7 +148,7 @@ public class SmtTransferTrainBuildJob(
         await truecaseTrainer.SaveAsync(cancellationToken);
 
         await using Stream engineStream = await _sharedFileService.OpenWriteAsync(
-            $"builds/{buildId}/model.zip",
+            $"builds/{buildId}/model.tar.gz",
             cancellationToken
         );
         await _smtModelFactory.SaveEngineToAsync(engineDir, engineStream, cancellationToken);
