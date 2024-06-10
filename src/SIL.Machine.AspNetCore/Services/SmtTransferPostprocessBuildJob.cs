@@ -9,72 +9,56 @@ public class SmtTransferPostprocessBuildJob(
     ISharedFileService sharedFileService,
     IRepository<TrainSegmentPair> trainSegmentPairs,
     ISmtModelFactory smtModelFactory,
-    ITruecaserFactory truecaserFactory
+    ITruecaserFactory truecaserFactory,
+    IOptionsMonitor<SmtTransferEngineOptions> options
 ) : PostprocessBuildJob(platformService, engines, lockFactory, buildJobService, logger, sharedFileService)
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
+    private readonly IOptionsMonitor<SmtTransferEngineOptions> _options = options;
 
-    protected override async Task DoWorkAsync(
-        string engineId,
-        string buildId,
-        (int, double) data,
-        string? buildOptions,
-        IDistributedReaderWriterLock @lock,
-        CancellationToken cancellationToken
-    )
+    protected override async Task<int> SaveModelAsync(string engineId, string buildId)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
+        await using (
+            Stream engineStream = await SharedFileService.OpenReadAsync(
+                $"builds/{buildId}/model.tar.gz",
+                CancellationToken.None
+            )
+        )
         {
-            await _smtModelFactory.DownloadBuiltEngineAsync(engineId, cancellationToken);
-            int segmentPairsSize = await TrainOnNewSegmentPairs(engineId, cancellationToken);
-            await PlatformService.BuildCompletedAsync(
-                buildId,
-                trainSize: data.Item1 + segmentPairsSize,
-                confidence: Math.Round(data.Item2, 2, MidpointRounding.AwayFromZero),
-                cancellationToken: CancellationToken.None
+            await _smtModelFactory.UpdateEngineFromAsync(
+                Path.Combine(_options.CurrentValue.EnginesDir, engineId),
+                engineStream,
+                CancellationToken.None
             );
-            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
         }
-
-        Logger.LogInformation("Build completed ({0}).", buildId);
+        return await TrainOnNewSegmentPairsAsync(engineId);
     }
 
-    private async Task<int> TrainOnNewSegmentPairs(string engineId, CancellationToken cancellationToken)
+    private async Task<int> TrainOnNewSegmentPairsAsync(string engineId)
     {
-        TranslationEngine? engine = await Engines.GetAsync(e => e.EngineId == engineId, cancellationToken);
-        if (engine is null)
-            throw new OperationCanceledException();
-
-        cancellationToken.ThrowIfCancellationRequested();
-        IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(
-            p => p.TranslationEngineRef == engine.Id,
-            CancellationToken.None
+        IReadOnlyList<TrainSegmentPair> segmentPairs = await _trainSegmentPairs.GetAllAsync(p =>
+            p.TranslationEngineRef == engineId
         );
         if (segmentPairs.Count == 0)
             return segmentPairs.Count;
 
+        string engineDir = Path.Combine(_options.CurrentValue.EnginesDir, engineId);
         var tokenizer = new LatinWordTokenizer();
         var detokenizer = new LatinWordDetokenizer();
-        ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineId);
-
-        using (
-            IInteractiveTranslationModel smtModel = _smtModelFactory.Create(engineId, tokenizer, detokenizer, truecaser)
-        )
+        ITruecaser truecaser = await _truecaserFactory.CreateAsync(engineDir);
+        using IInteractiveTranslationModel smtModel = await _smtModelFactory.CreateAsync(
+            engineDir,
+            tokenizer,
+            detokenizer,
+            truecaser
+        );
+        foreach (TrainSegmentPair segmentPair in segmentPairs)
         {
-            foreach (TrainSegmentPair segmentPair in segmentPairs)
-            {
-                await smtModel.TrainSegmentAsync(
-                    segmentPair.Source,
-                    segmentPair.Target,
-                    cancellationToken: CancellationToken.None
-                );
-            }
-            await smtModel.SaveAsync(CancellationToken.None);
+            await smtModel.TrainSegmentAsync(segmentPair.Source, segmentPair.Target);
         }
+        await smtModel.SaveAsync();
         return segmentPairs.Count;
     }
 }

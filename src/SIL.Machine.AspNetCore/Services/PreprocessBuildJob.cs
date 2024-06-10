@@ -1,12 +1,10 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
-    protected TranslationEngineType EngineType { get; init; }
-    protected bool PretranslationEnabled { get; init; }
 
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
@@ -72,9 +70,18 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
         if (engine is null)
             throw new OperationCanceledException($"Engine {engineId} does not exist.  Build canceled.");
 
-        buildPreprocessSummary.Add("SourceLanguageResolved", ResolveLanguageCode(engine.SourceLanguage));
-        buildPreprocessSummary.Add("TargetLanguageResolved", ResolveLanguageCode(engine.TargetLanguage));
+        bool sourceTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.SourceLanguage, out string srcLang);
+        buildPreprocessSummary.Add("SourceLanguageResolved", srcLang);
+        bool targetTagInBaseModel = ResolveLanguageCodeForBaseModel(engine.TargetLanguage, out string trgLang);
+        buildPreprocessSummary.Add("TargetLanguageResolved", trgLang);
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
+
+        if (trainCount == 0 && (!sourceTagInBaseModel || !targetTagInBaseModel))
+        {
+            throw new InvalidOperationException(
+                $"Neither language code in build {buildId} are known to the base model, and the data specified for training was empty. Build canceled."
+            );
+        }
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -85,7 +92,6 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
                 engineId,
                 buildId,
                 BuildStage.Train,
-                data: new object(),
                 buildOptions: buildOptions,
                 cancellationToken: cancellationToken
             );
@@ -111,11 +117,11 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
         await using StreamWriter targetTrainWriter =
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
-        using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
+        await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );
-        using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
+        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
 
         int trainCount = 0;
         int pretranslateCount = 0;
@@ -173,27 +179,24 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
                 }
             }
 
-            if (PretranslationEnabled)
+            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
             {
-                foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+                if (
+                    IsInPretranslate(row, corpus)
+                    && row.SourceSegment.Length > 0
+                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
+                )
                 {
-                    if (
-                        IsInPretranslate(row, corpus)
-                        && row.SourceSegment.Length > 0
-                        && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
-                    )
-                    {
-                        pretranslateWriter.WriteStartObject();
-                        pretranslateWriter.WriteString("corpusId", corpus.Id);
-                        pretranslateWriter.WriteString("textId", row.TextId);
-                        pretranslateWriter.WriteStartArray("refs");
-                        foreach (object rowRef in row.Refs)
-                            pretranslateWriter.WriteStringValue(rowRef.ToString());
-                        pretranslateWriter.WriteEndArray();
-                        pretranslateWriter.WriteString("translation", row.SourceSegment);
-                        pretranslateWriter.WriteEndObject();
-                        pretranslateCount++;
-                    }
+                    pretranslateWriter.WriteStartObject();
+                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("textId", row.TextId);
+                    pretranslateWriter.WriteStartArray("refs");
+                    foreach (object rowRef in row.Refs)
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteString("translation", row.SourceSegment);
+                    pretranslateWriter.WriteEndObject();
+                    pretranslateCount++;
                 }
             }
         }
@@ -226,27 +229,31 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
 
     private static bool IsInTrain(Row row, Corpus corpus)
     {
-        return IsIncluded(row, corpus.TrainOnAll, corpus.TrainOnTextIds, corpus.TrainOnChapters);
+        return IsIncluded(row, corpus.TrainOnTextIds, corpus.TrainOnChapters);
     }
 
     private static bool IsInPretranslate(Row row, Corpus corpus)
     {
-        return IsIncluded(row, corpus.PretranslateAll, corpus.PretranslateTextIds, corpus.PretranslateChapters);
+        return IsIncluded(row, corpus.PretranslateTextIds, corpus.PretranslateChapters);
     }
 
     private static bool IsIncluded(
-        Row row,
-        bool all,
-        IReadOnlySet<string> textIds,
+        Row? row,
+        IReadOnlySet<string>? textIds,
         IReadOnlyDictionary<string, HashSet<int>>? chapters
     )
     {
+        if (row is null)
+            return false;
         if (chapters is not null)
         {
-            if (row.Refs.Any(r => IsInChapters(chapters, r)))
-                return true;
+            return row.Refs.Any(r => IsInChapters(chapters, r));
         }
-        return all || textIds.Contains(row.TextId);
+        if (textIds is not null)
+        {
+            return textIds.Contains(row.TextId);
+        }
+        return true;
     }
 
     private static bool IsInChapters(IReadOnlyDictionary<string, HashSet<int>> bookChapters, object rowRef)
@@ -424,8 +431,9 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
         int RowCount
     );
 
-    protected virtual string ResolveLanguageCode(string languageCode)
+    protected virtual bool ResolveLanguageCodeForBaseModel(string languageCode, out string resolvedCode)
     {
-        return languageCode;
+        resolvedCode = languageCode;
+        return true;
     }
 }

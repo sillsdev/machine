@@ -24,18 +24,7 @@ public class NmtEngineServiceTests
     public async Task CancelBuildAsync_Building()
     {
         using var env = new TestEnvironment();
-
-        var cts = new CancellationTokenSource();
-        env.ClearMLService.When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>())).Do(_ => cts.Cancel());
-        env.TrainJobFunc = async () =>
-        {
-            await env.BuildJobService.BuildJobStartedAsync("engine1", "build1");
-
-            while (!cts.IsCancellationRequested)
-                await Task.Delay(50);
-
-            await env.BuildJobService.BuildJobFinishedAsync("engine1", "build1", buildComplete: false);
-        };
+        env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
@@ -62,18 +51,7 @@ public class NmtEngineServiceTests
     public async Task DeleteAsync_WhileBuilding()
     {
         using var env = new TestEnvironment();
-
-        var cts = new CancellationTokenSource();
-        env.ClearMLService.When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>())).Do(_ => cts.Cancel());
-        env.TrainJobFunc = async () =>
-        {
-            await env.BuildJobService.BuildJobStartedAsync("engine1", "build1");
-
-            while (!cts.IsCancellationRequested)
-                await Task.Delay(50);
-
-            await env.BuildJobService.BuildJobFinishedAsync("engine1", "build1", buildComplete: false);
-        };
+        env.UseInfiniteTrainJob();
 
         TranslationEngine engine = env.Engines.Get("engine1");
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
@@ -84,8 +62,7 @@ public class NmtEngineServiceTests
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
         await env.Service.DeleteAsync("engine1");
         // ensure that the train job has completed
-        if (env.TrainJobTask is not null)
-            await env.TrainJobTask;
+        await env.WaitForBuildToFinishAsync();
         Assert.That(env.Engines.Contains("engine1"), Is.False);
     }
 
@@ -95,13 +72,16 @@ public class NmtEngineServiceTests
         private readonly BackgroundJobClient _jobClient;
         private BackgroundJobServer _jobServer;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private Func<Task> _trainJobFunc;
+        private Task? _trainJobTask;
 
         public TestEnvironment()
         {
             if (!Sldr.IsInitialized)
                 Sldr.Initialize(offlineMode: true);
 
-            TrainJobFunc = RunMockTrainJob;
+            _trainJobFunc = RunNormalTrainJob;
             Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
                 new TranslationEngine
@@ -138,7 +118,10 @@ public class NmtEngineServiceTests
                 .Returns(Task.FromResult("job1"));
             ClearMLService
                 .When(x => x.EnqueueTaskAsync("job1", Arg.Any<string>(), Arg.Any<CancellationToken>()))
-                .Do(_ => TrainJobTask = Task.Run(TrainJobFunc));
+                .Do(_ => _trainJobTask = Task.Run(_trainJobFunc));
+            ClearMLService
+                .When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>()))
+                .Do(_ => _cancellationTokenSource.Cancel());
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
             buildJobOptions.CurrentValue.Returns(
@@ -156,7 +139,7 @@ public class NmtEngineServiceTests
                         new ClearMLBuildQueue()
                         {
                             TranslationEngineType = TranslationEngineType.SmtTransfer,
-                            ModelType = "hmm",
+                            ModelType = "thot",
                             DockerImage = "default",
                             Queue = "default"
                         }
@@ -201,8 +184,6 @@ public class NmtEngineServiceTests
         public IClearMLService ClearMLService { get; }
         public ISharedFileService SharedFileService { get; }
         public IBuildJobService BuildJobService { get; }
-        public Func<Task> TrainJobFunc { get; set; }
-        public Task? TrainJobTask { get; private set; }
 
         public void StopServer()
         {
@@ -240,9 +221,11 @@ public class NmtEngineServiceTests
             );
         }
 
-        public Task WaitForBuildToFinishAsync()
+        public async Task WaitForBuildToFinishAsync()
         {
-            return WaitForBuildState(e => e.CurrentBuild is null);
+            await WaitForBuildState(e => e.CurrentBuild is null);
+            if (_trainJobTask is not null)
+                await _trainJobTask;
         }
 
         public Task WaitForBuildToStartAsync()
@@ -250,6 +233,11 @@ public class NmtEngineServiceTests
             return WaitForBuildState(e =>
                 e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage == BuildStage.Train
             );
+        }
+
+        public void UseInfiniteTrainJob()
+        {
+            _trainJobFunc = RunInfiniteTrainJob;
         }
 
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
@@ -260,20 +248,17 @@ public class NmtEngineServiceTests
             while (true)
             {
                 TranslationEngine? engine = subscription.Change.Entity;
-                if (engine is not null && predicate(engine))
+                if (engine is null || predicate(engine))
                     break;
                 await subscription.WaitForChangeAsync();
             }
         }
 
-        private async Task RunMockTrainJob()
+        private async Task RunNormalTrainJob()
         {
             await BuildJobService.BuildJobStartedAsync("engine1", "build1");
 
-            await using (Stream stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json"))
-            {
-                await JsonSerializer.SerializeAsync(stream, Array.Empty<Pretranslation>());
-            }
+            await using Stream stream = await SharedFileService.OpenWriteAsync("builds/build1/pretranslate.trg.json");
 
             await BuildJobService.StartBuildJobAsync(
                 BuildJobRunnerType.Hangfire,
@@ -284,9 +269,20 @@ public class NmtEngineServiceTests
             );
         }
 
+        private async Task RunInfiniteTrainJob()
+        {
+            await BuildJobService.BuildJobStartedAsync("engine1", "build1");
+
+            while (!_cancellationTokenSource.IsCancellationRequested)
+                await Task.Delay(50);
+
+            await BuildJobService.BuildJobFinishedAsync("engine1", "build1", buildComplete: false);
+        }
+
         protected override void DisposeManagedResources()
         {
             _jobServer.Dispose();
+            _cancellationTokenSource.Dispose();
         }
 
         private class EnvActivator(TestEnvironment env) : JobActivator
@@ -308,14 +304,14 @@ public class NmtEngineServiceTests
                         new LanguageTagService()
                     );
                 }
-                if (jobType == typeof(NmtPostprocessBuildJob))
+                if (jobType == typeof(PostprocessBuildJob))
                 {
-                    return new NmtPostprocessBuildJob(
+                    return new PostprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
                         _env.BuildJobService,
-                        Substitute.For<ILogger<NmtPostprocessBuildJob>>(),
+                        Substitute.For<ILogger<PostprocessBuildJob>>(),
                         _env.SharedFileService
                     );
                 }

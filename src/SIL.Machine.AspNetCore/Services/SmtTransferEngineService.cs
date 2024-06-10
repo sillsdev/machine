@@ -22,13 +22,6 @@ public class SmtTransferEngineService(
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
-    public const string ModelDirectory = "models/";
-
-    public static string GetModelPath(string engineId)
-    {
-        return $"{ModelDirectory}{engineId}.zip";
-    }
-
     public async Task<TranslationEngine> CreateAsync(
         string engineId,
         string? engineName,
@@ -46,7 +39,7 @@ public class SmtTransferEngineService(
             );
         }
 
-        var translationEngine = await _dataAccessContext.WithTransactionAsync(
+        TranslationEngine translationEngine = await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 var translationEngine = new TranslationEngine
@@ -68,7 +61,7 @@ public class SmtTransferEngineService(
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
             SmtTransferEngineState state = _stateService.Get(engineId);
-            state.InitNew();
+            await state.InitNewAsync(CancellationToken.None);
         }
         return translationEngine;
     }

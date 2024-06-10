@@ -35,15 +35,7 @@ public class ModelCleanupService(
             .Where(e => e.Type == TranslationEngineType.Nmt)
             .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1));
 
-        // Add SMT engines
-        IEnumerable<string> validSmtModels = allEngines
-            .Where(e => e.Type == TranslationEngineType.SmtTransfer)
-            .Select(e => SmtTransferEngineService.GetModelPath(e.EngineId));
-
-        HashSet<string> filenameFilter = validNmtFilenames
-            .Concat(validNmtFilenamesForNextBuild)
-            .Concat(validSmtModels)
-            .ToHashSet();
+        HashSet<string> filenameFilter = validNmtFilenames.Concat(validNmtFilenamesForNextBuild).ToHashSet();
 
         foreach (string path in paths)
         {

@@ -17,12 +17,9 @@ public class ClearMLMonitorService(
     ),
         IClearMLQueueService
 {
-    private static readonly string EvalMetric = CreateMD5("eval");
-    private static readonly string BleuVariant = CreateMD5("bleu");
-
     private static readonly string SummaryMetric = CreateMD5("Summary");
-    private static readonly string CorpusSizeVariant = CreateMD5("corpus_size");
-    private static readonly string ProgressVariant = CreateMD5("progress");
+    private static readonly string TrainCorpusSizeVariant = CreateMD5("train_corpus_size");
+    private static readonly string ConfidenceVariant = CreateMD5("confidence");
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
@@ -134,24 +131,29 @@ public class ClearMLMonitorService(
                     switch (task.Status)
                     {
                         case ClearMLTaskStatus.InProgress:
+                        {
+                            double? percentCompleted = null;
+                            if (task.Runtime.TryGetValue("progress", out string? progressStr))
+                                percentCompleted = int.Parse(progressStr, CultureInfo.InvariantCulture) / 100.0;
+                            task.Runtime.TryGetValue("message", out string? message);
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(
-                                    task.LastIteration ?? 0,
-                                    percentCompleted: GetMetric(task, SummaryMetric, ProgressVariant)
-                                ),
-                                0,
+                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted, message),
+                                queueDepth: 0,
                                 cancellationToken
                             );
                             break;
+                        }
 
                         case ClearMLTaskStatus.Completed:
+                        {
+                            task.Runtime.TryGetValue("message", out string? message);
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
-                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0),
-                                0,
+                                new ProgressStatus(task.LastIteration ?? 0, percentCompleted: 1.0, message),
+                                queueDepth: 0,
                                 cancellationToken
                             );
                             bool canceling = !await TrainJobCompletedAsync(
@@ -159,8 +161,8 @@ public class ClearMLMonitorService(
                                 buildJobService,
                                 engine.EngineId,
                                 engine.CurrentBuild.BuildId,
-                                (int)GetMetric(task, SummaryMetric, CorpusSizeVariant),
-                                GetMetric(task, EvalMetric, BleuVariant),
+                                (int)GetMetric(task, SummaryMetric, TrainCorpusSizeVariant),
+                                GetMetric(task, SummaryMetric, ConfidenceVariant),
                                 engine.CurrentBuild.Options,
                                 cancellationToken
                             );
@@ -176,8 +178,10 @@ public class ClearMLMonitorService(
                                 );
                             }
                             break;
+                        }
 
                         case ClearMLTaskStatus.Stopped:
+                        {
                             await TrainJobCanceledAsync(
                                 lockFactory,
                                 buildJobService,
@@ -187,8 +191,10 @@ public class ClearMLMonitorService(
                                 cancellationToken
                             );
                             break;
+                        }
 
                         case ClearMLTaskStatus.Failed:
+                        {
                             await TrainJobFaultedAsync(
                                 lockFactory,
                                 buildJobService,
@@ -199,6 +205,7 @@ public class ClearMLMonitorService(
                                 cancellationToken
                             );
                             break;
+                        }
                     }
                 }
             }
@@ -227,7 +234,7 @@ public class ClearMLMonitorService(
         await platformService.BuildStartedAsync(buildId, CancellationToken.None);
 
         await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, cancellationToken);
-        _logger.LogInformation("Build started ({0})", buildId);
+        _logger.LogInformation("Build started ({BuildId})", buildId);
         return true;
     }
 
@@ -287,7 +294,7 @@ public class ClearMLMonitorService(
                     CancellationToken.None
                 );
             }
-            _logger.LogError("Build faulted ({0}). Error: {1}", buildId, message);
+            _logger.LogError("Build faulted ({BuildId}). Error: {ErrorMessage}", buildId, message);
         }
         finally
         {
@@ -317,7 +324,7 @@ public class ClearMLMonitorService(
                     CancellationToken.None
                 );
             }
-            _logger.LogInformation("Build canceled ({0})", buildId);
+            _logger.LogInformation("Build canceled ({BuildId})", buildId);
         }
         finally
         {
@@ -327,7 +334,7 @@ public class ClearMLMonitorService(
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "Unable to to delete job data for build {0}.", buildId);
+                _logger.LogWarning(e, "Unable to to delete job data for build {BuildId}.", buildId);
             }
             _curBuildStatus.Remove(buildId);
         }
@@ -365,10 +372,8 @@ public class ClearMLMonitorService(
 
     private static string CreateMD5(string input)
     {
-        using var md5 = MD5.Create();
-
         byte[] inputBytes = Encoding.UTF8.GetBytes(input);
-        byte[] hashBytes = md5.ComputeHash(inputBytes);
+        byte[] hashBytes = MD5.HashData(inputBytes);
 
         return Convert.ToHexString(hashBytes).ToLower();
     }

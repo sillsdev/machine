@@ -29,4 +29,7 @@ public record ClearMLTask
         string,
         IReadOnlyDictionary<string, ClearMLMetricsEvent>
     > LastMetrics { get; init; }
+
+    [JsonConverter(typeof(DictionaryStringStringConverter))]
+    public required IReadOnlyDictionary<string, string> Runtime { get; init; }
 }
