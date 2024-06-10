@@ -1,12 +1,10 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
+public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
 
     internal BuildJobRunnerType TrainJobRunnerType { get; init; } = BuildJobRunnerType.ClearML;
-    protected TranslationEngineType EngineType { get; init; }
-    protected bool PretranslationEnabled { get; init; }
 
     private readonly ISharedFileService _sharedFileService;
     private readonly ICorpusService _corpusService;
@@ -85,7 +83,6 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
                 engineId,
                 buildId,
                 BuildStage.Train,
-                data: new object(),
                 buildOptions: buildOptions,
                 cancellationToken: cancellationToken
             );
@@ -111,11 +108,11 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
         await using StreamWriter targetTrainWriter =
             new(await _sharedFileService.OpenWriteAsync($"builds/{buildId}/train.trg.txt", cancellationToken));
 
-        using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
+        await using Stream pretranslateStream = await _sharedFileService.OpenWriteAsync(
             $"builds/{buildId}/pretranslate.src.json",
             cancellationToken
         );
-        using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
+        await using Utf8JsonWriter pretranslateWriter = new(pretranslateStream, PretranslateWriterOptions);
 
         int trainCount = 0;
         int pretranslateCount = 0;
@@ -173,27 +170,24 @@ public abstract class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus
                 }
             }
 
-            if (PretranslationEnabled)
+            foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
             {
-                foreach (Row row in AlignPretranslateCorpus(sourceTextCorpora[0], targetTextCorpus))
+                if (
+                    IsInPretranslate(row, corpus)
+                    && row.SourceSegment.Length > 0
+                    && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
+                )
                 {
-                    if (
-                        IsInPretranslate(row, corpus)
-                        && row.SourceSegment.Length > 0
-                        && (row.TargetSegment.Length == 0 || !IsInTrain(row, corpus))
-                    )
-                    {
-                        pretranslateWriter.WriteStartObject();
-                        pretranslateWriter.WriteString("corpusId", corpus.Id);
-                        pretranslateWriter.WriteString("textId", row.TextId);
-                        pretranslateWriter.WriteStartArray("refs");
-                        foreach (object rowRef in row.Refs)
-                            pretranslateWriter.WriteStringValue(rowRef.ToString());
-                        pretranslateWriter.WriteEndArray();
-                        pretranslateWriter.WriteString("translation", row.SourceSegment);
-                        pretranslateWriter.WriteEndObject();
-                        pretranslateCount++;
-                    }
+                    pretranslateWriter.WriteStartObject();
+                    pretranslateWriter.WriteString("corpusId", corpus.Id);
+                    pretranslateWriter.WriteString("textId", row.TextId);
+                    pretranslateWriter.WriteStartArray("refs");
+                    foreach (object rowRef in row.Refs)
+                        pretranslateWriter.WriteStringValue(rowRef.ToString());
+                    pretranslateWriter.WriteEndArray();
+                    pretranslateWriter.WriteString("translation", row.SourceSegment);
+                    pretranslateWriter.WriteEndObject();
+                    pretranslateCount++;
                 }
             }
         }

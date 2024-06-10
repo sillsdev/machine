@@ -15,7 +15,7 @@ public class ClearMLService(
         new()
         {
             PropertyNamingPolicy = JsonNamingPolicy,
-            Converters = { new Utils.CustomEnumConverterFactory(JsonNamingPolicy) }
+            Converters = { new CustomEnumConverterFactory(JsonNamingPolicy) }
         };
 
     private readonly IClearMLAuthenticationService _clearMLAuthService = clearMLAuthService;
@@ -181,7 +181,8 @@ public class ClearMLService(
             "status_message",
             "created",
             "active_duration",
-            "last_metrics"
+            "last_metrics",
+            "runtime"
         );
         JsonObject? result = await CallAsync("tasks", "get_all_ex", body, cancellationToken);
         var tasks = (JsonArray?)result?["data"]?["tasks"];
