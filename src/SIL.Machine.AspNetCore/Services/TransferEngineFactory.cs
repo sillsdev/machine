@@ -1,20 +1,18 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> engineOptions) : ITransferEngineFactory
+public class TransferEngineFactory : ITransferEngineFactory
 {
-    private readonly IOptionsMonitor<SmtTransferEngineOptions> _engineOptions = engineOptions;
-
-    public ITranslationEngine? Create(
-        string engineId,
+    public Task<ITranslationEngine?> CreateAsync(
+        string engineDir,
         IRangeTokenizer<string, int, string> tokenizer,
         IDetokenizer<string, string> detokenizer,
-        ITruecaser truecaser
+        ITruecaser truecaser,
+        CancellationToken cancellationToken = default
     )
     {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
         string hcTrgConfigFileName = Path.Combine(engineDir, "trg-hc.xml");
-        TransferEngine? transferEngine = null;
+        ITranslationEngine? transferEngine = null;
         if (File.Exists(hcSrcConfigFileName) && File.Exists(hcTrgConfigFileName))
         {
             var hcTraceManager = new TraceManager();
@@ -37,19 +35,19 @@ public class TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> eng
                 Truecaser = truecaser
             };
         }
-        return transferEngine;
+        return Task.FromResult(transferEngine);
     }
 
-    public void InitNew(string engineId)
+    public Task InitNewAsync(string engineDir, CancellationToken cancellationToken = default)
     {
         // TODO: generate source and target config files
+        return Task.CompletedTask;
     }
 
-    public void Cleanup(string engineId)
+    public Task CleanupAsync(string engineDir, CancellationToken cancellationToken = default)
     {
-        string engineDir = Path.Combine(_engineOptions.CurrentValue.EnginesDir, engineId);
         if (!Directory.Exists(engineDir))
-            return;
+            return Task.CompletedTask;
         string hcSrcConfigFileName = Path.Combine(engineDir, "src-hc.xml");
         if (File.Exists(hcSrcConfigFileName))
             File.Delete(hcSrcConfigFileName);
@@ -58,5 +56,6 @@ public class TransferEngineFactory(IOptionsMonitor<SmtTransferEngineOptions> eng
             File.Delete(hcTrgConfigFileName);
         if (!Directory.EnumerateFileSystemEntries(engineDir).Any())
             Directory.Delete(engineDir);
+        return Task.CompletedTask;
     }
 }

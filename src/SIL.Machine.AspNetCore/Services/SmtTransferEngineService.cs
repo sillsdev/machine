@@ -1,10 +1,5 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public static class SmtTransferBuildStages
-{
-    public const string Train = "train";
-}
-
 public class SmtTransferEngineService(
     IDistributedReaderWriterLockFactory lockFactory,
     IPlatformService platformService,
@@ -13,7 +8,7 @@ public class SmtTransferEngineService(
     IRepository<TrainSegmentPair> trainSegmentPairs,
     SmtTransferEngineStateService stateService,
     IBuildJobService buildJobService,
-    JobStorage jobStorage
+    IClearMLQueueService clearMLQueueService
 ) : ITranslationEngineService
 {
     private readonly IDistributedReaderWriterLockFactory _lockFactory = lockFactory;
@@ -23,7 +18,7 @@ public class SmtTransferEngineService(
     private readonly IRepository<TrainSegmentPair> _trainSegmentPairs = trainSegmentPairs;
     private readonly SmtTransferEngineStateService _stateService = stateService;
     private readonly IBuildJobService _buildJobService = buildJobService;
-    private readonly JobStorage _jobStorage = jobStorage;
+    private readonly IClearMLQueueService _clearMLQueueService = clearMLQueueService;
 
     public TranslationEngineType Type => TranslationEngineType.SmtTransfer;
 
@@ -44,7 +39,7 @@ public class SmtTransferEngineService(
             );
         }
 
-        var translationEngine = await _dataAccessContext.WithTransactionAsync(
+        TranslationEngine translationEngine = await _dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
                 var translationEngine = new TranslationEngine
@@ -52,10 +47,11 @@ public class SmtTransferEngineService(
                     EngineId = engineId,
                     SourceLanguage = sourceLanguage,
                     TargetLanguage = targetLanguage,
+                    Type = TranslationEngineType.SmtTransfer,
                     IsModelPersisted = isModelPersisted ?? true // models are persisted if not specified
                 };
                 await _engines.InsertAsync(translationEngine, ct);
-                await _buildJobService.CreateEngineAsync([BuildJobType.Cpu], engineId, engineName, ct);
+                await _buildJobService.CreateEngineAsync(engineId, engineName, ct);
                 return translationEngine;
             },
             cancellationToken: cancellationToken
@@ -65,7 +61,7 @@ public class SmtTransferEngineService(
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
             SmtTransferEngineState state = _stateService.Get(engineId);
-            state.InitNew();
+            await state.InitNewAsync(CancellationToken.None);
         }
         return translationEngine;
     }
@@ -85,6 +81,7 @@ public class SmtTransferEngineService(
                 },
                 cancellationToken: cancellationToken
             );
+            await _buildJobService.DeleteEngineAsync(engineId, CancellationToken.None);
 
             if (_stateService.TryRemove(engineId, out SmtTransferEngineState? state))
             {
@@ -199,11 +196,10 @@ public class SmtTransferEngineService(
                 throw new InvalidOperationException("The engine is already building or in the process of canceling.");
 
             await _buildJobService.StartBuildJobAsync(
-                BuildJobType.Cpu,
-                TranslationEngineType.SmtTransfer,
+                BuildJobRunnerType.Hangfire,
                 engineId,
                 buildId,
-                SmtTransferBuildStages.Train,
+                BuildStage.Preprocess,
                 corpora,
                 buildOptions,
                 cancellationToken
@@ -225,9 +221,9 @@ public class SmtTransferEngineService(
         }
     }
 
-    public Task<int> GetQueueSizeAsync(CancellationToken cancellationToken = default)
+    public int GetQueueSize()
     {
-        return Task.FromResult(Convert.ToInt32(_jobStorage.GetMonitoringApi().EnqueuedCount("smt_transfer")));
+        return _clearMLQueueService.GetQueueSize(Type);
     }
 
     public bool IsLanguageNativeToModel(string language, out string internalCode)

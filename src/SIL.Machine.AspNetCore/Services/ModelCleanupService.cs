@@ -24,17 +24,18 @@ public class ModelCleanupService(
             NmtEngineService.ModelDirectory,
             cancellationToken: cancellationToken
         );
-        // Get all engine ids from the database
+        // Get all NMT engine ids from the database
         IReadOnlyList<TranslationEngine>? allEngines = await _engines.GetAllAsync(cancellationToken: cancellationToken);
-        IEnumerable<string> validFilenames = allEngines.Select(e =>
-            NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision)
-        );
+        IEnumerable<string> validNmtFilenames = allEngines
+            .Where(e => e.Type == TranslationEngineType.Nmt)
+            .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision));
         // If there is a currently running build that creates and pushes a new file, but the database has not
         // updated yet, don't delete the new file.
-        IEnumerable<string> validFilenamesForNextBuild = allEngines.Select(e =>
-            NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1)
-        );
-        HashSet<string> filenameFilter = validFilenames.Concat(validFilenamesForNextBuild).ToHashSet();
+        IEnumerable<string> validNmtFilenamesForNextBuild = allEngines
+            .Where(e => e.Type == TranslationEngineType.Nmt)
+            .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision + 1));
+
+        HashSet<string> filenameFilter = validNmtFilenames.Concat(validNmtFilenamesForNextBuild).ToHashSet();
 
         foreach (string path in paths)
         {

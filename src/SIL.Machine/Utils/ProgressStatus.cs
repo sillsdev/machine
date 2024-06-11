@@ -7,7 +7,7 @@ namespace SIL.Machine.Utils
         public ProgressStatus(int step, int stepCount, string message = null)
             : this(step, stepCount == 0 ? 1.0 : (double)step / stepCount, message) { }
 
-        public ProgressStatus(int step, double? percentCompleted = null, string message = null, int? queueDepth = null)
+        public ProgressStatus(int step, double? percentCompleted = null, string message = null)
         {
             Step = step;
             PercentCompleted = percentCompleted;

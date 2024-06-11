@@ -3,40 +3,46 @@
 [TestFixture]
 public class SmtTransferEngineServiceTests
 {
+    const string EngineId1 = "engine1";
+    const string EngineId2 = "engine2";
+    const string BuildId1 = "build1";
+    const string CorpusId1 = "corpus1";
+
     [Test]
     public async Task CreateAsync()
     {
         using var env = new TestEnvironment();
-        await env.Service.CreateAsync("engine2", "Engine 2", "es", "en");
-        TranslationEngine? engine = await env.Engines.GetAsync(e => e.EngineId == "engine2");
+        await env.Service.CreateAsync(EngineId2, "Engine 2", "es", "en");
+        TranslationEngine? engine = await env.Engines.GetAsync(e => e.EngineId == EngineId2);
         Assert.Multiple(() =>
         {
             Assert.That(engine, Is.Not.Null);
-            Assert.That(engine?.EngineId, Is.EqualTo("engine2"));
+            Assert.That(engine?.EngineId, Is.EqualTo(EngineId2));
             Assert.That(engine?.BuildRevision, Is.EqualTo(0));
             Assert.That(engine?.IsModelPersisted, Is.True);
         });
-        env.SmtModelFactory.Received().InitNew("engine2");
-        env.TransferEngineFactory.Received().InitNew("engine2");
+        string engineDir = Path.Combine("translation_engines", EngineId2);
+        _ = env.SmtModelFactory.Received().InitNewAsync(engineDir);
+        _ = env.TransferEngineFactory.Received().InitNewAsync(engineDir);
     }
 
-    [Test]
-    public async Task StartBuildAsync()
+    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.ClearML)]
+    public async Task StartBuildAsync(BuildJobRunnerType trainJobRunnerType)
     {
-        using var env = new TestEnvironment();
-        TranslationEngine engine = env.Engines.Get("engine1");
+        using var env = new TestEnvironment(trainJobRunnerType);
+        TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.BuildRevision, Is.EqualTo(1));
         // ensure that the SMT model was loaded before training
-        await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
+        await env.Service.TranslateAsync(EngineId1, n: 1, "esto es una prueba.");
         await env.Service.StartBuildAsync(
-            "engine1",
-            "build1",
+            EngineId1,
+            BuildId1,
             null,
-            new[]
-            {
+            [
                 new Corpus()
                 {
-                    Id = "corpus1",
+                    Id = CorpusId1,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     SourceFiles = [],
@@ -44,53 +50,45 @@ public class SmtTransferEngineServiceTests
                     TrainOnTextIds = null,
                     PretranslateTextIds = null
                 }
-            }
+            ]
         );
         await env.WaitForBuildToFinishAsync();
-        await env
+        _ = env
             .SmtBatchTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
-        await env
+        _ = env
             .TruecaserTrainer.Received()
             .TrainAsync(Arg.Any<IProgress<ProgressStatus>>(), Arg.Any<CancellationToken>());
-        await env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
-        await env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
-        engine = env.Engines.Get("engine1");
+        _ = env.SmtBatchTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
+        _ = env.TruecaserTrainer.Received().SaveAsync(Arg.Any<CancellationToken>());
+        engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
         Assert.That(engine.BuildRevision, Is.EqualTo(2));
         // check if SMT model was reloaded upon first use after training
         env.SmtModel.ClearReceivedCalls();
-        await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba.");
+        await env.Service.TranslateAsync(EngineId1, n: 1, "esto es una prueba.");
         env.SmtModel.Received().Dispose();
-        await env.SmtModel.DidNotReceive().SaveAsync();
-        await env.Truecaser.DidNotReceive().SaveAsync();
+        _ = env.SmtModel.DidNotReceive().SaveAsync();
+        _ = env.Truecaser.DidNotReceive().SaveAsync();
     }
 
-    [Test]
-    public async Task CancelBuildAsync_Building()
+    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.ClearML)]
+    public async Task CancelBuildAsync_Building(BuildJobRunnerType trainJobRunnerType)
     {
-        using var env = new TestEnvironment();
-        await env.SmtBatchTrainer.TrainAsync(
-            Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(cancellationToken =>
-            {
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Thread.Sleep(100);
-                }
-            })
-        );
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
-        await env.WaitForBuildToStartAsync();
-        TranslationEngine engine = env.Engines.Get("engine1");
+        using var env = new TestEnvironment(trainJobRunnerType);
+        env.UseInfiniteTrainJob();
+
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.WaitForTrainingToStartAsync();
+        TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
-        await env.Service.CancelBuildAsync("engine1");
+        await env.Service.CancelBuildAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
-        await env.SmtBatchTrainer.DidNotReceive().SaveAsync();
-        await env.TruecaserTrainer.DidNotReceive().SaveAsync();
-        engine = env.Engines.Get("engine1");
+        _ = env.SmtBatchTrainer.DidNotReceive().SaveAsync();
+        _ = env.TruecaserTrainer.DidNotReceive().SaveAsync();
+        engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
     }
 
@@ -98,126 +96,100 @@ public class SmtTransferEngineServiceTests
     public void CancelBuildAsync_NotBuilding()
     {
         using var env = new TestEnvironment();
-        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync("engine1"));
+        Assert.ThrowsAsync<InvalidOperationException>(() => env.Service.CancelBuildAsync(EngineId1));
     }
 
     [Test]
     public async Task StartBuildAsync_RestartUnfinishedBuild()
     {
-        using var env = new TestEnvironment();
+        using var env = new TestEnvironment(BuildJobRunnerType.Hangfire);
+        env.UseInfiniteTrainJob();
 
-        await env.SmtBatchTrainer.TrainAsync(
-            Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(cancellationToken =>
-            {
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Thread.Sleep(100);
-                }
-            })
-        );
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
-        await env.WaitForBuildToStartAsync();
-        TranslationEngine engine = env.Engines.Get("engine1");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.WaitForTrainingToStartAsync();
+        TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
         env.StopServer();
         await env.WaitForBuildToRestartAsync();
-        engine = env.Engines.Get("engine1");
+        engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Pending));
-        await env.PlatformService.Received().BuildRestartingAsync("build1");
+        _ = env.PlatformService.Received().BuildRestartingAsync(BuildId1);
         env.SmtBatchTrainer.ClearSubstitute(ClearOptions.CallActions);
         env.StartServer();
         await env.WaitForBuildToFinishAsync();
-        engine = env.Engines.Get("engine1");
+        engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
     }
 
-    [Test]
-    public async Task DeleteAsync_WhileBuilding()
+    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.ClearML)]
+    public async Task DeleteAsync_WhileBuilding(BuildJobRunnerType trainJobRunnerType)
     {
-        using var env = new TestEnvironment();
-        await env.SmtBatchTrainer.TrainAsync(
-            Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(cancellationToken =>
-            {
-                while (true)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Thread.Sleep(100);
-                }
-            })
-        );
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
-        await env.WaitForBuildToStartAsync();
-        TranslationEngine engine = env.Engines.Get("engine1");
-        Assert.That(engine.CurrentBuild, Is.Not.Null);
-        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
-        await env.Service.DeleteAsync("engine1");
-        // ensure that the build job was canceled
-        await env.WaitForAllHangfireJobsToFinishAsync();
-        await env.SmtBatchTrainer.DidNotReceive().SaveAsync();
-        await env.TruecaserTrainer.DidNotReceive().SaveAsync();
-        Assert.That(env.Engines.Contains("engine1"), Is.False);
-    }
+        using var env = new TestEnvironment(trainJobRunnerType);
+        env.UseInfiniteTrainJob();
 
-    [Test]
-    public async Task TrainSegmentPairAsync()
-    {
-        using var env = new TestEnvironment();
-        bool training = true;
-        await env.SmtBatchTrainer.TrainAsync(
-            Arg.Any<IProgress<ProgressStatus>>(),
-            Arg.Do<CancellationToken>(cancellationToken =>
-            {
-                while (training)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Thread.Sleep(100);
-                }
-            })
-        );
-        await env.Service.StartBuildAsync("engine1", "build1", "{}", Array.Empty<Corpus>());
-        await env.WaitForBuildToStartAsync();
-        TranslationEngine engine = env.Engines.Get("engine1");
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.WaitForTrainingToStartAsync();
+        TranslationEngine engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Not.Null);
         Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
-        await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
-        training = false;
+        await env.Service.DeleteAsync(EngineId1);
         await env.WaitForBuildToFinishAsync();
-        engine = env.Engines.Get("engine1");
+        await env.WaitForAllHangfireJobsToFinishAsync();
+        _ = env.SmtBatchTrainer.DidNotReceive().SaveAsync();
+        _ = env.TruecaserTrainer.DidNotReceive().SaveAsync();
+        Assert.That(env.Engines.Contains(EngineId1), Is.False);
+    }
+
+    [TestCase(BuildJobRunnerType.Hangfire)]
+    [TestCase(BuildJobRunnerType.ClearML)]
+    public async Task TrainSegmentPairAsync(BuildJobRunnerType trainJobRunnerType)
+    {
+        using var env = new TestEnvironment(trainJobRunnerType);
+        env.UseInfiniteTrainJob();
+
+        await env.Service.StartBuildAsync(EngineId1, BuildId1, "{}", Array.Empty<Corpus>());
+        await env.WaitForBuildToStartAsync();
+        TranslationEngine engine = env.Engines.Get(EngineId1);
+        Assert.That(engine.CurrentBuild, Is.Not.Null);
+        Assert.That(engine.CurrentBuild.JobState, Is.EqualTo(BuildJobState.Active));
+        await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
+        env.StopTraining();
+        await env.WaitForBuildToFinishAsync();
+        engine = env.Engines.Get(EngineId1);
         Assert.That(engine.CurrentBuild, Is.Null);
-        await env.SmtModel.Received(2).TrainSegmentAsync("esto es una prueba.", "this is a test.", true);
+        Assert.That(engine.BuildRevision, Is.EqualTo(2));
+        _ = env.SmtModel.Received(2).TrainSegmentAsync("esto es una prueba.", "this is a test.", true);
     }
 
     [Test]
     public async Task CommitAsync_LoadedInactive()
     {
         using var env = new TestEnvironment();
-        await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
+        await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         await Task.Delay(10);
         await env.CommitAsync(TimeSpan.Zero);
-        await env.SmtModel.Received().SaveAsync();
-        Assert.That(env.StateService.Get("engine1").IsLoaded, Is.False);
+        _ = env.SmtModel.Received().SaveAsync();
+        Assert.That(env.StateService.Get(EngineId1).IsLoaded, Is.False);
     }
 
     [Test]
     public async Task CommitAsync_LoadedActive()
     {
         using var env = new TestEnvironment();
-        await env.Service.TrainSegmentPairAsync("engine1", "esto es una prueba.", "this is a test.", true);
+        await env.Service.TrainSegmentPairAsync(EngineId1, "esto es una prueba.", "this is a test.", true);
         await env.CommitAsync(TimeSpan.FromHours(1));
-        await env.SmtModel.Received().SaveAsync();
-        Assert.That(env.StateService.Get("engine1").IsLoaded, Is.True);
+        _ = env.SmtModel.Received().SaveAsync();
+        Assert.That(env.StateService.Get(EngineId1).IsLoaded, Is.True);
     }
 
     [Test]
     public async Task TranslateAsync()
     {
         using var env = new TestEnvironment();
-        TranslationResult result = (await env.Service.TranslateAsync("engine1", n: 1, "esto es una prueba."))[0];
+        TranslationResult result = (await env.Service.TranslateAsync(EngineId1, n: 1, "esto es una prueba."))[0];
         Assert.That(result.Translation, Is.EqualTo("this is a TEST."));
     }
 
@@ -225,7 +197,7 @@ public class SmtTransferEngineServiceTests
     public async Task GetWordGraphAsync()
     {
         using var env = new TestEnvironment();
-        WordGraph result = await env.Service.GetWordGraphAsync("engine1", "esto es una prueba.");
+        WordGraph result = await env.Service.GetWordGraphAsync(EngineId1, "esto es una prueba.");
         Assert.That(
             result.Arcs.Select(a => string.Join(' ', a.TargetTokens)),
             Is.EqualTo(new[] { "this is", "a test", "." })
@@ -239,16 +211,21 @@ public class SmtTransferEngineServiceTests
         private BackgroundJobServer _jobServer;
         private readonly ITruecaserFactory _truecaserFactory;
         private readonly IDistributedReaderWriterLockFactory _lockFactory;
-        private readonly IBuildJobService _buildJobService;
+        private readonly BuildJobRunnerType _trainJobRunnerType;
+        private Task? _trainJobTask;
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private bool _training = true;
 
-        public TestEnvironment()
+        public TestEnvironment(BuildJobRunnerType trainJobRunnerType = BuildJobRunnerType.ClearML)
         {
+            _trainJobRunnerType = trainJobRunnerType;
             Engines = new MemoryRepository<TranslationEngine>();
             Engines.Add(
                 new TranslationEngine
                 {
-                    Id = "engine1",
-                    EngineId = "engine1",
+                    Id = EngineId1,
+                    EngineId = EngineId1,
+                    Type = TranslationEngineType.SmtTransfer,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -261,10 +238,12 @@ public class SmtTransferEngineServiceTests
             PlatformService = Substitute.For<IPlatformService>();
             SmtModel = Substitute.For<IInteractiveTranslationModel>();
             SmtBatchTrainer = Substitute.For<ITrainer>();
-            SmtBatchTrainer.Stats.Returns(new TrainStats { Metrics = { { "bleu", 0.0 }, { "perplexity", 0.0 } } });
+            SmtBatchTrainer.Stats.Returns(
+                new TrainStats { TrainCorpusSize = 0, Metrics = { { "bleu", 0.0 }, { "perplexity", 0.0 } } }
+            );
             Truecaser = Substitute.For<ITruecaser>();
             TruecaserTrainer = Substitute.For<ITrainer>();
-            TruecaserTrainer.SaveAsync().Returns(Task.CompletedTask);
+
             SmtModelFactory = CreateSmtModelFactory();
             TransferEngineFactory = CreateTransferEngineFactory();
             _truecaserFactory = CreateTruecaserFactory();
@@ -273,18 +252,69 @@ public class SmtTransferEngineServiceTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            _buildJobService = new BuildJobService(
-                new[] { new HangfireBuildJobRunner(_jobClient, new[] { new SmtTransferHangfireBuildJobFactory() }) },
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(
-                    new BuildJobOptions
-                    {
-                        Runners = new Dictionary<BuildJobType, BuildJobRunner>
+            SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
+            var clearMLOptions = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
+            clearMLOptions.CurrentValue.Returns(new ClearMLOptions());
+            var buildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            buildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions
+                {
+                    ClearML =
+                    [
+                        new ClearMLBuildQueue()
                         {
-                            { BuildJobType.Cpu, BuildJobRunner.Hangfire }
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "thot",
+                            DockerImage = "default",
+                            Queue = "default"
                         }
-                    }
+                    ]
+                }
+            );
+            ClearMLService = Substitute.For<IClearMLService>();
+            ClearMLService
+                .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>("project1"));
+            ClearMLService
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
                 )
+                .Returns(Task.FromResult("job1"));
+            ClearMLService
+                .When(x => x.EnqueueTaskAsync("job1", Arg.Any<string>(), Arg.Any<CancellationToken>()))
+                .Do(_ => _trainJobTask = Task.Run(RunTrainJob));
+            ClearMLService
+                .When(x => x.StopTaskAsync("job1", Arg.Any<CancellationToken>()))
+                .Do(_ => _cancellationTokenSource.Cancel());
+            ClearMLMonitorService = new ClearMLMonitorService(
+                Substitute.For<IServiceProvider>(),
+                ClearMLService,
+                SharedFileService,
+                clearMLOptions,
+                buildJobOptions,
+                Substitute.For<ILogger<ClearMLMonitorService>>()
+            );
+            BuildJobService = new BuildJobService(
+                [
+                    new HangfireBuildJobRunner(_jobClient, [new SmtTransferHangfireBuildJobFactory()]),
+                    new ClearMLBuildJobRunner(
+                        ClearMLService,
+                        [new SmtTransferClearMLBuildJobFactory(SharedFileService, Engines)],
+                        buildJobOptions
+                    )
+                ],
+                Engines
             );
             _jobServer = CreateJobServer();
             StateService = CreateStateService();
@@ -303,6 +333,13 @@ public class SmtTransferEngineServiceTests
         public ITrainer TruecaserTrainer { get; }
         public IPlatformService PlatformService { get; }
 
+        public IClearMLService ClearMLService { get; }
+        public IClearMLQueueService ClearMLMonitorService { get; }
+
+        public ISharedFileService SharedFileService { get; }
+
+        public IBuildJobService BuildJobService { get; }
+
         public async Task CommitAsync(TimeSpan inactiveTimeout)
         {
             await StateService.CommitAsync(_lockFactory, Engines, inactiveTimeout);
@@ -310,8 +347,8 @@ public class SmtTransferEngineServiceTests
 
         public void StopServer()
         {
-            StateService.Dispose();
             _jobServer.Dispose();
+            StateService.Dispose();
         }
 
         public void StartServer()
@@ -319,6 +356,26 @@ public class SmtTransferEngineServiceTests
             _jobServer = CreateJobServer();
             StateService = CreateStateService();
             Service = CreateService();
+        }
+
+        public void UseInfiniteTrainJob()
+        {
+            SmtBatchTrainer.TrainAsync(
+                Arg.Any<IProgress<ProgressStatus>>(),
+                Arg.Do<CancellationToken>(cancellationToken =>
+                {
+                    while (_training)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+            );
+        }
+
+        public void StopTraining()
+        {
+            _training = false;
         }
 
         private BackgroundJobServer CreateJobServer()
@@ -334,7 +391,14 @@ public class SmtTransferEngineServiceTests
 
         private SmtTransferEngineStateService CreateStateService()
         {
-            return new SmtTransferEngineStateService(SmtModelFactory, TransferEngineFactory, _truecaserFactory);
+            var options = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+            options.CurrentValue.Returns(new SmtTransferEngineOptions());
+            return new SmtTransferEngineStateService(
+                SmtModelFactory,
+                TransferEngineFactory,
+                _truecaserFactory,
+                options
+            );
         }
 
         private SmtTransferEngineService CreateService()
@@ -346,8 +410,8 @@ public class SmtTransferEngineServiceTests
                 Engines,
                 TrainSegmentPairs,
                 StateService,
-                _buildJobService,
-                _memoryStorage
+                BuildJobService,
+                ClearMLMonitorService
             );
         }
 
@@ -425,20 +489,22 @@ public class SmtTransferEngineServiceTests
                 );
 
             factory
-                .Create(
+                .CreateAsync(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
                     Arg.Any<IDetokenizer<string, string>>(),
-                    Arg.Any<ITruecaser>()
+                    Arg.Any<ITruecaser>(),
+                    Arg.Any<CancellationToken>()
                 )
-                .Returns(SmtModel);
+                .Returns(Task.FromResult(SmtModel));
             factory
-                .CreateTrainer(
+                .CreateTrainerAsync(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
-                    Arg.Any<IParallelTextCorpus>()
+                    Arg.Any<IParallelTextCorpus>(),
+                    Arg.Any<CancellationToken>()
                 )
-                .Returns(SmtBatchTrainer);
+                .Returns(Task.FromResult(SmtBatchTrainer));
             return factory;
         }
 
@@ -475,13 +541,14 @@ public class SmtTransferEngineServiceTests
                     )
                 );
             factory
-                .Create(
+                .CreateAsync(
                     Arg.Any<string>(),
                     Arg.Any<IRangeTokenizer<string, int, string>>(),
                     Arg.Any<IDetokenizer<string, string>>(),
-                    Arg.Any<ITruecaser>()
+                    Arg.Any<ITruecaser>(),
+                    Arg.Any<CancellationToken>()
                 )
-                .Returns(engine);
+                .Returns(Task.FromResult<ITranslationEngine?>(engine));
             return factory;
         }
 
@@ -490,8 +557,13 @@ public class SmtTransferEngineServiceTests
             ITruecaserFactory factory = Substitute.For<ITruecaserFactory>();
             factory.CreateAsync(Arg.Any<string>()).Returns(Task.FromResult(Truecaser));
             factory
-                .CreateTrainer(Arg.Any<string>(), Arg.Any<ITokenizer<string, int, string>>(), Arg.Any<ITextCorpus>())
-                .Returns(TruecaserTrainer);
+                .CreateTrainerAsync(
+                    Arg.Any<string>(),
+                    Arg.Any<ITokenizer<string, int, string>>(),
+                    Arg.Any<ITextCorpus>(),
+                    Arg.Any<CancellationToken>()
+                )
+                .Returns(Task.FromResult(TruecaserTrainer));
             return factory;
         }
 
@@ -510,14 +582,23 @@ public class SmtTransferEngineServiceTests
                 await Task.Delay(50);
         }
 
-        public Task WaitForBuildToFinishAsync()
+        public async Task WaitForBuildToFinishAsync()
         {
-            return WaitForBuildState(e => e.CurrentBuild is null);
+            await WaitForBuildState(e => e.CurrentBuild is null);
+            if (_trainJobTask is not null)
+                await _trainJobTask;
         }
 
         public Task WaitForBuildToStartAsync()
         {
             return WaitForBuildState(e => e.CurrentBuild!.JobState is BuildJobState.Active);
+        }
+
+        public Task WaitForTrainingToStartAsync()
+        {
+            return WaitForBuildState(e =>
+                e.CurrentBuild!.JobState is BuildJobState.Active && e.CurrentBuild!.Stage is BuildStage.Train
+            );
         }
 
         public Task WaitForBuildToRestartAsync()
@@ -528,12 +609,12 @@ public class SmtTransferEngineServiceTests
         private async Task WaitForBuildState(Func<TranslationEngine, bool> predicate)
         {
             using ISubscription<TranslationEngine> subscription = await Engines.SubscribeAsync(e =>
-                e.EngineId == "engine1"
+                e.EngineId == EngineId1
             );
             while (true)
             {
                 TranslationEngine? engine = subscription.Change.Entity;
-                if (engine is not null && predicate(engine))
+                if (engine is null || predicate(engine))
                     break;
                 await subscription.WaitForChangeAsync();
             }
@@ -545,32 +626,110 @@ public class SmtTransferEngineServiceTests
             _jobServer.Dispose();
         }
 
+        private async Task RunTrainJob()
+        {
+            try
+            {
+                await BuildJobService.BuildJobStartedAsync("engine1", "build1", _cancellationTokenSource.Token);
+
+                string engineDir = Path.Combine("translation_engines", EngineId1);
+                await SmtModelFactory.InitNewAsync(engineDir, _cancellationTokenSource.Token);
+                ITextCorpus sourceCorpus = new DictionaryTextCorpus();
+                ITextCorpus targetCorpus = new DictionaryTextCorpus();
+                IParallelTextCorpus parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
+                LatinWordTokenizer tokenizer = new();
+                using ITrainer smtModelTrainer = await SmtModelFactory.CreateTrainerAsync(
+                    engineDir,
+                    tokenizer,
+                    parallelCorpus,
+                    _cancellationTokenSource.Token
+                );
+                using ITrainer truecaseTrainer = await _truecaserFactory.CreateTrainerAsync(
+                    engineDir,
+                    tokenizer,
+                    targetCorpus,
+                    _cancellationTokenSource.Token
+                );
+                await smtModelTrainer.TrainAsync(null, _cancellationTokenSource.Token);
+                await truecaseTrainer.TrainAsync(cancellationToken: _cancellationTokenSource.Token);
+
+                await smtModelTrainer.SaveAsync(_cancellationTokenSource.Token);
+                await truecaseTrainer.SaveAsync(_cancellationTokenSource.Token);
+
+                await using Stream engineStream = await SharedFileService.OpenWriteAsync(
+                    $"builds/{BuildId1}/model.tar.gz",
+                    _cancellationTokenSource.Token
+                );
+
+                await using Stream targetStream = await SharedFileService.OpenWriteAsync(
+                    $"builds/{BuildId1}/pretranslate.trg.json",
+                    _cancellationTokenSource.Token
+                );
+
+                await BuildJobService.StartBuildJobAsync(
+                    BuildJobRunnerType.Hangfire,
+                    EngineId1,
+                    BuildId1,
+                    BuildStage.Postprocess,
+                    data: (0, 0.0)
+                );
+            }
+            catch (OperationCanceledException)
+            {
+                await BuildJobService.BuildJobFinishedAsync("engine1", "build1", buildComplete: false);
+            }
+        }
+
         private class EnvActivator(TestEnvironment env) : JobActivator
         {
             private readonly TestEnvironment _env = env;
 
             public override object ActivateJob(Type jobType)
             {
-                if (jobType == typeof(SmtTransferBuildJob))
+                if (jobType == typeof(PreprocessBuildJob))
                 {
-                    ICorpusService corpusService = Substitute.For<ICorpusService>();
-                    corpusService
-                        .CreateTextCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
-                        .Returns([new DictionaryTextCorpus()]);
-                    corpusService
-                        .CreateTermCorpora(Arg.Any<IReadOnlyList<CorpusFile>>())
-                        .Returns([new DictionaryTextCorpus()]);
-
-                    return new SmtTransferBuildJob(
+                    return new PreprocessBuildJob(
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
-                        _env._buildJobService,
-                        Substitute.For<ILogger<SmtTransferBuildJob>>(),
+                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        _env.BuildJobService,
+                        _env.SharedFileService,
+                        Substitute.For<ICorpusService>()
+                    )
+                    {
+                        TrainJobRunnerType = _env._trainJobRunnerType
+                    };
+                }
+                if (jobType == typeof(SmtTransferPostprocessBuildJob))
+                {
+                    var options = Substitute.For<IOptionsMonitor<SmtTransferEngineOptions>>();
+                    options.CurrentValue.Returns(new SmtTransferEngineOptions());
+                    return new SmtTransferPostprocessBuildJob(
+                        _env.PlatformService,
+                        _env.Engines,
+                        _env._lockFactory,
+                        _env.BuildJobService,
+                        Substitute.For<ILogger<SmtTransferPostprocessBuildJob>>(),
+                        _env.SharedFileService,
                         _env.TrainSegmentPairs,
+                        _env.SmtModelFactory,
+                        _env._truecaserFactory,
+                        options
+                    );
+                }
+                if (jobType == typeof(SmtTransferTrainBuildJob))
+                {
+                    return new SmtTransferTrainBuildJob(
+                        _env.PlatformService,
+                        _env.Engines,
+                        _env._lockFactory,
+                        _env.BuildJobService,
+                        Substitute.For<ILogger<SmtTransferTrainBuildJob>>(),
+                        _env.SharedFileService,
                         _env._truecaserFactory,
                         _env.SmtModelFactory,
-                        corpusService
+                        _env.TransferEngineFactory
                     );
                 }
                 return base.ActivateJob(jobType);

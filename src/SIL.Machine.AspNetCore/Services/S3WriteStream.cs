@@ -1,10 +1,5 @@
 namespace SIL.Machine.AspNetCore.Services;
 
-[SuppressMessage(
-    "Usage",
-    "CA1844: Provide memory-based overrides of async methods when subclassing 'Stream'",
-    Justification = "Data would have to be copied anyway"
-)]
 public class S3WriteStream(
     AmazonS3Client client,
     string key,
@@ -48,15 +43,18 @@ public class S3WriteStream(
 
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override async ValueTask WriteAsync(
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken = default
+    )
     {
         try
         {
-            using MemoryStream ms = new(buffer, offset, count);
+            using Stream stream = buffer.AsStream();
 
             int bytesWritten = 0;
 
-            while (count > bytesWritten)
+            while (stream.Length > bytesWritten)
             {
                 int partNumber = _uploadResponses.Count + 1;
                 UploadPartRequest request =
@@ -66,7 +64,7 @@ public class S3WriteStream(
                         Key = _key,
                         UploadId = _uploadId,
                         PartNumber = partNumber,
-                        InputStream = ms,
+                        InputStream = stream,
                         PartSize = MaxPartSize
                     };
                 request.StreamTransferProgress += new EventHandler<StreamTransferProgressArgs>(
@@ -97,6 +95,11 @@ public class S3WriteStream(
             await AbortAsync(e);
             throw;
         }
+    }
+
+    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
     }
 
     protected override void Dispose(bool disposing)

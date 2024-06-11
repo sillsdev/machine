@@ -1,7 +1,7 @@
 namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
-public class NmtPreprocessBuildJobTests
+public class PreprocessBuildJobTests
 {
     [Test]
     public async Task RunAsync_FilterOutEverything()
@@ -233,6 +233,15 @@ public class NmtPreprocessBuildJobTests
         });
     }
 
+    [Test]
+    public async Task RunAsync_UnknownLanguageTagsNoDataSmtTransfer()
+    {
+        using TestEnvironment env = new();
+        Corpus corpus1 = env.DefaultTextFileCorpus with { SourceLanguage = "xxx", TargetLanguage = "zzz" };
+
+        await env.RunBuildJobAsync(corpus1, engineId: "engine2", engineType: TranslationEngineType.SmtTransfer);
+    }
+
     private class TestEnvironment : ObjectModel.DisposableBase
     {
         private static readonly string TestDataPath = Path.Combine(
@@ -252,10 +261,8 @@ public class NmtPreprocessBuildJobTests
         public MemoryRepository<TranslationEngine> Engines { get; }
         public IDistributedReaderWriterLockFactory LockFactory { get; }
         public IBuildJobService BuildJobService { get; }
-        public ILogger<NmtPreprocessBuildJob> Logger { get; }
         public IClearMLService ClearMLService { get; }
-        public NmtPreprocessBuildJob BuildJob { get; }
-        public IOptionsMonitor<ClearMLOptions> Options { get; }
+        public IOptionsMonitor<BuildJobOptions> BuildJobOptions { get; }
 
         public Corpus DefaultTextFileCorpus { get; }
         public Corpus DefaultMixedSourceTextFileCorpus { get; }
@@ -267,7 +274,7 @@ public class NmtPreprocessBuildJobTests
             if (!Sldr.IsInitialized)
                 Sldr.Initialize(offlineMode: true);
 
-            _tempDir = new TempDirectory("NmtPreprocessBuildJobTests");
+            _tempDir = new TempDirectory("PreprocessBuildJobTests");
 
             ZipParatextProject("pt-source1");
             ZipParatextProject("pt-source2");
@@ -323,6 +330,7 @@ public class NmtPreprocessBuildJobTests
                 {
                     Id = "engine1",
                     EngineId = "engine1",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "es",
                     TargetLanguage = "en",
                     BuildRevision = 1,
@@ -332,8 +340,8 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = BuildJobRunner.Hangfire,
-                        Stage = NmtBuildStages.Preprocess
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
                     }
                 }
             );
@@ -342,6 +350,7 @@ public class NmtPreprocessBuildJobTests
                 {
                     Id = "engine2",
                     EngineId = "engine2",
+                    Type = TranslationEngineType.Nmt,
                     SourceLanguage = "xxx",
                     TargetLanguage = "zzz",
                     BuildRevision = 1,
@@ -351,8 +360,28 @@ public class NmtPreprocessBuildJobTests
                         BuildId = "build1",
                         JobId = "job1",
                         JobState = BuildJobState.Pending,
-                        JobRunner = BuildJobRunner.Hangfire,
-                        Stage = NmtBuildStages.Preprocess
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
+                    }
+                }
+            );
+            Engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine2",
+                    EngineId = "engine2",
+                    Type = TranslationEngineType.Nmt,
+                    SourceLanguage = "xxx",
+                    TargetLanguage = "zzz",
+                    BuildRevision = 1,
+                    IsModelPersisted = false,
+                    CurrentBuild = new()
+                    {
+                        BuildId = "build1",
+                        JobId = "job1",
+                        JobState = BuildJobState.Pending,
+                        BuildJobRunner = BuildJobRunnerType.Hangfire,
+                        Stage = BuildStage.Preprocess
                     }
                 }
             );
@@ -363,8 +392,29 @@ public class NmtPreprocessBuildJobTests
                 new MemoryRepository<RWLock>(),
                 new ObjectIdGenerator()
             );
-            Options = Substitute.For<IOptionsMonitor<ClearMLOptions>>();
-            Options.CurrentValue.Returns(new ClearMLOptions { ModelType = "test_model" });
+            BuildJobOptions = Substitute.For<IOptionsMonitor<BuildJobOptions>>();
+            BuildJobOptions.CurrentValue.Returns(
+                new BuildJobOptions
+                {
+                    ClearML =
+                    [
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.Nmt,
+                            ModelType = "huggingface",
+                            DockerImage = "default",
+                            Queue = "default"
+                        },
+                        new ClearMLBuildQueue()
+                        {
+                            TranslationEngineType = TranslationEngineType.SmtTransfer,
+                            ModelType = "thot",
+                            DockerImage = "default",
+                            Queue = "default"
+                        }
+                    ]
+                }
+            );
             ClearMLService = Substitute.For<IClearMLService>();
             ClearMLService
                 .GetProjectIdAsync("engine1", Arg.Any<CancellationToken>())
@@ -373,10 +423,18 @@ public class NmtPreprocessBuildJobTests
                 .GetProjectIdAsync("engine2", Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<string?>("project1"));
             ClearMLService
-                .CreateTaskAsync("build1", "project1", Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .GetProjectIdAsync("engine2", Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult<string?>("project1"));
+            ClearMLService
+                .CreateTaskAsync(
+                    "build1",
+                    "project1",
+                    Arg.Any<string>(),
+                    Arg.Any<string>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(Task.FromResult("job1"));
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-            Logger = Substitute.For<ILogger<NmtPreprocessBuildJob>>();
             BuildJobService = new BuildJobService(
                 [
                     new HangfireBuildJobRunner(
@@ -389,39 +447,66 @@ public class NmtPreprocessBuildJobTests
                             new NmtClearMLBuildJobFactory(
                                 SharedFileService,
                                 Substitute.For<ILanguageTagService>(),
-                                Engines,
-                                Options
+                                Engines
                             )
-                        ]
+                        ],
+                        BuildJobOptions
                     )
                 ],
-                Engines,
-                new OptionsWrapper<BuildJobOptions>(new BuildJobOptions())
+                Engines
             );
-            BuildJob = new NmtPreprocessBuildJob(
-                PlatformService,
-                Engines,
-                LockFactory,
-                Logger,
-                BuildJobService,
-                SharedFileService,
-                CorpusService,
-                new LanguageTagService()
-            )
-            {
-                Seed = 1234
-            };
         }
 
-        public Task RunBuildJobAsync(Corpus corpus, bool useKeyTerms = true, string engineId = "engine1")
+        public PreprocessBuildJob GetBuildJob(TranslationEngineType engineType)
         {
-            return BuildJob.RunAsync(
-                engineId,
-                "build1",
-                [corpus],
-                useKeyTerms ? null : "{\"use_key_terms\":false}",
-                default
-            );
+            switch (engineType)
+            {
+                case TranslationEngineType.Nmt:
+                {
+                    return new NmtPreprocessBuildJob(
+                        PlatformService,
+                        Engines,
+                        LockFactory,
+                        Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
+                        BuildJobService,
+                        SharedFileService,
+                        CorpusService,
+                        new LanguageTagService()
+                    )
+                    {
+                        Seed = 1234
+                    };
+                }
+                case TranslationEngineType.SmtTransfer:
+                {
+                    return new PreprocessBuildJob(
+                        PlatformService,
+                        Engines,
+                        LockFactory,
+                        Substitute.For<ILogger<PreprocessBuildJob>>(),
+                        BuildJobService,
+                        SharedFileService,
+                        CorpusService
+                    )
+                    {
+                        Seed = 1234
+                    };
+                }
+                default:
+                    throw new InvalidOperationException("Unknown engine type.");
+            }
+            ;
+        }
+
+        public Task RunBuildJobAsync(
+            Corpus corpus,
+            bool useKeyTerms = true,
+            string engineId = "engine1",
+            TranslationEngineType engineType = TranslationEngineType.Nmt
+        )
+        {
+            return GetBuildJob(engineType)
+                .RunAsync(engineId, "build1", [corpus], useKeyTerms ? null : "{\"use_key_terms\":false}", default);
         }
 
         public async Task<(int Source1Count, int Source2Count, int TargetCount, int TermCount)> GetTrainCountAsync()

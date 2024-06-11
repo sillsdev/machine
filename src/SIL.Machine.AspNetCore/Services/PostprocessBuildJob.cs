@@ -1,15 +1,18 @@
 ﻿namespace SIL.Machine.AspNetCore.Services;
 
-public class NmtPostprocessBuildJob(
+public class PostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
     IBuildJobService buildJobService,
-    ILogger<NmtPostprocessBuildJob> logger,
+    ILogger<PostprocessBuildJob> logger,
     ISharedFileService sharedFileService
 ) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, buildJobService, logger)
 {
-    private readonly ISharedFileService _sharedFileService = sharedFileService;
+    private static readonly JsonSerializerOptions JsonSerializerOptions =
+        new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    protected ISharedFileService SharedFileService { get; } = sharedFileService;
 
     protected override async Task DoWorkAsync(
         string engineId,
@@ -22,14 +25,15 @@ public class NmtPostprocessBuildJob(
     {
         (int corpusSize, double confidence) = data;
 
-        // The NMT job has successfully completed, so insert the generated pretranslations into the database.
+        // The MT job has successfully completed, so insert the generated pretranslations into the database.
         await InsertPretranslationsAsync(engineId, buildId, cancellationToken);
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
+            int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
             await PlatformService.BuildCompletedAsync(
                 buildId,
-                corpusSize,
+                corpusSize + additionalCorpusSize,
                 Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
                 CancellationToken.None
             );
@@ -37,6 +41,11 @@ public class NmtPostprocessBuildJob(
         }
 
         Logger.LogInformation("Build completed ({0}).", buildId);
+    }
+
+    protected virtual Task<int> SaveModelAsync(string engineId, string buildId)
+    {
+        return Task.FromResult(0);
     }
 
     protected override async Task CleanupAsync(
@@ -53,7 +62,7 @@ public class NmtPostprocessBuildJob(
         try
         {
             if (completionStatus is not JobCompletionStatus.Faulted)
-                await _sharedFileService.DeleteAsync($"builds/{buildId}/");
+                await SharedFileService.DeleteAsync($"builds/{buildId}/");
         }
         catch (Exception e)
         {
@@ -61,9 +70,13 @@ public class NmtPostprocessBuildJob(
         }
     }
 
-    private async Task InsertPretranslationsAsync(string engineId, string buildId, CancellationToken cancellationToken)
+    protected async Task InsertPretranslationsAsync(
+        string engineId,
+        string buildId,
+        CancellationToken cancellationToken
+    )
     {
-        await using var targetPretranslateStream = await _sharedFileService.OpenReadAsync(
+        await using Stream targetPretranslateStream = await SharedFileService.OpenReadAsync(
             $"builds/{buildId}/pretranslate.trg.json",
             cancellationToken
         );
@@ -71,7 +84,7 @@ public class NmtPostprocessBuildJob(
         IAsyncEnumerable<Pretranslation> pretranslations = JsonSerializer
             .DeserializeAsyncEnumerable<Pretranslation>(
                 targetPretranslateStream,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase },
+                JsonSerializerOptions,
                 cancellationToken
             )
             .OfType<Pretranslation>();
