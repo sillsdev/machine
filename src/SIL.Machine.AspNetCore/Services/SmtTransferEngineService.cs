@@ -188,6 +188,13 @@ public class SmtTransferEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        // Update the engine type to Smt if unset - for migrating to v1.5
+        await _engines.UpdateAsync(
+            e => e.EngineId == engineId && e.Type == null,
+            u => u.Set(e => e.Type, TranslationEngineType.SmtTransfer),
+            cancellationToken: cancellationToken
+        );
+
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {

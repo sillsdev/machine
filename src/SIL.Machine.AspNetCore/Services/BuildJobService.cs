@@ -77,8 +77,15 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
             return false;
 
         IBuildJobRunner runner = _runners[runnerType];
+        if (engine.Type is null)
+        {
+            throw new InvalidOperationException(
+                "Engine type is not set.  This can come from a invalid migration to Serval 1.5."
+            );
+        }
+        TranslationEngineType type = engine.Type.Value;
         string jobId = await runner.CreateJobAsync(
-            engine.Type,
+            type,
             engineId,
             buildId,
             stage,
@@ -105,7 +112,7 @@ public class BuildJobService(IEnumerable<IBuildJobRunner> runners, IRepository<T
                     ),
                 cancellationToken: cancellationToken
             );
-            await runner.EnqueueJobAsync(jobId, engine.Type, cancellationToken);
+            await runner.EnqueueJobAsync(jobId, type, cancellationToken);
             return true;
         }
         catch

@@ -80,6 +80,13 @@ public class NmtEngineService(
         CancellationToken cancellationToken = default
     )
     {
+        // Update the engine type to Nmt if unset - for migrating to v1.5
+        await _engines.UpdateAsync(
+            e => e.EngineId == engineId && e.Type == null,
+            u => u.Set(e => e.Type, TranslationEngineType.Nmt),
+            cancellationToken: cancellationToken
+        );
+
         IDistributedReaderWriterLock @lock = await _lockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
