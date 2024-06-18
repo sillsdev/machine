@@ -376,6 +376,39 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
+    public void GetUsfm_Verse_VersesNotInTemplate()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 2:11"), "Verse 11 1st part of range - include it."),
+            (ScrRef("MAT 2:12"), "Verse 12 2nd part of range - include it."),
+            (ScrRef("MAT 2:13"), "Verse 13 does not exist - include it."),
+            (ScrRef("MAT 2:14", "MAT 2:15"), "Verse 14 exists - include it."),
+            (ScrRef("MAT 2:16", "MAT 2:17"), "Verse 17 exists - include it."),
+            (ScrRef("MAT 2:18", "MAT 2:19"), "Verse 18-19 does not exist - include it."),
+            (ScrRef("MAT 2:20"), "Verse 20 does not exist - include it."),
+            (ScrRef("MAT 2:22/3:ip"), "This should not be included - only verse text."),
+            (ScrRef("MAT 5:3"), "Chapter 5?!?!? - include it.")
+        };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(
+            target,
+            Contains.Substring(
+                "\\v 11-12 Verse 11 1st part of range - include it. Verse 12 2nd part of range - include it."
+            )
+        );
+        Assert.That(target, Contains.Substring("\\v 13 Verse 13 does not exist - include it."));
+        Assert.That(target, Contains.Substring("\\v 14 Verse 14 exists - include it."));
+        Assert.That(target, Contains.Substring("\\v 17 Verse 17 exists - include it."));
+        Assert.That(target, Contains.Substring("\\v 17 Verse 17 exists - include it."));
+        Assert.That(target, Contains.Substring("\\v 18-19 Verse 18-19 does not exist - include it."));
+        Assert.That(target, Contains.Substring("\\v 20 Verse 20 does not exist - include it."));
+        Assert.That(target, !Contains.Substring("This should not be included - only verse text."));
+        Assert.That(target, Contains.Substring("\\c 5\r\n\\v 3 Chapter 5?!?!? - include it."));
+    }
+
+    [Test]
     public void GetUsfm_Verse_PretranslationsBeforeText()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
