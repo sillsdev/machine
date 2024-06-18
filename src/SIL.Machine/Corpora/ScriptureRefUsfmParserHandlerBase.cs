@@ -15,6 +15,10 @@ namespace SIL.Machine.Corpora
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase
     {
         private VerseRef _curVerseRef;
+        protected VerseRef CurVerseRef
+        {
+            get { return _curVerseRef; }
+        }
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
         private bool _duplicateVerse = false;
@@ -235,7 +239,7 @@ namespace SIL.Machine.Corpora
             _curTextType.Pop();
         }
 
-        private void UpdateVerseRef(VerseRef verseRef, string marker)
+        protected void UpdateVerseRef(VerseRef verseRef, string marker)
         {
             if (!VerseRef.AreOverlappingVersesRanges(verseRef, _curVerseRef))
             {

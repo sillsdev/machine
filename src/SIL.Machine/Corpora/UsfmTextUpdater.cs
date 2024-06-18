@@ -41,6 +41,7 @@ namespace SIL.Machine.Corpora
         public override void EndUsfm(UsfmParserState state)
         {
             CollectTokens(state);
+            InsertRemainingRows();
             base.EndUsfm(state);
         }
 
@@ -328,19 +329,69 @@ namespace SIL.Machine.Corpora
                     if (compare == 0)
                     {
                         // source and row match
-                        // grab the text and increment both
                         rowTexts.Add(text);
                         sourceIndex++;
+                        _rowIndex++;
                         break;
                     }
                 }
-                if (compare <= 0)
+                if (compare < 0)
                 {
                     // source is ahead row, increment row
+                    InsertOrphanRow(preserveLastVerse: true);
                     _rowIndex++;
                 }
             }
             return rowTexts;
+        }
+
+        private void InsertOrphanRow(bool preserveLastVerse = false)
+        {
+            (IReadOnlyList<ScriptureRef> rowScrRefs, string text) = _rows[_rowIndex];
+
+            if (_tokens.Count == 0)
+                return;
+            if (!rowScrRefs[0].IsVerse)
+                return;
+            if (rowScrRefs[0].BookNum != CurVerseRef.BookNum)
+                return;
+
+            var lastToken = _tokens.Last();
+            if (preserveLastVerse)
+                _tokens.RemoveAt(_tokens.Count - 1);
+
+            if (rowScrRefs[0].ChapterNum != CurVerseRef.ChapterNum)
+                _tokens.Add(new UsfmToken(UsfmTokenType.Chapter, "c", null, null, rowScrRefs[0].Chapter));
+            if (rowScrRefs.Count > 1)
+            {
+                _tokens.Add(
+                    new UsfmToken(
+                        UsfmTokenType.Verse,
+                        "v",
+                        null,
+                        null,
+                        $"{rowScrRefs[0].Verse}-{rowScrRefs.Last().Verse}"
+                    )
+                );
+            }
+            else
+            {
+                _tokens.Add(new UsfmToken(UsfmTokenType.Verse, "v", null, null, rowScrRefs[0].Verse));
+            }
+            _tokens.Add(new UsfmToken(UsfmTokenType.Text, null, text, null));
+            if (preserveLastVerse)
+                _tokens.Add(lastToken);
+
+            UpdateVerseRef(rowScrRefs.Last().VerseRef, "v");
+        }
+
+        private void InsertRemainingRows()
+        {
+            while (_rowIndex < _rows.Count)
+            {
+                InsertOrphanRow();
+                _rowIndex++;
+            }
         }
 
         private void CollectTokens(UsfmParserState state)

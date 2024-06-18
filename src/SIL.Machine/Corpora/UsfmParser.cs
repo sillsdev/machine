@@ -629,7 +629,6 @@ namespace SIL.Machine.Corpora
             switch (element.Type)
             {
                 case UsfmElementType.Book:
-                    Handler?.EndBook(State, element.Marker);
                     break;
                 case UsfmElementType.Para:
                     Handler?.EndPara(State, element.Marker);
