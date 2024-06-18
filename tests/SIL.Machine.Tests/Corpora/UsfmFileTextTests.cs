@@ -13,7 +13,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(23));
+        Assert.That(rows, Has.Length.EqualTo(24));
 
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1", corpus.Versification)));
         Assert.That(rows[0].Text, Is.EqualTo("Chapter one, verse one."));
@@ -73,7 +73,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(49));
+        Assert.That(rows, Has.Length.EqualTo(50));
 
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:h", corpus.Versification)));
         Assert.That(rows[0].Text, Is.EqualTo("Matthew"));
@@ -146,7 +146,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(23));
+        Assert.That(rows, Has.Length.EqualTo(24));
 
         Assert.That(rows[3].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:4", corpus.Versification)));
         Assert.That(rows[3].Text, Is.EqualTo("Chapter one, verse four,"));
@@ -179,7 +179,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(23));
+        Assert.That(rows, Has.Length.EqualTo(24));
 
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1", corpus.Versification)));
         Assert.That(
@@ -254,7 +254,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(45));
+        Assert.That(rows, Has.Length.EqualTo(46));
 
         Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/3:ip", corpus.Versification)));
         Assert.That(rows[2].Text, Is.EqualTo("An introduction to Matthew\\fe + \\ft This is an endnote.\\fe*"));

@@ -49,11 +49,11 @@ namespace SIL.Machine.Corpora
             base.StartBook(state, marker, code);
         }
 
-        public override void EndBook(UsfmParserState state, string marker)
+        public override void EndBook(UsfmParserState state)
         {
             PopNewTokens();
-
-            base.EndBook(state, marker);
+            CollectTokens(state);
+            base.EndBook(state);
         }
 
         public override void StartPara(
@@ -314,7 +314,7 @@ namespace SIL.Machine.Corpora
                     {
                         compare = rowScrRef.CompareTo(segScrRefs[sourceIndex], compareSegments: false);
                         if (compare > 0)
-                            // source is ahead of row, increment source
+                            // row is ahead of source, increment source
                             sourceIndex++;
                         else
                             break;
@@ -330,7 +330,7 @@ namespace SIL.Machine.Corpora
                 }
                 if (compare <= 0)
                 {
-                    // row is ahead of source, increment row
+                    // source is ahead row, increment row
                     _rowIndex++;
                 }
             }

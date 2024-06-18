@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 
         public virtual void StartBook(UsfmParserState state, string marker, string code) { }
 
-        public virtual void EndBook(UsfmParserState state, string marker) { }
+        public virtual void EndBook(UsfmParserState state) { }
 
         public virtual void Chapter(
             UsfmParserState state,

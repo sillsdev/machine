@@ -376,6 +376,16 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
+    public void GetUsfm_Verse_LastVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 4:1"), "Updating the last verse.") };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
+        Assert.That(target, Contains.Substring("\\v 1 Updating the last verse.\r\n"));
+    }
+
+    [Test]
     public void GetUsfm_Verse_PretranslationsBeforeText()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>

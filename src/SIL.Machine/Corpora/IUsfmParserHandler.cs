@@ -28,10 +28,10 @@ namespace SIL.Machine.Corpora
         void StartBook(UsfmParserState state, string marker, string code);
 
         /// <summary>
-        /// End of a book element, not the end of the entire book.
+        /// End of a book
         /// Book element contains the description as text
         /// </summary>
-        void EndBook(UsfmParserState state, string marker);
+        void EndBook(UsfmParserState state);
 
         /// <summary>
         /// Chapter element
