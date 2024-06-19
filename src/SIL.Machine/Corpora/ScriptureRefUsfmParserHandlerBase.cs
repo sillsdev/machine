@@ -31,7 +31,6 @@ namespace SIL.Machine.Corpora
         public override void EndUsfm(UsfmParserState state)
         {
             EndVerseText(state);
-            EndBook(state);
         }
 
         public override void Chapter(

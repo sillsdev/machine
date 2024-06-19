@@ -38,6 +38,12 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
 
+        public override void EndUsfm(UsfmParserState state)
+        {
+            CollectTokens(state);
+            base.EndUsfm(state);
+        }
+
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
             CollectTokens(state);
@@ -49,11 +55,11 @@ namespace SIL.Machine.Corpora
             base.StartBook(state, marker, code);
         }
 
-        public override void EndBook(UsfmParserState state)
+        public override void EndBook(UsfmParserState state, string marker)
         {
             PopNewTokens();
-            CollectTokens(state);
-            base.EndBook(state);
+
+            base.EndBook(state, marker);
         }
 
         public override void StartPara(
