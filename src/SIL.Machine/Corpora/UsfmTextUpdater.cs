@@ -38,6 +38,12 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
 
+        public override void EndUsfm(UsfmParserState state)
+        {
+            CollectTokens(state);
+            base.EndUsfm(state);
+        }
+
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
             CollectTokens(state);
@@ -314,7 +320,7 @@ namespace SIL.Machine.Corpora
                     {
                         compare = rowScrRef.CompareTo(segScrRefs[sourceIndex], compareSegments: false);
                         if (compare > 0)
-                            // source is ahead of row, increment source
+                            // row is ahead of source, increment source
                             sourceIndex++;
                         else
                             break;
@@ -330,7 +336,7 @@ namespace SIL.Machine.Corpora
                 }
                 if (compare <= 0)
                 {
-                    // row is ahead of source, increment row
+                    // source is ahead row, increment row
                     _rowIndex++;
                 }
             }
