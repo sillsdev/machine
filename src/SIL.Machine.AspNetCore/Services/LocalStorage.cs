@@ -59,6 +59,15 @@ public class LocalStorage : DisposableBase, IFileStorage
         return Task.FromResult<Stream>(File.OpenWrite(pathUri.LocalPath));
     }
 
+    public Task MoveAsync(string sourcePath, string destPath, CancellationToken cancellationToken = default)
+    {
+        Uri sourcePathUri = new(_basePath, Normalize(sourcePath));
+        Uri destPathUri = new(_basePath, Normalize(destPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(destPathUri.LocalPath)!);
+        File.Move(sourcePathUri.LocalPath, destPathUri.LocalPath);
+        return Task.CompletedTask;
+    }
+
     public async Task DeleteAsync(string path, bool recurse, CancellationToken cancellationToken = default)
     {
         Uri pathUri = new(_basePath, Normalize(path));

@@ -49,6 +49,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddMessageOutboxOptions(
+        this IMachineBuilder builder,
+        Action<MessageOutboxOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<MessageOutboxOptions>(config);
+        return builder;
+    }
+
     public static IMachineBuilder AddSharedFileOptions(
         this IMachineBuilder builder,
         Action<SharedFileOptions> configureOptions
@@ -263,6 +278,8 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
+                o.AddRepository<OutboxMessage>("outbox_messages");
+                o.AddRepository<Outbox>("outboxes");
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -280,6 +297,11 @@ public static class IMachineBuilderExtensions
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
+
+        builder.Services.AddSingleton<IOutboxMessageHandler, ServalPlatformOutboxHandler>();
+
+        builder.Services.AddSingleton<IMessageOutboxService, MessageOutboxService>();
+
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
@@ -334,6 +356,9 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
+
+        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
+
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];

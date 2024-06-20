@@ -28,6 +28,7 @@ public static class IServiceCollectionExtensions
             builder.AddSmtTransferEngineOptions(o => { });
             builder.AddClearMLOptions(o => { });
             builder.AddBuildJobOptions(o => { });
+            builder.AddMessageOutboxOptions(o => { });
         }
         else
         {
@@ -36,6 +37,7 @@ public static class IServiceCollectionExtensions
             builder.AddSmtTransferEngineOptions(configuration.GetSection(SmtTransferEngineOptions.Key));
             builder.AddClearMLOptions(configuration.GetSection(ClearMLOptions.Key));
             builder.AddBuildJobOptions(configuration.GetSection(BuildJobOptions.Key));
+            builder.AddMessageOutboxOptions(configuration.GetSection(MessageOutboxOptions.Key));
         }
         return builder;
     }

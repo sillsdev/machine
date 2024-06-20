@@ -133,6 +133,15 @@ public class InMemoryStorage : DisposableBase, IFileStorage
         }
     }
 
+    public Task MoveAsync(string sourcePath, string destPath, CancellationToken cancellationToken = default)
+    {
+        if (!_memoryStreams.TryGetValue(Normalize(sourcePath), out Entry? entry))
+            throw new FileNotFoundException($"Unable to find file {sourcePath}");
+        _memoryStreams[Normalize(destPath)] = entry;
+        _memoryStreams.Remove(Normalize(sourcePath), out _);
+        return Task.CompletedTask;
+    }
+
     protected override void DisposeManagedResources()
     {
         foreach (Entry stream in _memoryStreams.Values)

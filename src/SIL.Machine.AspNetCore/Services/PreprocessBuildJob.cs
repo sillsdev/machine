@@ -15,12 +15,13 @@ public class PreprocessBuildJob : HangfireBuildJob<IReadOnlyList<Corpus>>
         IPlatformService platformService,
         IRepository<TranslationEngine> engines,
         IDistributedReaderWriterLockFactory lockFactory,
+        IDataAccessContext dataAccessContext,
         ILogger<PreprocessBuildJob> logger,
         IBuildJobService buildJobService,
         ISharedFileService sharedFileService,
         ICorpusService corpusService
     )
-        : base(platformService, engines, lockFactory, buildJobService, logger)
+        : base(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
     {
         _sharedFileService = sharedFileService;
         _corpusService = corpusService;
