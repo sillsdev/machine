@@ -328,9 +328,8 @@ namespace SIL.Machine.Corpora
                     if (compare == 0)
                     {
                         // source and row match
-                        // grab the text and increment both
+                        // grab the text - both source and row will be incremented in due time...
                         rowTexts.Add(text);
-                        sourceIndex++;
                         break;
                     }
                 }
