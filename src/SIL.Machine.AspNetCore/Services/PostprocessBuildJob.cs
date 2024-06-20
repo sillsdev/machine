@@ -4,10 +4,11 @@ public class PostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<PostprocessBuildJob> logger,
     ISharedFileService sharedFileService
-) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, buildJobService, logger)
+) : HangfireBuildJob<(int, double)>(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions =
         new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -30,14 +31,25 @@ public class PostprocessBuildJob(
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {
-            int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
-            await PlatformService.BuildCompletedAsync(
-                buildId,
-                corpusSize + additionalCorpusSize,
-                Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
-                CancellationToken.None
+            await DataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    int additionalCorpusSize = await SaveModelAsync(engineId, buildId);
+                    await PlatformService.BuildCompletedAsync(
+                        buildId,
+                        corpusSize + additionalCorpusSize,
+                        Math.Round(confidence, 2, MidpointRounding.AwayFromZero),
+                        CancellationToken.None
+                    );
+                    await BuildJobService.BuildJobFinishedAsync(
+                        engineId,
+                        buildId,
+                        buildComplete: true,
+                        CancellationToken.None
+                    );
+                },
+                cancellationToken: CancellationToken.None
             );
-            await BuildJobService.BuildJobFinishedAsync(engineId, buildId, buildComplete: true, CancellationToken.None);
         }
 
         Logger.LogInformation("Build completed ({0}).", buildId);

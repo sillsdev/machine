@@ -150,10 +150,10 @@ public class SmtTransferEngineService(
             }
 
             SmtTransferEngineState state = _stateService.Get(engineId);
-            if (engine.CurrentBuild?.JobState is BuildJobState.Active)
-            {
-                await _dataAccessContext.WithTransactionAsync(
-                    async (ct) =>
+            await _dataAccessContext.WithTransactionAsync(
+                async (ct) =>
+                {
+                    if (engine.CurrentBuild?.JobState is BuildJobState.Active)
                     {
                         await _trainSegmentPairs.InsertAsync(
                             new TrainSegmentPair
@@ -163,17 +163,17 @@ public class SmtTransferEngineService(
                                 Target = targetSegment,
                                 SentenceStart = sentenceStart
                             },
-                            ct
+                            CancellationToken.None
                         );
+                        await TrainSubroutineAsync(state, CancellationToken.None);
+                    }
+                    else
+                    {
                         await TrainSubroutineAsync(state, ct);
-                    },
-                    cancellationToken: CancellationToken.None
-                );
-            }
-            else
-            {
-                await TrainSubroutineAsync(state, cancellationToken);
-            }
+                    }
+                },
+                cancellationToken: cancellationToken
+            );
 
             state.IsUpdated = true;
             state.LastUsedTime = DateTime.Now;
@@ -233,12 +233,16 @@ public class SmtTransferEngineService(
 
     private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
-        (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
-            engineId,
-            cancellationToken
+        string? buildId = null;
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
+                if (buildId is not null && jobState is BuildJobState.None)
+                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            },
+            cancellationToken: cancellationToken
         );
-        if (buildId is not null && jobState is BuildJobState.None)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId is not null;
     }
 
