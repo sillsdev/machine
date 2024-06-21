@@ -259,7 +259,8 @@ namespace SIL.Machine.Corpora
 
         private void EndParentElement()
         {
-            _curElements.Pop();
+            if (_curElements.Count > 1)
+                _curElements.Pop();
         }
 
         private IReadOnlyList<ScriptureRef> CreateVerseRefs()
