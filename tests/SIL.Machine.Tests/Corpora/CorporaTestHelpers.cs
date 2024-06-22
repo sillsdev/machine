@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using NUnit.Framework.Constraints;
 
 namespace SIL.Machine.Corpora;
 
@@ -34,5 +35,12 @@ internal static class CorporaTestHelpers
             File.Delete(path);
         ZipFile.CreateFromDirectory(UsfmTestProjectPath, path);
         return path;
+    }
+
+    public static EqualConstraint IgnoreLineEndings(this EqualConstraint constraint)
+    {
+        return constraint.Using<string>(
+            (actual, expected) => actual.ReplaceLineEndings() == expected.ReplaceLineEndings()
+        );
     }
 }

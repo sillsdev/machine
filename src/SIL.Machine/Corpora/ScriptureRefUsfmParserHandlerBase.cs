@@ -84,7 +84,7 @@ namespace SIL.Machine.Corpora
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
-            if (!state.IsVerseText || marker == "d")
+            if (!state.IsVerseText)
             {
                 StartParentElement(marker);
                 StartNonVerseText(state);
