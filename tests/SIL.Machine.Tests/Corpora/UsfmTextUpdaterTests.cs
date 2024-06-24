@@ -376,13 +376,26 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
-    public void GetUsfm_Verse_LastVerse()
+    public void GetUsfm_Verse_LastSegment()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 4:1"), "Updating the last verse.") };
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Updating the last verse.") };
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1
+";
+        string target = UpdateUsfm(rows, usfm);
 
-        string target = UpdateUsfm(rows);
-        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
-        Assert.That(target, Contains.Substring("\\v 1 Updating the last verse.\r\n"));
+        Assert.That(
+            target,
+            Is.EqualTo(
+                    @"\id MAT - Test
+\c 1
+\v 1 Updating the last verse.
+"
+                )
+                .IgnoreLineEndings()
+        );
     }
 
     [Test]
@@ -409,12 +422,16 @@ public class UsfmTextUpdaterTests
 
     private static string UpdateUsfm(
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
+        string? source = null,
         string? idText = null,
         bool stripAllText = false,
         bool preferExistingText = false
     )
     {
-        string source = ReadUsfm();
+        if (source is null)
+            source = ReadUsfm();
+        else
+            source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
         var updater = new UsfmTextUpdater(
             rows,
             idText,
