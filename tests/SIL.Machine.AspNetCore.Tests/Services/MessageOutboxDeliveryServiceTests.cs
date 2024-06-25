@@ -6,14 +6,14 @@ using Serval.Translation.V1;
 namespace SIL.Machine.AspNetCore.Services;
 
 [TestFixture]
-public class MessageOutboxHandlerServiceTests
+public class MessageOutboxDeliveryServiceTests
 {
     [Test]
     public async Task SendMessages()
     {
         var env = new TestEnvironment();
         env.AddStandardMessages();
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Received.InOrder(() =>
         {
             env.Client.BuildStartedAsync(new BuildStartedRequest { BuildId = "A" });
@@ -31,7 +31,7 @@ public class MessageOutboxHandlerServiceTests
         // Timeout is long enough where the message attempt will be incremented, but not deleted.
         env.ClientInternalFailure();
         await Task.Delay(100);
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // Each group should try to send one message
         Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(1));
         Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
@@ -39,8 +39,8 @@ public class MessageOutboxHandlerServiceTests
 
         // with now shorter timeout, the messages will be deleted.
         // 4 start build attempts, and only one build completed attempt
-        env.MessageOutboxHandlerService.SetMessageExpiration(TimeSpan.FromMilliseconds(1));
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        env.MessageOutboxDeliveryService.SetMessageExpiration(TimeSpan.FromMilliseconds(1));
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Assert.That(await env.Messages.ExistsAsync(m => true), Is.False);
         var startCalls = env
             .Client.ReceivedCalls()
@@ -58,18 +58,18 @@ public class MessageOutboxHandlerServiceTests
         var env = new TestEnvironment();
         env.AddStandardMessages();
         env.ClientUnavailableFailure();
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // Only the first group should be attempted - but not recorded as attempted
         Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(0));
         Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
         Assert.That((await env.Messages.GetAsync(m => m.Id == "3"))!.Attempts, Is.EqualTo(0));
         env.ClientInternalFailure();
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(1));
         Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
         Assert.That((await env.Messages.GetAsync(m => m.Id == "3"))!.Attempts, Is.EqualTo(1));
         env.ClientNoFailure();
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Assert.That(await env.Messages.ExistsAsync(m => true), Is.False);
         // 1 (unavailable) + 2 (internal) + 3 (success) = 6 calls
         Assert.That(env.Client.ReceivedCalls().Count(), Is.EqualTo(6));
@@ -84,29 +84,29 @@ public class MessageOutboxHandlerServiceTests
             method: OutboxMessageMethod.BuildStarted,
             groupId: "C",
             requestContent: JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "C" }),
-            CancellationToken.None
+            cancellationToken: CancellationToken.None
         );
         Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdC}.json"), Is.False);
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // small max document size - message saved to file
         env.OutboxService.SetMaxDocumentSize(1);
         var fileIdD = await env.OutboxService.EnqueueMessageAsync(
             method: OutboxMessageMethod.BuildStarted,
             groupId: "D",
             requestContent: JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "D" }),
-            CancellationToken.None
+            cancellationToken: CancellationToken.None
         );
         Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}.json"), Is.True);
-        await env.MessageOutboxHandlerService.ProcessMessagesOnceAsync();
+        await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}.json"), Is.False);
     }
 
-    public class TestMessageOutboxHandlerService(
+    public class TestMessageOutboxDeliveryService(
         TranslationPlatformApi.TranslationPlatformApiClient client,
         IRepository<OutboxMessage> messages,
         ISharedFileService sharedFileService,
-        ILogger<MessageOutboxHandlerService> logger
-    ) : MessageOutboxHandlerService(client, messages, sharedFileService, logger)
+        ILogger<MessageOutboxDeliveryService> logger
+    ) : MessageOutboxDeliveryService(client, messages, sharedFileService, new MessageOutboxOptions(), logger)
     {
         public async Task ProcessMessagesOnceAsync() => await ProcessMessagesAsync();
 
@@ -129,7 +129,7 @@ public class MessageOutboxHandlerServiceTests
         public TestMessageOutboxService OutboxService { get; }
         public ISharedFileService SharedFileService { get; }
         public TranslationPlatformApi.TranslationPlatformApiClient Client { get; }
-        public TestMessageOutboxHandlerService MessageOutboxHandlerService { get; }
+        public TestMessageOutboxDeliveryService MessageOutboxDeliveryService { get; }
         public AsyncClientStreamingCall<InsertPretranslationRequest, Empty> InsertPretranslationsCall { get; }
 
         public TestEnvironment()
@@ -151,11 +151,11 @@ public class MessageOutboxHandlerServiceTests
             Client = Substitute.For<TranslationPlatformApi.TranslationPlatformApiClient>();
             ClientNoFailure();
 
-            MessageOutboxHandlerService = new TestMessageOutboxHandlerService(
+            MessageOutboxDeliveryService = new TestMessageOutboxDeliveryService(
                 Client,
                 Messages,
                 SharedFileService,
-                Substitute.For<ILogger<MessageOutboxHandlerService>>()
+                Substitute.For<ILogger<MessageOutboxDeliveryService>>()
             );
         }
 

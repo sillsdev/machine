@@ -49,6 +49,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddMessageOutboxOptions(
+        this IMachineBuilder builder,
+        Action<MessageOutboxOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<MessageOutboxOptions>(config);
+        return builder;
+    }
+
     public static IMachineBuilder AddSharedFileOptions(
         this IMachineBuilder builder,
         Action<SharedFileOptions> configureOptions
@@ -340,7 +355,7 @@ public static class IMachineBuilderExtensions
         });
         builder.AddServalPlatformService(connectionString);
 
-        builder.Services.AddHostedService<MessageOutboxHandlerService>();
+        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
 
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()

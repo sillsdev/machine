@@ -2,19 +2,20 @@
 
 namespace SIL.Machine.AspNetCore.Services;
 
-public class MessageOutboxHandlerService(
+public class MessageOutboxDeliveryService(
     TranslationPlatformApi.TranslationPlatformApiClient client,
     IRepository<OutboxMessage> messages,
     ISharedFileService sharedFileService,
-    ILogger<MessageOutboxHandlerService> logger
+    MessageOutboxOptions options,
+    ILogger<MessageOutboxDeliveryService> logger
 ) : BackgroundService
 {
     private readonly TranslationPlatformApi.TranslationPlatformApiClient _client = client;
     private readonly IRepository<OutboxMessage> _messages = messages;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
-    private readonly ILogger<MessageOutboxHandlerService> _logger = logger;
+    private readonly ILogger<MessageOutboxDeliveryService> _logger = logger;
     protected TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
-    protected TimeSpan MessageExpiration { get; set; } = TimeSpan.FromDays(4);
+    protected TimeSpan MessageExpiration { get; set; } = TimeSpan.FromHours(options.MessageExpirationInHours);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

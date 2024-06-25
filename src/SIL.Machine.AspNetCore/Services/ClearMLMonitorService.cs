@@ -228,22 +228,21 @@ public class ClearMLMonitorService(
     )
     {
         IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
-        return await _dataAccessContext.WithTransactionAsync(
-            async (ct) =>
-            {
-                await using (await @lock.WriterLockAsync(cancellationToken: ct))
+        await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken)){
+            return await _dataAccessContext.WithTransactionAsync(
+                async (ct) =>
                 {
                     if (!await buildJobService.BuildJobStartedAsync(engineId, buildId, ct))
                         return false;
-                }
-                await platformService.BuildStartedAsync(buildId, CancellationToken.None);
+                    await platformService.BuildStartedAsync(buildId, CancellationToken.None);
 
-                await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, ct);
-                _logger.LogInformation("Build started ({BuildId})", buildId);
-                return true;
-            },
-            cancellationToken: cancellationToken
-        );
+                    await UpdateTrainJobStatus(platformService, buildId, new ProgressStatus(0), 0, ct);
+                    _logger.LogInformation("Build started ({BuildId})", buildId);
+                    return true;
+                },
+                cancellationToken: cancellationToken
+            );
+        }
     }
 
     private async Task<bool> TrainJobCompletedAsync(

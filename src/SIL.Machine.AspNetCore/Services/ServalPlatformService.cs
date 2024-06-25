@@ -16,7 +16,7 @@ public class ServalPlatformService(
             OutboxMessageMethod.BuildStarted,
             buildId,
             JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -38,7 +38,7 @@ public class ServalPlatformService(
                     Confidence = confidence
                 }
             ),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -48,7 +48,7 @@ public class ServalPlatformService(
             OutboxMessageMethod.BuildCanceled,
             buildId,
             JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -58,7 +58,7 @@ public class ServalPlatformService(
             OutboxMessageMethod.BuildFaulted,
             buildId,
             JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -68,7 +68,7 @@ public class ServalPlatformService(
             OutboxMessageMethod.BuildRestarting,
             buildId,
             JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 
@@ -124,7 +124,8 @@ public class ServalPlatformService(
             OutboxMessageMethod.InsertPretranslations,
             engineId,
             JsonSerializer.Serialize(requests),
-            cancellationToken
+            alwaysSaveContentToDisk: true,
+            cancellationToken: cancellationToken
         );
     }
 
@@ -140,7 +141,7 @@ public class ServalPlatformService(
             JsonSerializer.Serialize(
                 new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count }
             ),
-            cancellationToken
+            cancellationToken: cancellationToken
         );
     }
 }

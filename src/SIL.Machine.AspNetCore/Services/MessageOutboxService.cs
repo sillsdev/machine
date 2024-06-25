@@ -15,7 +15,8 @@ public class MessageOutboxService(
         OutboxMessageMethod method,
         string groupId,
         string requestContent,
-        CancellationToken cancellationToken
+        bool alwaysSaveContentToDisk = false,
+        CancellationToken cancellationToken = default
     )
     {
         // get next index
@@ -35,7 +36,7 @@ public class MessageOutboxService(
             GroupId = groupId,
             RequestContent = requestContent
         };
-        if (requestContent.Length > MaxDocumentSize)
+        if (requestContent.Length > MaxDocumentSize || alwaysSaveContentToDisk)
         {
             // The file is too large - save it to disk and send a reference.
             // MongoDB has a 16MB document size limit - let's keep below that.

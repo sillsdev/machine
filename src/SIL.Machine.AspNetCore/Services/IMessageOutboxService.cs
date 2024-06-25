@@ -6,6 +6,7 @@ public interface IMessageOutboxService
         OutboxMessageMethod method,
         string groupId,
         string requestContent,
-        CancellationToken cancellationToken
+        bool alwaysSaveContentToDisk = false,
+        CancellationToken cancellationToken = default
     );
 }
