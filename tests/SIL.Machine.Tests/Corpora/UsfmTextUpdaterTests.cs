@@ -190,6 +190,20 @@ public class UsfmTextUpdaterTests
     }
 
     [Test]
+    public void GetUsfm_MergeVerseSegments()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 2:2"), "Verse 2."),
+            (ScrRef("MAT 2:2a"), "Verse 2a."),
+            (ScrRef("MAT 2:2b"), "Verse 2b.")
+        };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(target, Contains.Substring("\\v 2-3 Verse 2. Verse 2a. Verse 2b.\r\n"));
+    }
+
+    [Test]
     public void GetUsfm_Verse_OptBreak()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
