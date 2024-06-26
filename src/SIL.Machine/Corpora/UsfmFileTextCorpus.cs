@@ -50,14 +50,13 @@ namespace SIL.Machine.Corpora
             foreach (var pair in idToUsfmContent)
             {
                 AddText(
-                    new UsfmStringText(
+                    new UsfmMemoryText(
                         stylesheet,
-                        Encoding.UTF8,
                         pair.Key,
                         pair.Value,
-                        Versification,
-                        includeMarkers,
-                        includeAllText
+                        versification: Versification,
+                        includeMarkers: includeMarkers,
+                        includeAllText: includeAllText
                     )
                 );
             }
