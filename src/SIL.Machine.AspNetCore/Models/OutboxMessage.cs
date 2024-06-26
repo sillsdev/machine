@@ -15,6 +15,7 @@ public record OutboxMessage : IEntity
 {
     public string Id { get; set; } = "";
     public int Revision { get; set; } = 1;
+    public required string SortableIndex { get; set; }
     public required OutboxMessageMethod Method { get; set; }
     public required string GroupId { get; set; }
     public required string? RequestContent { get; set; }

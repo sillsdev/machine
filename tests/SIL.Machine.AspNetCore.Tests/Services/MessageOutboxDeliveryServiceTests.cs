@@ -33,9 +33,9 @@ public class MessageOutboxDeliveryServiceTests
         await Task.Delay(100);
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // Each group should try to send one message
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(1));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "3"))!.Attempts, Is.EqualTo(1));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "B"))!.Attempts, Is.EqualTo(1));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "A"))!.Attempts, Is.EqualTo(0));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "C"))!.Attempts, Is.EqualTo(1));
 
         // with now shorter timeout, the messages will be deleted.
         // 4 start build attempts, and only one build completed attempt
@@ -60,14 +60,14 @@ public class MessageOutboxDeliveryServiceTests
         env.ClientUnavailableFailure();
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // Only the first group should be attempted - but not recorded as attempted
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(0));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "3"))!.Attempts, Is.EqualTo(0));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "B"))!.Attempts, Is.EqualTo(0));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "A"))!.Attempts, Is.EqualTo(0));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "C"))!.Attempts, Is.EqualTo(0));
         env.ClientInternalFailure();
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "1"))!.Attempts, Is.EqualTo(1));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "2"))!.Attempts, Is.EqualTo(0));
-        Assert.That((await env.Messages.GetAsync(m => m.Id == "3"))!.Attempts, Is.EqualTo(1));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "B"))!.Attempts, Is.EqualTo(1));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "A"))!.Attempts, Is.EqualTo(0));
+        Assert.That((await env.Messages.GetAsync(m => m.Id == "C"))!.Attempts, Is.EqualTo(1));
         env.ClientNoFailure();
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         Assert.That(await env.Messages.ExistsAsync(m => true), Is.False);
@@ -86,7 +86,7 @@ public class MessageOutboxDeliveryServiceTests
             requestContent: JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "C" }),
             cancellationToken: CancellationToken.None
         );
-        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdC}.json"), Is.False);
+        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdC}"), Is.False);
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
         // small max document size - message saved to file
         env.OutboxService.SetMaxDocumentSize(1);
@@ -96,9 +96,9 @@ public class MessageOutboxDeliveryServiceTests
             requestContent: JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "D" }),
             cancellationToken: CancellationToken.None
         );
-        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}.json"), Is.True);
+        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}"), Is.True);
         await env.MessageOutboxDeliveryService.ProcessMessagesOnceAsync();
-        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}.json"), Is.False);
+        Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdD}"), Is.False);
     }
 
     public class TestMessageOutboxDeliveryService(
@@ -114,7 +114,7 @@ public class MessageOutboxDeliveryServiceTests
     }
 
     public class TestMessageOutboxService(
-        IRepository<Sequence> messageIndexes,
+        IRepository<SortableIndex> messageIndexes,
         IRepository<OutboxMessage> messages,
         ISharedFileService sharedFileService
     ) : MessageOutboxService(messageIndexes, messages, sharedFileService)
@@ -124,7 +124,7 @@ public class MessageOutboxDeliveryServiceTests
 
     private class TestEnvironment : ObjectModel.DisposableBase
     {
-        public MemoryRepository<Sequence> MessageIndexes { get; }
+        public MemoryRepository<SortableIndex> MessageIndexes { get; }
         public MemoryRepository<OutboxMessage> Messages { get; }
         public TestMessageOutboxService OutboxService { get; }
         public ISharedFileService SharedFileService { get; }
@@ -134,7 +134,7 @@ public class MessageOutboxDeliveryServiceTests
 
         public TestEnvironment()
         {
-            MessageIndexes = new MemoryRepository<Sequence>();
+            MessageIndexes = new MemoryRepository<SortableIndex>();
             Messages = new MemoryRepository<OutboxMessage>();
             SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
             OutboxService = new TestMessageOutboxService(MessageIndexes, Messages, SharedFileService);
@@ -208,7 +208,8 @@ public class MessageOutboxDeliveryServiceTests
             Messages.Add(
                 new OutboxMessage
                 {
-                    Id = "2",
+                    Id = "A",
+                    SortableIndex = "2",
                     Method = OutboxMessageMethod.BuildCompleted,
                     GroupId = "A",
                     RequestContent = JsonSerializer.Serialize(
@@ -224,7 +225,8 @@ public class MessageOutboxDeliveryServiceTests
             Messages.Add(
                 new OutboxMessage
                 {
-                    Id = "1",
+                    Id = "B",
+                    SortableIndex = "1",
                     Method = OutboxMessageMethod.BuildStarted,
                     GroupId = "A",
                     RequestContent = JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "A" })
@@ -233,7 +235,8 @@ public class MessageOutboxDeliveryServiceTests
             Messages.Add(
                 new OutboxMessage
                 {
-                    Id = "3",
+                    Id = "C",
+                    SortableIndex = "3",
                     Method = OutboxMessageMethod.BuildStarted,
                     GroupId = "B",
                     RequestContent = JsonSerializer.Serialize(new BuildStartedRequest { BuildId = "B" })

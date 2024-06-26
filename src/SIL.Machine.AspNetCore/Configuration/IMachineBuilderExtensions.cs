@@ -279,7 +279,7 @@ public static class IMachineBuilderExtensions
                         )
                 );
                 o.AddRepository<OutboxMessage>("outbox_messages");
-                o.AddRepository<Sequence>("outbox_message_index");
+                o.AddRepository<SortableIndex>("sortable_indexes");
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");

@@ -40,7 +40,7 @@ public class MessageOutboxDeliveryService(
         IEnumerable<List<OutboxMessage>> messageGroups = messages.GroupBy(
             m => m.GroupId,
             m => m,
-            (key, element) => element.OrderBy(m => m.Id).ToList()
+            (key, element) => element.OrderBy(m => m.SortableIndex).ToList()
         );
 
         foreach (List<OutboxMessage> messageGroup in messageGroups)
@@ -94,7 +94,7 @@ public class MessageOutboxDeliveryService(
         if (message.RequestContent is null)
         {
             await using var requestContentStream = await _sharedFileService.OpenReadAsync(
-                $"outbox/{message.Id}.json",
+                $"outbox/{message.Id}",
                 cancellationToken
             );
             requestContent = new StreamReader(requestContentStream).ReadToEnd();
@@ -168,7 +168,7 @@ public class MessageOutboxDeliveryService(
         await _messages.DeleteAsync(message.Id);
         if (deleteMessageFromDisk)
         {
-            await _sharedFileService.DeleteAsync($"outbox/{message.Id}.json", cancellationToken);
+            await _sharedFileService.DeleteAsync($"outbox/{message.Id}", cancellationToken);
         }
     }
 
