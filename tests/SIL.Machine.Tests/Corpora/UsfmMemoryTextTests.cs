@@ -1,5 +1,4 @@
-﻿using System.Text;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace SIL.Machine.Corpora;
 
@@ -54,7 +53,6 @@ public class UsfmMemoryTextTests
         UsfmMemoryText text =
             new(
                 new UsfmStylesheet("usfm.sty"),
-                Encoding.UTF8,
                 "MAT",
                 usfm.Trim().ReplaceLineEndings("\r\n") + "\r\n",
                 includeMarkers: includeMarkers,

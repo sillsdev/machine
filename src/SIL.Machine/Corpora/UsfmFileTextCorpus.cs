@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using SIL.Scripture;
 
@@ -35,6 +36,29 @@ namespace SIL.Machine.Corpora
                         )
                     );
                 }
+            }
+        }
+
+        public UsfmFileTextCorpus(
+            IReadOnlyDictionary<string, string> idToUsfmContent,
+            UsfmStylesheet stylesheet,
+            ScrVers versification,
+            bool includeMarkers = false,
+            bool includeAllText = false
+        )
+        {
+            foreach (var pair in idToUsfmContent)
+            {
+                AddText(
+                    new UsfmMemoryText(
+                        stylesheet,
+                        pair.Key,
+                        pair.Value,
+                        versification: Versification,
+                        includeMarkers: includeMarkers,
+                        includeAllText: includeAllText
+                    )
+                );
             }
         }
 
