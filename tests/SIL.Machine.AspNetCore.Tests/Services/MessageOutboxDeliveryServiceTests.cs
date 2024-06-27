@@ -128,7 +128,13 @@ public class MessageOutboxDeliveryServiceTests
         IRepository<OutboxMessage> messages,
         IEnumerable<IOutboxMessageHandler> outboxMessageHandlers,
         ILogger<MessageOutboxDeliveryService> logger
-    ) : MessageOutboxDeliveryService(messages, outboxMessageHandlers, new MessageOutboxOptions(), logger)
+    )
+        : MessageOutboxDeliveryService(
+            messages,
+            outboxMessageHandlers,
+            Substitute.For<IOptionsMonitor<MessageOutboxOptions>>(),
+            logger
+        )
     {
         public async Task ProcessMessagesOnceAsync() => await ProcessMessagesAsync();
 

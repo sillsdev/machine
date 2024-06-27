@@ -3,7 +3,7 @@
 public class MessageOutboxDeliveryService(
     IRepository<OutboxMessage> messages,
     IEnumerable<IOutboxMessageHandler> outboxMessageHandlers,
-    MessageOutboxOptions options,
+    IOptionsMonitor<MessageOutboxOptions> options,
     ILogger<MessageOutboxDeliveryService> logger
 ) : BackgroundService
 {
@@ -13,7 +13,8 @@ public class MessageOutboxDeliveryService(
 
     private readonly ILogger<MessageOutboxDeliveryService> _logger = logger;
     protected TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10);
-    protected TimeSpan MessageExpiration { get; set; } = TimeSpan.FromHours(options.MessageExpirationInHours);
+    protected TimeSpan MessageExpiration { get; set; } =
+        TimeSpan.FromHours(options.CurrentValue.MessageExpirationInHours);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
