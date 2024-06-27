@@ -6,8 +6,8 @@ public record Outbox : IEntity
 
     public int Revision { get; set; }
 
-    public string Name { get; set; } = null!;
-    public int CurrentIndex { get; set; }
+    public required string Name { get; init; } = null!;
+    public required int CurrentIndex { get; set; }
 
     public static async Task<Outbox> GetOutboxNextIndexAsync(
         IRepository<Outbox> indexRepository,
