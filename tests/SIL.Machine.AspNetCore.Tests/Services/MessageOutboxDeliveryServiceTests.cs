@@ -124,17 +124,19 @@ public class MessageOutboxDeliveryServiceTests
         Assert.That(await env.SharedFileService.ExistsAsync($"outbox/{fileIdC}"), Is.False);
     }
 
+    private static IOptionsMonitor<MessageOutboxOptions> GetMessageOutboxOptionsMonitor()
+    {
+        var options = new MessageOutboxOptions();
+        var optionsMonitor = Substitute.For<IOptionsMonitor<MessageOutboxOptions>>();
+        optionsMonitor.CurrentValue.Returns(options);
+        return optionsMonitor;
+    }
+
     public class TestMessageOutboxDeliveryService(
         IRepository<OutboxMessage> messages,
         IEnumerable<IOutboxMessageHandler> outboxMessageHandlers,
         ILogger<MessageOutboxDeliveryService> logger
-    )
-        : MessageOutboxDeliveryService(
-            messages,
-            outboxMessageHandlers,
-            Substitute.For<IOptionsMonitor<MessageOutboxOptions>>(),
-            logger
-        )
+    ) : MessageOutboxDeliveryService(messages, outboxMessageHandlers, GetMessageOutboxOptionsMonitor(), logger)
     {
         public async Task ProcessMessagesOnceAsync() => await ProcessMessagesAsync();
 
