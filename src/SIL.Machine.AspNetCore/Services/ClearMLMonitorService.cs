@@ -4,7 +4,6 @@ public class ClearMLMonitorService(
     IServiceProvider services,
     IClearMLService clearMLService,
     ISharedFileService sharedFileService,
-    IDataAccessContext dataAccessContext,
     IOptionsMonitor<ClearMLOptions> clearMLOptions,
     IOptionsMonitor<BuildJobOptions> buildJobOptions,
     ILogger<ClearMLMonitorService> logger
@@ -24,7 +23,6 @@ public class ClearMLMonitorService(
 
     private readonly IClearMLService _clearMLService = clearMLService;
     private readonly ISharedFileService _sharedFileService = sharedFileService;
-    private readonly IDataAccessContext _dataAccessContext = dataAccessContext;
     private readonly ILogger<IClearMLQueueService> _logger = logger;
     private readonly Dictionary<string, ProgressStatus> _curBuildStatus = new();
 
@@ -85,6 +83,7 @@ public class ClearMLMonitorService(
                 _queueSizePerEngineType[engineType] = queuePositionsPerEngineType.Count;
             }
 
+            var dataAccessContext = scope.ServiceProvider.GetRequiredService<IDataAccessContext>();
             var platformService = scope.ServiceProvider.GetRequiredService<IPlatformService>();
             var lockFactory = scope.ServiceProvider.GetRequiredService<IDistributedReaderWriterLockFactory>();
             foreach (TranslationEngine engine in trainingEngines)
@@ -119,6 +118,7 @@ public class ClearMLMonitorService(
                     )
                     {
                         bool canceled = !await TrainJobStartedAsync(
+                            dataAccessContext,
                             lockFactory,
                             buildJobService,
                             platformService,
@@ -171,6 +171,7 @@ public class ClearMLMonitorService(
                             if (canceling)
                             {
                                 await TrainJobCanceledAsync(
+                                    dataAccessContext,
                                     lockFactory,
                                     buildJobService,
                                     platformService,
@@ -185,6 +186,7 @@ public class ClearMLMonitorService(
                         case ClearMLTaskStatus.Stopped:
                         {
                             await TrainJobCanceledAsync(
+                                dataAccessContext,
                                 lockFactory,
                                 buildJobService,
                                 platformService,
@@ -198,6 +200,7 @@ public class ClearMLMonitorService(
                         case ClearMLTaskStatus.Failed:
                         {
                             await TrainJobFaultedAsync(
+                                dataAccessContext,
                                 lockFactory,
                                 buildJobService,
                                 platformService,
@@ -219,6 +222,7 @@ public class ClearMLMonitorService(
     }
 
     private async Task<bool> TrainJobStartedAsync(
+        IDataAccessContext dataAccessContext,
         IDistributedReaderWriterLockFactory lockFactory,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -231,7 +235,7 @@ public class ClearMLMonitorService(
         IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
         await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
         {
-            success = await _dataAccessContext.WithTransactionAsync(
+            success = await dataAccessContext.WithTransactionAsync(
                 async (ct) =>
                 {
                     if (!await buildJobService.BuildJobStartedAsync(engineId, buildId, ct))
@@ -281,6 +285,7 @@ public class ClearMLMonitorService(
     }
 
     private async Task TrainJobFaultedAsync(
+        IDataAccessContext dataAccessContext,
         IDistributedReaderWriterLockFactory lockFactory,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -295,7 +300,7 @@ public class ClearMLMonitorService(
             IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                await _dataAccessContext.WithTransactionAsync(
+                await dataAccessContext.WithTransactionAsync(
                     async (ct) =>
                     {
                         await platformService.BuildFaultedAsync(buildId, message, ct);
@@ -318,6 +323,7 @@ public class ClearMLMonitorService(
     }
 
     private async Task TrainJobCanceledAsync(
+        IDataAccessContext dataAccessContext,
         IDistributedReaderWriterLockFactory lockFactory,
         IBuildJobService buildJobService,
         IPlatformService platformService,
@@ -331,7 +337,7 @@ public class ClearMLMonitorService(
             IDistributedReaderWriterLock @lock = await lockFactory.CreateAsync(engineId, cancellationToken);
             await using (await @lock.WriterLockAsync(cancellationToken: cancellationToken))
             {
-                await _dataAccessContext.WithTransactionAsync(
+                await dataAccessContext.WithTransactionAsync(
                     async (ct) =>
                     {
                         await platformService.BuildCanceledAsync(buildId, ct);

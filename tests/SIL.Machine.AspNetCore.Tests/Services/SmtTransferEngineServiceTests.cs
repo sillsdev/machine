@@ -301,7 +301,6 @@ public class SmtTransferEngineServiceTests
                 Substitute.For<IServiceProvider>(),
                 ClearMLService,
                 SharedFileService,
-                new MemoryDataAccessContext(),
                 clearMLOptions,
                 buildJobOptions,
                 Substitute.For<ILogger<ClearMLMonitorService>>()

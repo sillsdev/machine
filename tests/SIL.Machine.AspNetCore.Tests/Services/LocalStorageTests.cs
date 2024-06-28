@@ -93,21 +93,4 @@ public class LocalStorageTests
         IReadOnlyCollection<string> files = await fs.ListFilesAsync("test", recurse: true);
         Assert.That(files, Is.Empty);
     }
-
-    [Test]
-    public async Task MoveAsync()
-    {
-        using var tmpDir = new TempDirectory("test");
-        using LocalStorage fs = new(tmpDir.Path);
-        using (StreamWriter sw = new(await fs.OpenWriteAsync("test1/file1")))
-        {
-            string input = "Hello";
-            sw.WriteLine(input);
-        }
-        await fs.MoveAsync("test1/file1", "test2/file1");
-        var files = await fs.ListFilesAsync("test1", recurse: true);
-        Assert.That(files, Is.Empty);
-        files = await fs.ListFilesAsync("test2", recurse: true);
-        Assert.That(files, Is.EquivalentTo(new[] { "test2/file1" }));
-    }
 }

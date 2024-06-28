@@ -19,7 +19,6 @@ public interface ISharedFileService
     Task<Stream> OpenWriteAsync(string path, CancellationToken cancellationToken = default);
 
     Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default);
-    Task MoveAsync(string sourcePath, string destPath, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string path, CancellationToken cancellationToken = default);
 }

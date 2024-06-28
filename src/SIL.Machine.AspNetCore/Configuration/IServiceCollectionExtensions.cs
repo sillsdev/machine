@@ -12,6 +12,7 @@ public static class IServiceCollectionExtensions
         services.AddHealthChecks().AddCheck<S3HealthCheck>("S3 Bucket");
 
         services.AddSingleton<ILanguageTagService, LanguageTagService>();
+        services.AddTransient<IFileSystem, FileSystem>();
 
         services.AddScoped<IDistributedReaderWriterLockFactory, DistributedReaderWriterLockFactory>();
         services.AddSingleton<ICorpusService, CorpusService>();

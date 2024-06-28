@@ -23,11 +23,15 @@ public class PostprocessBuildJob(
     {
         (int corpusSize, double confidence) = data;
 
-        await PlatformService.InsertPretranslationsAsync(
-            engineId,
-            $"builds/{buildId}/pretranslate.trg.json",
-            cancellationToken
-        );
+        await using (
+            Stream pretranslationsStream = await SharedFileService.OpenReadAsync(
+                $"builds/{buildId}/pretranslate.trg.json",
+                cancellationToken
+            )
+        )
+        {
+            await PlatformService.InsertPretranslationsAsync(engineId, pretranslationsStream, cancellationToken);
+        }
 
         await using (await @lock.WriterLockAsync(cancellationToken: CancellationToken.None))
         {

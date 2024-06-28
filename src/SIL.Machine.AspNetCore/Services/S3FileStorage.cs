@@ -111,27 +111,6 @@ public class S3FileStorage : DisposableBase, IFileStorage
         );
     }
 
-    public async Task MoveAsync(string sourcePath, string destPath, CancellationToken cancellationToken = default)
-    {
-        CopyObjectRequest copyRequest =
-            new()
-            {
-                SourceBucket = _bucketName,
-                SourceKey = _basePath + Normalize(sourcePath),
-                DestinationBucket = _bucketName,
-                DestinationKey = _basePath + Normalize(destPath)
-            };
-        CopyObjectResponse copyResponse = await _client.CopyObjectAsync(copyRequest, cancellationToken);
-        if (!copyResponse.HttpStatusCode.Equals(HttpStatusCode.OK))
-        {
-            throw new HttpRequestException(
-                $"Received status code {copyResponse.HttpStatusCode} when attempting to copy {sourcePath} to {destPath}"
-            );
-        }
-
-        await DeleteAsync(sourcePath, cancellationToken: cancellationToken);
-    }
-
     public async Task DeleteAsync(string path, bool recurse = false, CancellationToken cancellationToken = default)
     {
         DeleteObjectRequest request = new() { BucketName = _bucketName, Key = _basePath + Normalize(path) };

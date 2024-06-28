@@ -11,6 +11,7 @@ builder
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
     .AddModelCleanupService()
+    .AddMessageOutboxDeliveryService()
     .AddClearMLService();
 
 if (builder.Environment.IsDevelopment())

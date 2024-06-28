@@ -4,5 +4,6 @@ public class MessageOutboxOptions
 {
     public const string Key = "MessageOutbox";
 
-    public int MessageExpirationInHours { get; set; } = 48;
+    public string DataDir { get; set; } = "outbox";
+    public TimeSpan MessageExpirationTimeout { get; set; } = TimeSpan.FromHours(48);
 }

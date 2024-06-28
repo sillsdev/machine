@@ -234,6 +234,8 @@ public static class IMachineBuilderExtensions
             o.AddRepository<TranslationEngine>();
             o.AddRepository<RWLock>();
             o.AddRepository<TrainSegmentPair>();
+            o.AddRepository<OutboxMessage>();
+            o.AddRepository<Outbox>();
         });
 
         return builder;
@@ -279,7 +281,10 @@ public static class IMachineBuilderExtensions
                         )
                 );
                 o.AddRepository<OutboxMessage>("outbox_messages");
-                o.AddRepository<Outbox>("outboxes");
+                o.AddRepository<Outbox>(
+                    "outboxes",
+                    mapSetup: m => m.MapIdProperty(o => o.Id).SetSerializer(new StringSerializer())
+                );
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -298,9 +303,9 @@ public static class IMachineBuilderExtensions
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
 
-        builder.Services.AddSingleton<IOutboxMessageHandler, ServalPlatformOutboxHandler>();
+        builder.Services.AddSingleton<IOutboxMessageHandler, ServalPlatformOutboxMessageHandler>();
 
-        builder.Services.AddSingleton<IMessageOutboxService, MessageOutboxService>();
+        builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
 
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
@@ -356,8 +361,6 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
-
-        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
 
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
@@ -420,6 +423,12 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
         builder.Services.AddHostedService<ModelCleanupService>();
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxDeliveryService(this IMachineBuilder builder)
+    {
+        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
         return builder;
     }
 }

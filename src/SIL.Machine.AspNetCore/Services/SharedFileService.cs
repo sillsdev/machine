@@ -101,9 +101,4 @@ public class SharedFileService : ISharedFileService
     {
         return _fileStorage.ExistsAsync(path, cancellationToken);
     }
-
-    public Task MoveAsync(string sourcePath, string destPath, CancellationToken cancellationToken = default)
-    {
-        return _fileStorage.MoveAsync(sourcePath, destPath, cancellationToken);
-    }
 }

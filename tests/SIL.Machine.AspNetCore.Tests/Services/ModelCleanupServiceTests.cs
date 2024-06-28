@@ -3,8 +3,6 @@
 [TestFixture]
 public class ModelCleanupServiceTests
 {
-    private readonly ISharedFileService _sharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
-    private readonly MemoryRepository<TranslationEngine> _engines = new MemoryRepository<TranslationEngine>();
     private static readonly List<string> ValidFiles =
     [
         "models/engineId1_1.tar.gz",
@@ -21,79 +19,86 @@ public class ModelCleanupServiceTests
         "models/engineId1_1.differentExtension"
     ];
 
-    private async Task SetUpAsync()
+    [Test]
+    public async Task CheckModelsAsync_ValidFiles()
     {
-        _engines.Add(
-            new TranslationEngine
-            {
-                Id = "engine1",
-                EngineId = "engineId1",
-                Type = TranslationEngineType.Nmt,
-                SourceLanguage = "es",
-                TargetLanguage = "en",
-                BuildRevision = 1,
-                IsModelPersisted = true
-            }
+        TestEnvironment env = new();
+        await env.CreateFilesAsync();
+
+        Assert.That(
+            await env.SharedFileService.ListFilesAsync("models"),
+            Is.EquivalentTo(ValidFiles.Concat(InvalidFiles))
         );
-        _engines.Add(
-            new TranslationEngine
-            {
-                Id = "engine2",
-                EngineId = "engineId2",
-                Type = TranslationEngineType.Nmt,
-                SourceLanguage = "es",
-                TargetLanguage = "en",
-                BuildRevision = 2,
-                IsModelPersisted = true
-            }
-        );
-        async Task WriteFileStub(string path, string content)
+        await env.CheckModelsAsync();
+        // only valid files exist after running service
+        Assert.That(await env.SharedFileService.ListFilesAsync("models"), Is.EquivalentTo(ValidFiles));
+    }
+
+    private class TestEnvironment
+    {
+        private readonly MemoryRepository<TranslationEngine> _engines;
+
+        public TestEnvironment()
         {
-            using StreamWriter streamWriter =
-                new(await _sharedFileService.OpenWriteAsync(path, CancellationToken.None));
+            _engines = new MemoryRepository<TranslationEngine>();
+            _engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine1",
+                    EngineId = "engineId1",
+                    Type = TranslationEngineType.Nmt,
+                    SourceLanguage = "es",
+                    TargetLanguage = "en",
+                    BuildRevision = 1,
+                    IsModelPersisted = true
+                }
+            );
+            _engines.Add(
+                new TranslationEngine
+                {
+                    Id = "engine2",
+                    EngineId = "engineId2",
+                    Type = TranslationEngineType.Nmt,
+                    SourceLanguage = "es",
+                    TargetLanguage = "en",
+                    BuildRevision = 2,
+                    IsModelPersisted = true
+                }
+            );
+
+            SharedFileService = new SharedFileService(Substitute.For<ILoggerFactory>());
+
+            Service = new ModelCleanupService(
+                Substitute.For<IServiceProvider>(),
+                SharedFileService,
+                Substitute.For<ILogger<ModelCleanupService>>()
+            );
+        }
+
+        public ModelCleanupService Service { get; }
+        public ISharedFileService SharedFileService { get; }
+
+        public async Task CreateFilesAsync()
+        {
+            foreach (string path in ValidFiles)
+            {
+                await WriteFileStubAsync(path, "content");
+            }
+            foreach (string path in InvalidFiles)
+            {
+                await WriteFileStubAsync(path, "content");
+            }
+        }
+
+        public Task CheckModelsAsync()
+        {
+            return Service.CheckModelsAsync(_engines, CancellationToken.None);
+        }
+
+        private async Task WriteFileStubAsync(string path, string content)
+        {
+            using StreamWriter streamWriter = new(await SharedFileService.OpenWriteAsync(path, CancellationToken.None));
             await streamWriter.WriteAsync(content);
         }
-        foreach (string path in ValidFiles)
-        {
-            await WriteFileStub(path, "content");
-        }
-        foreach (string path in InvalidFiles)
-        {
-            await WriteFileStub(path, "content");
-        }
-    }
-
-    public class TestModelCleanupService(
-        IServiceProvider serviceProvider,
-        ISharedFileService sharedFileService,
-        IRepository<TranslationEngine> engines,
-        ILogger<ModelCleanupService> logger
-    ) : ModelCleanupService(serviceProvider, sharedFileService, engines, logger)
-    {
-        public async Task DoWorkAsync() =>
-            await base.DoWorkAsync(Substitute.For<IServiceScope>(), CancellationToken.None);
-    }
-
-    [Test]
-    public async Task DoWorkAsync_ValidFiles()
-    {
-        await SetUpAsync();
-
-        var cleanupJob = new TestModelCleanupService(
-            Substitute.For<IServiceProvider>(),
-            _sharedFileService,
-            _engines,
-            Substitute.For<ILogger<ModelCleanupService>>()
-        );
-        Assert.That(
-            _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
-            Is.EquivalentTo(ValidFiles.Concat(InvalidFiles).ToHashSet())
-        );
-        await cleanupJob.DoWorkAsync();
-        // only valid files exist after running service
-        Assert.That(
-            _sharedFileService.ListFilesAsync("models").Result.ToHashSet(),
-            Is.EquivalentTo(ValidFiles.ToHashSet())
-        );
     }
 }

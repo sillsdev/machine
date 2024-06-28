@@ -2,8 +2,12 @@
 
 public interface IOutboxMessageHandler
 {
-    public string Name { get; }
+    public string OutboxId { get; }
 
-    public Task SendMessageAsync(OutboxMessage message, CancellationToken cancellationToken = default);
-    public Task CleanupMessageAsync(OutboxMessage message, CancellationToken cancellationToken = default);
+    public Task HandleMessageAsync(
+        string method,
+        string? content,
+        Stream? contentStream,
+        CancellationToken cancellationToken = default
+    );
 }

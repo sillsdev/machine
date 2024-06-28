@@ -13,7 +13,8 @@ public class ServalPlatformService(
     public async Task BuildStartedAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.BuildStarted,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.BuildStarted,
             buildId,
             JsonSerializer.Serialize(new BuildStartedRequest { BuildId = buildId }),
             cancellationToken: cancellationToken
@@ -28,7 +29,8 @@ public class ServalPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.BuildCompleted,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.BuildCompleted,
             buildId,
             JsonSerializer.Serialize(
                 new BuildCompletedRequest
@@ -45,7 +47,8 @@ public class ServalPlatformService(
     public async Task BuildCanceledAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.BuildCanceled,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.BuildCanceled,
             buildId,
             JsonSerializer.Serialize(new BuildCanceledRequest { BuildId = buildId }),
             cancellationToken: cancellationToken
@@ -55,7 +58,8 @@ public class ServalPlatformService(
     public async Task BuildFaultedAsync(string buildId, string message, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.BuildFaulted,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.BuildFaulted,
             buildId,
             JsonSerializer.Serialize(new BuildFaultedRequest { BuildId = buildId, Message = message }),
             cancellationToken: cancellationToken
@@ -65,7 +69,8 @@ public class ServalPlatformService(
     public async Task BuildRestartingAsync(string buildId, CancellationToken cancellationToken = default)
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.BuildRestarting,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.BuildRestarting,
             buildId,
             JsonSerializer.Serialize(new BuildRestartingRequest { BuildId = buildId }),
             cancellationToken: cancellationToken
@@ -102,15 +107,16 @@ public class ServalPlatformService(
 
     public async Task InsertPretranslationsAsync(
         string engineId,
-        string path,
+        Stream pretranslationsStream,
         CancellationToken cancellationToken = default
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.InsertPretranslations,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.InsertPretranslations,
             engineId,
-            requestContent: engineId,
-            requestContentPath: path,
+            engineId,
+            pretranslationsStream,
             cancellationToken: cancellationToken
         );
     }
@@ -122,7 +128,8 @@ public class ServalPlatformService(
     )
     {
         await _outboxService.EnqueueMessageAsync(
-            ServalPlatformMessageMethod.IncrementTranslationEngineCorpusSize,
+            ServalPlatformOutboxConstants.OutboxId,
+            ServalPlatformOutboxConstants.IncrementTranslationEngineCorpusSize,
             engineId,
             JsonSerializer.Serialize(
                 new IncrementTranslationEngineCorpusSizeRequest { EngineId = engineId, Count = count }
