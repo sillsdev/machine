@@ -66,7 +66,7 @@ public class ServalPlatformOutboxHandler(
             case ServalPlatformMessageMethod.InsertPretranslations:
 
                 {
-                    Stream targetPretranslateStream = await _sharedFileService.OpenReadAsync(
+                    using Stream targetPretranslateStream = await _sharedFileService.OpenReadAsync(
                         $"outbox/{message.Id}",
                         cancellationToken
                     );
@@ -77,23 +77,24 @@ public class ServalPlatformOutboxHandler(
                             cancellationToken
                         )
                         .OfType<Pretranslation>();
-                    IAsyncEnumerable<InsertPretranslationRequest> requests = pretranslations.Select(
-                        p => new InsertPretranslationRequest
-                        {
-                            EngineId = message.RequestContent!,
-                            CorpusId = p.CorpusId,
-                            TextId = p.TextId,
-                            Refs = { p.Refs },
-                            Translation = p.Translation
-                        }
-                    );
 
                     using var call = _client.InsertPretranslations(cancellationToken: cancellationToken);
-                    await foreach (var request in requests)
+                    await foreach (Pretranslation? pretranslation in pretranslations)
                     {
-                        await call.RequestStream.WriteAsync(request, cancellationToken: cancellationToken);
+                        await call.RequestStream.WriteAsync(
+                            new InsertPretranslationRequest
+                            {
+                                EngineId = message.RequestContent!,
+                                CorpusId = pretranslation.CorpusId,
+                                TextId = pretranslation.TextId,
+                                Refs = { pretranslation.Refs },
+                                Translation = pretranslation.Translation
+                            },
+                            cancellationToken
+                        );
                     }
                     await call.RequestStream.CompleteAsync();
+                    await call;
                 }
                 break;
             case ServalPlatformMessageMethod.IncrementTranslationEngineCorpusSize:
