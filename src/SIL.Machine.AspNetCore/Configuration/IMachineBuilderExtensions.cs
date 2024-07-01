@@ -280,7 +280,10 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
-                o.AddRepository<OutboxMessage>("outbox_messages");
+                o.AddRepository<OutboxMessage>(
+                    "outbox_messages",
+                    mapSetup: m => m.MapProperty(m => m.OutboxRef).SetSerializer(new StringSerializer())
+                );
                 o.AddRepository<Outbox>(
                     "outboxes",
                     mapSetup: m => m.MapIdProperty(o => o.Id).SetSerializer(new StringSerializer())
