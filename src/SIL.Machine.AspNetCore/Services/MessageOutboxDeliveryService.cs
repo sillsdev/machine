@@ -19,6 +19,7 @@ public class MessageOutboxDeliveryService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        Initialize();
         using IServiceScope scope = _services.CreateScope();
         var messages = scope.ServiceProvider.GetRequiredService<IRepository<OutboxMessage>>();
         using ISubscription<OutboxMessage> subscription = await messages.SubscribeAsync(e => true, stoppingToken);
@@ -29,6 +30,11 @@ public class MessageOutboxDeliveryService(
                 break;
             await ProcessMessagesAsync(messages, stoppingToken);
         }
+    }
+
+    private void Initialize()
+    {
+        _fileSystem.CreateDirectory(_options.CurrentValue.OutboxDir);
     }
 
     internal async Task ProcessMessagesAsync(
@@ -99,7 +105,7 @@ public class MessageOutboxDeliveryService(
     )
     {
         Stream? contentStream = null;
-        string filePath = Path.Combine(_options.CurrentValue.DataDir, message.Id);
+        string filePath = Path.Combine(_options.CurrentValue.OutboxDir, message.Id);
         if (message.HasContentStream)
             contentStream = _fileSystem.OpenRead(filePath);
         try

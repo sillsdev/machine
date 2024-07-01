@@ -54,7 +54,7 @@ public class MessageOutboxService(
                 Content = content,
                 HasContentStream = contentStream is not null
             };
-        string filePath = Path.Combine(_options.CurrentValue.DataDir, outboxMessage.Id);
+        string filePath = Path.Combine(_options.CurrentValue.OutboxDir, outboxMessage.Id);
         try
         {
             if (contentStream is not null)
