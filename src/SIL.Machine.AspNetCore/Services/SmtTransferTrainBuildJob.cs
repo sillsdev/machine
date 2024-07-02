@@ -4,13 +4,14 @@ public class SmtTransferTrainBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<SmtTransferTrainBuildJob> logger,
     ISharedFileService sharedFileService,
     ITruecaserFactory truecaserFactory,
     ISmtModelFactory smtModelFactory,
     ITransferEngineFactory transferEngineFactory
-) : HangfireBuildJob(platformService, engines, lockFactory, buildJobService, logger)
+) : HangfireBuildJob(platformService, engines, lockFactory, dataAccessContext, buildJobService, logger)
 {
     private static readonly JsonWriterOptions PretranslateWriterOptions = new() { Indented = true };
     private static readonly JsonSerializerOptions JsonSerializerOptions =

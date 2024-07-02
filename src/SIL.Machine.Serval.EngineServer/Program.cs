@@ -6,11 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder
     .Services.AddMachine(builder.Configuration)
+    .AddBuildJobService()
     .AddMongoDataAccess()
     .AddMongoHangfireJobClient()
     .AddServalTranslationEngineService()
-    .AddBuildJobService()
     .AddModelCleanupService()
+    .AddMessageOutboxDeliveryService()
     .AddClearMLService();
 
 if (builder.Environment.IsDevelopment())

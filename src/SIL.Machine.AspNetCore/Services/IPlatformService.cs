@@ -24,7 +24,7 @@ public interface IPlatformService
 
     Task InsertPretranslationsAsync(
         string engineId,
-        IAsyncEnumerable<Pretranslation> pretranslations,
+        Stream pretranslationsStream,
         CancellationToken cancellationToken = default
     );
 }

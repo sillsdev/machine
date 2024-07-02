@@ -4,6 +4,7 @@ public class SmtTransferPostprocessBuildJob(
     IPlatformService platformService,
     IRepository<TranslationEngine> engines,
     IDistributedReaderWriterLockFactory lockFactory,
+    IDataAccessContext dataAccessContext,
     IBuildJobService buildJobService,
     ILogger<SmtTransferPostprocessBuildJob> logger,
     ISharedFileService sharedFileService,
@@ -11,7 +12,16 @@ public class SmtTransferPostprocessBuildJob(
     ISmtModelFactory smtModelFactory,
     ITruecaserFactory truecaserFactory,
     IOptionsMonitor<SmtTransferEngineOptions> options
-) : PostprocessBuildJob(platformService, engines, lockFactory, buildJobService, logger, sharedFileService)
+)
+    : PostprocessBuildJob(
+        platformService,
+        engines,
+        lockFactory,
+        dataAccessContext,
+        buildJobService,
+        logger,
+        sharedFileService
+    )
 {
     private readonly ISmtModelFactory _smtModelFactory = smtModelFactory;
     private readonly ITruecaserFactory _truecaserFactory = truecaserFactory;

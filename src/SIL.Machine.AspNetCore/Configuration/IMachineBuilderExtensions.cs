@@ -49,6 +49,21 @@ public static class IMachineBuilderExtensions
         return builder;
     }
 
+    public static IMachineBuilder AddMessageOutboxOptions(
+        this IMachineBuilder builder,
+        Action<MessageOutboxOptions> configureOptions
+    )
+    {
+        builder.Services.Configure(configureOptions);
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxOptions(this IMachineBuilder builder, IConfiguration config)
+    {
+        builder.Services.Configure<MessageOutboxOptions>(config);
+        return builder;
+    }
+
     public static IMachineBuilder AddSharedFileOptions(
         this IMachineBuilder builder,
         Action<SharedFileOptions> configureOptions
@@ -219,6 +234,8 @@ public static class IMachineBuilderExtensions
             o.AddRepository<TranslationEngine>();
             o.AddRepository<RWLock>();
             o.AddRepository<TrainSegmentPair>();
+            o.AddRepository<OutboxMessage>();
+            o.AddRepository<Outbox>();
         });
 
         return builder;
@@ -263,6 +280,14 @@ public static class IMachineBuilderExtensions
                             )
                         )
                 );
+                o.AddRepository<OutboxMessage>(
+                    "outbox_messages",
+                    mapSetup: m => m.MapProperty(m => m.OutboxRef).SetSerializer(new StringSerializer())
+                );
+                o.AddRepository<Outbox>(
+                    "outboxes",
+                    mapSetup: m => m.MapIdProperty(o => o.Id).SetSerializer(new StringSerializer())
+                );
             }
         );
         builder.Services.AddHealthChecks().AddMongoDb(connectionString!, name: "Mongo");
@@ -280,6 +305,11 @@ public static class IMachineBuilderExtensions
             throw new InvalidOperationException("Serval connection string is required");
 
         builder.Services.AddScoped<IPlatformService, ServalPlatformService>();
+
+        builder.Services.AddSingleton<IOutboxMessageHandler, ServalPlatformOutboxMessageHandler>();
+
+        builder.Services.AddScoped<IMessageOutboxService, MessageOutboxService>();
+
         builder
             .Services.AddGrpcClient<TranslationPlatformApi.TranslationPlatformApiClient>(o =>
             {
@@ -334,6 +364,7 @@ public static class IMachineBuilderExtensions
             options.Interceptors.Add<UnimplementedInterceptor>();
         });
         builder.AddServalPlatformService(connectionString);
+
         engineTypes ??=
             builder.Configuration?.GetSection("TranslationEngines").Get<TranslationEngineType[]?>()
             ?? [TranslationEngineType.SmtTransfer, TranslationEngineType.Nmt];
@@ -395,6 +426,12 @@ public static class IMachineBuilderExtensions
     public static IMachineBuilder AddModelCleanupService(this IMachineBuilder builder)
     {
         builder.Services.AddHostedService<ModelCleanupService>();
+        return builder;
+    }
+
+    public static IMachineBuilder AddMessageOutboxDeliveryService(this IMachineBuilder builder)
+    {
+        builder.Services.AddHostedService<MessageOutboxDeliveryService>();
         return builder;
     }
 }

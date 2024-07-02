@@ -297,6 +297,7 @@ public class NmtEngineServiceTests
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
+                        new MemoryDataAccessContext(),
                         Substitute.For<ILogger<NmtPreprocessBuildJob>>(),
                         _env.BuildJobService,
                         _env.SharedFileService,
@@ -310,6 +311,7 @@ public class NmtEngineServiceTests
                         _env.PlatformService,
                         _env.Engines,
                         _env._lockFactory,
+                        new MemoryDataAccessContext(),
                         _env.BuildJobService,
                         Substitute.For<ILogger<PostprocessBuildJob>>(),
                         _env.SharedFileService

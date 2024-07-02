@@ -38,6 +38,7 @@ global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using MongoDB.Bson.Serialization.Serializers;
 global using MongoDB.Driver;
 global using MongoDB.Driver.Linq;
 global using Nito.AsyncEx;

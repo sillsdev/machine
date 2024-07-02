@@ -181,12 +181,16 @@ public class NmtEngineService(
 
     private async Task<bool> CancelBuildJobAsync(string engineId, CancellationToken cancellationToken)
     {
-        (string? buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(
-            engineId,
-            cancellationToken
+        string? buildId = null;
+        await _dataAccessContext.WithTransactionAsync(
+            async (ct) =>
+            {
+                (buildId, BuildJobState jobState) = await _buildJobService.CancelBuildJobAsync(engineId, ct);
+                if (buildId is not null && jobState is BuildJobState.None)
+                    await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
+            },
+            cancellationToken: cancellationToken
         );
-        if (buildId is not null && jobState is BuildJobState.None)
-            await _platformService.BuildCanceledAsync(buildId, CancellationToken.None);
         return buildId is not null;
     }
 

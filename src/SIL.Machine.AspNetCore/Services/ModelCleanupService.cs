@@ -3,21 +3,20 @@ namespace SIL.Machine.AspNetCore.Services;
 public class ModelCleanupService(
     IServiceProvider services,
     ISharedFileService sharedFileService,
-    IRepository<TranslationEngine> engines,
     ILogger<ModelCleanupService> logger
 ) : RecurrentTask("Model Cleanup Service", services, RefreshPeriod, logger)
 {
     private readonly ISharedFileService _sharedFileService = sharedFileService;
     private readonly ILogger<ModelCleanupService> _logger = logger;
-    private readonly IRepository<TranslationEngine> _engines = engines;
     private static readonly TimeSpan RefreshPeriod = TimeSpan.FromDays(1);
 
     protected override async Task DoWorkAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
-        await CheckModelsAsync(cancellationToken);
+        var engines = scope.ServiceProvider.GetRequiredService<IRepository<TranslationEngine>>();
+        await CheckModelsAsync(engines, cancellationToken);
     }
 
-    private async Task CheckModelsAsync(CancellationToken cancellationToken)
+    internal async Task CheckModelsAsync(IRepository<TranslationEngine> engines, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Running model cleanup job");
         IReadOnlyCollection<string> paths = await _sharedFileService.ListFilesAsync(
@@ -25,7 +24,7 @@ public class ModelCleanupService(
             cancellationToken: cancellationToken
         );
         // Get all NMT engine ids from the database
-        IReadOnlyList<TranslationEngine>? allEngines = await _engines.GetAllAsync(cancellationToken: cancellationToken);
+        IReadOnlyList<TranslationEngine>? allEngines = await engines.GetAllAsync(cancellationToken: cancellationToken);
         IEnumerable<string> validNmtFilenames = allEngines
             .Where(e => e.Type == TranslationEngineType.Nmt)
             .Select(e => NmtEngineService.GetModelPath(e.EngineId, e.BuildRevision));
