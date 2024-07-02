@@ -7,15 +7,17 @@ namespace SIL.Machine.Corpora
     public class MemoryStreamContainer : DisposableBase, IStreamContainer
     {
         private readonly string _usfm;
+        private readonly Encoding _encoding;
 
-        public MemoryStreamContainer(string usfm)
+        public MemoryStreamContainer(string usfm, Encoding encoding)
         {
             _usfm = usfm;
+            _encoding = encoding;
         }
 
         public Stream OpenStream()
         {
-            return new MemoryStream(Encoding.UTF8.GetBytes(_usfm));
+            return new MemoryStream(_encoding.GetBytes(_usfm));
         }
     }
 }
