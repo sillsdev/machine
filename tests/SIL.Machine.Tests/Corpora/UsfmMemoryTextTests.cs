@@ -49,6 +49,23 @@ public class UsfmMemoryTextTests
         });
     }
 
+    [Test]
+    public void GetRows_Ending_ParagraphMarker()
+    {
+        //The ending paragraph marker should not crash the parser.
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\v 1 Descriptive title\x - \xo 18:16 \xt  hello world\x*\p
+"
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1));
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
