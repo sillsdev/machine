@@ -47,6 +47,19 @@ public class UsfmTokenizerTests
         Assert.That(result, Is.EqualTo(usfm));
     }
 
+    [Test]
+    public void Tokenize_Ending_ParagraphMarker()
+    {
+        //The ending paragraph marker should not crash the parser.
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Descriptive title\x - \xo 18:16 \xt  hello world\x*\p
+";
+        IReadOnlyList<UsfmToken> tokens = new UsfmTokenizer().Tokenize(usfm);
+        Assert.That(tokens, Has.Count.EqualTo(13));
+    }
+
     private static string ReadUsfm()
     {
         return File.ReadAllText(Path.Combine(CorporaTestHelpers.UsfmTestProjectPath, "41MATTes.SFM"));
