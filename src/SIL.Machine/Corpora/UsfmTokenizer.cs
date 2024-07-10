@@ -385,7 +385,16 @@ namespace SIL.Machine.Corpora
                         else if (tokens[i - 1].Type == UsfmTokenType.End)
                         {
                             // Insert space token after * of end marker
-                            int colNum = usfm.Length + 1 - Math.Max(usfm.LastIndexOf('\n', index), 0);
+                            int colNum;
+                            if (index >= usfm.Length)
+                            {
+                                colNum = usfm.Length + 1;
+                            }
+                            else
+                            {
+                                colNum = usfm.Length + 1 - Math.Max(usfm.LastIndexOf('\n', index), 0);
+                            }
+
                             tokens.Insert(
                                 i,
                                 new UsfmToken(UsfmTokenType.Text, null, " ", null)
