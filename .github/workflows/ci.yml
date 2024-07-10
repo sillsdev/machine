@@ -97,7 +97,6 @@ jobs:
         run: |
           dotnet pack src\SIL.Machine\SIL.Machine.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Translation.Thot\SIL.Machine.Translation.Thot.csproj -c Release -o artifacts
-          dotnet pack src\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Tool\SIL.Machine.Tool.csproj -c Release -o artifacts
           dotnet pack src\SIL.Machine.Morphology.HermitCrab.Tool\SIL.Machine.Morphology.HermitCrab.Tool.csproj -c Release -o artifacts

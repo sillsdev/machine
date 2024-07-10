@@ -45,14 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Tokenization.SentencePiece.Tests", "tests\SIL.Machine.Tokenization.SentencePiece.Tests\SIL.Machine.Tokenization.SentencePiece.Tests.csproj", "{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.AspNetCore", "src\SIL.Machine.AspNetCore\SIL.Machine.AspNetCore.csproj", "{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Serval.EngineServer", "src\SIL.Machine.Serval.EngineServer\SIL.Machine.Serval.EngineServer.csproj", "{183B5AB9-1BD1-4000-97E7-90706D45A668}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.Serval.JobServer", "src\SIL.Machine.Serval.JobServer\SIL.Machine.Serval.JobServer.csproj", "{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIL.Machine.AspNetCore.Tests", "tests\SIL.Machine.AspNetCore.Tests\SIL.Machine.AspNetCore.Tests.csproj", "{B5B83426-7099-4EAD-9E07-8D8CA61BABAB}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,22 +99,6 @@ Global
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{183B5AB9-1BD1-4000-97E7-90706D45A668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{183B5AB9-1BD1-4000-97E7-90706D45A668}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{183B5AB9-1BD1-4000-97E7-90706D45A668}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{183B5AB9-1BD1-4000-97E7-90706D45A668}.Release|Any CPU.Build.0 = Release|Any CPU
-		{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5B83426-7099-4EAD-9E07-8D8CA61BABAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5B83426-7099-4EAD-9E07-8D8CA61BABAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5B83426-7099-4EAD-9E07-8D8CA61BABAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5B83426-7099-4EAD-9E07-8D8CA61BABAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,10 +116,6 @@ Global
 		{0BBEED18-3CC1-4BA6-8E11-603A5D2DEDC9} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{09135223-6285-4268-BFA3-147BDB5B663B} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
 		{AB5F75C1-64B7-4E0F-A4B5-B14EB16E6DDC} = {66246A1C-8D45-40FB-A660-C58577122CA7}
-		{A04C171E-A8E5-40D2-AECA-9FDA6F5FE92B} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
-		{183B5AB9-1BD1-4000-97E7-90706D45A668} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
-		{81CABDF5-7A9C-44A8-9A0A-2B17DED577A9} = {31B4F5EB-E148-4A51-84B5-B90BB8F38AD3}
-		{B5B83426-7099-4EAD-9E07-8D8CA61BABAB} = {66246A1C-8D45-40FB-A660-C58577122CA7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9F18C25E-E140-43C3-B177-D562E1628370}
