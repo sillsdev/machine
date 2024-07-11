@@ -1,2 +1,3 @@
 !tests/SIL.Machine.Tests/Corpora/TestData/usfm/source/*
 !tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
+!tests/SIL.Machine.Tests/Corpora/TestData/project/*

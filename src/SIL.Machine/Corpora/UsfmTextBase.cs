@@ -133,6 +133,8 @@ namespace SIL.Machine.Corpora
                 }
                 else if (CurrentTextType == ScriptureTextType.Verse)
                 {
+                    if (_rowTexts.Count == 0)
+                        return;
                     StringBuilder verseText = _rowTexts.Peek();
                     if (verseText.Length > 0 && !char.IsWhiteSpace(verseText[verseText.Length - 1]))
                         verseText.Append(" ");
