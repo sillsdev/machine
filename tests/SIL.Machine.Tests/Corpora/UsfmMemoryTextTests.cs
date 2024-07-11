@@ -49,6 +49,27 @@ public class UsfmMemoryTextTests
         });
     }
 
+    [Test]
+    public void GetRows_DuplicateVerseWithTable()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\v 1 First verse
+\periph Table of Contents Abbreviation
+\rem non verse content 1
+\v 1 duplicate first verse
+\rem non verse content 2
+\mt1 Table
+\tr \tc1 row 1 cell 1 \tc2 row 1 cell 2
+\tr \tc1 row 2 cell 1 \tc2 row 2 cell 2
+",
+            includeAllText: true
+        );
+
+        Assert.That(rows, Has.Length.EqualTo(5));
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
