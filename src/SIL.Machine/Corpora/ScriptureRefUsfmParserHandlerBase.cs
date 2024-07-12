@@ -68,7 +68,10 @@ namespace SIL.Machine.Corpora
             }
             else
             {
-                EndVerseText(state);
+                if (CurrentTextType == ScriptureTextType.NonVerse)
+                    EndNonVerseText(state);
+                else
+                    EndVerseText(state);
                 UpdateVerseRef(state.VerseRef, marker);
                 StartVerseText(state);
             }

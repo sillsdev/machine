@@ -36,8 +36,25 @@ namespace SIL.Machine.Corpora
         {
             string usfm = ReadUsfm();
             var rowCollector = new TextRowCollector(this);
+
+            var tokenizer = new UsfmTokenizer(_stylesheet);
+            IReadOnlyList<UsfmToken> tokens;
+            try
+            {
+                tokens = tokenizer.Tokenize(usfm, _includeMarkers);
+            }
+            catch (Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"An error occurred while tokenizing the text '{Id}`");
+                if (!string.IsNullOrEmpty(Project))
+                    sb.Append($" in project '{Project}'");
+                sb.Append($". Error: '{ex.Message}'");
+                throw new InvalidOperationException(sb.ToString(), ex);
+            }
+
             var parser = new UsfmParser(
-                usfm,
+                tokens,
                 rowCollector,
                 _stylesheet,
                 Versification,
