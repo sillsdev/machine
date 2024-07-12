@@ -70,6 +70,26 @@ public class UsfmMemoryTextTests
         Assert.That(rows, Has.Length.EqualTo(5));
     }
 
+    [Test]
+    public void GetRows_multichapter_nonverse()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\q1
+\f * \fr 119 \ft World \f*
+\v 1 First verse in line!?!
+\c 2
+\d
+description
+\b
+",
+            includeAllText: true
+        );
+
+        Assert.That(rows, Has.Length.EqualTo(5));
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
