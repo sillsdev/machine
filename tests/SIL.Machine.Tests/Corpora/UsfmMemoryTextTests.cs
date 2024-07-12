@@ -87,7 +87,7 @@ description
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(5));
+        Assert.That(rows, Has.Length.EqualTo(3));
     }
 
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
