@@ -71,13 +71,14 @@ public class UsfmMemoryTextTests
     }
 
     [Test]
-    public void GetRows_multichapter_nonverse()
+    public void GetRows_VersePara_BeginningNonVerseSegment()
     {
+        // a verse paragraph that begins with a non-verse segment followed by a verse segment
         TextRow[] rows = GetRows(
             @"\id MAT - Test
 \c 1
 \q1
-\f * \fr 119 \ft World \f*
+\f \fr 119 \ft World \f*
 \v 1 First verse in line!?!
 \c 2
 \d
@@ -87,7 +88,7 @@ description
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(3));
+        Assert.That(rows, Has.Length.EqualTo(4));
     }
 
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
