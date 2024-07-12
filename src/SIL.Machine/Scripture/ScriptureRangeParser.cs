@@ -151,6 +151,11 @@ public class ScriptureRangeParser
         Dictionary<string, List<int>> chaptersPerBook = new Dictionary<string, List<int>>();
         chapterSelections = chapterSelections.Trim();
 
+        if (chapterSelections.Length == 0)
+        {
+            return chaptersPerBook;
+        }
+
         char delimiter = ';';
         if (chapterSelections.Contains(';'))
         {
