@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.IO.Compression;
+using System.Text.Json;
 using NUnit.Framework;
 
 namespace SIL.Machine.Corpora;
@@ -65,41 +66,88 @@ public class UsfmManualTests
     public static readonly string ParatextProjectPath = Path.Combine(CorporaTestHelpers.TestDataPath, "project");
 
     [Test]
-    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
+    // [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     public async Task CreateUsfmFile()
     {
-        FileParatextProjectSettingsParser parser = new(ParatextProjectPath);
-        ParatextProjectSettings settings = parser.Parse();
-
-        // Read text from pretranslations file
-        using Stream pretranslationStream = File.OpenRead(PretranslationPath);
-        (IReadOnlyList<ScriptureRef>, string)[] pretranslations = await JsonSerializer
-            .DeserializeAsyncEnumerable<PretranslationDto>(
-                pretranslationStream,
-                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-            )
-            .Select(p =>
-                (
-                    (IReadOnlyList<ScriptureRef>)(
-                        p?.Refs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray() ?? []
-                    ),
-                    p?.Translation ?? ""
-                )
-            )
-            .ToArrayAsync();
-
-        foreach (
-            string sfmFileName in Directory.EnumerateFiles(
-                ParatextProjectPath,
-                $"{settings.FileNamePrefix}*{settings.FileNameSuffix}"
-            )
-        )
+        async Task GetUsfmAsync(string projectPath)
         {
-            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
-            string usfm = await File.ReadAllTextAsync(sfmFileName);
-            UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
-            string newUsfm = updater.GetUsfm(settings.Stylesheet);
-            Assert.That(newUsfm, Is.Not.Null);
+            ParatextProjectSettingsParserBase parser;
+            ZipArchive? projectArchive = null;
+            try
+            {
+                projectArchive = ZipFile.Open(projectPath, ZipArchiveMode.Read);
+                parser = new ZipParatextProjectSettingsParser(projectArchive);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                parser = new FileParatextProjectSettingsParser(projectPath);
+            }
+            ParatextProjectSettings settings = parser.Parse();
+
+            // Read text from pretranslations file
+            using Stream pretranslationStream = File.OpenRead(PretranslationPath);
+            (IReadOnlyList<ScriptureRef>, string)[] pretranslations = await JsonSerializer
+                .DeserializeAsyncEnumerable<PretranslationDto>(
+                    pretranslationStream,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
+                )
+                .Select(p =>
+                    (
+                        (IReadOnlyList<ScriptureRef>)(
+                            p?.Refs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray()
+                            ?? []
+                        ),
+                        p?.Translation ?? ""
+                    )
+                )
+                .ToArrayAsync();
+            List<string> sfmTexts = [];
+            if (projectArchive == null)
+            {
+                sfmTexts = (
+                    await Task.WhenAll(
+                        Directory
+                            .EnumerateFiles(projectPath, $"{settings.FileNamePrefix}*{settings.FileNameSuffix}")
+                            .Select(async sfmFileName => await File.ReadAllTextAsync(sfmFileName))
+                    )
+                ).ToList();
+            }
+            else
+            {
+                sfmTexts = projectArchive
+                    .Entries.Where(e =>
+                        e.Name.StartsWith(settings.FileNamePrefix) && e.Name.EndsWith(settings.FileNameSuffix)
+                    )
+                    .Select(e =>
+                    {
+                        string contents;
+                        using (var sr = new StreamReader(e.Open()))
+                        {
+                            contents = sr.ReadToEnd();
+                        }
+                        return contents;
+                    })
+                    .ToList();
+            }
+            foreach (string usfm in sfmTexts)
+            {
+                var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
+                UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
+                string newUsfm = updater.GetUsfm(settings.Stylesheet);
+                Assert.That(newUsfm, Is.Not.Null);
+            }
+        }
+        if (!File.Exists(Path.Combine(ParatextProjectPath, "Settings.xml")))
+        {
+            Assert.Multiple(() =>
+            {
+                foreach (string subdir in Directory.EnumerateFiles(ParatextProjectPath))
+                    Assert.DoesNotThrowAsync(async () => await GetUsfmAsync(subdir), $"Failed to parse {subdir}");
+            });
+        }
+        else
+        {
+            await GetUsfmAsync(ParatextProjectPath);
         }
     }
 }
