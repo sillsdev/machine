@@ -66,7 +66,7 @@ public class UsfmManualTests
     public static readonly string ParatextProjectPath = Path.Combine(CorporaTestHelpers.TestDataPath, "project");
 
     [Test]
-    // [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
+    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     public async Task CreateUsfmFile()
     {
         async Task GetUsfmAsync(string projectPath)
