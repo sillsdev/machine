@@ -177,6 +177,7 @@ public class ScriptureRangeParserTests
             new Dictionary<string, List<int>> { { "JHN", new List<int>() } },
             false
         );
+        yield return new TestCaseData("", new Dictionary<string, List<int>>(), false);
 
         //*Throw exceptions
         yield return new TestCaseData("MAT3-1", new Dictionary<string, List<int>>(), true);
@@ -185,7 +186,6 @@ public class ScriptureRangeParserTests
         yield return new TestCaseData("MAT0-10", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("MAT-FLUM", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("-MAT-FLUM", new Dictionary<string, List<int>>(), true);
-        yield return new TestCaseData("", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("ABC", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("MAT-ABC", new Dictionary<string, List<int>>(), true);
         yield return new TestCaseData("NT;-ABC-LUK", new Dictionary<string, List<int>>(), true);
