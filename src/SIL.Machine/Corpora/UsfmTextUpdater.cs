@@ -361,7 +361,7 @@ namespace SIL.Machine.Corpora
         private bool ReplaceWithNewTokens(UsfmParserState state)
         {
             bool newText = _replace.Count > 0 && _replace.Peek();
-            int tokenEnd = state.Index + state.SpecialTokenCount + 1;
+            int tokenEnd = state.Index + state.SpecialTokenCount;
             bool existingText = false;
             for (int index = _tokenIndex; index <= tokenEnd; index++)
             {
@@ -393,6 +393,7 @@ namespace SIL.Machine.Corpora
 
         private void PopNewTokens()
         {
+            // if (_replace.Any())
             _replace.Pop();
         }
     }

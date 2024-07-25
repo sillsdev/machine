@@ -71,6 +71,22 @@ public class UsfmMemoryTextTests
     }
 
     [Test]
+    public void GetRows_TriplicateVerse()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\v 1 First verse
+\v 1 First verse
+\v 1 First verse
+",
+            includeAllText: true
+        );
+
+        Assert.That(rows, Has.Length.EqualTo(1));
+    }
+
+    [Test]
     public void GetRows_VersePara_BeginningNonVerseSegment()
     {
         // a verse paragraph that begins with a non-verse segment followed by a verse segment

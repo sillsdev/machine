@@ -53,7 +53,7 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
-            if (state.VerseRef.Equals(_curVerseRef))
+            if (state.VerseRef.Equals(_curVerseRef) && !_duplicateVerse)
             {
                 EndVerseText(state, CreateVerseRefs());
                 // ignore duplicate verses
