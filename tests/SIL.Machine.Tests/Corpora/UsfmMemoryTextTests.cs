@@ -25,8 +25,16 @@ public class UsfmMemoryTextTests
         {
             Assert.That(rows, Has.Length.EqualTo(1));
 
-            Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1")));
-            Assert.That(rows[0].Text, Is.EqualTo("Descriptive title"));
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("Descriptive title"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
         });
     }
 
@@ -44,8 +52,16 @@ public class UsfmMemoryTextTests
         {
             Assert.That(rows, Has.Length.EqualTo(1));
 
-            Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1")));
-            Assert.That(rows[0].Text, Is.EqualTo("Last segment"));
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("Last segment"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
         });
     }
 
@@ -67,7 +83,7 @@ public class UsfmMemoryTextTests
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(5));
+        Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.ToList().Select(tr => tr.Text)));
     }
 
     [Test]
@@ -77,13 +93,19 @@ public class UsfmMemoryTextTests
             @"\id MAT - Test
 \c 1
 \v 1 First verse
+\rem non verse
 \v 1 First verse
+\rem non verse
 \v 1 First verse
+\v 2 Second verse
 ",
             includeAllText: true
         );
-
-        Assert.That(rows, Has.Length.EqualTo(1));
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows[0].Text, Is.EqualTo("First verse"), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+        });
     }
 
     [Test]
@@ -104,7 +126,7 @@ description
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(4));
+        Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.ToList().Select(tr => tr.Text)));
     }
 
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
