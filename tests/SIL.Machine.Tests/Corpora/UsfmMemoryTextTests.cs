@@ -28,7 +28,7 @@ public class UsfmMemoryTextTests
             Assert.That(
                 rows[0].Ref,
                 Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
-                string.Join(",", rows.ToList().Select(tr => tr.Text))
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
             );
             Assert.That(
                 rows[0].Text,
@@ -55,7 +55,7 @@ public class UsfmMemoryTextTests
             Assert.That(
                 rows[0].Ref,
                 Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
-                string.Join(",", rows.ToList().Select(tr => tr.Text))
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
             );
             Assert.That(
                 rows[0].Text,
