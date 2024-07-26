@@ -393,7 +393,6 @@ namespace SIL.Machine.Corpora
 
         private void PopNewTokens()
         {
-            // if (_replace.Any())
             _replace.Pop();
         }
     }
