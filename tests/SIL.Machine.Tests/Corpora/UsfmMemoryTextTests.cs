@@ -92,19 +92,22 @@ public class UsfmMemoryTextTests
         TextRow[] rows = GetRows(
             @"\id MAT - Test
 \c 1
-\v 1 First verse
-\rem non verse
-\v 1 First verse
-\rem non verse
-\v 1 First verse
+\v 1 First verse 1
+\rem non verse 1
+\v 1 First verse 2
+\rem non verse 2
+\v 1 First verse 3
+\rem non verse 3
 \v 2 Second verse
 ",
             includeAllText: true
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows[0].Text, Is.EqualTo("First verse"), string.Join(",", rows.ToList().Select(tr => tr.Text)));
-            Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo("First verse 1"));
+            Assert.That(rows[3].Text, Is.EqualTo("non verse 3"));
+            Assert.That(rows[4].Text, Is.EqualTo("Second verse"));
         });
     }
 
