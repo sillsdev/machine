@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
 
@@ -42,7 +43,19 @@ namespace SIL.Machine.Corpora
                 versification,
                 preserveWhitespace
             );
-            parser.ProcessTokens();
+            try
+            {
+                parser.ProcessTokens();
+            }
+            catch (Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.Append(
+                    $"An error occurred while parsing the USFM text in Verse: {parser.State.VerseRef}, line: {parser.State.LineNumber}, "
+                );
+                sb.Append($"column: {parser.State.ColumnNumber}, error: '{ex.Message}'");
+                throw new InvalidOperationException(sb.ToString(), ex);
+            }
         }
 
         private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);
@@ -130,18 +143,7 @@ namespace SIL.Machine.Corpora
         /// </summary>
         public void ProcessTokens()
         {
-            bool continueProcessing = true;
-            while (continueProcessing)
-            {
-                try
-                {
-                    continueProcessing = ProcessToken();
-                }
-                catch (Exception e)
-                {
-                    throw new UsfmParsingException(State, e);
-                }
-            }
+            while (ProcessToken()) { }
         }
 
         /// <summary>
@@ -199,8 +201,7 @@ namespace SIL.Machine.Corpora
             {
                 case UsfmTokenType.Book:
                 case UsfmTokenType.Chapter:
-                    CloseAll();
-                    break;
+                    throw new Exception("Book and chapter tokens should not be encountered here.");
                 case UsfmTokenType.Paragraph:
                     // Handle special case of table rows
                     if (token.Marker == "tr")
