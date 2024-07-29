@@ -3,7 +3,7 @@
 namespace SIL.Machine.Corpora;
 
 [TestFixture]
-public class UsfmTextUpdaterTests
+public class UpdateUsfmParserHandlerTests
 {
     [Test]
     public void GetUsfm_Verse_CharStyle()
@@ -446,7 +446,7 @@ public class UsfmTextUpdaterTests
             source = ReadUsfm();
         else
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-        var updater = new UsfmTextUpdater(
+        var updater = new UpdateUsfmParserHandler(
             rows,
             idText,
             stripAllText: stripAllText,

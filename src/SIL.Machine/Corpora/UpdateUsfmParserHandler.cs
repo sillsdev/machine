@@ -8,7 +8,7 @@ namespace SIL.Machine.Corpora
      * This is a USFM parser handler that can be used to replace the existing text in a USFM file with the specified
      * text.
      */
-    public class UsfmTextUpdater : ScriptureRefUsfmParserHandlerBase
+    public class UpdateUsfmParserHandler : ScriptureRefUsfmParserHandlerBase
     {
         private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Corpora
         private int _rowIndex;
         private int _tokenIndex;
 
-        public UsfmTextUpdater(
+        public UpdateUsfmParserHandler(
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             bool stripAllText = false,

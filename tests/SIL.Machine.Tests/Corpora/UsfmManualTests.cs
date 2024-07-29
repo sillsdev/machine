@@ -43,7 +43,7 @@ public class UsfmManualTests
             )
         )
         {
-            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: false);
+            var updater = new UpdateUsfmParserHandler(pretranslations, stripAllText: true, preferExistingText: false);
             string usfm = await File.ReadAllTextAsync(sfmFileName);
             UsfmParser.Parse(usfm, updater, targetSettings.Stylesheet, targetSettings.Versification);
             string newUsfm = updater.GetUsfm(targetSettings.Stylesheet);
@@ -95,7 +95,7 @@ public class UsfmManualTests
             )
         )
         {
-            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
+            var updater = new UpdateUsfmParserHandler(pretranslations, stripAllText: true, preferExistingText: true);
             string usfm = await File.ReadAllTextAsync(sfmFileName);
             UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
             string newUsfm = updater.GetUsfm(settings.Stylesheet);
