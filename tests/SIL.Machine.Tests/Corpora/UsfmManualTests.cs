@@ -9,13 +9,13 @@ public class UsfmManualTests
 {
     [Test]
     [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
-    public async Task ParseParallelCorpusAsync()
+    public void ParseParallelCorpusAsync()
     {
-        ParatextTextCorpus tCorpus =
-            new(projectDir: CorporaTestHelpers.UsfmTargetProjectPath, includeAllText: true, includeMarkers: true);
+        ParatextBackupTextCorpus tCorpus =
+            new("../../../Corpora/TestData/project/trg.zip", includeAllText: true, includeMarkers: true);
 
-        ParatextTextCorpus sCorpus =
-            new(projectDir: CorporaTestHelpers.UsfmSourceProjectPath, includeAllText: true, includeMarkers: true);
+        ParatextBackupTextCorpus sCorpus =
+            new("../../../Corpora/TestData/project/src.zip", includeAllText: true, includeMarkers: true);
 
         ParallelTextCorpus pCorpus =
             new(sCorpus, tCorpus, alignmentCorpus: null, rowRefComparer: null)
@@ -28,27 +28,55 @@ public class UsfmManualTests
         Assert.That(rows, Has.Count.GreaterThan(0));
 
         // insert the source into the target as pretranslations to make sure that USFM generation works
+
+        //Below gives empty content in SUS 1:65
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = rows.Select(r =>
-                ((IReadOnlyList<ScriptureRef>)r.SourceRefs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
+                ((IReadOnlyList<ScriptureRef>)r.Refs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
             )
+            .Where(s => s.Item1[0].Book == "SUS")
             .ToList();
 
-        ParatextProjectSettings targetSettings = new FileParatextProjectSettingsParser(
-            CorporaTestHelpers.UsfmTargetProjectPath
-        ).Parse();
+        //Below also gives empty content in SUS 1:65 - which is indicative of the issue, I think
+        //I'm suspicious of this line in Serval Pretranslation service:
+        //      p.Refs.Select(r => ScriptureRef.Parse(r, targetSettings.Versification)).ToArray(),
+        //Are we miss-parsing these refs somehow by using the targetSettings? Or maybe there's just a mistake in the project versification itself?
 
-        foreach (
-            string sfmFileName in Directory.EnumerateFiles(
-                CorporaTestHelpers.UsfmTargetProjectPath,
-                $"{targetSettings.FileNamePrefix}*{targetSettings.FileNameSuffix}"
-            )
-        )
+        // IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = rows.Select(r =>
+        //         ((IReadOnlyList<ScriptureRef>)r.SourceRefs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
+        //     )
+        //     .Where(s => s.Item1[0].Book == "SUS")
+        //     .ToList();
+
+        //Below 'works' but gives DAG 13:62 content in SUS 1:65
+
+        // IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = rows.Select(r =>
+        //         ((IReadOnlyList<ScriptureRef>)r.TargetRefs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
+        //     )
+        //     .Where(s => s.Item1[0].Book == "SUS")
+        //     .ToList();
+
+        ZipArchive zip = ZipFile.OpenRead("../../../Corpora/TestData/project/trg.zip");
+        ParatextProjectSettings targetSettings = new ZipParatextProjectSettingsParser(zip).Parse();
+
+        ZipArchive zipSrc = ZipFile.OpenRead("../../../Corpora/TestData/project/trg.zip");
+        ParatextProjectSettings sourceSettings = new ZipParatextProjectSettingsParser(zipSrc).Parse();
+
+        foreach (ZipArchiveEntry zipFileEntry in zip.Entries)
         {
-            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: false);
-            string usfm = await File.ReadAllTextAsync(sfmFileName);
+            if (
+                !zipFileEntry.Name.EndsWith(targetSettings.FileNameSuffix)
+                || !zipFileEntry.Name.StartsWith(targetSettings.FileNamePrefix)
+                || !zipFileEntry.Name.Contains("SUS")
+            )
+            {
+                continue;
+            }
+
+            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
+            string usfm = new StreamReader(zipFileEntry.Open()).ReadToEnd();
             UsfmParser.Parse(usfm, updater, targetSettings.Stylesheet, targetSettings.Versification);
             string newUsfm = updater.GetUsfm(targetSettings.Stylesheet);
-            Assert.That(newUsfm, Is.Not.Null);
+            Assert.Fail(newUsfm);
         }
     }
 
