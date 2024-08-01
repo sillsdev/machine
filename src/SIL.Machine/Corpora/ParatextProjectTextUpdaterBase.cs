@@ -5,11 +5,16 @@ namespace SIL.Machine.Corpora
 {
     public abstract class ParatextProjectTextUpdaterBase
     {
-        private readonly ParatextProjectSettingsParserBase _settingsParser;
+        private readonly ParatextProjectSettings _settings;
 
         protected ParatextProjectTextUpdaterBase(ParatextProjectSettingsParserBase settingsParser)
         {
-            _settingsParser = settingsParser;
+            _settings = settingsParser.Parse();
+        }
+
+        protected ParatextProjectTextUpdaterBase(ParatextProjectSettings settings)
+        {
+            _settings = settings;
         }
 
         public string UpdateUsfm(
@@ -20,9 +25,7 @@ namespace SIL.Machine.Corpora
             bool preferExistingText = true
         )
         {
-            ParatextProjectSettings settings = _settingsParser.Parse();
-
-            string fileName = settings.GetBookFileName(bookId);
+            string fileName = _settings.GetBookFileName(bookId);
             if (!Exists(fileName))
                 return null;
 
@@ -38,8 +41,8 @@ namespace SIL.Machine.Corpora
                 stripAllText,
                 preferExistingText: preferExistingText
             );
-            UsfmParser.Parse(usfm, handler, settings.Stylesheet, settings.Versification);
-            return handler.GetUsfm(settings.Stylesheet);
+            UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
+            return handler.GetUsfm(_settings.Stylesheet);
         }
 
         protected abstract bool Exists(string fileName);
