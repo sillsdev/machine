@@ -4,8 +4,5 @@ namespace SIL.Machine.Corpora
     {
         protected ZipParatextProjectTextUpdaterBase(ZipParatextProjectSettingsParserBase settingsParser)
             : base(settingsParser) { }
-
-        protected ZipParatextProjectTextUpdaterBase(ParatextProjectSettings settings)
-            : base(settings) { }
     }
 }
