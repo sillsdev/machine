@@ -135,7 +135,11 @@ public class UsfmManualTests
             }
             foreach (string usfm in sfmTexts)
             {
-                var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
+                var updater = new UpdateUsfmParserHandler(
+                    pretranslations,
+                    stripAllText: true,
+                    preferExistingText: true
+                );
                 UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
                 string newUsfm = updater.GetUsfm(settings.Stylesheet);
                 Assert.That(newUsfm, Is.Not.Null);
