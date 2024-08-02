@@ -7,14 +7,14 @@ namespace SIL.Machine.Corpora
     {
         private readonly ParatextProjectSettings _settings;
 
-        protected ParatextProjectTextUpdaterBase(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
-        }
-
         protected ParatextProjectTextUpdaterBase(ParatextProjectSettings settings)
         {
             _settings = settings;
+        }
+
+        protected ParatextProjectTextUpdaterBase(ParatextProjectSettingsParserBase settingsParser)
+        {
+            _settings = settingsParser.Parse();
         }
 
         public string UpdateUsfm(

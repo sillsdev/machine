@@ -3,7 +3,7 @@ using System.IO.Compression;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextProjectTextUpdater : ZipParatextProjectTextUpdaterBase
+    public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase
     {
         private readonly ZipArchive _archive;
 
