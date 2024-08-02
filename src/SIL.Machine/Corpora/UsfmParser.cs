@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Scripture;
 
@@ -43,19 +41,8 @@ namespace SIL.Machine.Corpora
                 versification,
                 preserveWhitespace
             );
-            try
-            {
-                parser.ProcessTokens();
-            }
-            catch (Exception ex)
-            {
-                var sb = new StringBuilder();
-                sb.Append(
-                    $"An error occurred while parsing the USFM text in Verse: {parser.State.VerseRef}, line: {parser.State.LineNumber}, "
-                );
-                sb.Append($"column: {parser.State.ColumnNumber}, error: '{ex.Message}'");
-                throw new InvalidOperationException(sb.ToString(), ex);
-            }
+
+            parser.ProcessTokens();
         }
 
         private static readonly Regex OptBreakSplitter = new Regex("(//)", RegexOptions.Compiled);

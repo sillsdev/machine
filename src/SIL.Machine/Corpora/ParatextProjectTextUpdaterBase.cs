@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace SIL.Machine.Corpora
 {
@@ -41,8 +43,20 @@ namespace SIL.Machine.Corpora
                 stripAllText,
                 preferExistingText: preferExistingText
             );
-            UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
-            return handler.GetUsfm(_settings.Stylesheet);
+            try
+            {
+                UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
+                return handler.GetUsfm(_settings.Stylesheet);
+            }
+            catch (Exception ex)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"An error occurred while parsing the usfm for '{bookId}`");
+                if (!string.IsNullOrEmpty(_settings.Name))
+                    sb.Append($" in project '{_settings.Name}'");
+                sb.Append($". Error: '{ex.Message}'");
+                throw new InvalidOperationException(sb.ToString(), ex);
+            }
         }
 
         protected abstract bool Exists(string fileName);
