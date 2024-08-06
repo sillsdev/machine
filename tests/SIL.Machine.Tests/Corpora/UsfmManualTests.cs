@@ -9,7 +9,7 @@ public class UsfmManualTests
 {
     [Test]
     [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
-    public async Task ParseParallelCorpusAsync()
+    public void ParseParallelCorpusAsync()
     {
         ParatextTextCorpus tCorpus =
             new(projectDir: CorporaTestHelpers.UsfmTargetProjectPath, includeAllText: true, includeMarkers: true);
@@ -36,18 +36,20 @@ public class UsfmManualTests
         ParatextProjectSettings targetSettings = new FileParatextProjectSettingsParser(
             CorporaTestHelpers.UsfmTargetProjectPath
         ).Parse();
-
+        var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTargetProjectPath);
         foreach (
-            string sfmFileName in Directory.EnumerateFiles(
-                CorporaTestHelpers.UsfmTargetProjectPath,
-                $"{targetSettings.FileNamePrefix}*{targetSettings.FileNameSuffix}"
-            )
+            string sfmFileName in Directory
+                .EnumerateFiles(
+                    CorporaTestHelpers.UsfmTargetProjectPath,
+                    $"{targetSettings.FileNamePrefix}*{targetSettings.FileNameSuffix}"
+                )
+                .Select(path => new DirectoryInfo(path).Name)
         )
         {
-            var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: false);
-            string usfm = await File.ReadAllTextAsync(sfmFileName);
-            UsfmParser.Parse(usfm, updater, targetSettings.Stylesheet, targetSettings.Versification);
-            string newUsfm = updater.GetUsfm(targetSettings.Stylesheet);
+            string bookId;
+            if (!targetSettings.IsBookFileName(sfmFileName, out bookId))
+                continue;
+            string newUsfm = updater.UpdateUsfm(bookId, pretranslations, stripAllText: true, preferExistingText: false);
             Assert.That(newUsfm, Is.Not.Null);
         }
     }
@@ -105,39 +107,52 @@ public class UsfmManualTests
                     )
                 )
                 .ToArrayAsync();
-            List<string> sfmTexts = [];
+            List<string> bookIds = [];
+            ParatextProjectTextUpdaterBase updater;
             if (projectArchive == null)
             {
-                sfmTexts = (
-                    await Task.WhenAll(
-                        Directory
-                            .EnumerateFiles(projectPath, $"{settings.FileNamePrefix}*{settings.FileNameSuffix}")
-                            .Select(async sfmFileName => await File.ReadAllTextAsync(sfmFileName))
-                    )
+                bookIds = (
+                    Directory
+                        .EnumerateFiles(projectPath, $"{settings.FileNamePrefix}*{settings.FileNameSuffix}")
+                        .Select(path => new DirectoryInfo(path).Name)
+                        .Select(filename =>
+                        {
+                            string bookId;
+                            if (settings.IsBookFileName(filename, out bookId))
+                                return bookId;
+                            else
+                                return "";
+                        })
+                        .Where(id => id != "")
                 ).ToList();
+                updater = new FileParatextProjectTextUpdater(projectPath);
             }
             else
             {
-                sfmTexts = projectArchive
+                bookIds = projectArchive
                     .Entries.Where(e =>
                         e.Name.StartsWith(settings.FileNamePrefix) && e.Name.EndsWith(settings.FileNameSuffix)
                     )
                     .Select(e =>
                     {
-                        string contents;
-                        using (var sr = new StreamReader(e.Open()))
-                        {
-                            contents = sr.ReadToEnd();
-                        }
-                        return contents;
+                        string bookId;
+                        if (settings.IsBookFileName(e.Name, out bookId))
+                            return bookId;
+                        else
+                            return "";
                     })
+                    .Where(id => id != "")
                     .ToList();
+                updater = new ZipParatextProjectTextUpdater(projectArchive);
             }
-            foreach (string usfm in sfmTexts)
+            foreach (string bookId in bookIds)
             {
-                var updater = new UsfmTextUpdater(pretranslations, stripAllText: true, preferExistingText: true);
-                UsfmParser.Parse(usfm, updater, settings.Stylesheet, settings.Versification);
-                string newUsfm = updater.GetUsfm(settings.Stylesheet);
+                string newUsfm = updater.UpdateUsfm(
+                    bookId,
+                    pretranslations,
+                    stripAllText: true,
+                    preferExistingText: true
+                );
                 Assert.That(newUsfm, Is.Not.Null);
             }
         }

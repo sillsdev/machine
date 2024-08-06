@@ -3,7 +3,7 @@
 namespace SIL.Machine.Corpora;
 
 [TestFixture]
-public class UsfmTextUpdaterTests
+public class UpdateUsfmParserHandlerTests
 {
     [Test]
     public void GetUsfm_Verse_CharStyle()
@@ -21,7 +21,7 @@ public class UsfmTextUpdaterTests
     [Test]
     public void GetUsfm_IdText()
     {
-        string target = UpdateUsfm(idText: "- Updated");
+        string target = UpdateUsfm(idText: "Updated");
         Assert.That(target, Contains.Substring("\\id MAT - Updated\r\n"));
     }
 
@@ -443,21 +443,27 @@ public class UsfmTextUpdaterTests
     )
     {
         if (source is null)
-            source = ReadUsfm();
+        {
+            var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTestProjectPath);
+            return updater.UpdateUsfm(
+                "MAT",
+                rows,
+                fullName: idText,
+                stripAllText: stripAllText,
+                preferExistingText: preferExistingText
+            );
+        }
         else
+        {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-        var updater = new UsfmTextUpdater(
-            rows,
-            idText,
-            stripAllText: stripAllText,
-            preferExistingText: preferExistingText
-        );
-        UsfmParser.Parse(source, updater);
-        return updater.GetUsfm();
-    }
-
-    private static string ReadUsfm()
-    {
-        return File.ReadAllText(Path.Combine(CorporaTestHelpers.UsfmTestProjectPath, "41MATTes.SFM"));
+            var updater = new UpdateUsfmParserHandler(
+                rows,
+                idText,
+                stripAllText: stripAllText,
+                preferExistingText: preferExistingText
+            );
+            UsfmParser.Parse(source, updater);
+            return updater.GetUsfm();
+        }
     }
 }

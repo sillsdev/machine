@@ -41,6 +41,7 @@ namespace SIL.Machine.Corpora
                 versification,
                 preserveWhitespace
             );
+
             parser.ProcessTokens();
         }
 
