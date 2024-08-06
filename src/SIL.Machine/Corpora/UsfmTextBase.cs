@@ -46,7 +46,7 @@ namespace SIL.Machine.Corpora
             catch (Exception ex)
             {
                 var sb = new StringBuilder();
-                sb.Append($"An error occurred while tokenizing the text '{Id}`");
+                sb.Append($"An error occurred while tokenizing the text '{Id}'");
                 if (!string.IsNullOrEmpty(Project))
                     sb.Append($" in project '{Project}'");
                 sb.Append($". Error: '{ex.Message}'");
@@ -67,7 +67,7 @@ namespace SIL.Machine.Corpora
             catch (Exception ex)
             {
                 var sb = new StringBuilder();
-                sb.Append($"An error occurred while parsing the text '{Id}`");
+                sb.Append($"An error occurred while parsing the text '{Id}'");
                 if (!string.IsNullOrEmpty(Project))
                     sb.Append($" in project '{Project}'");
                 sb.Append($". Verse: {parser.State.VerseRef}, line: {parser.State.LineNumber}, ");
