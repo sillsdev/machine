@@ -187,6 +187,12 @@ namespace SIL.Machine.Corpora
             CheckConvertVerseParaToNonVerse(state);
         }
 
+        public override void OptBreak(UsfmParserState state)
+        {
+            if (_curTextType.Count == 0)
+                _curTextType.Push(ScriptureTextType.NonVerse);
+        }
+
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
 
         protected virtual void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }

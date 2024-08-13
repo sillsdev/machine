@@ -112,6 +112,27 @@ public class UsfmMemoryTextTests
     }
 
     [Test]
+    public void GetRows_OptBreak()
+    {
+        // a verse paragraph that begins with a non-verse segment followed by a verse segment
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\v 1 First verse in line // More text
+\c 2
+\v 1
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(2), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo(@"First verse in line // More text"));
+        });
+    }
+
+    [Test]
     public void GetRows_VersePara_BeginningNonVerseSegment()
     {
         // a verse paragraph that begins with a non-verse segment followed by a verse segment
@@ -130,6 +151,39 @@ description
         );
 
         Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+    }
+
+    [Test]
+    public void GetRows_OptBreakAtBeginning()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\li //
+",
+            includeAllText: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo(""));
+        });
+    }
+
+    [Test]
+    public void GetRows_OptBreakAtBeginningIncludeMarkers()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\li //
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo("//"));
+        });
     }
 
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
