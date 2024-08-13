@@ -216,20 +216,16 @@ namespace SIL.Machine.Corpora
 
             public override void OptBreak(UsfmParserState state)
             {
+                base.OptBreak(state);
+
                 if (_text._includeMarkers)
                 {
-                    if (_rowTexts.Count > 0)
-                        _rowTexts.Peek().Append("//");
-                    else
-                        _rowTexts.Push(new StringBuilder("//"));
+                    _rowTexts.Peek().Append("//");
                 }
-                else if (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText) //When is this not true?
+                else if (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText)
                 {
-                    if (_rowTexts.Count == 0)
-                        return;
                     _rowTexts.Peek().TrimEnd();
                 }
-                base.OptBreak(state);
             }
 
             public override void Text(UsfmParserState state, string text)

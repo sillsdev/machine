@@ -83,7 +83,7 @@ public class UsfmMemoryTextTests
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+        Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.Select(tr => tr.Text)));
     }
 
     [Test]
@@ -104,7 +104,7 @@ public class UsfmMemoryTextTests
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.Select(tr => tr.Text)));
             Assert.That(rows[0].Text, Is.EqualTo("First verse 1"));
             Assert.That(rows[3].Text, Is.EqualTo("non verse 3"));
             Assert.That(rows[4].Text, Is.EqualTo("Second verse"));
@@ -112,7 +112,7 @@ public class UsfmMemoryTextTests
     }
 
     [Test]
-    public void GetRows_OptBreak()
+    public void GetRows_OptBreak_MiddleIncludeMarkers()
     {
         TextRow[] rows = GetRows(
             @"\id MAT - Test
@@ -126,7 +126,7 @@ public class UsfmMemoryTextTests
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Length.EqualTo(2), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(2), string.Join(",", rows.Select(tr => tr.Text)));
             Assert.That(rows[0].Text, Is.EqualTo(@"First verse in line // More text"));
         });
     }
@@ -148,11 +148,11 @@ description
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+        Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.Select(tr => tr.Text)));
     }
 
     [Test]
-    public void GetRows_OptBreakAtBeginning()
+    public void GetRows_OptBreak_Beginning()
     {
         TextRow[] rows = GetRows(
             @"\id MAT - Test
@@ -162,13 +162,13 @@ description
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.Select(tr => tr.Text)));
             Assert.That(rows[0].Text, Is.EqualTo(""));
         });
     }
 
     [Test]
-    public void GetRows_OptBreakAtBeginningIncludeMarkers()
+    public void GetRows_OptBreak_BeginningIncludeMarkers()
     {
         TextRow[] rows = GetRows(
             @"\id MAT - Test
@@ -179,7 +179,7 @@ description
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.Select(tr => tr.Text)));
             Assert.That(rows[0].Text, Is.EqualTo("//"));
         });
     }

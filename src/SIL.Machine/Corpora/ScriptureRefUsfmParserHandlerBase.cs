@@ -175,6 +175,11 @@ namespace SIL.Machine.Corpora
                 CheckConvertVerseParaToNonVerse(state);
         }
 
+        public override void OptBreak(UsfmParserState state)
+        {
+            CheckConvertVerseParaToNonVerse(state);
+        }
+
         public override void StartChar(
             UsfmParserState state,
             string markerWithoutPlus,
@@ -185,12 +190,6 @@ namespace SIL.Machine.Corpora
             // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
             // segment
             CheckConvertVerseParaToNonVerse(state);
-        }
-
-        public override void OptBreak(UsfmParserState state)
-        {
-            if (_curTextType.Count == 0)
-                _curTextType.Push(ScriptureTextType.NonVerse);
         }
 
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
