@@ -114,7 +114,6 @@ public class UsfmMemoryTextTests
     [Test]
     public void GetRows_OptBreak()
     {
-        // a verse paragraph that begins with a non-verse segment followed by a verse segment
         TextRow[] rows = GetRows(
             @"\id MAT - Test
 \c 1
@@ -135,7 +134,6 @@ public class UsfmMemoryTextTests
     [Test]
     public void GetRows_VersePara_BeginningNonVerseSegment()
     {
-        // a verse paragraph that begins with a non-verse segment followed by a verse segment
         TextRow[] rows = GetRows(
             @"\id MAT - Test
 \c 1
