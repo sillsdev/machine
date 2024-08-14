@@ -175,6 +175,11 @@ namespace SIL.Machine.Corpora
                 CheckConvertVerseParaToNonVerse(state);
         }
 
+        public override void OptBreak(UsfmParserState state)
+        {
+            CheckConvertVerseParaToNonVerse(state);
+        }
+
         public override void StartChar(
             UsfmParserState state,
             string markerWithoutPlus,
