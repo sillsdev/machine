@@ -7,12 +7,21 @@ namespace SIL.Machine.Corpora;
 public class ParatextKeyTermsCorpusTests
 {
     [Test]
-    public void TestGetKeyTerms()
+    public void TestGetKeyTermsFromTermsRenderings()
     {
         using var env = new TestEnvironment();
         IList<TextRow> rows = env.Corpus.GetRows().ToList();
         Assert.That(rows.Count, Is.EqualTo(1));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abba"));
+        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Xerxes"));
+    }
+
+    [Test]
+    public void TestGetKeyTermsFromTermsLocalizations()
+    {
+        using var env = new TestEnvironment(preferTermsLocalization: true);
+        IList<TextRow> rows = env.Corpus.GetRows().ToList();
+        Assert.That(rows.Count, Is.EqualTo(1));
+        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Ahasuerus Xerxes"));
     }
 
     [Test]
@@ -35,19 +44,21 @@ public class ParatextKeyTermsCorpusTests
     [TestCase("Abba|| ", new string[] { "Abba" })]
     [TestCase("Abba||Abbah?", new string[] { "Abba", "Abbah" })]
     [TestCase("Abba (note)", new string[] { "Abba" })]
+    [TestCase("Abba (note)", new string[] { "Abba" })]
+    [TestCase("Ahasuerus, Xerxes; Assuerus", new string[] { "Ahasuerus", "Xerxes", "Assuerus" })]
     public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
     {
-        Assert.That(ParatextBackupTermsCorpus.GetRenderings(glossString), Is.EqualTo(expectedOutput));
+        Assert.That(ParatextBackupTermsCorpus.GetGlosses(glossString), Is.EqualTo(expectedOutput));
     }
 
     private class TestEnvironment : DisposableBase
     {
         private readonly string _backupPath;
 
-        public TestEnvironment()
+        public TestEnvironment(bool preferTermsLocalization = false)
         {
             _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-            Corpus = new ParatextBackupTermsCorpus(_backupPath, new string[] { "PN" });
+            Corpus = new ParatextBackupTermsCorpus(_backupPath, new string[] { "PN" }, "en", preferTermsLocalization);
         }
 
         public ParatextBackupTermsCorpus Corpus { get; }
