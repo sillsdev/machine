@@ -27,6 +27,12 @@
 		<EmbeddedResource Include="Corpora\BiblicalTerms.xml" />
 		<EmbeddedResource Include="Corpora\BiblicalTermsP6NT.xml" />
 		<EmbeddedResource Include="Corpora\BiblicalTermsSILNT.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsEn.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsEs.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsFr.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsId.xml" />
+		<EmbeddedResource Include="Corpora\BiblicalTermsPt.xml" />
+
 	</ItemGroup>
 
 	<ItemGroup>
