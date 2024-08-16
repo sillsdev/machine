@@ -17,7 +17,8 @@ namespace SIL.Machine.Corpora
             string fileNameSuffix,
             string biblicalTermsListType,
             string biblicalTermsProjectName,
-            string biblicalTermsFileName
+            string biblicalTermsFileName,
+            string languageCode
         )
         {
             Name = name;
@@ -31,6 +32,7 @@ namespace SIL.Machine.Corpora
             BiblicalTermsListType = biblicalTermsListType;
             BiblicalTermsProjectName = biblicalTermsProjectName;
             BiblicalTermsFileName = biblicalTermsFileName;
+            LanguageCode = languageCode;
         }
 
         public string Name { get; }
@@ -44,6 +46,8 @@ namespace SIL.Machine.Corpora
         public string BiblicalTermsListType { get; }
         public string BiblicalTermsProjectName { get; }
         public string BiblicalTermsFileName { get; }
+
+        public string LanguageCode { get; }
 
         public bool IsBookFileName(string fileName, out string bookId)
         {

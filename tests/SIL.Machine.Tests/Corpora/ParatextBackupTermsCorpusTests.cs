@@ -58,7 +58,7 @@ public class ParatextKeyTermsCorpusTests
         public TestEnvironment(bool preferTermsLocalization = false)
         {
             _backupPath = CorporaTestHelpers.CreateTestParatextBackup();
-            Corpus = new ParatextBackupTermsCorpus(_backupPath, new string[] { "PN" }, "en", preferTermsLocalization);
+            Corpus = new ParatextBackupTermsCorpus(_backupPath, new string[] { "PN" }, preferTermsLocalization);
         }
 
         public ParatextBackupTermsCorpus Corpus { get; }
