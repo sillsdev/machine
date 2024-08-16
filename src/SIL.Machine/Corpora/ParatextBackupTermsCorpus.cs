@@ -32,48 +32,17 @@ namespace SIL.Machine.Corpora
             { "pt", "SIL.Machine.Corpora.BiblicalTermsPt.xml" }
         };
 
+        private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
+        private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
+
         public ParatextBackupTermsCorpus(
             string fileName,
             IEnumerable<string> termCategories,
-            string languageCode = null,
             bool preferTermsLocalization = false
         )
         {
             using (var archive = ZipFile.OpenRead(fileName))
             {
-                ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
-                XDocument doc;
-                bool useTermsRenderingXml = !preferTermsLocalization && termsFileEntry != null;
-
-                if (!SupportedLanguageTermsLocalizationXmls.TryGetValue(languageCode, out string resourceName))
-                {
-                    if (termsFileEntry != null)
-                    {
-                        useTermsRenderingXml = true;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-
-                if (useTermsRenderingXml)
-                {
-                    using (Stream keyTermsFile = termsFileEntry.Open())
-                    {
-                        doc = XDocument.Load(keyTermsFile);
-                    }
-                }
-                else
-                {
-                    using (
-                        Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
-                    )
-                    {
-                        doc = XDocument.Load(keyTermsFile);
-                    }
-                }
-
                 var settingsParser = new ZipParatextProjectSettingsParser(archive);
                 ParatextProjectSettings settings = settingsParser.Parse();
 
@@ -121,6 +90,40 @@ namespace SIL.Machine.Corpora
                 {
                     termIdToCategoryDictionary = new Dictionary<string, string>();
                 }
+                ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
+                XDocument doc;
+                bool useTermsRenderingXml =
+                    (!preferTermsLocalization || settings.BiblicalTermsListType != "Major") && termsFileEntry != null;
+
+                if (!SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName))
+                {
+                    if (termsFileEntry != null)
+                    {
+                        useTermsRenderingXml = true;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+
+                if (useTermsRenderingXml)
+                {
+                    using (Stream keyTermsFile = termsFileEntry.Open())
+                    {
+                        doc = XDocument.Load(keyTermsFile);
+                    }
+                }
+                else
+                {
+                    using (
+                        Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
+                    )
+                    {
+                        doc = XDocument.Load(keyTermsFile);
+                    }
+                }
+
                 AddTexts(doc, settings, termCategories, termIdToCategoryDictionary);
             }
         }
@@ -168,19 +171,17 @@ namespace SIL.Machine.Corpora
         public static IReadOnlyList<string> GetGlosses(string gloss)
         {
             //If entire term rendering is surrounded in square brackets, remove them
-            Regex rx = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
-            Match rx_match = rx.Match(gloss);
-            if (rx_match.Success)
-                gloss = rx_match.Groups[0].Value;
+            Match match = ContentInBracketsRegex.Match(gloss);
+            if (match.Success)
+                gloss = match.Groups[0].Value;
             gloss = gloss.Replace("?", "");
             gloss = gloss.Replace("*", "");
             gloss = gloss.Replace("/", " ");
             gloss = gloss.Trim();
             gloss = StripParens(gloss);
             gloss = StripParens(gloss, left: '[', right: ']');
-            // gloss = gloss.Trim();
-            Regex rx2 = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
-            foreach (Match m in rx2.Matches(gloss))
+            gloss = gloss.Trim();
+            foreach (Match m in NumericalInformationRegex.Matches(gloss))
             {
                 gloss.Replace(m.Value, "");
             }
