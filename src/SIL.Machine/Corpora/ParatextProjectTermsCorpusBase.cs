@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -10,7 +8,7 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
-    public class ParatextBackupTermsCorpus : DictionaryTextCorpus
+    public abstract class ParatextProjectTermsCorpusBase : DictionaryTextCorpus
     {
         private static readonly List<string> PredefinedTermsListTypes = new List<string>()
         {
@@ -19,6 +17,7 @@ namespace SIL.Machine.Corpora
             "SilNt",
             "Pt6"
         };
+        private readonly ParatextProjectSettings _settings;
 
         private static readonly Dictionary<string, string> SupportedLanguageTermsLocalizationXmls = new Dictionary<
             string,
@@ -35,52 +34,20 @@ namespace SIL.Machine.Corpora
         private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
-        public ParatextBackupTermsCorpus(
-            string fileName,
-            IEnumerable<string> termCategories,
-            bool preferTermsLocalization = false
-        )
+        public ParatextProjectTermsCorpusBase(ParatextProjectSettings settings)
         {
-            using (var archive = ZipFile.OpenRead(fileName))
+            _settings = settings;
+        }
+
+        protected void AddTexts(IEnumerable<string> termCategories, bool preferTermsLocalization = false)
+        {
+            XDocument biblicalTermsDoc;
+            IDictionary<string, string> termIdToCategoryDictionary;
+            if (_settings.BiblicalTermsListType == "Project")
             {
-                var settingsParser = new ZipParatextProjectSettingsParser(archive);
-                ParatextProjectSettings settings = settingsParser.Parse();
-
-                //Align TermRenderings and BiblicalTerms
-                ZipArchiveEntry biblicalTermsFileEntry = archive.GetEntry(settings.BiblicalTermsFileName);
-
-                XDocument biblicalTermsDoc;
-                IDictionary<string, string> termIdToCategoryDictionary;
-                if (settings.BiblicalTermsListType == "Project")
+                if (Exists(_settings.BiblicalTermsFileName))
                 {
-                    if (biblicalTermsFileEntry != null)
-                    {
-                        using (Stream keyTermsFile = biblicalTermsFileEntry.Open())
-                        {
-                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                            termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                        }
-                    }
-                    else
-                    {
-                        using (
-                            Stream keyTermsFile = Assembly
-                                .GetExecutingAssembly()
-                                .GetManifestResourceStream("SIL.Machine.Corpora.BiblicalTerms.xml")
-                        )
-                        {
-                            biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                            termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                        }
-                    }
-                }
-                else if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
-                {
-                    using (
-                        Stream keyTermsFile = Assembly
-                            .GetExecutingAssembly()
-                            .GetManifestResourceStream("SIL.Machine.Corpora." + settings.BiblicalTermsFileName)
-                    )
+                    using (Stream keyTermsFile = Open(_settings.BiblicalTermsFileName))
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -88,47 +55,69 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    termIdToCategoryDictionary = new Dictionary<string, string>();
-                }
-                ZipArchiveEntry termsFileEntry = archive.GetEntry("TermRenderings.xml");
-                XDocument doc;
-                bool useTermsRenderingXml =
-                    (!preferTermsLocalization || settings.BiblicalTermsListType != "Major") && termsFileEntry != null;
-
-                if (!SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName))
-                {
-                    if (termsFileEntry != null)
+                    using (
+                        Stream keyTermsFile = Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("SIL.Machine.Corpora.BiblicalTerms.xml")
+                    )
                     {
-                        useTermsRenderingXml = true;
-                    }
-                    else
-                    {
-                        return;
+                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
                     }
                 }
-
-                if (useTermsRenderingXml)
+            }
+            else if (PredefinedTermsListTypes.Contains(_settings.BiblicalTermsListType))
+            {
+                using (
+                    Stream keyTermsFile = Assembly
+                        .GetExecutingAssembly()
+                        .GetManifestResourceStream("SIL.Machine.Corpora." + _settings.BiblicalTermsFileName)
+                )
                 {
-                    using (Stream keyTermsFile = termsFileEntry.Open())
-                    {
-                        doc = XDocument.Load(keyTermsFile);
-                    }
+                    biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                    termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                }
+            }
+            else
+            {
+                termIdToCategoryDictionary = new Dictionary<string, string>();
+            }
+            XDocument doc;
+            bool useTermsRenderingXml =
+                (!preferTermsLocalization || _settings.BiblicalTermsListType != "Major")
+                && Exists("TermRenderings.xml");
+
+            if (!SupportedLanguageTermsLocalizationXmls.TryGetValue(_settings.LanguageCode, out string resourceName))
+            {
+                if (Exists("TermRenderings.xml"))
+                {
+                    useTermsRenderingXml = true;
                 }
                 else
                 {
-                    using (
-                        Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
-                    )
-                    {
-                        doc = XDocument.Load(keyTermsFile);
-                    }
+                    return;
                 }
-
-                AddTexts(doc, settings, termCategories, termIdToCategoryDictionary);
             }
+
+            if (useTermsRenderingXml)
+            {
+                using (Stream keyTermsFile = Open("TermRenderings.xml"))
+                {
+                    doc = XDocument.Load(keyTermsFile);
+                }
+            }
+            else
+            {
+                using (Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+                {
+                    doc = XDocument.Load(keyTermsFile);
+                }
+            }
+
+            AddTexts(doc, _settings, termCategories, termIdToCategoryDictionary);
         }
 
-        public void AddTexts(
+        private void AddTexts(
             XDocument doc,
             ParatextProjectSettings settings,
             IEnumerable<string> termCategories,
@@ -235,5 +224,9 @@ namespace SIL.Machine.Corpora
                 .DistinctBy(e => e.Attribute("Id").Value)
                 .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
         }
+
+        protected abstract Stream Open(string fileName);
+
+        protected abstract bool Exists(string fileName);
     }
 }
