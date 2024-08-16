@@ -92,9 +92,25 @@ namespace SIL.Machine.Corpora
             {
                 throw new InvalidOperationException(
                     $"The BiblicalTermsListSetting element in Settings.xml in project {fullName}"
-                        + $" is not in the expected format (i.e., Major::BiblicalTerms.xml) but is {biblicalTermsListSetting}."
+                        + $" is not in the expected format (e.g., Major::BiblicalTerms.xml) but is {biblicalTermsListSetting}."
                 );
             }
+            string languageIsoCodeSetting = settingsDoc.Root.Element("LanguageIsoCode")?.Value;
+            if (languageIsoCodeSetting == null)
+            {
+                throw new InvalidOperationException(
+                    $"The LanguageIsoCode element in Settings.xml in project {fullName} does not exist."
+                );
+            }
+            string[] languageIsoCodeSettingParts = settingsDoc.Root.Element("LanguageIsoCode").Value.Split(':');
+            if (languageIsoCodeSettingParts.Length != 4)
+            {
+                throw new InvalidOperationException(
+                    $"The LanguageIsoCode element in Settings.xml in project {fullName}"
+                        + $" is not in the expected format (e.g., en:::) but is {languageIsoCodeSetting}."
+                );
+            }
+            string languageCode = languageIsoCodeSettingParts[0];
 
             return new ParatextProjectSettings(
                 name,
@@ -107,7 +123,8 @@ namespace SIL.Machine.Corpora
                 suffix,
                 parts[0],
                 parts[1],
-                parts[2]
+                parts[2],
+                languageCode
             );
         }
 

@@ -184,7 +184,8 @@ public class ParatextProjectSettingsTests
             ".SFM",
             "Major",
             "",
-            "BiblicalTerms.xml"
+            "BiblicalTerms.xml",
+            "en"
         );
     }
 }
