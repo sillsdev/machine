@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,7 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextProjectTermsCorpusBase : DictionaryTextCorpus
+    public abstract class ParatextTermsCorpusBase : DictionaryTextCorpus
     {
         private static readonly List<string> PredefinedTermsListTypes = new List<string>()
         {
@@ -17,7 +18,6 @@ namespace SIL.Machine.Corpora
             "SilNt",
             "Pt6"
         };
-        private readonly ParatextProjectSettings _settings;
 
         private static readonly Dictionary<string, string> SupportedLanguageTermsLocalizationXmls = new Dictionary<
             string,
@@ -34,20 +34,19 @@ namespace SIL.Machine.Corpora
         private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
-        public ParatextProjectTermsCorpusBase(ParatextProjectSettings settings)
-        {
-            _settings = settings;
-        }
-
-        protected void AddTexts(IEnumerable<string> termCategories, bool preferTermsLocalization = false)
+        protected void AddTexts(
+            ParatextProjectSettings settings,
+            IEnumerable<string> termCategories,
+            bool useTermGlosses = true
+        )
         {
             XDocument biblicalTermsDoc;
             IDictionary<string, string> termIdToCategoryDictionary;
-            if (_settings.BiblicalTermsListType == "Project")
+            if (settings.BiblicalTermsListType == "Project")
             {
-                if (Exists(_settings.BiblicalTermsFileName))
+                if (Exists(settings.BiblicalTermsFileName))
                 {
-                    using (Stream keyTermsFile = Open(_settings.BiblicalTermsFileName))
+                    using (Stream keyTermsFile = Open(settings.BiblicalTermsFileName))
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -66,12 +65,12 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
-            else if (PredefinedTermsListTypes.Contains(_settings.BiblicalTermsListType))
+            else if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
             {
                 using (
                     Stream keyTermsFile = Assembly
                         .GetExecutingAssembly()
-                        .GetManifestResourceStream("SIL.Machine.Corpora." + _settings.BiblicalTermsFileName)
+                        .GetManifestResourceStream("SIL.Machine.Corpora." + settings.BiblicalTermsFileName)
                 )
                 {
                     biblicalTermsDoc = XDocument.Load(keyTermsFile);
@@ -82,78 +81,97 @@ namespace SIL.Machine.Corpora
             {
                 termIdToCategoryDictionary = new Dictionary<string, string>();
             }
-            XDocument doc;
-            bool useTermsRenderingXml =
-                (!preferTermsLocalization || _settings.BiblicalTermsListType != "Major")
-                && Exists("TermRenderings.xml");
 
-            if (!SupportedLanguageTermsLocalizationXmls.TryGetValue(_settings.LanguageCode, out string resourceName))
-            {
-                if (Exists("TermRenderings.xml"))
-                {
-                    useTermsRenderingXml = true;
-                }
-                else
-                {
-                    return;
-                }
-            }
-
-            if (useTermsRenderingXml)
-            {
-                using (Stream keyTermsFile = Open("TermRenderings.xml"))
-                {
-                    doc = XDocument.Load(keyTermsFile);
-                }
-            }
-            else
+            XDocument termsGlossesDoc = null;
+            if (
+                settings.LanguageCode != null
+                && settings.BiblicalTermsListType == "Major"
+                && !SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName)
+            )
             {
                 using (Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {
-                    doc = XDocument.Load(keyTermsFile);
+                    termsGlossesDoc = XDocument.Load(keyTermsFile);
                 }
             }
 
-            AddTexts(doc, _settings, termCategories, termIdToCategoryDictionary);
+            XDocument termRenderingsDoc = null;
+            if (Exists("TermRenderings.xml"))
+            {
+                using (Stream keyTermsFile = Open("TermRenderings.xml"))
+                {
+                    termRenderingsDoc = XDocument.Load(keyTermsFile);
+                }
+            }
+
+            IDictionary<string, IReadOnlyList<string>> termsRenderings =
+                new Dictionary<string, IReadOnlyList<string>>();
+            if (termRenderingsDoc != null)
+            {
+                termsRenderings = termRenderingsDoc
+                    .Descendants()
+                    .Where(n => n.Name.LocalName == "TermRendering")
+                    .Select(ele => (ele.Attribute("Id").Value, ele))
+                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Select(kvp =>
+                    {
+                        string id = kvp.Item1.Replace("\n", "&#xA");
+                        string gloss = kvp.Item2.Element("Renderings").Value;
+                        IReadOnlyList<string> glosses = GetGlosses(gloss);
+                        return (id, glosses);
+                    })
+                    .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
+            }
+
+            IDictionary<string, IReadOnlyList<string>> termsGlosses = new Dictionary<string, IReadOnlyList<string>>();
+            if (termsGlossesDoc != null && useTermGlosses)
+            {
+                termsGlosses = termsGlossesDoc
+                    .Descendants()
+                    .Where(n => n.Name.LocalName == "Localization")
+                    .Select(ele => (ele.Attribute("Id").Value, ele))
+                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Select(kvp =>
+                    {
+                        string id = kvp.Item1.Replace("\n", "&#xA");
+                        string gloss = kvp.Item2.Element("Gloss").Value;
+                        IReadOnlyList<string> glosses = GetGlosses(gloss);
+                        return (id, glosses);
+                    })
+                    .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
+            }
+            if (termsGlosses.Count > 0 || termsRenderings.Count > 0)
+                AddTerms(termsRenderings, termsGlosses, settings);
         }
 
-        private void AddTexts(
-            XDocument doc,
-            ParatextProjectSettings settings,
+        private static bool IsInCategory(
+            string id,
             IEnumerable<string> termCategories,
             IDictionary<string, string> termIdToCategoryDictionary
         )
         {
-            IEnumerable<XElement> termsElements = doc.Descendants().Where(n => n.Name.LocalName == "TermRendering");
-            bool isTermRenderingsFile = true;
-            if (termsElements.Count() == 0)
-            {
-                termsElements = doc.Descendants().Where(n => n.Name.LocalName == "Localization");
-                isTermRenderingsFile = false;
-            }
+            string category;
+            return (termCategories.Count() == 0)
+                || (termIdToCategoryDictionary.TryGetValue(id, out category) && termCategories.Contains(category));
+        }
 
+        private void AddTerms(
+            IDictionary<string, IReadOnlyList<string>> termsRenderings,
+            IDictionary<string, IReadOnlyList<string>> termsGlosses,
+            ParatextProjectSettings settings
+        )
+        {
             string textId =
                 $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
-            List<TextRow> rows = new List<TextRow>();
-            foreach (XElement element in termsElements)
-            {
-                string id = element.Attribute("Id").Value;
-                string category = "";
-                if (
-                    (termCategories.Count() > 0 && !termIdToCategoryDictionary.TryGetValue(id, out category))
-                    || (termCategories.Count() > 0 && !termCategories.Contains(category))
-                )
-                {
-                    continue;
-                }
-                id = id.Replace("\n", "&#xA");
-                string gloss = isTermRenderingsFile
-                    ? element.Element("Renderings").Value
-                    : element.Attribute("Gloss").Value;
-                IReadOnlyList<string> glosses = GetGlosses(gloss);
-                rows.Add(new TextRow(textId, id) { Segment = glosses });
-            }
-            IText text = new MemoryText(textId, rows);
+
+            //Prefer renderings to gloss localizations
+            IDictionary<string, IReadOnlyList<string>> glosses = termsRenderings
+                .Concat(termsGlosses.Where(kvp => !termsGlosses.ContainsKey(kvp.Key)))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            IText text = new MemoryText(
+                textId,
+                glosses.Select(kvp => new TextRow(textId, kvp.Key) { Segment = kvp.Value })
+            );
             AddText(text);
         }
 

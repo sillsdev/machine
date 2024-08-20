@@ -4,19 +4,18 @@ using System.IO.Compression;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextProjectTermsCorpus : ParatextProjectTermsCorpusBase
+    public class ParatextBackupTermsCorpus : ParatextTermsCorpusBase
     {
         private readonly ZipArchive _archive;
 
-        public ZipParatextProjectTermsCorpus(
+        public ParatextBackupTermsCorpus(
             ZipArchive archive,
             IEnumerable<string> termCategories,
             bool preferTermsLocalization = false
         )
-            : base(new ZipParatextProjectSettingsParser(archive).Parse())
         {
             _archive = archive;
-            AddTexts(termCategories, preferTermsLocalization);
+            AddTexts(new ZipParatextProjectSettingsParser(archive).Parse(), termCategories, preferTermsLocalization);
         }
 
         protected override bool Exists(string fileName)
