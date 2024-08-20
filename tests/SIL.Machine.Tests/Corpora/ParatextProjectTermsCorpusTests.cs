@@ -128,7 +128,7 @@ public class ParatextProjectTermsCorpusTests
     public void TestStripParens(string testString, string expectedOutput, char left = '(', char right = ')')
     {
         Assert.That(
-            ParatextProjectTermsCorpusBase.StripParens(testString, left: left, right: right),
+            ParatextTermsCorpusBase.StripParens(testString, left: left, right: right),
             Is.EqualTo(expectedOutput)
         );
     }
@@ -143,7 +143,7 @@ public class ParatextProjectTermsCorpusTests
     [TestCase("Ahasuerus, Xerxes; Assuerus", new string[] { "Ahasuerus", "Xerxes", "Assuerus" })]
     public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
     {
-        Assert.That(ParatextProjectTermsCorpusBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
+        Assert.That(ParatextTermsCorpusBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
     }
 
     private class TestEnvironment(
