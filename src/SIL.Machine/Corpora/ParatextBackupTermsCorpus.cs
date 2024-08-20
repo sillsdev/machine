@@ -11,11 +11,11 @@ namespace SIL.Machine.Corpora
         public ParatextBackupTermsCorpus(
             ZipArchive archive,
             IEnumerable<string> termCategories,
-            bool preferTermsLocalization = false
+            bool useTermGlosses = true
         )
         {
             _archive = archive;
-            AddTexts(new ZipParatextProjectSettingsParser(archive).Parse(), termCategories, preferTermsLocalization);
+            AddTexts(new ZipParatextProjectSettingsParser(archive).Parse(), termCategories, useTermGlosses);
         }
 
         protected override bool Exists(string fileName)
