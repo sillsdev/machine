@@ -86,7 +86,7 @@ namespace SIL.Machine.Corpora
             if (
                 settings.LanguageCode != null
                 && settings.BiblicalTermsListType == "Major"
-                && !SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName)
+                && SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName)
             )
             {
                 using (Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
@@ -104,8 +104,7 @@ namespace SIL.Machine.Corpora
                 }
             }
 
-            IDictionary<string, IReadOnlyList<string>> termsRenderings =
-                new Dictionary<string, IReadOnlyList<string>>();
+            IDictionary<string, IEnumerable<string>> termsRenderings = new Dictionary<string, IEnumerable<string>>();
             if (termRenderingsDoc != null)
             {
                 termsRenderings = termRenderingsDoc
@@ -120,10 +119,12 @@ namespace SIL.Machine.Corpora
                         IReadOnlyList<string> glosses = GetGlosses(gloss);
                         return (id, glosses);
                     })
+                    .GroupBy(kvp => kvp.Item1, kvp => kvp.Item2) //Handle duplicate term ids (which do exist) e.g. שִׁלֵּמִי
+                    .Select(grouping => (grouping.Key, grouping.SelectMany(g => g)))
                     .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
             }
 
-            IDictionary<string, IReadOnlyList<string>> termsGlosses = new Dictionary<string, IReadOnlyList<string>>();
+            IDictionary<string, IEnumerable<string>> termsGlosses = new Dictionary<string, IEnumerable<string>>();
             if (termsGlossesDoc != null && useTermGlosses)
             {
                 termsGlosses = termsGlossesDoc
@@ -134,10 +135,12 @@ namespace SIL.Machine.Corpora
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
-                        string gloss = kvp.Item2.Element("Gloss").Value;
+                        string gloss = kvp.Item2.Attribute("Gloss").Value;
                         IReadOnlyList<string> glosses = GetGlosses(gloss);
                         return (id, glosses);
                     })
+                    .GroupBy(kvp => kvp.Item1, kvp => kvp.Item2)
+                    .Select(grouping => (grouping.Key, grouping.SelectMany(g => g)))
                     .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
             }
             if (termsGlosses.Count > 0 || termsRenderings.Count > 0)
@@ -156,8 +159,8 @@ namespace SIL.Machine.Corpora
         }
 
         private void AddTerms(
-            IDictionary<string, IReadOnlyList<string>> termsRenderings,
-            IDictionary<string, IReadOnlyList<string>> termsGlosses,
+            IDictionary<string, IEnumerable<string>> termsRenderings,
+            IDictionary<string, IEnumerable<string>> termsGlosses,
             ParatextProjectSettings settings
         )
         {
@@ -165,12 +168,12 @@ namespace SIL.Machine.Corpora
                 $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
 
             //Prefer renderings to gloss localizations
-            IDictionary<string, IReadOnlyList<string>> glosses = termsRenderings
-                .Concat(termsGlosses.Where(kvp => !termsGlosses.ContainsKey(kvp.Key)))
+            IDictionary<string, IEnumerable<string>> glosses = termsRenderings
+                .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             IText text = new MemoryText(
                 textId,
-                glosses.Select(kvp => new TextRow(textId, kvp.Key) { Segment = kvp.Value })
+                glosses.Select(kvp => new TextRow(textId, kvp.Key) { Segment = kvp.Value.ToList() })
             );
             AddText(text);
         }

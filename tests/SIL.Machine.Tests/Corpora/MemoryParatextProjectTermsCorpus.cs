@@ -10,11 +10,11 @@ public class MemoryParatextProjectTermsCorpus : ParatextTermsCorpusBase
         ParatextProjectSettings settings,
         IEnumerable<string> termCategories,
         Dictionary<string, string> files,
-        bool preferTermsLocalization = false
+        bool useTermGlosses = true
     )
     {
         Files = files;
-        AddTexts(settings, termCategories, preferTermsLocalization);
+        AddTexts(settings, termCategories, useTermGlosses);
     }
 
     protected override bool Exists(string fileName)

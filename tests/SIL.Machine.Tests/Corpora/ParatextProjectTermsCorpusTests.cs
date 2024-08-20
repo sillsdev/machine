@@ -50,11 +50,26 @@ public class ParatextProjectTermsCorpusTests
             new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
-            )
+            ),
+            useTermGlosses: true
         );
         IList<TextRow> rows = env.Corpus.GetRows().ToList();
         Assert.That(rows.Count, Is.EqualTo(5726));
         Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abagtha"));
+    }
+
+    [Test]
+    public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings_DoNotUseTermGlosses()
+    {
+        var env = new TestEnvironment(
+            new DefaultParatextProjectSettings(
+                biblicalTermsListType: "Major",
+                biblicalTermsFileName: "BiblicalTerms.xml"
+            ),
+            useTermGlosses: false
+        );
+        IList<TextRow> rows = env.Corpus.GetRows().ToList();
+        Assert.That(rows.Count, Is.EqualTo(0));
     }
 
     [Test]
@@ -65,7 +80,7 @@ public class ParatextProjectTermsCorpusTests
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
-            preferTermsLocalization: true
+            useTermGlosses: true
         );
         IList<TextRow> rows = env.Corpus.GetRows().ToList();
         Assert.That(rows.Count, Is.EqualTo(5726));
@@ -81,10 +96,10 @@ public class ParatextProjectTermsCorpusTests
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "fr"
             ),
-            preferTermsLocalization: true
+            useTermGlosses: true
         );
         IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(5716));
+        Assert.That(rows.Count, Is.EqualTo(5715));
         Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Aaron"));
     }
 
@@ -112,11 +127,12 @@ public class ParatextProjectTermsCorpusTests
 </TermRenderingsList>"
                 }
             },
-            preferTermsLocalization: true
+            useTermGlosses: true
         );
         IList<TextRow> rows = env.Corpus.GetRows().ToList();
         Assert.That(rows.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abagtha"));
+        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Xerxes"));
+        Assert.That(string.Join(" ", rows[2].Segment), Is.EqualTo("Abi"));
     }
 
     [Test]
@@ -149,7 +165,7 @@ public class ParatextProjectTermsCorpusTests
     private class TestEnvironment(
         ParatextProjectSettings? settings = null,
         Dictionary<string, string>? files = null,
-        bool preferTermsLocalization = false
+        bool useTermGlosses = true
     )
     {
         public MemoryParatextProjectTermsCorpus Corpus { get; } =
@@ -157,7 +173,7 @@ public class ParatextProjectTermsCorpusTests
                 settings ?? new DefaultParatextProjectSettings(),
                 new string[] { "PN" },
                 files ?? new(),
-                preferTermsLocalization
+                useTermGlosses
             );
     }
 
