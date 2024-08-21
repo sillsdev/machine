@@ -5,7 +5,7 @@ using SIL.Scripture;
 namespace SIL.Machine.Corpora;
 
 [TestFixture]
-public class ParatextProjectTermsCorpusTests
+public class ParatextTermsCorpusTests
 {
     [Test]
     public void TestGetKeyTermsFromTermsRenderings()
@@ -144,7 +144,7 @@ public class ParatextProjectTermsCorpusTests
     public void TestStripParens(string testString, string expectedOutput, char left = '(', char right = ')')
     {
         Assert.That(
-            ParatextTermsCorpusBase.StripParens(testString, left: left, right: right),
+            ParatextTermsParserBase.StripParens(testString, left: left, right: right),
             Is.EqualTo(expectedOutput)
         );
     }
@@ -159,7 +159,7 @@ public class ParatextProjectTermsCorpusTests
     [TestCase("Ahasuerus, Xerxes; Assuerus", new string[] { "Ahasuerus", "Xerxes", "Assuerus" })]
     public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
     {
-        Assert.That(ParatextTermsCorpusBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
+        Assert.That(ParatextTermsParserBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
     }
 
     private class TestEnvironment(
@@ -168,11 +168,11 @@ public class ParatextProjectTermsCorpusTests
         bool useTermGlosses = true
     )
     {
-        public MemoryParatextProjectTermsCorpus Corpus { get; } =
-            new MemoryParatextProjectTermsCorpus(
+        public ParatextProjectTermsCorpus Corpus { get; } =
+            new ParatextProjectTermsCorpus(
+                files ?? new(),
                 settings ?? new DefaultParatextProjectSettings(),
                 new string[] { "PN" },
-                files ?? new(),
                 useTermGlosses
             );
     }

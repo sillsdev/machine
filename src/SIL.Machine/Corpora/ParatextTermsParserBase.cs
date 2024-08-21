@@ -9,7 +9,7 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextTermsCorpusBase : DictionaryTextCorpus
+    public abstract class ParatextTermsParserBase
     {
         private static readonly List<string> PredefinedTermsListTypes = new List<string>()
         {
@@ -34,7 +34,7 @@ namespace SIL.Machine.Corpora
         private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
-        protected void AddTexts(
+        public IEnumerable<(string, IEnumerable<string>)> Parse(
             ParatextProjectSettings settings,
             IEnumerable<string> termCategories,
             bool useTermGlosses = true
@@ -144,7 +144,12 @@ namespace SIL.Machine.Corpora
                     .ToDictionary(kvp => kvp.Item1, kvp => kvp.Item2);
             }
             if (termsGlosses.Count > 0 || termsRenderings.Count > 0)
-                AddTerms(termsRenderings, termsGlosses, settings);
+            {
+                return termsRenderings
+                    .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
+                    .Select(kvp => (kvp.Key, kvp.Value));
+            }
+            return new List<(string, IEnumerable<string>)>();
         }
 
         private static bool IsInCategory(
@@ -156,26 +161,6 @@ namespace SIL.Machine.Corpora
             string category;
             return (termCategories.Count() == 0)
                 || (termIdToCategoryDictionary.TryGetValue(id, out category) && termCategories.Contains(category));
-        }
-
-        private void AddTerms(
-            IDictionary<string, IEnumerable<string>> termsRenderings,
-            IDictionary<string, IEnumerable<string>> termsGlosses,
-            ParatextProjectSettings settings
-        )
-        {
-            string textId =
-                $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
-
-            //Prefer renderings to gloss localizations
-            IDictionary<string, IEnumerable<string>> glosses = termsRenderings
-                .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            IText text = new MemoryText(
-                textId,
-                glosses.Select(kvp => new TextRow(textId, kvp.Key) { Segment = kvp.Value.ToList() })
-            );
-            AddText(text);
         }
 
         public static IReadOnlyList<string> GetGlosses(string gloss)
