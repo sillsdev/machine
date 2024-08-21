@@ -3,11 +3,12 @@ using System.IO.Compression;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextTermsParser : ParatextTermsParserBase
+    public class ZipParatextProjectTermsParser : ParatextProjectTermsParserBase
     {
         private readonly ZipArchive _archive;
 
-        public ZipParatextTermsParser(ZipArchive archive)
+        public ZipParatextProjectTermsParser(ZipArchive archive, ParatextProjectSettings settings = null)
+            : base(settings ?? new ZipParatextProjectSettingsParser(archive).Parse())
         {
             _archive = archive;
         }

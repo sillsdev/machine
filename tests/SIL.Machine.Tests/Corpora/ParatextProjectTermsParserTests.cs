@@ -5,7 +5,7 @@ using SIL.Scripture;
 namespace SIL.Machine.Corpora;
 
 [TestFixture]
-public class ParatextTermsCorpusTests
+public class ParatextProjectTermsParserTests
 {
     [Test]
     public void TestGetKeyTermsFromTermsRenderings()
@@ -38,9 +38,9 @@ public class ParatextTermsCorpusTests
                 }
             }
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(1));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Xerxes"));
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(1));
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Xerxes"));
     }
 
     [Test]
@@ -53,9 +53,9 @@ public class ParatextTermsCorpusTests
             ),
             useTermGlosses: true
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abagtha"));
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(5726));
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Abagtha"));
     }
 
     [Test]
@@ -68,8 +68,8 @@ public class ParatextTermsCorpusTests
             ),
             useTermGlosses: false
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(0));
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(0));
     }
 
     [Test]
@@ -82,9 +82,9 @@ public class ParatextTermsCorpusTests
             ),
             useTermGlosses: true
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Abagtha"));
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(5726));
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Abagtha"));
     }
 
     [Test]
@@ -98,9 +98,9 @@ public class ParatextTermsCorpusTests
             ),
             useTermGlosses: true
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(5715));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Aaron"));
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(5715));
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Aaron"));
     }
 
     [Test]
@@ -129,10 +129,10 @@ public class ParatextTermsCorpusTests
             },
             useTermGlosses: true
         );
-        IList<TextRow> rows = env.Corpus.GetRows().ToList();
-        Assert.That(rows.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", rows.First().Segment), Is.EqualTo("Xerxes"));
-        Assert.That(string.Join(" ", rows[2].Segment), Is.EqualTo("Abi"));
+        IReadOnlyList<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses().ToList();
+        Assert.That(terms.Count, Is.EqualTo(5726));
+        Assert.That(string.Join(" ", terms[1].Glosses), Is.EqualTo("Abagtha"));
+        Assert.That(string.Join(" ", terms[2].Glosses), Is.EqualTo("Abi"));
     }
 
     [Test]
@@ -144,7 +144,7 @@ public class ParatextTermsCorpusTests
     public void TestStripParens(string testString, string expectedOutput, char left = '(', char right = ')')
     {
         Assert.That(
-            ParatextTermsParserBase.StripParens(testString, left: left, right: right),
+            ParatextProjectTermsParserBase.StripParens(testString, left: left, right: right),
             Is.EqualTo(expectedOutput)
         );
     }
@@ -159,7 +159,7 @@ public class ParatextTermsCorpusTests
     [TestCase("Ahasuerus, Xerxes; Assuerus", new string[] { "Ahasuerus", "Xerxes", "Assuerus" })]
     public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
     {
-        Assert.That(ParatextTermsParserBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
+        Assert.That(ParatextProjectTermsParserBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
     }
 
     private class TestEnvironment(
@@ -168,13 +168,14 @@ public class ParatextTermsCorpusTests
         bool useTermGlosses = true
     )
     {
-        public ParatextProjectTermsCorpus Corpus { get; } =
-            new ParatextProjectTermsCorpus(
-                files ?? new(),
-                settings ?? new DefaultParatextProjectSettings(),
-                new string[] { "PN" },
-                useTermGlosses
-            );
+        private readonly bool _useTermGlosses = useTermGlosses;
+        public ParatextProjectTermsParserBase Parser { get; } =
+            new MemoryParatextProjectTermsParser(settings ?? new DefaultParatextProjectSettings(), files ?? new());
+
+        public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> GetGlosses()
+        {
+            return Parser.Parse(new string[] { "PN" }, _useTermGlosses);
+        }
     }
 
     private class DefaultParatextProjectSettings(

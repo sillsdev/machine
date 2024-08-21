@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,7 +10,7 @@ using SIL.Extensions;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextTermsParserBase
+    public abstract class ParatextProjectTermsParserBase
     {
         private static readonly List<string> PredefinedTermsListTypes = new List<string>()
         {
@@ -34,19 +35,30 @@ namespace SIL.Machine.Corpora
         private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
-        public IEnumerable<(string, IEnumerable<string>)> Parse(
-            ParatextProjectSettings settings,
+        private readonly ParatextProjectSettings _settings;
+
+        protected ParatextProjectTermsParserBase(ParatextProjectSettings settings)
+        {
+            _settings = settings;
+        }
+
+        protected ParatextProjectTermsParserBase(ParatextProjectSettingsParserBase settingsParser)
+        {
+            _settings = settingsParser.Parse();
+        }
+
+        public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> Parse(
             IEnumerable<string> termCategories,
             bool useTermGlosses = true
         )
         {
             XDocument biblicalTermsDoc;
             IDictionary<string, string> termIdToCategoryDictionary;
-            if (settings.BiblicalTermsListType == "Project")
+            if (_settings.BiblicalTermsListType == "Project")
             {
-                if (Exists(settings.BiblicalTermsFileName))
+                if (Exists(_settings.BiblicalTermsFileName))
                 {
-                    using (Stream keyTermsFile = Open(settings.BiblicalTermsFileName))
+                    using (Stream keyTermsFile = Open(_settings.BiblicalTermsFileName))
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -65,12 +77,12 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
-            else if (PredefinedTermsListTypes.Contains(settings.BiblicalTermsListType))
+            else if (PredefinedTermsListTypes.Contains(_settings.BiblicalTermsListType))
             {
                 using (
                     Stream keyTermsFile = Assembly
                         .GetExecutingAssembly()
-                        .GetManifestResourceStream("SIL.Machine.Corpora." + settings.BiblicalTermsFileName)
+                        .GetManifestResourceStream("SIL.Machine.Corpora." + _settings.BiblicalTermsFileName)
                 )
                 {
                     biblicalTermsDoc = XDocument.Load(keyTermsFile);
@@ -84,9 +96,9 @@ namespace SIL.Machine.Corpora
 
             XDocument termsGlossesDoc = null;
             if (
-                settings.LanguageCode != null
-                && settings.BiblicalTermsListType == "Major"
-                && SupportedLanguageTermsLocalizationXmls.TryGetValue(settings.LanguageCode, out string resourceName)
+                _settings.LanguageCode != null
+                && _settings.BiblicalTermsListType == "Major"
+                && SupportedLanguageTermsLocalizationXmls.TryGetValue(_settings.LanguageCode, out string resourceName)
             )
             {
                 using (Stream keyTermsFile = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
@@ -147,9 +159,9 @@ namespace SIL.Machine.Corpora
             {
                 return termsRenderings
                     .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
-                    .Select(kvp => (kvp.Key, kvp.Value));
+                    .Select(kvp => (kvp.Key, (IReadOnlyList<string>)kvp.Value.ToList()));
             }
-            return new List<(string, IEnumerable<string>)>();
+            return new List<(string, IReadOnlyList<string>)>();
         }
 
         private static bool IsInCategory(
