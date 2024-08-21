@@ -2,7 +2,8 @@ using System.Text;
 
 namespace SIL.Machine.Corpora;
 
-public class MemoryParatextTermsParser(IDictionary<string, string> files) : ParatextTermsParserBase
+public class MemoryParatextProjectTermsParser(ParatextProjectSettings settings, IDictionary<string, string> files)
+    : ParatextProjectTermsParserBase(settings)
 {
     public IDictionary<string, string> Files { get; } = files;
 
