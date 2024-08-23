@@ -235,6 +235,11 @@ namespace SIL.Machine.Corpora
                 if (_rowTexts.Count == 0)
                     return;
 
+                if (text.Trim() == "...")
+                {
+                    text = "";
+                }
+
                 StringBuilder rowText = _rowTexts.Peek();
                 if (_text._includeMarkers)
                 {

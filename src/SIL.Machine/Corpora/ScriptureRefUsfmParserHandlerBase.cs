@@ -171,7 +171,7 @@ namespace SIL.Machine.Corpora
         public override void Text(UsfmParserState state, string text)
         {
             // if we hit text in a verse paragraph and we aren't in a verse, then start a non-verse segment
-            if (text.Trim().Length > 0)
+            if (text.Trim().Length > 0 && text.Trim() != "...")
                 CheckConvertVerseParaToNonVerse(state);
         }
 

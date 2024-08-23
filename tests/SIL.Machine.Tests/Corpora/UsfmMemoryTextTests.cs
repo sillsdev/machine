@@ -184,6 +184,47 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_IgnoreLoneEllipsis()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\q1
+\f \fr 119 \ft World \f*
+\v 1 ...
+\v 2 Text
+\c 2
+\d
+description
+\b
+",
+            includeAllText: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.Select(tr => tr.Text)));
+            Assert.That(rows[1].Text, Is.EqualTo(""));
+        });
+    }
+
+    [Test]
+    public void GetRows_Ellipsis()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\v 1 Verse text ... More text
+",
+            includeAllText: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo("Verse text ... More text"));
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
