@@ -235,11 +235,6 @@ namespace SIL.Machine.Corpora
                 if (_rowTexts.Count == 0)
                     return;
 
-                if (text.Trim() == "...")
-                {
-                    text = "";
-                }
-
                 StringBuilder rowText = _rowTexts.Peek();
                 if (_text._includeMarkers)
                 {
@@ -279,6 +274,10 @@ namespace SIL.Machine.Corpora
             protected override void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
             {
                 string text = _rowTexts.Pop().ToString();
+                if (text.Trim() == "...")
+                {
+                    text = "";
+                }
                 _rows.AddRange(_text.CreateRows(scriptureRefs, text, _sentenceStart));
                 _sentenceStart = state.Token.Marker == "c" || text.HasSentenceEnding();
             }
