@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
 using NUnit.Framework;
 
@@ -167,6 +168,81 @@ public class UsfmManualTests
         else
         {
             await GetUsfmAsync(ParatextProjectPath);
+        }
+    }
+
+    [Test]
+    public async Task Test()
+    {
+        FileParatextProjectSettingsParser targetSettingsParser = new(CorporaTestHelpers.UsfmTargetProjectPath);
+        ParatextProjectSettings targetSettings = targetSettingsParser.Parse();
+
+        FileParatextProjectSettingsParser sourceSettingsParser = new(CorporaTestHelpers.UsfmSourceProjectPath);
+        ParatextProjectSettings sourceSettings = sourceSettingsParser.Parse();
+
+        var sourceCorpus = new ParatextTextCorpus(CorporaTestHelpers.UsfmSourceProjectPath);
+        var targetCorpus = new ParatextTextCorpus(CorporaTestHelpers.UsfmTargetProjectPath);
+
+        var rows = AlignPretranslateCorpus(sourceCorpus.FilterTexts(["SUS"]), targetCorpus.FilterTexts(["SUS"]))
+            .ToList();
+
+        var updater = new UsfmTextUpdater(rows, stripAllText: true, preferExistingText: true);
+        string usfm = await File.ReadAllTextAsync(
+            Path.Combine(CorporaTestHelpers.UsfmSourceProjectPath, sourceSettings.GetBookFileName("SUS"))
+        );
+        UsfmParser.Parse(usfm, updater, sourceSettings.Stylesheet, sourceSettings.Versification);
+        string newUsfm = updater.GetUsfm(sourceSettings.Stylesheet);
+    }
+
+    private static IEnumerable<(IReadOnlyList<ScriptureRef>, string)> AlignPretranslateCorpus(
+        ITextCorpus srcCorpus,
+        ITextCorpus trgCorpus
+    )
+    {
+        int rowCount = 0;
+        StringBuilder srcSegBuffer = new();
+        StringBuilder trgSegBuffer = new();
+        List<ScriptureRef> refs = [];
+        foreach (ParallelTextRow row in srcCorpus.AlignRows(trgCorpus, allSourceRows: true))
+        {
+            if (!row.IsTargetRangeStart && row.IsTargetInRange)
+            {
+                refs.AddRange(row.Refs.Cast<ScriptureRef>());
+                if (row.SourceText.Length > 0)
+                {
+                    if (srcSegBuffer.Length > 0)
+                        srcSegBuffer.Append(' ');
+                    srcSegBuffer.Append(row.SourceText);
+                }
+                rowCount++;
+            }
+            else
+            {
+                if (rowCount > 0)
+                {
+                    yield return (
+                        refs.Select(r => ScriptureRef.Parse(r.ToString(), trgCorpus.Versification)).ToArray(),
+                        srcSegBuffer.ToString()
+                    );
+                    srcSegBuffer.Clear();
+                    trgSegBuffer.Clear();
+                    refs.Clear();
+                    rowCount = 0;
+                }
+
+                refs.AddRange(row.Refs.Cast<ScriptureRef>());
+                srcSegBuffer.Append(row.SourceText);
+                trgSegBuffer.Append(row.TargetText);
+                rowCount++;
+            }
+        }
+
+        if (rowCount > 0)
+        {
+            yield return (
+                refs.Select(r => ScriptureRef.Parse(r.ToString(), trgCorpus.Versification)).ToArray(),
+                srcSegBuffer.ToString()
+            );
         }
     }
 }
