@@ -71,7 +71,7 @@ namespace SIL.Machine.Corpora
                 if (!string.IsNullOrEmpty(Project))
                     sb.Append($" in project '{Project}'");
                 sb.Append($". Verse: {parser.State.VerseRef}, line: {parser.State.LineNumber}, ");
-                sb.Append($"column: {parser.State.ColumnNumber}, error: '{ex.Message}'");
+                sb.Append($"character: {parser.State.ColumnNumber}, error: '{ex.Message}'");
                 throw new InvalidOperationException(sb.ToString(), ex);
             }
             return rowCollector.Rows;
