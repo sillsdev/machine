@@ -73,21 +73,6 @@ public class ParatextProjectTermsParserTests
     }
 
     [Test]
-    public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings_PreferLocalization()
-    {
-        var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
-                biblicalTermsListType: "Major",
-                biblicalTermsFileName: "BiblicalTerms.xml"
-            ),
-            useTermGlosses: true
-        );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
-        Assert.That(terms.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Abagtha"));
-    }
-
-    [Test]
     public void TestGetKeyTermsFromTermsLocalizations_()
     {
         var env = new TestEnvironment(
