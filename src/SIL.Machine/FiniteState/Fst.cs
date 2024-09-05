@@ -368,7 +368,7 @@ namespace SIL.Machine.FiniteState
             int annIndex = traversalMethod.Annotations.IndexOf(start);
 
             var initAnns = new HashSet<int>();
-            while (annIndex < traversalMethod.Annotations.Count)
+            while (annIndex < traversalMethod.Annotations.Count && annIndex > -1)
             {
                 var initRegisters = new Register<TOffset>[_registerCount, 2];
 
