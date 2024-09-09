@@ -103,20 +103,3 @@ If you would like to find out more about how to use Machine, check out the tutor
 ### CSharpier
 
 All C# code should be formatted using [CSharpier](https://csharpier.com/). The best way to enable support for CSharpier is to install the appropriate [IDE extension](https://csharpier.com/docs/Editors) and configure it to format on save.
-
-### Development locally
-
-- Install MongoDB 6.0 and MongoDBCompass and run it on localhost:27017
-  - Create the following folders:
-  - C:\var\lib\machine\data
-  - C:\var\lib\machine\machine
-- set the following environment variables:
-  - ASPNETCORE_ENVIRONMENT=Development
-- Open "Machine.sln" and debug the ApiServer
-- Now, you are running the complete environment where everything is being debugged and the mongodb is exposed.
-
-### Develop with serval
-
-* Install https://github.com/sillsdev/serval in an adjacent folder
-* Follow the instructions in serval for develoment
-* To debug machine and machine_job together, launch "DockerComb" in VSCode
