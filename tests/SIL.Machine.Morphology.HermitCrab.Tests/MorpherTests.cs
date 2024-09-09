@@ -65,6 +65,38 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void AnalyzeWord_CanGuess_ReturnsCorrectAnalysis()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        Assert.That(morpher.AnalyzeWord("gag"), Is.Empty);
+        Assert.That(morpher.AnalyzeWord("gagd"), Is.Empty);
+
+        morpher.GuessRoot = true;
+        var analyses = morpher.AnalyzeWord("gag").ToList();
+        Assert.That(analyses[0].ToString(), Is.EquivalentTo("[*gag]"));
+        var analyses2 = morpher.AnalyzeWord("gagd").ToList();
+        Assert.That(analyses2[0].ToString(), Is.EquivalentTo("[*gag ed_suffix]"));
+    }
+
+    [Test]
     public void GenerateWords_CanGenerate_ReturnsCorrectWord()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
