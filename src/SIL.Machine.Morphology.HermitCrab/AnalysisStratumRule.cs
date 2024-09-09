@@ -90,6 +90,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 output.Add(mruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
+                if (_morpher.MaxUnapplications > 0 && output.Count >= _morpher.MaxUnapplications)
+                    break;
             }
             return output;
         }

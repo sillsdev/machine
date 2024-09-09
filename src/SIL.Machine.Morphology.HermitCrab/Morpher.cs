@@ -48,6 +48,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
+            MaxUnapplications = 0;
+            GuessRoot = false;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
 
@@ -62,6 +64,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int DeletionReapplications { get; set; }
 
         public int MaxStemCount { get; set; }
+
+        /// <summary>
+        /// MaxUnapplications limits the number of unapplications to make it possible
+        /// to make it possible to debug words that take 30 minutes to parse
+        /// because there are too many unapplications.
+        /// </summary>
+        public int MaxUnapplications { get; set; }
+
+        /// <summary>
+        /// When GuessRoot is true, guess LexEntries for the roots of the analyses.
+        /// </summary>
+        public bool GuessRoot { get; set; }
 
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
@@ -104,8 +118,31 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
+            var origAnalyses = GuessRoot ? analyses.ToList() : null;
+            var syntheses = Synthesize(word, analyses);
+            if (GuessRoot && syntheses.Count() == 0)
+            {
+                // Guess roots when there are no results.
+                List<Word> matches = new List<Word>();
+                foreach (Word analysisWord in origAnalyses)
+                {
+                    var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
+                    foreach (Word synthesisWord in lexicalGuesses)
+                    {
+                        foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                        {
+                            if (IsMatch(word, validWord))
+                                matches.Add(validWord);
+                        }
+                    }
+                }
 
-            return Synthesize(word, analyses);
+                matches.Sort((x, y) => y.Morphs.Count().CompareTo(x.Morphs.Count()));
+
+                return matches;
+            }
+            return syntheses;
+
         }
 
         /// <summary>
@@ -307,6 +344,49 @@ namespace SIL.Machine.Morphology.HermitCrab
                     yield return newWord;
                 }
             }
+        }
+
+        private IEnumerable<Word> LexicalGuess(Word input)
+        {
+            if (_traceManager.IsTracing)
+                _traceManager.LexicalLookup(input.Stratum, input);
+            var table = input.Stratum.CharacterDefinitionTable;
+            var allRange = Range<ShapeNode>.Create(input.Shape.First, input.Shape.Last);
+            var shapeStrings = EnumerateShapeStrings(input.Shape.GetNodes(allRange).ToList(), 0, "", table);
+            foreach (string shapeString in shapeStrings)
+            {
+                var lexEntry = new LexEntry
+                {
+                    Id = shapeString,
+                    SyntacticFeatureStruct = input.SyntacticFeatureStruct,
+                    Gloss = shapeString,
+                    Stratum = input.Stratum,
+                    IsPartial = input.SyntacticFeatureStruct.IsEmpty
+                };
+                var root = new RootAllomorph(new Segments(table, shapeString));
+                lexEntry.Allomorphs.Add(root);
+                Word newWord = input.Clone();
+                newWord.RootAllomorph = root;
+                if (_traceManager.IsTracing)
+                    _traceManager.SynthesizeWord(_lang, newWord);
+                newWord.Freeze();
+                yield return newWord;
+            }
+        }
+
+        IEnumerable<string> EnumerateShapeStrings(IList<ShapeNode> nodes, int index, string prefix, CharacterDefinitionTable table)
+        {
+            if (index == nodes.Count)
+            {
+                return new List<string> { prefix };
+            }
+            string[] strReps = table.GetMatchingStrReps(nodes[index]).ToArray();
+            List<string> strings = new List<string>();
+            foreach (string strRep in strReps)
+            {
+                strings.AddRange(EnumerateShapeStrings(nodes, index + 1, prefix + strRep, table));
+            }
+            return strings;
         }
 
         private bool IsWordValid(Word word)
