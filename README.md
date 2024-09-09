@@ -81,7 +81,6 @@ Machine is available as a set of NuGet packages:
 - [SIL.Machine](https://www.nuget.org/packages/SIL.Machine/): core library
 - [SIL.Machine.Translation.Thot](https://www.nuget.org/packages/SIL.Machine.Translation.Thot/): statistical machine translation and word alignment
 - [SIL.Machine.Morphology.HermitCrab](https://www.nuget.org/packages/SIL.Machine.Morphology.HermitCrab/): rule-based morphological parsing
-- [SIL.Machine.WebApi](https://www.nuget.org/packages/SIL.Machine.WebApi/): ASP.NET Core web API middleware
 
 Machine is also available as a command-line tool that can be installed as a .NET tool.
 
