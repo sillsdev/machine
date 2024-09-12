@@ -107,7 +107,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Parse the specified surface form, possibly tracing the parse.
         /// If there are no analyses and guessRoot is true, then guess the root.
         /// </summary>
-         public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot)
+        public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot)
         {
             // convert the word to its phonetic shape
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
