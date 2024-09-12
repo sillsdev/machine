@@ -184,6 +184,26 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_OptBreak_OutsideOfSegment()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+//
+\p
+\v 1 This is the first verse.
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo("This is the first verse."));
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
