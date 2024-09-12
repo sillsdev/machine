@@ -86,7 +86,7 @@ public class MorpherTests : HermitCrabTestBase
         Morphophonemic.MorphologicalRules.Add(edSuffix);
 
         // Make a lexical pattern equivalent to Any+.
-         ShapeNode node = new ShapeNode(new FeatureStruct());
+        ShapeNode node = new ShapeNode(new FeatureStruct());
         node.Annotation.Optional = true;
         node.Annotation.Iterative = true;
         var shape = new Shape(begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));

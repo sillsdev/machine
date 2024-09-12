@@ -222,7 +222,9 @@ namespace SIL.Machine.Annotations
             if (!IsLeaf && !_children.ValueEquals(other._children))
                 return false;
 
-            return _fs.ValueEquals(other._fs) && _optional == other._optional && _iterative == other._iterative && Range == other.Range;
+            return _fs.ValueEquals(other._fs)
+                && _optional == other._optional
+                && _iterative == other._iterative && Range == other.Range;
         }
 
         public int GetFrozenHashCode()
