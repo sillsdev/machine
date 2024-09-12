@@ -218,6 +218,9 @@ namespace SIL.Machine.Corpora
             {
                 base.OptBreak(state);
 
+                if (_rowTexts.Count == 0)
+                    return;
+
                 if (_text._includeMarkers)
                 {
                     _rowTexts.Peek().Append("//");
