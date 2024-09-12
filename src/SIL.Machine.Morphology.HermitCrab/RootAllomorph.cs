@@ -32,7 +32,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Does this represent a lexical pattern (e.g. [Seg]+)?
         /// </summary>
-        public bool IsPattern {  get; set; }
+        public bool IsPattern { get; set; }
 
         /// <summary>
         /// Was this allomorph guessed by a lexical pattern?
