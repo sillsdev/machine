@@ -26,6 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Dictionary<Stratum, RootAllomorphTrie> _allomorphTries;
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
+        private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
 
         public Morpher(ITraceManager traceManager, Language lang)
         {
@@ -38,7 +39,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var allomorphs = new HashSet<RootAllomorph>(stratum.Entries.SelectMany(entry => entry.Allomorphs));
                 var trie = new RootAllomorphTrie(ann => ann.Type() == HCFeatureSystem.Segment);
                 foreach (RootAllomorph allomorph in allomorphs)
-                    trie.Add(allomorph);
+                {
+                    if (allomorph.IsPattern)
+                        _lexicalPatterns.Add(allomorph);
+                    else
+                        trie.Add(allomorph);
+                }
                 _allomorphTries[stratum] = trie;
 
                 morphemes.AddRange(stratum.Entries);
@@ -49,7 +55,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
             MaxUnapplications = 0;
-            GuessRoot = false;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
 
@@ -72,11 +77,6 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public int MaxUnapplications { get; set; }
 
-        /// <summary>
-        /// When GuessRoot is true, guess LexEntries for the roots of the analyses.
-        /// </summary>
-        public bool GuessRoot { get; set; }
-
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
 
@@ -85,15 +85,29 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _lang; }
         }
 
+        public IList<RootAllomorph> LexicalPatterns
+        {
+            get { return _lexicalPatterns; }
+        }
+
         /// <summary>
         /// Parses the specified surface form.
         /// </summary>
         public IEnumerable<Word> ParseWord(string word)
         {
-            return ParseWord(word, out _);
+            return ParseWord(word, out _, false);
         }
 
         public IEnumerable<Word> ParseWord(string word, out object trace)
+        {
+            return ParseWord(word, out trace, false);
+        }
+
+        /// <summary>
+        /// Parse the specified surface form, possibly tracing the parse.
+        /// If there are no analyses and guessRoot is true, then guess the root.
+        /// </summary>
+         public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot)
         {
             // convert the word to its phonetic shape
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
@@ -118,9 +132,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
-            var origAnalyses = GuessRoot ? analyses.ToList() : null;
+            var origAnalyses = guessRoot ? analyses.ToList() : null;
             var syntheses = Synthesize(word, analyses);
-            if (GuessRoot && syntheses.Count() == 0)
+            if (guessRoot && syntheses.Count() == 0)
             {
                 // Guess roots when there are no results.
                 List<Word> matches = new List<Word>();
@@ -350,43 +364,93 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
-            var table = input.Stratum.CharacterDefinitionTable;
-            var allRange = Range<ShapeNode>.Create(input.Shape.First, input.Shape.Last);
-            var shapeStrings = EnumerateShapeStrings(input.Shape.GetNodes(allRange).ToList(), 0, "", table);
-            foreach (string shapeString in shapeStrings)
+            CharacterDefinitionTable table = input.Stratum.CharacterDefinitionTable;
+             IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Range);
+            foreach (RootAllomorph lexicalPattern in _lexicalPatterns)
             {
-                var lexEntry = new LexEntry
+                IEnumerable<ShapeNode> shapePattern = lexicalPattern.Segments.Shape.GetNodes(lexicalPattern.Segments.Shape.Range);
+                foreach (List<ShapeNode> match in MatchNodesWithPattern(shapeNodes.ToList(), shapePattern.ToList()))
                 {
-                    Id = shapeString,
-                    SyntacticFeatureStruct = input.SyntacticFeatureStruct,
-                    Gloss = shapeString,
-                    Stratum = input.Stratum,
-                    IsPartial = input.SyntacticFeatureStruct.IsEmpty
-                };
-                var root = new RootAllomorph(new Segments(table, shapeString));
-                lexEntry.Allomorphs.Add(root);
-                Word newWord = input.Clone();
-                newWord.RootAllomorph = root;
-                if (_traceManager.IsTracing)
-                    _traceManager.SynthesizeWord(_lang, newWord);
-                newWord.Freeze();
-                yield return newWord;
+                    // Create a root allomorph for the guess.
+                    string shapeString = match.ToString(table, false);
+                    var root = new RootAllomorph(new Segments(table, shapeString))
+                    {
+                        Guessed = true
+                    };
+                    // Point the root allomorph to the lexical pattern in FieldWorks.
+                    if (lexicalPattern.Properties.ContainsKey("ID"))
+                        root.Properties["ID"] = lexicalPattern.Properties["ID"];
+                    if (lexicalPattern.Morpheme != null && lexicalPattern.Morpheme.Properties.ContainsKey("ID"))
+                        root.Morpheme.Properties["ID"] = lexicalPattern.Morpheme.Properties["ID"];
+                    // Create a lexical entry to hold the root allomorph.
+                    // (The root allmorph will point to the lexical entry.)
+                    var lexEntry = new LexEntry
+                    {
+                        Id = shapeString,
+                        SyntacticFeatureStruct = input.SyntacticFeatureStruct,
+                        Gloss = shapeString,
+                        Stratum = input.Stratum,
+                        IsPartial = input.SyntacticFeatureStruct.IsEmpty
+                    };
+                    lexEntry.Allomorphs.Add(root);
+                    // Create a new word that uses the root allomorph.
+                    Word newWord = input.Clone();
+                    newWord.RootAllomorph = root;
+                    if (_traceManager.IsTracing)
+                        _traceManager.SynthesizeWord(_lang, newWord);
+                    newWord.Freeze();
+                    yield return newWord;
+                }
             }
         }
 
-        IEnumerable<string> EnumerateShapeStrings(IList<ShapeNode> nodes, int index, string prefix, CharacterDefinitionTable table)
+        public IEnumerable<List<ShapeNode>> MatchNodesWithPattern(IList<ShapeNode> nodes, IList<ShapeNode> pattern,
+            int n = 0, int p = 0, bool obligatory = false, List<ShapeNode> prefix = null)
         {
-            if (index == nodes.Count)
+            var results = new List<List<ShapeNode>>();
+            if (prefix == null)
+                prefix = new List<ShapeNode>();
+            if (pattern.Count() == p)
             {
-                return new List<string> { prefix };
+                if (nodes.Count() == n)
+                    // We match because we are at the end of both the pattern and the nodes.
+                    results.Add(prefix);
+                return results;
             }
-            string[] strReps = table.GetMatchingStrReps(nodes[index]).ToArray();
-            List<string> strings = new List<string>();
-            foreach (string strRep in strReps)
+            if (pattern[p].Annotation.Optional && !obligatory)
+                // Try skipping this item in the pattern.
+                results.AddRange(MatchNodesWithPattern(nodes, pattern, n, p + 1, false, prefix));
+            if (nodes.Count() == n)
             {
-                strings.AddRange(EnumerateShapeStrings(nodes, index + 1, prefix + strRep, table));
+                // We fail to match because we are at the end of the nodes but not the pattern.
+                return results;
             }
-            return strings;
+            ShapeNode newNode = UnifyShapeNodes(nodes[n], pattern[p]);
+            if (newNode == null)
+                // We fail because the pattern didn't match the node here.
+                return results;
+            // Make a copy of prefix to avoid crosstalk and add newNode.
+            prefix = new List<ShapeNode>(prefix)
+            {
+                newNode
+            };
+            if (pattern[p].Annotation.Iterative)
+                // Try using this item in the pattern again.
+                results.AddRange(MatchNodesWithPattern(nodes, pattern, n + 1, p, true, prefix));
+            // Try the remainder of the nodes against the remainder of the pattern.
+            results.AddRange(MatchNodesWithPattern(nodes, pattern, n + 1, p + 1, false, prefix));
+            return results;
+        }
+
+        ShapeNode UnifyShapeNodes(ShapeNode node, ShapeNode pattern)
+        {
+            FeatureStruct fs = null;
+            node.Annotation.FeatureStruct.Unify(pattern.Annotation.FeatureStruct, out fs);
+            if (fs == null)
+                return null;
+            if (fs.ValueEquals(node.Annotation.FeatureStruct))
+                return node;
+            return new ShapeNode(fs);
         }
 
         private bool IsWordValid(Word word)
@@ -452,6 +516,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             try
             {
                 return ParseWord(word).Select(CreateWordAnalysis);
+            }
+            catch (InvalidShapeException)
+            {
+                return Enumerable.Empty<WordAnalysis>();
+            }
+        }
+
+        public IEnumerable<WordAnalysis> AnalyzeWord(string word, bool guessRoot)
+        {
+            try
+            {
+                return ParseWord(word, out _, guessRoot).Select(CreateWordAnalysis);
             }
             catch (InvalidShapeException)
             {

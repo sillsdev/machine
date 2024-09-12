@@ -29,6 +29,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public bool IsBound { get; set; }
 
+        /// <summary>
+        /// Does this represent a lexical pattern (e.g. [Seg]+)?
+        /// </summary>
+        public bool IsPattern {  get; set; }
+
+        /// <summary>
+        /// Was this allomorph guessed by a lexical pattern?
+        /// </summary>
+        public bool Guessed { get; set; }
+
         protected override bool ConstraintsEqual(Allomorph other)
         {
             if (!(other is RootAllomorph otherAllo))

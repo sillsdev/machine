@@ -19,6 +19,7 @@ namespace SIL.Machine.Annotations
         private int _hashCode;
         private FeatureStruct _fs;
         private bool _optional;
+        private bool _iterative;
         private object _data;
 
         public Annotation(Range<TOffset> range, FeatureStruct fs)
@@ -40,6 +41,7 @@ namespace SIL.Machine.Annotations
             : this(ann.Range, ann.FeatureStruct.Clone())
         {
             Optional = ann.Optional;
+            Iterative = ann.Iterative;
             _data = ann._data;
             if (ann._children != null && ann._children.Count > 0)
                 Children.AddRange(ann.Children.Select(node => node.Clone()));
@@ -128,6 +130,23 @@ namespace SIL.Machine.Annotations
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this annotation is iterative.
+        /// This is used in lexical patterns such as [Seg]+:
+        /// Kleene star = iterative and optional, Kleene plus = iterative and not optional.
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this annotation is iterative, otherwise <c>false</c>.
+        /// </value>
+        public bool Iterative
+        {
+            get { return _iterative; }
+            set
+            {
+                CheckFrozen();
+                _iterative = value;
+            }
+        }
         internal int ListID { get; set; }
 
         public bool Remove(bool preserveChildren)
@@ -188,6 +207,7 @@ namespace SIL.Machine.Annotations
             _hashCode = _hashCode * 31 + _fs.GetFrozenHashCode();
             _hashCode = _hashCode * 31 + (_children == null ? 0 : _children.GetFrozenHashCode());
             _hashCode = _hashCode * 31 + _optional.GetHashCode();
+            _hashCode = _hashCode * 31 + _iterative.GetHashCode();
             _hashCode = _hashCode * 31 + Range.GetHashCode();
         }
 
@@ -202,7 +222,7 @@ namespace SIL.Machine.Annotations
             if (!IsLeaf && !_children.ValueEquals(other._children))
                 return false;
 
-            return _fs.ValueEquals(other._fs) && _optional == other._optional && Range == other.Range;
+            return _fs.ValueEquals(other._fs) && _optional == other._optional && _iterative == other._iterative && Range == other.Range;
         }
 
         public int GetFrozenHashCode()
