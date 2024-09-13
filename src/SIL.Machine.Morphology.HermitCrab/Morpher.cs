@@ -156,7 +156,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return matches;
             }
             return syntheses;
-
         }
 
         /// <summary>
