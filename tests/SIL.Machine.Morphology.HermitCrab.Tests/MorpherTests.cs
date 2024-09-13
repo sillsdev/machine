@@ -258,11 +258,13 @@ public class MorpherTests : HermitCrabTestBase
         starNode.Annotation.Optional = true;
         starNode.Annotation.Iterative = true;
         List<ShapeNode> starPattern = new List<ShapeNode> { starNode };
-        Assert.That(morpher.MatchNodesWithPattern(noNodes, starPattern),
+        Assert.That(
+            morpher.MatchNodesWithPattern(noNodes, starPattern),
             Is.EquivalentTo(new List<List<ShapeNode>> { noNodes })
         );
         var result = morpher.MatchNodesWithPattern(oneNode, starPattern);
-        Assert.That(morpher.MatchNodesWithPattern(oneNode, starPattern),
+        Assert.That(
+            morpher.MatchNodesWithPattern(oneNode, starPattern),
             Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
         );
         Assert.That(
