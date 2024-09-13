@@ -402,8 +402,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        public IEnumerable<List<ShapeNode>> MatchNodesWithPattern(IList<ShapeNode> nodes, IList<ShapeNode> pattern,
-            int n = 0, int p = 0, bool obligatory = false, List<ShapeNode> prefix = null)
+        public IEnumerable<List<ShapeNode>> MatchNodesWithPattern(
+            IList<ShapeNode> nodes,
+            IList<ShapeNode> pattern,
+            int n = 0,
+            int p = 0,
+            bool obligatory = false,
+            List<ShapeNode> prefix = null
+            )
         {
             var results = new List<List<ShapeNode>>();
             if (prefix == null)
