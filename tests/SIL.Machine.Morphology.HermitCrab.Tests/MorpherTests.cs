@@ -89,8 +89,8 @@ public class MorpherTests : HermitCrabTestBase
         ShapeNode node = new ShapeNode(new FeatureStruct());
         node.Annotation.Optional = true;
         node.Annotation.Iterative = true;
-        var shape = new Shape(
-            begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
+        var shape = new Shape(begin => new ShapeNode(
+            begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
             ));
         shape.AddRange(new List<ShapeNode> { node });
         var lexicalPattern = new RootAllomorph(new Segments(Table1, "", shape));
