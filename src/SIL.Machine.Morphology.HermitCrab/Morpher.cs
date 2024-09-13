@@ -434,10 +434,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 // We fail because the pattern didn't match the node here.
                 return results;
             // Make a copy of prefix to avoid crosstalk and add newNode.
-            prefix = new List<ShapeNode>(prefix)
-            {
-                newNode
-            };
+            prefix = new List<ShapeNode>(prefix) { newNode };
             if (pattern[p].Annotation.Iterative)
                 // Try using this item in the pattern again.
                 results.AddRange(MatchNodesWithPattern(nodes, pattern, n + 1, p, true, prefix));
