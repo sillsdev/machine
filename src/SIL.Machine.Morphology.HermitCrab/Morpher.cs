@@ -374,10 +374,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     // Create a root allomorph for the guess.
                     string shapeString = match.ToString(table, false);
-                    var root = new RootAllomorph(new Segments(table, shapeString))
-                    {
-                        Guessed = true
-                    };
+                    var root = new RootAllomorph(new Segments(table, shapeString)) { Guessed = true };
                     // Point the root allomorph to the lexical pattern in FieldWorks.
                     if (lexicalPattern.Properties.ContainsKey("ID"))
                         root.Properties["ID"] = lexicalPattern.Properties["ID"];

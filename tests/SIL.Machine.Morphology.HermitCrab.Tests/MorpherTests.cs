@@ -198,10 +198,19 @@ public class MorpherTests : HermitCrabTestBase
         List<ShapeNode> nodesfs1B = new List<ShapeNode> { new ShapeNode(fs1B) };
         List<ShapeNode> nodesfs2B = new List<ShapeNode> { new ShapeNode(fs2B) };
         Assert.That(morpher.MatchNodesWithPattern(nodesfs1A, nodesfs1B), Is.Empty);
-        Assert.That(morpher.MatchNodesWithPattern(nodesfs1A, nodesfs1A), Is.EqualTo(new List<List<ShapeNode>> { nodesfs1A }));
+        Assert.That(
+            morpher.MatchNodesWithPattern(nodesfs1A, nodesfs1A),
+            Is.EqualTo(new List<List<ShapeNode>> { nodesfs1A })
+        );
         var fs1A2B = morpher.MatchNodesWithPattern(nodesfs1A, nodesfs2B);
-        Assert.That(fs1A2B.ToList()[0][0].Annotation.FeatureStruct.GetValue(feat1).ToString(), Is.EqualTo(valueA.ToString()));
-        Assert.That(fs1A2B.ToList()[0][0].Annotation.FeatureStruct.GetValue(feat2).ToString(), Is.EqualTo(valueB.ToString()));
+        Assert.That(
+            fs1A2B.ToList()[0][0].Annotation.FeatureStruct.GetValue(feat1).ToString(),
+            Is.EqualTo(valueA.ToString())
+        );
+        Assert.That(
+            fs1A2B.ToList()[0][0].Annotation.FeatureStruct.GetValue(feat2).ToString(),
+            Is.EqualTo(valueB.ToString())
+        );
 
         List<ShapeNode> noNodes = new List<ShapeNode> { };
         List<ShapeNode> oneNode = new List<ShapeNode> { new ShapeNode(fs1A) };
@@ -210,15 +219,27 @@ public class MorpherTests : HermitCrabTestBase
         List<ShapeNode> fourNodes = new List<ShapeNode> { new ShapeNode(fs1A), new ShapeNode(fs1A), new ShapeNode(fs1A), new ShapeNode(fs1A) };
 
         // Test sequences.
-        Assert.That(morpher.MatchNodesWithPattern(twoNodes, twoNodes), Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes }));
-        Assert.That(morpher.MatchNodesWithPattern(threeNodes, threeNodes), Is.EquivalentTo(new List<List<ShapeNode>> { threeNodes }));
+        Assert.That(
+            morpher.MatchNodesWithPattern(twoNodes, twoNodes),
+            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
+        );
+        Assert.That(
+            morpher.MatchNodesWithPattern(threeNodes, threeNodes),
+            Is.EquivalentTo(new List<List<ShapeNode>> { threeNodes })
+        );
 
         // Test optionality.
         ShapeNode optionalNode = new ShapeNode(fs1A);
         optionalNode.Annotation.Optional = true;
         List<ShapeNode> optionalPattern = new List<ShapeNode> { optionalNode };
-        Assert.That(morpher.MatchNodesWithPattern(noNodes, optionalPattern), Is.EquivalentTo(new List<List<ShapeNode>> { noNodes }));
-        Assert.That(morpher.MatchNodesWithPattern(oneNode, optionalPattern), Is.EquivalentTo(new List<List<ShapeNode>> { oneNode }));
+        Assert.That(
+            morpher.MatchNodesWithPattern(noNodes, optionalPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { noNodes })
+        );
+        Assert.That(
+            morpher.MatchNodesWithPattern(oneNode, optionalPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+        );
         Assert.That(morpher.MatchNodesWithPattern(twoNodes, optionalPattern), Is.Empty);
 
         // Test Kleene star.
@@ -226,17 +247,30 @@ public class MorpherTests : HermitCrabTestBase
         starNode.Annotation.Optional = true;
         starNode.Annotation.Iterative = true;
         List<ShapeNode> starPattern = new List<ShapeNode> { starNode };
-        Assert.That(morpher.MatchNodesWithPattern(noNodes, starPattern), Is.EquivalentTo(new List<List<ShapeNode>> { noNodes }));
+        Assert.That(morpher.MatchNodesWithPattern(noNodes, starPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { noNodes })
+        );
         var result = morpher.MatchNodesWithPattern(oneNode, starPattern);
-        Assert.That(morpher.MatchNodesWithPattern(oneNode, starPattern), Is.EquivalentTo(new List<List<ShapeNode>> { oneNode }));
-        Assert.That(morpher.MatchNodesWithPattern(twoNodes, starPattern), Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes }));
+        Assert.That(morpher.MatchNodesWithPattern(oneNode, starPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+        );
+        Assert.That(
+            morpher.MatchNodesWithPattern(twoNodes, starPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
+        );
 
         // Test Kleene plus.
         ShapeNode plusNode = new ShapeNode(fs1A);
         plusNode.Annotation.Iterative = true;
         List<ShapeNode> plusPattern = new List<ShapeNode> { plusNode };
         Assert.That(morpher.MatchNodesWithPattern(noNodes, plusPattern), Is.Empty);
-        Assert.That(morpher.MatchNodesWithPattern(oneNode, plusPattern), Is.EquivalentTo(new List<List<ShapeNode>> { oneNode }));
-        Assert.That(morpher.MatchNodesWithPattern(twoNodes, plusPattern), Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes }));
+        Assert.That(
+            morpher.MatchNodesWithPattern(oneNode, plusPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+        );
+        Assert.That(
+            morpher.MatchNodesWithPattern(twoNodes, plusPattern),
+            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
+        );
     }
 }
