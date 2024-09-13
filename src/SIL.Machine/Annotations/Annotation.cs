@@ -224,7 +224,8 @@ namespace SIL.Machine.Annotations
 
             return _fs.ValueEquals(other._fs)
                 && _optional == other._optional
-                && _iterative == other._iterative && Range == other.Range;
+                && _iterative == other._iterative
+                && Range == other.Range;
         }
 
         public int GetFrozenHashCode()
