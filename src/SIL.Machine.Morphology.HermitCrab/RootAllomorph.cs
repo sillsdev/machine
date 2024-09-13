@@ -34,11 +34,6 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool IsPattern { get; set; }
 
-        /// <summary>
-        /// Was this allomorph guessed by a lexical pattern?
-        /// </summary>
-        public bool Guessed { get; set; }
-
         protected override bool ConstraintsEqual(Allomorph other)
         {
             if (!(other is RootAllomorph otherAllo))

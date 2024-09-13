@@ -367,7 +367,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Range);
             foreach (RootAllomorph lexicalPattern in _lexicalPatterns)
             {
-                IEnumerable<ShapeNode> shapePattern = lexicalPattern.Segments.Shape.GetNodes(lexicalPattern.Segments.Shape.Range);
+                IEnumerable<ShapeNode> shapePattern = lexicalPattern.Segments.Shape.GetNodes(
+                    lexicalPattern.Segments.Shape.Range
+                );
                 foreach (List<ShapeNode> match in MatchNodesWithPattern(shapeNodes.ToList(), shapePattern.ToList()))
                 {
                     // Create a root allomorph for the guess.
