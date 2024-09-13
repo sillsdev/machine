@@ -72,6 +72,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _properties; }
         }
 
+        /// <summary>
+        /// Was this allomorph guessed by a lexical pattern?
+        /// </summary>
+        public bool Guessed { get; set; }
+
         public bool FreeFluctuatesWith(Allomorph other)
         {
             if (this == other)
