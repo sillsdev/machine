@@ -215,12 +215,14 @@ public class MorpherTests : HermitCrabTestBase
         List<ShapeNode> noNodes = new List<ShapeNode> { };
         List<ShapeNode> oneNode = new List<ShapeNode> { new ShapeNode(fs1A) };
         List<ShapeNode> twoNodes = new List<ShapeNode> { new ShapeNode(fs1A), new ShapeNode(fs1A) };
-        List<ShapeNode> threeNodes = new List<ShapeNode> {
+        List<ShapeNode> threeNodes = new List<ShapeNode>
+        {
             new ShapeNode(fs1A),
             new ShapeNode(fs1A),
             new ShapeNode(fs1A)
         };
-        List<ShapeNode> fourNodes = new List<ShapeNode> {
+        List<ShapeNode> fourNodes = new List<ShapeNode>
+        {
             new ShapeNode(fs1A),
             new ShapeNode(fs1A),
             new ShapeNode(fs1A),

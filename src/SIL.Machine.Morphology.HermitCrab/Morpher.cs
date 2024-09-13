@@ -409,7 +409,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             int p = 0,
             bool obligatory = false,
             List<ShapeNode> prefix = null
-            )
+        )
         {
             var results = new List<List<ShapeNode>>();
             if (prefix == null)
