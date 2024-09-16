@@ -93,7 +93,9 @@ public class MorpherTests : HermitCrabTestBase
             begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
         ));
         shape.AddRange(new List<ShapeNode> { node });
-        var lexicalPattern = new RootAllomorph(new Segments(Table1, "", shape));
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
+        Table1.AddNaturalClass(naturalClass);
+        var lexicalPattern = new RootAllomorph(new Segments(Table1, "[Any]*"));
 
         var morpher = new Morpher(TraceManager, Language);
         morpher.LexicalPatterns.Add(lexicalPattern);
@@ -187,21 +189,13 @@ public class MorpherTests : HermitCrabTestBase
         FeatureValue valueA = new StringFeatureValue("A");
         FeatureValue valueB = new StringFeatureValue("B");
         FeatureStruct fs1A = new FeatureStruct();
-        FeatureStruct fs1B = new FeatureStruct();
         FeatureStruct fs2B = new FeatureStruct();
         fs1A.AddValue(feat1, valueA);
-        fs1B.AddValue(feat1, valueB);
         fs2B.AddValue(feat2, valueB);
 
         // Test feature matching.
         List<ShapeNode> nodesfs1A = new List<ShapeNode> { new ShapeNode(fs1A) };
-        List<ShapeNode> nodesfs1B = new List<ShapeNode> { new ShapeNode(fs1B) };
         List<ShapeNode> nodesfs2B = new List<ShapeNode> { new ShapeNode(fs2B) };
-        Assert.That(morpher.MatchNodesWithPattern(nodesfs1A, nodesfs1B), Is.Empty);
-        Assert.That(
-            morpher.MatchNodesWithPattern(nodesfs1A, nodesfs1A),
-            Is.EqualTo(new List<List<ShapeNode>> { nodesfs1A })
-        );
         var fs1A2B = morpher.MatchNodesWithPattern(nodesfs1A, nodesfs2B);
         Assert.That(
             fs1A2B.ToList()[0][0].Annotation.FeatureStruct.GetValue(feat1).ToString(),
@@ -212,78 +206,70 @@ public class MorpherTests : HermitCrabTestBase
             Is.EqualTo(valueB.ToString())
         );
 
-        List<ShapeNode> noNodes = new List<ShapeNode> { };
-        List<ShapeNode> oneNode = new List<ShapeNode> { new ShapeNode(fs1A) };
-        List<ShapeNode> twoNodes = new List<ShapeNode> { new ShapeNode(fs1A), new ShapeNode(fs1A) };
-        List<ShapeNode> threeNodes = new List<ShapeNode>
-        {
-            new ShapeNode(fs1A),
-            new ShapeNode(fs1A),
-            new ShapeNode(fs1A)
-        };
-        List<ShapeNode> fourNodes = new List<ShapeNode>
-        {
-            new ShapeNode(fs1A),
-            new ShapeNode(fs1A),
-            new ShapeNode(fs1A),
-            new ShapeNode(fs1A)
-        };
+        IList<ShapeNode> noNodes = GetNodes("");
+        IList<ShapeNode> oneNode = GetNodes("a");
+        IList<ShapeNode> twoNodes = GetNodes("aa");
+        IList<ShapeNode> threeNodes = GetNodes("aaa");
+        IList<ShapeNode> fourNodes = GetNodes("aaaa");
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
+        Table2.AddNaturalClass(naturalClass);
 
         // Test sequences.
+        Assert.That(morpher.MatchNodesWithPattern(oneNode, GetNodes("i")), Is.Empty);
+        Assert.That(
+            morpher.MatchNodesWithPattern(oneNode, oneNode),
+            Is.EqualTo(new List<IList<ShapeNode>> { oneNode })
+        );
         Assert.That(
             morpher.MatchNodesWithPattern(twoNodes, twoNodes),
-            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes })
         );
         Assert.That(
             morpher.MatchNodesWithPattern(threeNodes, threeNodes),
-            Is.EquivalentTo(new List<List<ShapeNode>> { threeNodes })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { threeNodes })
         );
 
         // Test optionality.
-        ShapeNode optionalNode = new ShapeNode(fs1A);
-        optionalNode.Annotation.Optional = true;
-        List<ShapeNode> optionalPattern = new List<ShapeNode> { optionalNode };
+        IList<ShapeNode> optionalPattern = GetNodes("([Any])");
         Assert.That(
             morpher.MatchNodesWithPattern(noNodes, optionalPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { noNodes })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { noNodes })
         );
         Assert.That(
             morpher.MatchNodesWithPattern(oneNode, optionalPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { oneNode })
         );
         Assert.That(morpher.MatchNodesWithPattern(twoNodes, optionalPattern), Is.Empty);
 
         // Test Kleene star.
-        ShapeNode starNode = new ShapeNode(fs1A);
-        starNode.Annotation.Optional = true;
-        starNode.Annotation.Iterative = true;
-        List<ShapeNode> starPattern = new List<ShapeNode> { starNode };
+        IList<ShapeNode> starPattern = GetNodes("[Any]*");
         Assert.That(
             morpher.MatchNodesWithPattern(noNodes, starPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { noNodes })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { noNodes })
         );
-        var result = morpher.MatchNodesWithPattern(oneNode, starPattern);
         Assert.That(
             morpher.MatchNodesWithPattern(oneNode, starPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { oneNode })
         );
         Assert.That(
             morpher.MatchNodesWithPattern(twoNodes, starPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes })
         );
 
-        // Test Kleene plus.
-        ShapeNode plusNode = new ShapeNode(fs1A);
-        plusNode.Annotation.Iterative = true;
-        List<ShapeNode> plusPattern = new List<ShapeNode> { plusNode };
+        // Test Kleene plus look alike ("+" is a boundary marker).
+        IList<ShapeNode> plusPattern = GetNodes("[Any]+");
         Assert.That(morpher.MatchNodesWithPattern(noNodes, plusPattern), Is.Empty);
         Assert.That(
             morpher.MatchNodesWithPattern(oneNode, plusPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { oneNode })
+            Is.EquivalentTo(new List<IList<ShapeNode>> { oneNode })
         );
-        Assert.That(
-            morpher.MatchNodesWithPattern(twoNodes, plusPattern),
-            Is.EquivalentTo(new List<List<ShapeNode>> { twoNodes })
-        );
+        Assert.That(morpher.MatchNodesWithPattern(twoNodes, plusPattern), Is.Empty);
+    }
+
+    IList<ShapeNode> GetNodes(string pattern)
+    {
+        // Use Table2 because it has boundaries defined.
+        Shape shape = new Segments(Table2, pattern).Shape;
+        return shape.GetNodes(shape.Range).ToList();
     }
 }
