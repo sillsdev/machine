@@ -32,7 +32,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Does this represent a lexical pattern (e.g. [Seg]*)?
         /// </summary>
-        public bool IsPattern {
+        public bool IsPattern
+        {
             get
             {
                 foreach (var node in _segments.Shape.GetNodes(_segments.Shape.Range))
