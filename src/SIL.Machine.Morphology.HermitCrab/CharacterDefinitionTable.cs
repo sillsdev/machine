@@ -130,7 +130,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
                     }
                 }
-                if (match) continue;
+                if (match)
+                    continue;
 
                 // Check for pattern language.
                 // NB: This only happens when the characters don't match.
