@@ -38,7 +38,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (var node in _segments.Shape.GetNodes(_segments.Shape.Range))
                 {
-                    if (node.Annotation.IsNaturalClass) return true;
+                    if (node.Annotation.IsNaturalClass)
+                        return true;
                  }
                 return false;
             }
