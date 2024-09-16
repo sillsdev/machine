@@ -20,6 +20,7 @@ namespace SIL.Machine.Annotations
         private FeatureStruct _fs;
         private bool _optional;
         private bool _iterative;
+        private bool _isNaturalClass;
         private object _data;
 
         public Annotation(Range<TOffset> range, FeatureStruct fs)
@@ -131,9 +132,26 @@ namespace SIL.Machine.Annotations
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this annotation represents a natural class.
+        /// This is used for lexical patterns such as [Seg].
+        /// </summary>
+        /// <value>
+        /// 	<c>true</c> if this annotation is a natural class, otherwise <c>false</c>.
+        /// </value>
+
+        public bool IsNaturalClass
+        {
+            get { return _isNaturalClass; }
+            set
+            {
+                CheckFrozen();
+                _isNaturalClass = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this annotation is iterative.
-        /// This is used in lexical patterns such as [Seg]+:
-        /// Kleene star = iterative and optional, Kleene plus = iterative and not optional.
+        /// This is used in lexical patterns such as [Seg]*:
         /// </summary>
         /// <value>
         /// 	<c>true</c> if this annotation is iterative, otherwise <c>false</c>.

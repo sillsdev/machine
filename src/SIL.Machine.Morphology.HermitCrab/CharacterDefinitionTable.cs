@@ -14,11 +14,13 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private readonly Dictionary<string, CharacterDefinition> _charDefLookup;
         private readonly HashSet<CharacterDefinition> _charDefs;
+        private readonly Dictionary<string, NaturalClass> _naturalClassLookup;
 
         public CharacterDefinitionTable()
         {
             _charDefLookup = new Dictionary<string, CharacterDefinition>();
             _charDefs = new HashSet<CharacterDefinition>();
+            _naturalClassLookup = new Dictionary<string, NaturalClass>();
         }
 
         public string Name { get; set; }
@@ -41,6 +43,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         public CharacterDefinition AddBoundary(IEnumerable<string> strRep)
         {
             return Add(strRep, HCFeatureSystem.Boundary, null);
+        }
+
+        public void AddNaturalClass(NaturalClass naturalClass)
+        {
+            _naturalClassLookup[naturalClass.Name] = naturalClass;
         }
 
         /// <summary>
@@ -103,6 +110,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             var nodesList = new List<ShapeNode>();
             int i = 0;
             string normalized = str.Normalize(NormalizationForm.FormD);
+            bool optional = false;
+            int optionalPos = 0;
+            int optionalCount = 0;
             while (i < normalized.Length)
             {
                 bool match = false;
@@ -120,15 +130,83 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
                     }
                 }
+                if (match) continue;
 
-                if (!match)
+                // Check for pattern language.
+                // NB: This only happens when the characters don't match.
+                if (normalized[i] == '[')
                 {
-                    nodes = null;
-                    errorPos = i;
-                    if (!str.IsNormalized(NormalizationForm.FormD))
-                        errorPos = normalized.Substring(0, errorPos).Normalize().Length;
-                    return false;
+                    // Example: [Seg].
+                    // Look for a natural class.
+                    int closePos = normalized.IndexOf("]", i);
+                    if (closePos > 0)
+                    {
+                        string className = normalized.Substring(i + 1, closePos - i - 1);
+                        if (_naturalClassLookup.ContainsKey(className))
+                        {
+                            NaturalClass naturalClass = _naturalClassLookup[className];
+                            var node = new ShapeNode(naturalClass.FeatureStruct);
+                            nodesList.Add(node);
+                            i = closePos + 1;
+                            continue;
+                        }
+                    }
                 }
+                else if (normalized[i] == '(')
+                {
+                    if (i + 1 < normalized.Length && normalized[i + 1] == '[')
+                    {
+                        // The natural class that follows is optional.
+                        // Wait for the close parenthesis to process.
+                        optional = true;
+                        optionalPos = i;
+                        optionalCount = nodesList.Count;
+                        i++;
+                        continue;
+                    }
+                }
+                else if (normalized[i] == ')')
+                {
+                    if (optional && nodesList.Count == optionalCount + 1)
+                    {
+                        // Example: ([Seg]).
+                        // Ill-formed: ([C][V]).
+                        // Make the last node optional.
+                        nodesList[nodesList.Count - 1].Annotation.Optional = true;
+                        optional = false;
+                        i++;
+                        continue;
+                    }
+                }
+                else if (normalized[i] == '*')
+                {
+                    if (i > 0 && normalized[i - 1] == ']')
+                    {
+                        // Example: [Seg]*.
+                        // Make the last node Kleene star.
+                        nodesList[nodesList.Count - 1].Annotation.Optional = true;
+                        nodesList[nodesList.Count - 1].Annotation.Iterative = true;
+                        i++;
+                        continue;
+                    }
+                }
+                // Kleene plus doesn't work because '+' is a boundary marker.
+
+                // Failure
+                nodes = null;
+                errorPos = i;
+                if (!str.IsNormalized(NormalizationForm.FormD))
+                    errorPos = normalized.Substring(0, errorPos).Normalize().Length;
+                return false;
+            }
+            if (optional)
+            {
+                // The open parenthesis didn't get closed.
+                nodes = null;
+                errorPos = optionalPos;
+                if (!str.IsNormalized(NormalizationForm.FormD))
+                    errorPos = normalized.Substring(0, errorPos).Normalize().Length;
+                return false;
             }
             nodes = nodesList;
             errorPos = -1;
