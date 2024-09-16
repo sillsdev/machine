@@ -30,9 +30,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool IsBound { get; set; }
 
         /// <summary>
-        /// Does this represent a lexical pattern (e.g. [Seg]+)?
+        /// Does this represent a lexical pattern (e.g. [Seg]*)?
         /// </summary>
-        public bool IsPattern { get; set; }
+        public bool IsPattern {
+            get
+            {
+                foreach (var node in _segments.Shape.GetNodes(_segments.Shape.Range))
+                {
+                    if (node.Annotation.IsNaturalClass) return true;
+                 }
+                return false;
+            }
+        }
 
         protected override bool ConstraintsEqual(Allomorph other)
         {
