@@ -40,7 +40,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     if (node.Annotation.IsNaturalClass)
                         return true;
-                 }
+                }
                 return false;
             }
         }
