@@ -96,6 +96,7 @@ public class MorpherTests : HermitCrabTestBase
         var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
         Table1.AddNaturalClass(naturalClass);
         var lexicalPattern = new RootAllomorph(new Segments(Table1, "[Any]*"));
+        Assert.That(lexicalPattern.IsPattern);
 
         var morpher = new Morpher(TraceManager, Language);
         morpher.LexicalPatterns.Add(lexicalPattern);
