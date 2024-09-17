@@ -375,13 +375,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // Create a root allomorph for the guess.
                     string shapeString = match.ToString(table, false);
                     var root = new RootAllomorph(new Segments(table, shapeString)) { Guessed = true };
-                    // Point the root allomorph to the lexical pattern in FieldWorks.
-                    if (lexicalPattern.Properties.ContainsKey("ID"))
-                        root.Properties["ID"] = lexicalPattern.Properties["ID"];
-                    if (lexicalPattern.Morpheme != null && lexicalPattern.Morpheme.Properties.ContainsKey("ID"))
-                        root.Morpheme.Properties["ID"] = lexicalPattern.Morpheme.Properties["ID"];
                     // Create a lexical entry to hold the root allomorph.
-                    // (The root allmorph will point to the lexical entry.)
+                    // (The root's Morpheme will point to the lexical entry.)
                     var lexEntry = new LexEntry
                     {
                         Id = shapeString,
@@ -391,6 +386,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                         IsPartial = input.SyntacticFeatureStruct.IsEmpty
                     };
                     lexEntry.Allomorphs.Add(root);
+                    // Point the root allomorph to the lexical pattern in FieldWorks.
+                    if (lexicalPattern.Properties.ContainsKey("ID"))
+                        root.Properties["ID"] = lexicalPattern.Properties["ID"];
+                    if (lexicalPattern.Morpheme != null && lexicalPattern.Morpheme.Properties.ContainsKey("ID"))
+                        root.Morpheme.Properties["ID"] = lexicalPattern.Morpheme.Properties["ID"];
                     // Create a new word that uses the root allomorph.
                     Word newWord = input.Clone();
                     newWord.RootAllomorph = root;
