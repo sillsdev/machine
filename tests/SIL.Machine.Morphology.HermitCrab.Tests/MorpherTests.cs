@@ -253,7 +253,8 @@ public class MorpherTests : HermitCrabTestBase
             morpher.MatchNodesWithPattern(oneNode, optionalPattern2),
             Is.EquivalentTo(new List<IList<ShapeNode>> { oneNode, oneNode })
         );
-        Assert.That(morpher.MatchNodesWithPattern(twoNodes, optionalPattern2),
+        Assert.That(
+            morpher.MatchNodesWithPattern(twoNodes, optionalPattern2),
             Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes }));
         Assert.That(morpher.MatchNodesWithPattern(threeNodes, optionalPattern2), Is.Empty);
 
