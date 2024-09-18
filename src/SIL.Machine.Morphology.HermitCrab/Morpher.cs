@@ -359,12 +359,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        /// <summary>
+        /// Match the input against lexical patterns and return matches.
+        /// </summary>
         private IEnumerable<Word> LexicalGuess(Word input)
         {
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
             CharacterDefinitionTable table = input.Stratum.CharacterDefinitionTable;
             IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Range);
+            HashSet<string> shapeSet = new HashSet<string>();
             foreach (RootAllomorph lexicalPattern in _lexicalPatterns)
             {
                 IEnumerable<ShapeNode> shapePattern = lexicalPattern.Segments.Shape.GetNodes(
@@ -374,6 +378,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     // Create a root allomorph for the guess.
                     string shapeString = match.ToString(table, false);
+                    if (shapeSet.Contains(shapeString))
+                        // Avoid duplicates caused by multiple paths through pattern (e.g. ([Seg])([Seg])).
+                        continue;
+                    shapeSet.Add(shapeString);
                     var root = new RootAllomorph(new Segments(table, shapeString)) { Guessed = true };
                     // Create a lexical entry to hold the root allomorph.
                     // (The root's Morpheme will point to the lexical entry.)
@@ -402,6 +410,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        /// <summary>
+        /// Match the shape nodes against the shape pattern.
+        /// This can produce multiple outputs if there is more than one path.
+        /// The outputs can be different because it unifies the nodes.
+        /// </summary>
         public IEnumerable<List<ShapeNode>> MatchNodesWithPattern(
             IList<ShapeNode> nodes,
             IList<ShapeNode> pattern,
