@@ -242,6 +242,21 @@ public class MorpherTests : HermitCrabTestBase
         );
         Assert.That(morpher.MatchNodesWithPattern(twoNodes, optionalPattern), Is.Empty);
 
+        // Test ambiguity.
+        // (It is up to the caller to eliminate duplicates.)
+        IList<ShapeNode> optionalPattern2 = GetNodes("([Any])([Any])");
+        Assert.That(
+            morpher.MatchNodesWithPattern(noNodes, optionalPattern2),
+            Is.EquivalentTo(new List<IList<ShapeNode>> { noNodes })
+        );
+        Assert.That(
+            morpher.MatchNodesWithPattern(oneNode, optionalPattern2),
+            Is.EquivalentTo(new List<IList<ShapeNode>> { oneNode, oneNode })
+        );
+        Assert.That(morpher.MatchNodesWithPattern(twoNodes, optionalPattern2),
+            Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes }));
+        Assert.That(morpher.MatchNodesWithPattern(threeNodes, optionalPattern2), Is.Empty);
+
         // Test Kleene star.
         IList<ShapeNode> starPattern = GetNodes("[Any]*");
         Assert.That(
