@@ -255,7 +255,8 @@ public class MorpherTests : HermitCrabTestBase
         );
         Assert.That(
             morpher.MatchNodesWithPattern(twoNodes, optionalPattern2),
-            Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes }));
+            Is.EquivalentTo(new List<IList<ShapeNode>> { twoNodes })
+        );
         Assert.That(morpher.MatchNodesWithPattern(threeNodes, optionalPattern2), Is.Empty);
 
         // Test Kleene star.
