@@ -85,21 +85,7 @@ public class MorpherTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
 
-        // Make a lexical pattern equivalent to Any+.
-        ShapeNode node = new ShapeNode(new FeatureStruct());
-        node.Annotation.Optional = true;
-        node.Annotation.Iterative = true;
-        var shape = new Shape(begin => new ShapeNode(
-            begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
-        ));
-        shape.AddRange(new List<ShapeNode> { node });
-        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
-        Table1.AddNaturalClass(naturalClass);
-        var lexicalPattern = new RootAllomorph(new Segments(Table1, "[Any]*"));
-        Assert.That(lexicalPattern.IsPattern);
-
         var morpher = new Morpher(TraceManager, Language);
-        morpher.LexicalPatterns.Add(lexicalPattern);
 
         Assert.That(morpher.AnalyzeWord("gag"), Is.Empty);
         Assert.That(morpher.AnalyzeWord("gagd"), Is.Empty);

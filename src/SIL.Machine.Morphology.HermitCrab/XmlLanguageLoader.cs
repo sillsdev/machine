@@ -717,7 +717,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _language.NaturalClasses.Add(nc);
             _natClasses[(string)natClassElem.Attribute("id")] = nc;
-            foreach (var table in _language.CharacterDefinitionTables)
+            foreach (CharacterDefinitionTable table in _language.CharacterDefinitionTables)
             {
                 table.AddNaturalClass(nc);
             }
