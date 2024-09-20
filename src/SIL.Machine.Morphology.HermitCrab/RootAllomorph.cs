@@ -38,9 +38,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (var node in _segments.Shape.GetNodes(_segments.Shape.Range))
                 {
-                    if (node.Annotation.Iterative ||
-                        (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary))
+                    if (
+                        node.Annotation.Iterative
+                        || (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary))
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
