@@ -85,11 +85,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _lang; }
         }
 
-        public IList<RootAllomorph> LexicalPatterns
-        {
-            get { return _lexicalPatterns; }
-        }
-
         /// <summary>
         /// Parses the specified surface form.
         /// </summary>
@@ -132,9 +127,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
-            var origAnalyses = guessRoot ? analyses.ToList() : null;
-            var syntheses = Synthesize(word, analyses);
-            if (guessRoot && syntheses.Count() == 0)
+            IList<Word> origAnalyses = guessRoot ? analyses.ToList() : null;
+            IList<Word> syntheses = Synthesize(word, analyses).ToList();
+            if (guessRoot && syntheses.Count == 0)
             {
                 // Guess roots when there are no results.
                 List<Word> matches = new List<Word>();
@@ -427,9 +422,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             var results = new List<List<ShapeNode>>();
             if (prefix == null)
                 prefix = new List<ShapeNode>();
-            if (pattern.Count() == p)
+            if (pattern.Count == p)
             {
-                if (nodes.Count() == n)
+                if (nodes.Count == n)
                     // We match because we are at the end of both the pattern and the nodes.
                     results.Add(prefix);
                 return results;
@@ -437,7 +432,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (pattern[p].Annotation.Optional && !obligatory)
                 // Try skipping this item in the pattern.
                 results.AddRange(MatchNodesWithPattern(nodes, pattern, n, p + 1, false, prefix));
-            if (nodes.Count() == n)
+            if (nodes.Count == n)
             {
                 // We fail to match because we are at the end of the nodes but not the pattern.
                 return results;

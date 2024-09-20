@@ -147,7 +147,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                         {
                             NaturalClass naturalClass = _naturalClassLookup[className];
                             var node = new ShapeNode(naturalClass.FeatureStruct);
-                            node.Annotation.IsNaturalClass = true;
                             nodesList.Add(node);
                             i = closePos + 1;
                             continue;

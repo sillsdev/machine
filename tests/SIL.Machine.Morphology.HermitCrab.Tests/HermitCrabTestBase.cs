@@ -795,6 +795,10 @@ public abstract class HermitCrabTestBase
         entry = AddEntry("bound", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "dag");
         entry.PrimaryAllomorph.IsBound = true;
 
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
+        Morphophonemic.CharacterDefinitionTable.AddNaturalClass(naturalClass);
+        AddEntry("pattern", new FeatureStruct(), Morphophonemic, "[Any]*");
+
         Language = new Language
         {
             Name = "Test",
