@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<BiblicalTermsLocalizations Language="Indonesian" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<BiblicalTermsLocalizations Language="Indonesian"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <Categories>
     <Localization Id="AT" Gloss="Sifat, Ciri" />
@@ -1022,7 +1022,7 @@ istilah untuk dewa dari bangsa manapun
 bulan keenam, setara dengan periode Agustus-September
     </Localization>
     <Localization Id="אַלּוֹן-1" Gloss="pohon besar, pohon tarbantin">
-pohon besar yang tinggi sekali; ditemukan sendiri atau di rumpun atau hutan; kehilangan daun di musim dingin. Berfungsi sebagai tanda, penanda kubur, atau tempat berkumpul; karena rerumputannya dianggap sakral oleh orang Kanaan, praktik ritual di bawah mereka selalu merupakan godaan bagi orang Israel 
+pohon besar yang tinggi sekali; ditemukan sendiri atau di rumpun atau hutan; kehilangan daun di musim dingin. Berfungsi sebagai tanda, penanda kubur, atau tempat berkumpul; karena rerumputannya dianggap sakral oleh orang Kanaan, praktik ritual di bawah mereka selalu merupakan godaan bagi orang Israel
     </Localization>
     <Localization Id="אַלּוֹן-2" Gloss="Alon">
 putra Yedaya; suku Simeon
@@ -1301,7 +1301,7 @@ putra Heman; penyanyi Bait Suci; waktu raja Daud
 pohon cemara besar, ditemukan baik di Lebanon maupun Ofir; menyediakan kayu yang sangat baik
     </Localization>
     <Localization Id="אֲלֻמָּה" Gloss="ikatan berkas-berkas">
-ikat bundar batang-batang biji-bijian (seperti gandum) yang dipanen 
+ikat bundar batang-batang biji-bijian (seperti gandum) yang dipanen
     </Localization>
     <Localization Id="אַלְמוֹדָד" Gloss="Almodad">
 putra Yoktan; keturunan Sem
@@ -1680,7 +1680,7 @@ kota; wilayah Yehuda
     </Localization>
     <Localization Id="אֶפְרָת-2" Gloss="Efrata">
 isteri dari Kaleb
-    </Localization>   
+    </Localization>
      <Localization Id="אֶפְרָתִי-1" Gloss="orang Efrata">
 penghuni daerah Efrata
     </Localization>
@@ -6220,7 +6220,7 @@ putra Ahab, raja Israel
     <Localization Id="יוֹאָשׁ-3" Gloss="Yoas">
 putra Ahazia; raja Yehuda (835-796)
     </Localization>
-    <Localization Id="יוֹאָשׁ-4" Glosys="Yoas">
+    <Localization Id="יוֹאָשׁ-4" Gloss="Yoas">
 putra Yoahas; raja Israel (798-782/781); juga dikenal sebagai Yehoas
     </Localization>
     <Localization Id="יוֹאָשׁ-5" Gloss="Yoas">
@@ -6344,7 +6344,7 @@ putra Amitai; nabi
 keturunan Yunani
     </Localization>
     <Localization Id="יוֹנָתָן-1" Gloss="Yonatan">
-putra raja Saul; suku Benyamin; 
+putra raja Saul; suku Benyamin;
     </Localization>
     <Localization Id="יוֹנָתָן-2" Gloss="Yonatan">
 putra Abyatar; suku Lewi
@@ -8792,7 +8792,7 @@ anggota suku Manasye
 lokasi sepanjang jalan pengungsian dari Mesir
     </Localization>
     <Localization Id="מְסוּכָה" Gloss="pagar duri">
-pagar dari tumbuhan semak duri  
+pagar dari tumbuhan semak duri
     </Localization>
     <Localization Id="מַסְמֵר" Gloss="paku">
 sepotong logam tipis (biasanya besi) diasah di satu ujung; digunakan untuk menempelkan potongan kayu satu sama lain atau ke lantai
@@ -11636,7 +11636,7 @@ pria; suku Benyamin
 pria; suku Manasye
     </Localization>
     <Localization Id="פַּדָּן" Gloss="Padan">
-lokasi; Padan-Aram 
+lokasi; Padan-Aram
     </Localization>
     <Localization Id="פַּדַּן אֲרָם" Gloss="Padan-Aram">
 lokasi
@@ -13511,7 +13511,7 @@ selentingan sangat dihargai
 lembah; FilistiN
     </Localization>
     <Localization Id="שֹׂרֵקָה" Gloss="pokok anggur">
-tanaman yang sangat dihargai oleh orang Israel 
+tanaman yang sangat dihargai oleh orang Israel
     </Localization>
     <Localization Id="שָׁאוּל-1" Gloss="Saul">
 putra Kish; raja Israel; suku Benyamin
@@ -14975,10 +14975,10 @@ keselamatan
 gubernur; setelah pembuangan
     </Localization>
 
-    <Localization Id="מול-1" Gloss= "menyunat, disunat"> 
+    <Localization Id="מול-1" Gloss= "menyunat, disunat">
     memotong kulit khatan sebagai tanda perjanjian Tuhan
     </Localization>
-    <Localization Id="מול-2" Gloss= "menyunat (hati)"> 
+    <Localization Id="מול-2" Gloss= "menyunat (hati)">
     khususkan diri untuk Tuhan, taat kepada Tuhan
     </Localization>
     <Localization Id="מול-3" Gloss= "pukul mundur, kalahkan">
