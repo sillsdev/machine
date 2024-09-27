@@ -1,5 +1,5 @@
-﻿using SIL.Machine.Annotations;
-using System.Linq;
+﻿using System.Linq;
+using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
