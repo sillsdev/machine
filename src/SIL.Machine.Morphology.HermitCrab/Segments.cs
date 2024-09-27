@@ -11,6 +11,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Segments(CharacterDefinitionTable table, string representation)
             : this(table, representation, table.Segment(representation)) { }
 
+        public Segments(CharacterDefinitionTable table, string representation, bool allowPattern)
+            : this(table, representation, table.Segment(representation, allowPattern)) { }
+
         public Segments(CharacterDefinitionTable table, string representation, Shape shape)
         {
             _representation = representation;

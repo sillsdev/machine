@@ -14,6 +14,7 @@ using System.IO;
 #if !SINGLE_THREADED
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Text;
 #endif
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -371,36 +372,58 @@ namespace SIL.Machine.Morphology.HermitCrab
                 );
                 foreach (List<ShapeNode> match in MatchNodesWithPattern(shapeNodes.ToList(), shapePattern.ToList()))
                 {
-                    // Create a root allomorph for the guess.
-                    string shapeString = match.ToString(table, false);
-                    if (shapeSet.Contains(shapeString))
-                        // Avoid duplicates caused by multiple paths through pattern (e.g. ([Seg])([Seg])).
-                        continue;
-                    shapeSet.Add(shapeString);
-                    var root = new RootAllomorph(new Segments(table, shapeString)) { Guessed = true };
-                    // Create a lexical entry to hold the root allomorph.
-                    // (The root's Morpheme will point to the lexical entry.)
-                    var lexEntry = new LexEntry
+                    IEnumerable<string> shapeStrings = new List<string>() { match.ToString(table, false) };
+                    // We could set shapeStrings to GetShapeStrings(match, table),
+                    // but that produces spurious ambiguities that don't seem to have any value.
+                    foreach (string shapeString in shapeStrings)
                     {
-                        Id = shapeString,
-                        SyntacticFeatureStruct = input.SyntacticFeatureStruct,
-                        Gloss = shapeString,
-                        Stratum = input.Stratum,
-                        IsPartial = input.SyntacticFeatureStruct.IsEmpty
-                    };
-                    lexEntry.Allomorphs.Add(root);
-                    // Point the root allomorph to the lexical pattern in FieldWorks.
-                    if (lexicalPattern.Properties.ContainsKey("ID"))
-                        root.Properties["ID"] = lexicalPattern.Properties["ID"];
-                    if (lexicalPattern.Morpheme != null && lexicalPattern.Morpheme.Properties.ContainsKey("ID"))
-                        root.Morpheme.Properties["ID"] = lexicalPattern.Morpheme.Properties["ID"];
-                    // Create a new word that uses the root allomorph.
-                    Word newWord = input.Clone();
-                    newWord.RootAllomorph = root;
-                    if (_traceManager.IsTracing)
-                        _traceManager.SynthesizeWord(_lang, newWord);
-                    newWord.Freeze();
-                    yield return newWord;
+                        if (shapeSet.Contains(shapeString))
+                            // Avoid duplicates caused by multiple paths through pattern (e.g. ([Seg])([Seg])).
+                            continue;
+                        shapeSet.Add(shapeString);
+                        // Create a root allomorph for the guess.
+                        var root = new RootAllomorph(new Segments(table, shapeString)) { Guessed = true };
+                        root.AllomorphCoOccurrenceRules.AddRange(lexicalPattern.AllomorphCoOccurrenceRules);
+                        root.Environments.AddRange(lexicalPattern.Environments);
+                        root.Properties.AddRange(lexicalPattern.Properties);
+                        root.StemName = lexicalPattern.StemName;
+                        root.IsBound = lexicalPattern.IsBound;
+                        // Create a lexical entry to hold the root allomorph.
+                        // (The root's Morpheme will point to the lexical entry.)
+                        var lexEntry = new LexEntry
+                        {
+                            Id = shapeString,
+                            Gloss = shapeString,
+                            IsPartial = input.SyntacticFeatureStruct.IsEmpty,
+                            SyntacticFeatureStruct = input.SyntacticFeatureStruct,
+                            Stratum = input.Stratum,
+                        };
+                        lexEntry.Allomorphs.Add(root);
+                        // Point the root allomorph to the lexical pattern in FieldWorks.
+                        if (lexicalPattern.Morpheme != null)
+                        {
+                            // Copy Morpheme fields.
+                            Morpheme morpheme = lexicalPattern.Morpheme;
+                            lexEntry.MorphemeCoOccurrenceRules.AddRange(morpheme.MorphemeCoOccurrenceRules);
+                            lexEntry.Properties.AddRange(morpheme.Properties);
+                            lexEntry.Stratum = morpheme.Stratum;
+                            LexEntry patternEntry = (LexEntry)morpheme;
+                            if (patternEntry != null)
+                            {
+                                // Copy LexEntry fields.
+                                lexEntry.MprFeatures = patternEntry.MprFeatures;
+                                lexEntry.SyntacticFeatureStruct = patternEntry.SyntacticFeatureStruct;
+                                lexEntry.IsPartial = patternEntry.IsPartial;
+                            }
+                        }
+                        // Create a new word that uses the root allomorph.
+                        Word newWord = input.Clone();
+                        newWord.RootAllomorph = root;
+                        if (_traceManager.IsTracing)
+                            _traceManager.SynthesizeWord(_lang, newWord);
+                        newWord.Freeze();
+                        yield return newWord;
+                    }
                 }
             }
         }
@@ -443,7 +466,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return results;
             // Make a copy of prefix to avoid crosstalk and add newNode.
             prefix = new List<ShapeNode>(prefix) { newNode };
-            if (pattern[p].Annotation.Iterative)
+            if (pattern[p].Iterative)
                 // Try using this item in the pattern again.
                 results.AddRange(MatchNodesWithPattern(nodes, pattern, n + 1, p, true, prefix));
             // Try the remainder of the nodes against the remainder of the pattern.
@@ -460,6 +483,58 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (fs.ValueEquals(node.Annotation.FeatureStruct))
                 return node;
             return new ShapeNode(fs);
+        }
+
+        private IEnumerable<string> GetShapeStrings(IList<ShapeNode> nodes, CharacterDefinitionTable table)
+        {
+            IList<string> strings = new List<string>();
+            if (nodes.Count == 0)
+            {
+                // We are at the end of the nodes.
+                strings.Add("");
+                return strings;
+            }
+
+            // Pop the first node.
+            ShapeNode node = nodes[0];
+            nodes.RemoveAt(0);
+
+            // Get suffixes.
+            IEnumerable<string> suffixes = GetShapeStrings(nodes, table);
+            if ((node.Annotation.Type() == HCFeatureSystem.Boundary) || node.IsDeleted())
+                // Skip this node.
+                return suffixes;
+            IEnumerable<string> strReps = table.GetMatchingStrReps(node);
+            if (strReps.Count() == 0)
+                // Skip this node;
+                return suffixes;
+
+            // Get string reps with unique feature structures.
+            IList<string> uniqueStrReps = new List<string>();
+            foreach (string strRep in strReps)
+            {
+                CharacterDefinition cd = table[strRep];
+                bool found = false;
+                foreach (string uniqueStrRep in uniqueStrReps)
+                {
+                    CharacterDefinition uniqueCd = table[uniqueStrRep];
+                    if (uniqueCd.FeatureStruct.ValueEquals(cd.FeatureStruct))
+                    {
+                        found = true;
+                        break;
+                    }
+                 }
+                if (!found)
+                    uniqueStrReps.Add(strRep);
+            }
+
+            // take the cross-product of uniqueStrReps and suffixes.
+            foreach (string uniqueStrRep in uniqueStrReps)
+            {
+                foreach (string suffix in suffixes)
+                    strings.Add(uniqueStrRep + suffix);
+            }
+            return strings;
         }
 
         private bool IsWordValid(Word word)
