@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using SIL.Machine.Annotations;
+using System.Linq;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -9,12 +10,24 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private readonly Segments _segments;
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RootAllomorph"/> class.
         /// </summary>
         public RootAllomorph(Segments segments)
         {
             _segments = segments;
+            foreach (ShapeNode node in _segments.Shape.GetNodes(_segments.Shape.Range))
+            {
+                if (
+                    node.Iterative
+                    || (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary)
+                )
+                {
+                    IsPattern = true;
+                }
+            }
+
         }
 
         /// <summary>
@@ -34,20 +47,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool IsPattern
         {
-            get
-            {
-                foreach (var node in _segments.Shape.GetNodes(_segments.Shape.Range))
-                {
-                    if (
-                        node.Annotation.Iterative
-                        || (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary)
-                    )
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+            get; private set;
         }
 
         protected override bool ConstraintsEqual(Allomorph other)
