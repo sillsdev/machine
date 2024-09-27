@@ -10,7 +10,6 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private readonly Segments _segments;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="RootAllomorph"/> class.
         /// </summary>
@@ -27,7 +26,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                     IsPattern = true;
                 }
             }
-
         }
 
         /// <summary>
