@@ -795,10 +795,6 @@ public abstract class HermitCrabTestBase
         entry = AddEntry("bound", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "dag");
         entry.PrimaryAllomorph.IsBound = true;
 
-        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
-        Morphophonemic.CharacterDefinitionTable.AddNaturalClass(naturalClass);
-        AddEntry("pattern", new FeatureStruct(), Morphophonemic, "[Any]*");
-
         Language = new Language
         {
             Name = "Test",
@@ -819,7 +815,7 @@ public abstract class HermitCrabTestBase
         }
     }
 
-    private LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
+    public LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
     {
         var entry = new LexEntry
         {
@@ -829,7 +825,7 @@ public abstract class HermitCrabTestBase
             IsPartial = syntacticFS.IsEmpty
         };
         foreach (string form in forms)
-            entry.Allomorphs.Add(new RootAllomorph(new Segments(stratum.CharacterDefinitionTable, form)));
+            entry.Allomorphs.Add(new RootAllomorph(new Segments(stratum.CharacterDefinitionTable, form, true)));
         stratum.Entries.Add(entry);
         Entries[gloss] = entry;
         return entry;

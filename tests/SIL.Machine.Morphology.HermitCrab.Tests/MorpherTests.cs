@@ -85,6 +85,10 @@ public class MorpherTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
 
+        var naturalClass = new NaturalClass(new FeatureStruct()) { Name = "Any" };
+        Morphophonemic.CharacterDefinitionTable.AddNaturalClass(naturalClass);
+        AddEntry("pattern", new FeatureStruct(), Morphophonemic, "[Any]*");
+
         var morpher = new Morpher(TraceManager, Language);
 
         Assert.That(morpher.AnalyzeWord("gag"), Is.Empty);
@@ -273,7 +277,7 @@ public class MorpherTests : HermitCrabTestBase
     IList<ShapeNode> GetNodes(string pattern)
     {
         // Use Table2 because it has boundaries defined.
-        Shape shape = new Segments(Table2, pattern).Shape;
+        Shape shape = new Segments(Table2, pattern, true).Shape;
         return shape.GetNodes(shape.Range).ToList();
     }
 }

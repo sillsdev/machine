@@ -498,7 +498,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private RootAllomorph LoadRootAllomorph(XElement alloElem, CharacterDefinitionTable table)
         {
             var shapeStr = (string)alloElem.Element("PhoneticShape");
-            Segments segments = new Segments(table, shapeStr);
+            Segments segments = new Segments(table, shapeStr, true);
             if (segments.Shape.All(n => n.Type() == HCFeatureSystem.Boundary))
                 throw new InvalidShapeException(shapeStr, 0);
             var allomorph = new RootAllomorph(segments) { IsBound = (bool?)alloElem.Attribute("isBound") ?? false };

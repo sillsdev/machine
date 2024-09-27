@@ -105,7 +105,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private bool GetShapeNodes(string str, out IEnumerable<ShapeNode> nodes, out int errorPos)
+        private bool GetShapeNodes(string str, bool allowPattern, out IEnumerable<ShapeNode> nodes, out int errorPos)
         {
             var nodesList = new List<ShapeNode>();
             int i = 0;
@@ -132,66 +132,70 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
                 if (match)
                     continue;
-
-                // Check for pattern language.
-                // NB: This only happens when the characters don't match.
-                if (normalized[i] == '[')
+                if (allowPattern)
                 {
-                    // Example: [Seg].
-                    // Look for a natural class.
-                    int closePos = normalized.IndexOf("]", i);
-                    if (closePos > 0)
+                    // Check for pattern language.
+                    // NB: This only happens when the characters don't match.
+                    // I thought about implementing this using Pattern<Shape, ShapeNode>,
+                    // but the Matcher doesn't preserve the unifications of the nodes.
+                    if (normalized[i] == '[')
                     {
-                        string className = normalized.Substring(i + 1, closePos - i - 1);
-                        if (_naturalClassLookup.ContainsKey(className))
+                        // Example: [Seg].
+                        // Look for a natural class.
+                        int closePos = normalized.IndexOf("]", i);
+                        if (closePos > 0)
                         {
-                            NaturalClass naturalClass = _naturalClassLookup[className];
-                            var node = new ShapeNode(naturalClass.FeatureStruct);
-                            nodesList.Add(node);
-                            i = closePos + 1;
+                            string className = normalized.Substring(i + 1, closePos - i - 1);
+                            if (_naturalClassLookup.ContainsKey(className))
+                            {
+                                NaturalClass naturalClass = _naturalClassLookup[className];
+                                var node = new ShapeNode(naturalClass.FeatureStruct);
+                                nodesList.Add(node);
+                                i = closePos + 1;
+                                continue;
+                            }
+                        }
+                    }
+                    else if (normalized[i] == '(')
+                    {
+                        if (i + 1 < normalized.Length && normalized[i + 1] == '[')
+                        {
+                            // The natural class that follows is optional.
+                            // Wait for the close parenthesis to process.
+                            optional = true;
+                            optionalPos = i;
+                            optionalCount = nodesList.Count;
+                            i++;
                             continue;
                         }
                     }
-                }
-                else if (normalized[i] == '(')
-                {
-                    if (i + 1 < normalized.Length && normalized[i + 1] == '[')
+                    else if (normalized[i] == ')')
                     {
-                        // The natural class that follows is optional.
-                        // Wait for the close parenthesis to process.
-                        optional = true;
-                        optionalPos = i;
-                        optionalCount = nodesList.Count;
-                        i++;
-                        continue;
+                        if (optional && nodesList.Count == optionalCount + 1)
+                        {
+                            // Example: ([Seg]).
+                            // Ill-formed: ([C][V]).
+                            // Make the last node optional.
+                            nodesList[nodesList.Count - 1].Annotation.Optional = true;
+                            optional = false;
+                            i++;
+                            continue;
+                        }
                     }
-                }
-                else if (normalized[i] == ')')
-                {
-                    if (optional && nodesList.Count == optionalCount + 1)
+                    else if (normalized[i] == '*')
                     {
-                        // Example: ([Seg]).
-                        // Ill-formed: ([C][V]).
-                        // Make the last node optional.
-                        nodesList[nodesList.Count - 1].Annotation.Optional = true;
-                        optional = false;
-                        i++;
-                        continue;
+                        if (i > 0 && normalized[i - 1] == ']')
+                        {
+                            // Example: [Seg]*.
+                            // Make the last node Kleene star.
+                            nodesList[nodesList.Count - 1].Annotation.Optional = true;
+                            nodesList[nodesList.Count - 1].Iterative = true;
+                            i++;
+                            continue;
+                        }
                     }
+                    // Kleene plus doesn't work because '+' is a boundary marker.
                 }
-                else if (normalized[i] == '*')
-                {
-                    if (i > 0 && normalized[i - 1] == ']')
-                    {
-                        // Example: [Seg]*.
-                        // Make the last node Kleene star.
-                        nodesList[nodesList.Count - 1].Annotation.Optional = true;
-                        nodesList[nodesList.Count - 1].Annotation.Iterative = true;
-                        i++;
-                        continue;
-                    }
-                }
-                // Kleene plus doesn't work because '+' is a boundary marker.
 
                 // Failure
                 nodes = null;
@@ -216,9 +220,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public Shape Segment(string str)
         {
+            return Segment(str, false);
+        }
+
+        public Shape Segment(string str, bool allowPattern)
+        {
             IEnumerable<ShapeNode> nodes;
             int errorPos;
-            if (GetShapeNodes(str, out nodes, out errorPos))
+            if (GetShapeNodes(str, allowPattern, out nodes, out errorPos))
             {
                 var shape = new Shape(begin => new ShapeNode(
                     begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
@@ -241,7 +250,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             IEnumerable<ShapeNode> nodes;
             int errorPos;
-            if (GetShapeNodes(str, out nodes, out errorPos))
+            if (GetShapeNodes(str, true, out nodes, out errorPos))
             {
                 shape = new Shape(begin => new ShapeNode(
                     begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
