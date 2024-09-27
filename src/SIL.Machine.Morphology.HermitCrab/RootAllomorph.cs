@@ -40,10 +40,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Does this represent a lexical pattern (e.g. [Seg]*)?
         /// </summary>
-        public bool IsPattern
-        {
-            get; private set;
-        }
+        public bool IsPattern { get; private set; }
 
         protected override bool ConstraintsEqual(Allomorph other)
         {
