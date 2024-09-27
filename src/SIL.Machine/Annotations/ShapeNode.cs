@@ -50,7 +50,7 @@ namespace SIL.Machine.Annotations
         /// </summary>
         public bool Iterative
         {
-            get { return Annotation.Data != null;  }
+            get { return Annotation.Data != null; }
             set
             {
                 if (value)

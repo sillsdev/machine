@@ -523,7 +523,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         found = true;
                         break;
                     }
-                 }
+                }
                 if (!found)
                     uniqueStrReps.Add(strRep);
             }
