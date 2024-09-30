@@ -189,7 +189,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             // Example: [Seg]*.
                             // Make the last node Kleene star.
                             nodesList[nodesList.Count - 1].Annotation.Optional = true;
-                            nodesList[nodesList.Count - 1].Iterative = true;
+                            nodesList[nodesList.Count - 1].SetIterative(true);
                             i++;
                             continue;
                         }
