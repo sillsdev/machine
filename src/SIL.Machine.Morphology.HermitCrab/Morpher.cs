@@ -466,7 +466,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return results;
             // Make a copy of prefix to avoid crosstalk and add newNode.
             prefix = new List<ShapeNode>(prefix) { newNode };
-            if (pattern[p].Iterative)
+            if (pattern[p].IsIterative())
                 // Try using this item in the pattern again.
                 results.AddRange(MatchNodesWithPattern(nodes, pattern, n + 1, p, true, prefix));
             // Try the remainder of the nodes against the remainder of the pattern.

@@ -45,21 +45,6 @@ namespace SIL.Machine.Annotations
             get { return _ann; }
         }
 
-        /// <summary>
-        /// Whether this is an iterative node in a lexical pattern.
-        /// </summary>
-        public bool Iterative
-        {
-            get { return Annotation.Data != null; }
-            set
-            {
-                if (value)
-                    Annotation.Data = value;
-                else
-                    Annotation.Data = null;
-            }
-        }
-
         public int CompareTo(ShapeNode other)
         {
             if (other.List != List)

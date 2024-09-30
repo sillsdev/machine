@@ -88,6 +88,19 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
         }
 
+        internal static bool IsIterative(this ShapeNode node)
+        {
+            return node.Annotation.Data != null;
+        }
+
+        internal static void SetIterative(this ShapeNode node, bool iterative)
+        {
+            if (iterative)
+                node.Annotation.Data = iterative;
+            else
+                node.Annotation.Data = null;
+        }
+
         private static readonly IEqualityComparer<ShapeNode> NodeComparer = new ProjectionEqualityComparer<
             ShapeNode,
             FeatureStruct
