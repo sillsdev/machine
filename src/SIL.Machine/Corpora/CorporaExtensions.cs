@@ -209,6 +209,11 @@ namespace SIL.Machine.Corpora
             return new TextFilterTextCorpus(corpus, predicate);
         }
 
+        public static ITextCorpus FilterTextRows(this ITextCorpus corpus, Func<TextRow, bool> predicate)
+        {
+            return new RowFilterTextCorpus(corpus, predicate);
+        }
+
         public static ITextCorpus WhereNonempty(this ITextCorpus corpus)
         {
             return corpus.Where(r => !r.IsEmpty);
@@ -439,6 +444,29 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds ?? Texts.Select(t => t.Id));
+            }
+        }
+
+        private class RowFilterTextCorpus : TextCorpusBase
+        {
+            private readonly ITextCorpus _corpus;
+            private readonly Func<TextRow, bool> _predicate;
+
+            public RowFilterTextCorpus(ITextCorpus corpus, Func<TextRow, bool> predicate)
+            {
+                _corpus = corpus;
+                _predicate = predicate;
+            }
+
+            public override IEnumerable<IText> Texts => _corpus.Texts;
+
+            public override bool IsTokenized => _corpus.IsTokenized;
+
+            public override ScrVers Versification => _corpus.Versification;
+
+            public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
+            {
+                return _corpus.GetRows(textIds ?? Texts.Select(t => t.Id)).Where(_predicate);
             }
         }
 
