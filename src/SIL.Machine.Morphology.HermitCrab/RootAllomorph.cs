@@ -18,7 +18,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             _segments = segments;
             foreach (ShapeNode node in _segments.Shape.GetNodes(_segments.Shape.Range))
             {
-                if (node.IsIterative() || (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary))
+                if (
+                    node.IsIterative()
+                    || (node.Annotation.Optional && node.Annotation.Type() != HCFeatureSystem.Boundary)
+                )
                 {
                     IsPattern = true;
                 }
