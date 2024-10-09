@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BookNames>
+  <book code="GEN" abbr="" short="" long="" />
+  <book code="EXO" abbr="" short="" long="" />
+  <book code="LEV" abbr="" short="" long="" />
+  <book code="NUM" abbr="" short="" long="" />
+  <book code="DEU" abbr="" short="" long="" />
+  <book code="JOS" abbr="" short="" long="" />
+  <book code="JDG" abbr="" short="" long="" />
+  <book code="RUT" abbr="" short="" long="" />
+  <book code="1SA" abbr="" short="" long="" />
+  <book code="2SA" abbr="" short="" long="" />
+  <book code="1KI" abbr="" short="" long="" />
+  <book code="2KI" abbr="" short="" long="" />
+  <book code="1CH" abbr="" short="" long="" />
+  <book code="2CH" abbr="" short="" long="" />
+  <book code="EZR" abbr="" short="" long="" />
+  <book code="NEH" abbr="" short="" long="" />
+  <book code="EST" abbr="" short="" long="" />
+  <book code="JOB" abbr="" short="" long="" />
+  <book code="PSA" abbr="" short="" long="" />
+  <book code="PRO" abbr="" short="" long="" />
+  <book code="ECC" abbr="" short="" long="" />
+  <book code="SNG" abbr="" short="" long="" />
+  <book code="ISA" abbr="" short="" long="" />
+  <book code="JER" abbr="" short="" long="" />
+  <book code="LAM" abbr="" short="" long="" />
+  <book code="EZK" abbr="" short="" long="" />
+  <book code="DAN" abbr="" short="" long="" />
+  <book code="HOS" abbr="" short="" long="" />
+  <book code="JOL" abbr="" short="" long="" />
+  <book code="AMO" abbr="" short="" long="" />
+  <book code="OBA" abbr="" short="" long="" />
+  <book code="JON" abbr="" short="" long="" />
+  <book code="MIC" abbr="" short="" long="" />
+  <book code="NAM" abbr="" short="" long="" />
+  <book code="HAB" abbr="" short="" long="" />
+  <book code="ZEP" abbr="" short="" long="" />
+  <book code="HAG" abbr="" short="" long="" />
+  <book code="ZEC" abbr="" short="" long="" />
+  <book code="MAL" abbr="" short="" long="" />
+  <book code="MAT" abbr="" short="Mateo" long="Mateo" />
+  <book code="MRK" abbr="" short="Marcos" long="Marcos" />
+  <book code="LUK" abbr="" short="Lucas" long="Lucas" />
+  <book code="JHN" abbr="" short="Juan" long="Juan" />
+  <book code="ACT" abbr="" short="Hechos" long="Hechos" />
+  <book code="ROM" abbr="" short="Romanos" long="Romanos" />
+  <book code="1CO" abbr="" short="1 Corintios" long="1 Corintios" />
+  <book code="2CO" abbr="" short="2 Corintios" long="2 Corintios" />
+  <book code="GAL" abbr="" short="Gálatas" long="Gálatas" />
+  <book code="EPH" abbr="" short="Efesios" long="Efesios" />
+  <book code="PHP" abbr="" short="Filipenses" long="Filipenses" />
+  <book code="COL" abbr="" short="Colosenses" long="Colosenses" />
+  <book code="1TH" abbr="" short="1 Tesalonicenses" long="1 Tesalonicenses" />
+  <book code="2TH" abbr="" short="2 Tesalonicenses" long="2 Tesalonicenses" />
+  <book code="1TI" abbr="" short="1 Timoteo" long="1 Timoteo" />
+  <book code="2TI" abbr="" short="2 Timoteo" long="2 Timoteo" />
+  <book code="TIT" abbr="" short="Tito" long="Tito" />
+  <book code="PHM" abbr="" short="Filemón" long="Filemón" />
+  <book code="HEB" abbr="" short="Hebreos" long="Hebreos" />
+  <book code="JAS" abbr="" short="Santiago" long="Santiago" />
+  <book code="1PE" abbr="" short="1 Pedro" long="1 Pedro" />
+  <book code="2PE" abbr="" short="2 Pedro" long="2 Pedro" />
+  <book code="1JN" abbr="" short="1 Juan" long="1 Juan" />
+  <book code="2JN" abbr="" short="2 Juan" long="2 Juan" />
+  <book code="3JN" abbr="" short="3 Juan" long="3 Juan" />
+  <book code="JUD" abbr="" short="Judas" long="Judas" />
+  <book code="REV" abbr="" short="Apocalipsis" long="Apocalipsis" />
+  <book code="TOB" abbr="" short="" long="" />
+  <book code="JDT" abbr="" short="" long="" />
+  <book code="ESG" abbr="" short="" long="" />
+  <book code="WIS" abbr="" short="" long="" />
+  <book code="SIR" abbr="" short="" long="" />
+  <book code="BAR" abbr="" short="" long="" />
+  <book code="LJE" abbr="" short="" long="" />
+  <book code="S3Y" abbr="" short="" long="" />
+  <book code="SUS" abbr="" short="" long="" />
+  <book code="BEL" abbr="" short="" long="" />
+  <book code="1MA" abbr="" short="" long="" />
+  <book code="2MA" abbr="" short="" long="" />
+  <book code="3MA" abbr="" short="" long="" />
+  <book code="4MA" abbr="" short="" long="" />
+  <book code="1ES" abbr="" short="" long="" />
+  <book code="2ES" abbr="" short="" long="" />
+  <book code="MAN" abbr="" short="" long="" />
+  <book code="PS2" abbr="" short="" long="" />
+  <book code="ODA" abbr="" short="" long="" />
+  <book code="PSS" abbr="" short="" long="" />
+  <book code="JSA" abbr="" short="" long="" />
+  <book code="JDB" abbr="" short="" long="" />
+  <book code="TBS" abbr="" short="" long="" />
+  <book code="SST" abbr="" short="" long="" />
+  <book code="DNT" abbr="" short="" long="" />
+  <book code="BLT" abbr="" short="" long="" />
+  <book code="XXA" abbr="" short="" long="" />
+  <book code="XXB" abbr="" short="" long="" />
+  <book code="XXC" abbr="" short="" long="" />
+  <book code="XXD" abbr="" short="" long="" />
+  <book code="XXE" abbr="" short="" long="" />
+  <book code="XXF" abbr="" short="" long="" />
+  <book code="XXG" abbr="" short="" long="" />
+  <book code="FRT" abbr="" short="Introducción" long="Versión Biblia Libre Nuevo Testamento" />
+  <book code="BAK" abbr="" short="" long="" />
+  <book code="OTH" abbr="" short="" long="" />
+  <book code="3ES" abbr="" short="" long="" />
+  <book code="EZA" abbr="" short="" long="" />
+  <book code="5EZ" abbr="" short="" long="" />
+  <book code="6EZ" abbr="" short="" long="" />
+  <book code="INT" abbr="" short="" long="" />
+  <book code="CNC" abbr="" short="" long="" />
+  <book code="GLO" abbr="" short="" long="" />
+  <book code="TDX" abbr="" short="" long="" />
+  <book code="NDX" abbr="" short="" long="" />
+  <book code="DAG" abbr="" short="" long="" />
+  <book code="PS3" abbr="" short="" long="" />
+  <book code="2BA" abbr="" short="" long="" />
+  <book code="LBA" abbr="" short="" long="" />
+  <book code="JUB" abbr="" short="" long="" />
+  <book code="ENO" abbr="" short="" long="" />
+  <book code="1MQ" abbr="" short="" long="" />
+  <book code="2MQ" abbr="" short="" long="" />
+  <book code="3MQ" abbr="" short="" long="" />
+  <book code="REP" abbr="" short="" long="" />
+  <book code="4BA" abbr="" short="" long="" />
+  <book code="LAO" abbr="" short="" long="" />
+</BookNames>

@@ -1,0 +1,139 @@
+<?xml version="1.0" standalone="yes"?><DBLMetadata version="2.2.1" id="9879dbb7cfe39e4d" revision="64">
+    <identification>
+      <name>World English Bible (American Edition)</name>
+      <nameLocal>World English Bible</nameLocal>
+      <description>Related dialect adaptation of the American Standard Version of 1901 into modern English</description>
+      <abbreviation>WEB</abbreviation>
+      <abbreviationLocal>WEB</abbreviationLocal>
+      <scope>Bible with Deuterocanon</scope>
+      <dateCompleted>2020-01-01</dateCompleted>
+      <bundleProducer>Paratext/9.2.102.3</bundleProducer>
+      <systemId type="paratext">
+        <id>9879dbb7cfe39e4d5d6f7f9dbd0c6414691a036e</id>
+        <csetId>4c4fe70e7e2ad454e20891a60bf81991037976b7</csetId>
+        <name>engWEB14</name>
+        <fullName>World English Bible (American Edition)</fullName>
+      </systemId>
+      <systemId type="ptreg">
+        <id>dtyynkiqGHSk8qEp7</id>
+      </systemId>
+    </identification>
+    <type>
+      <medium>text</medium>
+      <isConfidential>false</isConfidential>
+      <hasCharacters>true</hasCharacters>
+      <isTranslation>true</isTranslation>
+      <isExpression>true</isExpression>
+      <translationType>Revision</translationType>
+      <audience>Common</audience>
+      <projectType>Standard</projectType>
+    </type>
+    <relationships/>
+    <agencies>
+      <rightsHolder>
+        <abbr>eBible.org</abbr>
+        <url>http://eBible.org</url>
+        <nameLocal>eBible.org</nameLocal>
+        <uid>545d2cb0ae307afa44b390fc</uid>
+        <name>eBible.org</name>
+      </rightsHolder>
+      <rightsAdmin>
+        <url>https://eBible.org</url>
+        <uid>545d2cb0ae307afa44b390fc</uid>
+        <name>eBible.org</name>
+      </rightsAdmin>
+      <contributor>
+        <content>true</content>
+        <publication>true</publication>
+        <management>true</management>
+        <finance>true</finance>
+        <qa>true</qa>
+        <uid>545d2cb0ae307afa44b390fc</uid>
+        <name>eBible.org</name>
+      </contributor>
+    </agencies>
+    <language>
+      <iso>eng</iso>
+      <name>English</name>
+      <nameLocal>English</nameLocal>
+      <script>Latin</script>
+      <scriptCode>Latn</scriptCode>
+      <scriptDirection>LTR</scriptDirection>
+      <ldml>en</ldml>
+      <rod>00025</rod>
+      <numerals>Arabic</numerals>
+    </language>
+    <countries>
+      <country>
+        <iso>US</iso>
+        <name>United States of America</name>
+      </country>
+    </countries>
+    <format>
+      <usxVersion>3.0</usxVersion>
+      <versedParagraphs>false</versedParagraphs>
+    </format>
+    <names>
+      <name id="book-1jn">
+        <abbr>1 John</abbr>
+        <short>1 John</short>
+        <long>John’s First Letter</long>
+      </name>
+      <name id="book-2jn">
+        <abbr>2 John</abbr>
+        <short>2 John</short>
+        <long>John’s Second Letter</long>
+      </name>
+      <name id="book-3jn">
+        <abbr>3 John</abbr>
+        <short>3 John</short>
+        <long>John’s Third Letter</long>
+      </name>
+    </names>
+    <manifest>
+      <resource checksum="9e58d8ce9076b9287365bb30f49d509d" mimeType="application/xml" size="115162" uri="release/USX_1/1JN.usx"/>
+      <resource checksum="c9f8f36baf20231ac043ef5774d54b4a" mimeType="application/xml" size="14166" uri="release/USX_1/2JN.usx"/>
+      <resource checksum="7943943cb65589575038308329bc34fd" mimeType="application/xml" size="13873" uri="release/USX_1/3JN.usx"/>
+      <resource checksum="fada16f5069a81ad7f3f846fad04088e" mimeType="application/xml" size="2843" uri="release/eng_en.ldml"/>
+      <resource checksum="a11849cc96f5beb21e0558a680047a71" mimeType="application/xml" size="94685" uri="release/styles.xml"/>
+      <resource checksum="6e473562ff871ce551b4932c1ffa5b3b" mimeType="text/plain" size="15457" uri="release/versification.vrs"/>
+    </manifest>
+    <publications>
+      <publication id="p1" default="true">
+        <name>World English Bible</name>
+        <nameLocal>World English Bible</nameLocal>
+        <description>Ecumenical</description>
+        <descriptionLocal>Ecumenical</descriptionLocal>
+        <abbreviation>WEB</abbreviation>
+        <abbreviationLocal>WEB</abbreviationLocal>
+        <canonicalContent>
+          <book code="1JN"/>
+          <book code="2JN"/>
+          <book code="3JN"/>
+        </canonicalContent>
+        <structure>
+          <content name="book-1jn" src="release/USX_1/1JN.usx" role="1JN"/>
+          <content name="book-2jn" src="release/USX_1/2JN.usx" role="2JN"/>
+          <content name="book-3jn" src="release/USX_1/3JN.usx" role="3JN"/>
+        </structure>
+      </publication>
+    </publications>
+    <copyright>
+      <fullStatement>
+        <statementContent type="xhtml">
+          <p>PUBLIC DOMAIN</p>
+        </statementContent>
+      </fullStatement>
+    </copyright>
+    <promotion>
+      <promoVersionInfo contentType="xhtml">
+        <p>See http://WorldEnglish.Bible</p>
+      </promoVersionInfo>
+    </promotion>
+    <archiveStatus>
+      <archivistName>Kahunapule Michael Johnson</archivistName>
+      <dateArchived>2021-12-10T23:21:07.923054</dateArchived>
+      <dateUpdated>2022-01-14T03:08:53.100483</dateUpdated>
+      <comments>Added missing "to" to EXO 13:11</comments>
+    </archiveStatus>
+  </DBLMetadata>
