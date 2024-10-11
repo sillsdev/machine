@@ -73,7 +73,7 @@ public class ParatextProjectTermsParserTests
     }
 
     [Test]
-    public void TestGetKeyTermsFromTermsLocalizations_()
+    public void TestGetKeyTermsFromTermsLocalizations()
     {
         var env = new TestEnvironment(
             new DefaultParatextProjectSettings(
@@ -86,6 +86,29 @@ public class ParatextProjectTermsParserTests
         IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(5715));
         Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Aaron"));
+    }
+
+    [Test]
+    public void TestGetKeyTermsFromTermsLocalizations_FilterByChapters()
+    {
+        var env = new TestEnvironment(
+            new DefaultParatextProjectSettings(
+                biblicalTermsListType: "Major",
+                biblicalTermsFileName: "BiblicalTerms.xml",
+                languageCode: "fr"
+            ),
+            useTermGlosses: true,
+            chapters: new Dictionary<string, HashSet<int>>()
+            {
+                {
+                    "HAB",
+                    new() { 1 }
+                }
+            }
+        );
+        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        Assert.That(terms.Count, Is.EqualTo(3)); //Habakkuk, YHWH, Kashdi/Chaldean are the only PN terms in HAB 1
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Habaquq"));
     }
 
     [Test]
@@ -150,16 +173,19 @@ public class ParatextProjectTermsParserTests
     private class TestEnvironment(
         ParatextProjectSettings? settings = null,
         Dictionary<string, string>? files = null,
-        bool useTermGlosses = true
+        bool useTermGlosses = true,
+        IDictionary<string, HashSet<int>>? chapters = null
     )
     {
         private readonly bool _useTermGlosses = useTermGlosses;
+        private readonly IDictionary<string, HashSet<int>>? _chapters = chapters;
+
         public ParatextProjectTermsParserBase Parser { get; } =
             new MemoryParatextProjectTermsParser(settings ?? new DefaultParatextProjectSettings(), files ?? new());
 
         public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> GetGlosses()
         {
-            return Parser.Parse(new string[] { "PN" }, _useTermGlosses);
+            return Parser.Parse(new string[] { "PN" }, _useTermGlosses, _chapters);
         }
     }
 
