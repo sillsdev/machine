@@ -9,7 +9,8 @@ namespace SIL.Machine.Corpora
         public ParatextBackupTermsCorpus(
             string fileName,
             IEnumerable<string> termCategories,
-            bool useTermGlosses = true
+            bool useTermGlosses = true,
+            IDictionary<string, HashSet<int>> chapters = null
         )
         {
             using (var archive = ZipFile.OpenRead(fileName))
@@ -18,7 +19,7 @@ namespace SIL.Machine.Corpora
                 IEnumerable<(string, IReadOnlyList<string>)> glosses = new ZipParatextProjectTermsParser(
                     archive,
                     settings
-                ).Parse(termCategories, useTermGlosses);
+                ).Parse(termCategories, useTermGlosses, chapters);
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
 

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SIL.Extensions;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -49,11 +50,13 @@ namespace SIL.Machine.Corpora
 
         public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> Parse(
             IEnumerable<string> termCategories,
-            bool useTermGlosses = true
+            bool useTermGlosses = true,
+            IDictionary<string, HashSet<int>> chapters = null
         )
         {
             XDocument biblicalTermsDoc;
             IDictionary<string, string> termIdToCategoryDictionary;
+            IDictionary<string, ImmutableHashSet<VerseRef>> termIdToReferences;
             if (_settings.BiblicalTermsListType == "Project")
             {
                 if (Exists(_settings.BiblicalTermsFileName))
@@ -62,6 +65,7 @@ namespace SIL.Machine.Corpora
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                        termIdToReferences = GetReferences(biblicalTermsDoc);
                     }
                 }
                 else
@@ -74,6 +78,7 @@ namespace SIL.Machine.Corpora
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                        termIdToReferences = GetReferences(biblicalTermsDoc);
                     }
                 }
             }
@@ -87,11 +92,13 @@ namespace SIL.Machine.Corpora
                 {
                     biblicalTermsDoc = XDocument.Load(keyTermsFile);
                     termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
+                    termIdToReferences = GetReferences(biblicalTermsDoc);
                 }
             }
             else
             {
                 termIdToCategoryDictionary = new Dictionary<string, string>();
+                termIdToReferences = new Dictionary<string, ImmutableHashSet<VerseRef>>();
             }
 
             XDocument termsGlossesDoc = null;
@@ -124,6 +131,7 @@ namespace SIL.Machine.Corpora
                     .Where(n => n.Name.LocalName == "TermRendering")
                     .Select(ele => (ele.Attribute("Id").Value, ele))
                     .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
@@ -144,6 +152,7 @@ namespace SIL.Machine.Corpora
                     .Where(n => n.Name.LocalName == "Localization")
                     .Select(ele => (ele.Attribute("Id").Value, ele))
                     .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
@@ -173,6 +182,24 @@ namespace SIL.Machine.Corpora
             string category;
             return (termCategories.Count() == 0)
                 || (termIdToCategoryDictionary.TryGetValue(id, out category) && termCategories.Contains(category));
+        }
+
+        private static bool IsInChapters(
+            string id,
+            IDictionary<string, HashSet<int>> chapters,
+            IDictionary<string, ImmutableHashSet<VerseRef>> termIdToReferences
+        )
+        {
+            ImmutableHashSet<VerseRef> verseRefs;
+            return termIdToReferences.Count() == 0
+                || chapters == null
+                || (
+                    termIdToReferences.TryGetValue(id, out verseRefs)
+                    && verseRefs.Any(vr =>
+                        chapters.TryGetValue(vr.Book, out HashSet<int> bookChapters)
+                        && (bookChapters.Count() == 0 || bookChapters.Contains(vr.ChapterNum))
+                    )
+                );
         }
 
         public static IReadOnlyList<string> GetGlosses(string gloss)
@@ -241,6 +268,23 @@ namespace SIL.Machine.Corpora
                 .Where(n => n.Name.LocalName == "Term")
                 .DistinctBy(e => e.Attribute("Id").Value)
                 .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
+        }
+
+        private static IDictionary<string, ImmutableHashSet<VerseRef>> GetReferences(XDocument biblicalTermsDocument)
+        {
+            return biblicalTermsDocument
+                .Descendants()
+                .Where(n => n.Name.LocalName == "Term")
+                .DistinctBy(e => e.Attribute("Id").Value)
+                .ToDictionary(
+                    e => e.Attribute("Id").Value,
+                    e =>
+                        e.Element("References")
+                            ?.Descendants()
+                            .Where(reference => int.TryParse(reference.Value.Substring(0, 9), out int _))
+                            .Select(reference => new VerseRef(int.Parse(reference.Value.Substring(0, 9))))
+                            .ToImmutableHashSet()
+                );
         }
 
         protected abstract Stream Open(string fileName);
