@@ -13,6 +13,8 @@ namespace SIL.Machine.Utils
         {
             // ToList is necessary to avoid deferred execution
             List<IEnumerator<TSource>> enumerators = source.Select(seq => seq.GetEnumerator()).ToList();
+            if (enumerators.Count == 0)
+                yield break;
             try
             {
                 while (true)
