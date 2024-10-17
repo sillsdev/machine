@@ -364,9 +364,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _traceManager.LexicalLookup(input.Stratum, input);
             CharacterDefinitionTable table = input.Stratum.CharacterDefinitionTable;
             IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Range);
-            HashSet<string> shapeSet = new HashSet<string>();
             foreach (RootAllomorph lexicalPattern in _lexicalPatterns)
             {
+                HashSet<string> shapeSet = new HashSet<string>();
                 IEnumerable<ShapeNode> shapePattern = lexicalPattern.Segments.Shape.GetNodes(
                     lexicalPattern.Segments.Shape.Range
                 );
