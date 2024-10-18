@@ -535,6 +535,7 @@ namespace SIL.Machine.Corpora
             private readonly ScrVers _sourceVersification;
             private TextRow _current;
             private bool _isEnumerating = false;
+            private bool _enumeratorHasMoreData = true;
 
             public TargetCorpusEnumerator(
                 IEnumerator<TextRow> enumerator,
@@ -564,7 +565,7 @@ namespace SIL.Machine.Corpora
                         _enumerator.MoveNext();
                         _isEnumerating = true;
                     }
-                    if (_verseRows.Count == 0 && _enumerator.Current != null)
+                    if (_verseRows.Count == 0 && _enumerator.Current != null && _enumeratorHasMoreData)
                         CollectVerses();
                     if (_verseRows.Count > 0)
                     {
@@ -635,7 +636,8 @@ namespace SIL.Machine.Corpora
                     if (!outOfOrder && scrRef.CompareTo(prevScrRef) < 0)
                         outOfOrder = true;
                     prevScrRef = scrRef;
-                } while (_enumerator.MoveNext());
+                    _enumeratorHasMoreData = _enumerator.MoveNext();
+                } while (_enumeratorHasMoreData);
 
                 if (outOfOrder)
                     rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
