@@ -576,15 +576,16 @@ namespace SIL.Machine.Corpora
                     return false;
                 }
 
-                bool result = _enumerator.MoveNext();
+                _enumeratorHasMoreData = _enumerator.MoveNext();
                 _current = _enumerator.Current;
-                return result;
+                return _enumeratorHasMoreData;
             }
 
             public void Reset()
             {
                 _enumerator.Reset();
                 _isEnumerating = false;
+                _enumeratorHasMoreData = true;
             }
 
             protected override void DisposeManagedResources()
