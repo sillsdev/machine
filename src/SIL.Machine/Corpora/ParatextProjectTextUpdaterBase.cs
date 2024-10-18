@@ -23,8 +23,7 @@ namespace SIL.Machine.Corpora
             string bookId,
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
             string fullName = null,
-            bool stripAllText = false,
-            bool preferExistingText = true
+            UpdateUsfmBehavior behavior = UpdateUsfmBehavior.PreferExisting
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -37,12 +36,7 @@ namespace SIL.Machine.Corpora
                 usfm = reader.ReadToEnd();
             }
 
-            var handler = new UpdateUsfmParserHandler(
-                rows,
-                fullName is null ? null : $"- {fullName}",
-                stripAllText,
-                preferExistingText: preferExistingText
-            );
+            var handler = new UpdateUsfmParserHandler(rows, fullName is null ? null : $"- {fullName}", behavior);
             try
             {
                 UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);

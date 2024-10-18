@@ -4,6 +4,13 @@ using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
+    public enum UpdateUsfmBehavior
+    {
+        PreferExisting,
+        PreferNew,
+        StripExisting
+    }
+
     /***
      * This is a USFM parser handler that can be used to replace the existing text in a USFM file with the specified
      * text.
@@ -14,8 +21,7 @@ namespace SIL.Machine.Corpora
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _newTokens;
         private readonly string _idText;
-        private readonly bool _stripAllText;
-        private readonly bool _preferExistingText;
+        private readonly UpdateUsfmBehavior _behavior;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -23,17 +29,15 @@ namespace SIL.Machine.Corpora
         public UpdateUsfmParserHandler(
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
-            bool stripAllText = false,
-            bool preferExistingText = false
+            UpdateUsfmBehavior behavior = UpdateUsfmBehavior.PreferExisting
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
             _tokens = new List<UsfmToken>();
             _newTokens = new List<UsfmToken>();
             _idText = idText;
-            _stripAllText = stripAllText;
             _replace = new Stack<bool>();
-            _preferExistingText = preferExistingText;
+            _behavior = behavior;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -371,7 +375,10 @@ namespace SIL.Machine.Corpora
                     break;
                 }
             }
-            bool useNewTokens = _stripAllText || (newText && !existingText) || (newText && !_preferExistingText);
+            bool useNewTokens =
+                _behavior == UpdateUsfmBehavior.StripExisting
+                || (newText && !existingText)
+                || (newText && _behavior == UpdateUsfmBehavior.PreferNew);
 
             if (useNewTokens)
                 _tokens.AddRange(_newTokens);
