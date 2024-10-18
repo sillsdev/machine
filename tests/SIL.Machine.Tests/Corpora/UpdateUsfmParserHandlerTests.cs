@@ -28,7 +28,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_StripAllText()
     {
-        string target = UpdateUsfm(stripAllText: true);
+        string target = UpdateUsfm(behavior: UpdateUsfmBehavior.StripExisting);
         Assert.That(target, Contains.Substring("\\id MAT\r\n"));
         Assert.That(target, Contains.Substring("\\v 1\r\n"));
         Assert.That(target, Contains.Substring("\\s\r\n"));
@@ -43,7 +43,7 @@ public class UpdateUsfmParserHandlerTests
             (ScrRef("MAT 1:6"), "Text 6"),
             (ScrRef("MAT 1:7"), "Text 7"),
         };
-        string target = UpdateUsfm(rows, preferExistingText: true);
+        string target = UpdateUsfm(rows, behavior: UpdateUsfmBehavior.PreferExisting);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
         Assert.That(target, Contains.Substring("\\v 6 Verse 6 content.\r\n"));
         Assert.That(target, Contains.Substring("\\v 7 Text 7\r\n"));
@@ -57,7 +57,7 @@ public class UpdateUsfmParserHandlerTests
             (ScrRef("MAT 1:6"), "Text 6"),
             (ScrRef("MAT 1:7"), "Text 7"),
         };
-        string target = UpdateUsfm(rows, preferExistingText: false);
+        string target = UpdateUsfm(rows, behavior: UpdateUsfmBehavior.PreferNew);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
         Assert.That(target, Contains.Substring("\\v 6 Text 6\r\n"));
         Assert.That(target, Contains.Substring("\\v 7 Text 7\r\n"));
@@ -438,30 +438,18 @@ public class UpdateUsfmParserHandlerTests
         IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
         string? source = null,
         string? idText = null,
-        bool stripAllText = false,
-        bool preferExistingText = false
+        UpdateUsfmBehavior behavior = UpdateUsfmBehavior.PreferNew
     )
     {
         if (source is null)
         {
             var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTestProjectPath);
-            return updater.UpdateUsfm(
-                "MAT",
-                rows,
-                fullName: idText,
-                stripAllText: stripAllText,
-                preferExistingText: preferExistingText
-            );
+            return updater.UpdateUsfm("MAT", rows, idText, behavior);
         }
         else
         {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-            var updater = new UpdateUsfmParserHandler(
-                rows,
-                idText,
-                stripAllText: stripAllText,
-                preferExistingText: preferExistingText
-            );
+            var updater = new UpdateUsfmParserHandler(rows, idText, behavior);
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
         }
