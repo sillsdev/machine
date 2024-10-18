@@ -91,7 +91,7 @@ namespace SIL.Machine.Corpora
 
         public string EndMarker { get; set; }
 
-        public int FirstLineIndent { get; set; }
+        public float FirstLineIndent { get; set; }
 
         public string FontName { get; set; }
 
@@ -101,7 +101,7 @@ namespace SIL.Machine.Corpora
 
         public UsfmJustification Justification { get; set; }
 
-        public int LeftMargin { get; set; }
+        public float LeftMargin { get; set; }
 
         public int LineSpacing { get; set; }
 
@@ -115,7 +115,7 @@ namespace SIL.Machine.Corpora
 
         public int Rank { get; set; }
 
-        public int RightMargin { get; set; }
+        public float RightMargin { get; set; }
 
         public bool SmallCaps { get; set; }
 

@@ -72,11 +72,11 @@ namespace SIL.Machine.Corpora
             { "note", UsfmTextProperties.Note }
         };
 
-        private readonly Dictionary<string, UsfmTag> _markers;
+        private readonly Dictionary<string, UsfmTag> _tags;
 
         public UsfmStylesheet(string stylesheetFileName, string alternateStylesheetFileName = null)
         {
-            _markers = new Dictionary<string, UsfmTag>();
+            _tags = new Dictionary<string, UsfmTag>();
             Parse(stylesheetFileName);
             if (!string.IsNullOrEmpty(alternateStylesheetFileName))
                 Parse(alternateStylesheetFileName);
@@ -84,10 +84,10 @@ namespace SIL.Machine.Corpora
 
         public UsfmTag GetTag(string marker)
         {
-            if (_markers.TryGetValue(marker, out UsfmTag tag))
+            if (_tags.TryGetValue(marker, out UsfmTag tag))
                 return tag;
 
-            if (IsCellRange(marker, out string baseMarker, out _) && _markers.TryGetValue(baseMarker, out tag))
+            if (IsCellRange(marker, out string baseMarker, out _) && _tags.TryGetValue(baseMarker, out tag))
                 return tag;
 
             tag = CreateTag(marker);
@@ -143,7 +143,6 @@ namespace SIL.Machine.Corpora
 
             List<StylesheetEntry> entries = SplitStylesheet(lines);
 
-            HashSet<string> foundStyles = new HashSet<string>();
             for (int i = 0; i < entries.Count; ++i)
             {
                 StylesheetEntry entry = entries[i];
@@ -155,30 +154,28 @@ namespace SIL.Machine.Corpora
                 if (parts.Length > 1 && parts[1] == "-")
                 {
                     // If the entry looks like "\marker xy -" remove the tag and its end tag if any
-                    _markers.Remove(parts[0]);
-                    _markers.Remove(parts[0] + "*");
+                    _tags.Remove(parts[0]);
+                    _tags.Remove(parts[0] + "*");
                     continue;
                 }
 
-                UsfmTag marker = CreateTag(entry.Text);
-                UsfmTag endMarker = ParseTagEntry(marker, entries, i + 1);
+                UsfmTag tag = CreateTag(entry.Text);
+                UsfmTag endTag = ParseTagEntry(tag, entries, i + 1);
 
-                if (endMarker != null && !_markers.ContainsKey(endMarker.Marker))
-                    _markers[endMarker.Marker] = endMarker;
-
-                foundStyles.Add(entry.Text);
+                if (endTag != null && !_tags.ContainsKey(endTag.Marker))
+                    _tags[endTag.Marker] = endTag;
             }
         }
 
         private UsfmTag CreateTag(string marker)
         {
             // If tag already exists update with addtl info (normally from custom.sty)
-            if (!_markers.TryGetValue(marker, out UsfmTag tag))
+            if (!_tags.TryGetValue(marker, out UsfmTag tag))
             {
                 tag = new UsfmTag(marker);
                 if (marker != "c" && marker != "v")
                     tag.TextProperties = UsfmTextProperties.Publishable;
-                _markers[marker] = tag;
+                _tags[marker] = tag;
             }
 
             return tag;
@@ -255,19 +252,19 @@ namespace SIL.Machine.Corpora
                         break;
 
                     case "leftmargin":
-                        int leftMargin;
-                        if (ParseInteger(entry, out leftMargin))
+                        float leftMargin;
+                        if (ParseFloat(entry, out leftMargin))
                             tag.LeftMargin = leftMargin;
                         break;
 
                     case "rightmargin":
-                        int rightMargin;
-                        if (ParseInteger(entry, out rightMargin))
+                        float rightMargin;
+                        if (ParseFloat(entry, out rightMargin))
                             tag.RightMargin = rightMargin;
                         break;
 
                     case "firstlineindent":
-                        int firstLineIndent;
+                        float firstLineIndent;
                         if (ParseFloat(entry, out firstLineIndent))
                             tag.FirstLineIndent = firstLineIndent;
                         break;
@@ -413,19 +410,17 @@ namespace SIL.Machine.Corpora
                 && result >= 0;
         }
 
-        private static bool ParseFloat(StylesheetEntry entry, out int result)
+        private static bool ParseFloat(StylesheetEntry entry, out float result)
         {
-            float floatResult;
             if (
                 float.TryParse(
                     entry.Text,
                     NumberStyles.Float | NumberStyles.AllowThousands,
                     CultureInfo.InvariantCulture,
-                    out floatResult
+                    out result
                 )
             )
             {
-                result = (int)(floatResult * 1000);
                 return true;
             }
 
