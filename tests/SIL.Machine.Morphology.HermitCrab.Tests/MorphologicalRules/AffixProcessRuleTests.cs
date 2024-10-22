@@ -1192,7 +1192,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         Morphophonemic.MorphologicalRules.Add(truncate);
 
         var morpher = new Morpher(TraceManager, Language);
-        AssertMorphsEqual(morpher.ParseWord("sa"), "32");
+        AssertMorphsEqual(morpher.ParseWord("sa"), "32 3SG");
 
         truncate.Allomorphs.Clear();
         truncate.Allomorphs.Add(
@@ -1208,7 +1208,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
 
         morpher = new Morpher(TraceManager, Language);
-        AssertMorphsEqual(morpher.ParseWord("ag"), "32");
+        AssertMorphsEqual(morpher.ParseWord("ag"), "32 3SG");
 
         truncate.Allomorphs.Clear();
         truncate.Allomorphs.Add(
@@ -1224,7 +1224,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
 
         morpher = new Morpher(TraceManager, Language);
-        AssertMorphsEqual(morpher.ParseWord("ag"), "32");
+        AssertMorphsEqual(morpher.ParseWord("ag"), "32 3SG");
 
         truncate.Allomorphs.Clear();
         truncate.Allomorphs.Add(
@@ -1240,7 +1240,7 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
 
         morpher = new Morpher(TraceManager, Language);
-        AssertMorphsEqual(morpher.ParseWord("sa"), "32");
+        AssertMorphsEqual(morpher.ParseWord("sa"), "32 3SG");
 
         truncate.Allomorphs.Clear();
         truncate.Allomorphs.Add(
@@ -1866,10 +1866,32 @@ public class AffixProcessRuleTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(nominalizer);
 
+        var deleteVowelSuffix = new AffixProcessRule
+        {
+            Name = "delete_vowel_suffix",
+            Gloss = "PRES",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        deleteVowelSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(vowel).Value
+                },
+                Rhs = { new CopyFromInput("1") }
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(deleteVowelSuffix);
+
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("tagu"), "47 3SG");
         AssertMorphsEqual(morpher.ParseWord("tags"), "47 3SG PAST");
         AssertMorphsEqual(morpher.ParseWord("tagsv"), "47 3SG PAST NOM");
+        // Test deleteVowelSuffix.
+        AssertMorphsEqual(morpher.ParseWord("tag"), "47 3SG PRES", "47");
+        AssertMorphsEqual(morpher.ParseWord("bubib"), "42 PRES", "43 PRES");
     }
 
     [Test]
