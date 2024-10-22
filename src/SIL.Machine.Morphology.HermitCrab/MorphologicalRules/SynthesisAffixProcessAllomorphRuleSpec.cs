@@ -169,7 +169,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             {
                 // There are no new output morphs in a truncation rule,
                 // so we add its allomorph to the last output shape.
-                 string morphID = output.MorphologicalRuleApplicationCount.ToString();
+                string morphID = output.MorphologicalRuleApplicationCount.ToString();
                 output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
             }
             var markedAllomorphs = new HashSet<Allomorph>();
