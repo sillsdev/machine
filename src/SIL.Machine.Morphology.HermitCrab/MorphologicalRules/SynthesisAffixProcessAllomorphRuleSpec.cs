@@ -195,7 +195,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     {
                         // an existing morph has been completely subsumed by the new morph
                         // mark the subsumed morph so we don't lose track of it
-                        Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph, morphID);
+                        Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(
+                            outputNewMorph,
+                            allomorph,
+                            morphID
+                        );
                         MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
                     }
                 }
