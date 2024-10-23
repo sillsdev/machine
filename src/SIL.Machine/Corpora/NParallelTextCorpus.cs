@@ -149,7 +149,39 @@ namespace SIL.Machine.Corpora
                             .Select(i => listOfEnumerators[i])
                             .ToList();
 
-                        if (!allNonMinRows.Any() && minEnumerators.Select(e => e.Current.IsInRange).Any()) { }
+                        if (!allNonMinRows.Any() && minEnumerators.Select(e => e.Current.IsInRange).Any())
+                        {
+                            if (
+                                rangeInfo.IsInRange
+                                && nonMinEnumerators
+                                    .Select(e => e.Current.IsInRange && e.Current.Segment.Count > 0)
+                                    .Any()
+                            )
+                            {
+                                yield return rangeInfo.CreateRow();
+                            }
+                            minRefIndexes.ForEach(i => rangeInfo.AddTextRow(listOfEnumerators[i].Current, i));
+                            nonMinRefIndexes.ForEach(i => rangeInfo.Rows[i].SameRefRows.Clear());
+                        }
+                        else
+                        {
+                            foreach (
+                                NParallelTextRow row in CreateMinRefRows(
+                                    rangeInfo,
+                                    minEnumerators.Select(e => e.Current).ToList(),
+                                    nonMinEnumerators.Select(e => e.Current).ToList(),
+                                    allNonMinRows
+                                )
+                            )
+                            {
+                                yield return row;
+                            }
+                            foreach (int i in nonMinRefIndexes)
+                            {
+                                rangeInfo.Rows[i].SameRefRows.Add(listOfEnumerators[i].Current);
+                                listOfEnumerators[i].MoveNext();
+                            }
+                        }
                         // source is less than target
                         if (!AllTargetRows && srcEnumerator.Current.IsInRange)
                         {
@@ -566,14 +598,17 @@ namespace SIL.Machine.Corpora
             return sameRefRows.Count > 0;
         }
 
-        private IEnumerable<NParallelTextRow> CreateNRows(
+        private IEnumerable<NParallelTextRow> CreateMinRefRows(
             NRangeInfo rangeInfo,
-            TextRow sourceRow,
-            int index,
-            List<TextRow> targetSameRefRows,
-            bool forceTargetInRange = false
+            IList<TextRow> currentRows,
+            IList<int> minRefIndexes,
+            IList<int> nonMinRefIndexes,
+            bool forceInRange = false
         )
         {
+            IList<TextRow> minRows = minRefIndexes.Select(i => currentRows[i]).ToList();
+            IList<TextRow> nonMinRows = nonMinRefIndexes.Select(i => currentRows[i]).ToList();
+
             if (CheckSameRefRows(targetSameRefRows, sourceRow))
             {
                 foreach (TextRow targetSameRefRow in targetSameRefRows)
@@ -631,8 +666,9 @@ namespace SIL.Machine.Corpora
 
         private class RangeRow
         {
-            public List<object> Refs { get; } = new List<object>();
-            public List<string> Segment { get; } = new List<string>();
+            public IList<object> Refs { get; } = new List<object>();
+            public IList<string> Segment { get; } = new List<string>();
+            public IList<TextRow> SameRefRows { get; } = new List<TextRow>();
             public bool IsSentenceStart { get; set; } = false;
             public bool IsInRange => Refs.Count > 0;
             public bool IsEmpty => Segment.Count == 0;
@@ -643,8 +679,38 @@ namespace SIL.Machine.Corpora
             public int N = -1;
             public string TextId { get; set; } = "";
             public ScrVers Versification { get; set; } = null;
+            public IComparer<object> RowRefComparer { get; set; } = null;
             public List<RangeRow> Rows { get; } = new List<RangeRow>();
             public bool IsInRange => Rows.Any(r => r.IsInRange);
+
+            private bool CheckSameRefRows(List<int> sameRefRows, TextRow otherRow)
+            {
+                try
+                {
+                    if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
+                        sameRefRows.Clear();
+                }
+                catch (ArgumentException)
+                {
+                    throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
+                }
+                return sameRefRows.Count > 0;
+            }
+
+            public void AddTextRow(TextRow row, int index)
+            {
+                if (N <= row.Segment.Count)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        $"There are only {N} parallel texts, but text {index} was chosen."
+                    );
+                }
+                TextId = row.TextId;
+                Rows[index].Refs.Add(row.Ref);
+                if (Rows[index].IsEmpty)
+                    Rows[index].IsSentenceStart = row.IsSentenceStart;
+                Rows[index].Segment.AddRange(row.Segment);
+            }
 
             public NParallelTextRow CreateRow()
             {
