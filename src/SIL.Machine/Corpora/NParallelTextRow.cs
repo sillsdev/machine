@@ -19,8 +19,8 @@ namespace SIL.Machine.Corpora
             TextId = textId;
             NRefs = nRefs.ToList().ToReadOnlyList();
             N = NRefs.Count;
-            Segments = Enumerable.Range(0, N).Select(_ => Array.Empty<string>()).ToImmutableArray();
-            Flags = Enumerable.Range(0, N).Select(_ => TextRowFlags.SentenceStart).ToImmutableArray();
+            NSegments = Enumerable.Range(0, N).Select(_ => Array.Empty<string>()).ToImmutableArray();
+            NFlags = Enumerable.Range(0, N).Select(_ => TextRowFlags.SentenceStart).ToImmutableArray();
         }
 
         public string TextId { get; }
@@ -30,25 +30,25 @@ namespace SIL.Machine.Corpora
         public IReadOnlyList<IReadOnlyList<object>> NRefs { get; }
         public int N { get; }
 
-        public IReadOnlyList<IReadOnlyList<string>> Segments { get; set; }
-        public IReadOnlyList<TextRowFlags> Flags { get; set; }
+        public IReadOnlyList<IReadOnlyList<string>> NSegments { get; set; }
+        public IReadOnlyList<TextRowFlags> NFlags { get; set; }
 
         public bool GetIsSentenceStart(int i) =>
-            Flags.Count > i ? Flags[i].HasFlag(TextRowFlags.SentenceStart) : throw new ArgumentOutOfRangeException();
+            NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.SentenceStart) : throw new ArgumentOutOfRangeException();
 
         public bool GetIsInRange(int i) =>
-            Flags.Count > i ? Flags[i].HasFlag(TextRowFlags.InRange) : throw new ArgumentOutOfRangeException();
+            NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.InRange) : throw new ArgumentOutOfRangeException();
 
         public bool GetIsRangeStart(int i) =>
-            Flags.Count > i ? Flags[i].HasFlag(TextRowFlags.RangeStart) : throw new ArgumentOutOfRangeException();
+            NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.RangeStart) : throw new ArgumentOutOfRangeException();
 
-        public bool IsEmpty => Segments.Any(s => s.Count == 0);
+        public bool IsEmpty => NSegments.Any(s => s.Count == 0);
 
-        public string GetText(int i) => string.Join(" ", Segments[i]);
+        public string GetText(int i) => string.Join(" ", NSegments[i]);
 
         public NParallelTextRow Invert()
         {
-            return new NParallelTextRow(TextId, NRefs.Reverse()) { Flags = Flags.Reverse().ToImmutableArray(), };
+            return new NParallelTextRow(TextId, NRefs.Reverse()) { NFlags = NFlags.Reverse().ToImmutableArray(), };
         }
     }
 }

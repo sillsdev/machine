@@ -6,7 +6,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public class ParallelCorpusEnumerator : DisposableBase, IEnumerator<TextRow>
+    public class TextCorpusEnumerator : DisposableBase, IEnumerator<TextRow>
     {
         private readonly IEnumerator<TextRow> _enumerator;
         private readonly bool _isScripture = false;
@@ -16,11 +16,7 @@ namespace SIL.Machine.Corpora
         private bool _isEnumerating = false;
         private bool _enumeratorHasMoreData = true;
 
-        public ParallelCorpusEnumerator(
-            IEnumerator<TextRow> enumerator,
-            ScrVers refVersification,
-            ScrVers versification
-        )
+        public TextCorpusEnumerator(IEnumerator<TextRow> enumerator, ScrVers refVersification, ScrVers versification)
         {
             _enumerator = enumerator;
             _refVersification = refVersification;
@@ -73,18 +69,18 @@ namespace SIL.Machine.Corpora
         {
             var rowList = new List<(ScriptureRef Ref, TextRow Row)>();
             bool outOfOrder = false;
-            ScriptureRef prevScrRef = ScriptureRef.Empty;
+            ScriptureRef prevRefRef = ScriptureRef.Empty;
             int rangeStartOffset = -1;
             do
             {
                 TextRow row = _enumerator.Current;
-                var scrRef = (ScriptureRef)row.Ref;
-                if (!prevScrRef.IsEmpty && scrRef.BookNum != prevScrRef.BookNum)
+                var refRef = (ScriptureRef)row.Ref;
+                if (!prevRefRef.IsEmpty && refRef.BookNum != prevRefRef.BookNum)
                     break;
 
-                scrRef = scrRef.ChangeVersification(_refVersification);
+                refRef = refRef.ChangeVersification(_refVersification);
                 // convert one-to-many versification mapping to a verse range
-                if (scrRef.Equals(prevScrRef))
+                if (refRef.Equals(prevRefRef))
                 {
                     (ScriptureRef rangeStartVerseRef, TextRow rangeStartRow) = rowList[
                         rowList.Count + rangeStartOffset
@@ -109,10 +105,10 @@ namespace SIL.Machine.Corpora
                 {
                     rangeStartOffset = -1;
                 }
-                rowList.Add((scrRef, row));
-                if (!outOfOrder && scrRef.CompareTo(prevScrRef) < 0)
+                rowList.Add((refRef, row));
+                if (!outOfOrder && refRef.CompareTo(prevRefRef) < 0)
                     outOfOrder = true;
-                prevScrRef = scrRef;
+                prevRefRef = refRef;
                 _enumeratorHasMoreData = _enumerator.MoveNext();
             } while (_enumeratorHasMoreData);
 

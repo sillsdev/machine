@@ -95,6 +95,7 @@ namespace SIL.Machine.Corpora
                     }
                     if (compare1 < 0)
                     {
+                        // source is less than target
                         if (!AllTargetRows && srcEnumerator.Current.IsInRange)
                         {
                             if (
