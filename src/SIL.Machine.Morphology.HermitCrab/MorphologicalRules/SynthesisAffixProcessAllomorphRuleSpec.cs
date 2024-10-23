@@ -165,7 +165,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 _allomorph,
                 output.MorphologicalRuleApplicationCount.ToString()
             );
-
+            if (outputNewMorph == null)
+            {
+                // There are no new output morphs in a truncation rule,
+                // so we add its allomorph to the last output shape.
+                string morphID = output.MorphologicalRuleApplicationCount.ToString();
+                output.MarkMorph(new List<ShapeNode>() { output.Shape.Last }, _allomorph, morphID);
+            }
             var markedAllomorphs = new HashSet<Allomorph>();
             foreach (Annotation<ShapeNode> inputMorph in match.Input.Morphs)
             {
@@ -178,11 +184,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
                 else if (inputMorph.Parent == null && !markedAllomorphs.Contains(allomorph))
                 {
-                    // an existing morph has been completely subsumed by the new morph
-                    // mark the subsumed morph so we don't lose track of it
-                    // this is only necessary if the allomorph hasn't already been marked elsewhere
-                    Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(outputNewMorph, allomorph, morphID);
-                    MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
+                    // This is only necessary if the allomorph hasn't already been marked elsewhere.
+                    if (outputNewMorph == null)
+                    {
+                        // There are no new output morphs in a truncation rule,
+                        // So we add allomorph to the first output shape.
+                        output.MarkMorph(new List<ShapeNode>() { output.Shape.First }, allomorph, morphID);
+                    }
+                    else
+                    {
+                        // an existing morph has been completely subsumed by the new morph
+                        // mark the subsumed morph so we don't lose track of it
+                        Annotation<ShapeNode> outputMorph = output.MarkSubsumedMorph(
+                            outputNewMorph,
+                            allomorph,
+                            morphID
+                        );
+                        MarkSubsumedMorphs(match.Input, output, inputMorph, outputMorph);
+                    }
                 }
                 markedAllomorphs.Add(allomorph);
             }
