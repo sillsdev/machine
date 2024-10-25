@@ -74,13 +74,13 @@ namespace SIL.Machine.Corpora
             do
             {
                 TextRow row = _enumerator.Current;
-                var refRef = (ScriptureRef)row.Ref;
-                if (!prevRefRef.IsEmpty && refRef.BookNum != prevRefRef.BookNum)
+                var scrRef = (ScriptureRef)row.Ref;
+                if (!prevRefRef.IsEmpty && scrRef.BookNum != prevRefRef.BookNum)
                     break;
 
-                refRef = refRef.ChangeVersification(_refVersification);
+                scrRef = scrRef.ChangeVersification(_refVersification);
                 // convert one-to-many versification mapping to a verse range
-                if (refRef.Equals(prevRefRef))
+                if (scrRef.Equals(prevRefRef))
                 {
                     (ScriptureRef rangeStartVerseRef, TextRow rangeStartRow) = rowList[
                         rowList.Count + rangeStartOffset
@@ -105,10 +105,10 @@ namespace SIL.Machine.Corpora
                 {
                     rangeStartOffset = -1;
                 }
-                rowList.Add((refRef, row));
-                if (!outOfOrder && refRef.CompareTo(prevRefRef) < 0)
+                rowList.Add((scrRef, row));
+                if (!outOfOrder && scrRef.CompareTo(prevRefRef) < 0)
                     outOfOrder = true;
-                prevRefRef = refRef;
+                prevRefRef = scrRef;
                 _enumeratorHasMoreData = _enumerator.MoveNext();
             } while (_enumeratorHasMoreData);
 

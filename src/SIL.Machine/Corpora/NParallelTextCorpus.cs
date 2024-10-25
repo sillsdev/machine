@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Linq;
-using SIL.ObjectModel;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -89,10 +87,9 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private bool AnyInRangeWithSegments(IList<IEnumerator<TextRow>> listOfEnumerators)
+        private bool AnyInRangeWithSegments(IList<TextRow> rows)
         {
-            return listOfEnumerators.Any(e => e.Current.IsInRange)
-                && listOfEnumerators.All(e => !(e.Current.IsInRange && e.Current.Segment.Count == 0));
+            return rows.Any(r => r.IsInRange) && rows.All(r => !(r.IsInRange && r.Segment.Count == 0));
         }
 
         private IList<int> MinRefIndexes(IList<object> refs)
@@ -123,19 +120,23 @@ namespace SIL.Machine.Corpora
                 List<TextRow>[] sameRefRows = new List<TextRow>[Corpora.Count];
                 bool[] completed = listOfEnumerators.Select(e => !e.MoveNext()).ToArray();
 
-                while (!completed.Any())
+                while (!completed.All(c => c))
                 {
                     IList<int> minRefIndexes;
-                    IList<object> currentRefs = listOfEnumerators.Select(e => e.Current.Ref).ToArray();
+                    IList<TextRow> currentRows = listOfEnumerators
+                        .Where((e, i) => !completed[i])
+                        .Select(e => e.Current)
+                        .ToArray();
                     try
                     {
-                        minRefIndexes = MinRefIndexes(currentRefs);
+                        minRefIndexes = MinRefIndexes(currentRows.Select(e => e.Ref).ToArray());
                     }
                     catch (ArgumentException)
                     {
-                        throw new CorpusAlignmentException(currentRefs.Select(r => r.ToString()).ToArray());
+                        throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
                     }
-                    if (minRefIndexes.Count < N)
+
+                    if (minRefIndexes.Count < (N - completed.Count(c => c))) //then there are some non-min refs
                     {
                         IList<int> nonMinRefIndexes = System.Linq.Enumerable.Range(0, N).Except(minRefIndexes).ToList();
                         IReadOnlyList<bool> allNonMinRows = nonMinRefIndexes
@@ -169,8 +170,15 @@ namespace SIL.Machine.Corpora
                                 NParallelTextRow row in CreateMinRefRows(
                                     rangeInfo,
                                     minEnumerators.Select(e => e.Current).ToList(),
-                                    nonMinEnumerators.Select(e => e.Current).ToList(),
-                                    allNonMinRows
+                                    nonMinRefIndexes,
+                                    forceInRange: minEnumerators
+                                        .Select(e => e.Current.TextId)
+                                        .Union(nonMinEnumerators.Select(e => e.Current.TextId))
+                                        .Distinct()
+                                        .Count() == 1
+                                        && nonMinEnumerators
+                                            .Select(e => !e.Current.IsRangeStart && e.Current.IsInRange)
+                                            .Any()
                                 )
                             )
                             {
@@ -182,353 +190,60 @@ namespace SIL.Machine.Corpora
                                 listOfEnumerators[i].MoveNext();
                             }
                         }
-                        // source is less than target
-                        if (!AllTargetRows && srcEnumerator.Current.IsInRange)
-                        {
-                            if (
-                                rangeInfo.IsInRange
-                                && trgEnumerator.Current.IsInRange
-                                && trgEnumerator.Current.Segment.Count > 0
-                            )
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-                            rangeInfo.TextId = srcEnumerator.Current.TextId;
-                            rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
-                            targetSameRefRows.Clear();
-                            if (rangeInfo.IsSourceEmpty)
-                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
-                        }
-                        else
-                        {
-                            foreach (
-                                ParallelTextRow row in CreateSourceRows(
-                                    rangeInfo,
-                                    srcEnumerator.Current,
-                                    targetSameRefRows,
-                                    forceTargetInRange: srcEnumerator.Current.TextId == trgEnumerator.Current.TextId
-                                        && !trgEnumerator.Current.IsRangeStart
-                                        && trgEnumerator.Current.IsInRange
-                                )
-                            )
-                            {
-                                yield return row;
-                            }
-                        }
-
-                        sourceSameRefRows.Add(srcEnumerator.Current);
-                        srcCompleted = !srcEnumerator.MoveNext();
-
-                        if (
-                            (!AllTargetRows && srcEnumerator.Current.IsInRange)
-                            || (!AllSourceRows && trgEnumerator.Current.IsInRange)
-                        )
-                        {
-                            if (rangeInfo.IsInRange && AnyInRangeWithSegments(listOfEnumerators))
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-
-                            rangeInfo.TextId = srcEnumerator.Current.TextId;
-                            rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
-                            rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
-                            sourceSameRefRows.Clear();
-                            targetSameRefRows.Clear();
-                            if (rangeInfo.IsSourceEmpty)
-                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            if (rangeInfo.IsTargetEmpty)
-                                rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
-                            rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
-                        }
-                        else
-                        {
-                            if (CheckSameRefRows(sourceSameRefRows, trgEnumerator.Current))
-                            {
-                                foreach (TextRow prevSourceRow in sourceSameRefRows)
-                                {
-                                    foreach (
-                                        NParallelTextRow row in CreateRows(
-                                            rangeInfo,
-                                            prevSourceRow,
-                                            trgEnumerator.Current
-                                        )
-                                    )
-                                    {
-                                        yield return row;
-                                    }
-                                }
-                            }
-
-                            if (CheckSameRefRows(targetSameRefRows, srcEnumerator.Current))
-                            {
-                                foreach (TextRow prevTargetRow in targetSameRefRows)
-                                {
-                                    foreach (
-                                        NParallelTextRow row in CreateRows(
-                                            rangeInfo,
-                                            srcEnumerator.Current,
-                                            prevTargetRow
-                                        )
-                                    )
-                                    {
-                                        yield return row;
-                                    }
-                                }
-                            }
-
-                            foreach (
-                                NParallelTextRow row in CreateRows(
-                                    rangeInfo,
-                                    srcEnumerator.Current,
-                                    trgEnumerator.Current,
-                                    compare2 == 0 ? alignmentEnumerator.Current.AlignedWordPairs : null
-                                )
-                            )
-                            {
-                                yield return row;
-                            }
-                        }
-
-                        sourceSameRefRows.Add(srcEnumerator.Current);
-                        srcCompleted = !srcEnumerator.MoveNext();
-
-                        targetSameRefRows.Add(trgEnumerator.Current);
-                        trgCompleted = !trgEnumerator.MoveNext();
                     }
-                    if (compare < 0)
-                    {
-                        if (!AllTargetRows && srcEnumerator.Current.IsInRange)
-                        {
-                            if (
-                                rangeInfo.IsInRange
-                                && trgEnumerator.Current.IsInRange
-                                && trgEnumerator.Current.Segment.Count > 0
-                            )
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-                            rangeInfo.TextId = srcEnumerator.Current.TextId;
-                            rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
-                            targetSameRefRows.Clear();
-                            if (rangeInfo.IsSourceEmpty)
-                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
-                        }
-                        else
-                        {
-                            foreach (
-                                NParallelTextRow row in CreateSourceRows(
-                                    rangeInfo,
-                                    srcEnumerator.Current,
-                                    targetSameRefRows,
-                                    forceTargetInRange: srcEnumerator.Current.TextId == trgEnumerator.Current.TextId
-                                        && !trgEnumerator.Current.IsRangeStart
-                                        && trgEnumerator.Current.IsInRange
-                                )
-                            )
-                            {
-                                yield return row;
-                            }
-                        }
-
-                        sourceSameRefRows.Add(srcEnumerator.Current);
-                        srcCompleted = !srcEnumerator.MoveNext();
-                    }
-                    else if (compare > 0)
-                    {
-                        if (!AllSourceRows && trgEnumerator.Current.IsInRange)
-                        {
-                            if (
-                                rangeInfo.IsInRange
-                                && srcEnumerator.Current.IsInRange
-                                && srcEnumerator.Current.Segment.Count > 0
-                            )
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-                            rangeInfo.TextId = trgEnumerator.Current.TextId;
-                            rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
-                            sourceSameRefRows.Clear();
-                            if (rangeInfo.IsTargetEmpty)
-                                rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                            rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
-                        }
-                        else
-                        {
-                            foreach (
-                                NParallelTextRow row in CreateTargetRows(
-                                    rangeInfo,
-                                    trgEnumerator.Current,
-                                    sourceSameRefRows,
-                                    forceSourceInRange: trgEnumerator.Current.TextId == srcEnumerator.Current.TextId
-                                        && !srcEnumerator.Current.IsRangeStart
-                                        && srcEnumerator.Current.IsInRange
-                                )
-                            )
-                            {
-                                yield return row;
-                            }
-                        }
-
-                        targetSameRefRows.Add(trgEnumerator.Current);
-                        trgCompleted = !trgEnumerator.MoveNext();
-                    }
-                    else
-                    // compare == 0 - the refs are the same
+                    else if (minRefIndexes.Count == (N - completed.Count(c => c)))
+                    // the refs are all the same
                     {
                         if (
-                            (!AllTargetRows && srcEnumerator.Current.IsInRange)
-                            || (!AllSourceRows && trgEnumerator.Current.IsInRange)
+                            !currentRows.Select((r, i) => AllRowsList[i]).Any()
+                            && currentRows.Select(r => r.IsInRange).Any()
                         )
                         {
-                            if (
-                                rangeInfo.IsInRange
-                                && (
-                                    (
-                                        srcEnumerator.Current.IsInRange
-                                        && !trgEnumerator.Current.IsInRange
-                                        && srcEnumerator.Current.Segment.Count > 0
-                                    )
-                                    || (
-                                        !srcEnumerator.Current.IsInRange
-                                        && trgEnumerator.Current.IsInRange
-                                        && trgEnumerator.Current.Segment.Count > 0
-                                    )
-                                    || (
-                                        srcEnumerator.Current.IsInRange
-                                        && trgEnumerator.Current.IsInRange
-                                        && srcEnumerator.Current.Segment.Count > 0
-                                        && trgEnumerator.Current.Segment.Count > 0
-                                    )
-                                )
-                            )
+                            if (rangeInfo.IsInRange && AnyInRangeWithSegments(currentRows))
                             {
                                 yield return rangeInfo.CreateRow();
                             }
 
-                            rangeInfo.TextId = srcEnumerator.Current.TextId;
-                            rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
-                            rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
-                            sourceSameRefRows.Clear();
-                            targetSameRefRows.Clear();
-                            if (rangeInfo.IsSourceEmpty)
-                                rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                            if (rangeInfo.IsTargetEmpty)
-                                rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                            rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
-                            rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
+                            for (int i = 0; i < currentRows.Count; i++)
+                            {
+                                rangeInfo.AddTextRow(currentRows[i], i);
+                                rangeInfo.Rows[i].SameRefRows.Clear();
+                            }
                         }
                         else
                         {
-                            if (CheckSameRefRows(sourceSameRefRows, trgEnumerator.Current))
+                            foreach (var row in currentRows) //TODO walk through together
                             {
-                                foreach (TextRow prevSourceRow in sourceSameRefRows)
+                                if (rangeInfo.CheckSameRefRows(row))
                                 {
-                                    foreach (
-                                        NParallelTextRow row in CreateRows(
-                                            rangeInfo,
-                                            prevSourceRow,
-                                            trgEnumerator.Current
-                                        )
-                                    )
+                                    foreach (TextRow tr in rangeInfo.Rows.SelectMany(r => r.SameRefRows))
                                     {
-                                        yield return row;
+                                        foreach (
+                                            NParallelTextRow r in CreateRows(rangeInfo, new List<TextRow> { tr, row })
+                                        )
+                                        {
+                                            yield return r;
+                                        }
                                     }
                                 }
                             }
-
-                            if (CheckSameRefRows(targetSameRefRows, srcEnumerator.Current))
-                            {
-                                foreach (TextRow prevTargetRow in targetSameRefRows)
-                                {
-                                    foreach (
-                                        NParallelTextRow row in CreateRows(
-                                            rangeInfo,
-                                            srcEnumerator.Current,
-                                            prevTargetRow
-                                        )
-                                    )
-                                    {
-                                        yield return row;
-                                    }
-                                }
-                            }
-
-                            foreach (
-                                NParallelTextRow row in CreateRows(
-                                    rangeInfo,
-                                    srcEnumerator.Current,
-                                    trgEnumerator.Current,
-                                    compare2 == 0 ? alignmentEnumerator.Current.AlignedWordPairs : null
-                                )
-                            )
+                            foreach (NParallelTextRow row in CreateRows(rangeInfo, currentRows))
                             {
                                 yield return row;
                             }
                         }
 
-                        sourceSameRefRows.Add(srcEnumerator.Current);
-                        srcCompleted = !srcEnumerator.MoveNext();
-
-                        targetSameRefRows.Add(trgEnumerator.Current);
-                        trgCompleted = !trgEnumerator.MoveNext();
-                    }
-                }
-
-                while (!srcCompleted)
-                {
-                    if (!AllTargetRows && srcEnumerator.Current.IsInRange)
-                    {
-                        rangeInfo.TextId = srcEnumerator.Current.TextId;
-                        rangeInfo.SourceRefs.Add(srcEnumerator.Current.Ref);
-                        targetSameRefRows.Clear();
-                        if (rangeInfo.IsSourceEmpty)
-                            rangeInfo.IsSourceSentenceStart = srcEnumerator.Current.IsSentenceStart;
-                        rangeInfo.SourceSegment.AddRange(srcEnumerator.Current.Segment);
+                        for (int i = 0; i < currentRows.Count; i++)
+                        {
+                            rangeInfo.Rows[i].SameRefRows.Add(currentRows[i]);
+                        }
                     }
                     else
                     {
-                        foreach (
-                            NParallelTextRow row in CreateSourceRows(
-                                rangeInfo,
-                                srcEnumerator.Current,
-                                targetSameRefRows
-                            )
-                        )
-                        {
-                            yield return row;
-                        }
+                        throw new CorpusAlignmentException(
+                            minRefIndexes.Select(i => currentRows[i].Ref.ToString()).ToArray()
+                        );
                     }
-                    srcCompleted = !srcEnumerator.MoveNext();
-                }
-
-                while (!trgCompleted)
-                {
-                    if (!AllSourceRows && trgEnumerator.Current.IsInRange)
-                    {
-                        rangeInfo.TextId = trgEnumerator.Current.TextId;
-                        rangeInfo.TargetRefs.Add(trgEnumerator.Current.Ref);
-                        sourceSameRefRows.Clear();
-                        if (rangeInfo.IsTargetEmpty)
-                            rangeInfo.IsTargetSentenceStart = trgEnumerator.Current.IsSentenceStart;
-                        rangeInfo.TargetSegment.AddRange(trgEnumerator.Current.Segment);
-                    }
-                    else
-                    {
-                        foreach (
-                            NParallelTextRow row in CreateTargetRows(
-                                rangeInfo,
-                                trgEnumerator.Current,
-                                sourceSameRefRows
-                            )
-                        )
-                        {
-                            yield return row;
-                        }
-                    }
-                    trgCompleted = !trgEnumerator.MoveNext();
                 }
 
                 if (rangeInfo.IsInRange)
@@ -573,7 +288,7 @@ namespace SIL.Machine.Corpora
                 else
                 {
                     refs.Add(refRefs);
-                    flags.Add(forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None);
+                    flags.Add(forceInRange == null || !forceInRange[i] ? TextRowFlags.None : TextRowFlags.InRange);
                 }
             }
 
@@ -584,82 +299,35 @@ namespace SIL.Machine.Corpora
             };
         }
 
-        private bool CheckSameRefRows(List<TextRow> sameRefRows, TextRow otherRow)
-        {
-            try
-            {
-                if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
-                    sameRefRows.Clear();
-            }
-            catch (ArgumentException)
-            {
-                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
-            }
-            return sameRefRows.Count > 0;
-        }
-
         private IEnumerable<NParallelTextRow> CreateMinRefRows(
             NRangeInfo rangeInfo,
-            IList<TextRow> currentRows,
-            IList<int> minRefIndexes,
+            IList<TextRow> minRefRows,
             IList<int> nonMinRefIndexes,
             bool forceInRange = false
         )
         {
-            IList<TextRow> minRows = minRefIndexes.Select(i => currentRows[i]).ToList();
-            IList<TextRow> nonMinRows = nonMinRefIndexes.Select(i => currentRows[i]).ToList();
+            List<TextRow> sameRefRows = rangeInfo
+                .Rows.Where((r, i) => nonMinRefIndexes.Contains(i))
+                .SelectMany(r => r.SameRefRows)
+                .ToList();
 
-            if (CheckSameRefRows(targetSameRefRows, sourceRow))
+            foreach (TextRow textRow in minRefRows)
             {
-                foreach (TextRow targetSameRefRow in targetSameRefRows)
+                if (rangeInfo.CheckSameRefRows(sameRefRows, textRow))
                 {
-                    foreach (NParallelTextRow row in CreateRows(rangeInfo, sourceRow, targetSameRefRow))
-                        yield return row;
-                }
-            }
-            else if (AllSourceRows)
-            {
-                foreach (
-                    NParallelTextRow row in CreateRows(
-                        rangeInfo,
-                        sourceRow,
-                        null,
-                        forceTargetInRange: forceTargetInRange
-                    )
-                )
-                {
-                    yield return row;
-                }
-            }
-        }
-
-        private IEnumerable<NParallelTextRow> CreateTargetRows(
-            NRangeInfo rangeInfo,
-            TextRow targetRow,
-            List<TextRow> sourceSameRefRows,
-            bool forceSourceInRange = false
-        )
-        {
-            if (CheckSameRefRows(sourceSameRefRows, targetRow))
-            {
-                foreach (TextRow sourceSameRefRow in sourceSameRefRows)
-                {
-                    foreach (NParallelTextRow row in CreateRows(rangeInfo, sourceSameRefRow, targetRow))
-                        yield return row;
-                }
-            }
-            else if (AllTargetRows)
-            {
-                foreach (
-                    NParallelTextRow row in CreateRows(
-                        rangeInfo,
-                        null,
-                        targetRow,
-                        forceSourceInRange: forceSourceInRange
-                    )
-                )
-                {
-                    yield return row;
+                    foreach (TextRow sameRefRow in sameRefRows)
+                    {
+                        foreach (
+                            NParallelTextRow row in CreateRows(
+                                rangeInfo,
+                                new List<TextRow>() { textRow, sameRefRow },
+                                forceInRange: new List<bool>() { false, forceInRange }
+                            )
+                        )
+                        {
+                            yield return row;
+                        }
+                    }
                 }
             }
         }
@@ -683,7 +351,7 @@ namespace SIL.Machine.Corpora
             public List<RangeRow> Rows { get; } = new List<RangeRow>();
             public bool IsInRange => Rows.Any(r => r.IsInRange);
 
-            private bool CheckSameRefRows(List<int> sameRefRows, TextRow otherRow)
+            public bool CheckSameRefRows(IList<TextRow> sameRefRows, TextRow otherRow)
             {
                 try
                 {
@@ -693,6 +361,21 @@ namespace SIL.Machine.Corpora
                 catch (ArgumentException)
                 {
                     throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
+                }
+                return sameRefRows.Count > 0;
+            }
+
+            public bool CheckSameRefRows(TextRow row)
+            {
+                var sameRefRows = Rows.SelectMany(r => r.SameRefRows).ToList();
+                try
+                {
+                    if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, row.Ref) != 0)
+                        sameRefRows.Clear();
+                }
+                catch (ArgumentException)
+                {
+                    throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), row.Ref.ToString());
                 }
                 return sameRefRows.Count > 0;
             }
@@ -727,7 +410,7 @@ namespace SIL.Machine.Corpora
                             .ToArray();
                     }
                 }
-                var nParRow = new NParallelTextRow(TextId, Rows.Select(r => r.Refs).ToArray())
+                var nParRow = new NParallelTextRow(TextId, Rows.Select(r => r.Refs.ToList()).ToArray())
                 {
                     NSegments = Rows.Select(r => r.Segment.ToArray()).ToArray(),
                     NFlags = Rows.Select(r => r.IsSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None)
