@@ -42,7 +42,7 @@ namespace SIL.Machine.Corpora
         public bool GetIsRangeStart(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.RangeStart) : throw new ArgumentOutOfRangeException();
 
-        public bool IsEmpty => NSegments.Any(s => s.Count == 0);
+        public bool IsEmpty => NSegments.All(s => s.Count == 0);
 
         public string GetText(int i) => string.Join(" ", NSegments[i]);
 

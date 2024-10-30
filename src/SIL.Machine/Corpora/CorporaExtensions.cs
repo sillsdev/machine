@@ -367,6 +367,16 @@ namespace SIL.Machine.Corpora
             return new FilterTextsTextCorpus(corpus, textIds);
         }
 
+        public static ITextCorpus SelectRandom(this NParallelTextCorpus corpus, int seed)
+        {
+            return new MergedCorpus(corpus, MergeRule.Random, seed);
+        }
+
+        public static ITextCorpus SelectFirst(this NParallelTextCorpus corpus)
+        {
+            return new MergedCorpus(corpus, MergeRule.First, 0);
+        }
+
         private class TransformTextCorpus : TextCorpusBase
         {
             private readonly ITextCorpus _corpus;
@@ -518,6 +528,72 @@ namespace SIL.Machine.Corpora
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
                 return _corpus.GetRows(textIds == null ? _textIds : _textIds.Intersect(textIds));
+            }
+        }
+
+        private enum MergeRule
+        {
+            First = 1,
+            Random = 2
+        }
+
+        private class MergedCorpus : TextCorpusBase
+        {
+            private readonly NParallelTextCorpus _corpus;
+
+            private readonly MergeRule _mergeRule;
+
+            private readonly Random _random;
+
+            private readonly int _seed;
+
+            public MergedCorpus(NParallelTextCorpus nParallelTextCorpus, MergeRule mergeRule, int seed)
+            {
+                _corpus = nParallelTextCorpus;
+                _mergeRule = mergeRule;
+                _seed = seed;
+                _random = new Random(_seed);
+            }
+
+            public override IEnumerable<IText> Texts => _corpus.Corpora.SelectMany(c => c.Texts);
+
+            public override bool IsTokenized =>
+                Enumerable.Range(0, _corpus.N).Select(i => _corpus.GetIsTokenized(i)).All(b => b);
+
+            public override ScrVers Versification => _corpus.N > 0 ? _corpus.Corpora.First().Versification : null;
+
+            public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
+            {
+                foreach (NParallelTextRow nRow in _corpus.GetRows())
+                {
+                    if (nRow.N == 0 || nRow.IsEmpty)
+                        continue;
+                    IReadOnlyList<int> nonEmptyIndices = nRow
+                        .NSegments.Select((s, i) => (s, i))
+                        .Where(pair => pair.s.Count > 0)
+                        .Select(pair => pair.i)
+                        .ToList();
+                    IReadOnlyList<int> indices =
+                        nonEmptyIndices.Count > 0 ? nonEmptyIndices : Enumerable.Range(0, nRow.N).ToList();
+                    switch (_mergeRule)
+                    {
+                        case MergeRule.First:
+                            yield return new TextRow(nRow.TextId, nRow.NRefs[indices.First()])
+                            {
+                                Segment = nRow.NSegments[indices.First()],
+                                Flags = nRow.NFlags[indices.First()]
+                            };
+                            break;
+                        case MergeRule.Random:
+                            int i = _random.Next(0, indices.Count);
+                            yield return new TextRow(nRow.TextId, nRow.NRefs[i])
+                            {
+                                Segment = nRow.NSegments[i],
+                                Flags = nRow.NFlags[i]
+                            };
+                            break;
+                    }
+                }
             }
         }
 

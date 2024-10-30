@@ -64,19 +64,17 @@ namespace SIL.Machine.Corpora
                 filterTextIds.IntersectWith(textIds);
 
             IList<IEnumerator<TextRow>> enumeratedCorpora = new List<IEnumerator<TextRow>>();
+            IEnumerable<NParallelTextRow> ret = new List<NParallelTextRow>() { };
             try
             {
                 for (int i = 0; i < Corpora.Count; i++)
                 {
+                    var enumerator = Corpora[i].GetRows(filterTextIds).GetEnumerator();
                     enumeratedCorpora.Add(
-                        new TextCorpusEnumerator(
-                            Corpora[i].GetRows(filterTextIds).GetEnumerator(),
-                            Corpora[0].Versification,
-                            Corpora[i].Versification
-                        )
+                        new TextCorpusEnumerator(enumerator, Corpora[0].Versification, Corpora[i].Versification)
                     );
                 }
-                return GetRows(enumeratedCorpora);
+                ret = GetRows(enumeratedCorpora).ToList(); //TODO cleanup
             }
             finally
             {
@@ -85,6 +83,7 @@ namespace SIL.Machine.Corpora
                     enumerator.Dispose();
                 }
             }
+            return ret;
         }
 
         private bool AnyInRangeWithSegments(IList<TextRow> rows)
@@ -95,7 +94,7 @@ namespace SIL.Machine.Corpora
         private IList<int> MinRefIndexes(IList<object> refs)
         {
             object minRef = refs[0];
-            IList<int> minRefIndexes = new List<int>(0);
+            IList<int> minRefIndexes = new List<int>() { 0 };
             for (int i = 1; i < refs.Count; i++)
             {
                 if (RowRefComparer.Compare(refs[i], minRef) < 0)
@@ -115,7 +114,11 @@ namespace SIL.Machine.Corpora
         private IEnumerable<NParallelTextRow> GetRows(IList<IEnumerator<TextRow>> listOfEnumerators)
         {
             {
-                var rangeInfo = new NRangeInfo { Versification = Corpora[0].Versification };
+                var rangeInfo = new NRangeInfo(N)
+                {
+                    Versification = Corpora[0].Versification,
+                    RowRefComparer = RowRefComparer
+                };
 
                 List<TextRow>[] sameRefRows = new List<TextRow>[Corpora.Count];
                 bool[] completed = listOfEnumerators.Select(e => !e.MoveNext()).ToArray();
@@ -123,22 +126,29 @@ namespace SIL.Machine.Corpora
                 while (!completed.All(c => c))
                 {
                     IList<int> minRefIndexes;
-                    IList<TextRow> currentRows = listOfEnumerators
-                        .Where((e, i) => !completed[i])
-                        .Select(e => e.Current)
-                        .ToArray();
+                    IList<TextRow> currentRows = listOfEnumerators.Select(e => e.Current).ToArray();
                     try
                     {
-                        minRefIndexes = MinRefIndexes(currentRows.Select(e => e.Ref).ToArray());
+                        minRefIndexes = MinRefIndexes(
+                            currentRows
+                                .Select(e =>
+                                {
+                                    if (e != null)
+                                        return e.Ref;
+                                    return null;
+                                })
+                                .ToArray()
+                        );
                     }
                     catch (ArgumentException)
                     {
                         throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
                     }
+                    var currentIncompleteRows = currentRows.Where((r, i) => !completed[i]).ToArray();
+                    IList<int> nonMinRefIndexes = System.Linq.Enumerable.Range(0, N).Except(minRefIndexes).ToList();
 
                     if (minRefIndexes.Count < (N - completed.Count(c => c))) //then there are some non-min refs
                     {
-                        IList<int> nonMinRefIndexes = System.Linq.Enumerable.Range(0, N).Except(minRefIndexes).ToList();
                         IReadOnlyList<bool> allNonMinRows = nonMinRefIndexes
                             .Select(i => AllRowsList[i])
                             .ToImmutableArray();
@@ -170,6 +180,7 @@ namespace SIL.Machine.Corpora
                                 NParallelTextRow row in CreateMinRefRows(
                                     rangeInfo,
                                     minEnumerators.Select(e => e.Current).ToList(),
+                                    minEnumerators.Where((e, i) => AllRowsList[i]).Select(e => e.Current).ToList(),
                                     nonMinRefIndexes,
                                     forceInRange: minEnumerators
                                         .Select(e => e.Current.TextId)
@@ -184,27 +195,33 @@ namespace SIL.Machine.Corpora
                             {
                                 yield return row;
                             }
-                            foreach (int i in nonMinRefIndexes)
-                            {
-                                rangeInfo.Rows[i].SameRefRows.Add(listOfEnumerators[i].Current);
-                                listOfEnumerators[i].MoveNext();
-                            }
+                        }
+                        foreach (int i in minRefIndexes)
+                        {
+                            rangeInfo.Rows[i].SameRefRows.Add(listOfEnumerators[i].Current);
+                            completed[i] = !listOfEnumerators[i].MoveNext();
                         }
                     }
                     else if (minRefIndexes.Count == (N - completed.Count(c => c)))
                     // the refs are all the same
                     {
                         if (
-                            !currentRows.Select((r, i) => AllRowsList[i]).Any()
-                            && currentRows.Select(r => r.IsInRange).Any()
+                            minRefIndexes
+                                .Select(i =>
+                                    !AllRowsList[i]
+                                    && minRefIndexes
+                                        .Select(j => j != i && !completed[i] && listOfEnumerators[i].Current.IsInRange)
+                                        .Any(b => b)
+                                )
+                                .Any(b => b)
                         )
                         {
-                            if (rangeInfo.IsInRange && AnyInRangeWithSegments(currentRows))
+                            if (rangeInfo.IsInRange && AnyInRangeWithSegments(currentIncompleteRows))
                             {
                                 yield return rangeInfo.CreateRow();
                             }
 
-                            for (int i = 0; i < currentRows.Count; i++)
+                            for (int i = 0; i < rangeInfo.Rows.Count; i++)
                             {
                                 rangeInfo.AddTextRow(currentRows[i], i);
                                 rangeInfo.Rows[i].SameRefRows.Clear();
@@ -212,30 +229,47 @@ namespace SIL.Machine.Corpora
                         }
                         else
                         {
-                            foreach (var row in currentRows) //TODO walk through together
+                            for (int i = 0; i < rangeInfo.Rows.Count - 1; i++)
                             {
-                                if (rangeInfo.CheckSameRefRows(row))
+                                for (int j = 0; j < rangeInfo.Rows.Count; j++)
                                 {
-                                    foreach (TextRow tr in rangeInfo.Rows.SelectMany(r => r.SameRefRows))
+                                    if (j <= i || completed[i] || completed[j])
+                                        continue;
+
+                                    if (rangeInfo.CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
                                     {
-                                        foreach (
-                                            NParallelTextRow r in CreateRows(rangeInfo, new List<TextRow> { tr, row })
-                                        )
+                                        foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
                                         {
-                                            yield return r;
+                                            foreach (
+                                                NParallelTextRow r in CreateRows(
+                                                    rangeInfo,
+                                                    rangeInfo.Rows[i].IsInRange,
+                                                    new List<TextRow> { tr, currentRows[i] }
+                                                )
+                                            )
+                                            {
+                                                yield return r;
+                                            }
                                         }
                                     }
                                 }
                             }
-                            foreach (NParallelTextRow row in CreateRows(rangeInfo, currentRows))
+                            foreach (
+                                NParallelTextRow row in CreateRows(
+                                    rangeInfo,
+                                    rangeInfo.IsInRange,
+                                    currentIncompleteRows
+                                )
+                            )
                             {
                                 yield return row;
                             }
                         }
 
-                        for (int i = 0; i < currentRows.Count; i++)
+                        for (int i = 0; i < rangeInfo.Rows.Count; i++)
                         {
                             rangeInfo.Rows[i].SameRefRows.Add(currentRows[i]);
+                            completed[i] = !listOfEnumerators[i].MoveNext();
                         }
                     }
                     else
@@ -246,7 +280,7 @@ namespace SIL.Machine.Corpora
                     }
                 }
 
-                if (rangeInfo.IsInRange)
+                if (rangeInfo.IsInRange) //TODO
                     yield return rangeInfo.CreateRow();
             }
         }
@@ -263,14 +297,15 @@ namespace SIL.Machine.Corpora
 
         private IEnumerable<NParallelTextRow> CreateRows(
             NRangeInfo rangeInfo,
+            bool isInRange,
             IList<TextRow> rows,
             IList<bool> forceInRange = null
         )
         {
-            if (rangeInfo.IsInRange)
+            if (isInRange)
                 yield return rangeInfo.CreateRow();
 
-            if (!rows.Any(r => r != null))
+            if (rows.All(r => r == null))
                 throw new ArgumentNullException("A corpus row must be specified.");
 
             object[] refRefs = new object[] { rows.Select(r => r?.Ref).First() };
@@ -302,6 +337,7 @@ namespace SIL.Machine.Corpora
         private IEnumerable<NParallelTextRow> CreateMinRefRows(
             NRangeInfo rangeInfo,
             IList<TextRow> minRefRows,
+            IList<TextRow> allRowsMinRefRows,
             IList<int> nonMinRefIndexes,
             bool forceInRange = false
         )
@@ -320,6 +356,7 @@ namespace SIL.Machine.Corpora
                         foreach (
                             NParallelTextRow row in CreateRows(
                                 rangeInfo,
+                                rangeInfo.IsInRange,
                                 new List<TextRow>() { textRow, sameRefRow },
                                 forceInRange: new List<bool>() { false, forceInRange }
                             )
@@ -328,6 +365,20 @@ namespace SIL.Machine.Corpora
                             yield return row;
                         }
                     }
+                }
+            }
+            foreach (TextRow textRow in allRowsMinRefRows)
+            {
+                foreach (
+                    NParallelTextRow row in CreateRows(
+                        rangeInfo,
+                        textRow.IsInRange,
+                        new List<TextRow> { textRow }, //TODO empty not non-existent
+                        new List<bool> { forceInRange }
+                    )
+                )
+                {
+                    yield return row;
                 }
             }
         }
@@ -344,12 +395,22 @@ namespace SIL.Machine.Corpora
 
         private class NRangeInfo
         {
-            public int N = -1;
+            public int N;
             public string TextId { get; set; } = "";
             public ScrVers Versification { get; set; } = null;
             public IComparer<object> RowRefComparer { get; set; } = null;
-            public List<RangeRow> Rows { get; } = new List<RangeRow>();
+            public List<RangeRow> Rows { get; }
             public bool IsInRange => Rows.Any(r => r.IsInRange);
+
+            public NRangeInfo(int n)
+            {
+                N = n;
+                Rows = new List<RangeRow>();
+                for (int i = 0; i < N; i++)
+                {
+                    Rows.Add(new RangeRow());
+                }
+            }
 
             public bool CheckSameRefRows(IList<TextRow> sameRefRows, TextRow otherRow)
             {
@@ -365,24 +426,9 @@ namespace SIL.Machine.Corpora
                 return sameRefRows.Count > 0;
             }
 
-            public bool CheckSameRefRows(TextRow row)
-            {
-                var sameRefRows = Rows.SelectMany(r => r.SameRefRows).ToList();
-                try
-                {
-                    if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, row.Ref) != 0)
-                        sameRefRows.Clear();
-                }
-                catch (ArgumentException)
-                {
-                    throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), row.Ref.ToString());
-                }
-                return sameRefRows.Count > 0;
-            }
-
             public void AddTextRow(TextRow row, int index)
             {
-                if (N <= row.Segment.Count)
+                if (N <= index)
                 {
                     throw new ArgumentOutOfRangeException(
                         $"There are only {N} parallel texts, but text {index} was chosen."
@@ -434,6 +480,10 @@ namespace SIL.Machine.Corpora
                 // Do not use the default comparer for ScriptureRef, since we want to ignore segments
                 if (x is ScriptureRef sx && y is ScriptureRef sy)
                     return sx.CompareTo(sy, compareSegments: false);
+                if (x == null && y != null)
+                    return 1;
+                if (x != null && y == null)
+                    return -1;
 
                 return Comparer<object>.Default.Compare(x, y);
             }
