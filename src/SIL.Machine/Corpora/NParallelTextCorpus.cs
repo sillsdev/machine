@@ -88,7 +88,11 @@ namespace SIL.Machine.Corpora
 
         private bool AnyInRangeWithSegments(IList<TextRow> rows)
         {
-            return rows.Any(r => r.IsInRange) && rows.All(r => !(r.IsInRange && r.Segment.Count == 0));
+            return rows.Any(r => r.IsInRange)
+                && (
+                    rows.Except(rows.Where(r => r.IsInRange && r.Segment.Count > 0)).Any(r => !r.IsInRange)
+                    || rows.All(r => r.IsInRange && r.Segment.Count > 0)
+                );
         }
 
         private IList<int> MinRefIndexes(IList<object> refs)
@@ -149,10 +153,6 @@ namespace SIL.Machine.Corpora
 
                     if (minRefIndexes.Count < (N - completed.Count(c => c))) //then there are some non-min refs
                     {
-                        IReadOnlyList<bool> allNonMinRows = nonMinRefIndexes
-                            .Select(i => AllRowsList[i])
-                            .ToImmutableArray();
-
                         IList<IEnumerator<TextRow>> minEnumerators = minRefIndexes
                             .Select(i => listOfEnumerators[i])
                             .ToList();
@@ -160,7 +160,16 @@ namespace SIL.Machine.Corpora
                             .Select(i => listOfEnumerators[i])
                             .ToList();
 
-                        if (!allNonMinRows.Any() && minEnumerators.Select(e => e.Current.IsInRange).Any())
+                        if (
+                            minRefIndexes
+                                .Select(i =>
+                                    !AllRowsList[i]
+                                    && minRefIndexes
+                                        .Select(j => j != i && !completed[i] && listOfEnumerators[i].Current.IsInRange)
+                                        .Any(b => b)
+                                )
+                                .Any(b => b)
+                        )
                         {
                             if (
                                 rangeInfo.IsInRange
