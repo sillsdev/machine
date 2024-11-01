@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Text.Json;
+using NUnit.Framework;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
@@ -627,8 +628,6 @@ public class ParallelTextCorpusTests
         Assert.That(rows[1].TargetSegment, Is.EqualTo("target segment 3 .".Split()));
     }
 
-    //TODO REMOVE: ABOVE PASS
-
     [Test]
     public void GetRows_RangeAllTargetRows()
     {
@@ -838,7 +837,7 @@ public class ParallelTextCorpusTests
         Assert.That(rows[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
         Assert.That(rows[1].TargetSegment, Is.EqualTo("target segment 2-1 .".Split()));
         Assert.That(rows[2].SourceRefs, Is.EqualTo(new[] { 2 }));
-        Assert.That(rows[2].TargetRefs, Is.EqualTo(new[] { 2 }));
+        Assert.That(rows[2].TargetRefs, Is.EqualTo(new[] { 2 }), JsonSerializer.Serialize(rows));
         Assert.That(rows[2].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
         Assert.That(rows[2].TargetSegment, Is.EqualTo("target segment 2-2 .".Split()));
     }
@@ -1015,8 +1014,6 @@ public class ParallelTextCorpusTests
             Is.EqualTo("target chapter one, verse four . target chapter one, verse five .".Split())
         );
     }
-
-    //TODO REMOVE: BELOW PASS
 
     [Test]
     public void Count_NoRows()
