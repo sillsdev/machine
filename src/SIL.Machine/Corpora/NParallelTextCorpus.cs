@@ -88,11 +88,8 @@ namespace SIL.Machine.Corpora
 
         private bool AnyInRangeWithSegments(IList<TextRow> rows)
         {
-            return rows.Any(r => r.IsInRange)
-                && (
-                    rows.Except(rows.Where(r => r.IsInRange && r.Segment.Count > 0)).Any(r => !r.IsInRange)
-                    || rows.All(r => r.IsInRange && r.Segment.Count > 0)
-                );
+            return (rows.Any(r => r.IsInRange && r.Segment.Count > 0) && rows.Any(r => !r.IsInRange))
+                || rows.All(r => r.IsInRange && r.Segment.Count > 0);
         }
 
         private IList<int> MinRefIndexes(IList<object> refs)
@@ -315,12 +312,14 @@ namespace SIL.Machine.Corpora
                 if (rows[i] != null)
                 {
                     textId = textId ?? rows[i]?.TextId;
-                    refs.Add(UnifyVersification(new object[] { rows[i].Ref }, i));
+                    refs.Add(
+                        UnifyVersification(rows[i].Ref == null ? new object[] { } : new object[] { rows[i].Ref }, i)
+                    );
                     flags.Add(rows[i].Flags);
                 }
                 else
                 {
-                    refs.Add(refRefs);
+                    refs.Add(new object[] { });
                     flags.Add(forceInRange != null && forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None);
                 }
             }
