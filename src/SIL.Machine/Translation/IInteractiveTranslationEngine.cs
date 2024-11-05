@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace SIL.Machine.Translation
 {
-    public interface IInteractiveTranslationEngine : ITranslationEngine
+    public interface IInteractiveTranslationEngine : ITranslationEngine, IWordAlignerEngine
     {
         Task<WordGraph> GetWordGraphAsync(string segment, CancellationToken cancellationToken = default);
 

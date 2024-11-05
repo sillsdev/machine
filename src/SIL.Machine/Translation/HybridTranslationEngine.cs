@@ -401,6 +401,49 @@ namespace SIL.Machine.Translation
             InteractiveEngine.TrainSegment(sourceSegment, targetSegment, sentenceStart);
         }
 
+        public TranslationResult GetBestPhraseAlignment(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        )
+        {
+            CheckDisposed();
+
+            return InteractiveEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
+        }
+
+        public TranslationResult GetBestPhraseAlignment(string sourceSegment, string targetSegment)
+        {
+            CheckDisposed();
+
+            return InteractiveEngine.GetBestPhraseAlignment(sourceSegment, targetSegment);
+        }
+
+        async Task<TranslationResult> IWordAlignerEngine.GetBestPhraseAlignmentAsync(
+            string sourceSegment,
+            string targetSegment,
+            CancellationToken cancellationToken
+        )
+        {
+            CheckDisposed();
+
+            return await InteractiveEngine
+                .GetBestPhraseAlignmentAsync(sourceSegment, targetSegment, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        public async Task<TranslationResult> GetBestPhraseAlignmentAsync(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment,
+            CancellationToken cancellationToken = default
+        )
+        {
+            CheckDisposed();
+
+            return await InteractiveEngine
+                .GetBestPhraseAlignmentAsync(sourceSegment, targetSegment, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         private TranslationResult Merge(TranslationResult interactiveResult, TranslationResult ruleResult)
         {
             var mergedTargetSegment = new List<string>();
