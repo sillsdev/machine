@@ -20,7 +20,10 @@ namespace SIL.Machine.Corpora
             TargetCorpus = targetCorpus;
             AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
-            NParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus });
+            NParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus })
+            {
+                AlignmentCorpus = AlignmentCorpus
+            };
         }
 
         public override bool IsSourceTokenized => SourceCorpus.IsTokenized;
@@ -45,19 +48,13 @@ namespace SIL.Machine.Corpora
 
                 foreach (var nRow in NParallelTextCorpus.GetRows(textIds))
                 {
-                    bool hasTarget = nRow.N > 1;
-                    if (!hasTarget && !AllTargetRows)
-                        continue;
-                    yield return new ParallelTextRow(
-                        nRow.TextId,
-                        nRow.NRefs[0],
-                        hasTarget ? nRow.NRefs[1] : new object[] { }
-                    )
+                    yield return new ParallelTextRow(nRow.TextId, nRow.NRefs[0], nRow.NRefs[1])
                     {
                         SourceFlags = nRow.NFlags[0],
-                        TargetFlags = hasTarget ? nRow.NFlags[1] : new TextRowFlags(),
+                        TargetFlags = nRow.NFlags[1],
                         SourceSegment = nRow.NSegments[0],
-                        TargetSegment = hasTarget ? nRow.NSegments[1] : new string[] { }
+                        TargetSegment = nRow.NSegments[1],
+                        AlignedWordPairs = nRow.AlignedWordPairs
                     };
                 }
             }
