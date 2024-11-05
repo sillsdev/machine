@@ -164,6 +164,49 @@ public class NParallelTextCorpusTests
     }
 
     [Test]
+    public void GetRows_ThreeCorpora_MissingRows_AllAllRows_MissingMiddle()
+    {
+        var corpus1 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
+                    TextRow("text1", 3, "source segment 3 .")
+                }
+            )
+        );
+        var corpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
+                    TextRow("text1", 2, "source segment 2 ."),
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                }
+            )
+        );
+        var corpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source segment 1 ."),
+                    TextRow("text1", 2, "source segment 2 ."),
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                }
+            )
+        );
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        NParallelTextRow[] rows = nParallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(3));
+        Assert.That(rows[1].NRefs.All(r => r.Count == 0 || (int)r[0] == 2));
+        Assert.That(rows[1].NSegments.All(r => r.Count == 0 || r.SequenceEqual("source segment 2 .".Split())));
+        Assert.That(rows[1].GetIsSentenceStart(1), Is.True);
+    }
+
+    [Test]
     public void GetRows_ThreeCorpora_MissingRows_MissingLastRows()
     {
         var corpus1 = new DictionaryTextCorpus(

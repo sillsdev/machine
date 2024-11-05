@@ -354,7 +354,10 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    refs.Add(CorrectVersification(refRefs, i));
+                    if (Corpora[i].IsScripture())
+                        refs.Add(CorrectVersification(refRefs, i));
+                    else
+                        refs.Add(new object[] { });
                     flags.Add(forceInRange != null && forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None);
                 }
             }
@@ -381,7 +384,7 @@ namespace SIL.Machine.Corpora
                 .ToList();
 
             List<int> alreadyYielded = new List<int>();
-
+            TextRow[] textRows;
             foreach (int i in minRefIndexes)
             {
                 TextRow textRow = currentRows[i];
@@ -394,7 +397,7 @@ namespace SIL.Machine.Corpora
                         alreadyYielded.Add(i);
                         foreach (TextRow sameRefRow in sameRefRows)
                         {
-                            var textRows = new TextRow[N];
+                            textRows = new TextRow[N];
                             textRows[i] = textRow;
                             textRows[j] = sameRefRow;
                             foreach (
@@ -407,13 +410,16 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
+            textRows = new TextRow[N];
+            var forceCurrentInRange = new bool[N];
             foreach (int i in minRefIndexes.Where(i => AllRowsList[i]).Except(alreadyYielded))
             {
                 TextRow textRow = currentRows[i];
-                var textRows = new TextRow[N];
                 textRows[i] = textRow;
-                var forceCurrentInRange = new bool[N];
                 forceCurrentInRange[i] = forceCurrentInRange[i];
+            }
+            if (textRows.Any(tr => tr != null))
+            {
                 foreach (NParallelTextRow row in CreateRows(rangeInfo, textRows, forceCurrentInRange))
                 {
                     yield return row;

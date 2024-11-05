@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Text.Json;
+using NUnit.Framework;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
@@ -63,5 +64,152 @@ public class CorporaExtensionsTests
         Assert.That(text, Is.EqualTo(""));
         Assert.That(origRef, Is.EqualTo(new VerseRef("MAT 2:12", ScrVers.Original)));
         Assert.That(corpusRef, Is.EqualTo(new VerseRef("MAT 2:12", corpus.Versification)));
+    }
+
+    [Test]
+    public void MergedCorpus_SelectFirst()
+    {
+        var corpus1 = new DictionaryTextCorpus(
+            new MemoryText("text1", new[] { TextRow("text1", 1, "source 1 segment 1 ."), TextRow("text1", 3) })
+        );
+        var corpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 2 segment 1 ."),
+                    TextRow("text1", 2, "source 2 segment 2 ."),
+                    TextRow("text1", 3)
+                }
+            )
+        );
+        var corpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 3 segment 1 ."),
+                    TextRow("text1", 2, "source 3 segment 2 ."),
+                    TextRow("text1", 3, "source 3 segment 3 .")
+                }
+            )
+        );
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        var mergedCorpus = nParallelCorpus.SelectFirst();
+        var rows = mergedCorpus.ToArray();
+        Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
+        Assert.That(rows[0].Text, Is.EqualTo("source 1 segment 1 ."));
+        Assert.That(rows[1].Text, Is.EqualTo("source 2 segment 2 ."));
+        Assert.That(rows[2].Text, Is.EqualTo("source 3 segment 3 ."));
+    }
+
+    [Test]
+    public void MergedCorpus_SelectRandom_Seed123456()
+    {
+        var corpus1 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 1 segment 1 ."),
+                    TextRow("text1", 2, "source 1 segment 2 ."),
+                    TextRow("text1", 3, "source 1 segment 3 .")
+                }
+            )
+        );
+        var corpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 2 segment 1 ."),
+                    TextRow("text1", 2, "source 2 segment 2 ."),
+                    TextRow("text1", 3, "source 2 segment 3 .")
+                }
+            )
+        );
+        var corpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 3 segment 1 ."),
+                    TextRow("text1", 2, "source 3 segment 2 ."),
+                    TextRow("text1", 3, "source 3 segment 3 .")
+                }
+            )
+        );
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        var mergedCorpus = nParallelCorpus.SelectRandom(123456);
+        var rows = mergedCorpus.ToArray();
+        Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows[0].Text, Is.EqualTo("source 1 segment 1 ."));
+            Assert.That(rows[1].Text, Is.EqualTo("source 1 segment 2 ."));
+            Assert.That(rows[2].Text, Is.EqualTo("source 1 segment 3 ."));
+        });
+    }
+
+    [Test]
+    public void MergedCorpus_SelectRandom_Seed4501()
+    {
+        var corpus1 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 1 segment 1 ."),
+                    TextRow("text1", 2, "source 1 segment 2 ."),
+                    TextRow("text1", 3, "source 1 segment 3 .")
+                }
+            )
+        );
+        var corpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 2 segment 1 ."),
+                    TextRow("text1", 2, "source 2 segment 2 ."),
+                    TextRow("text1", 3, "source 2 segment 3 .")
+                }
+            )
+        );
+        var corpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 3 segment 1 ."),
+                    TextRow("text1", 2, "source 3 segment 2 ."),
+                    TextRow("text1", 3, "source 3 segment 3 .")
+                }
+            )
+        );
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        var mergedCorpus = nParallelCorpus.SelectRandom(4501);
+        var rows = mergedCorpus.ToArray();
+        Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows[0].Text, Is.EqualTo("source 1 segment 1 ."));
+            Assert.That(rows[1].Text, Is.EqualTo("source 2 segment 2 ."));
+            Assert.That(rows[2].Text, Is.EqualTo("source 3 segment 3 ."));
+        });
+    }
+
+    private static TextRow TextRow(
+        string textId,
+        object rowRef,
+        string text = "",
+        TextRowFlags flags = TextRowFlags.SentenceStart
+    )
+    {
+        return new TextRow(textId, rowRef)
+        {
+            Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
+            Flags = flags
+        };
     }
 }

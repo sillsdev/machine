@@ -564,7 +564,7 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
-                foreach (NParallelTextRow nRow in _corpus.GetRows())
+                foreach (NParallelTextRow nRow in _corpus.GetRows(textIds))
                 {
                     if (nRow.N == 0 || nRow.IsEmpty)
                         continue;
