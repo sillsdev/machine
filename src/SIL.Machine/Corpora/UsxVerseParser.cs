@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SIL.Machine.Utils;
 using SIL.Scripture;
@@ -9,18 +10,40 @@ namespace SIL.Machine.Corpora
 {
     public class UsxVerseParser
     {
-        private static readonly HashSet<string> NonVerseParaStyles = new HashSet<string>
+        private static readonly HashSet<string> VerseParaStyles = new HashSet<string>
         {
-            "ms",
-            "mr",
-            "s",
-            "sr",
-            "r",
+            // Paragraphs
+            "p",
+            "m",
+            "po",
+            "pr",
+            "cls",
+            "pmo",
+            "pm",
+            "pmc",
+            "pmr",
+            "pi",
+            "pc",
+            "mi",
+            "nb",
+            // Poetry
+            "q",
+            "qc",
+            "qr",
+            "qm",
+            "qd",
+            "b",
             "d",
-            "sp",
-            "rem",
-            "restore",
-            "cl"
+            // Lists
+            "lh",
+            "li",
+            "lf",
+            "lim",
+            // Deprecated
+            "ph",
+            "phi",
+            "ps",
+            "psi",
         };
 
         public IEnumerable<UsxVerse> Parse(Stream stream)
@@ -59,7 +82,7 @@ namespace SIL.Machine.Corpora
                                     ctxt.IsSentenceStart = true;
                                     continue;
                                 }
-                                ctxt.ParaElement = e;
+                                ctxt.ParentElement = e;
                                 foreach (UsxVerse evt in ParseElement(e, ctxt))
                                     yield return evt;
                                 break;
@@ -122,6 +145,19 @@ namespace SIL.Machine.Corpora
                                 if (ctxt.IsInVerse)
                                     ctxt.AddToken("", e);
                                 break;
+                            case "table":
+                                foreach (UsxVerse evt in ParseElement(e, ctxt))
+                                    yield return evt;
+                                break;
+                            case "row":
+                                foreach (UsxVerse evt in ParseElement(e, ctxt))
+                                    yield return evt;
+                                break;
+                            case "cell":
+                                ctxt.ParentElement = e;
+                                foreach (UsxVerse evt in ParseElement(e, ctxt))
+                                    yield return evt;
+                                break;
                         }
                         break;
 
@@ -133,24 +169,12 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private static bool IsVersePara(XElement paraElem)
+        private static bool IsVersePara(XElement parentElement)
         {
-            var style = (string)paraElem.Attribute("style");
-            if (NonVerseParaStyles.Contains(style))
-                return false;
-
-            if (IsNumberedStyle("ms", style))
-                return false;
-
-            if (IsNumberedStyle("s", style))
-                return false;
-
-            return true;
-        }
-
-        private static bool IsNumberedStyle(string stylePrefix, string style)
-        {
-            return style.StartsWith(stylePrefix) && int.TryParse(style.Substring(stylePrefix.Length), out _);
+            string style = (string)parentElement.Attribute("style");
+            // strip any digits to the right of the style name using regular expression
+            style = Regex.Replace(style, @"\d+$", "");
+            return VerseParaStyles.Contains(style);
         }
 
         private class ParseContext
@@ -161,11 +185,11 @@ namespace SIL.Machine.Corpora
             public string Verse { get; set; }
             public bool IsInVerse => Chapter != null && Verse != null;
             public bool IsSentenceStart { get; set; } = true;
-            public XElement ParaElement { get; set; }
+            public XElement ParentElement { get; set; }
 
             public void AddToken(string text, XElement elem = null)
             {
-                _tokens.Add(new UsxToken(ParaElement, text, elem));
+                _tokens.Add(new UsxToken(ParentElement, text, elem));
             }
 
             public UsxVerse CreateVerse()

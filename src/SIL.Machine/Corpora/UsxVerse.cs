@@ -29,8 +29,15 @@ namespace SIL.Machine.Corpora
                 if (token.Text.Length == 0 || token.Text.StartsWith("\n"))
                     continue;
 
-                if (prevToken != null && token.ParaElement != prevToken.ParaElement && sb.Length > 0 && !endsWithSpace)
+                if (
+                    prevToken != null
+                    && token.ParentElement != prevToken.ParentElement
+                    && sb.Length > 0
+                    && !endsWithSpace
+                )
+                {
                     sb.Append(" ");
+                }
 
                 sb.Append(token);
                 endsWithSpace = token.Text.EndsWith(" ");
