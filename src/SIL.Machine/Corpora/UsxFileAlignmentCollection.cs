@@ -182,19 +182,19 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsxToken> tokens
         )
         {
-            XElement prevParaElem = null;
+            XElement prevParentElement = null;
             var sb = new StringBuilder();
             var linkStrs = new List<(Range<int>, string)>();
             foreach (UsxToken token in tokens)
             {
-                if (token.ParaElement != prevParaElem && sb.Length > 0)
+                if (token.ParentElement != prevParentElement && sb.Length > 0)
                     sb.Append(" ");
 
                 int start = sb.Length;
                 sb.Append(token);
                 if (token.Element is XElement e && e.Name == "wg")
                     linkStrs.Add((Range<int>.Create(start, sb.Length), (string)e.Attribute("target_links")));
-                prevParaElem = token.ParaElement;
+                prevParentElement = token.ParentElement;
             }
             string text = sb.ToString().Trim();
 

@@ -4,14 +4,14 @@ namespace SIL.Machine.Corpora
 {
     public class UsxToken
     {
-        public UsxToken(XElement paraElem, string text, XElement elem = null)
+        public UsxToken(XElement parentElement, string text, XElement elem = null)
         {
-            ParaElement = paraElem;
+            ParentElement = parentElement;
             Text = text;
             Element = elem;
         }
 
-        public XElement ParaElement { get; }
+        public XElement ParentElement { get; }
         public string Text { get; }
         public XElement Element { get; }
 
