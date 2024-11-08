@@ -199,6 +199,92 @@ public class CorporaExtensionsTests
         });
     }
 
+    [Test]
+    public void AlignMergedCorpora()
+    {
+        var sourceCorpus1 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 1 segment 1 ."),
+                    TextRow("text1", 2, "source 1 segment 2 ."),
+                    TextRow("text1", 3, "source 1 segment 3 .")
+                }
+            )
+        );
+        var sourceCorpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 2 segment 1 ."),
+                    TextRow("text1", 2, "source 2 segment 2 ."),
+                    TextRow("text1", 3, "source 2 segment 3 .")
+                }
+            )
+        );
+        var sourceCorpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source 3 segment 1 ."),
+                    TextRow("text1", 2, "source 3 segment 2 ."),
+                    TextRow("text1", 3, "source 3 segment 3 .")
+                }
+            )
+        );
+
+        ITextCorpus sourceCorpus = (new ITextCorpus[] { sourceCorpus1, sourceCorpus1, sourceCorpus3 })
+            .AlignMany([true, true, true])
+            .SelectFirst();
+
+        var targetCorpus1 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "target 1 segment 1 ."),
+                    TextRow("text1", 2, "target 1 segment 2 ."),
+                    TextRow("text1", 3, "target 1 segment 3 .")
+                }
+            )
+        );
+        var targetCorpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "target 2 segment 1 ."),
+                    TextRow("text1", 2, "target 2 segment 2 ."),
+                    TextRow("text1", 3, "target 2 segment 3 .")
+                }
+            )
+        );
+        var targetCorpus3 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "target 3 segment 1 ."),
+                    TextRow("text1", 2, "target 3 segment 2 ."),
+                    TextRow("text1", 3, "target 3 segment 3 .")
+                }
+            )
+        );
+
+        ITextCorpus targetCorpus = (new ITextCorpus[] { targetCorpus1, targetCorpus2, targetCorpus3 })
+            .AlignMany([true, true, true])
+            .SelectFirst();
+
+        IParallelTextCorpus alignedCorpus = sourceCorpus.AlignRows(targetCorpus);
+        ParallelTextRow[] rows = alignedCorpus.GetRows().ToArray();
+        Assert.That(rows, Has.Length.EqualTo(3));
+        Assert.That(rows[0].SourceText, Is.EqualTo("source 1 segment 1 ."));
+        Assert.That(rows[2].TargetText, Is.EqualTo("target 1 segment 3 ."));
+    }
+
     private static TextRow TextRow(
         string textId,
         object rowRef,

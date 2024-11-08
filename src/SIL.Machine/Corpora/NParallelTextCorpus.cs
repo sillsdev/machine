@@ -155,7 +155,10 @@ namespace SIL.Machine.Corpora
                     var currentIncompleteRows = currentRows.Where((r, i) => !completed[i]).ToArray();
                     IList<int> nonMinRefIndexes = System.Linq.Enumerable.Range(0, N).Except(minRefIndexes).ToList();
 
-                    if (minRefIndexes.Count < (N - completed.Count(c => c)) || completed.Where(c => !c).Count() == 1) //then there are some non-min refs or only one incomplete enumerator
+                    if (
+                        minRefIndexes.Count < (N - completed.Count(c => c))
+                        || completed.Where((c, i) => !c && minRefIndexes.Contains(i)).Count() == 1
+                    ) //then there are some non-min refs or only one incomplete enumerator
                     {
                         IList<IEnumerator<TextRow>> minEnumerators = minRefIndexes
                             .Select(i => listOfEnumerators[i])
@@ -285,7 +288,7 @@ namespace SIL.Machine.Corpora
                             foreach (
                                 NParallelTextRow row in CreateRows(
                                     rangeInfo,
-                                    currentIncompleteRows,
+                                    currentRows.Select((r, i) => completed[i] ? null : r).ToArray(),
                                     alignedWordPairs: AlignmentCorpus != null && compareAlignmentCorpus == 0
                                         ? alignmentEnumerator.Current.AlignedWordPairs.ToArray()
                                         : null
@@ -338,29 +341,30 @@ namespace SIL.Machine.Corpora
             if (rows.All(r => r == null))
                 throw new ArgumentNullException("A corpus row must be specified.");
 
-            object[] refRefs = new object[] { rows.Select(r => r?.Ref).First() };
+            object[] defaultRefs = new object[] { };
+            if (rows.Any(r => r != null))
+                defaultRefs = new object[] { rows.Where(r => r != null).Select(r => r.Ref).First() };
             string textId = null;
-            IList<object[]> refs = new List<object[]>();
-            IList<TextRowFlags> flags = new List<TextRowFlags>();
+            object[][] refs = new object[N][];
+            TextRowFlags[] flags = new TextRowFlags[N];
             for (int i = 0; i < rows.Count; i++)
             {
                 if (rows[i] != null)
                 {
                     textId = textId ?? rows[i]?.TextId;
-                    refs.Add(
-                        CorrectVersification(rows[i].Ref == null ? new object[] { } : new object[] { rows[i].Ref }, i)
-                    );
-                    flags.Add(rows[i].Flags);
+                    refs[i] = CorrectVersification(rows[i].Ref == null ? defaultRefs : new object[] { rows[i].Ref }, i);
+                    flags[i] = rows[i].Flags;
                 }
                 else
                 {
                     if (Corpora[i].IsScripture())
-                        refs.Add(CorrectVersification(refRefs, i));
+                        refs[i] = CorrectVersification(defaultRefs, i);
                     else
-                        refs.Add(new object[] { });
-                    flags.Add(forceInRange != null && forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None);
+                        refs[i] = new object[] { };
+                    flags[i] = forceInRange != null && forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None;
                 }
             }
+            refs = refs.Select(r => r ?? (new object[] { })).ToArray();
 
             yield return new NParallelTextRow(textId, refs)
             {
@@ -524,7 +528,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private class DefaultRowRefComparer : IComparer<object>
+        public class DefaultRowRefComparer : IComparer<object>
         {
             public int Compare(object x, object y)
             {

@@ -13,8 +13,8 @@ namespace SIL.Machine.Corpora
             if (string.IsNullOrEmpty(textId))
                 throw new ArgumentNullException(nameof(textId));
 
-            if (nRefs.SelectMany(r => r).Count() == 0)
-                throw new ArgumentNullException("Either a source or target ref must be provided.");
+            if (nRefs == null || nRefs.Where(r => r != null).SelectMany(r => r).Count() == 0)
+                throw new ArgumentNullException($"Refs must be provided but nRefs={nRefs}");
 
             TextId = textId;
             NRefs = nRefs.ToList().ToReadOnlyList();

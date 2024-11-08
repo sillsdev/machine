@@ -245,6 +245,16 @@ namespace SIL.Machine.Corpora
             };
         }
 
+        public static NParallelTextCorpus AlignMany(this ITextCorpus[] corpora, bool[] allRowsPerCorpus = null)
+        {
+            NParallelTextCorpus nParallelTextCorpus = new NParallelTextCorpus(corpora);
+            if (allRowsPerCorpus != null)
+            {
+                nParallelTextCorpus.AllRowsList = allRowsPerCorpus;
+            }
+            return nParallelTextCorpus;
+        }
+
         public static (ITextCorpus, ITextCorpus, int, int) Split(
             this ITextCorpus corpus,
             double? percent = null,
@@ -564,35 +574,46 @@ namespace SIL.Machine.Corpora
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
+                int indexOfInRangeRow = -1;
                 foreach (NParallelTextRow nRow in _corpus.GetRows(textIds))
                 {
-                    if (nRow.N == 0 || nRow.IsEmpty)
-                        continue;
                     IReadOnlyList<int> nonEmptyIndices = nRow
                         .NSegments.Select((s, i) => (s, i))
-                        .Where(pair => pair.s.Count > 0)
+                        .Where(pair => pair.s.Count > 0 || nRow.GetIsInRange(pair.i))
                         .Select(pair => pair.i)
                         .ToList();
                     IReadOnlyList<int> indices =
                         nonEmptyIndices.Count > 0 ? nonEmptyIndices : Enumerable.Range(0, nRow.N).ToList();
+                    if (indexOfInRangeRow == -1)
+                    {
+                        indices = indices.Where(i => nRow.GetIsRangeStart(i) || !nRow.GetIsInRange(i)).ToList();
+                    }
+                    if (indices.Count == 0)
+                        continue;
+                    int indexOfSelectedRow = -1;
                     switch (_mergeRule)
                     {
                         case MergeRule.First:
-                            yield return new TextRow(nRow.TextId, nRow.NRefs[indices.First()])
-                            {
-                                Segment = nRow.NSegments[indices.First()],
-                                Flags = nRow.NFlags[indices.First()]
-                            };
+                            indexOfSelectedRow = indices.First();
                             break;
                         case MergeRule.Random:
-                            int i = _random.Next(0, indices.Count);
-                            yield return new TextRow(nRow.TextId, nRow.NRefs[i])
-                            {
-                                Segment = nRow.NSegments[i],
-                                Flags = nRow.NFlags[i]
-                            };
+                            indexOfSelectedRow = indices[_random.Next(0, indices.Count)];
                             break;
                     }
+                    indexOfSelectedRow = indexOfInRangeRow != -1 ? indexOfInRangeRow : indexOfSelectedRow;
+                    if (!nRow.GetIsInRange(indexOfSelectedRow))
+                    {
+                        indexOfInRangeRow = -1;
+                    }
+                    if (nRow.GetIsRangeStart(indexOfSelectedRow))
+                    {
+                        indexOfInRangeRow = indexOfSelectedRow;
+                    }
+                    yield return new TextRow(nRow.TextId, nRow.Ref)
+                    {
+                        Segment = nRow.NSegments[indexOfSelectedRow],
+                        Flags = nRow.NFlags[indexOfSelectedRow]
+                    };
                 }
             }
         }
