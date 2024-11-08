@@ -377,12 +377,12 @@ namespace SIL.Machine.Corpora
             return new FilterTextsTextCorpus(corpus, textIds);
         }
 
-        public static ITextCorpus SelectRandom(this NParallelTextCorpus corpus, int seed)
+        public static ITextCorpus ChooseRandom(this NParallelTextCorpus corpus, int seed)
         {
             return new MergedCorpus(corpus, MergeRule.Random, seed);
         }
 
-        public static ITextCorpus SelectFirst(this NParallelTextCorpus corpus)
+        public static ITextCorpus ChooseFirst(this NParallelTextCorpus corpus)
         {
             return new MergedCorpus(corpus, MergeRule.First, 0);
         }

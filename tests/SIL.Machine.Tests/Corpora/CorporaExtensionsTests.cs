@@ -95,7 +95,7 @@ public class CorporaExtensionsTests
             )
         );
         var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.SelectFirst();
+        var mergedCorpus = nParallelCorpus.ChooseFirst();
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.That(rows[0].Text, Is.EqualTo("source 1 segment 1 ."));
@@ -140,7 +140,7 @@ public class CorporaExtensionsTests
             )
         );
         var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.SelectRandom(123456);
+        var mergedCorpus = nParallelCorpus.ChooseRandom(123456);
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.Multiple(() =>
@@ -188,7 +188,7 @@ public class CorporaExtensionsTests
             )
         );
         var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.SelectRandom(4501);
+        var mergedCorpus = nParallelCorpus.ChooseRandom(4501);
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.Multiple(() =>
@@ -238,7 +238,7 @@ public class CorporaExtensionsTests
 
         ITextCorpus sourceCorpus = (new ITextCorpus[] { sourceCorpus1, sourceCorpus1, sourceCorpus3 })
             .AlignMany([true, true, true])
-            .SelectFirst();
+            .ChooseFirst();
 
         var targetCorpus1 = new DictionaryTextCorpus(
             new MemoryText(
@@ -276,7 +276,7 @@ public class CorporaExtensionsTests
 
         ITextCorpus targetCorpus = (new ITextCorpus[] { targetCorpus1, targetCorpus2, targetCorpus3 })
             .AlignMany([true, true, true])
-            .SelectFirst();
+            .ChooseFirst();
 
         IParallelTextCorpus alignedCorpus = sourceCorpus.AlignRows(targetCorpus);
         ParallelTextRow[] rows = alignedCorpus.GetRows().ToArray();
