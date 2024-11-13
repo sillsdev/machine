@@ -6,7 +6,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public class TextCorpusEnumerator : DisposableBase, IEnumerator<TextRow>
+    internal class TextCorpusEnumerator : DisposableBase, IEnumerator<TextRow>
     {
         private readonly IEnumerator<TextRow> _enumerator;
         private readonly bool _isScripture = false;

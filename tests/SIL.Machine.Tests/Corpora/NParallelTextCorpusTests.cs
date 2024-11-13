@@ -47,12 +47,12 @@ public class NParallelTextCorpusTests
         Assert.That(rows.Length, Is.EqualTo(3));
         Assert.That(rows[0].NRefs.All(r => (int)r[0] == 1));
         Assert.That(rows[0].NSegments.All(r => r.SequenceEqual("source segment 1 .".Split())));
-        Assert.That(rows[0].GetIsSentenceStart(0), Is.False);
-        Assert.That(rows[0].GetIsSentenceStart(1), Is.True);
+        Assert.That(rows[0].IsSentenceStart(0), Is.False);
+        Assert.That(rows[0].IsSentenceStart(1), Is.True);
         Assert.That(rows[2].NRefs.All(r => (int)r[0] == 3));
         Assert.That(rows[2].NSegments.All(r => r.SequenceEqual("source segment 3 .".Split())));
-        Assert.That(rows[2].GetIsSentenceStart(1), Is.False);
-        Assert.That(rows[2].GetIsSentenceStart(2), Is.True);
+        Assert.That(rows[2].IsSentenceStart(1), Is.False);
+        Assert.That(rows[2].IsSentenceStart(2), Is.True);
     }
 
     [Test]
@@ -86,8 +86,8 @@ public class NParallelTextCorpusTests
         Assert.That(rows.Length, Is.EqualTo(1));
         Assert.That(rows[0].NRefs.All(r => (int)r[0] == 3));
         Assert.That(rows[0].NSegments.All(r => r.SequenceEqual("source segment 3 .".Split())));
-        Assert.That(rows[0].GetIsSentenceStart(0), Is.True);
-        Assert.That(rows[0].GetIsSentenceStart(1), Is.False);
+        Assert.That(rows[0].IsSentenceStart(0), Is.True);
+        Assert.That(rows[0].IsSentenceStart(1), Is.False);
     }
 
     [Test]
@@ -116,13 +116,13 @@ public class NParallelTextCorpusTests
         var corpus3 = new DictionaryTextCorpus(
             new MemoryText("text1", new[] { TextRow("text1", 3, "source segment 3 .") })
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(3));
         Assert.That(rows[2].NRefs.All(r => (int)r[0] == 3));
         Assert.That(rows[2].NSegments.All(r => r.SequenceEqual("source segment 3 .".Split())));
-        Assert.That(rows[2].GetIsSentenceStart(0), Is.True);
-        Assert.That(rows[2].GetIsSentenceStart(1), Is.False);
+        Assert.That(rows[2].IsSentenceStart(0), Is.True);
+        Assert.That(rows[2].IsSentenceStart(1), Is.False);
     }
 
     [Test]
@@ -151,16 +151,13 @@ public class NParallelTextCorpusTests
         var corpus3 = new DictionaryTextCorpus(
             new MemoryText("text1", new[] { TextRow("text1", 3, "source segment 3 .") })
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3])
-        {
-            AllRowsList = [true, false, true]
-        };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, false, true] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(2));
         Assert.That(rows[1].NRefs.All(r => (int)r[0] == 3));
         Assert.That(rows[1].NSegments.All(r => r.SequenceEqual("source segment 3 .".Split())));
-        Assert.That(rows[1].GetIsSentenceStart(0), Is.True);
-        Assert.That(rows[1].GetIsSentenceStart(1), Is.False);
+        Assert.That(rows[1].IsSentenceStart(0), Is.True);
+        Assert.That(rows[1].IsSentenceStart(1), Is.False);
     }
 
     [Test]
@@ -198,12 +195,12 @@ public class NParallelTextCorpusTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRowsList = [true, true, true] };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(3));
         Assert.That(rows[1].NRefs.All(r => r.Count == 0 || (int)r[0] == 2));
         Assert.That(rows[1].NSegments.All(r => r.Count == 0 || r.SequenceEqual("source segment 2 .".Split())));
-        Assert.That(rows[1].GetIsSentenceStart(1), Is.True);
+        Assert.That(rows[1].IsSentenceStart(1), Is.True);
     }
 
     [Test]
@@ -226,15 +223,12 @@ public class NParallelTextCorpusTests
         var corpus3 = new DictionaryTextCorpus(
             new MemoryText("text1", new[] { TextRow("text1", 1, "source segment 1 .") })
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3])
-        {
-            AllRowsList = [true, false, false]
-        };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, false, false] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(3));
         Assert.That(rows[1].NRefs.All(r => r.Count == 0 || (int)r[0] == 2));
         Assert.That(rows[1].NSegments.All(r => r.Count == 0 || r.SequenceEqual("source segment 2 .".Split())));
-        Assert.That(rows[1].GetIsSentenceStart(0), Is.True);
+        Assert.That(rows[1].IsSentenceStart(0), Is.True);
     }
 
     [Test]
@@ -250,12 +244,12 @@ public class NParallelTextCorpusTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1]) { AllRowsList = [true] };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1]) { AllRows = [true] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(2));
         Assert.That(rows[0].NRefs.All(r => (int)r[0] == 1));
         Assert.That(rows[0].NSegments.All(r => r.SequenceEqual("source segment 1 .".Split())));
-        Assert.That(rows[0].GetIsSentenceStart(0), Is.False);
+        Assert.That(rows[0].IsSentenceStart(0), Is.False);
     }
 
     [Test]
@@ -406,10 +400,7 @@ public class NParallelTextCorpusTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3])
-        {
-            AllRowsList = [false, false, true]
-        };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [false, false, true] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.That(rows[0].NRefs[0], Is.EquivalentTo(new object[] { 1 }));
@@ -461,10 +452,7 @@ public class NParallelTextCorpusTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3])
-        {
-            AllRowsList = [false, true, false]
-        };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [false, true, false] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(2), JsonSerializer.Serialize(rows));
         Assert.That(rows[0].NRefs[0], Is.EquivalentTo(new object[] { 1, 2 }));
@@ -516,10 +504,7 @@ public class NParallelTextCorpusTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3])
-        {
-            AllRowsList = [true, false, false]
-        };
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, false, false] };
         NParallelTextRow[] rows = nParallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(2), JsonSerializer.Serialize(rows));
         Assert.That(rows[0].NRefs[0], Is.EquivalentTo(new object[] { 1 }));

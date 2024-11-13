@@ -6,6 +6,12 @@ namespace SIL.Machine.Corpora
 {
     public abstract class NParallelTextCorpusBase : INParallelTextCorpus
     {
+        public abstract int N { get; }
+
+        public abstract IReadOnlyList<ITextCorpus> Corpora { get; }
+
+        public abstract bool IsTokenized(int i);
+
         int ICorpus<NParallelTextRow>.Count(bool includeEmpty)
         {
             return Count(includeEmpty, null);

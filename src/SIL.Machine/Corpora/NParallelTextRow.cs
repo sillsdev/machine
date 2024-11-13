@@ -33,18 +33,18 @@ namespace SIL.Machine.Corpora
         public IReadOnlyList<IReadOnlyList<string>> NSegments { get; set; }
         public IReadOnlyList<TextRowFlags> NFlags { get; set; }
 
-        public bool GetIsSentenceStart(int i) =>
+        public bool IsSentenceStart(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.SentenceStart) : throw new ArgumentOutOfRangeException();
 
-        public bool GetIsInRange(int i) =>
+        public bool IsInRange(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.InRange) : throw new ArgumentOutOfRangeException();
 
-        public bool GetIsRangeStart(int i) =>
+        public bool IsRangeStart(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.RangeStart) : throw new ArgumentOutOfRangeException();
 
         public bool IsEmpty => NSegments.All(s => s.Count == 0);
 
-        public string GetText(int i) => string.Join(" ", NSegments[i]);
+        public string Text(int i) => string.Join(" ", NSegments[i]);
 
         public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; set; }
 

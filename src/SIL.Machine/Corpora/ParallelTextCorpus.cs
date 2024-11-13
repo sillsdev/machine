@@ -29,14 +29,14 @@ namespace SIL.Machine.Corpora
 
         public ITextCorpus SourceCorpus { get; }
         public ITextCorpus TargetCorpus { get; }
-
-        public NParallelTextCorpus NParallelTextCorpus { get; set; }
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
 
+        private NParallelTextCorpus NParallelTextCorpus { get; set; }
+
         public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
         {
-            NParallelTextCorpus.AllRowsList = new bool[] { AllSourceRows, AllTargetRows };
+            NParallelTextCorpus.AllRows = new bool[] { AllSourceRows, AllTargetRows };
             bool isScripture = SourceCorpus.IsScripture() && TargetCorpus.IsScripture();
             foreach (var nRow in NParallelTextCorpus.GetRows(textIds))
             {

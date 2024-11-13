@@ -245,16 +245,6 @@ namespace SIL.Machine.Corpora
             };
         }
 
-        public static NParallelTextCorpus AlignMany(this ITextCorpus[] corpora, bool[] allRowsPerCorpus = null)
-        {
-            NParallelTextCorpus nParallelTextCorpus = new NParallelTextCorpus(corpora);
-            if (allRowsPerCorpus != null)
-            {
-                nParallelTextCorpus.AllRowsList = allRowsPerCorpus;
-            }
-            return nParallelTextCorpus;
-        }
-
         public static (ITextCorpus, ITextCorpus, int, int) Split(
             this ITextCorpus corpus,
             double? percent = null,
@@ -375,16 +365,6 @@ namespace SIL.Machine.Corpora
             if (textIds == null)
                 return corpus;
             return new FilterTextsTextCorpus(corpus, textIds);
-        }
-
-        public static ITextCorpus ChooseRandom(this NParallelTextCorpus corpus, int seed)
-        {
-            return new MergedCorpus(corpus, MergeRule.Random, seed);
-        }
-
-        public static ITextCorpus ChooseFirst(this NParallelTextCorpus corpus)
-        {
-            return new MergedCorpus(corpus, MergeRule.First, 0);
         }
 
         private class TransformTextCorpus : TextCorpusBase
@@ -541,36 +521,59 @@ namespace SIL.Machine.Corpora
             }
         }
 
+        #endregion
+
+        #region INParallelTextCorpus operations
+
+        public static INParallelTextCorpus AlignMany(
+            this IEnumerable<ITextCorpus> corpora,
+            IEnumerable<bool> allRowsPerCorpus = null
+        )
+        {
+            NParallelTextCorpus nParallelTextCorpus = new NParallelTextCorpus(corpora);
+            if (allRowsPerCorpus != null)
+            {
+                nParallelTextCorpus.AllRows = allRowsPerCorpus.ToArray();
+            }
+            return nParallelTextCorpus;
+        }
+
+        public static ITextCorpus ChooseRandom(this INParallelTextCorpus corpus, int seed)
+        {
+            return new MergedCorpus(corpus, MergeRule.Random, seed);
+        }
+
+        public static ITextCorpus ChooseFirst(this INParallelTextCorpus corpus)
+        {
+            return new MergedCorpus(corpus, MergeRule.First, 0);
+        }
+
         private enum MergeRule
         {
-            First = 1,
-            Random = 2
+            First,
+            Random
         }
 
         private class MergedCorpus : TextCorpusBase
         {
-            private readonly NParallelTextCorpus _corpus;
+            private readonly INParallelTextCorpus _corpus;
 
             private readonly MergeRule _mergeRule;
 
             private readonly Random _random;
 
-            private readonly int _seed;
-
-            public MergedCorpus(NParallelTextCorpus nParallelTextCorpus, MergeRule mergeRule, int seed)
+            public MergedCorpus(INParallelTextCorpus nParallelTextCorpus, MergeRule mergeRule, int seed)
             {
                 _corpus = nParallelTextCorpus;
                 _mergeRule = mergeRule;
-                _seed = seed;
-                _random = new Random(_seed);
+                _random = new Random(seed);
             }
 
             public override IEnumerable<IText> Texts => _corpus.Corpora.SelectMany(c => c.Texts);
 
-            public override bool IsTokenized =>
-                Enumerable.Range(0, _corpus.N).Select(i => _corpus.GetIsTokenized(i)).All(b => b);
+            public override bool IsTokenized => Enumerable.Range(0, _corpus.N).All(i => _corpus.IsTokenized(i));
 
-            public override ScrVers Versification => _corpus.N > 0 ? _corpus.Corpora.First().Versification : null;
+            public override ScrVers Versification => _corpus.N > 0 ? _corpus.Corpora[0].Versification : null;
 
             public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
             {
@@ -579,14 +582,14 @@ namespace SIL.Machine.Corpora
                 {
                     IReadOnlyList<int> nonEmptyIndices = nRow
                         .NSegments.Select((s, i) => (s, i))
-                        .Where(pair => pair.s.Count > 0 || nRow.GetIsInRange(pair.i))
+                        .Where(pair => pair.s.Count > 0 || nRow.IsInRange(pair.i))
                         .Select(pair => pair.i)
                         .ToList();
                     IReadOnlyList<int> indices =
                         nonEmptyIndices.Count > 0 ? nonEmptyIndices : Enumerable.Range(0, nRow.N).ToList();
                     if (indexOfInRangeRow == -1)
                     {
-                        indices = indices.Where(i => nRow.GetIsRangeStart(i) || !nRow.GetIsInRange(i)).ToList();
+                        indices = indices.Where(i => nRow.IsRangeStart(i) || !nRow.IsInRange(i)).ToList();
                     }
                     if (indices.Count == 0)
                         continue;
@@ -601,11 +604,11 @@ namespace SIL.Machine.Corpora
                             break;
                     }
                     indexOfSelectedRow = indexOfInRangeRow != -1 ? indexOfInRangeRow : indexOfSelectedRow;
-                    if (!nRow.GetIsInRange(indexOfSelectedRow))
+                    if (!nRow.IsInRange(indexOfSelectedRow))
                     {
                         indexOfInRangeRow = -1;
                     }
-                    if (nRow.GetIsRangeStart(indexOfSelectedRow))
+                    if (nRow.IsRangeStart(indexOfSelectedRow))
                     {
                         indexOfInRangeRow = indexOfSelectedRow;
                     }
