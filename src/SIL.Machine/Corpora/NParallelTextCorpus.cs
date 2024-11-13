@@ -110,198 +110,194 @@ namespace SIL.Machine.Corpora
             IEnumerator<AlignmentRow> alignmentEnumerator
         )
         {
+            var rangeInfo = new NRangeInfo(N)
             {
-                var rangeInfo = new NRangeInfo(N)
+                Versifications = Corpora.Select(c => c.Versification).ToArray(),
+                RowRefComparer = RowRefComparer
+            };
+
+            bool[] completed = enumerators.Select(e => !e.MoveNext()).ToArray();
+
+            while (!completed.All(c => c))
+            {
+                List<int> minRefIndexes;
+                List<TextRow> currentRows = enumerators.Select(e => e.Current).ToList();
+                try
                 {
-                    Versifications = Corpora.Select(c => c.Versification).ToArray(),
-                    RowRefComparer = RowRefComparer
-                };
-
-                bool[] completed = enumerators.Select(e => !e.MoveNext()).ToArray();
-
-                while (!completed.All(c => c))
-                {
-                    List<int> minRefIndexes;
-                    List<TextRow> currentRows = enumerators.Select(e => e.Current).ToList();
-                    try
-                    {
-                        minRefIndexes = MinRefIndexes(
-                                currentRows
-                                    .Select(
-                                        (e, i) =>
-                                        {
-                                            if (!completed[i])
-                                                return e.Ref;
-                                            return null;
-                                        }
-                                    )
-                                    .ToArray()
-                            )
-                            .ToList();
-                    }
-                    catch (ArgumentException)
-                    {
-                        throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
-                    }
-                    TextRow[] currentIncompleteRows = currentRows.Where((r, i) => !completed[i]).ToArray();
-                    List<int> nonMinRefIndexes = Enumerable.Range(0, N).Except(minRefIndexes).ToList();
-                    int numberOfRemainingRows = N - completed.Count(c => c);
-                    if (minRefIndexes.Count < numberOfRemainingRows || minRefIndexes.Count(i => !completed[i]) == 1)
-                    //then there are some non-min refs or only one incomplete enumerator
-                    {
-                        List<IEnumerator<TextRow>> minEnumerators = minRefIndexes.Select(i => enumerators[i]).ToList();
-                        List<IEnumerator<TextRow>> nonMinEnumerators = nonMinRefIndexes
-                            .Select(i => enumerators[i])
-                            .ToList();
-
-                        if (
-                            nonMinRefIndexes.Any(i => !AllRows[i])
-                            && minRefIndexes.Any(i => !completed[i] && currentRows[i].IsInRange)
-                        )
-                        {
-                            if (
-                                rangeInfo.IsInRange
-                                && nonMinEnumerators.Any(e =>
-                                    e.Current != null && e.Current.IsInRange && e.Current.Segment.Count > 0
-                                )
-                            )
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-                            minRefIndexes.ForEach(i => rangeInfo.AddTextRow(enumerators[i].Current, i));
-                            nonMinRefIndexes.ForEach(i => rangeInfo.Rows[i].SameRefRows.Clear());
-                        }
-                        else
-                        {
-                            bool anyNonMinEnumeratorsMidRange = nonMinRefIndexes.Any(i =>
-                                !completed[i] && !currentRows[i].IsRangeStart && currentRows[i].IsInRange
-                            );
-                            foreach (
-                                NParallelTextRow row in CreateMinRefRows(
-                                    rangeInfo,
-                                    currentRows.ToArray(),
-                                    minRefIndexes.ToArray(),
-                                    nonMinRefIndexes.ToArray(),
-                                    forceInRange: minRefIndexes
-                                        .Select(i =>
-                                            anyNonMinEnumeratorsMidRange
-                                            && nonMinRefIndexes.All(j =>
-                                                !completed[j] && currentRows[j].TextId == currentRows[i].TextId
-                                            )
-                                        )
-                                        .ToList()
-                                )
-                            )
-                            {
-                                yield return row;
-                            }
-                        }
-                        foreach (int i in minRefIndexes)
-                        {
-                            rangeInfo.Rows[i].SameRefRows.Add(enumerators[i].Current);
-                            completed[i] = !enumerators[i].MoveNext();
-                        }
-                    }
-                    else if (minRefIndexes.Count == numberOfRemainingRows)
-                    // the refs are all the same
-                    {
-                        int compareAlignmentCorpus = -1;
-                        if (AlignmentCorpus != null)
-                        {
-                            do
-                            {
-                                try
-                                {
-                                    compareAlignmentCorpus = alignmentEnumerator.MoveNext()
-                                        ? RowRefComparer.Compare(
-                                            currentIncompleteRows[0].Ref,
-                                            alignmentEnumerator.Current.Ref
-                                        )
-                                        : 1;
-                                }
-                                catch (ArgumentException)
-                                {
-                                    throw new CorpusAlignmentException(
-                                        currentRows.Select(e => e.Ref.ToString()).ToArray()
-                                    );
-                                }
-                            } while (compareAlignmentCorpus < 0);
-                        }
-
-                        if (
-                            minRefIndexes
-                                .Select(i =>
-                                    enumerators[i].Current.IsInRange && minRefIndexes.All(j => j == i || !AllRows[j])
-                                )
-                                .Any(b => b)
-                        )
-                        {
-                            if (rangeInfo.IsInRange && AllInRangeHaveSegments(currentIncompleteRows))
-                            {
-                                yield return rangeInfo.CreateRow();
-                            }
-
-                            for (int i = 0; i < rangeInfo.Rows.Count; i++)
-                            {
-                                rangeInfo.AddTextRow(currentRows[i], i);
-                                rangeInfo.Rows[i].SameRefRows.Clear();
-                            }
-                        }
-                        else
-                        {
-                            for (int i = 0; i < rangeInfo.Rows.Count; i++)
-                            {
-                                for (int j = 0; j < rangeInfo.Rows.Count; j++) //TODO rework
-                                {
-                                    if (i == j || completed[i] || completed[j])
-                                        continue;
-
-                                    if (rangeInfo.CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
+                    minRefIndexes = MinRefIndexes(
+                            currentRows
+                                .Select(
+                                    (e, i) =>
                                     {
-                                        foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
-                                        {
-                                            var textRows = new TextRow[N];
-                                            textRows[i] = tr;
-                                            textRows[j] = currentRows[j];
-                                            foreach (NParallelTextRow r in CreateRows(rangeInfo, textRows))
-                                            {
-                                                yield return r;
-                                            }
-                                        }
+                                        if (!completed[i])
+                                            return e.Ref;
+                                        return null;
                                     }
-                                }
-                            }
-                            foreach (
-                                NParallelTextRow row in CreateRows(
-                                    rangeInfo,
-                                    currentRows.Select((r, i) => completed[i] ? null : r).ToArray(),
-                                    alignedWordPairs: AlignmentCorpus != null && compareAlignmentCorpus == 0
-                                        ? alignmentEnumerator.Current.AlignedWordPairs.ToArray()
-                                        : null
                                 )
+                                .ToArray()
+                        )
+                        .ToList();
+                }
+                catch (ArgumentException)
+                {
+                    throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
+                }
+                TextRow[] currentIncompleteRows = currentRows.Where((r, i) => !completed[i]).ToArray();
+                List<int> nonMinRefIndexes = Enumerable.Range(0, N).Except(minRefIndexes).ToList();
+                int numberOfRemainingRows = N - completed.Count(c => c);
+                if (minRefIndexes.Count < numberOfRemainingRows || minRefIndexes.Count(i => !completed[i]) == 1)
+                //then there are some non-min refs or only one incomplete enumerator
+                {
+                    List<IEnumerator<TextRow>> minEnumerators = minRefIndexes.Select(i => enumerators[i]).ToList();
+                    List<IEnumerator<TextRow>> nonMinEnumerators = nonMinRefIndexes
+                        .Select(i => enumerators[i])
+                        .ToList();
+
+                    if (
+                        nonMinRefIndexes.Any(i => !AllRows[i])
+                        && minRefIndexes.Any(i => !completed[i] && currentRows[i].IsInRange)
+                    )
+                    {
+                        if (
+                            rangeInfo.IsInRange
+                            && nonMinEnumerators.Any(e =>
+                                e.Current != null && e.Current.IsInRange && e.Current.Segment.Count > 0
                             )
+                        )
+                        {
+                            yield return rangeInfo.CreateRow();
+                        }
+                        minRefIndexes.ForEach(i => rangeInfo.AddTextRow(enumerators[i].Current, i));
+                        nonMinRefIndexes.ForEach(i => rangeInfo.Rows[i].SameRefRows.Clear());
+                    }
+                    else
+                    {
+                        bool anyNonMinEnumeratorsMidRange = nonMinRefIndexes.Any(i =>
+                            !completed[i] && !currentRows[i].IsRangeStart && currentRows[i].IsInRange
+                        );
+                        foreach (
+                            NParallelTextRow row in CreateMinRefRows(
+                                rangeInfo,
+                                currentRows.ToArray(),
+                                minRefIndexes.ToArray(),
+                                nonMinRefIndexes.ToArray(),
+                                forceInRange: minRefIndexes
+                                    .Select(i =>
+                                        anyNonMinEnumeratorsMidRange
+                                        && nonMinRefIndexes.All(j =>
+                                            !completed[j] && currentRows[j].TextId == currentRows[i].TextId
+                                        )
+                                    )
+                                    .ToList()
+                            )
+                        )
+                        {
+                            yield return row;
+                        }
+                    }
+                    foreach (int i in minRefIndexes)
+                    {
+                        rangeInfo.Rows[i].SameRefRows.Add(enumerators[i].Current);
+                        completed[i] = !enumerators[i].MoveNext();
+                    }
+                }
+                else if (minRefIndexes.Count == numberOfRemainingRows)
+                // the refs are all the same
+                {
+                    int compareAlignmentCorpus = -1;
+                    if (AlignmentCorpus != null)
+                    {
+                        do
+                        {
+                            try
                             {
-                                yield return row;
+                                compareAlignmentCorpus = alignmentEnumerator.MoveNext()
+                                    ? RowRefComparer.Compare(
+                                        currentIncompleteRows[0].Ref,
+                                        alignmentEnumerator.Current.Ref
+                                    )
+                                    : 1;
                             }
+                            catch (ArgumentException)
+                            {
+                                throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
+                            }
+                        } while (compareAlignmentCorpus < 0);
+                    }
+
+                    if (
+                        minRefIndexes
+                            .Select(i =>
+                                enumerators[i].Current.IsInRange && minRefIndexes.All(j => j == i || !AllRows[j])
+                            )
+                            .Any(b => b)
+                    )
+                    {
+                        if (rangeInfo.IsInRange && AllInRangeHaveSegments(currentIncompleteRows))
+                        {
+                            yield return rangeInfo.CreateRow();
                         }
 
                         for (int i = 0; i < rangeInfo.Rows.Count; i++)
                         {
-                            rangeInfo.Rows[i].SameRefRows.Add(currentRows[i]);
-                            completed[i] = !enumerators[i].MoveNext();
+                            rangeInfo.AddTextRow(currentRows[i], i);
+                            rangeInfo.Rows[i].SameRefRows.Clear();
                         }
                     }
                     else
                     {
-                        throw new CorpusAlignmentException(
-                            minRefIndexes.Select(i => currentRows[i].Ref.ToString()).ToArray()
-                        );
+                        for (int i = 0; i < rangeInfo.Rows.Count; i++)
+                        {
+                            for (int j = 0; j < rangeInfo.Rows.Count; j++) //TODO rework
+                            {
+                                if (i == j || completed[i] || completed[j])
+                                    continue;
+
+                                if (rangeInfo.CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
+                                {
+                                    foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
+                                    {
+                                        var textRows = new TextRow[N];
+                                        textRows[i] = tr;
+                                        textRows[j] = currentRows[j];
+                                        foreach (NParallelTextRow r in CreateRows(rangeInfo, textRows))
+                                        {
+                                            yield return r;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        foreach (
+                            NParallelTextRow row in CreateRows(
+                                rangeInfo,
+                                currentRows.Select((r, i) => completed[i] ? null : r).ToArray(),
+                                alignedWordPairs: AlignmentCorpus != null && compareAlignmentCorpus == 0
+                                    ? alignmentEnumerator.Current.AlignedWordPairs.ToArray()
+                                    : null
+                            )
+                        )
+                        {
+                            yield return row;
+                        }
+                    }
+
+                    for (int i = 0; i < rangeInfo.Rows.Count; i++)
+                    {
+                        rangeInfo.Rows[i].SameRefRows.Add(currentRows[i]);
+                        completed[i] = !enumerators[i].MoveNext();
                     }
                 }
-
-                if (rangeInfo.IsInRange)
-                    yield return rangeInfo.CreateRow();
+                else
+                {
+                    throw new CorpusAlignmentException(
+                        minRefIndexes.Select(i => currentRows[i].Ref.ToString()).ToArray()
+                    );
+                }
             }
+
+            if (rangeInfo.IsInRange)
+                yield return rangeInfo.CreateRow();
         }
 
         private object[] CorrectVersification(object[] refs, int i)

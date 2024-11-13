@@ -32,7 +32,7 @@ namespace SIL.Machine.Corpora
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
 
-        private NParallelTextCorpus NParallelTextCorpus { get; set; }
+        public NParallelTextCorpus NParallelTextCorpus { get; }
 
         public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
         {
