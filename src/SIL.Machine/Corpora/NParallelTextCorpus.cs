@@ -26,7 +26,6 @@ namespace SIL.Machine.Corpora
         public override int N => Corpora.Count;
         public IReadOnlyList<bool> AllRows { get; set; }
         public override IReadOnlyList<ITextCorpus> Corpora { get; }
-        public IAlignmentCorpus AlignmentCorpus { get; set; }
         public IComparer<object> RowRefComparer { get; }
 
         private HashSet<string> GetTextIdsFromCorpora()
@@ -53,7 +52,6 @@ namespace SIL.Machine.Corpora
             if (textIds != null)
                 filterTextIds.IntersectWith(textIds);
 
-            IEnumerator<AlignmentRow> alignmentEnumerator = null;
             List<IEnumerator<TextRow>> enumeratedCorpora = new List<IEnumerator<TextRow>>();
             try
             {
@@ -64,10 +62,7 @@ namespace SIL.Machine.Corpora
                         new TextCorpusEnumerator(enumerator, Corpora[0].Versification, Corpora[i].Versification)
                     );
                 }
-
-                if (AlignmentCorpus != null)
-                    alignmentEnumerator = AlignmentCorpus.GetRows(filterTextIds).GetEnumerator();
-                foreach (NParallelTextRow row in GetRows(enumeratedCorpora, alignmentEnumerator))
+                foreach (NParallelTextRow row in GetRows(enumeratedCorpora))
                     yield return row;
             }
             finally
@@ -76,7 +71,6 @@ namespace SIL.Machine.Corpora
                 {
                     enumerator.Dispose();
                 }
-                alignmentEnumerator?.Dispose();
             }
         }
 
@@ -105,10 +99,7 @@ namespace SIL.Machine.Corpora
             return minRefIndexes;
         }
 
-        private IEnumerable<NParallelTextRow> GetRows(
-            IList<IEnumerator<TextRow>> enumerators,
-            IEnumerator<AlignmentRow> alignmentEnumerator
-        )
+        private IEnumerable<NParallelTextRow> GetRows(IList<IEnumerator<TextRow>> enumerators)
         {
             var rangeInfo = new NRangeInfo(N)
             {
@@ -204,27 +195,6 @@ namespace SIL.Machine.Corpora
                 else if (minRefIndexes.Count == numberOfRemainingRows)
                 // the refs are all the same
                 {
-                    int compareAlignmentCorpus = -1;
-                    if (AlignmentCorpus != null)
-                    {
-                        do
-                        {
-                            try
-                            {
-                                compareAlignmentCorpus = alignmentEnumerator.MoveNext()
-                                    ? RowRefComparer.Compare(
-                                        currentIncompleteRows[0].Ref,
-                                        alignmentEnumerator.Current.Ref
-                                    )
-                                    : 1;
-                            }
-                            catch (ArgumentException)
-                            {
-                                throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
-                            }
-                        } while (compareAlignmentCorpus < 0);
-                    }
-
                     if (
                         minRefIndexes
                             .Select(i =>
@@ -271,10 +241,7 @@ namespace SIL.Machine.Corpora
                         foreach (
                             NParallelTextRow row in CreateRows(
                                 rangeInfo,
-                                currentRows.Select((r, i) => completed[i] ? null : r).ToArray(),
-                                alignedWordPairs: AlignmentCorpus != null && compareAlignmentCorpus == 0
-                                    ? alignmentEnumerator.Current.AlignedWordPairs.ToArray()
-                                    : null
+                                currentRows.Select((r, i) => completed[i] ? null : r).ToArray()
                             )
                         )
                         {
@@ -313,8 +280,7 @@ namespace SIL.Machine.Corpora
         private IEnumerable<NParallelTextRow> CreateRows(
             NRangeInfo rangeInfo,
             IReadOnlyList<TextRow> rows,
-            IReadOnlyList<bool> forceInRange = null,
-            IReadOnlyList<AlignedWordPair> alignedWordPairs = null
+            IReadOnlyList<bool> forceInRange = null
         )
         {
             if (rangeInfo.IsInRange)
@@ -351,8 +317,7 @@ namespace SIL.Machine.Corpora
             yield return new NParallelTextRow(textId, refs)
             {
                 NSegments = rows.Select(r => r?.Segment ?? Array.Empty<string>()).ToArray(),
-                NFlags = flags.ToReadOnlyList(),
-                AlignedWordPairs = alignedWordPairs
+                NFlags = flags.ToReadOnlyList()
             };
         }
 

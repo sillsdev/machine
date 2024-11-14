@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
@@ -15,10 +17,7 @@ namespace SIL.Machine.Corpora
             TargetCorpus = targetCorpus;
             AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
             RowRefComparer = rowRefComparer ?? new NParallelTextCorpus.DefaultRowRefComparer();
-            NParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus })
-            {
-                AlignmentCorpus = AlignmentCorpus
-            };
+            NParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus });
         }
 
         public override bool IsSourceTokenized => SourceCorpus.IsTokenized;
@@ -36,22 +35,43 @@ namespace SIL.Machine.Corpora
 
         public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
         {
-            NParallelTextCorpus.AllRows = new bool[] { AllSourceRows, AllTargetRows };
-            bool isScripture = SourceCorpus.IsScripture() && TargetCorpus.IsScripture();
-            foreach (var nRow in NParallelTextCorpus.GetRows(textIds))
+            using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetEnumerator())
             {
-                yield return new ParallelTextRow(
-                    nRow.TextId,
-                    nRow.NRefs[0].Count > 0 || !isScripture ? nRow.NRefs[0] : new object[] { nRow.Ref },
-                    nRow.NRefs[1].Count > 0 || !isScripture ? nRow.NRefs[1] : new object[] { nRow.Ref }
-                )
+                NParallelTextCorpus.AllRows = new bool[] { AllSourceRows, AllTargetRows };
+                bool isScripture = SourceCorpus.IsScripture() && TargetCorpus.IsScripture();
+                foreach (var nRow in NParallelTextCorpus.GetRows(textIds))
                 {
-                    SourceFlags = nRow.NFlags[0],
-                    TargetFlags = nRow.NFlags[1],
-                    SourceSegment = nRow.NSegments[0],
-                    TargetSegment = nRow.NSegments[1],
-                    AlignedWordPairs = nRow.AlignedWordPairs
-                };
+                    int compareAlignmentCorpus = -1;
+                    if (AlignmentCorpus != null && nRow.NSegments.All(s => s.Count > 0))
+                    {
+                        do
+                        {
+                            try
+                            {
+                                compareAlignmentCorpus = alignmentEnumerator.MoveNext()
+                                    ? RowRefComparer.Compare(nRow.Ref, alignmentEnumerator.Current.Ref)
+                                    : 1;
+                            }
+                            catch (ArgumentException)
+                            {
+                                throw new CorpusAlignmentException(nRow.NRefs.Select(r => r.ToString()).ToArray());
+                            }
+                        } while (compareAlignmentCorpus < 0);
+                    }
+                    yield return new ParallelTextRow(
+                        nRow.TextId,
+                        nRow.NRefs[0].Count > 0 || !isScripture ? nRow.NRefs[0] : new object[] { nRow.Ref },
+                        nRow.NRefs[1].Count > 0 || !isScripture ? nRow.NRefs[1] : new object[] { nRow.Ref }
+                    )
+                    {
+                        SourceFlags = nRow.NFlags[0],
+                        TargetFlags = nRow.NFlags[1],
+                        SourceSegment = nRow.NSegments[0],
+                        TargetSegment = nRow.NSegments[1],
+                        AlignedWordPairs =
+                            compareAlignmentCorpus == 0 ? alignmentEnumerator.Current.AlignedWordPairs.ToArray() : null
+                    };
+                }
             }
         }
     }

@@ -46,8 +46,6 @@ namespace SIL.Machine.Corpora
 
         public string Text(int i) => string.Join(" ", NSegments[i]);
 
-        public IReadOnlyCollection<AlignedWordPair> AlignedWordPairs { get; set; }
-
         public NParallelTextRow Invert()
         {
             return new NParallelTextRow(TextId, NRefs.Reverse()) { NFlags = NFlags.Reverse().ToImmutableArray(), };
