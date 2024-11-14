@@ -538,87 +538,26 @@ namespace SIL.Machine.Corpora
             return nParallelTextCorpus;
         }
 
-        public static ITextCorpus ChooseRandom(this INParallelTextCorpus corpus, int seed)
+        public static ITextCorpus ChooseRandom(
+            this IEnumerable<ITextCorpus> corpora,
+            IEnumerable<bool> allRows,
+            int seed
+        )
         {
-            return new MergedCorpus(corpus, MergeRule.Random, seed);
+            return new MergedTextCorpus(
+                new NParallelTextCorpus(corpora) { AllRows = allRows.ToArray() },
+                MergeRule.Random,
+                seed
+            );
         }
 
-        public static ITextCorpus ChooseFirst(this INParallelTextCorpus corpus)
+        public static ITextCorpus ChooseFirst(this IEnumerable<ITextCorpus> corpora, IEnumerable<bool> allRows)
         {
-            return new MergedCorpus(corpus, MergeRule.First, 0);
-        }
-
-        private enum MergeRule
-        {
-            First,
-            Random
-        }
-
-        private class MergedCorpus : TextCorpusBase
-        {
-            private readonly INParallelTextCorpus _corpus;
-
-            private readonly MergeRule _mergeRule;
-
-            private readonly Random _random;
-
-            public MergedCorpus(INParallelTextCorpus nParallelTextCorpus, MergeRule mergeRule, int seed)
-            {
-                _corpus = nParallelTextCorpus;
-                _mergeRule = mergeRule;
-                _random = new Random(seed);
-            }
-
-            public override IEnumerable<IText> Texts => _corpus.Corpora.SelectMany(c => c.Texts);
-
-            public override bool IsTokenized => Enumerable.Range(0, _corpus.N).All(i => _corpus.IsTokenized(i));
-
-            public override ScrVers Versification => _corpus.N > 0 ? _corpus.Corpora[0].Versification : null;
-
-            public override IEnumerable<TextRow> GetRows(IEnumerable<string> textIds)
-            {
-                int indexOfInRangeRow = -1;
-                foreach (NParallelTextRow nRow in _corpus.GetRows(textIds))
-                {
-                    IReadOnlyList<int> nonEmptyIndices = nRow
-                        .NSegments.Select((s, i) => (s, i))
-                        .Where(pair => pair.s.Count > 0 || nRow.IsInRange(pair.i))
-                        .Select(pair => pair.i)
-                        .ToList();
-                    IReadOnlyList<int> indices =
-                        nonEmptyIndices.Count > 0 ? nonEmptyIndices : Enumerable.Range(0, nRow.N).ToList();
-                    if (indexOfInRangeRow == -1)
-                    {
-                        indices = indices.Where(i => nRow.IsRangeStart(i) || !nRow.IsInRange(i)).ToList();
-                    }
-                    if (indices.Count == 0)
-                        continue;
-                    int indexOfSelectedRow = -1;
-                    switch (_mergeRule)
-                    {
-                        case MergeRule.First:
-                            indexOfSelectedRow = indices.First();
-                            break;
-                        case MergeRule.Random:
-                            indexOfSelectedRow = indices[_random.Next(0, indices.Count)];
-                            break;
-                    }
-                    indexOfSelectedRow = indexOfInRangeRow != -1 ? indexOfInRangeRow : indexOfSelectedRow;
-                    if (!nRow.IsInRange(indexOfSelectedRow))
-                    {
-                        indexOfInRangeRow = -1;
-                    }
-                    if (nRow.IsRangeStart(indexOfSelectedRow))
-                    {
-                        indexOfInRangeRow = indexOfSelectedRow;
-                    }
-                    yield return new TextRow(nRow.TextId, nRow.Ref)
-                    {
-                        Segment = nRow.NSegments[indexOfSelectedRow],
-                        Flags = nRow.NFlags[indexOfSelectedRow]
-                    };
-                }
-            }
+            return new MergedTextCorpus(
+                new NParallelTextCorpus(corpora) { AllRows = allRows.ToArray() },
+                MergeRule.First,
+                0
+            );
         }
 
         #endregion

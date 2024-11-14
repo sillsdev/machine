@@ -106,9 +106,18 @@ namespace SIL.Machine.Corpora
                 RowRefComparer = RowRefComparer
             };
 
-            bool[] completed = enumerators.Select(e => !e.MoveNext()).ToArray();
+            bool[] completed = new bool[N];
+            int numCompleted = 0;
+            for (int i = 0; i < N; i++)
+            {
+                bool isCompleted = !enumerators[i].MoveNext();
+                completed[i] = isCompleted;
+                if (isCompleted)
+                    numCompleted++;
+            }
+            int numberOfRemainingRows = N - numCompleted;
 
-            while (!completed.All(c => c))
+            while (numCompleted < N)
             {
                 List<int> minRefIndexes;
                 List<TextRow> currentRows = enumerators.Select(e => e.Current).ToList();
@@ -133,7 +142,6 @@ namespace SIL.Machine.Corpora
                     throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
                 }
                 List<int> nonMinRefIndexes = Enumerable.Range(0, N).Except(minRefIndexes).ToList();
-                int numberOfRemainingRows = N - completed.Count(c => c);
                 if (minRefIndexes.Count < numberOfRemainingRows || minRefIndexes.Count(i => !completed[i]) == 1)
                 //then there are some non-min refs or only one incomplete enumerator
                 {
@@ -172,9 +180,9 @@ namespace SIL.Machine.Corpora
                                         anyNonMinEnumeratorsMidRange
                                         && nonMinRefIndexes.All(j =>
                                             !completed[j] && currentRows[j].TextId == currentRows[i].TextId
-                                        )
+                                        ) //All non-min rows have the same textId as the given min row
                                     )
-                                    .ToList() //TODO refactor
+                                    .ToList()
                             )
                         )
                         {
@@ -184,7 +192,13 @@ namespace SIL.Machine.Corpora
                     foreach (int i in minRefIndexes)
                     {
                         rangeInfo.Rows[i].SameRefRows.Add(enumerators[i].Current);
-                        completed[i] = !enumerators[i].MoveNext();
+                        bool isCompleted = !enumerators[i].MoveNext();
+                        completed[i] = isCompleted;
+                        if (isCompleted)
+                        {
+                            numCompleted++;
+                            numberOfRemainingRows--;
+                        }
                     }
                 }
                 else if (minRefIndexes.Count == numberOfRemainingRows)
@@ -212,31 +226,11 @@ namespace SIL.Machine.Corpora
                     }
                     else
                     {
-                        for (int i = 0; i < rangeInfo.Rows.Count; i++)
+                        foreach (NParallelTextRow row in CreateSameRefRows(rangeInfo, completed, currentRows))
                         {
-                            if (completed[i])
-                                continue;
-
-                            for (int j = 0; j < rangeInfo.Rows.Count; j++)
-                            {
-                                if (i == j || completed[j])
-                                    continue;
-
-                                if (CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
-                                {
-                                    foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
-                                    {
-                                        var textRows = new TextRow[N];
-                                        textRows[i] = tr;
-                                        textRows[j] = currentRows[j];
-                                        foreach (NParallelTextRow r in CreateRows(rangeInfo, textRows))
-                                        {
-                                            yield return r;
-                                        }
-                                    }
-                                }
-                            }
+                            yield return row;
                         }
+
                         foreach (
                             NParallelTextRow row in CreateRows(
                                 rangeInfo,
@@ -251,7 +245,13 @@ namespace SIL.Machine.Corpora
                     for (int i = 0; i < rangeInfo.Rows.Count; i++)
                     {
                         rangeInfo.Rows[i].SameRefRows.Add(currentRows[i]);
-                        completed[i] = !enumerators[i].MoveNext();
+                        bool isCompleted = !enumerators[i].MoveNext();
+                        completed[i] = isCompleted;
+                        if (isCompleted)
+                        {
+                            numCompleted++;
+                            numberOfRemainingRows--;
+                        }
                     }
                 }
                 else
@@ -338,8 +338,6 @@ namespace SIL.Machine.Corpora
                 TextRow textRow = currentRows[i];
                 foreach ((List<TextRow> sameRefRows, int j) in sameRefRowsPerIndex)
                 {
-                    if (i == j)
-                        continue;
                     if (CheckSameRefRows(sameRefRows, textRow))
                     {
                         alreadyYielded.Add(i);
@@ -389,6 +387,39 @@ namespace SIL.Machine.Corpora
                 throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
             }
             return sameRefRows.Count > 0;
+        }
+
+        private IEnumerable<NParallelTextRow> CreateSameRefRows(
+            NRangeInfo rangeInfo,
+            IList<bool> completed,
+            IList<TextRow> currentRows
+        )
+        {
+            for (int i = 0; i < rangeInfo.Rows.Count; i++)
+            {
+                if (completed[i])
+                    continue;
+
+                for (int j = 0; j < rangeInfo.Rows.Count; j++)
+                {
+                    if (i == j || completed[j])
+                        continue;
+
+                    if (CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
+                    {
+                        foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
+                        {
+                            var textRows = new TextRow[N];
+                            textRows[i] = tr;
+                            textRows[j] = currentRows[j];
+                            foreach (NParallelTextRow r in CreateRows(rangeInfo, textRows))
+                            {
+                                yield return r;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private class RangeRow

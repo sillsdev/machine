@@ -94,8 +94,7 @@ public class CorporaExtensionsTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.ChooseFirst();
+        var mergedCorpus = new List<ITextCorpus> { corpus1, corpus2, corpus3 }.ChooseFirst([true, true, true]);
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.That(rows[0].Text, Is.EqualTo("source 1 segment 1 ."));
@@ -139,8 +138,7 @@ public class CorporaExtensionsTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.ChooseRandom(123456);
+        var mergedCorpus = new List<ITextCorpus> { corpus1, corpus2, corpus3 }.ChooseRandom([true, true, true], 123456);
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.Multiple(() =>
@@ -187,8 +185,7 @@ public class CorporaExtensionsTests
                 }
             )
         );
-        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
-        var mergedCorpus = nParallelCorpus.ChooseRandom(4501);
+        var mergedCorpus = new List<ITextCorpus> { corpus1, corpus2, corpus3 }.ChooseRandom([true, true, true], 4501);
         var rows = mergedCorpus.ToArray();
         Assert.That(rows, Has.Length.EqualTo(3), JsonSerializer.Serialize(rows));
         Assert.Multiple(() =>
@@ -236,9 +233,9 @@ public class CorporaExtensionsTests
             )
         );
 
-        ITextCorpus sourceCorpus = (new ITextCorpus[] { sourceCorpus1, sourceCorpus1, sourceCorpus3 })
-            .AlignMany([true, true, true])
-            .ChooseFirst();
+        ITextCorpus sourceCorpus = new List<ITextCorpus> { sourceCorpus1, sourceCorpus2, sourceCorpus3 }.ChooseFirst(
+            [true, true, true]
+        );
 
         var targetCorpus1 = new DictionaryTextCorpus(
             new MemoryText(
@@ -274,9 +271,9 @@ public class CorporaExtensionsTests
             )
         );
 
-        ITextCorpus targetCorpus = (new ITextCorpus[] { targetCorpus1, targetCorpus2, targetCorpus3 })
-            .AlignMany([true, true, true])
-            .ChooseFirst();
+        ITextCorpus targetCorpus = new List<ITextCorpus> { targetCorpus1, targetCorpus2, targetCorpus3 }.ChooseFirst(
+            [true, true, true]
+        );
 
         IParallelTextCorpus alignedCorpus = sourceCorpus.AlignRows(targetCorpus);
         ParallelTextRow[] rows = alignedCorpus.GetRows().ToArray();
