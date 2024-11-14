@@ -17,7 +17,7 @@ namespace SIL.Machine.Corpora
             TargetCorpus = targetCorpus;
             AlignmentCorpus = alignmentCorpus ?? new DictionaryAlignmentCorpus();
             RowRefComparer = rowRefComparer ?? new NParallelTextCorpus.DefaultRowRefComparer();
-            NParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus });
+            _nParallelTextCorpus = new NParallelTextCorpus(new List<ITextCorpus> { SourceCorpus, TargetCorpus });
         }
 
         public override bool IsSourceTokenized => SourceCorpus.IsTokenized;
@@ -31,15 +31,15 @@ namespace SIL.Machine.Corpora
         public IAlignmentCorpus AlignmentCorpus { get; }
         public IComparer<object> RowRefComparer { get; }
 
-        public NParallelTextCorpus NParallelTextCorpus { get; }
+        private readonly NParallelTextCorpus _nParallelTextCorpus;
 
         public override IEnumerable<ParallelTextRow> GetRows(IEnumerable<string> textIds)
         {
             using (IEnumerator<AlignmentRow> alignmentEnumerator = AlignmentCorpus.GetEnumerator())
             {
-                NParallelTextCorpus.AllRows = new bool[] { AllSourceRows, AllTargetRows };
+                _nParallelTextCorpus.AllRows = new bool[] { AllSourceRows, AllTargetRows };
                 bool isScripture = SourceCorpus.IsScripture() && TargetCorpus.IsScripture();
-                foreach (var nRow in NParallelTextCorpus.GetRows(textIds))
+                foreach (var nRow in _nParallelTextCorpus.GetRows(textIds))
                 {
                     int compareAlignmentCorpus = -1;
                     if (AlignmentCorpus != null && nRow.NSegments.All(s => s.Count > 0))
