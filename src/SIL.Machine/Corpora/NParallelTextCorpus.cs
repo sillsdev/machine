@@ -38,6 +38,7 @@ namespace SIL.Machine.Corpora
                     textIds.AddRange(Corpora[i].Texts.Select(t => t.Id));
                 else
                     textIds.IntersectWith(Corpora[i].Texts.Select(t => t.Id));
+
                 if (AllRows[i])
                     allRowsTextIds.AddRange(Corpora[i].Texts.Select(t => t.Id));
             }
@@ -68,15 +69,13 @@ namespace SIL.Machine.Corpora
             finally
             {
                 foreach (IEnumerator<TextRow> enumerator in enumeratedCorpora)
-                {
                     enumerator.Dispose();
-                }
             }
         }
 
         private static bool AllInRangeHaveSegments(IList<TextRow> rows)
         {
-            return rows.All(r => (r.IsInRange && r.Segment.Count > 0) || (!r.IsInRange));
+            return rows.All(r => (r.IsInRange && !r.IsEmpty) || (!r.IsInRange));
         }
 
         private IList<int> MinRefIndexes(IList<object> refs)
@@ -133,33 +132,29 @@ namespace SIL.Machine.Corpora
                 {
                     throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
                 }
-                TextRow[] currentIncompleteRows = currentRows.Where((r, i) => !completed[i]).ToArray();
                 List<int> nonMinRefIndexes = Enumerable.Range(0, N).Except(minRefIndexes).ToList();
                 int numberOfRemainingRows = N - completed.Count(c => c);
                 if (minRefIndexes.Count < numberOfRemainingRows || minRefIndexes.Count(i => !completed[i]) == 1)
                 //then there are some non-min refs or only one incomplete enumerator
                 {
-                    List<IEnumerator<TextRow>> minEnumerators = minRefIndexes.Select(i => enumerators[i]).ToList();
-                    List<IEnumerator<TextRow>> nonMinEnumerators = nonMinRefIndexes
-                        .Select(i => enumerators[i])
-                        .ToList();
-
                     if (
-                        nonMinRefIndexes.Any(i => !AllRows[i])
-                        && minRefIndexes.Any(i => !completed[i] && currentRows[i].IsInRange)
+                        nonMinRefIndexes.Any(i => !AllRows[i]) //At least one of the non-min rows has not been marked as 'all rows'
+                        && minRefIndexes.Any(i => !completed[i] && currentRows[i].IsInRange) //and at least one of the min rows is not completed and in a range
                     )
                     {
                         if (
                             rangeInfo.IsInRange
-                            && nonMinEnumerators.Any(e =>
-                                e.Current != null && e.Current.IsInRange && e.Current.Segment.Count > 0
-                            )
+                            && nonMinRefIndexes.Any(i =>
+                                !completed[i] && currentRows[i].IsInRange && !currentRows[i].IsEmpty
+                            ) //At least one of the non-min rows is not completed, is in a range, and has content
                         )
                         {
                             yield return rangeInfo.CreateRow();
                         }
-                        minRefIndexes.ForEach(i => rangeInfo.AddTextRow(enumerators[i].Current, i));
-                        nonMinRefIndexes.ForEach(i => rangeInfo.Rows[i].SameRefRows.Clear());
+                        foreach (int i in minRefIndexes)
+                            rangeInfo.AddTextRow(enumerators[i].Current, i);
+                        foreach (int i in nonMinRefIndexes)
+                            rangeInfo.Rows[i].SameRefRows.Clear();
                     }
                     else
                     {
@@ -179,7 +174,7 @@ namespace SIL.Machine.Corpora
                                             !completed[j] && currentRows[j].TextId == currentRows[i].TextId
                                         )
                                     )
-                                    .ToList()
+                                    .ToList() //TODO refactor
                             )
                         )
                         {
@@ -196,14 +191,15 @@ namespace SIL.Machine.Corpora
                 // the refs are all the same
                 {
                     if (
-                        minRefIndexes
-                            .Select(i =>
-                                enumerators[i].Current.IsInRange && minRefIndexes.All(j => j == i || !AllRows[j])
-                            )
-                            .Any(b => b)
+                        minRefIndexes.Any(i =>
+                            currentRows[i].IsInRange && minRefIndexes.All(j => j == i || !AllRows[j])
+                        ) //At least one row is in range while the other rows are all not marked as 'all rows'
                     )
                     {
-                        if (rangeInfo.IsInRange && AllInRangeHaveSegments(currentIncompleteRows))
+                        if (
+                            rangeInfo.IsInRange
+                            && AllInRangeHaveSegments(currentRows.Where((r, i) => !completed[i]).ToArray())
+                        )
                         {
                             yield return rangeInfo.CreateRow();
                         }
@@ -218,12 +214,15 @@ namespace SIL.Machine.Corpora
                     {
                         for (int i = 0; i < rangeInfo.Rows.Count; i++)
                         {
-                            for (int j = 0; j < rangeInfo.Rows.Count; j++) //TODO rework
+                            if (completed[i])
+                                continue;
+
+                            for (int j = 0; j < rangeInfo.Rows.Count; j++)
                             {
-                                if (i == j || completed[i] || completed[j])
+                                if (i == j || completed[j])
                                     continue;
 
-                                if (rangeInfo.CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
+                                if (CheckSameRefRows(rangeInfo.Rows[i].SameRefRows, currentRows[j]))
                                 {
                                     foreach (TextRow tr in rangeInfo.Rows[i].SameRefRows)
                                     {
@@ -341,7 +340,7 @@ namespace SIL.Machine.Corpora
                 {
                     if (i == j)
                         continue;
-                    if (rangeInfo.CheckSameRefRows(sameRefRows, textRow))
+                    if (CheckSameRefRows(sameRefRows, textRow))
                     {
                         alreadyYielded.Add(i);
                         foreach (TextRow sameRefRow in sameRefRows)
@@ -378,6 +377,20 @@ namespace SIL.Machine.Corpora
             }
         }
 
+        private bool CheckSameRefRows(IList<TextRow> sameRefRows, TextRow otherRow)
+        {
+            try
+            {
+                if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
+                    sameRefRows.Clear();
+            }
+            catch (ArgumentException)
+            {
+                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
+            }
+            return sameRefRows.Count > 0;
+        }
+
         private class RangeRow
         {
             public IList<object> Refs { get; } = new List<object>();
@@ -405,20 +418,6 @@ namespace SIL.Machine.Corpora
                 {
                     Rows.Add(new RangeRow());
                 }
-            }
-
-            public bool CheckSameRefRows(IList<TextRow> sameRefRows, TextRow otherRow)
-            {
-                try
-                {
-                    if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
-                        sameRefRows.Clear();
-                }
-                catch (ArgumentException)
-                {
-                    throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
-                }
-                return sameRefRows.Count > 0;
             }
 
             public void AddTextRow(TextRow row, int index)
