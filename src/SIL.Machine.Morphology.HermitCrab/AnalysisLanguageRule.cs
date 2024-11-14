@@ -31,6 +31,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 HashSet<Word> outputSet = tempSet;
                 outputSet.Clear();
+                AnalysisStratumRule stratumRule = _rules[i] as AnalysisStratumRule;
+                stratumRule?.InitializeDuplicationDetection();
 
                 foreach (Word inData in inputSet)
                 {
@@ -41,9 +43,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                 }
 
+                stratumRule?.ClearDuplicationDetection();
                 tempSet = inputSet;
                 inputSet = outputSet;
-            }
+            } 
 
             return results;
         }

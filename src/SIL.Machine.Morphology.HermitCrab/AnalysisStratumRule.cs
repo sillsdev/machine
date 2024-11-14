@@ -14,6 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly IRule<Word, ShapeNode> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
+        private HashSet<Shape> _shapeSet;
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
@@ -56,6 +57,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 #endif
                     break;
             }
+        }
+
+        public void InitializeDuplicationDetection()
+        {
+            _shapeSet = new HashSet<Shape>(FreezableEqualityComparer<Shape>.Default);
+        }
+
+        public void ClearDuplicationDetection()
+        {
+            _shapeSet = null;
         }
 
         public IEnumerable<Word> Apply(Word input)
@@ -117,6 +128,18 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
+            if (_shapeSet != null)
+            {
+                // Ignore shapes that we have already tried at this level of the stratum.
+                // ApplyTemplates is called at the very beginning of applying the analysis stratum.
+                // It is also called recursively by ApplyMorphologicalRules if the rules are unordered.
+                // In this case, we can still use the same shapeSet since the templates and morphological
+                // rules continue to be applied until there are no more changes, and so
+                // trying this shape again won't change the results.
+                if (_shapeSet.Contains(input.Shape))
+                    yield break;
+                _shapeSet.Add(input.Shape);
+            }
             foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)

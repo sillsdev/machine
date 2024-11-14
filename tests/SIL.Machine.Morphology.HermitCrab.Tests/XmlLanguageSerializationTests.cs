@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System.Diagnostics;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -27,4 +28,14 @@ public class XmlLanguageSerializationTests
                 File.Delete(TempXmlFileName);
         }
     }
+
+    [Test]
+    public void TestParseWord()
+    {
+        Language language = XmlLanguageLoader.Load("C:\\Users\\PC\\AppData\\Local\\Temp\\Mbugwe LizzieHC practice.xml");
+        Morpher morpher = new Morpher(new TraceManager(), language);
+        var output = morpher.ParseWord("wa", out _);
+        Debug.WriteLine(output);
+    }
+
 }
