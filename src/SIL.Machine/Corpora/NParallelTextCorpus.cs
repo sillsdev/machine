@@ -289,9 +289,7 @@ namespace SIL.Machine.Corpora
             if (rows.All(r => r == null))
                 throw new ArgumentNullException("A corpus row must be specified.");
 
-            object[] defaultRefs = new object[] { };
-            if (rows.Any(r => r != null))
-                defaultRefs = new object[] { rows.Where(r => r != null).Select(r => r.Ref).First() };
+            object[] defaultRefs = new object[] { rows.Where(r => r != null).Select(r => r.Ref).First() };
             string textId = null;
             object[][] refs = new object[N][];
             TextRowFlags[] flags = new TextRowFlags[N];
