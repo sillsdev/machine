@@ -13,9 +13,14 @@ namespace SIL.Machine.Corpora
 
         private readonly Random _random;
 
-        public MergedTextCorpus(NParallelTextCorpus nParallelTextCorpus, MergeRule mergeRule, int seed)
+        public MergedTextCorpus(
+            IEnumerable<ITextCorpus> corpora,
+            IEnumerable<bool> allRows,
+            MergeRule mergeRule,
+            int seed
+        )
         {
-            _corpus = nParallelTextCorpus;
+            _corpus = new NParallelTextCorpus(corpora) { AllRows = allRows.ToList() };
             _mergeRule = mergeRule;
             _random = new Random(seed);
         }

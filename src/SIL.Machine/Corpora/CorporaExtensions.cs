@@ -544,20 +544,12 @@ namespace SIL.Machine.Corpora
             int seed
         )
         {
-            return new MergedTextCorpus(
-                new NParallelTextCorpus(corpora) { AllRows = allRows.ToArray() },
-                MergeRule.Random,
-                seed
-            );
+            return new MergedTextCorpus(corpora, allRows.ToArray(), MergeRule.Random, seed);
         }
 
         public static ITextCorpus ChooseFirst(this IEnumerable<ITextCorpus> corpora, IEnumerable<bool> allRows)
         {
-            return new MergedTextCorpus(
-                new NParallelTextCorpus(corpora) { AllRows = allRows.ToArray() },
-                MergeRule.First,
-                0
-            );
+            return new MergedTextCorpus(corpora, allRows.ToArray(), MergeRule.First, 0);
         }
 
         #endregion
