@@ -538,18 +538,14 @@ namespace SIL.Machine.Corpora
             return nParallelTextCorpus;
         }
 
-        public static ITextCorpus ChooseRandom(
-            this IEnumerable<ITextCorpus> corpora,
-            IEnumerable<bool> allRows,
-            int seed
-        )
+        public static ITextCorpus ChooseRandom(this IEnumerable<ITextCorpus> corpora, int seed)
         {
-            return new MergedTextCorpus(corpora, allRows.ToArray(), MergeRule.Random, seed);
+            return new MergedTextCorpus(corpora, MergeRule.Random, seed);
         }
 
-        public static ITextCorpus ChooseFirst(this IEnumerable<ITextCorpus> corpora, IEnumerable<bool> allRows)
+        public static ITextCorpus ChooseFirst(this IEnumerable<ITextCorpus> corpora)
         {
-            return new MergedTextCorpus(corpora, allRows.ToArray(), MergeRule.First, 0);
+            return new MergedTextCorpus(corpora, MergeRule.First);
         }
 
         #endregion
