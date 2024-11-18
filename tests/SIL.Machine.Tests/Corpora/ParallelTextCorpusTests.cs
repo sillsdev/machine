@@ -445,6 +445,55 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
+    public void GetRows_OverlappingRangesAndMissingRow()
+    {
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow(
+                        "text1",
+                        1,
+                        "source segment 1 . source segment 2 . source segment 3 .",
+                        TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
+                    ),
+                    TextRow("text1", 2, flags: TextRowFlags.InRange),
+                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                }
+            )
+        );
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow(
+                        "text1",
+                        3,
+                        "target segment 3 . target segment 4 .",
+                        TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
+                    ),
+                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                }
+            )
+        );
+
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(1));
+        Assert.That(rows[0].SourceRefs, Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(rows[0].TargetRefs, Is.EqualTo(new[] { 3, 4 }));
+        Assert.That(
+            rows[0].SourceSegment,
+            Is.EqualTo("source segment 1 . source segment 2 . source segment 3 .".Split())
+        );
+        Assert.That(rows[0].TargetSegment, Is.EqualTo("target segment 3 . target segment 4 .".Split()));
+        Assert.That(rows[0].IsSourceSentenceStart, Is.True);
+        Assert.That(rows[0].IsTargetSentenceStart, Is.True);
+    }
+
+    [Test]
     public void GetRows_AdjacentRangesSameText()
     {
         var sourceCorpus = new DictionaryTextCorpus(

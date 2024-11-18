@@ -538,7 +538,7 @@ namespace SIL.Machine.Corpora
             return nParallelTextCorpus;
         }
 
-        public static ITextCorpus ChooseRandom(this IEnumerable<ITextCorpus> corpora, int seed)
+        public static ITextCorpus ChooseRandom(this IEnumerable<ITextCorpus> corpora, int? seed = null)
         {
             return new MergedTextCorpus(corpora, MergeRule.Random, seed);
         }

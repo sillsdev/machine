@@ -155,15 +155,6 @@ namespace SIL.Machine.Corpora
                         && minRefIndexes.Any(i => !completed[i] && currentRows[i].IsInRange) //and at least one of the min rows is not completed and in a range
                     )
                     {
-                        if (
-                            rangeInfo.IsInRange
-                            && nonMinRefIndexes.Any(i =>
-                                !completed[i] && currentRows[i].IsInRange && !currentRows[i].IsEmpty
-                            ) //At least one of the non-min rows is not completed, is in a range, and has content
-                        )
-                        {
-                            yield return rangeInfo.CreateRow();
-                        }
                         foreach (int i in minRefIndexes)
                             rangeInfo.AddTextRow(enumerators[i].Current, i);
                         foreach (int i in nonMinRefIndexes)
