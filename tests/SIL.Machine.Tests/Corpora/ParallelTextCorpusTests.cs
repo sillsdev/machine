@@ -445,7 +445,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetRows_OverlappingRangesAndMissingRow()
+    public void GetRows_OverlappingRangesAndMissingRows()
     {
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
