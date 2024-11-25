@@ -523,6 +523,33 @@ namespace SIL.Machine.Corpora
 
         #endregion
 
+        #region INParallelTextCorpus operations
+
+        public static INParallelTextCorpus AlignMany(
+            this IEnumerable<ITextCorpus> corpora,
+            IEnumerable<bool> allRowsPerCorpus = null
+        )
+        {
+            NParallelTextCorpus nParallelTextCorpus = new NParallelTextCorpus(corpora);
+            if (allRowsPerCorpus != null)
+            {
+                nParallelTextCorpus.AllRows = allRowsPerCorpus.ToArray();
+            }
+            return nParallelTextCorpus;
+        }
+
+        public static ITextCorpus ChooseRandom(this IEnumerable<ITextCorpus> corpora, int? seed = null)
+        {
+            return new MergedTextCorpus(corpora, MergeRule.Random, seed);
+        }
+
+        public static ITextCorpus ChooseFirst(this IEnumerable<ITextCorpus> corpora)
+        {
+            return new MergedTextCorpus(corpora, MergeRule.First);
+        }
+
+        #endregion
+
         #region IAlignmentCorpus operations
 
         public static IAlignmentCorpus Transform(
