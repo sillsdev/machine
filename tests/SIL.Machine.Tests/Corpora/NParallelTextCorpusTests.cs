@@ -7,6 +7,14 @@ namespace SIL.Machine.Corpora;
 public class NParallelTextCorpusTests
 {
     [Test]
+    public void GetRows_ZeroCorpora()
+    {
+        var nParallelCorpus = new NParallelTextCorpus([]);
+        NParallelTextRow[] rows = nParallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(0));
+    }
+
+    [Test]
     public void GetRows_ThreeCorpora()
     {
         var corpus1 = new DictionaryTextCorpus(
