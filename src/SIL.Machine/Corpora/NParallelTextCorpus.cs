@@ -12,8 +12,6 @@ namespace SIL.Machine.Corpora
         public NParallelTextCorpus(IEnumerable<ITextCorpus> corpora, IComparer<object> rowRefComparer = null)
         {
             Corpora = corpora.ToImmutableArray();
-            if (Corpora.Count < 1)
-                throw new ArgumentException("There must be at least one corpora.", nameof(corpora));
             RowRefComparer = rowRefComparer ?? new DefaultRowRefComparer();
             AllRows = new bool[Corpora.Count]
                 .Select(_ => false)
