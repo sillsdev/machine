@@ -22,7 +22,7 @@ public class TranslationModelCommandSpec : ICommandSpec
         _modelArgument = command.Argument("MODEL_PATH", "The translation model.").IsRequired();
         _modelTypeOption = command.Option(
             "-mt|--model-type <MODEL_TYPE>",
-            $"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.FastAlign}\".",
+            $"The word alignment model type.\nTypes: \"{ThotWordAlignmentHelpers.Hmm}\" (default), \"{ThotWordAlignmentHelpers.Ibm1}\", \"{ThotWordAlignmentHelpers.Ibm2}\", \"{ThotWordAlignmentHelpers.FastAlign}\".",
             CommandOptionType.SingleValue
         );
         _pluginOption = command.Option(
@@ -67,7 +67,7 @@ public class TranslationModelCommandSpec : ICommandSpec
         if (_modelFactory != null)
             return _modelFactory.CreateModel(_modelArgument.Value);
 
-        ThotWordAlignmentModelType wordAlignmentModelType = ToolHelpers.GetThotWordAlignmentModelType(
+        ThotWordAlignmentModelType wordAlignmentModelType = ThotWordAlignmentHelpers.GetThotWordAlignmentModelType(
             _modelTypeOption.Value()
         );
 
