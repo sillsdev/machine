@@ -19,7 +19,10 @@ namespace SIL.Machine.Corpora
                 IEnumerable<(string, IReadOnlyList<string>)> glosses = new ZipParatextProjectTermsParser(
                     archive,
                     settings
-                ).Parse(termCategories, useTermGlosses, chapters);
+                )
+                    .Parse(termCategories, useTermGlosses, chapters)
+                    .OrderBy(g => g.TermId);
+
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";
 
