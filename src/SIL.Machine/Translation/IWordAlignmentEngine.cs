@@ -1,26 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using SIL.Machine.Corpora;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
     public interface IWordAlignmentEngine : IWordAligner, IDisposable
     {
-        Task<WordAlignmentResult> GetBestAlignmentAsync(
-            string sourceSegment,
-            string targetSegment,
-            CancellationToken cancellationToken = default
-        );
+        IWordVocabulary SourceWords { get; }
+        IWordVocabulary TargetWords { get; }
+        IReadOnlySet<int> SpecialSymbolIndices { get; }
 
-        Task<WordAlignmentResult> GetBestAlignmentAsync(
+        IEnumerable<(string TargetWord, double Score)> GetTranslations(string sourceWord, double threshold = 0);
+        IEnumerable<(int TargetWordIndex, double Score)> GetTranslations(int sourceWordIndex, double threshold = 0);
+
+        double GetTranslationScore(string sourceWord, string targetWord);
+        double GetTranslationScore(int sourceWordIndex, int targetWordIndex);
+
+        IReadOnlyCollection<AlignedWordPair> GetBestAlignedWordPairs(
+            IReadOnlyList<string> sourceSegment,
+            IReadOnlyList<string> targetSegment
+        );
+        void ComputeAlignedWordPairScores(
             IReadOnlyList<string> sourceSegment,
             IReadOnlyList<string> targetSegment,
-            CancellationToken cancellationToken = default
+            IReadOnlyCollection<AlignedWordPair> wordPairs
         );
-
-        WordAlignmentResult GetBestAlignment(string sourceSegment, string targetSegment);
-
-        WordAlignmentResult GetBestAlignment(IReadOnlyList<string> sourceSegment, IReadOnlyList<string> targetSegment);
     }
 }
