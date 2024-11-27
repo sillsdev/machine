@@ -23,6 +23,20 @@ namespace SIL.Machine.Corpora
             return result;
         }
 
+        public static bool TryParse(string alignments, out IReadOnlyCollection<AlignedWordPair> alignedWordPairs)
+        {
+            alignedWordPairs = null;
+            try
+            {
+                alignedWordPairs = Parse(alignments);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public AlignedWordPair(int sourceIndex, int targetIndex)
         {
             SourceIndex = sourceIndex;
