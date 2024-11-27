@@ -168,7 +168,8 @@ namespace SIL.Machine.Corpora
             {
                 return termsRenderings
                     .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
-                    .Select(kvp => (kvp.Key, (IReadOnlyList<string>)kvp.Value.ToList()));
+                    .Select(kvp => (kvp.Key, (IReadOnlyList<string>)kvp.Value.ToList()))
+                    .OrderBy(glosses => glosses.Key);
             }
             return new List<(string, IReadOnlyList<string>)>();
         }

@@ -55,7 +55,7 @@ public class ParatextProjectTermsParserTests
         );
         IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Abagtha"));
+        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Aaron"));
     }
 
     [Test]
@@ -139,8 +139,7 @@ public class ParatextProjectTermsParserTests
         );
         IReadOnlyList<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses().ToList();
         Assert.That(terms.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", terms[1].Glosses), Is.EqualTo("Abagtha"));
-        Assert.That(string.Join(" ", terms[2].Glosses), Is.EqualTo("Abi"));
+        Assert.That(string.Join(" ", terms[1].Glosses), Is.EqualTo("Aaron"));
     }
 
     [Test]
