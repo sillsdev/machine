@@ -821,7 +821,7 @@ public abstract class HermitCrabTestBase
         foreach (Stratum stratum in Language.Strata)
         {
             stratum.MorphologicalRuleOrder = ruleOrder;
-       }
+        }
     }
 
     public LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
