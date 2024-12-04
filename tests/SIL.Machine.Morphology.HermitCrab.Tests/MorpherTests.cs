@@ -36,6 +36,12 @@ public class MorpherTests : HermitCrabTestBase
             morpher.AnalyzeWord("sagd"),
             Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
         );
+
+        SetRuleOrder(MorphologicalRuleOrder.Linear);
+        Assert.That(
+            morpher.AnalyzeWord("sagd"),
+            Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
+        );
     }
 
     [Test]
