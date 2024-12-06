@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
+using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation.Thot
@@ -117,6 +118,11 @@ namespace SIL.Machine.Translation.Thot
 
         public ITrainer CreateTrainer(IParallelTextCorpus corpus)
         {
+            return CreateTrainer(corpus, null);
+        }
+
+        public ITrainer CreateTrainer(IParallelTextCorpus corpus, ITokenizer<string, int, string> tokenizer = null)
+        {
             CheckDisposed();
 
             if (_owned)
@@ -126,7 +132,13 @@ namespace SIL.Machine.Translation.Thot
                 );
             }
 
-            return new Trainer(this, corpus);
+            var trainer = new Trainer(this, corpus);
+            if (tokenizer != null)
+            {
+                trainer.SourceTokenizer = tokenizer;
+                trainer.TargetTokenizer = tokenizer;
+            }
+            return trainer;
         }
 
         public Task SaveAsync()
