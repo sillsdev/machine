@@ -245,16 +245,16 @@ namespace SIL.Machine.Corpora
                     if (paraTag != null && paraTag.TextType != UsfmTextType.VerseText && paraTag.TextType != 0)
                         CloseAll();
                     else
-                        CloseNote();
+                        CloseEmbedded();
                     break;
-                case UsfmTokenType.Note:
-                    CloseNote();
+                case UsfmTokenType.Embedded:
+                    CloseEmbedded();
                     break;
                 case UsfmTokenType.End:
                     // If end marker for an active note
-                    if (State.Stack.Any(e => e.Type == UsfmElementType.Note && (e.Marker + "*" == token.Marker)))
+                    if (State.Stack.Any(e => e.Type == UsfmElementType.Embedded && (e.Marker + "*" == token.Marker)))
                     {
-                        CloseNote(closed: true);
+                        CloseEmbedded(closed: true);
                         break;
                     }
 
@@ -487,6 +487,9 @@ namespace SIL.Machine.Corpora
                         break;
                     }
 
+                    if (UsfmStylesheet.IsEmbeddedPart(token.Marker))
+                        CloseNoteText();
+
                     string actualMarker;
                     bool invalidMarker = false;
                     if (token.Marker.StartsWith("+"))
@@ -508,8 +511,15 @@ namespace SIL.Machine.Corpora
                         token.Type == UsfmTokenType.Unknown || invalidMarker,
                         token.Attributes
                     );
+
+                    if (IsEmbeddedText(token))
+                    {
+                        // Note text should be handled as a full segment
+                        State.Push(new UsfmParserElement(UsfmElementType.EmbeddedText, token.Marker));
+                        Handler?.StartEmbeddedText(State);
+                    }
                     break;
-                case UsfmTokenType.Note:
+                case UsfmTokenType.Embedded:
                     // Look for category
                     string noteCategory = null;
                     if (
@@ -524,9 +534,9 @@ namespace SIL.Machine.Corpora
                         State.SpecialTokenCount += 3;
                     }
 
-                    State.Push(new UsfmParserElement(UsfmElementType.Note, token.Marker));
+                    State.Push(new UsfmParserElement(UsfmElementType.Embedded, token.Marker, token.Attributes));
 
-                    Handler?.StartNote(State, token.Marker, token.Data, noteCategory);
+                    Handler?.StartEmbedded(State, token.Marker, token.Data, noteCategory);
                     break;
                 case UsfmTokenType.Text:
                     string text = token.Text;
@@ -596,15 +606,15 @@ namespace SIL.Machine.Corpora
         private UsfmTokenType DetermineUnknownTokenType()
         {
             // Unknown inside notes are character
-            if (State.Stack.Any(e => e.Type == UsfmElementType.Note))
+            if (State.Stack.Any(e => e.Type == UsfmElementType.Embedded))
                 return UsfmTokenType.Character;
 
             return UsfmTokenType.Paragraph;
         }
 
-        private void CloseNote(bool closed = false)
+        private void CloseEmbedded(bool closed = false)
         {
-            if (State.Stack.Any(elem => elem.Type == UsfmElementType.Note))
+            if (State.Stack.Any(elem => elem.Type == UsfmElementType.Embedded))
             {
                 UsfmParserElement elem;
                 do
@@ -613,9 +623,15 @@ namespace SIL.Machine.Corpora
                         break;
 
                     elem = State.Peek();
-                    CloseElement(closed && elem.Type == UsfmElementType.Note);
-                } while (elem.Type != UsfmElementType.Note);
+                    CloseElement(closed && elem.Type == UsfmElementType.Embedded);
+                } while (elem.Type != UsfmElementType.Embedded);
             }
+        }
+
+        private void CloseNoteText()
+        {
+            while (State.Stack.Count > 0 && State.Peek().Type == UsfmElementType.EmbeddedText)
+                CloseElement();
         }
 
         private void CloseCharStyles()
@@ -638,8 +654,11 @@ namespace SIL.Machine.Corpora
                 case UsfmElementType.Char:
                     Handler?.EndChar(State, element.Marker, element.Attributes, closed);
                     break;
-                case UsfmElementType.Note:
-                    Handler?.EndNote(State, element.Marker, closed);
+                case UsfmElementType.Embedded:
+                    Handler?.EndEmbedded(State, element.Marker, element.Attributes, closed);
+                    break;
+                case UsfmElementType.EmbeddedText:
+                    Handler?.EndEmbeddedText(State);
                     break;
                 case UsfmElementType.Table:
                     Handler?.EndTable(State);
@@ -671,6 +690,11 @@ namespace SIL.Machine.Corpora
                 && (State.Tokens[State.Index + 2].Type == UsfmTokenType.End)
                 && (State.Tokens[State.Index + 2].Marker == token.EndMarker)
                 && (token.Marker == "ref");
+        }
+
+        private bool IsEmbeddedText(UsfmToken token)
+        {
+            return UsfmStylesheet.IsEmbeddedText(token.Marker) && State.EmbeddedTag != null;
         }
     }
 }

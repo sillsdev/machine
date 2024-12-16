@@ -9,7 +9,8 @@ namespace SIL.Machine.Corpora
         None,
         NonVerse,
         Verse,
-        Note
+        Embedded,
+        EmbeddedText
     }
 
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase
@@ -151,21 +152,29 @@ namespace SIL.Machine.Corpora
             EndParentElement();
         }
 
-        public override void StartNote(UsfmParserState state, string marker, string caller, string category)
+        public override void StartEmbedded(UsfmParserState state, string marker, string caller, string category)
         {
-            if (CurrentTextType != ScriptureTextType.None && !_duplicateVerse)
+            if (_curVerseRef.IsDefault)
+                UpdateVerseRef(state.VerseRef, marker);
+
+            if (!_duplicateVerse)
             {
                 // if we hit a note in a verse paragraph and we aren't in a verse, then start a non-verse segment
                 CheckConvertVerseParaToNonVerse(state);
                 NextElement(marker);
-                StartNoteText(state);
             }
         }
 
-        public override void EndNote(UsfmParserState state, string marker, bool closed)
+        public override void StartEmbeddedText(UsfmParserState state)
         {
-            if (CurrentTextType == ScriptureTextType.Note && !_duplicateVerse)
-                EndNoteText(state);
+            _curTextType.Push(ScriptureTextType.EmbeddedText);
+            StartEmbeddedText(state, CreateNonVerseRef());
+        }
+
+        public override void EndEmbeddedText(UsfmParserState state)
+        {
+            EndEmbeddedText(state, CreateNonVerseRef());
+            _curTextType.Pop();
         }
 
         public override void Text(UsfmParserState state, string text)
@@ -200,9 +209,9 @@ namespace SIL.Machine.Corpora
 
         protected virtual void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void StartEmbeddedText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void EndEmbeddedText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
         private void StartVerseText(UsfmParserState state)
         {
@@ -228,18 +237,6 @@ namespace SIL.Machine.Corpora
         private void EndNonVerseText(UsfmParserState state)
         {
             EndNonVerseText(state, CreateNonVerseRef());
-            _curTextType.Pop();
-        }
-
-        private void StartNoteText(UsfmParserState state)
-        {
-            _curTextType.Push(ScriptureTextType.Note);
-            StartNoteText(state, CreateNonVerseRef());
-        }
-
-        private void EndNoteText(UsfmParserState state)
-        {
-            EndNoteText(state, CreateNonVerseRef());
             _curTextType.Pop();
         }
 

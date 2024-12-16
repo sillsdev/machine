@@ -69,14 +69,24 @@ namespace SIL.Machine.Corpora
         void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes, bool closed);
 
         /// <summary>
-        /// Start of a note
+        /// Start of an embedded - a note, figure or cross reference
         /// </summary>
-        void StartNote(UsfmParserState state, string marker, string caller, string category);
+        void StartEmbedded(UsfmParserState state, string marker, string caller, string category);
 
         /// <summary>
-        /// End of a note
+        /// End of an embedded
         /// </summary>
-        void EndNote(UsfmParserState state, string marker, bool closed);
+        void EndEmbedded(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes, bool closed);
+
+        /// <summary>
+        /// Start of an embedded text
+        /// </summary>
+        void StartEmbeddedText(UsfmParserState state);
+
+        /// <summary>
+        /// End of an embedded text
+        /// </summary>
+        void EndEmbeddedText(UsfmParserState state);
 
         /// <summary>
         /// Start of a table
