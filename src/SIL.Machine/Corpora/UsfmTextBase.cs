@@ -258,6 +258,9 @@ namespace SIL.Machine.Corpora
                 }
                 else if (text.Length > 0 && (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText))
                 {
+                    if (InEmbedded(state.Token.Marker) && !InNoteText)
+                        return;
+
                     if (
                         state.PrevToken?.Type == UsfmTokenType.End
                         && (rowText.Length == 0 || char.IsWhiteSpace(rowText[rowText.Length - 1]))
