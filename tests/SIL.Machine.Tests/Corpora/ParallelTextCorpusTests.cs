@@ -1548,7 +1548,7 @@ public class ParallelTextCorpusTests
         foreach (var row in rows)
         {
             var bookId = row.TextId;
-            var expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
+            var expectedRef = ScriptureRef.Parse($"{bookId} 1:1", versification = ScrVers.Original);
             Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
             Assert.That(expectedRef, Is.InstanceOf<ScriptureRef>());
             Assert.That(row.SourceRefs.First, Is.EqualTo(expectedRef)); // Only row 1:1 is valid
