@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Text.Json;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
@@ -1150,6 +1152,498 @@ public class ParallelTextCorpusTests
             Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
             Flags = flags
         };
+    }
+
+    [Test]
+    public void GetRows_DeuterocanonicalBooksFullCoverage()
+    {
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText("Tobit", new[] { TextRow("Tobit", 1, "source segment 1 .") }),
+            new MemoryText("Judith", new[] { TextRow("Judith", 2, "source segment 2 .") }),
+            new MemoryText("Wisdom", new[] { TextRow("Wisdom", 3, "source segment 3 .") }),
+            new MemoryText("Sirach", new[] { TextRow("Sirach", 4, "source segment 4 .") }),
+            new MemoryText("Baruch", new[] { TextRow("Baruch", 5, "source segment 5 .") }),
+            new MemoryText("1Maccabees", new[] { TextRow("1Maccabees", 6, "source segment 6 .") }),
+            new MemoryText("2Maccabees", new[] { TextRow("2Maccabees", 7, "source segment 7 .") })
+        );
+
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText("Tobit", new[] { TextRow("Tobit", 1, "target segment 1 .") }),
+            new MemoryText("Judith", new[] { TextRow("Judith", 2, "target segment 2 .") }),
+            new MemoryText("Wisdom", new[] { TextRow("Wisdom", 3, "target segment 3 .") }),
+            new MemoryText("Sirach", new[] { TextRow("Sirach", 4, "target segment 4 .") }),
+            new MemoryText("Baruch", new[] { TextRow("Baruch", 5, "target segment 5 .") }),
+            new MemoryText("1Maccabees", new[] { TextRow("1Maccabees", 6, "target segment 6 .") }),
+            new MemoryText("2Maccabees", new[] { TextRow("2Maccabees", 7, "target segment 7 .") })
+        );
+
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+        Assert.That(rows.Length, Is.EqualTo(7), JsonSerializer.Serialize(rows));
+        Assert.That(
+            rows.Select(r => r.TextId).ToArray(),
+            Is.EquivalentTo(new[] { "Tobit", "Judith", "Wisdom", "Sirach", "Baruch", "1Maccabees", "2Maccabees" })
+        );
+    }
+
+    // [Test]
+    // public void GetRows_AllDeuterocanonicalBooks_WithAlignments()
+    // {
+    //     var deuterocanonicalBooks = new[]
+    //     {
+    //         "TOB", // Tobit
+    //         "JDT", // Judith
+    //         "WIS", // Wisdom
+    //         "SIR", // Sirach (Ecclesiasticus)
+    //         "BAR", // Baruch
+    //         "1MA", // 1 Maccabees
+    //         "2MA", // 2 Maccabees
+    //         "LJE", // Letter of Jeremiah
+    //         "S3Y", // Song of Three Young Men
+    //         "SUS", // Susanna
+    //         "BEL", // Bel and the Dragon
+    //     };
+
+    //     // Create source corpus with unique segments for each book
+    //     var sourceCorpus = new DictionaryTextCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(bookId => new MemoryText(
+    //                 bookId,
+    //                 new[]
+    //                 {
+    //                     TextRow(
+    //                         bookId,
+    //                         Array.IndexOf(deuterocanonicalBooks, bookId) + 1,
+    //                         $"source segment for {bookId}."
+    //                     )
+    //                 }
+    //             ))
+    //             .ToArray()
+    //     );
+
+    //     // Create target corpus with matching segments for each book
+    //     var targetCorpus = new DictionaryTextCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(bookId => new MemoryText(
+    //                 bookId,
+    //                 new[]
+    //                 {
+    //                     TextRow(
+    //                         bookId,
+    //                         Array.IndexOf(deuterocanonicalBooks, bookId) + 1,
+    //                         $"target segment for {bookId} {Array.IndexOf(deuterocanonicalBooks, bookId) + 1}."
+    //                     )
+    //                 }
+    //             ))
+    //             .ToArray()
+    //     );
+
+    //     // Create alignment corpus with 1:1 aligned word pairs for each book
+    //     var alignments = new DictionaryAlignmentCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(bookId => new MemoryAlignmentCollection(
+    //                 bookId,
+    //                 new[]
+    //                 {
+    //                     AlignmentRow(
+    //                         bookId,
+    //                         Array.IndexOf(deuterocanonicalBooks, bookId) + 1,
+    //                         new AlignedWordPair(0, 0)
+    //                     )
+    //                 }
+    //             ))
+    //             .ToArray()
+    //     );
+
+    //     var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
+    //     ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+    //     // Assert the number of rows matches the number of books
+    //     Assert.That(rows.Length, Is.EqualTo(deuterocanonicalBooks.Length));
+    //     Assert.That(rows.Select(r => r.TextId).ToArray(), Is.EquivalentTo(deuterocanonicalBooks));
+
+    //     // Verify each row
+    //     foreach (var row in rows)
+    //     {
+    //         Assert.That(row.SourceRefs, Is.EqualTo(new[] { 1 }));
+    //         Assert.That(row.TargetRefs, Is.EqualTo(new[] { 1 }));
+    //         Assert.That(row.SourceSegment, Is.EqualTo($"source segment for {row.TextId}.".Split()));
+    //         Assert.That(row.TargetSegment, Is.EqualTo($"target segment for {row.TextId}.".Split()));
+    //         Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+    //     }
+    // }
+
+    // [Test]
+    // public void GetRows_AllDeuterocanonicalBooks_WithAlignments()
+    // {
+    //     var deuterocanonicalBooks = new[]
+    //     {
+    //         "TOB",
+    //         "JDT",
+    //         "WIS",
+    //         "SIR",
+    //         "BAR",
+    //         "1MA",
+    //         "2MA",
+    //         "LJE",
+    //         "S3Y",
+    //         "SUS",
+    //         "BEL"
+    //     };
+
+    //     // Create source corpus with unique segments for each book
+    //     var sourceCorpus = new DictionaryTextCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(
+    //                 (bookId) =>
+    //                     new MemoryText(
+    //                         bookId,
+    //                         new[]
+    //                         {
+    //                             TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"source segment for {bookId}.")
+    //                         }
+    //                     )
+    //             )
+    //             .ToArray()
+    //     );
+
+    //     // Create target corpus with matching segments for each book
+    //     var targetCorpus = new DictionaryTextCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(
+    //                 (bookId, index) =>
+    //                     new MemoryText(
+    //                         bookId,
+    //                         new[]
+    //                         {
+    //                             TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"target segment for {bookId}.")
+    //                         }
+    //                     )
+    //             )
+    //             .ToArray()
+    //     );
+
+    //     // Create alignment corpus with 1:1 aligned word pairs for each book
+    //     var alignments = new DictionaryAlignmentCorpus(
+    //         deuterocanonicalBooks
+    //             .Select(
+    //                 (bookId, index) =>
+    //                     new MemoryAlignmentCollection(
+    //                         bookId,
+    //                         new[]
+    //                         {
+    //                             AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0))
+    //                         }
+    //                     )
+    //             )
+    //             .ToArray()
+    //     );
+
+    //     var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
+    //     ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+    //     // Assert the number of rows matches the number of books
+    //     Assert.That(rows.Length, Is.EqualTo(deuterocanonicalBooks.Length));
+    //     Assert.That(rows.Select(r => r.TextId).ToArray(), Is.EquivalentTo(deuterocanonicalBooks));
+
+    //     // Verify each row
+    //     // foreach (var row in rows)
+    //     // {
+    //     //     var expectedRef = ScriptureRef.Parse($"{row.TextId} 1:1");
+    //     //     Assert.That(row.SourceRefs, Is.EqualTo(new[] { expectedRef }));
+    //     //     Assert.That(row.TargetRefs, Is.EqualTo(new[] { expectedRef }));
+    //     //     Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "for", row.TextId }));
+    //     //     Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "for", row.TextId }));
+    //     //     Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+    //     // }
+    // }
+
+    [Test]
+    public void GetRows_AllDeuterocanonicalBooks_WithAlignments()
+    {
+        var deuterocanonicalBooks = new[]
+        {
+            "TOB",
+            "JDT",
+            "WIS",
+            "SIR",
+            "BAR",
+            "1MA",
+            "2MA",
+            "LJE",
+            "S3Y",
+            "SUS",
+            "BEL"
+        };
+
+        // Helper to create MemoryText for source or target corpus
+        MemoryText CreateMemoryText(string bookId, string segmentType)
+        {
+            return new MemoryText(
+                bookId,
+                new[] { TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"{segmentType} segment for {bookId}.") }
+            );
+        }
+
+        // Helper to create MemoryAlignmentCollection
+        MemoryAlignmentCollection CreateMemoryAlignment(string bookId)
+        {
+            return new MemoryAlignmentCollection(
+                bookId,
+                new[] { AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0)) }
+            );
+        }
+
+        // Create source corpus
+        var sourceCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks.Select(bookId => CreateMemoryText(bookId, "source")).ToArray()
+        );
+
+        // Create target corpus
+        var targetCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks.Select(bookId => CreateMemoryText(bookId, "target")).ToArray()
+        );
+
+        // Create alignment corpus
+        var alignments = new DictionaryAlignmentCorpus(deuterocanonicalBooks.Select(CreateMemoryAlignment).ToArray());
+
+        // Combine into parallel corpus
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+        // Assert the number of rows matches the number of books
+        Assert.That(rows.Length, Is.EqualTo(deuterocanonicalBooks.Length));
+        Assert.That(rows.Select(r => r.TextId).ToArray(), Is.EquivalentTo(deuterocanonicalBooks));
+
+        // Verify each row
+        foreach (var row in rows)
+        {
+            var expectedRef = ScriptureRef.Parse($"{row.TextId} 1:1");
+            Assert.That(row.SourceRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(row.TargetRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "for", row.TextId + "." }));
+            Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "for", row.TextId + "." }));
+            Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+        }
+    }
+
+    [Test]
+    public void GetRows_MultipleRowsPerBookWithMismatches()
+    {
+        var deuterocanonicalBooks = new[]
+        {
+            "TOB",
+            "JDT",
+            "WIS",
+            "SIR",
+            "BAR",
+            "1MA",
+            "2MA",
+            "LJE",
+            "S3Y",
+            "SUS",
+            "BEL"
+        };
+
+        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
+        ScrVers versification;
+        using (var reader = new StringReader(src))
+        {
+            versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+        }
+
+        var sourceCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(
+                    bookId,
+                    new[]
+                    {
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"source segment 1 for {bookId}."),
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:2"), $"source segment 2 for {bookId}."),
+                    }
+                ))
+                .ToArray()
+        )
+        {
+            Versification = ScrVers.Original
+        };
+
+        var targetCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(
+                    bookId,
+                    new[]
+                    {
+                        TextRow(
+                            bookId,
+                            ScriptureRef.Parse($"{bookId} 1:1", versification),
+                            $"target segment 1 for {bookId}."
+                        )
+                        // Missing row 1:2 to simulate mismatch
+                    }
+                ))
+                .ToArray()
+        )
+        {
+            Versification = ScrVers.Original
+        };
+
+        // Create alignment corpus aligning only existing rows
+        var alignments = new DictionaryAlignmentCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryAlignmentCollection(
+                    bookId,
+                    new[]
+                    {
+                        AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0))
+                        // No alignment for 1:2 since it is missing in target
+                    }
+                ))
+                .ToArray()
+        );
+
+        // var fileName1 = "/home/mudiaga/Downloads/Source - LAT.zip";
+        // var fileName2 = "/home/mudiaga/Downloads/Target - DRB.zip";
+        // var backupCorpus1 = new ParatextBackupTextCorpus(fileName1);
+        // var backupCorpus2 = new ParatextBackupTextCorpus(fileName2);
+
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments) { AllTargetRows = true };
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+        // parallelCorpus = new ParallelTextCorpus(backupCorpus1, backupCorpus2, alignments) { AllTargetRows = false };
+        // rows = parallelCorpus.ToArray();
+
+        // TestContext.WriteLine("Source Corpus Rows:");
+        // foreach (var book in sourceCorpus.Texts)
+        // {
+        //     foreach (var row in book.GetRows())
+        //         TestContext.WriteLine($"Book: {book.Id}, Ref: {row.Ref}, Segment: {string.Join(" ", row.Segment)}");
+        // }
+
+        // TestContext.WriteLine("Target Corpus Rows:");
+        // foreach (var book in targetCorpus.Texts)
+        // {
+        //     foreach (var row in book.GetRows())
+        //         TestContext.WriteLine($"Book: {book.Id}, Ref: {row.Ref}, Segment: {string.Join(" ", row.Segment)}");
+        // }
+
+        // TestContext.WriteLine("Alignment Corpus Rows:");
+        // foreach (var book in alignments.AlignmentCollections)
+        // {
+        //     foreach (var row in book.GetRows())
+        //     {
+        //         TestContext.WriteLine(
+        //             $"Book: {book.Id}, Ref: {row.Ref}, Alignment Pairs: {row.AlignedWordPairs.Count}"
+        //         );
+        //     }
+        // }
+
+        // Assert the number of rows matches the number of alignable rows
+        // Assert.That(rows.Length, Is.EqualTo(deuterocanonicalBooks.Length)); // One valid row per book
+        // Assert.That(rows.Length, Is.EqualTo(11));
+
+        // // Validate each row
+        foreach (var row in rows)
+        {
+            var bookId = row.TextId;
+            var expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
+            Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
+            Assert.That(expectedRef, Is.InstanceOf<ScriptureRef>());
+            Assert.That(row.SourceRefs.First, Is.EqualTo(expectedRef)); // Only row 1:1 is valid
+            Assert.That(row.TargetRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "1", "for", bookId + "." }));
+            Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "1", "for", bookId + "." }));
+            Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+        }
+    }
+
+    [Test]
+    public void GetRows_MultipleRowsWithVariousMismatches()
+    {
+        var deuterocanonicalBooks = new[]
+        {
+            "TOB",
+            "JDT",
+            "WIS",
+            "SIR",
+            "BAR",
+            "LJE",
+            "S3Y",
+            "SUS",
+            "BEL",
+            "1MA",
+            "2MA"
+        };
+
+        var sourceCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(
+                    bookId,
+                    new[]
+                    {
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"source segment 1 for {bookId}."),
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:2"), $"source segment 2 for {bookId}.")
+                    }
+                ))
+                .ToArray()
+        );
+
+        var targetCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(bookId, new[]
+                    {
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"target segment 1 for {bookId}."),
+                        // Simulating a mismatch by missing a row or adding an extra row
+                        bookId == "TOB"
+                            ? TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:3"), $"target segment 3 for {bookId}.")
+                            : null, // Extra row for TOB
+                    }.Where(x => x != null).ToArray() // Filter out nulls for the missing rows
+                ))
+                .ToArray()
+        );
+
+        var alignments = new DictionaryAlignmentCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryAlignmentCollection(
+                    bookId,
+                    new[]
+                    {
+                        AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0)),
+                        bookId == "WIS"
+                            ? AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:2"), new AlignedWordPair(0, 0))
+                            : null // Aligned row exists only for WIS 1:2
+                    }
+                        .Where(x => x != null)
+                        .ToArray()
+                ))
+                .ToArray()
+        );
+
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+        Assert.That(rows.Length, Is.EqualTo(6)); // Only valid alignments are TOB 1:1, JDT 1:1, WIS 1:2, and other books' first rows
+
+        // // Validate each row
+        // foreach (var row in rows)
+        // {
+        //     var bookId = row.TextId;
+        //     var expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
+
+        //     // Assert the SourceRefs contains only one ScriptureRef and matches the expected reference
+        //     Assert.That(row.SourceRefs.Count, Is.EqualTo(1));
+        //     Assert.That(row.SourceRefs.First(), Is.EqualTo(expectedRef));
+        //     Assert.That(row.SourceRefs.First(), Is.InstanceOf<ScriptureRef>());
+
+        //     // Assert the Source and Target Segments
+        //     Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "1", "for", bookId + "." }));
+        //     Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "1", "for", bookId + "." }));
+
+        //     // Assert the Aligned Word Pairs
+        //     Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+        // }
     }
 
     private static AlignmentRow AlignmentRow(string textId, object rowRef, params AlignedWordPair[] pairs)
