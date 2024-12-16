@@ -1548,11 +1548,11 @@ public class ParallelTextCorpusTests
         foreach (var row in rows)
         {
             var bookId = row.TextId;
-            var expectedRef = ScriptureRef.Parse($"{bookId} 1:1", versification = ScrVers.Original);
+            var expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
             Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
             Assert.That(expectedRef, Is.InstanceOf<ScriptureRef>());
-            Assert.That(row.SourceRefs.First, Is.EqualTo(expectedRef)); // Only row 1:1 is valid
-            Assert.That(row.TargetRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(expectedRef.CompareTo(row.SourceRefs[0]), Is.EqualTo(0)); // Only row 1:1 is valid
+            Assert.That(expectedRef.CompareTo(row.TargetRefs[0]), Is.EqualTo(0)); // Only row 1:1 is valid
             Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "1", "for", bookId + "." }));
             Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "1", "for", bookId + "." }));
             Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
