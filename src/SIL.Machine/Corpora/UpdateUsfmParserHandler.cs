@@ -380,7 +380,7 @@ namespace SIL.Machine.Corpora
                 || (newText && !existingText)
                 || (newText && _behavior == UpdateUsfmBehavior.PreferNew);
 
-            if (useNewTokens)
+            if (useNewTokens && !state.DoNotTranslate)
                 _tokens.AddRange(_newTokens);
 
             _newTokens.Clear();

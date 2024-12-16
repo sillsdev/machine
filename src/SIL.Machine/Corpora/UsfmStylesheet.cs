@@ -11,6 +11,7 @@ namespace SIL.Machine.Corpora
     public class UsfmStylesheet
     {
         private static readonly Regex CellRangeRegex = new Regex(@"^(t[ch][cr]?[1-5])-([2-5])$", RegexOptions.Compiled);
+        private static readonly Regex ReferenceRegex = new Regex(@"^(fr|r|rq|xo|xt|)$", RegexOptions.Compiled);
 
         private static readonly Dictionary<string, UsfmJustification> JustificationMappings = new Dictionary<
             string,
@@ -109,6 +110,16 @@ namespace SIL.Machine.Corpora
             baseMarker = tag;
             colSpan = 0;
             return false;
+        }
+
+        public static bool IsReference(string tag)
+        {
+            return !(tag is null) && ReferenceRegex.IsMatch(tag);
+        }
+
+        public static bool IsFigure(string tag)
+        {
+            return tag == "fig";
         }
 
         private static IEnumerable<string> GetEmbeddedStylesheet(string fileName)

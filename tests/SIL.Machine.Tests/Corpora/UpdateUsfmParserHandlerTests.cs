@@ -76,7 +76,7 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_Verse_ReplaceNote()
+    public void GetUsfm_Verse_ReplaceNoteKeepReference()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
@@ -87,7 +87,38 @@ public class UpdateUsfmParserHandlerTests
         string target = UpdateUsfm(rows);
         Assert.That(
             target,
-            Contains.Substring("\\v 1 First verse of the second chapter. \\f + \\ft This is a new footnote.\\f*\r\n")
+            Contains.Substring(
+                "\\v 1 First verse of the second chapter. \\f + \\fr 2:1: \\ft This is a new footnote.\\f*\r\n"
+            )
+        );
+    }
+
+    [Test]
+    public void GetUsfm_Verse_PreserveFiguresAndReferences()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            // fig
+            (ScrRef("MAT 1:5"), "Fifth verse of the first chapter."),
+            (ScrRef("MAT 1:5/1:fig"), "figure text not updated"),
+            // rq
+            (ScrRef("MAT 2:5/1:rq"), "quote reference not updated"),
+            // r
+            (ScrRef("MAT 2/1:r"), "parallel reference not updated"),
+            // xo
+            (ScrRef("MAT 2:6/3:xo"), "Cross reference not update"),
+            // xt
+            (ScrRef("MAT 2:6/4:xt"), "cross reference - target reference not updated"),
+            // xta
+            (ScrRef("MAT 2:6/5:xta"), "cross reference annotation updated"),
+        };
+
+        string target = UpdateUsfm(rows);
+        Assert.That(
+            target,
+            Contains.Substring(
+                "\\v 1 First verse of the second chapter. \\f + \\fr 2:1: \\ft This is a new footnote.\\f*\r\n"
+            )
         );
     }
 

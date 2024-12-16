@@ -289,7 +289,7 @@ namespace SIL.Machine.Corpora
             protected override void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
             {
                 string text = _rowTexts.Pop().ToString();
-                if (_text._includeAllText)
+                if (_text._includeAllText && !state.DoNotTranslate)
                     _rows.Add(_text.CreateRow(scriptureRef, text, _sentenceStart));
             }
 

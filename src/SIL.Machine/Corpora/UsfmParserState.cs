@@ -81,6 +81,10 @@ namespace SIL.Machine.Corpora
         /// </summary>
         public bool IsFigure => CharTag?.Marker == "fig";
 
+        public bool DoNotTranslate => _doNotTranslateIndex >= 0;
+
+        private int _doNotTranslateIndex = -1;
+
         /// <summary>
         /// Current paragraph tag or null for none.
         /// Note that book and table rows are considered paragraphs for legacy checking reasons.
@@ -189,12 +193,21 @@ namespace SIL.Machine.Corpora
         internal void Push(UsfmParserElement elem)
         {
             _stack.Add(elem);
+            if (
+                _doNotTranslateIndex == -1
+                && (UsfmStylesheet.IsReference(elem.Marker) || UsfmStylesheet.IsFigure(elem.Marker))
+            )
+            {
+                _doNotTranslateIndex = _stack.Count - 1;
+            }
         }
 
         internal UsfmParserElement Pop()
         {
             UsfmParserElement element = _stack[_stack.Count - 1];
             _stack.RemoveAt(_stack.Count - 1);
+            if (_doNotTranslateIndex == _stack.Count)
+                _doNotTranslateIndex = -1;
             return element;
         }
     }
