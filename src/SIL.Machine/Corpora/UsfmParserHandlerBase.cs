@@ -53,9 +53,18 @@ namespace SIL.Machine.Corpora
             bool closed
         ) { }
 
-        public virtual void StartNote(UsfmParserState state, string marker, string caller, string category) { }
+        public virtual void StartSubComponent(UsfmParserState state, string marker, string caller, string category) { }
 
-        public virtual void EndNote(UsfmParserState state, string marker, bool closed) { }
+        public virtual void EndSubComponent(
+            UsfmParserState state,
+            string marker,
+            IReadOnlyList<UsfmAttribute> attributes,
+            bool closed
+        ) { }
+
+        public virtual void StartSubComponentText(UsfmParserState state) { }
+
+        public virtual void EndSubComponentText(UsfmParserState state) { }
 
         public virtual void StartTable(UsfmParserState state) { }
 

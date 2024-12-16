@@ -245,16 +245,18 @@ namespace SIL.Machine.Corpora
                     if (paraTag != null && paraTag.TextType != UsfmTextType.VerseText && paraTag.TextType != 0)
                         CloseAll();
                     else
-                        CloseNote();
+                        CloseSubComponent();
                     break;
-                case UsfmTokenType.Note:
-                    CloseNote();
+                case UsfmTokenType.SubComponent:
+                    CloseSubComponent();
                     break;
                 case UsfmTokenType.End:
                     // If end marker for an active note
-                    if (State.Stack.Any(e => e.Type == UsfmElementType.Note && (e.Marker + "*" == token.Marker)))
+                    if (
+                        State.Stack.Any(e => e.Type == UsfmElementType.SubComponent && (e.Marker + "*" == token.Marker))
+                    )
                     {
-                        CloseNote(closed: true);
+                        CloseSubComponent(closed: true);
                         break;
                     }
 
@@ -487,6 +489,9 @@ namespace SIL.Machine.Corpora
                         break;
                     }
 
+                    if (UsfmStylesheet.IsSubComponentPart(token.Marker))
+                        CloseNoteText();
+
                     string actualMarker;
                     bool invalidMarker = false;
                     if (token.Marker.StartsWith("+"))
@@ -508,8 +513,15 @@ namespace SIL.Machine.Corpora
                         token.Type == UsfmTokenType.Unknown || invalidMarker,
                         token.Attributes
                     );
+
+                    if (IsSubComponentText(token))
+                    {
+                        // Note text should be handled as a full segment
+                        State.Push(new UsfmParserElement(UsfmElementType.SubComponentText, token.Marker));
+                        Handler?.StartSubComponentText(State);
+                    }
                     break;
-                case UsfmTokenType.Note:
+                case UsfmTokenType.SubComponent:
                     // Look for category
                     string noteCategory = null;
                     if (
@@ -524,9 +536,9 @@ namespace SIL.Machine.Corpora
                         State.SpecialTokenCount += 3;
                     }
 
-                    State.Push(new UsfmParserElement(UsfmElementType.Note, token.Marker));
+                    State.Push(new UsfmParserElement(UsfmElementType.SubComponent, token.Marker, token.Attributes));
 
-                    Handler?.StartNote(State, token.Marker, token.Data, noteCategory);
+                    Handler?.StartSubComponent(State, token.Marker, token.Data, noteCategory);
                     break;
                 case UsfmTokenType.Text:
                     string text = token.Text;
@@ -596,15 +608,15 @@ namespace SIL.Machine.Corpora
         private UsfmTokenType DetermineUnknownTokenType()
         {
             // Unknown inside notes are character
-            if (State.Stack.Any(e => e.Type == UsfmElementType.Note))
+            if (State.Stack.Any(e => e.Type == UsfmElementType.SubComponent))
                 return UsfmTokenType.Character;
 
             return UsfmTokenType.Paragraph;
         }
 
-        private void CloseNote(bool closed = false)
+        private void CloseSubComponent(bool closed = false)
         {
-            if (State.Stack.Any(elem => elem.Type == UsfmElementType.Note))
+            if (State.Stack.Any(elem => elem.Type == UsfmElementType.SubComponent))
             {
                 UsfmParserElement elem;
                 do
@@ -613,9 +625,15 @@ namespace SIL.Machine.Corpora
                         break;
 
                     elem = State.Peek();
-                    CloseElement(closed && elem.Type == UsfmElementType.Note);
-                } while (elem.Type != UsfmElementType.Note);
+                    CloseElement(closed && elem.Type == UsfmElementType.SubComponent);
+                } while (elem.Type != UsfmElementType.SubComponent);
             }
+        }
+
+        private void CloseNoteText()
+        {
+            while (State.Stack.Count > 0 && State.Peek().Type == UsfmElementType.SubComponentText)
+                CloseElement();
         }
 
         private void CloseCharStyles()
@@ -638,8 +656,11 @@ namespace SIL.Machine.Corpora
                 case UsfmElementType.Char:
                     Handler?.EndChar(State, element.Marker, element.Attributes, closed);
                     break;
-                case UsfmElementType.Note:
-                    Handler?.EndNote(State, element.Marker, closed);
+                case UsfmElementType.SubComponent:
+                    Handler?.EndSubComponent(State, element.Marker, element.Attributes, closed);
+                    break;
+                case UsfmElementType.SubComponentText:
+                    Handler?.EndSubComponentText(State);
                     break;
                 case UsfmElementType.Table:
                     Handler?.EndTable(State);
@@ -671,6 +692,11 @@ namespace SIL.Machine.Corpora
                 && (State.Tokens[State.Index + 2].Type == UsfmTokenType.End)
                 && (State.Tokens[State.Index + 2].Marker == token.EndMarker)
                 && (token.Marker == "ref");
+        }
+
+        private bool IsSubComponentText(UsfmToken token)
+        {
+            return UsfmStylesheet.IsSubComponentText(token.Marker) && State.SubComponentTag != null;
         }
     }
 }

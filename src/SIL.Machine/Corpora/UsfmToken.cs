@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
         Text,
         Paragraph,
         Character,
-        Note,
+        SubComponent,
         End,
         Milestone,
         MilestoneEnd,

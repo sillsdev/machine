@@ -183,6 +183,16 @@ namespace SIL.Machine.Corpora
                                 }
                             );
                         }
+                        else if (UsfmStylesheet.IsSubComponent(tag.Marker))
+                        {
+                            tokens.Add(
+                                new UsfmToken(UsfmTokenType.SubComponent, marker, null, endMarker)
+                                {
+                                    LineNumber = lineNum,
+                                    ColumnNumber = colNum
+                                }
+                            );
+                        }
                         else
                         {
                             tokens.Add(
@@ -243,7 +253,7 @@ namespace SIL.Machine.Corpora
                     case UsfmStyleType.Note:
                         tokens.Add(
                             new UsfmToken(
-                                UsfmTokenType.Note,
+                                UsfmTokenType.SubComponent,
                                 marker,
                                 null,
                                 endMarker,

@@ -77,11 +77,6 @@ namespace SIL.Machine.Corpora
         public int SpecialTokenCount { get; internal set; }
 
         /// <summary>
-        /// True if the token processed is a figure.
-        /// </summary>
-        public bool IsFigure => CharTag?.Marker == "fig";
-
-        /// <summary>
         /// Current paragraph tag or null for none.
         /// Note that book and table rows are considered paragraphs for legacy checking reasons.
         /// </summary>
@@ -110,13 +105,13 @@ namespace SIL.Machine.Corpora
         }
 
         /// <summary>
-        /// Current note tag or null for none
+        /// Current sub component tag (note, figure, cross reference) or null for none
         /// </summary>
-        public UsfmTag NoteTag
+        public UsfmTag SubComponentTag
         {
             get
             {
-                UsfmParserElement elem = Stack.LastOrDefault(e => e.Type == UsfmElementType.Note);
+                UsfmParserElement elem = Stack.LastOrDefault(e => e.Type == UsfmElementType.SubComponent);
                 return elem != null ? Stylesheet.GetTag(elem.Marker) : null;
             }
         }
@@ -158,7 +153,7 @@ namespace SIL.Machine.Corpora
             get
             {
                 // Sidebars and notes are not verse text
-                if (_stack.Any(e => e.Type == UsfmElementType.Sidebar || e.Type == UsfmElementType.Note))
+                if (_stack.Any(e => e.Type == UsfmElementType.Sidebar || e.Type == UsfmElementType.SubComponent))
                     return false;
 
                 if (!IsVersePara)
@@ -210,7 +205,8 @@ namespace SIL.Machine.Corpora
         Table,
         Row,
         Cell,
-        Note,
+        SubComponent,
+        SubComponentText,
         Sidebar
     };
 

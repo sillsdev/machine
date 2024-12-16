@@ -9,7 +9,8 @@ namespace SIL.Machine.Corpora
         None,
         NonVerse,
         Verse,
-        Note
+        SubComponent,
+        SubComponentText
     }
 
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase
@@ -151,21 +152,29 @@ namespace SIL.Machine.Corpora
             EndParentElement();
         }
 
-        public override void StartNote(UsfmParserState state, string marker, string caller, string category)
+        public override void StartSubComponent(UsfmParserState state, string marker, string caller, string category)
         {
+            if (_curVerseRef.IsDefault)
+                UpdateVerseRef(state.VerseRef, marker, startAsChildElement: true);
+
             if (CurrentTextType != ScriptureTextType.None && !_duplicateVerse)
             {
                 // if we hit a note in a verse paragraph and we aren't in a verse, then start a non-verse segment
                 CheckConvertVerseParaToNonVerse(state);
                 NextElement(marker);
-                StartNoteText(state);
             }
         }
 
-        public override void EndNote(UsfmParserState state, string marker, bool closed)
+        public override void StartSubComponentText(UsfmParserState state)
         {
-            if (CurrentTextType == ScriptureTextType.Note && !_duplicateVerse)
-                EndNoteText(state);
+            _curTextType.Push(ScriptureTextType.SubComponentText);
+            StartSubComponentText(state, CreateNonVerseRef());
+        }
+
+        public override void EndSubComponentText(UsfmParserState state)
+        {
+            EndSubComponentText(state, CreateNonVerseRef());
+            _curTextType.Pop();
         }
 
         public override void Text(UsfmParserState state, string text)
@@ -200,9 +209,9 @@ namespace SIL.Machine.Corpora
 
         protected virtual void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void StartSubComponentText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void EndSubComponentText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
         private void StartVerseText(UsfmParserState state)
         {
@@ -231,24 +240,13 @@ namespace SIL.Machine.Corpora
             _curTextType.Pop();
         }
 
-        private void StartNoteText(UsfmParserState state)
-        {
-            _curTextType.Push(ScriptureTextType.Note);
-            StartNoteText(state, CreateNonVerseRef());
-        }
-
-        private void EndNoteText(UsfmParserState state)
-        {
-            EndNoteText(state, CreateNonVerseRef());
-            _curTextType.Pop();
-        }
-
-        private void UpdateVerseRef(VerseRef verseRef, string marker)
+        private void UpdateVerseRef(VerseRef verseRef, string marker, bool startAsChildElement = false)
         {
             if (!VerseRef.AreOverlappingVersesRanges(verseRef, _curVerseRef))
             {
                 _curElements.Clear();
-                _curElements.Push(new ScriptureElement(0, marker));
+                int position = startAsChildElement ? 1 : 0;
+                _curElements.Push(new ScriptureElement(position, marker));
             }
             _curVerseRef = verseRef;
         }

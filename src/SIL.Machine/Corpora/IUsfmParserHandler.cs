@@ -69,14 +69,29 @@ namespace SIL.Machine.Corpora
         void EndChar(UsfmParserState state, string marker, IReadOnlyList<UsfmAttribute> attributes, bool closed);
 
         /// <summary>
-        /// Start of a note
+        /// Start of a sub component - a note, figure or cross reference
         /// </summary>
-        void StartNote(UsfmParserState state, string marker, string caller, string category);
+        void StartSubComponent(UsfmParserState state, string marker, string caller, string category);
 
         /// <summary>
-        /// End of a note
+        /// End of a sub component
         /// </summary>
-        void EndNote(UsfmParserState state, string marker, bool closed);
+        void EndSubComponent(
+            UsfmParserState state,
+            string marker,
+            IReadOnlyList<UsfmAttribute> attributes,
+            bool closed
+        );
+
+        /// <summary>
+        /// Start of a sub component text
+        /// </summary>
+        void StartSubComponentText(UsfmParserState state);
+
+        /// <summary>
+        /// End of a sub component text
+        /// </summary>
+        void EndSubComponentText(UsfmParserState state);
 
         /// <summary>
         /// Start of a table

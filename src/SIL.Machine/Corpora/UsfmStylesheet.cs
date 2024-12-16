@@ -12,6 +12,44 @@ namespace SIL.Machine.Corpora
     {
         private static readonly Regex CellRangeRegex = new Regex(@"^(t[ch][cr]?[1-5])-([2-5])$", RegexOptions.Compiled);
 
+        private static readonly HashSet<string> SubComponentTextTags = new HashSet<string> { "ft", };
+
+        private static readonly HashSet<string> SubComponentTags = new HashSet<string> { "fig", "rq", "f", "fe", "x", };
+
+        private static readonly HashSet<string> UntranslatedParagraphTag = new HashSet<string> { "r", "rem", };
+        private static readonly HashSet<string> SubComponentPartTags = new HashSet<string>
+        {
+            "f",
+            "fe",
+            "fr",
+            "fq",
+            "fqa",
+            "fk",
+            "fw",
+            "fp",
+            "fv",
+            "ft",
+            "fdc",
+            "fm",
+            "fig",
+            "x",
+            "xo",
+            "xk",
+            "xq",
+            "xt",
+            "xta",
+            "xop",
+            "xot",
+            "xnt",
+            "xdc",
+            "rq",
+            "zpa-xb",
+            "zpa-xc",
+            "zpa-xv"
+        };
+
+        private static readonly Regex NonAlpha = new Regex("[^a-zA-Z0-9]");
+
         private static readonly Dictionary<string, UsfmJustification> JustificationMappings = new Dictionary<
             string,
             UsfmJustification
@@ -109,6 +147,26 @@ namespace SIL.Machine.Corpora
             baseMarker = tag;
             colSpan = 0;
             return false;
+        }
+
+        public static bool IsSubComponentPart(string tag)
+        {
+            return !(tag is null) && SubComponentPartTags.Contains(NonAlpha.Replace(tag ?? "", ""));
+        }
+
+        public static bool IsSubComponent(string tag)
+        {
+            return !(tag is null) && SubComponentTags.Contains(NonAlpha.Replace(tag ?? "", ""));
+        }
+
+        public static bool IsUntranslatedParagraph(string tag)
+        {
+            return !(tag is null) && UntranslatedParagraphTag.Contains(tag);
+        }
+
+        public static bool IsSubComponentText(string tag)
+        {
+            return !(tag is null) && SubComponentTextTags.Contains(tag);
         }
 
         private static IEnumerable<string> GetEmbeddedStylesheet(string fileName)

@@ -199,16 +199,24 @@ namespace SIL.Machine.Corpora
                     _rowTexts.Peek().TrimEnd();
             }
 
-            public override void StartNote(UsfmParserState state, string marker, string caller, string category)
+            public override void StartSubComponent(UsfmParserState state, string marker, string caller, string category)
             {
-                base.StartNote(state, marker, caller, category);
+                base.StartSubComponent(state, marker, caller, category);
 
                 OutputMarker(state);
             }
 
-            public override void EndNote(UsfmParserState state, string marker, bool closed)
+            public override void EndSubComponent(
+                UsfmParserState state,
+                string marker,
+                IReadOnlyList<UsfmAttribute> attributes,
+                bool closed
+            )
             {
-                base.EndNote(state, marker, closed);
+                base.EndSubComponent(state, marker, attributes, closed);
+
+                if (_text._includeMarkers && attributes != null && state.PrevToken?.Type == UsfmTokenType.Attribute)
+                    _rowTexts.Peek().Append(state.PrevToken);
 
                 if (closed)
                     OutputMarker(state);
@@ -293,7 +301,7 @@ namespace SIL.Machine.Corpora
                     _rows.Add(_text.CreateRow(scriptureRef, text, _sentenceStart));
             }
 
-            protected override void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef)
+            protected override void StartSubComponentText(UsfmParserState state, ScriptureRef scriptureRef)
             {
                 if (_text._includeMarkers)
                     return;
@@ -301,7 +309,7 @@ namespace SIL.Machine.Corpora
                 _rowTexts.Push(new StringBuilder());
             }
 
-            protected override void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef)
+            protected override void EndSubComponentText(UsfmParserState state, ScriptureRef scriptureRef)
             {
                 if (_text._includeMarkers)
                     return;

@@ -11,7 +11,7 @@ public class UsfmTokenizerTests
         string usfm = ReadUsfm();
         var tokenizer = new UsfmTokenizer();
         IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
-        Assert.That(tokens, Has.Count.EqualTo(236));
+        Assert.That(tokens, Has.Count.EqualTo(240));
 
         Assert.That(tokens[0].Type, Is.EqualTo(UsfmTokenType.Book));
         Assert.That(tokens[0].Marker, Is.EqualTo("id"));
@@ -30,7 +30,7 @@ public class UsfmTokenizerTests
         Assert.That(tokens[38].LineNumber, Is.EqualTo(11));
         Assert.That(tokens[38].ColumnNumber, Is.EqualTo(1));
 
-        Assert.That(tokens[47].Type, Is.EqualTo(UsfmTokenType.Note));
+        Assert.That(tokens[47].Type, Is.EqualTo(UsfmTokenType.SubComponent));
         Assert.That(tokens[47].Marker, Is.EqualTo("f"));
         Assert.That(tokens[47].Data, Is.EqualTo("+"));
         Assert.That(tokens[47].LineNumber, Is.EqualTo(11));
