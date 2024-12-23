@@ -204,6 +204,20 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_VeryOddVerse()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+1 This is the 1\v 00 verse.
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+        // If it gets this far, it's not throwing an exception.
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
