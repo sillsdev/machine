@@ -39,7 +39,7 @@ public class AlignCommand : CommandBase
         );
         _symHeuristicOption = Option(
             "-sh|--sym-heuristic <SYM_HEURISTIC>",
-            $"The symmetrization heuristic.\nHeuristics: \"{SymmetrizationHelpers.Och}\" (default), \"{SymmetrizationHelpers.Union}\", \"{SymmetrizationHelpers.Intersection}\", \"{SymmetrizationHelpers.Grow}\", \"{SymmetrizationHelpers.GrowDiag}\", \"{SymmetrizationHelpers.GrowDiagFinal}\", \"{SymmetrizationHelpers.GrowDiagFinalAnd}\", \"{SymmetrizationHelpers.None}\".",
+            $"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\", \"{ToolHelpers.None}\".",
             CommandOptionType.SingleValue
         );
         _scoresOption = Option("-s|--scores", "Include scores in the output.", CommandOptionType.NoValue);
@@ -53,7 +53,7 @@ public class AlignCommand : CommandBase
         if (code != 0)
             return code;
 
-        if (!SymmetrizationHelpers.ValidateSymmetrizationHeuristicOption(_symHeuristicOption?.Value()))
+        if (!ToolHelpers.ValidateSymmetrizationHeuristicOption(_symHeuristicOption?.Value()))
         {
             Out.WriteLine("The specified symmetrization heuristic is invalid.");
             return 1;
@@ -75,9 +75,7 @@ public class AlignCommand : CommandBase
 
         int processorCount = Environment.ProcessorCount;
 
-        SymmetrizationHeuristic symHeuristic = SymmetrizationHelpers.GetSymmetrizationHeuristic(
-            _symHeuristicOption?.Value()
-        );
+        SymmetrizationHeuristic symHeuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption?.Value());
 
         if (!_quietOption.HasValue())
             Out.Write("Loading model... ");

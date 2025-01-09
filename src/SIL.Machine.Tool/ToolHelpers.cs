@@ -14,6 +14,22 @@ namespace SIL.Machine;
 
 internal static class ToolHelpers
 {
+    public const string FastAlign = "fast_align";
+    public const string Ibm1 = "ibm1";
+    public const string Ibm2 = "ibm2";
+    public const string Hmm = "hmm";
+    public const string Ibm3 = "ibm3";
+    public const string Ibm4 = "ibm4";
+
+    public const string Och = "och";
+    public const string Union = "union";
+    public const string Intersection = "intersection";
+    public const string Grow = "grow";
+    public const string GrowDiag = "grow-diag";
+    public const string GrowDiagFinal = "grow-diag-final";
+    public const string GrowDiagFinalAnd = "grow-diag-final-and";
+    public const string None = "none";
+
     public static bool ValidateCorpusFormatOption(string value)
     {
         return string.IsNullOrEmpty(value) || value.ToLowerInvariant().IsOneOf("dbl", "usx", "text", "pt", "pt_m");
@@ -138,14 +154,29 @@ internal static class ToolHelpers
 
     public static bool ValidateTranslationModelTypeOption(string value)
     {
-        var validTypes = new HashSet<string>
-        {
-            ThotWordAlignmentHelpers.Hmm,
-            ThotWordAlignmentHelpers.Ibm1,
-            ThotWordAlignmentHelpers.Ibm2,
-            ThotWordAlignmentHelpers.FastAlign
-        };
+        var validTypes = new HashSet<string> { Hmm, Ibm1, Ibm2, FastAlign };
         return string.IsNullOrEmpty(value) || validTypes.Contains(value);
+    }
+
+    public static ThotWordAlignmentModelType GetThotWordAlignmentModelType(string modelType)
+    {
+        switch (modelType)
+        {
+            case "fastAlign":
+            case FastAlign:
+                return ThotWordAlignmentModelType.FastAlign;
+            case Ibm1:
+                return ThotWordAlignmentModelType.Ibm1;
+            case Ibm2:
+                return ThotWordAlignmentModelType.Ibm2;
+            default:
+            case Hmm:
+                return ThotWordAlignmentModelType.Hmm;
+            case Ibm3:
+                return ThotWordAlignmentModelType.Ibm3;
+            case Ibm4:
+                return ThotWordAlignmentModelType.Ibm4;
+        }
     }
 
     public static ITrainer CreateTranslationModelTrainer(
@@ -155,9 +186,7 @@ internal static class ToolHelpers
         int maxSize
     )
     {
-        ThotWordAlignmentModelType wordAlignmentModelType = ThotWordAlignmentHelpers.GetThotWordAlignmentModelType(
-            modelType
-        );
+        ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
 
         string modelDir = Path.GetDirectoryName(modelConfigFileName);
         if (!Directory.Exists(modelDir))
@@ -169,6 +198,38 @@ internal static class ToolHelpers
         return new ThotSmtModelTrainer(wordAlignmentModelType, corpus, modelConfigFileName)
         {
             MaxCorpusCount = maxSize
+        };
+    }
+
+    public static bool ValidateSymmetrizationHeuristicOption(string value, bool noneAllowed = true)
+    {
+        var validHeuristics = new HashSet<string>
+        {
+            Och,
+            Union,
+            Intersection,
+            Grow,
+            GrowDiag,
+            GrowDiagFinal,
+            GrowDiagFinalAnd
+        };
+        if (noneAllowed)
+            validHeuristics.Add(None);
+        return string.IsNullOrEmpty(value) || validHeuristics.Contains(value.ToLowerInvariant());
+    }
+
+    public static SymmetrizationHeuristic GetSymmetrizationHeuristic(string value)
+    {
+        return value switch
+        {
+            None => SymmetrizationHeuristic.None,
+            Union => SymmetrizationHeuristic.Union,
+            Intersection => SymmetrizationHeuristic.Intersection,
+            Grow => SymmetrizationHeuristic.Grow,
+            GrowDiag => SymmetrizationHeuristic.GrowDiag,
+            GrowDiagFinal => SymmetrizationHeuristic.GrowDiagFinal,
+            GrowDiagFinalAnd => SymmetrizationHeuristic.GrowDiagFinalAnd,
+            _ => SymmetrizationHeuristic.Och,
         };
     }
 
