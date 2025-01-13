@@ -34,7 +34,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
-                    _mrulesRule = new LinearRuleCascade<Word, ShapeNode>(
+                    // Use PermutationRuleCascade instead of LinearRuleCascade
+                    // because morphological rules should be considered optional
+                    // during unapplication (they are obligatory during application,
+                    // but we don't know they have been applied during unapplication).
+                    _mrulesRule = new PermutationRuleCascade<Word, ShapeNode>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
