@@ -85,10 +85,7 @@ public class MorpherTests : HermitCrabTestBase
             Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value
         };
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value,
-            }
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
         );
         Morphophonemic.PhonologicalRules.Add(rule1);
 
