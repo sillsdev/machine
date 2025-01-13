@@ -3,6 +3,7 @@ using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
+using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -36,8 +37,64 @@ public class MorpherTests : HermitCrabTestBase
             morpher.AnalyzeWord("sagd"),
             Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
         );
+    }
+
+    [Test]
+    public void AnalyzeWord_CanAnalyzeLinear_ReturnsCorrectAnalysis()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        // Adding rules shouldn't block sagd analysis when Linear.
+        var tSuffix = new AffixProcessRule
+        {
+            Id = "PLURAL",
+            Name = "t_suffix",
+            Gloss = "PLURAL",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+        };
+        tSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") }
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(tSuffix);
+
+        // Add a phonological rule so that "sagd" becomes "sag[dt]" during unapplication.
+        // This is to verify that unapplication works correctly.
+        var rule1 = new RewriteRule
+        {
+            Name = "rule1",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value
+        };
+        rule1.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value,
+            }
+        );
+        Morphophonemic.PhonologicalRules.Add(rule1);
 
         SetRuleOrder(MorphologicalRuleOrder.Linear);
+        var morpher = new Morpher(TraceManager, Language);
+
         Assert.That(
             morpher.AnalyzeWord("sagd"),
             Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
