@@ -168,7 +168,7 @@ description
         Assert.That(rows[0].Text, Is.EqualTo("World"));
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:f")));
         Assert.That(rows[1].Text, Is.EqualTo("This is a comment"));
-        Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0:2/ip")));
+        Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/2:ip")));
         Assert.That(rows, Has.Length.EqualTo(3), string.Join(",", rows.Select(tr => tr.Text)));
     }
 

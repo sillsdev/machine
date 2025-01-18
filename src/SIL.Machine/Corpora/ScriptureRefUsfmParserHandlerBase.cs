@@ -155,9 +155,9 @@ namespace SIL.Machine.Corpora
         public override void StartSubComponent(UsfmParserState state, string marker, string caller, string category)
         {
             if (_curVerseRef.IsDefault)
-                UpdateVerseRef(state.VerseRef, marker, startAsChildElement: true);
+                UpdateVerseRef(state.VerseRef, marker);
 
-            if (CurrentTextType != ScriptureTextType.None && !_duplicateVerse)
+            if (!_duplicateVerse)
             {
                 // if we hit a note in a verse paragraph and we aren't in a verse, then start a non-verse segment
                 CheckConvertVerseParaToNonVerse(state);
@@ -240,13 +240,12 @@ namespace SIL.Machine.Corpora
             _curTextType.Pop();
         }
 
-        private void UpdateVerseRef(VerseRef verseRef, string marker, bool startAsChildElement = false)
+        private void UpdateVerseRef(VerseRef verseRef, string marker)
         {
             if (!VerseRef.AreOverlappingVersesRanges(verseRef, _curVerseRef))
             {
                 _curElements.Clear();
-                int position = startAsChildElement ? 1 : 0;
-                _curElements.Push(new ScriptureElement(position, marker));
+                _curElements.Push(new ScriptureElement(0, marker));
             }
             _curVerseRef = verseRef;
         }
