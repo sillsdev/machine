@@ -31,6 +31,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
+        private readonly Word _cloneOf = null;
+        private readonly IList<Word> _alternatives = new List<Word>();
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
         {
@@ -92,6 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 kvp => new HashSet<int>(kvp.Value)
             );
             _mruleAppCount = word._mruleAppCount;
+            _cloneOf = word;
         }
 
         public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -394,6 +397,52 @@ namespace SIL.Machine.Morphology.HermitCrab
             CheckFrozen();
             _nonHeadApps.Add(nonHead);
             _nonHeadAppIndex++;
+        }
+
+        internal Word CloneOf
+        {
+            get { return _cloneOf; }
+        }
+
+        internal IList<Word> Alternatives
+        {
+            get { return _alternatives; }
+        }
+
+        internal IList<Word> ExpandAlternatives()
+        {
+            IList<Word> alternatives = new List<Word>();
+            IList<Word> originals = _cloneOf?.ExpandAlternatives();
+            // Update the alternatives of _cloneOf with any changes made since the clone.
+            if (originals == null || originals.Count < 2)
+            {
+                // Special case.
+                alternatives.Add(this);
+            }
+            else
+            {
+                foreach (Word original in originals)
+                {
+                    Word alternative = original.Clone();
+                    alternative._shape = this.Shape;
+                    // Add new rules to alternative.
+                    foreach (IMorphologicalRule rule in MorphologicalRules)
+                    {
+                        if (_cloneOf != null && _cloneOf.MorphologicalRules.Contains(rule))
+                            continue;
+                        alternative.MorphologicalRuleUnapplied(rule);
+                    }
+                    if (RootAllomorph != null)
+                        alternative.RootAllomorph = RootAllomorph;
+                    alternative.Freeze();
+                    alternatives.Add(alternative);
+                }
+
+            }
+            // Add local alternatives.
+            foreach (Word alternative in _alternatives)
+                alternatives.AddRange(alternative.ExpandAlternatives());
+            return alternatives;
         }
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
