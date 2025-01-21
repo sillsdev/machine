@@ -67,6 +67,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
+            Word origInput = input;
             input = input.Clone();
             input.Stratum = _stratum;
 
@@ -89,11 +90,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (mergeEquivalentAnalyses)
                 {
+                    // Skip intermediate sources from phonological rules, templates, and morphological rules.
+                    mruleOutWord.Source = origInput;
                     Shape shape = mruleOutWord.Shape;
                     if (shapeWord.ContainsKey(shape))
                     {
                         shapeWord[shape].Alternatives.Add(mruleOutWord);
-                         continue;
+                        continue;
                     }
                     shapeWord[shape] = mruleOutWord;
                 }

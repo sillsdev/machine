@@ -146,10 +146,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
                     foreach (Word synthesisWord in lexicalGuesses)
                     {
-                        foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                        foreach (Word alternative in synthesisWord.ExpandAlternatives())
                         {
-                            if (IsMatch(word, validWord))
-                                matches.Add(validWord);
+                            foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                            {
+                                if (IsMatch(word, validWord))
+                                    matches.Add(validWord);
+                            }
                         }
                     }
                 }
@@ -285,10 +288,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
-                    foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                    foreach (Word alternative in synthesisWord.ExpandAlternatives())
                     {
-                        if (IsMatch(word, validWord))
-                            matches.Add(validWord);
+                        foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                        {
+                            if (IsMatch(word, validWord))
+                                matches.Add(validWord);
+                        }
                     }
                 }
             }
@@ -311,9 +317,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                             analyses.TryDequeue(out Word analysisWord);
                             foreach (Word synthesisWord in LexicalLookup(analysisWord))
                             {
-                                foreach (Word alternativeSynthesis in synthesisWord.ExpandAlternatives())
+                                foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
-                                    foreach (Word validWord in _synthesisRule.Apply(alternativeSynthesis).Where(IsWordValid))
+                                    foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {
                                         if (IsMatch(word, validWord))
                                             matches.Add(validWord);

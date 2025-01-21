@@ -31,7 +31,6 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
-        private readonly Word _cloneOf = null;
         private readonly IList<Word> _alternatives = new List<Word>();
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
@@ -74,6 +73,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
             Stratum = word.Stratum;
+            Source = word;
+            // Don't copy Alternatives.
             _shape = word._shape.Clone();
             _rootAllomorph = word._rootAllomorph;
             SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
@@ -94,7 +95,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 kvp => new HashSet<int>(kvp.Value)
             );
             _mruleAppCount = word._mruleAppCount;
-            _cloneOf = word;
         }
 
         public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -399,10 +399,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadAppIndex++;
         }
 
-        internal Word CloneOf
-        {
-            get { return _cloneOf; }
-        }
+        internal Word Source { get; set; }
 
         internal IList<Word> Alternatives
         {
@@ -412,8 +409,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal IList<Word> ExpandAlternatives()
         {
             IList<Word> alternatives = new List<Word>();
-            IList<Word> originals = _cloneOf?.ExpandAlternatives();
-            // Update the alternatives of _cloneOf with any changes made since the clone.
+            IList<Word> originals = Source?.ExpandAlternatives();
+            // Update the alternatives of CloneOf with any changes made since the clone.
             if (originals == null || originals.Count < 2)
             {
                 // Special case.
@@ -426,18 +423,17 @@ namespace SIL.Machine.Morphology.HermitCrab
                     Word alternative = original.Clone();
                     alternative._shape = this.Shape;
                     // Add new rules to alternative.
-                    foreach (IMorphologicalRule rule in MorphologicalRules)
-                    {
-                        if (_cloneOf != null && _cloneOf.MorphologicalRules.Contains(rule))
-                            continue;
-                        alternative.MorphologicalRuleUnapplied(rule);
-                    }
+                    int m_start = Source == null ? 0 : Source._mruleApps.Count();
+                    for (int i = m_start; i < _mruleApps.Count(); i++)
+                        alternative.MorphologicalRuleUnapplied(_mruleApps[i]);
+                    int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
+                    for (int i = nh_start; i < _nonHeadApps.Count(); i++)
+                        alternative.NonHeadUnapplied(_nonHeadApps[i]);
                     if (RootAllomorph != null)
                         alternative.RootAllomorph = RootAllomorph;
                     alternative.Freeze();
                     alternatives.Add(alternative);
                 }
-
             }
             // Add local alternatives.
             foreach (Word alternative in _alternatives)
