@@ -88,10 +88,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
+                // Skip intermediate sources from phonological rules, templates, and morphological rules.
+                mruleOutWord.Source = origInput;
                 if (mergeEquivalentAnalyses)
                 {
-                    // Skip intermediate sources from phonological rules, templates, and morphological rules.
-                    mruleOutWord.Source = origInput;
                     Shape shape = mruleOutWord.Shape;
                     if (shapeWord.ContainsKey(shape))
                     {
