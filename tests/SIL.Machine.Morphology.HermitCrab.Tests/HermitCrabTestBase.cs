@@ -813,6 +813,15 @@ public abstract class HermitCrabTestBase
             stratum.MorphologicalRules.Clear();
             stratum.AffixTemplates.Clear();
         }
+        SetRuleOrder(MorphologicalRuleOrder.Unordered);
+    }
+
+    protected void SetRuleOrder(MorphologicalRuleOrder ruleOrder)
+    {
+        foreach (Stratum stratum in Language.Strata)
+        {
+            stratum.MorphologicalRuleOrder = ruleOrder;
+        }
     }
 
     public LexEntry AddEntry(string gloss, FeatureStruct syntacticFS, Stratum stratum, params string[] forms)
