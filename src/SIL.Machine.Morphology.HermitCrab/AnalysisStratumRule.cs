@@ -93,9 +93,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (mergeEquivalentAnalyses)
                 {
                     Shape shape = mruleOutWord.Shape;
-                    if (shapeWord.ContainsKey(shape))
+                    Word canonicalWord;
+                    if (shapeWord.TryGetValue(shape, out canonicalWord))
                     {
-                        shapeWord[shape].Alternatives.Add(mruleOutWord);
+                        canonicalWord.Alternatives.Add(mruleOutWord);
                         continue;
                     }
                     shapeWord[shape] = mruleOutWord;
