@@ -410,7 +410,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             IList<Word> alternatives = new List<Word>();
             IList<Word> originals = Source?.ExpandAlternatives();
-            // Update the alternatives of CloneOf with any changes made since the clone.
+            // Update the alternatives of Source with any changes made since Source.
             if (originals == null || originals.Count < 2)
             {
                 // Special case.
@@ -429,9 +429,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
                         alternative.NonHeadUnapplied(_nonHeadApps[i]);
-                    if (_realizationalFS != Source._realizationalFS)
-                        alternative._realizationalFS = _realizationalFS;
-                    if (RootAllomorph != null)
+                    // Add changes to feature structures to alternative.
+                    if (!_realizationalFS.ValueEquals(Source._realizationalFS))
+                    {
+                        FeatureStruct diff = _realizationalFS.Clone();
+                        diff.Subtract(Source._realizationalFS);
+                        FeatureStruct newFS;
+                        alternative._realizationalFS.Unify(diff, out newFS);
+                        alternative._realizationalFS = newFS;
+                    }
+                    if (RootAllomorph != Source.RootAllomorph)
                         alternative.RootAllomorph = RootAllomorph;
                     alternative.Freeze();
                     alternatives.Add(alternative);
