@@ -429,6 +429,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     int nh_start = Source == null ? 0 : Source._nonHeadApps.Count();
                     for (int i = nh_start; i < _nonHeadApps.Count(); i++)
                         alternative.NonHeadUnapplied(_nonHeadApps[i]);
+                    if (_realizationalFS != Source._realizationalFS)
+                        alternative._realizationalFS = _realizationalFS;
                     if (RootAllomorph != null)
                         alternative.RootAllomorph = RootAllomorph;
                     alternative.Freeze();
