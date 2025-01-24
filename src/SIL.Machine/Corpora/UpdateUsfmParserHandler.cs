@@ -23,6 +23,7 @@ namespace SIL.Machine.Corpora
      */
     public class UpdateUsfmParserHandler : ScriptureRefUsfmParserHandlerBase
     {
+        private static readonly HashSet<string> UntranslatedParagraphTag = new HashSet<string> { "r", "rem", };
         private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _newTokens;
@@ -440,6 +441,11 @@ namespace SIL.Machine.Corpora
         private void PopNewTokens()
         {
             _replace.Pop();
+        }
+
+        public static bool IsUntranslatedParagraph(string tag)
+        {
+            return !(tag is null) && UntranslatedParagraphTag.Contains(tag);
         }
     }
 }

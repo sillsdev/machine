@@ -16,8 +16,6 @@ namespace SIL.Machine.Corpora
 
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase
     {
-        private static readonly HashSet<string> UntranslatedParagraphTag = new HashSet<string> { "r", "rem", };
-
         private VerseRef _curVerseRef;
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
@@ -366,12 +364,7 @@ namespace SIL.Machine.Corpora
 
         public bool InEmbedded(string marker)
         {
-            return _inEmbedded || IsEmbeddedPart(marker);
-        }
-
-        public static bool IsUntranslatedParagraph(string tag)
-        {
-            return !(tag is null) && UntranslatedParagraphTag.Contains(tag);
+            return _inEmbedded || IsEmbeddedCharacter(marker);
         }
 
         private static bool IsNoteText(string marker)

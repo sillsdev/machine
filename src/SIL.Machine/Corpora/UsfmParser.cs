@@ -508,7 +508,6 @@ namespace SIL.Machine.Corpora
                         token.Type == UsfmTokenType.Unknown || invalidMarker,
                         token.Attributes
                     );
-
                     break;
                 case UsfmTokenType.Note:
                     // Look for category
