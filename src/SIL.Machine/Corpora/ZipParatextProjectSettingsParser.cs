@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,6 +12,7 @@ namespace SIL.Machine.Corpora
         public ZipParatextProjectSettingsParser(ZipArchive archive)
         {
             _archive = archive;
+            Versification.Table.Implementation = new ZipVersificationTable(archive);
         }
 
         protected override bool Exists(string fileName)
