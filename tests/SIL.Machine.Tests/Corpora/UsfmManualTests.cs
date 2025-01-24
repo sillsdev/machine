@@ -49,7 +49,11 @@ public class UsfmManualTests
             string bookId;
             if (!targetSettings.IsBookFileName(sfmFileName, out bookId))
                 continue;
-            string newUsfm = updater.UpdateUsfm(bookId, pretranslations, behavior: UpdateUsfmBehavior.StripExisting);
+            string newUsfm = updater.UpdateUsfm(
+                bookId,
+                pretranslations,
+                textBehavior: UpdateUsfmTextBehavior.StripExisting
+            );
             Assert.That(newUsfm, Is.Not.Null);
         }
     }
@@ -150,7 +154,7 @@ public class UsfmManualTests
                 string newUsfm = updater.UpdateUsfm(
                     bookId,
                     pretranslations,
-                    behavior: UpdateUsfmBehavior.StripExisting
+                    textBehavior: UpdateUsfmTextBehavior.StripExisting
                 );
                 Assert.That(newUsfm, Is.Not.Null);
             }

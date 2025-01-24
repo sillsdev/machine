@@ -148,7 +148,32 @@ description
             includeAllText: true
         );
 
-        Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.Select(tr => tr.Text)));
+        Assert.That(rows, Has.Length.EqualTo(5), string.Join(",", rows.Select(tr => tr.Text)));
+        Assert.That(rows[0].Text, Is.EqualTo(""));
+        Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:q1")));
+        Assert.That(rows[1].Text, Is.EqualTo("World"));
+        Assert.That(rows[1].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:q1/1:f")));
+    }
+
+    [Test]
+    public void GetRows_VersePara_CommentFirst()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\f \fr 119 \ft World \f*
+\ip This is a comment
+\c 1
+\v 1 First verse in line!?!
+\c 2
+",
+            includeAllText: true
+        );
+
+        Assert.That(rows[0].Text, Is.EqualTo("World"));
+        Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:f")));
+        Assert.That(rows[1].Text, Is.EqualTo("This is a comment"));
+        Assert.That(rows[1].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/2:ip")));
+        Assert.That(rows, Has.Length.EqualTo(3), string.Join(",", rows.Select(tr => tr.Text)));
     }
 
     [Test]
