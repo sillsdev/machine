@@ -12,11 +12,11 @@ namespace SIL.Machine.Corpora
             foreach (string token in alignments.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 int dashIndex = token.IndexOf('-');
-                int i = int.Parse(token.Substring(0, dashIndex));
+                int i = ParseIndex(token.Substring(0, dashIndex));
 
                 int colonIndex = token.IndexOf(':', dashIndex + 1);
                 int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
-                int j = int.Parse(token.Substring(dashIndex + 1, length));
+                int j = ParseIndex(token.Substring(dashIndex + 1, length));
 
                 result.Add(invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j));
             }
@@ -90,6 +90,11 @@ namespace SIL.Machine.Corpora
                     sb.Append($":{AlignmentScore:0.########}");
             }
             return sb.ToString();
+        }
+
+        private static int ParseIndex(string indexString)
+        {
+            return int.TryParse(indexString, out int index) ? index : -1;
         }
     }
 }
