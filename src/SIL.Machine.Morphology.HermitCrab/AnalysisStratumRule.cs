@@ -34,7 +34,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
-                    _mrulesRule = new LinearRuleCascade<Word, ShapeNode>(
+                    // Use PermutationRuleCascade instead of LinearRuleCascade
+                    // because morphological rules should be considered optional
+                    // during unapplication (they are obligatory during application,
+                    // but we don't know they have been applied during unapplication).
+                    _mrulesRule = new PermutationRuleCascade<Word, ShapeNode>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
@@ -69,17 +73,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             _prulesRule.Apply(input);
             input.Freeze();
 
-            IEnumerable<Word> mruleOutWords = null;
-            switch (_stratum.MorphologicalRuleOrder)
-            {
-                case MorphologicalRuleOrder.Linear:
-                    mruleOutWords = ApplyTemplates(input);
-                    break;
-
-                case MorphologicalRuleOrder.Unordered:
-                    mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
-                    break;
-            }
+            // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
+            IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
             Debug.Assert(mruleOutWords != null);
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
