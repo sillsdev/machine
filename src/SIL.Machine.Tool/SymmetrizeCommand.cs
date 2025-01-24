@@ -37,7 +37,7 @@ public class SymmetrizeCommand : CommandBase
         );
         _symHeuristicOption = Option(
             "-sh|--sym-heuristic <SYM_HEURISTIC>",
-            $"The symmetrization heuristic.\nHeuristics: \"{ToolHelpers.Och}\" (default), \"{ToolHelpers.Union}\", \"{ToolHelpers.Intersection}\", \"{ToolHelpers.Grow}\", \"{ToolHelpers.GrowDiag}\", \"{ToolHelpers.GrowDiagFinal}\", \"{ToolHelpers.GrowDiagFinalAnd}\".",
+            $"The symmetrization heuristic.\nHeuristics: \"{SymmetrizationHelpers.Och}\" (default), \"{SymmetrizationHelpers.Union}\", \"{SymmetrizationHelpers.Intersection}\", \"{SymmetrizationHelpers.Grow}\", \"{SymmetrizationHelpers.GrowDiag}\", \"{SymmetrizationHelpers.GrowDiagFinal}\", \"{SymmetrizationHelpers.GrowDiagFinalAnd}\".",
             CommandOptionType.SingleValue
         );
         _quietOption = Option("-q|--quiet", "Only display results.", CommandOptionType.NoValue);
@@ -67,14 +67,21 @@ public class SymmetrizeCommand : CommandBase
             return 1;
         }
 
-        if (!ToolHelpers.ValidateSymmetrizationHeuristicOption(_symHeuristicOption.Value(), noneAllowed: false))
+        if (
+            !SymmetrizationHelpers.ValidateSymmetrizationHeuristicOption(
+                _symHeuristicOption.Value(),
+                noneAllowed: false
+            )
+        )
         {
             Out.WriteLine("The specified symmetrization heuristic is invalid.");
             return 1;
         }
 
         string outputFormat = _outputFormatOption.Value() ?? Pharaoh;
-        SymmetrizationHeuristic heuristic = ToolHelpers.GetSymmetrizationHeuristic(_symHeuristicOption.Value());
+        SymmetrizationHeuristic heuristic = SymmetrizationHelpers.GetSymmetrizationHeuristic(
+            _symHeuristicOption.Value()
+        );
 
         using var directReader = new StreamReader(_directArgument.Value);
         using var inverseReader = new StreamReader(_inverseArgument.Value);
