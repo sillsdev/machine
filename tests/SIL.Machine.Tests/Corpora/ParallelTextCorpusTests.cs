@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 using SIL.Scripture;
@@ -1406,290 +1405,22 @@ public class ParallelTextCorpusTests
     [TestCase("S3Y", "S3Y 1:1", Description = "Validate S3Y Source and Target References")]
     [TestCase("SUS", "SUS 1:1", Description = "Validate SUS Source and Target References")]
     [TestCase("BEL", "BEL 1:1", Description = "Validate BEL Source and Target References")]
-    public void ValidateSourceAndTargetReferencesWithBackup(string bookId, string verseRef)
+    public void ValidateSourceAndTargetReferencesForDeuterocanonicals(string bookId, string verseRef)
     {
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
+        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
 
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile);
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile);
-
-        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
-            new[]
-            {
-                new MemoryAlignmentCollection(
-                    bookId,
-                    new[] { AlignmentRow(bookId, ScriptureRef.Parse(verseRef), new AlignedWordPair(0, 0)) }
-                )
-            }
-        );
-
-        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
-        {
-            AllTargetRows = true
-        };
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        var rows = parallelCorpus.GetRows();
 
         ParallelTextRow row = rows.First(r => r.TextId == bookId);
 
         Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
+        Assert.That(row.TargetRefs.First, Is.InstanceOf<ScriptureRef>());
+
         Assert.That(verseRef, Is.InstanceOf<string>());
         Assert.That(verseRef.CompareTo(row.SourceRefs[0].ToString()), Is.EqualTo(0));
         Assert.That(verseRef.CompareTo(row.TargetRefs[0].ToString()), Is.EqualTo(0));
-    }
-
-    [Test]
-    [TestCase("TOB", "TOB 1:1", Description = "Validate TOB Source and Target References")]
-    [TestCase("JDT", "JDT 1:1", Description = "Validate JDT Source and Target References")]
-    [TestCase("WIS", "WIS 1:1", Description = "Validate WIS Source and Target References")]
-    [TestCase("SIR", "SIR 1:1", Description = "Validate SIR Source and Target References")]
-    [TestCase("BAR", "BAR 1:1", Description = "Validate BAR Source and Target References")]
-    [TestCase("1MA", "1MA 1:1", Description = "Validate 1MA Source and Target References")]
-    [TestCase("2MA", "2MA 1:1", Description = "Validate 2MA Source and Target References")]
-    [TestCase("LJE", "LJE 1:1", Description = "Validate LJE Source and Target References")]
-    [TestCase("S3Y", "S3Y 1:1", Description = "Validate S3Y Source and Target References")]
-    [TestCase("SUS", "SUS 1:1", Description = "Validate SUS Source and Target References")]
-    [TestCase("BEL", "BEL 1:1", Description = "Validate BEL Source and Target References")]
-    public void ValidateSourceAndTargetReferences(string bookId, string verseRef)
-    {
-        var deuterocanonicalBooks = new[]
-        {
-            "TOB",
-            "JDT",
-            "WIS",
-            "SIR",
-            "BAR",
-            "1MA",
-            "2MA",
-            "LJE",
-            "S3Y",
-            "SUS",
-            "BEL"
-        };
-
-        // Create source corpus with two rows for each book
-        var sourceCorpus = new DictionaryTextCorpus(
-            deuterocanonicalBooks
-                .Select(book => new MemoryText(
-                    book,
-                    new[]
-                    {
-                        TextRow(book, ScriptureRef.Parse($"{book} 1:1"), $"source segment 1 for {book}."),
-                        TextRow(book, ScriptureRef.Parse($"{book} 1:2"), $"source segment 2 for {book}."),
-                    }
-                ))
-                .ToArray()
-        );
-
-        // Create target corpus with only one row per book
-        var targetCorpus = new DictionaryTextCorpus(
-            deuterocanonicalBooks
-                .Select(book => new MemoryText(
-                    book,
-                    new[] { TextRow(book, ScriptureRef.Parse($"{book} 1:1"), $"target segment 1 for {book}.") }
-                ))
-                .ToArray()
-        );
-
-        // Create alignments for the first row only
-        var alignments = new DictionaryAlignmentCorpus(
-            new[]
-            {
-                new MemoryAlignmentCollection(
-                    bookId,
-                    new[] { AlignmentRow(bookId, ScriptureRef.Parse(verseRef), new AlignedWordPair(0, 0)) }
-                )
-            }
-        );
-
-        // Create parallel text corpus
-        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments) { AllTargetRows = true };
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
-
-        // Find the row for the specified book ID
-        ParallelTextRow row = rows.First(r => r.TextId == bookId);
-
-        // Validate source and target references
-        var expectedRef = ScriptureRef.Parse(verseRef);
-        // Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
-        // Assert.That(row.SourceRefs.First.CompareTo(expectedRef), Is.EqualTo(0));
-        // Assert.That(row.TargetRefs.First.CompareTo(expectedRef), Is.EqualTo(0));
-
-        // Validate segments
-        var expectedSourceSegment = new[] { "source", "segment", "1", "for", bookId + "." };
-        var expectedTargetSegment = new[] { "target", "segment", "1", "for", bookId + "." };
-        // Assert.That(row.SourceSegment, Is.EqualTo(expectedSourceSegment));
-        // Assert.That(row.TargetSegment, Is.EqualTo(expectedTargetSegment));
-
-        // Validate word alignments
-        var expectedAlignedWordPairs = new[] { new AlignedWordPair(0, 0) };
-        // Assert.That(row.AlignedWordPairs, Is.EquivalentTo(expectedAlignedWordPairs));
-    }
-
-    [Test]
-    [TestCase("TOB", "TOB 1:1", Description = "Validate TOB Aligned Word Pairs")]
-    [TestCase("JDT", "JDT 1:1", Description = "Validate JDT Aligned Word Pairs")]
-    [TestCase("WIS", "WIS 1:1", Description = "Validate WIS Aligned Word Pairs")]
-    [TestCase("SIR", "SIR 1:1", Description = "Validate SIR Aligned Word Pairs")]
-    [TestCase("BAR", "BAR 1:1", Description = "Validate BAR Aligned Word Pairs")]
-    [TestCase("1MA", "1MA 1:1", Description = "Validate 1MA Aligned Word Pairs")]
-    [TestCase("2MA", "2MA 1:1", Description = "Validate 2MA Aligned Word Pairs")]
-    [TestCase("LJE", "LJE 1:1", Description = "Validate LJE Aligned Word Pairs")]
-    [TestCase("S3Y", "S3Y 1:1", Description = "Validate S3Y Aligned Word Pairs")]
-    [TestCase("SUS", "SUS 1:1", Description = "Validate SUS Aligned Word Pairs")]
-    [TestCase("BEL", "BEL 1:1", Description = "Validate BEL Aligned Word Pairs")]
-    public void ValidateParallelCorpusAlignmentWorks(string bookId, string verseRef)
-    {
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile);
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile);
-
-        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
-            new[]
-            {
-                new MemoryAlignmentCollection(
-                    bookId,
-                    new[] { AlignmentRow(bookId, ScriptureRef.Parse(verseRef), new AlignedWordPair(0, 0)) }
-                )
-            }
-        );
-
-        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
-        {
-            AllTargetRows = true
-        };
-        AlignmentRow[] rows = parallelCorpus.AlignmentCorpus.ToArray();
-
-        AlignmentRow? row = rows.First(r => r.TextId == bookId);
-
-        Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
-    }
-
-    public static IEnumerable<TestCaseData> VersificationTestCases()
-    {
-        ScrVers[] allVersifications = new[]
-        {
-            ScrVers.Original,
-            ScrVers.Septuagint,
-            ScrVers.Vulgate,
-            ScrVers.English,
-            ScrVers.RussianProtestant,
-            ScrVers.RussianOrthodox
-        };
-
-        string[] deuterocanonicalBooks = new[] { "TOB" };
-
-        foreach (ScrVers versification in allVersifications)
-        {
-            foreach (string book in deuterocanonicalBooks)
-            {
-                string verseRef = $"{book} 1:1"; // Test with the first verse of each book
-                yield return new TestCaseData(versification, book, verseRef).SetName(
-                    $"Validate_{book}_with_{versification.Type}_versification"
-                );
-            }
-        }
-    }
-
-    [Test]
-    [TestCaseSource(nameof(VersificationTestCases))]
-    public void ValidateReferencesWithAllVersifications(ScrVers versification, string bookId, string verseRef)
-    {
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-        {
-            Versification = versification
-        };
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile)
-        {
-            Versification = versification
-        };
-
-        Assert.That(sourceCorpus.Versification, Is.EqualTo(versification), "Source corpus versification mismatch.");
-        Assert.That(targetCorpus.Versification, Is.EqualTo(versification), "Target corpus versification mismatch.");
-
-        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
-            new[]
-            {
-                new MemoryAlignmentCollection(
-                    bookId,
-                    new[]
-                    {
-                        AlignmentRow(bookId, ScriptureRef.Parse(verseRef, versification), new AlignedWordPair(0, 0))
-                    }
-                )
-            }
-        );
-
-        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
-        {
-            AllTargetRows = true
-        };
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
-
-        ParallelTextRow? row = rows.FirstOrDefault(r => r.TextId == bookId);
-        Assert.That(row, Is.Not.Null, $"No row found for book {bookId}.");
-
-        Assert.That(row.SourceRefs[0].ToString(), Is.EqualTo(verseRef), "Source reference mismatch.");
-        Assert.That(row.TargetRefs[0].ToString(), Is.EqualTo(verseRef), "Target reference mismatch.");
-    }
-
-    [Test]
-    [TestCase("TOB", ScrVersType.Original)]
-    [TestCase("TOB", ScrVersType.Septuagint)]
-    [TestCase("TOB", ScrVersType.Vulgate)]
-    [TestCase("TOB", ScrVersType.English)]
-    [TestCase("TOB", ScrVersType.RussianProtestant)]
-    [TestCase("TOB", ScrVersType.RussianOrthodox)]
-    public void EnsureFirstAndLastRowExist(string bookId, ScrVersType versificationType)
-    {
-        ScrVers versification = GetVersification(versificationType);
-
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-        {
-            Versification = versification
-        };
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile)
-        {
-            Versification = versification
-        };
-
-        IText? sourceText = sourceCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
-        Assert.That(sourceText, Is.Not.Null, $"Source text for book {bookId} is null.");
-
-        TextRow[] verseRows = sourceText.GetRows().ToArray();
-        Assert.That(verseRows, Is.Not.Empty, $"No verses found for book {bookId}.");
-
-        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
-            new[]
-            {
-                new MemoryAlignmentCollection(
-                    bookId,
-                    verseRows.Select(row => AlignmentRow(bookId, row.Ref, new AlignedWordPair(0, 0)))
-                )
-            }
-        );
-
-        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
-        {
-            AllTargetRows = true
-        };
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
-
-        ParallelTextRow[] filteredRows = rows.Where(r => r.TextId == bookId).ToArray();
-        Assert.That(filteredRows, Is.Not.Empty, $"Filtered rows for book {bookId} are empty.");
-
-        ParallelTextRow? firstRow = filteredRows.FirstOrDefault();
-        ParallelTextRow? lastRow = filteredRows.LastOrDefault();
-        Assert.That(firstRow, Is.Not.Null, "First verse row is null.");
-        Assert.That(lastRow, Is.Not.Null, "Last verse row is null.");
     }
 
     [Test]
@@ -1702,28 +1433,14 @@ public class ParallelTextCorpusTests
     [TestCase("2MA", ScrVersType.English)]
     public void GetVersesInVersification_ButNotInSourceOrTarget(string bookId, ScrVersType versificationType)
     {
-        ScrVers versification = versificationType switch
-        {
-            ScrVersType.Original => ScrVers.Original,
-            ScrVersType.Septuagint => ScrVers.Septuagint,
-            ScrVersType.Vulgate => ScrVers.Vulgate,
-            ScrVersType.English => ScrVers.English,
-            ScrVersType.RussianProtestant => ScrVers.RussianProtestant,
-            ScrVersType.RussianOrthodox => ScrVers.RussianOrthodox,
-            _ => throw new ArgumentException("Invalid versification type", nameof(versificationType))
-        };
+        ScrVers versification = GetVersification(versificationType);
 
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
+        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
+        sourceCorpus.Versification = versification;
+        targetCorpus.Versification = versification;
 
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-        {
-            Versification = versification
-        };
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile)
-        {
-            Versification = versification
-        };
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
 
         IText? sourceText = sourceCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
         IText? targetText = targetCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
@@ -1793,28 +1510,14 @@ public class ParallelTextCorpusTests
     [TestCase("2MA", ScrVersType.English)]
     public void GetVersesInSourceOrTarget_ButNotInVersification(string bookId, ScrVersType versificationType)
     {
-        ScrVers versification = versificationType switch
-        {
-            ScrVersType.Original => ScrVers.Original,
-            ScrVersType.Septuagint => ScrVers.Septuagint,
-            ScrVersType.Vulgate => ScrVers.Vulgate,
-            ScrVersType.English => ScrVers.English,
-            ScrVersType.RussianProtestant => ScrVers.RussianProtestant,
-            ScrVersType.RussianOrthodox => ScrVers.RussianOrthodox,
-            _ => throw new ArgumentException("Invalid versification type", nameof(versificationType))
-        };
+        ScrVers versification = GetVersification(versificationType);
 
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
-        string targetCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
+        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
+        sourceCorpus.Versification = versification;
+        targetCorpus.Versification = versification;
 
-        ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-        {
-            Versification = versification
-        };
-        ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(targetCorpusFile)
-        {
-            Versification = versification
-        };
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
 
         List<string> issues = new List<string>();
 
@@ -1885,114 +1588,81 @@ public class ParallelTextCorpusTests
     {
         Dictionary<string, string> expectedMappings = new Dictionary<string, string>
         {
-            // { "S3Y 1:1-29", "DAG 3:24-52" },
-            // { "S3Y 1:30-31", "DAG 3:52-53" },
-            // { "S3Y 1:33", "DAG 3:54" },
-            // { "S3Y 1:32", "DAG 3:55" },
-            // { "S3Y 1:34-35", "DAG 3:56-57" },
-            // { "S3Y 1:37", "DAG 3:58" },
-            // { "S3Y 1:36", "DAG 3:59" },
-            // { "S3Y 1:38-68", "DAG 3:60-90" },
-            // { "DAG 13:1-63", "SUS 1:1-63" },
-            { "SUS 1:1-63", "DAG 13:1-63" },
+            { "SUS 1:1", "DAG 13:1" },
+            { "SUS 1:2", "DAG 13:2" }
         };
+
+        string source1Text = "Et erat vir habitans in Babylone, et nomen ejus Joakim:";
+        string source2Text = "et accepit uxorem nomine Susannam, filiam Helciæ, pulchram nimis, et timentem Deum:";
 
         Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
         {
             { ScrVersType.Original, ScrVers.Original },
-            { ScrVersType.English, ScrVers.English },
+            { ScrVersType.English, ScrVers.English }
         };
 
-        string sourceCorpusFile = CorporaTestHelpers.TestDataPath + "/Target - DRB.zip";
+        ParatextTextCorpus corpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
 
         foreach (var versificationType in versifications.Keys)
         {
             ScrVers versification = versifications[versificationType];
-
-            ParatextBackupTextCorpus sourceCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-            {
-                Versification = versification
-            };
-            ParatextBackupTextCorpus targetCorpus = new ParatextBackupTextCorpus(sourceCorpusFile)
-            {
-                Versification = versification
-            };
+            corpus.Versification = versification;
 
             TestContext.WriteLine($"Validating for versification: {versificationType}");
 
-            Dictionary<string, string> expandedMappings = ExpandVerseMappings(expectedMappings);
-
-            foreach (var mapping in expandedMappings)
+            foreach (var mapping in expectedMappings)
             {
-                IEnumerable<ScriptureRef> sourceVerses = ExpandVerseRange(mapping.Key, versification);
-                IEnumerable<ScriptureRef> targetVerses = ExpandVerseRange(mapping.Value, versification);
+                ScriptureRef sourceVerse = ScriptureRef.Parse(mapping.Key, versification);
+                ScriptureRef targetVerse = ScriptureRef.Parse(mapping.Value, versification);
 
-                foreach (var sourceVerse in sourceVerses)
+                // Retrieve text for the source verse
+                IText? sourceText = corpus.Texts.FirstOrDefault(t => t.Id == sourceVerse.Book);
+                IText? mappedText = corpus.Texts.FirstOrDefault(t => t.Id == targetVerse.Book);
+
+                if (sourceText == null || mappedText == null)
                 {
-                    IText? sourceText = sourceCorpus.Texts.FirstOrDefault(t => t.Id == sourceVerse.Book);
-                    if (sourceText == null)
-                    {
-                        TestContext.WriteLine(
-                            $"Missing source text for book {sourceVerse.Book} in versification {versificationType}."
-                        );
-                        continue;
-                    }
+                    TestContext.WriteLine(
+                        $"Missing text for book {sourceVerse.Book} in versification {versificationType}."
+                    );
+                    continue;
+                }
 
-                    TextRow? sourceRow = sourceText
-                        .GetRows()
-                        .FirstOrDefault(row => sourceVerse.CompareTo((ScriptureRef)row.Ref) == 0);
-                    if (sourceRow == null)
-                    {
-                        TestContext.WriteLine(
-                            $"Missing source verse {sourceVerse} in versification {versificationType}."
-                        );
-                        continue;
-                    }
+                TextRow? sourceRow = sourceText
+                    .GetRows()
+                    .FirstOrDefault(row => sourceVerse.ToString() == row.Ref.ToString());
+                TextRow? targetRow = mappedText
+                    .GetRows()
+                    .FirstOrDefault(row => targetVerse.ToString() == row.Ref.ToString());
 
-                    string sourceContent = sourceRow.Text;
+                if (sourceRow == null || targetRow == null)
+                {
+                    TestContext.WriteLine(
+                        $"Missing verse: {sourceVerse} or {targetVerse} in versification {versificationType}."
+                    );
+                    continue;
+                }
 
-                    foreach (ScriptureRef targetVerse in targetVerses)
-                    {
-                        IText? targetText = targetCorpus.Texts.FirstOrDefault(t => t.Id == targetVerse.Book);
-                        if (targetText == null)
-                        {
-                            TestContext.WriteLine(
-                                $"Missing target text for book {targetVerse.Book} in versification {versificationType}."
-                            );
-                            continue;
-                        }
+                string sourceContent = sourceRow.Text;
+                string targetContent = targetRow.Text;
 
-                        TextRow? targetRow = targetText
-                            .GetRows()
-                            .FirstOrDefault(row =>
-                                (
-                                    ((ScriptureRef)row.Ref).Book == targetVerse.Book
-                                    && ((ScriptureRef)row.Ref).Chapter == targetVerse.Chapter
-                                    && ((ScriptureRef)row.Ref).Verse == targetVerse.Verse
-                                )
-                            );
-                        if (targetRow == null)
-                        {
-                            TestContext.WriteLine(
-                                $"Missing target verse {targetVerse} in versification {versificationType}."
-                            );
-                            continue;
-                        }
+                // Normalize text for comparison
+                string[] unwanted = { "÷" };
+                sourceContent = CorporaTestHelpers.NormalizeSpaces(
+                    CorporaTestHelpers.CleanString(sourceContent, unwanted)
+                );
+                targetContent = CorporaTestHelpers.NormalizeSpaces(
+                    CorporaTestHelpers.CleanString(targetContent, unwanted)
+                );
 
-                        string targetContent = targetRow.Text;
-
-                        // Clean and normalize content for comparison
-                        string[] unwanted = { "÷" };
-                        sourceContent = NormalizeSpaces(CleanString(sourceContent, unwanted));
-                        targetContent = NormalizeSpaces(CleanString(targetContent, unwanted));
-
-                        if (sourceContent != targetContent)
-                        {
-                            TestContext.WriteLine(
-                                $"Mismatch: Source {sourceVerse} ({sourceContent}) != Target {targetVerse} ({targetContent})"
-                            );
-                        }
-                    }
+                if (sourceVerse.Verse == "1")
+                {
+                    Assert.That(sourceContent, Is.EqualTo(source1Text), $"Mismatch in text for {sourceVerse}");
+                    Assert.That(targetContent, Is.EqualTo(source1Text), $"Mismatch in text for {targetVerse}");
+                }
+                else if (sourceVerse.Verse == "2")
+                {
+                    Assert.That(sourceContent, Is.EqualTo(source2Text), $"Mismatch in text for {sourceVerse}");
+                    Assert.That(targetContent, Is.EqualTo(source2Text), $"Mismatch in text for {targetVerse}");
                 }
             }
         }
@@ -2022,13 +1692,16 @@ public class ParallelTextCorpusTests
             ScrVers versification = versifications[versificationType];
             TestContext.WriteLine($"Validating for versification: {versificationType}");
 
-            Dictionary<string, string> expandedMappings = ExpandVerseMappings(expectedMappings);
+            Dictionary<string, string> expandedMappings = CorporaTestHelpers.ExpandVerseMappings(expectedMappings);
 
             foreach (var mapping in expandedMappings)
             {
                 string sourceVerse = mapping.Key;
 
-                IEnumerable<ScriptureRef> targetVerses = ExpandVerseRange(mapping.Value, versification);
+                IEnumerable<ScriptureRef> targetVerses = CorporaTestHelpers.ExpandVerseRange(
+                    mapping.Value,
+                    versification
+                );
 
                 foreach (ScriptureRef targetVerse in targetVerses)
                 {
@@ -2074,103 +1747,6 @@ public class ParallelTextCorpusTests
             ScrVersType.RussianOrthodox => ScrVers.RussianOrthodox,
             _ => throw new ArgumentException("Invalid versification type", nameof(versificationType))
         };
-    }
-
-    /// <summary>
-    /// Expands a hyphenated verse range (e.g., "S3Y 1:1-29") into individual verses.
-    /// </summary>
-    private static IEnumerable<ScriptureRef> ExpandVerseRange(string verseRange, ScrVers versification)
-    {
-        var parts = verseRange.Split(':');
-        var bookAndChapter = parts[0].Trim();
-        var verses = parts[1];
-
-        if (verses.Contains('-'))
-        {
-            var rangeParts = verses.Split('-').Select(int.Parse).ToArray();
-            var startVerse = rangeParts[0];
-            var endVerse = rangeParts[1];
-
-            for (int verse = startVerse; verse <= endVerse; verse++)
-            {
-                yield return ScriptureRef.Parse($"{bookAndChapter}:{verse}", versification);
-            }
-        }
-        else
-        {
-            yield return ScriptureRef.Parse(verseRange, versification);
-        }
-    }
-
-    static Dictionary<string, string> ExpandVerseMappings(Dictionary<string, string> mappings)
-    {
-        var expandedMappings = new Dictionary<string, string>();
-
-        foreach (var mapping in mappings)
-        {
-            var sourceParts = ParseRange(mapping.Key);
-            var targetParts = ParseRange(mapping.Value);
-
-            // Check if either source or target is a single verse
-            if (sourceParts.IsSingleVerse && targetParts.IsSingleVerse)
-            {
-                expandedMappings[mapping.Key] = mapping.Value;
-                continue;
-            }
-
-            int sourceVerseCount = sourceParts.EndVerse - sourceParts.StartVerse + 1;
-            int targetVerseCount = targetParts.EndVerse - targetParts.StartVerse + 1;
-
-            if (sourceVerseCount != targetVerseCount)
-            {
-                throw new InvalidOperationException(
-                    "Source and target verse ranges must have the same number of verses."
-                );
-            }
-
-            for (int i = 0; i < sourceVerseCount; i++)
-            {
-                string sourceVerse = $"{sourceParts.Book} {sourceParts.Chapter}:{sourceParts.StartVerse + i}";
-                string targetVerse = $"{targetParts.Book} {targetParts.Chapter}:{targetParts.StartVerse + i}";
-
-                expandedMappings[sourceVerse] = targetVerse;
-            }
-        }
-
-        return expandedMappings;
-    }
-
-    static (string Book, int Chapter, int StartVerse, int EndVerse, bool IsSingleVerse) ParseRange(string range)
-    {
-        var parts = range.Split(' ');
-        var book = parts[0];
-
-        var chapterAndVerses = parts[1].Split(':');
-        int chapter = int.Parse(chapterAndVerses[0]);
-
-        var verseRange = chapterAndVerses[1].Split('-');
-
-        int startVerse = int.Parse(verseRange[0]);
-        int endVerse = verseRange.Length > 1 ? int.Parse(verseRange[1]) : startVerse;
-
-        bool isSingleVerse = startVerse == endVerse;
-
-        return (book, chapter, startVerse, endVerse, isSingleVerse);
-    }
-
-    static string CleanString(string input, string[] unwanted)
-    {
-        foreach (var item in unwanted)
-        {
-            input = input.Replace(item, "").Trim();
-        }
-        return input;
-    }
-
-    static string NormalizeSpaces(string input)
-    {
-        // Replace multiple spaces with a single space
-        return Regex.Replace(input, @"\s+", " ");
     }
 
     private static AlignmentRow AlignmentRow(string textId, object rowRef, params AlignedWordPair[] pairs)
