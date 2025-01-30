@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
-using NUnit.Framework.Internal;
 using SIL.Scripture;
 using SIL.Scripture.Extensions;
 
