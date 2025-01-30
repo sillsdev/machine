@@ -1273,7 +1273,12 @@ public class ParallelTextCorpusTests
         ScrVers versification;
         using (var reader = new StringReader(src))
         {
-            versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            versification = Versification.Table.Implementation.Load(
+                reader,
+                "vers.txt",
+                ScrVers.English,
+                "customVersification"
+            );
         }
 
         DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
