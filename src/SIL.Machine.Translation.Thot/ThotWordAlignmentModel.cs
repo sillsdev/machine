@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.Corpora;
@@ -141,7 +142,7 @@ namespace SIL.Machine.Translation.Thot
             return trainer;
         }
 
-        public Task SaveAsync()
+        public Task SaveAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
 

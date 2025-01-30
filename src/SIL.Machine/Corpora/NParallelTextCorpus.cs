@@ -217,6 +217,8 @@ namespace SIL.Machine.Corpora
 
                         for (int i = 0; i < rangeInfo.Rows.Count; i++)
                         {
+                            if (completed[i])
+                                continue;
                             rangeInfo.AddTextRow(currentRows[i], i);
                             sameRefRows[i].Clear();
                         }
