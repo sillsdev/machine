@@ -149,7 +149,7 @@ public class UsfmFileTextTests
         Assert.That(rows, Has.Length.EqualTo(24));
 
         Assert.That(rows[3].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:4", corpus.Versification)));
-        Assert.That(rows[3].Text, Is.EqualTo("Chapter one, verse four,"));
+        Assert.That(rows[3].Text, Is.EqualTo("Chapter one with odd whitespace, verse four,"));
         Assert.That(rows[3].IsSentenceStart, Is.True);
 
         Assert.That(rows[4].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:5", corpus.Versification)));
