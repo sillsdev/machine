@@ -81,6 +81,10 @@ namespace SIL.Machine.Translation.Thot
 
         protected IntPtr Handle { get; set; }
 
+        public ITokenizer<string, int, string> SourceTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public ITokenizer<string, int, string> TargetTokenizer { get; set; } = WhitespaceTokenizer.Instance;
+        public IDetokenizer<string, string> TargetDetokenizer { get; set; } = WhitespaceDetokenizer.Instance;
+
         internal void SetHandle(IntPtr handle, bool owned = false)
         {
             if (!_owned && Handle != IntPtr.Zero)
@@ -119,11 +123,6 @@ namespace SIL.Machine.Translation.Thot
 
         public ITrainer CreateTrainer(IParallelTextCorpus corpus)
         {
-            return CreateTrainer(corpus, null);
-        }
-
-        public ITrainer CreateTrainer(IParallelTextCorpus corpus, ITokenizer<string, int, string> tokenizer = null)
-        {
             CheckDisposed();
 
             if (_owned)
@@ -134,11 +133,8 @@ namespace SIL.Machine.Translation.Thot
             }
 
             var trainer = new Trainer(this, corpus);
-            if (tokenizer != null)
-            {
-                trainer.SourceTokenizer = tokenizer;
-                trainer.TargetTokenizer = tokenizer;
-            }
+            trainer.SourceTokenizer = SourceTokenizer;
+            trainer.TargetTokenizer = TargetTokenizer;
             return trainer;
         }
 

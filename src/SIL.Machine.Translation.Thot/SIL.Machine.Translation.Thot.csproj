@@ -13,7 +13,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Thot" Version="3.4.4" />
-		<PackageReference Include="CaseExtensions" Version="1.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
