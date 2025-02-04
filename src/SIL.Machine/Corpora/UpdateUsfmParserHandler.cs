@@ -23,7 +23,6 @@ namespace SIL.Machine.Corpora
      */
     public class UpdateUsfmParserHandler : ScriptureRefUsfmParserHandlerBase
     {
-        private static readonly HashSet<string> UntranslatedParagraphTag = new HashSet<string> { "r", "rem", };
         private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _newTokens;
@@ -368,14 +367,9 @@ namespace SIL.Machine.Corpora
 
         private bool ReplaceWithNewTokens(UsfmParserState state, bool closed = true)
         {
-            bool untranslatableParagraph =
-                state.ParaTag?.Marker != null && IsUntranslatedParagraph(state.ParaTag.Marker);
             if (_textBehavior == UpdateUsfmTextBehavior.StripExisting)
             {
-                if (untranslatableParagraph)
-                    ClearNewTokens();
-                else
-                    AddNewTokens();
+                AddNewTokens();
                 return true;
             }
 
@@ -389,15 +383,14 @@ namespace SIL.Machine.Corpora
                 .Any(t => t.Type == UsfmTokenType.Text && t.Text.Length > 0);
 
             bool useNewTokens =
-                !untranslatableParagraph
-                && newText
+                newText
                 && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew)
                 && (!inEmbed || InNoteText);
 
             if (useNewTokens)
                 AddNewTokens();
 
-            if (untranslatableParagraph || (existingText && _textBehavior == UpdateUsfmTextBehavior.PreferExisting))
+            if (existingText && _textBehavior == UpdateUsfmTextBehavior.PreferExisting)
                 ClearNewTokens();
 
             // figure out when to skip the existing text
@@ -441,11 +434,6 @@ namespace SIL.Machine.Corpora
         private void PopNewTokens()
         {
             _replace.Pop();
-        }
-
-        public static bool IsUntranslatedParagraph(string tag)
-        {
-            return !(tag is null) && UntranslatedParagraphTag.Contains(tag);
         }
     }
 }
