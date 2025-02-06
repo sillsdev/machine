@@ -1482,4 +1482,25 @@ public class MatcherTests : PhoneticTestsBase
         Assert.That(match.GroupCaptures["first"].Range, Is.EqualTo(Range<int>.Create(1, 3)));
         Assert.That(match.GroupCaptures["second"].Range, Is.EqualTo(Range<int>.Create(3, 10)));
     }
+
+    [Test]
+    public void CanonicalizeOptionalAnnotation()
+    {
+        FeatureStruct any = FeatureStruct.New().Value;
+        Pattern<AnnotatedStringData, int> pattern = Pattern<AnnotatedStringData, int>
+            .New()
+            .Group("first", first => first.Annotation(any))
+            .Group("second", second => second.Annotation(any))
+            .Group("third", third => third.Annotation(any))
+            .Value;
+        AnnotatedStringData word = CreateStringData("axxb");
+        word.Annotations.ElementAt(1).Optional = true;
+        word.Annotations.ElementAt(2).Optional = true;
+        var matcher = new Matcher<AnnotatedStringData, int>(
+            pattern,
+            new MatcherSettings<int> { AnchoredToStart = true, AnchoredToEnd = true, AllSubmatches = true }
+        );
+        IList<Match<AnnotatedStringData, int>> matches = matcher.AllMatches(word).ToList();
+        Assert.That(matches, Has.Count.EqualTo(2));
+    }
 }

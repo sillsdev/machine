@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.FiniteState
 {
@@ -34,14 +33,10 @@ namespace SIL.Machine.FiniteState
             base.CopyTo(other);
 
             var otherDfst = (DeterministicFstTraversalInstance<TData, TOffset>)other;
-            Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = Output
-                .Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-                .Zip(Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()))
-                .ToDictionary(t => t.Item1, t => t.Item2);
             otherDfst.Mappings.AddRange(
                 _mappings.Select(kvp => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(
                     kvp.Key,
-                    outputMappings[kvp.Value]
+                    kvp.Value
                 ))
             );
             foreach (Annotation<TOffset> ann in _queue)

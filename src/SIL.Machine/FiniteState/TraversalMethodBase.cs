@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
@@ -20,6 +22,8 @@ namespace SIL.Machine.FiniteState
         private readonly bool _useDefaults;
         private readonly List<Annotation<TOffset>> _annotations;
         private readonly Queue<TInst> _cachedInstances;
+        private readonly IDictionary<TInst, IList<CommandUpdate>> _commandUpdates;
+        private readonly IDictionary<TInst, IList<TraverseOutput>> _outputs;
 
         protected TraversalMethodBase(
             Fst<TData, TOffset> fst,
@@ -61,6 +65,8 @@ namespace SIL.Machine.FiniteState
                 }
             }
             _cachedInstances = new Queue<TInst>();
+            _commandUpdates = new Dictionary<TInst, IList<CommandUpdate>>();
+            _outputs = new Dictionary<TInst, IList<TraverseOutput>>();
         }
 
         private int CompareAnnotations(Annotation<TOffset> x, Annotation<TOffset> y)
@@ -93,6 +99,39 @@ namespace SIL.Machine.FiniteState
             IList<TagMapCommand> initCmds,
             ISet<int> initAnns
         );
+
+        protected class CommandUpdate
+        {
+            public TInst Source;
+            public Arc<TData, TOffset> Arc;
+            public IEnumerable<TagMapCommand> Cmds;
+            public Register<TOffset> Start;
+            public Register<TOffset> End;
+
+            public CommandUpdate (TInst source, Arc<TData, TOffset> arc, IEnumerable<TagMapCommand> cmds, Register<TOffset> start, Register<TOffset> end)
+            {
+                Source = source;
+                Arc = arc;
+                Cmds = cmds;
+                Start = start;
+                End = end;
+            }
+        }
+
+        protected void RecordCommands(
+            TInst source,
+            Arc<TData, TOffset> arc,
+            IEnumerable<TagMapCommand> cmds,
+            Register<TOffset> start,
+            Register<TOffset> end,
+            TInst target
+        )
+        {
+            var commandUpdate = new CommandUpdate(source, arc, cmds, start, end);
+            if (!_commandUpdates.ContainsKey(target))
+                _commandUpdates[target] = new List<CommandUpdate>();
+            _commandUpdates[target].Add(commandUpdate);
+        }
 
         protected static void ExecuteCommands(
             Register<TOffset>[,] registers,
@@ -134,7 +173,8 @@ namespace SIL.Machine.FiniteState
             VariableBindings varBindings,
             Arc<TData, TOffset> arc,
             ICollection<FstResult<TData, TOffset>> curResults,
-            IList<int> priorities
+            IList<int> priorities,
+            TInst inst
         )
         {
             if (arc.Target.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
@@ -143,6 +183,15 @@ namespace SIL.Machine.FiniteState
                     annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_fst.Direction);
                 var matchRegisters = (Register<TOffset>[,])registers.Clone();
                 ExecuteCommands(matchRegisters, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>());
+                TInst finalInst = CreateInstance();
+                RecordCommands(inst, null, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>(), finalInst);
+                if (!arc.Target.IsAccepting)
+                {
+                    var outputs = GetOutputs(finalInst);
+                    Debug.Assert(_fst.RegistersEqualityComparer.Equals(outputs[0].Registers, matchRegisters), "registers didn't match");
+                    if (output != null)
+                        Debug.Assert(outputs[0].Output.ToString().Equals(output.ToString()), "output didn't match");
+                }
                 if (arc.Target.AcceptInfos.Count > 0)
                 {
                     foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
@@ -190,6 +239,93 @@ namespace SIL.Machine.FiniteState
             }
         }
 
+        protected class TraverseOutput
+        {
+            public Register<TOffset>[,] Registers;
+            public TData Output;
+            public IDictionary<Annotation<TOffset>, Annotation<TOffset>> Mappings;
+            public Queue<Annotation<TOffset>> Queue;
+
+            public TraverseOutput(Register<TOffset>[,] registers, TData output, Dictionary<Annotation<TOffset>, Annotation<TOffset>> mappings)
+            {
+                Registers = registers;
+                Output = output;
+                Mappings = mappings;
+                Queue = new Queue<Annotation<TOffset>>();
+            }
+
+            public TraverseOutput(TraverseOutput other)
+            {
+                Registers = (Register<TOffset>[,])other.Registers.Clone();
+                Output = ((ICloneable<TData>)other.Output).Clone();
+                Mappings = other.Mappings;
+                Queue = new Queue<Annotation<TOffset>>(other.Queue);
+            }
+        }
+
+        private IList<TraverseOutput> GetOutputs(TInst inst)
+        {
+            if (inst != null && _outputs.ContainsKey(inst))
+                return _outputs[inst];
+            IList<TraverseOutput> outputs = new List<TraverseOutput>();
+            IList<CommandUpdate> updates = GetCommandUpdates(inst);
+            if (updates.Count == 0)
+            {
+                // We are at the beginning.
+                var registers = inst != null ? inst.Registers : new Register<TOffset>[Fst.RegisterCount, 2];
+                var dataOutput = ((ICloneable<TData>)Data).Clone();
+                var mappings = new Dictionary<Annotation<TOffset>, Annotation<TOffset>>();
+                mappings.AddRange(Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
+                        .Zip(
+                            dataOutput.Annotations.SelectMany(a => a.GetNodesBreadthFirst()),
+                            (a1, a2) => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(a1, a2)
+                        ));
+                var output = new TraverseOutput(registers, dataOutput, mappings);
+                outputs.Add(output);
+                return outputs;
+            }
+            foreach (CommandUpdate update in updates)
+            {
+                foreach(TraverseOutput output in GetOutputs(update.Source))
+                {
+                    var newOutput = new TraverseOutput(output);
+                    ExecuteCommands(newOutput.Registers, update.Cmds, update.Start, update.End);
+                    if (update.Arc != null)
+                    {
+                        for (int j = 0; j < update.Arc.Input.EnqueueCount; j++)
+                            newOutput.Queue.Enqueue(Annotations[update.Source.AnnotationIndex]);
+
+                        Annotation<TOffset> prevNewAnn = null;
+                        foreach (Output<TData, TOffset> outputAction in update.Arc.Outputs)
+                        {
+                            Annotation<TOffset> outputAnn;
+                            if (outputAction.UsePrevNewAnnotation && prevNewAnn != null)
+                            {
+                                outputAnn = prevNewAnn;
+                            }
+                            else
+                            {
+                                Annotation<TOffset> inputAnn = newOutput.Queue.Dequeue();
+                                outputAnn = output.Mappings[inputAnn];
+                            }
+                            prevNewAnn = outputAction.UpdateOutput(newOutput.Output, outputAnn, Fst.Operations);
+                        }
+                    }
+                    outputs.Add(newOutput);
+                }
+            }
+            return outputs;
+        }
+
+        private IList<CommandUpdate> GetCommandUpdates(TInst inst)
+        {
+            if (inst == null)
+                return new List<CommandUpdate>();
+            if (!_commandUpdates.ContainsKey(inst))
+                _commandUpdates[inst] = new List<CommandUpdate>();
+            return _commandUpdates[inst];
+        }
+
         protected IEnumerable<TInst> Initialize(
             ref int annIndex,
             Register<TOffset>[,] registers,
@@ -221,6 +357,13 @@ namespace SIL.Machine.FiniteState
                 }
             }
 
+            var startInst = CreateInstance();
+            for (int i = 0; i < registers.Length/2; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                    startInst.Registers[i, j] = registers[i, j];
+            }
+
             ExecuteCommands(registers, cmds, new Register<TOffset>(offset, true), new Register<TOffset>());
 
             for (
@@ -242,6 +385,9 @@ namespace SIL.Machine.FiniteState
                 }
             }
 
+            foreach (var inst in insts)
+                RecordCommands(startInst, null, cmds, new Register<TOffset>(offset, true), new Register<TOffset>(), inst);
+
             return insts;
         }
 
@@ -253,6 +399,8 @@ namespace SIL.Machine.FiniteState
             bool optional = false
         )
         {
+            TInst source = inst;
+            inst = CopyInstance(inst);
             inst.Priorities?.Add(arc.Priority);
             int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             TOffset nextOffset;
@@ -292,6 +440,14 @@ namespace SIL.Machine.FiniteState
                     anns.Add(i);
                 }
 
+                RecordCommands(
+                    source,
+                    arc,
+                    arc.Commands,
+                    new Register<TOffset>(nextOffset, nextStart),
+                    new Register<TOffset>(end, false),
+                    inst
+                );
                 ExecuteCommands(
                     inst.Registers,
                     arc.Commands,
@@ -307,7 +463,8 @@ namespace SIL.Machine.FiniteState
                         varBindings,
                         arc,
                         curResults,
-                        inst.Priorities
+                        inst.Priorities,
+                        inst
                     );
                 }
 
@@ -327,13 +484,21 @@ namespace SIL.Machine.FiniteState
             }
             else
             {
+                RecordCommands(
+                    source,
+                    arc,
+                    arc.Commands,
+                    new Register<TOffset>(nextOffset, nextStart),
+                    new Register<TOffset>(end, false),
+                    inst
+                );
                 ExecuteCommands(
                     inst.Registers,
                     arc.Commands,
                     new Register<TOffset>(nextOffset, nextStart),
                     new Register<TOffset>(end, false)
                 );
-                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
+                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities, inst);
 
                 inst.State = arc.Target;
                 inst.AnnotationIndex = nextIndex;
@@ -348,12 +513,22 @@ namespace SIL.Machine.FiniteState
             ICollection<FstResult<TData, TOffset>> curResults
         )
         {
+            TInst source = inst;
+            inst = CopyInstance(source);
             Annotation<TOffset> ann =
                 inst.AnnotationIndex < _annotations.Count
                     ? _annotations[inst.AnnotationIndex]
                     : _data.Annotations.GetEnd(_fst.Direction);
             int prevIndex = GetPrevNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             Annotation<TOffset> prevAnn = _annotations[prevIndex];
+            RecordCommands(
+                source,
+                arc,
+                arc.Commands,
+                new Register<TOffset>(ann.Range.GetStart(_fst.Direction), true),
+                new Register<TOffset>(prevAnn.Range.GetEnd(_fst.Direction), false),
+                inst
+            );
             ExecuteCommands(
                 inst.Registers,
                 arc.Commands,
@@ -367,7 +542,8 @@ namespace SIL.Machine.FiniteState
                 inst.VariableBindings,
                 arc,
                 curResults,
-                inst.Priorities
+                inst.Priorities,
+                inst
             );
 
             inst.State = arc.Target;
@@ -418,7 +594,9 @@ namespace SIL.Machine.FiniteState
 
         protected void ReleaseInstance(TInst inst)
         {
-            _cachedInstances.Enqueue(inst);
+            if (inst == null)
+                return;
+            // _cachedInstances.Enqueue(inst);
         }
     }
 }
