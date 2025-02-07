@@ -1498,10 +1498,12 @@ public class MatcherTests : PhoneticTestsBase
         word.Annotations.ElementAt(2).Optional = true;
         var matcher = new Matcher<AnnotatedStringData, int>(
             pattern,
-            new MatcherSettings<int> {
+            new MatcherSettings<int>
+            {
                 AnchoredToStart = true,
                 AnchoredToEnd = true,
-                AllSubmatches = true }
+                AllSubmatches = true
+            }
         );
         IList<Match<AnnotatedStringData, int>> matches = matcher.AllMatches(word).ToList();
         Assert.That(matches, Has.Count.EqualTo(2));
