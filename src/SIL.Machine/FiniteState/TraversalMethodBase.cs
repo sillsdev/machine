@@ -108,7 +108,12 @@ namespace SIL.Machine.FiniteState
             public Register<TOffset> Start;
             public Register<TOffset> End;
 
-            public CommandUpdate (TInst source, Arc<TData, TOffset> arc, IEnumerable<TagMapCommand> cmds, Register<TOffset> start, Register<TOffset> end)
+            public CommandUpdate (
+                TInst source,
+                Arc<TData,TOffset> arc,
+                IEnumerable<TagMapCommand> cmds,
+                Register<TOffset> start,
+                Register<TOffset> end)
             {
                 Source = source;
                 Arc = arc;

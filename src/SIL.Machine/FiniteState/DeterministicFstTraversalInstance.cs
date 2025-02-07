@@ -34,10 +34,7 @@ namespace SIL.Machine.FiniteState
 
             var otherDfst = (DeterministicFstTraversalInstance<TData, TOffset>)other;
             otherDfst.Mappings.AddRange(
-                _mappings.Select(kvp => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(
-                    kvp.Key,
-                    kvp.Value
-                ))
+                _mappings.Select(kvp => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(kvp.Key, kvp.Value))
             );
             foreach (Annotation<TOffset> ann in _queue)
                 otherDfst.Queue.Enqueue(ann);
