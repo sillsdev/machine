@@ -59,6 +59,7 @@ namespace SIL.Machine.FiniteState
                             ti = CopyInstance(inst);
                             if (inst.VariableBindings != null)
                                 ti.VariableBindings = inst.VariableBindings.Clone();
+                            RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
                         }
 
                         ExecuteOutputs(arc.Outputs, ti.Output, ti.Mappings, ti.Queue);

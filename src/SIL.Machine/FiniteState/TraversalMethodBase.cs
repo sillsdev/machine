@@ -127,6 +127,8 @@ namespace SIL.Machine.FiniteState
             TInst target
         )
         {
+            if (source == target)
+                return;
             var commandUpdate = new CommandUpdate(source, arc, cmds, start, end);
             if (!_commandUpdates.ContainsKey(target))
                 _commandUpdates[target] = new List<CommandUpdate>();
@@ -185,12 +187,15 @@ namespace SIL.Machine.FiniteState
                 ExecuteCommands(matchRegisters, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>());
                 TInst finalInst = CreateInstance();
                 RecordCommands(inst, null, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>(), finalInst);
-                if (!arc.Target.IsAccepting)
+                if (true)
                 {
                     var outputs = GetOutputs(finalInst);
                     Debug.Assert(_fst.RegistersEqualityComparer.Equals(outputs[0].Registers, matchRegisters), "registers didn't match");
                     if (output != null)
                         Debug.Assert(outputs[0].Output.ToString().Equals(output.ToString()), "output didn't match");
+                    if (varBindings != null)
+                        Debug.Assert(varBindings.ValueEquals(inst.VariableBindings), "varBindings didn't match");
+                    Debug.Assert(annIndex.Equals(inst.AnnotationIndex), "annIndex didn't match");
                 }
                 if (arc.Target.AcceptInfos.Count > 0)
                 {
@@ -289,7 +294,8 @@ namespace SIL.Machine.FiniteState
                 foreach(TraverseOutput output in GetOutputs(update.Source))
                 {
                     var newOutput = new TraverseOutput(output);
-                    ExecuteCommands(newOutput.Registers, update.Cmds, update.Start, update.End);
+                    if (update.Cmds != null)
+                        ExecuteCommands(newOutput.Registers, update.Cmds, update.Start, update.End);
                     if (update.Arc != null)
                     {
                         for (int j = 0; j < update.Arc.Input.EnqueueCount; j++)
@@ -307,6 +313,7 @@ namespace SIL.Machine.FiniteState
                             {
                                 Annotation<TOffset> inputAnn = newOutput.Queue.Dequeue();
                                 outputAnn = output.Mappings[inputAnn];
+                                outputAnn = outputAnn.Clone();
                             }
                             prevNewAnn = outputAction.UpdateOutput(newOutput.Output, outputAnn, Fst.Operations);
                         }
@@ -431,6 +438,7 @@ namespace SIL.Machine.FiniteState
                     {
                         TInst ti = CopyInstance(inst);
                         ti.AnnotationIndex = i;
+                        RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
                         foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true))
                         {
                             yield return ni;
@@ -456,6 +464,7 @@ namespace SIL.Machine.FiniteState
                 );
                 if (!optional || _endAnchor)
                 {
+                    inst.AnnotationIndex = nextIndex;
                     CheckAccepting(
                         nextIndex,
                         inst.Registers,
@@ -477,6 +486,7 @@ namespace SIL.Machine.FiniteState
                     ni.AnnotationIndex = curIndex;
                     if (varBindings != null)
                         inst.VariableBindings = cloneOutputs ? varBindings.Clone() : varBindings;
+                    RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ni);
                     yield return ni;
                     cloneOutputs = true;
                     first = false;
@@ -498,11 +508,12 @@ namespace SIL.Machine.FiniteState
                     new Register<TOffset>(nextOffset, nextStart),
                     new Register<TOffset>(end, false)
                 );
-                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities, inst);
 
                 inst.State = arc.Target;
                 inst.AnnotationIndex = nextIndex;
                 inst.VariableBindings = varBindings;
+                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities, inst);
+
                 yield return inst;
             }
         }

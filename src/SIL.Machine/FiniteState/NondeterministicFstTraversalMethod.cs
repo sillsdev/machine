@@ -70,6 +70,7 @@ namespace SIL.Machine.FiniteState
                                 if (inst.VariableBindings != null && varBindings == null)
                                     varBindings = inst.VariableBindings.Clone();
                                 ti.VariableBindings = varBindings;
+                                RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
                             }
 
                             if (arc.Outputs.Count == 1)
@@ -111,6 +112,7 @@ namespace SIL.Machine.FiniteState
                             NondeterministicFstTraversalInstance<TData, TOffset> ti = isInstReusable
                                 ? inst
                                 : CopyInstance(inst);
+                            RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
 
                             if (arc.Outputs.Count == 1)
                             {

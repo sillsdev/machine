@@ -45,6 +45,8 @@ namespace SIL.Machine.FiniteState
             if (_priorities != null)
                 other.Priorities.AddRange(_priorities);
             Array.Copy(_registers, other.Registers, _registers.Length);
+            if (VariableBindings != null)
+                other.VariableBindings = VariableBindings.Clone();
         }
 
         public virtual void Clear()
