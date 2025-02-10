@@ -156,6 +156,8 @@ namespace SIL.Machine.FiniteState
                     ReleaseInstance(inst);
             }
 
+            var newResults = new List<FstResult<TData, TOffset>>();
+            GetFstResults(newResults, curResults);
             return curResults;
         }
 
