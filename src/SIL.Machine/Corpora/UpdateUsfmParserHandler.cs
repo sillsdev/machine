@@ -33,6 +33,8 @@ namespace SIL.Machine.Corpora
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
+        private bool _embedUpdated;
+        private List<string> _embedRowTexts;
 
         public UpdateUsfmParserHandler(
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
@@ -50,6 +52,8 @@ namespace SIL.Machine.Corpora
             _textBehavior = textBehavior;
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
+            _embedUpdated = false;
+            _embedRowTexts = new List<string>();
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -196,15 +200,16 @@ namespace SIL.Machine.Corpora
             base.EndChar(state, marker, attributes, closed);
         }
 
-        public override void StartEmbed(UsfmParserState state, string marker, string caller, string category)
+        public override void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef)
         {
+            _embedRowTexts = AdvanceRows(new[] { scriptureRef }).ToList();
+            _embedUpdated = _embedRowTexts.Count > 0;
+
             // strip out notes in verses that are being replaced
             if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
-
-            base.StartEmbed(state, marker, caller, category);
         }
 
         public override void EndEmbed(
@@ -219,6 +224,9 @@ namespace SIL.Machine.Corpora
                 SkipTokens(state);
             else
                 CollectTokens(state);
+
+            _embedRowTexts.Clear();
+            _embedUpdated = false;
 
             base.EndEmbed(state, marker, attributes, closed);
         }
@@ -289,14 +297,14 @@ namespace SIL.Machine.Corpora
             PopNewTokens();
         }
 
-        protected override void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef)
+        protected override void StartNoteText(UsfmParserState state)
         {
-            IReadOnlyList<string> rowTexts = AdvanceRows(new[] { scriptureRef });
-            PushNewTokens(rowTexts.Select(t => new UsfmToken(t + " ")));
+            PushNewTokens(_embedRowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
         protected override void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef)
         {
+            _embedRowTexts.Clear();
             PopNewTokens();
         }
 
@@ -374,8 +382,10 @@ namespace SIL.Machine.Corpora
             }
 
             bool newText = _replace.Count > 0 && _replace.Peek();
-            bool inEmbed = InEmbed(state.Token.Marker);
-            bool isStyleTag = state.Token.Marker != null && !IsEmbedPart(state.Token.Marker);
+            string marker = state?.Token?.Marker;
+            bool inEmbed = InEmbed(marker);
+            bool inNestedEmbed = IsInNestedEmbed(marker);
+            bool isStyleTag = marker != null && !IsEmbedPart(marker);
 
             bool existingText = state
                 .Tokens.Skip(_tokenIndex)
@@ -385,7 +395,10 @@ namespace SIL.Machine.Corpora
             bool useNewTokens =
                 newText
                 && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew)
-                && (!inEmbed || InNoteText);
+                && (
+                    !inEmbed
+                    || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmIntraVerseMarkerBehavior.Preserve)
+                );
 
             if (useNewTokens)
                 AddNewTokens();
@@ -394,13 +407,16 @@ namespace SIL.Machine.Corpora
                 ClearNewTokens();
 
             // figure out when to skip the existing text
-            bool withinNewText = _replace.Any(r => r);
-            if (withinNewText && inEmbed)
+            bool embedInNewVerseText = _replace.Any(r => r) && inEmbed;
+            if (embedInNewVerseText || _embedUpdated)
             {
                 if (_embedBehavior == UpdateUsfmIntraVerseMarkerBehavior.Strip)
+                {
+                    ClearNewTokens();
                     return true;
+                }
 
-                if (!InNoteText)
+                if (!InNoteText || inNestedEmbed)
                     return false;
             }
 

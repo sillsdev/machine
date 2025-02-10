@@ -73,7 +73,7 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(51));
+        Assert.That(rows, Has.Length.EqualTo(50));
 
         Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:h", corpus.Versification)));
         Assert.That(rows[0].Text, Is.EqualTo("Matthew"));
@@ -82,10 +82,10 @@ public class UsfmFileTextTests
         Assert.That(rows[1].Text, Is.EqualTo("Matthew"));
 
         Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/3:ip", corpus.Versification)));
-        Assert.That(rows[2].Text, Is.EqualTo("An introduction to Matthew with an empty comment"));
+        Assert.That(rows[2].Text, Is.EqualTo("An introduction to Matthew"));
 
         Assert.That(rows[3].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/3:ip/1:fe", corpus.Versification)));
-        Assert.That(rows[3].Text, Is.EqualTo(""));
+        Assert.That(rows[3].Text, Is.EqualTo("This is an endnote."));
 
         Assert.That(rows[4].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/4:p", corpus.Versification)));
         Assert.That(rows[4].Text, Is.EqualTo("MAT 1 Here is another paragraph."));
@@ -185,7 +185,7 @@ public class UsfmFileTextTests
         Assert.That(
             rows[0].Text,
             Is.EqualTo(
-                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse \\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*one."
+                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*"
             )
         );
 
@@ -206,7 +206,7 @@ public class UsfmFileTextTests
         Assert.That(rows[8].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:1", corpus.Versification)));
         Assert.That(
             rows[8].Text,
-            Is.EqualTo("Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a \\bd footnote.\\bd*\\f*one.")
+            Is.EqualTo("Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a footnote.\\f*one.")
         );
 
         Assert.That(rows[9].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:2", corpus.Versification)));
@@ -231,7 +231,7 @@ public class UsfmFileTextTests
         Assert.That(rows[12].Text, Is.EqualTo("Chapter two, verse four."));
 
         Assert.That(rows[13].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:5", corpus.Versification)));
-        Assert.That(rows[13].Text, Is.EqualTo("Chapter two, verse five\\rq (MAT 3:1)\\rq*."));
+        Assert.That(rows[13].Text, Is.EqualTo("Chapter two, verse five \\rq (MAT 3:1)\\rq*."));
 
         Assert.That(rows[14].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:6", corpus.Versification)));
         Assert.That(rows[14].Text, Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
@@ -256,16 +256,16 @@ public class UsfmFileTextTests
 
         IText text = corpus["MAT"];
         TextRow[] rows = text.GetRows().ToArray();
-        Assert.That(rows, Has.Length.EqualTo(47));
+        Assert.That(rows, Has.Length.EqualTo(46));
 
         Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/3:ip", corpus.Versification)));
-        Assert.That(rows[2].Text, Is.EqualTo("An introduction to Matthew with an empty comment\\fe + \\ft \\fe*"));
+        Assert.That(rows[2].Text, Is.EqualTo("An introduction to Matthew\\fe + \\ft This is an endnote.\\fe*"));
 
         Assert.That(rows[8].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1", corpus.Versification)));
         Assert.That(
             rows[8].Text,
             Is.EqualTo(
-                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse \\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*one."
+                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*"
             )
         );
 
@@ -289,7 +289,7 @@ public class UsfmFileTextTests
         Assert.That(rows[22].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:1", corpus.Versification)));
         Assert.That(
             rows[22].Text,
-            Is.EqualTo("Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a \\bd footnote.\\bd*\\f*one.")
+            Is.EqualTo("Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a footnote.\\f*one.")
         );
 
         Assert.That(rows[26].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/2:esb/2:p", corpus.Versification)));
