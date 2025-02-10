@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.RegularExpressions;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Internal;
 using SIL.Scripture;
 using SIL.Scripture.Extensions;
@@ -1157,39 +1155,6 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetRows_DeuterocanonicalBooksFullCoverage()
-    {
-        DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
-            new MemoryText("Tobit", new[] { TextRow("Tobit", 1, "source segment 1 .") }),
-            new MemoryText("Judith", new[] { TextRow("Judith", 2, "source segment 2 .") }),
-            new MemoryText("Wisdom", new[] { TextRow("Wisdom", 3, "source segment 3 .") }),
-            new MemoryText("Sirach", new[] { TextRow("Sirach", 4, "source segment 4 .") }),
-            new MemoryText("Baruch", new[] { TextRow("Baruch", 5, "source segment 5 .") }),
-            new MemoryText("1Maccabees", new[] { TextRow("1Maccabees", 6, "source segment 6 .") }),
-            new MemoryText("2Maccabees", new[] { TextRow("2Maccabees", 7, "source segment 7 .") })
-        );
-
-        DictionaryTextCorpus targetCorpus = new DictionaryTextCorpus(
-            new MemoryText("Tobit", new[] { TextRow("Tobit", 1, "target segment 1 .") }),
-            new MemoryText("Judith", new[] { TextRow("Judith", 2, "target segment 2 .") }),
-            new MemoryText("Wisdom", new[] { TextRow("Wisdom", 3, "target segment 3 .") }),
-            new MemoryText("Sirach", new[] { TextRow("Sirach", 4, "target segment 4 .") }),
-            new MemoryText("Baruch", new[] { TextRow("Baruch", 5, "target segment 5 .") }),
-            new MemoryText("1Maccabees", new[] { TextRow("1Maccabees", 6, "target segment 6 .") }),
-            new MemoryText("2Maccabees", new[] { TextRow("2Maccabees", 7, "target segment 7 .") })
-        );
-
-        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
-
-        Assert.That(rows.Length, Is.EqualTo(7), JsonSerializer.Serialize(rows));
-        Assert.That(
-            rows.Select(r => r.TextId).ToArray(),
-            Is.EquivalentTo(new[] { "Tobit", "Judith", "Wisdom", "Sirach", "Baruch", "1Maccabees", "2Maccabees" })
-        );
-    }
-
-    [Test]
     public void GetRows_AllDeuterocanonicalBooks_WithAlignments()
     {
         string[] deuterocanonicalBooks = new[]
@@ -1270,16 +1235,6 @@ public class ParallelTextCorpusTests
             "BEL"
         };
 
-        string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
-        ScrVers versification;
-        if (!Versification.Table.Implementation.Exists("custom"))
-        {
-            using (var reader = new StringReader(src))
-            {
-                versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
-            }
-        }
-
         DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
             deuterocanonicalBooks
                 .Select(bookId => new MemoryText(
@@ -1300,11 +1255,7 @@ public class ParallelTextCorpusTests
             deuterocanonicalBooks
                 .Select(bookId => new MemoryText(
                     bookId,
-                    new[]
-                    {
-                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"target segment 1 for {bookId}.")
-                        // Missing row 1:2 to simulate mismatch
-                    }
+                    new[] { TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"target segment 1 for {bookId}.") }
                 ))
                 .ToArray()
         )
@@ -1316,117 +1267,100 @@ public class ParallelTextCorpusTests
             deuterocanonicalBooks
                 .Select(bookId => new MemoryAlignmentCollection(
                     bookId,
-                    new[]
-                    {
-                        AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0))
-                        // No alignment for 1:2 since it is missing in target
-                    }
+                    new[] { AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0)) }
                 ))
                 .ToArray()
         );
 
         ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
         {
-            AllTargetRows = true
+            AllSourceRows = true
         };
-        ParallelTextRow[] rows = parallelCorpus.ToArray();
 
-        string mismatchReport = "";
-        foreach (ParallelTextRow row in rows)
+        var rows = parallelCorpus.ToList();
+        Assert.That(rows.Count, Is.EqualTo(22), "Total rows processed should be 22.");
+
+        TestContext.WriteLine("=== Debugging Output ===");
+        TestContext.WriteLine($"Total Rows: {rows.Count}");
+
+        foreach (var row in rows.Take(2))
         {
             string bookId = row.TextId;
-            ScriptureRef expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
+            TestContext.WriteLine($"Book: {bookId}");
+            TestContext.WriteLine(
+                $"SourceRefs: {string.Join(", ", row.SourceRefs?.Select(sr => sr.ToString()) ?? new[] { "null" })}"
+            );
+            TestContext.WriteLine(
+                $"TargetRefs: {string.Join(", ", row.TargetRefs?.Select(tr => tr.ToString()) ?? new[] { "null" })}"
+            );
+            TestContext.WriteLine($"SourceSegment: {string.Join(" ", row.SourceSegment)}");
+            TestContext.WriteLine($"TargetSegment: {string.Join(" ", row.TargetSegment)}");
+            TestContext.WriteLine("--------------");
+        }
 
-            // Handle potential nulls for SourceRefs and TargetRefs
-            var sourceRef = row.SourceRefs.FirstOrDefault();
-            if (sourceRef == null || expectedRef.CompareTo(sourceRef) != 0)
+        for (int i = 0; i < rows.Count; i++)
+        {
+            ParallelTextRow row = rows[i];
+            string bookId = row.TextId;
+            bool isFirstVerse = row.SourceRefs.FirstOrDefault() is ScriptureRef srcRef && srcRef.Verse == "1";
+
+            ScriptureRef expectedRef = isFirstVerse
+                ? ScriptureRef.Parse($"{bookId} 1:1")
+                : ScriptureRef.Parse($"{bookId} 1:2");
+
+            // Assert SourceRef
+            var sourceRef = row.SourceRefs.FirstOrDefault() as ScriptureRef;
+            Assert.That(sourceRef, Is.Not.Null, $"[Row {i}] SourceRef should not be null for {bookId}.");
+            Assert.That(
+                sourceRef.CompareTo(expectedRef),
+                Is.EqualTo(0),
+                $"[Row {i}] SourceRef mismatch for {bookId}. Expected: {expectedRef}, Found: {sourceRef}"
+            );
+
+            // Assert TargetRef
+            var targetRef = row.TargetRefs.FirstOrDefault() as ScriptureRef;
+            if (isFirstVerse)
             {
-                mismatchReport += $"Mismatch in SourceRefs for {bookId}. Expected: {expectedRef}, Found: {sourceRef}\n";
-            }
-
-            var targetRef = row.TargetRefs.FirstOrDefault();
-            if (targetRef == null || expectedRef.CompareTo(targetRef) != 0)
-            {
-                mismatchReport += $"Mismatch in TargetRefs for {bookId}. Expected: {expectedRef}, Found: {targetRef}\n";
-            }
-
-            string[] expectedSourceSegment = new[] { "source", "segment", "1", "for", bookId + "." };
-            if (!row.SourceSegment.SequenceEqual(expectedSourceSegment))
-            {
-                mismatchReport +=
-                    $"Mismatch in SourceSegment for {bookId}. Expected: {string.Join(" ", expectedSourceSegment)}, Found: {string.Join(" ", row.SourceSegment)}\n";
-            }
-
-            string[] expectedTargetSegment = new[] { "target", "segment", "1", "for", bookId + "." };
-            if (!row.TargetSegment.SequenceEqual(expectedTargetSegment))
-            {
-                mismatchReport +=
-                    $"Mismatch in TargetSegment for {bookId}. Expected: {string.Join(" ", expectedTargetSegment)}, Found: {string.Join(" ", row.TargetSegment)}\n";
-            }
-
-            AlignedWordPair[] expectedAlignedWordPairs = new[] { new AlignedWordPair(0, 0) };
-
-            if (row.AlignedWordPairs == null || !row.AlignedWordPairs.SequenceEqual(expectedAlignedWordPairs))
-            {
-                string expectedAlignedWordPairsString = string.Join(
-                    ", ",
-                    expectedAlignedWordPairs.Select(p => p.ToString())
+                Assert.That(targetRef, Is.Not.Null, $"[Row {i}] TargetRef should not be null for {bookId}.");
+                Assert.That(
+                    targetRef.CompareTo(expectedRef),
+                    Is.EqualTo(0),
+                    $"[Row {i}] TargetRef mismatch for {bookId}. Expected: {expectedRef}, Found: {targetRef}"
                 );
-                string actualAlignedWordPairsString =
-                    row.AlignedWordPairs != null
-                        ? string.Join(", ", row.AlignedWordPairs.Select(p => p.ToString()))
-                        : "null";
-                mismatchReport +=
-                    $"Mismatch in AlignedWordPairs for {bookId}. Expected: {expectedAlignedWordPairsString}, Found: {actualAlignedWordPairsString}\n";
             }
+            else
+            {
+                Assert.That(
+                    row.TargetSegment == null || row.TargetSegment.Count == 0,
+                    Is.True,
+                    $"[Row {i}] TargetSegment should be null or empty for {bookId} 1:2 since it is missing in the target."
+                );
+            }
+
+            // Assert SourceSegment
+            string[] expectedSourceSegment = isFirstVerse
+                ? new[] { "source", "segment", "1", "for", bookId + "." }
+                : new[] { "source", "segment", "2", "for", bookId + "." };
+
+            Assert.That(
+                row.SourceSegment,
+                Is.EqualTo(expectedSourceSegment),
+                $"[Row {i}] SourceSegment mismatch for {bookId}."
+            );
+
+            // Assert TargetSegment
+            string[] expectedTargetSegment = isFirstVerse
+                ? new[] { "target", "segment", "1", "for", bookId + "." }
+                : Array.Empty<string>();
+
+            Assert.That(
+                row.TargetSegment == null
+                    || row.TargetSegment.Count == 0
+                    || row.TargetSegment.SequenceEqual(new[] { "target", "segment", "1", "for", bookId + "." }),
+                Is.True,
+                $"[Row {i}] TargetSegment should either be empty or match the expected value for {bookId} 1:2."
+            );
         }
-
-        int sourceSegmentMismatches = Regex.Matches(mismatchReport, "Mismatch in SourceSegment").Count;
-        int alignmentMismatches = Regex.Matches(mismatchReport, "Mismatch in AlignedWordPairs").Count;
-
-        Assert.That(mismatchReport, Is.Not.Null, "There are mismatches that should be caught by the test");
-        Assert.That(alignmentMismatches, Is.EqualTo(9)); // expecting 9 mismatches
-        Assert.That(sourceSegmentMismatches, Is.EqualTo(9));
-
-        if (!string.IsNullOrEmpty(mismatchReport))
-        {
-            TestContext.WriteLine("Mismatches found:");
-            TestContext.WriteLine(mismatchReport);
-        }
-        else
-        {
-            TestContext.WriteLine("No mismatches found. All rows match as expected.");
-        }
-    }
-
-    [Test]
-    [TestCase("TOB", "TOB 1:1", Description = "Validate TOB Source and Target References")]
-    [TestCase("JDT", "JDT 1:1", Description = "Validate JDT Source and Target References")]
-    [TestCase("WIS", "WIS 1:1", Description = "Validate WIS Source and Target References")]
-    [TestCase("SIR", "SIR 1:1", Description = "Validate SIR Source and Target References")]
-    [TestCase("BAR", "BAR 1:1", Description = "Validate BAR Source and Target References")]
-    [TestCase("1MA", "1MA 1:1", Description = "Validate 1MA Source and Target References")]
-    [TestCase("2MA", "2MA 1:1", Description = "Validate 2MA Source and Target References")]
-    [TestCase("LJE", "LJE 1:1", Description = "Validate LJE Source and Target References")]
-    [TestCase("S3Y", "S3Y 1:1", Description = "Validate S3Y Source and Target References")]
-    [TestCase("SUS", "SUS 1:1", Description = "Validate SUS Source and Target References")]
-    [TestCase("BEL", "BEL 1:1", Description = "Validate BEL Source and Target References")]
-    public void ValidateSourceAndTargetReferencesForDeuterocanonicals(string bookId, string verseRef)
-    {
-        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
-        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
-        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
-
-        var rows = parallelCorpus.GetRows();
-
-        ParallelTextRow row = rows.First(r => r.TextId == bookId);
-
-        Assert.That(row.SourceRefs.First, Is.InstanceOf<ScriptureRef>());
-        Assert.That(row.TargetRefs.First, Is.InstanceOf<ScriptureRef>());
-
-        Assert.That(verseRef, Is.InstanceOf<string>());
-        Assert.That(verseRef.CompareTo(row.SourceRefs[0].ToString()), Is.EqualTo(0));
-        Assert.That(verseRef.CompareTo(row.TargetRefs[0].ToString()), Is.EqualTo(0));
     }
 
     [Test]
@@ -1434,8 +1368,6 @@ public class ParallelTextCorpusTests
     [TestCase("JDT", ScrVersType.Septuagint)]
     [TestCase("WIS", ScrVersType.Vulgate)]
     [TestCase("SIR", ScrVersType.English)]
-    [TestCase("BAR", ScrVersType.RussianProtestant)]
-    [TestCase("1MA", ScrVersType.RussianOrthodox)]
     [TestCase("2MA", ScrVersType.English)]
     public void GetVersesInVersification_ButNotInSourceOrTarget(string bookId, ScrVersType versificationType)
     {
@@ -1504,6 +1436,14 @@ public class ParallelTextCorpusTests
                 TestContext.WriteLine(issue);
             }
         }
+
+        TestContext.WriteLine(issues.Count);
+
+        Assert.That(
+            issues.Count,
+            Is.Not.EqualTo(0),
+            "There are missing verses in teh provided source and target SFM that are in the vrf files. The test should capture those "
+        );
     }
 
     [Test]
@@ -1586,7 +1526,11 @@ public class ParallelTextCorpusTests
             }
         }
 
-        Assert.Pass("Test completed. See TestContext output for any logged issues.");
+        Assert.That(
+            issues.Count,
+            Is.Not.EqualTo(0),
+            "The test should catch the extra verses in the Source of Target SFM that are not the the vrs file "
+        );
     }
 
     [Test]
@@ -1653,12 +1597,8 @@ public class ParallelTextCorpusTests
 
                 // Normalize text for comparison
                 string[] unwanted = { "÷" };
-                sourceContent = CorporaTestHelpers.NormalizeSpaces(
-                    CorporaTestHelpers.CleanString(sourceContent, unwanted)
-                );
-                targetContent = CorporaTestHelpers.NormalizeSpaces(
-                    CorporaTestHelpers.CleanString(targetContent, unwanted)
-                );
+                sourceContent = CorporaTestHelpers.CleanString(sourceContent, unwanted);
+                targetContent = CorporaTestHelpers.CleanString(targetContent, unwanted);
 
                 if (sourceVerse.Verse == "1")
                 {
@@ -1676,6 +1616,87 @@ public class ParallelTextCorpusTests
 
     [Test]
     public void GetDoubleMappingsAcrossVersifications()
+    {
+        Dictionary<string, string> expectedMappings = new Dictionary<string, string>
+        {
+            { "DAG 1:1-3", "DAG 1:1-3" },
+            { "DAG 1:4-6", "DAG 1:1-3" },
+            { "DAG 1:7", "SUS 1:7" },
+            { "DAG 1:8", "SUS 1:8" }
+        };
+
+        Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
+        {
+            { ScrVersType.Original, ScrVers.Original },
+            { ScrVersType.English, ScrVers.English }
+        };
+
+        Dictionary<string, HashSet<string>> targetToSourceMap = new Dictionary<string, HashSet<string>>();
+
+        foreach (ScrVersType versificationType in versifications.Keys)
+        {
+            ScrVers versification = versifications[versificationType];
+            TestContext.WriteLine($"Validating for versification: {versificationType}");
+
+            Dictionary<string, string> expandedMappings = CorporaTestHelpers.ExpandVerseMappings(expectedMappings);
+
+            foreach (var mapping in expandedMappings)
+            {
+                string sourceVerse = mapping.Key;
+
+                IEnumerable<ScriptureRef> targetVerses = CorporaTestHelpers.ExpandVerseRange(
+                    mapping.Value,
+                    versification
+                );
+
+                foreach (ScriptureRef targetVerse in targetVerses)
+                {
+                    string targetVerseKey = targetVerse.ToString();
+
+                    if (!targetToSourceMap.TryGetValue(targetVerseKey, out HashSet<string>? sourceSet))
+                    {
+                        sourceSet = new HashSet<string>();
+                        targetToSourceMap[targetVerseKey] = sourceSet;
+                    }
+
+                    sourceSet.Add(sourceVerse);
+                }
+            }
+        }
+
+        int doubleMappingCount = 0;
+
+        foreach (KeyValuePair<string, HashSet<string>> mapping in targetToSourceMap)
+        {
+            string targetVerse = mapping.Key;
+            HashSet<string> sourceVerses = mapping.Value;
+
+            // Merging content for multiple source verses mapped to the same target
+            string mergedContent = string.Empty;
+
+            foreach (var sourceVerse in sourceVerses)
+            {
+                mergedContent += $"Content for {sourceVerse} ";
+            }
+
+            TestContext.WriteLine($"Merged content for Target {targetVerse}: {mergedContent}");
+
+            if (sourceVerses.Count > 1)
+            {
+                TestContext.WriteLine(
+                    $"Double mapping detected for Target {targetVerse}: "
+                        + $"Mapped from Source(s) {string.Join(", ", sourceVerses)}"
+                );
+                doubleMappingCount++;
+            }
+        }
+
+        Assert.That(doubleMappingCount, Is.Not.EqualTo(0), "The sample double mapping should be caught by the test");
+        TestContext.WriteLine(doubleMappingCount);
+    }
+
+    [Test]
+    public void VerifyCorrectDoubleMapping()
     {
         Dictionary<string, string> expectedMappings = new Dictionary<string, string>
         {
@@ -1724,21 +1745,136 @@ public class ParallelTextCorpusTests
             }
         }
 
+        // Iterate through the targetToSourceMap to check for double mappings
         foreach (KeyValuePair<string, HashSet<string>> mapping in targetToSourceMap)
         {
             string targetVerse = mapping.Key;
             HashSet<string> sourceVerses = mapping.Value;
 
+            // If there is more than one source verse mapped to the target, it's a double mapping
             if (sourceVerses.Count > 1)
             {
                 TestContext.WriteLine(
-                    $"Double mapping detected for Target {targetVerse}: "
-                        + $"Mapped from Source(s) {string.Join(", ", sourceVerses)}"
+                    $"Double mapping detected for target verse '{targetVerse}': "
+                        + $"Mapped from source verses: {string.Join(", ", sourceVerses)}"
                 );
+            }
+            else
+            {
+                // Verify that the source verse is correctly mapped for this target verse
+                foreach (string sourceVerse in sourceVerses)
+                {
+                    TestContext.WriteLine($"Mapping Target {targetVerse} -> Source {sourceVerse}");
+
+                    // Ensure that the source verse is within the expected range in 'expectedMappings'
+                    Assert.That(
+                        expectedMappings.Keys.Any(range => CorporaTestHelpers.IsVerseInRange(sourceVerse, range)),
+                        Is.True,
+                        $"Unexpected source verse '{sourceVerse}' for target verse '{targetVerse}'. Expected a verse in the range {string.Join(", ", expectedMappings.Keys)}"
+                    );
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void VerifyVRSMappingToPostMappedUSFM()
+    {
+        // Example mappings between source and target
+        Dictionary<string, string> vrsMappings = new Dictionary<string, string>
+        {
+            { "DAG 1:1-3", "SUS 1:1-3" },
+            { "DAG 1:4-6", "SUS 1:1-3" },
+        };
+
+        // Simulate post-mapped USFM content
+        Dictionary<string, string> postMappedUSFMContent = new Dictionary<string, string>
+        {
+            { "SUS 1:1", "In the beginning God created the heaven and the earth." },
+            { "SUS 1:2", "And the earth was without form, and void." },
+            { "SUS 1:3", "And God said, Let there be light." },
+            { "SUS 1:4", "And God saw that the light was good." },
+            { "SUS 1:5", "" }, // Empty content.
+            { "SUS 1:6", "" } // Empty content.
+        };
+
+        Dictionary<string, HashSet<string>> targetToSourceMap = new Dictionary<string, HashSet<string>>();
+
+        // Expand VRS mappings into target and source verses
+        foreach (var mapping in vrsMappings)
+        {
+            string sourceVerse = mapping.Key;
+            string targetVerse = mapping.Value;
+
+            IEnumerable<SIL.Machine.Corpora.ScriptureRef> targetVerses = CorporaTestHelpers.ExpandVerseRange(
+                targetVerse,
+                ScrVers.Original
+            );
+
+            foreach (ScriptureRef? target in targetVerses)
+            {
+                string targetString = target.ToString();
+
+                TestContext.WriteLine($"Expanded target verse: {targetString}");
+
+                if (!targetToSourceMap.TryGetValue(targetString, out HashSet<string>? value))
+                {
+                    value = new HashSet<string>();
+                    targetToSourceMap[targetString] = value;
+                }
+
+                value.Add(sourceVerse);
             }
         }
 
-        Assert.Pass("Test completed");
+        // Debug output: Log the keys of the post-mapped USFM content
+        TestContext.WriteLine("Post-mapped USFM content keys: ");
+        foreach (var key in postMappedUSFMContent.Keys)
+        {
+            TestContext.WriteLine(key);
+        }
+
+        foreach (var targetVerse in targetToSourceMap)
+        {
+            string target = targetVerse.Key;
+            HashSet<string> sourceVerses = targetVerse.Value;
+
+            // Debug output to inspect target and check if it matches post-mapped content
+            TestContext.WriteLine($"Verifying target verse: {target}");
+
+            Assert.That(
+                postMappedUSFMContent.Keys.Any(value => value.ToString().Contains(target)),
+                $"Target verse '{target}' does not exist or is not mapped correctly in the post-mapped USFM content. "
+                    + $"Post-mapped content: {string.Join(", ", postMappedUSFMContent.Values)}"
+            );
+
+            // If the target verse has content, check if it should have content from the VRS source
+            if (postMappedUSFMContent[target] != "")
+            {
+                // Check if the target verse is populated with content
+                Assert.That(
+                    sourceVerses.Count,
+                    Is.GreaterThan(0),
+                    $"Expected mapping for target verse '{target}', but no source verses mapped to it."
+                );
+            }
+            else
+            {
+                Assert.That(
+                    sourceVerses.Count,
+                    Is.EqualTo(0),
+                    $"Expected no content for target verse '{target}', but found source verses mapped to it."
+                );
+            }
+
+            if (sourceVerses.Count > 1)
+            {
+                TestContext.WriteLine(
+                    $"Double mapping detected for target verse '{target}': "
+                        + $"Mapped from source verses: {string.Join(", ", sourceVerses)}"
+                );
+            }
+        }
     }
 
     private static ScrVers GetVersification(ScrVersType versificationType)

@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using System.Text.RegularExpressions;
+// using System.Text.RegularExpressions;
 using NUnit.Framework.Constraints;
 using SIL.Scripture;
 
@@ -138,7 +138,7 @@ internal static class CorporaTestHelpers
         return expandedMappings;
     }
 
-    public static (string Book, int Chapter, int StartVerse, int EndVerse, bool IsSingleVerse) ParseRange(string range)
+    private static (string Book, int Chapter, int StartVerse, int EndVerse, bool IsSingleVerse) ParseRange(string range)
     {
         var parts = range.Split(' ');
         var book = parts[0];
@@ -168,11 +168,19 @@ internal static class CorporaTestHelpers
         return input;
     }
 
-    /// <summary>
-    /// Replace multiple spaces with a single space.
-    /// </summary>
-    public static string NormalizeSpaces(string input)
+    // Helper function to check if a specific verse falls within a given range
+    public static bool IsVerseInRange(string verse, string range)
     {
-        return Regex.Replace(input, @"\s+", " ");
+        var rangeParts = range.Split(' ')[1].Split('-');
+        var rangeStart = int.Parse(rangeParts[0].Split(':')[1]);
+        int rangeEnd = rangeStart;
+        if (rangeParts.Length > 1)
+        {
+            rangeEnd = int.Parse(rangeParts[1]);
+        }
+
+        var verseNumber = int.Parse(verse.Split(':')[1]);
+
+        return verseNumber >= rangeStart && verseNumber <= rangeEnd;
     }
 }
