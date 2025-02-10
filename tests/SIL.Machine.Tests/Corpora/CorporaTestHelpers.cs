@@ -1,5 +1,4 @@
 ﻿using System.IO.Compression;
-using System.Text.RegularExpressions;
 using NUnit.Framework.Constraints;
 using SIL.Scripture;
 
@@ -138,7 +137,7 @@ internal static class CorporaTestHelpers
         return expandedMappings;
     }
 
-    public static (string Book, int Chapter, int StartVerse, int EndVerse, bool IsSingleVerse) ParseRange(string range)
+    private static (string Book, int Chapter, int StartVerse, int EndVerse, bool IsSingleVerse) ParseRange(string range)
     {
         var parts = range.Split(' ');
         var book = parts[0];
@@ -166,13 +165,5 @@ internal static class CorporaTestHelpers
             input = input.Replace(item, "").Trim();
         }
         return input;
-    }
-
-    /// <summary>
-    /// Replace multiple spaces with a single space.
-    /// </summary>
-    public static string NormalizeSpaces(string input)
-    {
-        return Regex.Replace(input, @"\s+", " ");
     }
 }
