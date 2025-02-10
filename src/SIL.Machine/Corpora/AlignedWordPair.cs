@@ -18,21 +18,25 @@ namespace SIL.Machine.Corpora
             bool invert = false
         )
         {
-            bool success = true;
             var result = new List<AlignedWordPair>();
             foreach (string token in alignments.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 int dashIndex = token.IndexOf('-');
-                success &= TryParseIndex(token.Substring(0, dashIndex), out int i);
-
                 int colonIndex = token.IndexOf(':', dashIndex + 1);
                 int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
-                success &= TryParseIndex(token.Substring(dashIndex + 1, length), out int j);
+                if (
+                    !TryParseIndex(token.Substring(0, dashIndex), out int i)
+                    || !TryParseIndex(token.Substring(dashIndex + 1, length), out int j)
+                )
+                {
+                    alignedWordPairs = result;
+                    return false;
+                }
 
                 result.Add(invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j));
             }
             alignedWordPairs = result;
-            return success;
+            return true;
         }
 
         public AlignedWordPair(int sourceIndex, int targetIndex)
@@ -92,14 +96,14 @@ namespace SIL.Machine.Corpora
 
         private static bool TryParseIndex(string indexString, out int index)
         {
-            if (int.TryParse(indexString, out int indexNum))
-            {
-                index = indexNum;
-                return true;
-            }
             if (indexString == "NULL")
             {
                 index = -1;
+                return true;
+            }
+            if (int.TryParse(indexString, out int indexNum))
+            {
+                index = indexNum;
                 return true;
             }
             index = -1;
