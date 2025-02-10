@@ -22,23 +22,13 @@ namespace SIL.Machine.Translation
             _aligner = new SymmetrizedWordAligner(DirectWordAlignmentEngine, InverseWordAlignmentEngine);
         }
 
-        public ITrainer CreateTrainer(IParallelTextCorpus corpus)
-        {
-            CheckDisposed();
-
-            ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(corpus);
-            ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert());
-
-            return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
-        }
-
         public SymmetrizationHeuristic Heuristic
         {
             get => _aligner.Heuristic;
             set => _aligner.Heuristic = value;
         }
 
-        public IWordAligner DirectWordAlignmentEngine
+        public IWordAlignmentModel DirectWordAlignmentEngine
         {
             get
             {
@@ -48,7 +38,7 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public IWordAligner InverseWordAlignmentEngine
+        public IWordAlignmentModel InverseWordAlignmentEngine
         {
             get
             {
@@ -172,6 +162,16 @@ namespace SIL.Machine.Translation
                 wordPair.TranslationScore = Math.Max(wordPair.TranslationScore, inverseWordPair.TranslationScore);
                 wordPair.AlignmentScore = Math.Max(wordPair.AlignmentScore, inverseWordPair.AlignmentScore);
             }
+        }
+
+        public ITrainer CreateTrainer(IParallelTextCorpus corpus)
+        {
+            CheckDisposed();
+
+            ITrainer directTrainer = _directWordAlignmentModel.CreateTrainer(corpus);
+            ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert());
+
+            return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
         }
 
         protected override void DisposeManagedResources()
