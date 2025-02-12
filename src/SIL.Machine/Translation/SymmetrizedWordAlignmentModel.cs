@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation
         {
             _directWordAlignmentModel = directWordAlignmentModel;
             _inverseWordAlignmentModel = inverseWordAlignmentModel;
-            _aligner = new SymmetrizedWordAligner(DirectWordAlignmentEngine, InverseWordAlignmentEngine);
+            _aligner = new SymmetrizedWordAligner(DirectWordAlignmentModel, InverseWordAlignmentModel);
         }
 
         public SymmetrizationHeuristic Heuristic
@@ -28,7 +28,7 @@ namespace SIL.Machine.Translation
             set => _aligner.Heuristic = value;
         }
 
-        public IWordAlignmentModel DirectWordAlignmentEngine
+        public IWordAlignmentModel DirectWordAlignmentModel
         {
             get
             {
@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public IWordAlignmentModel InverseWordAlignmentEngine
+        public IWordAlignmentModel InverseWordAlignmentModel
         {
             get
             {
