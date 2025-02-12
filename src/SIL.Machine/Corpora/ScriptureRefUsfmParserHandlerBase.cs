@@ -34,6 +34,9 @@ namespace SIL.Machine.Corpora
         protected ScriptureTextType CurrentTextType =>
             _curTextType.Count == 0 ? ScriptureTextType.None : _curTextType.Peek();
 
+        private static readonly string[] EmbedStyles = new[] { "f", "fe", "fig", "fm", "x" };
+        private static readonly char[] EmbedPartStartCharStyles = new[] { 'f', 'x', 'z' };
+
         public override void EndUsfm(UsfmParserState state)
         {
             EndVerseText(state);
@@ -213,14 +216,14 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
-            if (IsEmbedPart(markerWithoutPlus) & InNoteText)
+            if (IsEmbedPartStyle(markerWithoutPlus) & InNoteText)
                 _inNestedEmbed = true;
 
             // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
             // segment
             CheckConvertVerseParaToNonVerse(state);
 
-            if (IsEmbedCharacter(markerWithoutPlus))
+            if (IsEmbedStyle(markerWithoutPlus))
             {
                 _inEmbed = true;
                 StartEmbed(state, markerWithoutPlus);
@@ -239,7 +242,7 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
-            if (IsEmbedPart(marker))
+            if (IsEmbedPartStyle(marker))
             {
                 if (_inNestedEmbed)
                 {
@@ -250,7 +253,7 @@ namespace SIL.Machine.Corpora
                     EndNoteText(state);
                 }
             }
-            if (IsEmbedCharacter(marker))
+            if (IsEmbedStyle(marker))
             {
                 EndEmbed(state, marker, attributes, closed);
                 _inEmbed = false;
@@ -343,7 +346,7 @@ namespace SIL.Machine.Corpora
 
         private void EndEmbedElements()
         {
-            if (_curElements.Count > 0 && IsEmbedCharacter(_curElements.Peek().Name))
+            if (_curElements.Count > 0 && IsEmbedStyle(_curElements.Peek().Name))
                 _curElements.Pop();
         }
 
@@ -380,14 +383,17 @@ namespace SIL.Machine.Corpora
 
         public bool InEmbed(string marker)
         {
-            return _inEmbed || IsEmbedCharacter(marker);
+            return _inEmbed || IsEmbedStyle(marker);
         }
 
         public bool IsInNestedEmbed(string marker)
         {
             return _inNestedEmbed
                 || (
-                    !(marker is null) && marker.StartsWith("+") && marker.Length > 1 && IsEmbedPart(marker.Substring(1))
+                    !(marker is null)
+                    && marker.StartsWith("+")
+                    && marker.Length > 1
+                    && IsEmbedPartStyle(marker.Substring(1))
                 );
         }
 
@@ -396,14 +402,14 @@ namespace SIL.Machine.Corpora
             return marker == "ft";
         }
 
-        public static bool IsEmbedPart(string marker)
+        public static bool IsEmbedPartStyle(string marker)
         {
-            return !(marker is null) && marker.Length > 0 && marker[0].IsOneOf('f', 'x', 'z');
+            return !(marker is null) && marker.Length > 0 && marker[0].IsOneOf(EmbedPartStartCharStyles);
         }
 
-        private static bool IsEmbedCharacter(string marker)
+        private static bool IsEmbedStyle(string marker)
         {
-            return !(marker is null) && marker.IsOneOf("f", "fe", "fig", "fm", "x");
+            return !(marker is null) && marker.IsOneOf(EmbedStyles);
         }
     }
 }
