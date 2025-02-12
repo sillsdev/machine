@@ -6,15 +6,15 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
 {
-    public class SymmetrizedWordAlignmentEngine : DisposableBase, IWordAlignmentEngine
+    public class SymmetrizedWordAlignmentEngine : DisposableBase, IWordAligner
     {
-        private readonly IWordAlignmentEngine _directWordAlignmentEngine;
-        private readonly IWordAlignmentEngine _inverseWordAlignmentEngine;
+        private readonly IWordAlignmentModel _directWordAlignmentEngine;
+        private readonly IWordAlignmentModel _inverseWordAlignmentEngine;
         private readonly SymmetrizedWordAligner _aligner;
 
         public SymmetrizedWordAlignmentEngine(
-            IWordAlignmentEngine directWordAlignmentEngine,
-            IWordAlignmentEngine inverseWordAlignmentEngine
+            IWordAlignmentModel directWordAlignmentEngine,
+            IWordAlignmentModel inverseWordAlignmentEngine
         )
         {
             _directWordAlignmentEngine = directWordAlignmentEngine;
@@ -28,7 +28,7 @@ namespace SIL.Machine.Translation
             set => _aligner.Heuristic = value;
         }
 
-        public IWordAlignmentEngine DirectWordAlignmentEngine
+        public IWordAligner DirectWordAlignmentEngine
         {
             get
             {
@@ -38,7 +38,7 @@ namespace SIL.Machine.Translation
             }
         }
 
-        public IWordAlignmentEngine InverseWordAlignmentEngine
+        public IWordAligner InverseWordAlignmentEngine
         {
             get
             {
