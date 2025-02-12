@@ -1,4 +1,6 @@
-﻿using SIL.Machine.Corpora;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using SIL.Machine.Corpora;
 
 namespace SIL.Machine.Translation
 {
@@ -25,6 +27,20 @@ namespace SIL.Machine.Translation
             ITrainer inverseTrainer = _inverseWordAlignmentModel.CreateTrainer(corpus.Invert());
 
             return new SymmetrizedWordAlignmentModelTrainer(directTrainer, inverseTrainer);
+        }
+
+        public void Save()
+        {
+            CheckDisposed();
+            _directWordAlignmentModel.Save();
+            _inverseWordAlignmentModel.Save();
+        }
+
+        public async Task SaveAsync(CancellationToken cancellationToken = default)
+        {
+            CheckDisposed();
+            await _directWordAlignmentModel.SaveAsync(cancellationToken);
+            await _inverseWordAlignmentModel.SaveAsync(cancellationToken);
         }
 
         protected override void DisposeManagedResources()

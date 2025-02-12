@@ -8,33 +8,31 @@ namespace SIL.Machine.Corpora
     {
         public static IReadOnlyCollection<AlignedWordPair> Parse(string alignments, bool invert = false)
         {
+            TryParse(alignments, out IReadOnlyCollection<AlignedWordPair> alignedWordPairs);
+            return alignedWordPairs;
+        }
+
+        public static bool TryParse(
+            string alignments,
+            out IReadOnlyCollection<AlignedWordPair> alignedWordPairs,
+            bool invert = false
+        )
+        {
+            bool success = true;
             var result = new List<AlignedWordPair>();
             foreach (string token in alignments.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 int dashIndex = token.IndexOf('-');
-                int i = int.Parse(token.Substring(0, dashIndex));
+                success &= TryParseIndex(token.Substring(0, dashIndex), out int i);
 
                 int colonIndex = token.IndexOf(':', dashIndex + 1);
                 int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
-                int j = int.Parse(token.Substring(dashIndex + 1, length));
+                success &= TryParseIndex(token.Substring(dashIndex + 1, length), out int j);
 
                 result.Add(invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j));
             }
-            return result;
-        }
-
-        public static bool TryParse(string alignments, out IReadOnlyCollection<AlignedWordPair> alignedWordPairs)
-        {
-            alignedWordPairs = null;
-            try
-            {
-                alignedWordPairs = Parse(alignments);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            alignedWordPairs = result;
+            return success;
         }
 
         public AlignedWordPair(int sourceIndex, int targetIndex)
@@ -90,6 +88,27 @@ namespace SIL.Machine.Corpora
                     sb.Append($":{AlignmentScore:0.########}");
             }
             return sb.ToString();
+        }
+
+        private static bool TryParseIndex(string indexString, out int index)
+        {
+            if (int.TryParse(indexString, out int indexNum))
+            {
+                index = indexNum;
+                return true;
+            }
+            if (indexString == "NULL")
+            {
+                index = -1;
+                return true;
+            }
+            index = -1;
+            return false;
+        }
+
+        public static int ParseIndex(string indexString)
+        {
+            return int.TryParse(indexString, out int index) ? index : -1;
         }
     }
 }

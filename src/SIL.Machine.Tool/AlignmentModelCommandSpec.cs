@@ -37,7 +37,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
         _modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
         _modelTypeOption = command.Option(
             "-mt|--model-type <MODEL_TYPE>",
-            $"The word alignment model type.\nTypes: \"{ThotWordAlignmentHelpers.Hmm}\" (default), \"{ThotWordAlignmentHelpers.Ibm1}\", \"{ThotWordAlignmentHelpers.Ibm2}\", \"{ThotWordAlignmentHelpers.Ibm3}\", \"{ThotWordAlignmentHelpers.Ibm4}\", \"{ThotWordAlignmentHelpers.FastAlign}\".",
+            $"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.Ibm3}\", \"{ToolHelpers.Ibm4}\", \"{ToolHelpers.FastAlign}\".",
             CommandOptionType.SingleValue
         );
         _pluginOption = command.Option(
@@ -90,7 +90,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
         ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.Hmm;
         if (_modelTypeOption.HasValue())
         {
-            modelType = ThotWordAlignmentHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
+            modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
         }
         else
         {
@@ -103,7 +103,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
                     yaml.Load(reader);
                     var root = (YamlMappingNode)yaml.Documents.First().RootNode;
                     var modelTypeStr = (string)root[new YamlScalarNode("model")];
-                    modelType = ThotWordAlignmentHelpers.GetThotWordAlignmentModelType(modelTypeStr);
+                    modelType = ToolHelpers.GetThotWordAlignmentModelType(modelTypeStr);
                 }
             }
         }
@@ -144,9 +144,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
             return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize, parameters, direct);
         }
 
-        ThotWordAlignmentModelType modelType = ThotWordAlignmentHelpers.GetThotWordAlignmentModelType(
-            _modelTypeOption.Value()
-        );
+        ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
 
         string modelPath = _modelArgument.Value;
         if (ToolHelpers.IsDirectoryPath(modelPath))
@@ -229,12 +227,12 @@ public class AlignmentModelCommandSpec : ICommandSpec
     {
         var validTypes = new HashSet<string>
         {
-            ThotWordAlignmentHelpers.Hmm,
-            ThotWordAlignmentHelpers.Ibm1,
-            ThotWordAlignmentHelpers.Ibm2,
-            ThotWordAlignmentHelpers.FastAlign,
-            ThotWordAlignmentHelpers.Ibm3,
-            ThotWordAlignmentHelpers.Ibm4
+            ToolHelpers.Hmm,
+            ToolHelpers.Ibm1,
+            ToolHelpers.Ibm2,
+            ToolHelpers.FastAlign,
+            ToolHelpers.Ibm3,
+            ToolHelpers.Ibm4
         };
         validTypes.UnionWith(pluginTypes);
         return string.IsNullOrEmpty(value) || validTypes.Contains(value);
