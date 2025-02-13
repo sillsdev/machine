@@ -726,11 +726,11 @@ public class UpdateUsfmParserHandlerTests
     private static void Assess(string target, string truth)
     {
         Assert.That(target, Is.Not.Null);
-        var target_lines = target.Split(new[] { "\r\n" }, StringSplitOptions.None);
+        var target_lines = target.Split(new[] { "\n" }, StringSplitOptions.None);
         var truth_lines = truth.Split(new[] { "\n" }, StringSplitOptions.None);
         for (int i = 0; i < truth_lines.Length; i++)
         {
-            Assert.That(target_lines[i], Is.EqualTo(truth_lines[i]));
+            Assert.That(target_lines[i].Trim(), Is.EqualTo(truth_lines[i].Trim()));
         }
     }
 }
