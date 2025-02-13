@@ -24,8 +24,8 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
             string fullName = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
-            UpdateUsfmIntraVerseMarkerBehavior embedBehavior = UpdateUsfmIntraVerseMarkerBehavior.Preserve,
-            UpdateUsfmIntraVerseMarkerBehavior styleBehavior = UpdateUsfmIntraVerseMarkerBehavior.Strip
+            UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
+            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
         )
         {
             string fileName = _settings.GetBookFileName(bookId);

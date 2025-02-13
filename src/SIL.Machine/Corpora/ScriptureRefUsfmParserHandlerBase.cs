@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
         private bool _duplicateVerse = false;
 
         private bool _inEmbed;
-        public bool InNoteText { get; private set; }
+        protected bool InNoteText { get; private set; }
         private bool _inNestedEmbed;
 
         protected ScriptureRefUsfmParserHandlerBase()
@@ -168,12 +168,12 @@ namespace SIL.Machine.Corpora
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
-            EndNoteText(state);
+            EndNoteTextWrapper(state);
             EndEmbed(state, marker, null, closed);
             _inEmbed = false;
         }
 
-        public void StartEmbed(UsfmParserState state, string marker)
+        protected void StartEmbed(UsfmParserState state, string marker)
         {
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
@@ -188,9 +188,9 @@ namespace SIL.Machine.Corpora
             StartEmbed(state, CreateNonVerseRef());
         }
 
-        public virtual void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        public virtual void EndEmbed(
+        protected virtual void EndEmbed(
             UsfmParserState state,
             string marker,
             IReadOnlyList<UsfmAttribute> attributes,
@@ -250,7 +250,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    EndNoteText(state);
+                    EndNoteTextWrapper(state);
                 }
             }
             if (IsEmbedStyle(marker))
@@ -268,7 +268,7 @@ namespace SIL.Machine.Corpora
 
         protected virtual void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        public virtual void StartNoteTextWrapper(UsfmParserState state)
+        protected virtual void StartNoteTextWrapper(UsfmParserState state)
         {
             InNoteText = true;
             _curTextType.Push(ScriptureTextType.NoteText);
@@ -277,7 +277,7 @@ namespace SIL.Machine.Corpora
 
         protected virtual void StartNoteText(UsfmParserState state) { }
 
-        public virtual void EndNoteText(UsfmParserState state)
+        protected virtual void EndNoteTextWrapper(UsfmParserState state)
         {
             if (_curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.NoteText)
             {
@@ -381,12 +381,12 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        public bool InEmbed(string marker)
+        protected bool IsInEmbed(string marker)
         {
             return _inEmbed || IsEmbedStyle(marker);
         }
 
-        public bool IsInNestedEmbed(string marker)
+        protected bool IsInNestedEmbed(string marker)
         {
             return _inNestedEmbed
                 || (
@@ -397,17 +397,17 @@ namespace SIL.Machine.Corpora
                 );
         }
 
-        private static bool IsNoteText(string marker)
+        protected static bool IsNoteText(string marker)
         {
             return marker == "ft";
         }
 
-        public static bool IsEmbedPartStyle(string marker)
+        protected static bool IsEmbedPartStyle(string marker)
         {
             return !(marker is null) && marker.Length > 0 && marker[0].IsOneOf(EmbedPartStartCharStyles);
         }
 
-        private static bool IsEmbedStyle(string marker)
+        protected static bool IsEmbedStyle(string marker)
         {
             return !(marker is null) && marker.IsOneOf(EmbedStyles);
         }

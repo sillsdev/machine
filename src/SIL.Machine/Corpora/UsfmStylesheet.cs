@@ -111,7 +111,7 @@ namespace SIL.Machine.Corpora
             return false;
         }
 
-        private static IEnumerable<string> GetEmbedStylesheet(string fileName)
+        private static IEnumerable<string> GetEmbeddedStylesheet(string fileName)
         {
             using (
                 var reader = new StreamReader(
@@ -136,7 +136,7 @@ namespace SIL.Machine.Corpora
             {
                 string fileName = Path.GetFileName(stylesheetFileName);
                 if (fileName == "usfm.sty" || fileName == "usfm_sb.sty")
-                    lines = GetEmbedStylesheet(fileName);
+                    lines = GetEmbeddedStylesheet(fileName);
                 else
                     throw new ArgumentException("The stylesheet does not exist.", nameof(stylesheetFileName));
             }
