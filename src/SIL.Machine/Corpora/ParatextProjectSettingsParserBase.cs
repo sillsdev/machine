@@ -40,22 +40,7 @@ namespace SIL.Machine.Corpora
             {
                 var guid = (string)settingsDoc.Root.Element("Guid");
                 string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
-                if (Versification.Table.Implementation.Exists(versName))
-                {
-                    versification = new ScrVers(versName);
-                }
-                else
-                {
-                    using (var reader = new StreamReader(Open("custom.vrs")))
-                    {
-                        versification = Versification.Table.Implementation.Load(
-                            reader,
-                            "custom.vrs",
-                            versification,
-                            versName
-                        );
-                    }
-                }
+                versification = new ScrVers(versName);
             }
 
             var stylesheetFileName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
