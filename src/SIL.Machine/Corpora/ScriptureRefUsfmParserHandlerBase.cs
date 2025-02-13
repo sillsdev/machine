@@ -23,6 +23,7 @@ namespace SIL.Machine.Corpora
 
         private bool _inEmbed;
         public bool InNoteText { get; private set; }
+        private bool _inNestedEmbed;
 
         protected ScriptureRefUsfmParserHandlerBase()
         {
@@ -159,7 +160,7 @@ namespace SIL.Machine.Corpora
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
             _inEmbed = true;
-            StartEmbed(state, marker, caller, category);
+            StartEmbed(state, marker);
         }
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
@@ -169,7 +170,7 @@ namespace SIL.Machine.Corpora
             _inEmbed = false;
         }
 
-        public virtual void StartEmbed(UsfmParserState state, string marker, string caller, string category)
+        public void StartEmbed(UsfmParserState state, string marker)
         {
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
@@ -180,7 +181,11 @@ namespace SIL.Machine.Corpora
                 CheckConvertVerseParaToNonVerse(state);
                 NextElement(marker);
             }
+
+            StartEmbed(state, CreateNonVerseRef());
         }
+
+        public virtual void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef) { }
 
         public virtual void EndEmbed(
             UsfmParserState state,
@@ -208,8 +213,8 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
-            if (IsEmbedPart(markerWithoutPlus))
-                EndNoteText(state);
+            if (IsEmbedPart(markerWithoutPlus) & InNoteText)
+                _inNestedEmbed = true;
 
             // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
             // segment
@@ -218,12 +223,12 @@ namespace SIL.Machine.Corpora
             if (IsEmbedCharacter(markerWithoutPlus))
             {
                 _inEmbed = true;
-                StartEmbed(state, markerWithoutPlus, null, null);
+                StartEmbed(state, markerWithoutPlus);
             }
 
             if (IsNoteText(markerWithoutPlus))
             {
-                StartNoteText(state);
+                StartNoteTextWrapper(state);
             }
         }
 
@@ -234,6 +239,17 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
+            if (IsEmbedPart(marker))
+            {
+                if (_inNestedEmbed)
+                {
+                    _inNestedEmbed = false;
+                }
+                else
+                {
+                    EndNoteText(state);
+                }
+            }
             if (IsEmbedCharacter(marker))
             {
                 EndEmbed(state, marker, attributes, closed);
@@ -249,14 +265,14 @@ namespace SIL.Machine.Corpora
 
         protected virtual void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        public virtual void StartNoteText(UsfmParserState state)
+        public virtual void StartNoteTextWrapper(UsfmParserState state)
         {
             InNoteText = true;
             _curTextType.Push(ScriptureTextType.NoteText);
-            StartNoteText(state, CreateNonVerseRef());
+            StartNoteText(state);
         }
 
-        protected virtual void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void StartNoteText(UsfmParserState state) { }
 
         public virtual void EndNoteText(UsfmParserState state)
         {
@@ -367,6 +383,14 @@ namespace SIL.Machine.Corpora
             return _inEmbed || IsEmbedCharacter(marker);
         }
 
+        public bool IsInNestedEmbed(string marker)
+        {
+            return _inNestedEmbed
+                || (
+                    !(marker is null) && marker.StartsWith("+") && marker.Length > 1 && IsEmbedPart(marker.Substring(1))
+                );
+        }
+
         private static bool IsNoteText(string marker)
         {
             return marker == "ft";
@@ -379,7 +403,7 @@ namespace SIL.Machine.Corpora
 
         private static bool IsEmbedCharacter(string marker)
         {
-            return marker.IsOneOf("f", "fe", "fig", "fm", "x");
+            return !(marker is null) && marker.IsOneOf("f", "fe", "fig", "fm", "x");
         }
     }
 }

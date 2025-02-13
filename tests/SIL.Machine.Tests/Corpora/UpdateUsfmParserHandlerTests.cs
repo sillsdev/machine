@@ -45,13 +45,25 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 1:6"), "Text 6"),
-            (ScrRef("MAT 1:7"), "Text 7"),
+            (ScrRef("MAT 1:1"), "Update 1"),
+            (ScrRef("MAT 1:2"), "Update 2"),
         };
-        string target = UpdateUsfm(rows, textBehavior: UpdateUsfmTextBehavior.PreferExisting);
-        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
-        Assert.That(target, Contains.Substring("\\v 6 Verse 6 content.\r\n"));
-        Assert.That(target, Contains.Substring("\\v 7 Text 7\r\n"));
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+";
+        string target = UpdateUsfm(rows, usfm, textBehavior: UpdateUsfmTextBehavior.PreferExisting);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+";
+        Assess(target, result);
     }
 
     [Test]
@@ -81,74 +93,25 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_Verse_StripNotesWithUpdatedVerseText()
+    public void GetUsfm_Verse_ReplaceNote()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 1:1"), "First verse of the first chapter.")
+            (ScrRef("MAT 1:1"), "updated text"),
+            (ScrRef("MAT 1:1/1:f"), "This is a new footnote.")
         };
-
-        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
-        Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
-        Assert.That(
-            target,
-            Contains.Substring("\\ip An introduction to Matthew with an empty comment\\fe + \\ft \\fe*")
-        );
-        Assert.That(target, Contains.Substring("\\v 1 First verse of the first chapter.\r\n\\li1\r\n\\v 2"));
-    }
-
-    [Test]
-    public void GetUsfm_Verse_ReplaceNoteKeepReference()
-    {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 2:1"), "First verse of the second chapter."),
-            (ScrRef("MAT 2:1/1:f"), "This is a new footnote.")
-        };
-
-        string target = UpdateUsfm(rows);
-        Assert.That(
-            target,
-            Contains.Substring(
-                "\\v 1 First verse of the second chapter. \\f + \\fr 2:1: \\ft This is a new footnote. \\f*\r\n"
-            )
-        );
-    }
-
-    [Test]
-    public void GetUsfm_Verse_PreserveFiguresAndReferences()
-    {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            // fig
-            (ScrRef("MAT 1:5"), "Fifth verse of the first chapter."),
-            (ScrRef("MAT 1:5/1:fig"), "figure text not updated"),
-            // r
-            (ScrRef("MAT 2:0/1:r"), "parallel reference not updated"),
-            // rq
-            (ScrRef("MAT 2:5/1:rq"), "quote reference not updated"),
-            // xo
-            (ScrRef("MAT 2:6/3:xo"), "Cross reference not update"),
-            // xt
-            (ScrRef("MAT 2:6/4:xt"), "cross reference - target reference not updated"),
-            // xta
-            (ScrRef("MAT 2:6/5:xta"), "cross reference annotation updated"),
-        };
-
-        string target = UpdateUsfm(rows);
-        Assert.That(
-            target,
-            Contains.Substring(
-                "\\v 5 Fifth verse of the first chapter.\r\n\\li2 \\fig Figure 1|src=\"image1.png\" size=\"col\" ref=\"1:5\"\\fig*\r\n\\v 6"
-            )
-        );
-        Assert.That(target, Contains.Substring("\\r (Mark 1:2-3; Luke 4:5-6)\r\n"));
-        Assert.That(
-            target,
-            Contains.Substring(
-                "\\v 6 Bad verse. \\x - \\xo 2:3-4 \\xt Cool Book 3:24 \\xta The annotation \\x* and more content.\r\n"
-            )
-        );
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Chapter \add one\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 updated text \f + \fr 2:1: \ft This is a new footnote. \f*
+";
+        Assess(target, result);
     }
 
     [Test]
@@ -163,7 +126,7 @@ public class UpdateUsfmParserHandlerTests
         Assert.That(
             target,
             Contains.Substring(
-                "\\v 1 First verse of the second chapter. \\f + \\fr 2:1: \\ft This is a \\bd footnote.\\bd*\\f*\r\n"
+                "\\v 1 First verse of the second chapter. \\f + \\fr 2:1: \\ft This is a footnote.\\f*\r\n"
             )
         );
     }
@@ -421,18 +384,6 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_NonVerse_KeepNote()
-    {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
-        };
-
-        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve);
-        Assert.That(target, Contains.Substring("\\ip The introductory paragraph. \\fe + \\ft \\fe*\r\n"));
-    }
-
-    [Test]
     public void GetUsfm_NonVerse_SkipNote()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
@@ -513,7 +464,235 @@ public class UpdateUsfmParserHandlerTests
         };
 
         string target = UpdateUsfm(rows);
-        Assert.That(target, Contains.Substring("\\ip The introductory paragraph. \\fe + \\ft \\fe*\r\n"));
+        Assert.That(
+            target,
+            Contains.Substring("\\ip The introductory paragraph. \\fe + \\ft This is an endnote.\\fe*\r\n")
+        );
+    }
+
+    [Test]
+    public void EmbedStylePreservation()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update the greeting"),
+            (ScrRef("MAT 1:1/1:f"), "Update the comment"),
+            (ScrRef("MAT 1:2"), "Update the greeting only"),
+            (ScrRef("MAT 1:3/1:f"), "Update the comment only"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Hello \f \fr 1.1 \ft Some \+bd note\+bd* \f*\bd World \bd*
+\v 2 Good \f \fr 1.2 \ft Some other \+bd note\+bd* \f*\bd Morning \bd*
+\v 3 Pleasant \f \fr 1.3 \ft A third \+bd note\+bd* \f*\bd Evening \bd*
+";
+        var target = UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve
+        );
+        var resultPp =
+            @"\id MAT - Test
+\c 1
+\v 1 Update the greeting \f \fr 1.1 \ft Update the comment \+bd \+bd*\f*\bd \bd*
+\v 2 Update the greeting only \f \fr 1.2 \ft Some other \+bd note\+bd* \f*\bd \bd*
+\v 3 Pleasant \f \fr 1.3 \ft Update the comment only \+bd \+bd*\f*\bd Evening \bd*
+";
+        Assess(target, resultPp);
+
+        target = UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip
+        );
+        var resultPs =
+            @"\id MAT - Test
+\c 1
+\v 1 Update the greeting \f \fr 1.1 \ft Update the comment \f*
+\v 2 Update the greeting only \f \fr 1.2 \ft Some other \+bd note\+bd* \f*
+\v 3 Pleasant \f \fr 1.3 \ft Update the comment only \f*\bd Evening \bd*
+";
+        Assess(target, resultPs);
+
+        target = UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve
+        );
+        var resultSp =
+            @"\id MAT - Test
+\c 1
+\v 1 Update the greeting \bd \bd*
+\v 2 Update the greeting only \bd \bd*
+\v 3 Pleasant \bd Evening \bd*
+";
+        Assess(target, resultSp);
+
+        target = UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip
+        );
+        var resultSs =
+            @"\id MAT - Test
+\c 1
+\v 1 Update the greeting
+\v 2 Update the greeting only
+\v 3 Pleasant \bd Evening \bd*
+";
+        Assess(target, resultSs);
+    }
+
+    [Test]
+    public void EmptyNote()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1/1:f"), "Update the note") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Empty Note \f \fr 1.1 \ft \f*
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Empty Note \f \fr 1.1 \ft Update the note \f*
+";
+        Assess(target, result);
+    }
+
+    [Test]
+    public void CrossReferenceDontUpdate()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1/1:x"), "Update the cross reference"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Cross reference verse \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Cross reference verse \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
+";
+        Assess(target, result);
+    }
+
+    [Test]
+    public void PreserveFigAndFm()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update"), };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 initial text \fig stuff\fig* more text \fm * \fm* and more.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update \fig stuff\fig*\fm * \fm*
+";
+        Assess(target, result);
+    }
+
+    [Test]
+    public void NestedXt()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update text"),
+            (ScrRef("MAT 1:1/1:f"), "Update note"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 initial text \f + \fr 15.8 \ft Text (\+xt reference\+xt*). And more.\f* and the end.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text \f + \fr 15.8 \ft Update note \+xt reference\+xt*\f*
+";
+        Assess(target, result);
+
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        var result2 =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text
+";
+        Assess(target, result2);
+    }
+
+    [Test]
+    public void NonNestedXt()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update text"),
+            (ScrRef("MAT 1:1/1:f"), "Update note"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 initial text \f + \fr 15.8 \ft Text \xt reference\f* and the end.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text \f + \fr 15.8 \ft Update note \xt reference\f*
+";
+        Assess(target, result);
+
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        var result2 =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text
+";
+        Assess(target, result2);
+    }
+
+    [Test]
+    public void MultipleFtOnlyUpdateFirst()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update text"),
+            (ScrRef("MAT 1:1/1:f"), "Update note"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 initial text \f + \fr 15.8 \ft first note \ft second note\f* and the end.
+";
+        var target = UpdateUsfm(rows, usfm);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text \f + \fr 15.8 \ft Update note \ft second note\f*
+";
+        Assess(target, result);
+
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        var result2 =
+            @"\id MAT - Test
+\c 1
+\v 1 Update text
+";
+        Assess(target, result2);
     }
 
     private static ScriptureRef[] ScrRef(params string[] refs)
@@ -541,6 +720,17 @@ public class UpdateUsfmParserHandlerTests
             var updater = new UpdateUsfmParserHandler(rows, idText, textBehavior, embedBehavior, styleBehavior);
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
+        }
+    }
+
+    private static void Assess(string target, string truth)
+    {
+        Assert.That(target, Is.Not.Null);
+        var target_lines = target.Split(new[] { "\r\n" }, StringSplitOptions.None);
+        var truth_lines = truth.Split(new[] { "\n" }, StringSplitOptions.None);
+        for (int i = 0; i < truth_lines.Length; i++)
+        {
+            Assert.That(target_lines[i], Is.EqualTo(truth_lines[i]));
         }
     }
 }
