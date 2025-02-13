@@ -19,22 +19,22 @@ public class UsfmTokenizerTests
         Assert.That(tokens[0].LineNumber, Is.EqualTo(1));
         Assert.That(tokens[0].ColumnNumber, Is.EqualTo(1));
 
-        Assert.That(tokens[37].Type, Is.EqualTo(UsfmTokenType.Text));
-        Assert.That(tokens[37].Text, Is.EqualTo("Chapter One "));
-        Assert.That(tokens[37].LineNumber, Is.EqualTo(10));
-        Assert.That(tokens[37].ColumnNumber, Is.EqualTo(4));
+        Assert.That(tokens[30].Type, Is.EqualTo(UsfmTokenType.Text));
+        Assert.That(tokens[30].Text, Is.EqualTo("Chapter One "));
+        Assert.That(tokens[30].LineNumber, Is.EqualTo(9));
+        Assert.That(tokens[30].ColumnNumber, Is.EqualTo(4));
 
-        Assert.That(tokens[38].Type, Is.EqualTo(UsfmTokenType.Verse));
-        Assert.That(tokens[38].Marker, Is.EqualTo("v"));
-        Assert.That(tokens[38].Data, Is.EqualTo("1"));
-        Assert.That(tokens[38].LineNumber, Is.EqualTo(11));
-        Assert.That(tokens[38].ColumnNumber, Is.EqualTo(1));
+        Assert.That(tokens[31].Type, Is.EqualTo(UsfmTokenType.Verse));
+        Assert.That(tokens[31].Marker, Is.EqualTo("v"));
+        Assert.That(tokens[31].Data, Is.EqualTo("1"));
+        Assert.That(tokens[31].LineNumber, Is.EqualTo(10));
+        Assert.That(tokens[31].ColumnNumber, Is.EqualTo(1));
 
-        Assert.That(tokens[47].Type, Is.EqualTo(UsfmTokenType.Note));
-        Assert.That(tokens[47].Marker, Is.EqualTo("f"));
-        Assert.That(tokens[47].Data, Is.EqualTo("+"));
-        Assert.That(tokens[47].LineNumber, Is.EqualTo(11));
-        Assert.That(tokens[47].ColumnNumber, Is.EqualTo(52));
+        Assert.That(tokens[40].Type, Is.EqualTo(UsfmTokenType.Note));
+        Assert.That(tokens[40].Marker, Is.EqualTo("f"));
+        Assert.That(tokens[40].Data, Is.EqualTo("+"));
+        Assert.That(tokens[40].LineNumber, Is.EqualTo(10));
+        Assert.That(tokens[40].ColumnNumber, Is.EqualTo(48));
     }
 
     [Test]

@@ -1,20 +1,19 @@
 \id MAT - Test
-\f + \fr 1.0 \ft \f*
 \h Matthew
 \mt Matthew
-\ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
+\ip An introduction to Matthew with an empty comment\fe + \ft \fe*
 \p \rq MAT 1\rq* Here is another paragraph.
 \p and with a \w keyword|a special concept\w* in it.
 \p and a \weirdtaglookingthing that is not an actual tag.
 \c 1
 \s Chapter One
-\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
+\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse \f + \fr 1:1: \ft This is a footnote for v1.\f*one.
 \li1
 \v 2 \bd C\bd*hapter one,
-\li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
+\li2 verse\f + \fr 1:2: \ft This is a footnote for v2.\f* two.
 \v 3 Chapter one \w*,
 \li2 verse three.
-\v 4 Chapter one, 
+\v 4 Chapter one,
 \li2 verse four,
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
@@ -27,7 +26,7 @@
 \s1 Chapter \it Two \it*
 \p
 \p
-\v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
+\v 1 Chapter \add two\add*, verse \f + \fr 2:1: \ft This is a \bd footnote.\bd*\f*one.
 \v 2-3 Chapter two, // verse \fm ∆\fm*two.
 \esb
 \ms This is a sidebar
@@ -38,9 +37,9 @@
 \p
 \v 6 Chapter two, verse \w six|strong="12345" \w*.
 \p
-\v 6 Bad verse. \x - \xo abc\xt 123\x* and more content.
+\v 6 Bad verse. \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
 \p
-\v 5 Chapter two, verse five \rq (MAT 3:1)\rq*.
+\v 5 Chapter two, verse five\rq (MAT 3:1)\rq*.
 \v 7a Chapter two, verse seven A,
 \s Section header \ts-s\*
 \p
@@ -55,6 +54,7 @@
 \v 11-12
 \restore restore information
 \c 3
+\r (Mark 1:2-3; Luke 4:5-6)
 \cl PSALM 3
 \s1 Section 1
 \mt1 Major Title 1

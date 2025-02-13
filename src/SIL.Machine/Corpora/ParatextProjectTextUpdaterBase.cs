@@ -23,7 +23,9 @@ namespace SIL.Machine.Corpora
             string bookId,
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
             string fullName = null,
-            UpdateUsfmBehavior behavior = UpdateUsfmBehavior.PreferExisting
+            UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
+            UpdateUsfmIntraVerseMarkerBehavior embedBehavior = UpdateUsfmIntraVerseMarkerBehavior.Preserve,
+            UpdateUsfmIntraVerseMarkerBehavior styleBehavior = UpdateUsfmIntraVerseMarkerBehavior.Strip
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -36,7 +38,13 @@ namespace SIL.Machine.Corpora
                 usfm = reader.ReadToEnd();
             }
 
-            var handler = new UpdateUsfmParserHandler(rows, fullName is null ? null : $"- {fullName}", behavior);
+            var handler = new UpdateUsfmParserHandler(
+                rows,
+                fullName is null ? null : $"- {fullName}",
+                textBehavior,
+                embedBehavior,
+                styleBehavior
+            );
             try
             {
                 UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
