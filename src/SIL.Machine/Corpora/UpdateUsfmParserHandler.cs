@@ -385,7 +385,7 @@ namespace SIL.Machine.Corpora
             string marker = state?.Token?.Marker;
             bool inEmbed = InEmbed(marker);
             bool inNestedEmbed = IsInNestedEmbed(marker);
-            bool isStyleTag = marker != null && !IsEmbedPart(marker);
+            bool isStyleTag = marker != null && !IsEmbedPartStyle(marker);
 
             bool existingText = state
                 .Tokens.Skip(_tokenIndex)

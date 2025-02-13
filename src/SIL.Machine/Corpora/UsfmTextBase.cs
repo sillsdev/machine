@@ -258,7 +258,9 @@ namespace SIL.Machine.Corpora
                 }
                 else if (text.Length > 0 && (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText))
                 {
-                    if (InEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker)))
+                    bool isEmbedOrNestedDontUpdate =
+                        InEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker));
+                    if (isEmbedOrNestedDontUpdate)
                         return;
 
                     if (
