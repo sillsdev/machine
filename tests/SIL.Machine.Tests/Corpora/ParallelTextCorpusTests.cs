@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Internal;
 using SIL.Scripture;
+using SIL.Scripture.Extensions;
 
 namespace SIL.Machine.Corpora;
 
@@ -1149,6 +1151,545 @@ public class ParallelTextCorpusTests
         {
             Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
             Flags = flags
+        };
+    }
+
+    [Test]
+    public void GetRows_AllDeuterocanonicalBooks_WithAlignments()
+    {
+        string[] deuterocanonicalBooks = new[]
+        {
+            "TOB",
+            "JDT",
+            "WIS",
+            "SIR",
+            "BAR",
+            "1MA",
+            "2MA",
+            "LJE",
+            "S3Y",
+            "SUS",
+            "BEL"
+        };
+
+        MemoryText CreateMemoryText(string bookId, string segmentType)
+        {
+            return new MemoryText(
+                bookId,
+                new[] { TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"{segmentType} segment for {bookId}.") }
+            );
+        }
+
+        MemoryAlignmentCollection CreateMemoryAlignment(string bookId)
+        {
+            return new MemoryAlignmentCollection(
+                bookId,
+                new[] { AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0)) }
+            );
+        }
+
+        DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks.Select(bookId => CreateMemoryText(bookId, "source")).ToArray()
+        );
+
+        DictionaryTextCorpus targetCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks.Select(bookId => CreateMemoryText(bookId, "target")).ToArray()
+        );
+
+        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
+            deuterocanonicalBooks.Select(CreateMemoryAlignment).ToArray()
+        );
+
+        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+
+        Assert.That(rows.Length, Is.EqualTo(deuterocanonicalBooks.Length));
+        Assert.That(rows.Select(r => r.TextId).ToArray(), Is.EquivalentTo(deuterocanonicalBooks));
+
+        foreach (ParallelTextRow row in rows)
+        {
+            ScriptureRef? expectedRef = ScriptureRef.Parse($"{row.TextId} 1:1");
+            Assert.That(row.SourceRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(row.TargetRefs, Is.EqualTo(new[] { expectedRef }));
+            Assert.That(row.SourceSegment, Is.EqualTo(new[] { "source", "segment", "for", row.TextId + "." }));
+            Assert.That(row.TargetSegment, Is.EqualTo(new[] { "target", "segment", "for", row.TextId + "." }));
+            Assert.That(row.AlignedWordPairs, Is.EquivalentTo(new[] { new AlignedWordPair(0, 0) }));
+        }
+    }
+
+    [Test]
+    public void GetRows_MultipleRowsPerBookWithMismatches()
+    {
+        string[] deuterocanonicalBooks = new[]
+        {
+            "TOB",
+            "JDT",
+            "WIS",
+            "SIR",
+            "BAR",
+            "1MA",
+            "2MA",
+            "LJE",
+            "S3Y",
+            "SUS",
+            "BEL"
+        };
+
+        DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(
+                    bookId,
+                    new[]
+                    {
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"source segment 1 for {bookId}."),
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:2"), $"source segment 2 for {bookId}."),
+                    }
+                ))
+                .ToArray()
+        )
+        {
+            Versification = ScrVers.Original
+        };
+
+        DictionaryTextCorpus targetCorpus = new DictionaryTextCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryText(
+                    bookId,
+                    new[]
+                    {
+                        TextRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), $"target segment 1 for {bookId}.")
+                        // Missing row 1:2 to simulate mismatch
+                    }
+                ))
+                .ToArray()
+        )
+        {
+            Versification = ScrVers.Original
+        };
+
+        DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
+            deuterocanonicalBooks
+                .Select(bookId => new MemoryAlignmentCollection(
+                    bookId,
+                    new[]
+                    {
+                        AlignmentRow(bookId, ScriptureRef.Parse($"{bookId} 1:1"), new AlignedWordPair(0, 0))
+                        // No alignment for 1:2 since it is missing in target
+                    }
+                ))
+                .ToArray()
+        );
+
+        ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
+        {
+            AllSourceRows = true
+        };
+
+        var rows = parallelCorpus;
+        int totalRowsProcessed = rows.Count();
+
+        int sourceRefMismatchCount = 0;
+        int targetRefMismatchCount = 0;
+        int sourceSegmentMismatchCount = 0;
+
+        string mismatchReport = "";
+        HashSet<string> processedBooks = new HashSet<string>();
+
+        foreach (ParallelTextRow row in rows)
+        {
+            string bookId = row.TextId;
+            processedBooks.Add(bookId);
+
+            ScriptureRef expectedRef = ScriptureRef.Parse($"{bookId} 1:1");
+
+            var sourceRef = row.SourceRefs.FirstOrDefault();
+            if (sourceRef == null || expectedRef.CompareTo(sourceRef) != 0)
+            {
+                sourceRefMismatchCount++;
+                mismatchReport += $"Mismatch in SourceRefs for {bookId}. Expected: {expectedRef}, Found: {sourceRef}\n";
+            }
+
+            var targetRef = row.TargetRefs.FirstOrDefault();
+            if (targetRef == null || expectedRef.CompareTo(targetRef) != 0)
+            {
+                targetRefMismatchCount++;
+                mismatchReport += $"Mismatch in TargetRefs for {bookId}. Expected: {expectedRef}, Found: {targetRef}\n";
+            }
+
+            string[] expectedSourceSegment = new[] { "source", "segment", "1", "for", bookId + "." };
+            if (!row.SourceSegment.SequenceEqual(expectedSourceSegment))
+            {
+                sourceSegmentMismatchCount++;
+                mismatchReport +=
+                    $"Mismatch in SourceSegment for {bookId}. Expected: {string.Join(" ", expectedSourceSegment)}, Found: {string.Join(" ", row.SourceSegment)}\n";
+            }
+        }
+
+        // Check for missing books
+        var missingBooks = deuterocanonicalBooks.Except(processedBooks).ToList();
+        if (missingBooks.Any())
+        {
+            mismatchReport += $"Missing books from processing: {string.Join(", ", missingBooks)}\n";
+        }
+
+        if (!string.IsNullOrEmpty(mismatchReport))
+        {
+            TestContext.WriteLine("Mismatches found:");
+            TestContext.WriteLine(mismatchReport);
+        }
+        else
+        {
+            TestContext.WriteLine("No mismatches found. All rows match as expected.");
+        }
+
+        Assert.That(totalRowsProcessed, Is.EqualTo(22), "Total rows processed should be 22.");
+        Assert.That(sourceRefMismatchCount, Is.EqualTo(11), "There should be 11 mismatches for the source ref.");
+        Assert.That(targetRefMismatchCount, Is.EqualTo(11), "There should be 11 mismatches for the target ref.");
+        Assert.That(
+            sourceSegmentMismatchCount,
+            Is.EqualTo(11),
+            "All extra 11 source segments should mismatch entirely."
+        );
+        Assert.That(
+            missingBooks.Count,
+            Is.EqualTo(0),
+            $"No books should be missing from processing, but found: {string.Join(", ", missingBooks)}"
+        );
+    }
+
+    [Test]
+    [TestCase("TOB", ScrVersType.Original)]
+    [TestCase("JDT", ScrVersType.Septuagint)]
+    [TestCase("WIS", ScrVersType.Vulgate)]
+    [TestCase("SIR", ScrVersType.English)]
+    [TestCase("2MA", ScrVersType.English)]
+    public void GetVersesInVersification_ButNotInSourceOrTarget(string bookId, ScrVersType versificationType)
+    {
+        ScrVers versification = GetVersification(versificationType);
+
+        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
+        sourceCorpus.Versification = versification;
+        targetCorpus.Versification = versification;
+
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
+
+        IText? sourceText = sourceCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
+        IText? targetText = targetCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
+
+        List<string> issues = new List<string>();
+
+        if (sourceText == null)
+        {
+            issues.Add($"Source text for book {bookId} is null.");
+        }
+        if (targetText == null)
+        {
+            issues.Add($"Target text for book {bookId} is null.");
+        }
+
+        if (sourceText != null && targetText != null)
+        {
+            int bookNum = Canon.BookIdToNumber(bookId);
+
+            string[] versificationReferences = ScrVersExtensions
+                .GetReferencesForBook(versification, bookNum)
+                .Select(row => row.Text)
+                .ToArray();
+
+            string[] sourceReferences = sourceText
+                .GetRows()
+                .Select(row => ((ScriptureRef)row.Ref).VerseRef.Text)
+                .ToArray();
+            string[] targetReferences = targetText
+                .GetRows()
+                .Select(row => ((ScriptureRef)row.Ref).VerseRef.Text)
+                .ToArray();
+
+            string[] missingInSource = versificationReferences.Where(vr => !sourceReferences.Contains(vr)).ToArray();
+            string[] missingInTarget = versificationReferences.Where(vr => !targetReferences.Contains(vr)).ToArray();
+
+            if (missingInSource.Any())
+            {
+                issues.Add($"Verses missing in source for {bookId} ({versificationType}):");
+                issues.AddRange(missingInSource.Select(reference => reference.ToString()));
+            }
+
+            if (missingInTarget.Any())
+            {
+                issues.Add($"Verses missing in target for {bookId} ({versificationType}):");
+                issues.AddRange(missingInTarget.Select(reference => reference.ToString()));
+            }
+        }
+
+        if (issues.Any())
+        {
+            TestContext.WriteLine("The following issues were encountered:");
+            foreach (var issue in issues)
+            {
+                TestContext.WriteLine(issue);
+            }
+        }
+
+        TestContext.WriteLine(issues.Count);
+
+        Assert.That(
+            issues.Count,
+            Is.Not.EqualTo(0),
+            "There are missing verses in teh provided source and target SFM that are in the vrf files. The test should capture those "
+        );
+    }
+
+    [Test]
+    [TestCase("TOB", ScrVersType.Original)]
+    [TestCase("JDT", ScrVersType.Septuagint)]
+    [TestCase("WIS", ScrVersType.Vulgate)]
+    [TestCase("SIR", ScrVersType.English)]
+    [TestCase("BAR", ScrVersType.RussianProtestant)]
+    [TestCase("1MA", ScrVersType.RussianOrthodox)]
+    [TestCase("2MA", ScrVersType.English)]
+    public void GetVersesInSourceOrTarget_ButNotInVersification(string bookId, ScrVersType versificationType)
+    {
+        ScrVers versification = GetVersification(versificationType);
+
+        ParatextTextCorpus sourceCorpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+        ParatextTextCorpus targetCorpus = CorporaTestHelpers.GetDeuterocanonicalTargetCorpus();
+        sourceCorpus.Versification = versification;
+        targetCorpus.Versification = versification;
+
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus);
+
+        List<string> issues = new List<string>();
+
+        IText? sourceText = sourceCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
+        if (sourceText == null)
+        {
+            issues.Add($"Source text for book {bookId} is null.");
+        }
+
+        IText? targetText = targetCorpus.Texts.FirstOrDefault(t => t.Id == bookId);
+        if (targetText == null)
+        {
+            issues.Add($"Target text for book {bookId} is null.");
+        }
+
+        if (sourceText != null && targetText != null)
+        {
+            int bookNum = Canon.BookIdToNumber(bookId);
+
+            string[] versificationReferences = ScrVersExtensions
+                .GetReferencesForBook(versification, bookNum)
+                .Select(row => row.Text)
+                .ToArray();
+
+            string[] sourceReferences = sourceText
+                .GetRows()
+                .Select(row => ((ScriptureRef)row.Ref).VerseRef.Text)
+                .ToArray();
+            string[] targetReferences = targetText
+                .GetRows()
+                .Select(row => ((ScriptureRef)row.Ref).VerseRef.Text)
+                .ToArray();
+
+            string[] inSourceButNotVersification = sourceReferences
+                .Where(sr => !versificationReferences.Contains(sr))
+                .ToArray();
+            string[] inTargetButNotVersification = targetReferences
+                .Where(tr => !versificationReferences.Contains(tr))
+                .ToArray();
+
+            if (inSourceButNotVersification.Any())
+            {
+                issues.Add($"Verses in source but not in versification for {bookId} ({versificationType}):");
+                issues.AddRange(inSourceButNotVersification.Select(refText => refText.ToString()));
+            }
+
+            if (inTargetButNotVersification.Any())
+            {
+                issues.Add($"Verses in target but not in versification for {bookId} ({versificationType}):");
+                issues.AddRange(inTargetButNotVersification.Select(refText => refText.ToString()));
+            }
+        }
+
+        if (issues.Any())
+        {
+            TestContext.WriteLine("The following issues were encountered:");
+            foreach (var issue in issues)
+            {
+                TestContext.WriteLine(issue);
+            }
+        }
+
+        Assert.That(
+            issues.Count,
+            Is.Not.EqualTo(0),
+            "The test should catch the extra verses in the Source of Target SFM that are not the the vrs file "
+        );
+    }
+
+    [Test]
+    public void ValidateCrossBookMappingsAcrossVersifications()
+    {
+        Dictionary<string, string> expectedMappings = new Dictionary<string, string>
+        {
+            { "SUS 1:1", "DAG 13:1" },
+            { "SUS 1:2", "DAG 13:2" }
+        };
+
+        string source1Text = "Et erat vir habitans in Babylone, et nomen ejus Joakim:";
+        string source2Text = "et accepit uxorem nomine Susannam, filiam Helciæ, pulchram nimis, et timentem Deum:";
+
+        Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
+        {
+            { ScrVersType.Original, ScrVers.Original },
+            { ScrVersType.English, ScrVers.English }
+        };
+
+        ParatextTextCorpus corpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
+
+        foreach (var versificationType in versifications.Keys)
+        {
+            ScrVers versification = versifications[versificationType];
+            corpus.Versification = versification;
+
+            TestContext.WriteLine($"Validating for versification: {versificationType}");
+
+            foreach (var mapping in expectedMappings)
+            {
+                ScriptureRef sourceVerse = ScriptureRef.Parse(mapping.Key, versification);
+                ScriptureRef targetVerse = ScriptureRef.Parse(mapping.Value, versification);
+
+                // Retrieve text for the source verse
+                IText? sourceText = corpus.Texts.FirstOrDefault(t => t.Id == sourceVerse.Book);
+                IText? mappedText = corpus.Texts.FirstOrDefault(t => t.Id == targetVerse.Book);
+
+                if (sourceText == null || mappedText == null)
+                {
+                    TestContext.WriteLine(
+                        $"Missing text for book {sourceVerse.Book} in versification {versificationType}."
+                    );
+                    continue;
+                }
+
+                TextRow? sourceRow = sourceText
+                    .GetRows()
+                    .FirstOrDefault(row => sourceVerse.ToString() == row.Ref.ToString());
+                TextRow? targetRow = mappedText
+                    .GetRows()
+                    .FirstOrDefault(row => targetVerse.ToString() == row.Ref.ToString());
+
+                if (sourceRow == null || targetRow == null)
+                {
+                    TestContext.WriteLine(
+                        $"Missing verse: {sourceVerse} or {targetVerse} in versification {versificationType}."
+                    );
+                    continue;
+                }
+
+                string sourceContent = sourceRow.Text;
+                string targetContent = targetRow.Text;
+
+                // Normalize text for comparison
+                string[] unwanted = { "÷" };
+                sourceContent = CorporaTestHelpers.CleanString(sourceContent, unwanted);
+                targetContent = CorporaTestHelpers.CleanString(targetContent, unwanted);
+
+                if (sourceVerse.Verse == "1")
+                {
+                    Assert.That(sourceContent, Is.EqualTo(source1Text), $"Mismatch in text for {sourceVerse}");
+                    Assert.That(targetContent, Is.EqualTo(source1Text), $"Mismatch in text for {targetVerse}");
+                }
+                else if (sourceVerse.Verse == "2")
+                {
+                    Assert.That(sourceContent, Is.EqualTo(source2Text), $"Mismatch in text for {sourceVerse}");
+                    Assert.That(targetContent, Is.EqualTo(source2Text), $"Mismatch in text for {targetVerse}");
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void GetDoubleMappingsAcrossVersifications()
+    {
+        Dictionary<string, string> expectedMappings = new Dictionary<string, string>
+        {
+            { "DAG 1:1-3", "SUS 1:1-3" },
+            { "DAG 1:4-6", "SUS 1:1-3" },
+            { "DAG 1:7", "SUS 1:7" },
+            { "DAG 1:8", "SUS 1:8" }
+        };
+
+        Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
+        {
+            { ScrVersType.Original, ScrVers.Original },
+            { ScrVersType.English, ScrVers.English }
+        };
+
+        Dictionary<string, HashSet<string>> targetToSourceMap = new Dictionary<string, HashSet<string>>();
+
+        foreach (ScrVersType versificationType in versifications.Keys)
+        {
+            ScrVers versification = versifications[versificationType];
+            TestContext.WriteLine($"Validating for versification: {versificationType}");
+
+            Dictionary<string, string> expandedMappings = CorporaTestHelpers.ExpandVerseMappings(expectedMappings);
+
+            foreach (var mapping in expandedMappings)
+            {
+                string sourceVerse = mapping.Key;
+
+                IEnumerable<ScriptureRef> targetVerses = CorporaTestHelpers.ExpandVerseRange(
+                    mapping.Value,
+                    versification
+                );
+
+                foreach (ScriptureRef targetVerse in targetVerses)
+                {
+                    string targetVerseKey = targetVerse.ToString();
+
+                    if (!targetToSourceMap.TryGetValue(targetVerseKey, out HashSet<string>? sourceSet))
+                    {
+                        sourceSet = new HashSet<string>();
+                        targetToSourceMap[targetVerseKey] = sourceSet;
+                    }
+
+                    sourceSet.Add(sourceVerse);
+                }
+            }
+        }
+
+        int doubleMappingCount = 0;
+
+        foreach (KeyValuePair<string, HashSet<string>> mapping in targetToSourceMap)
+        {
+            string targetVerse = mapping.Key;
+            HashSet<string> sourceVerses = mapping.Value;
+
+            if (sourceVerses.Count > 1)
+            {
+                TestContext.WriteLine(
+                    $"Double mapping detected for Target {targetVerse}: "
+                        + $"Mapped from Source(s) {string.Join(", ", sourceVerses)}"
+                );
+                doubleMappingCount++;
+            }
+        }
+
+        Assert.That(doubleMappingCount, Is.Not.EqualTo(0), "The sample double mapping should be caught by the test");
+        TestContext.WriteLine(doubleMappingCount);
+    }
+
+    private static ScrVers GetVersification(ScrVersType versificationType)
+    {
+        return versificationType switch
+        {
+            ScrVersType.Original => ScrVers.Original,
+            ScrVersType.Septuagint => ScrVers.Septuagint,
+            ScrVersType.Vulgate => ScrVers.Vulgate,
+            ScrVersType.English => ScrVers.English,
+            ScrVersType.RussianProtestant => ScrVers.RussianProtestant,
+            ScrVersType.RussianOrthodox => ScrVers.RussianOrthodox,
+            _ => throw new ArgumentException("Invalid versification type", nameof(versificationType))
         };
     }
 
