@@ -259,7 +259,7 @@ namespace SIL.Machine.Corpora
                 else if (text.Length > 0 && (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText))
                 {
                     bool isEmbedOrNestedDontUpdate =
-                        InEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker));
+                        IsInEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker));
                     if (isEmbedOrNestedDontUpdate)
                         return;
 

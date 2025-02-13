@@ -88,7 +88,7 @@ public class UpdateUsfmParserHandlerTests
             (ScrRef("MAT 2:1"), "First verse of the second chapter.")
         };
 
-        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(target, Contains.Substring("\\v 1 First verse of the second chapter.\r\n"));
     }
 
@@ -245,7 +245,7 @@ public class UpdateUsfmParserHandlerTests
             (ScrRef("MAT 2:3"), "Third verse of the second chapter.")
         };
 
-        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(
             target,
             Contains.Substring("\\v 2-3 Second verse of the second chapter. Third verse of the second chapter.\r\n")
@@ -391,7 +391,7 @@ public class UpdateUsfmParserHandlerTests
             (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
         };
 
-        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(target, Contains.Substring("\\ip The introductory paragraph.\r\n"));
     }
 
@@ -490,8 +490,8 @@ public class UpdateUsfmParserHandlerTests
         var target = UpdateUsfm(
             rows,
             usfm,
-            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve,
-            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
         );
         var resultPp =
             @"\id MAT - Test
@@ -505,8 +505,8 @@ public class UpdateUsfmParserHandlerTests
         target = UpdateUsfm(
             rows,
             usfm,
-            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve,
-            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
         );
         var resultPs =
             @"\id MAT - Test
@@ -520,8 +520,8 @@ public class UpdateUsfmParserHandlerTests
         target = UpdateUsfm(
             rows,
             usfm,
-            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip,
-            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Preserve
+            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
         );
         var resultSp =
             @"\id MAT - Test
@@ -535,8 +535,8 @@ public class UpdateUsfmParserHandlerTests
         target = UpdateUsfm(
             rows,
             usfm,
-            embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip,
-            styleBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip
+            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
         );
         var resultSs =
             @"\id MAT - Test
@@ -626,7 +626,7 @@ public class UpdateUsfmParserHandlerTests
 ";
         Assess(target, result);
 
-        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         var result2 =
             @"\id MAT - Test
 \c 1
@@ -656,7 +656,7 @@ public class UpdateUsfmParserHandlerTests
 ";
         Assess(target, result);
 
-        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         var result2 =
             @"\id MAT - Test
 \c 1
@@ -686,7 +686,7 @@ public class UpdateUsfmParserHandlerTests
 ";
         Assess(target, result);
 
-        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmIntraVerseMarkerBehavior.Strip);
+        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         var result2 =
             @"\id MAT - Test
 \c 1
@@ -705,8 +705,8 @@ public class UpdateUsfmParserHandlerTests
         string? source = null,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
-        UpdateUsfmIntraVerseMarkerBehavior embedBehavior = UpdateUsfmIntraVerseMarkerBehavior.Preserve,
-        UpdateUsfmIntraVerseMarkerBehavior styleBehavior = UpdateUsfmIntraVerseMarkerBehavior.Strip
+        UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
+        UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
     )
     {
         if (source is null)

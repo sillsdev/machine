@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
         StripExisting
     }
 
-    public enum UpdateUsfmIntraVerseMarkerBehavior
+    public enum UpdateUsfmMarkerBehavior
     {
         Preserve,
         Strip,
@@ -28,8 +28,8 @@ namespace SIL.Machine.Corpora
         private readonly List<UsfmToken> _newTokens;
         private readonly string _idText;
         private readonly UpdateUsfmTextBehavior _textBehavior;
-        private readonly UpdateUsfmIntraVerseMarkerBehavior _embedBehavior;
-        private readonly UpdateUsfmIntraVerseMarkerBehavior _styleBehavior;
+        private readonly UpdateUsfmMarkerBehavior _embedBehavior;
+        private readonly UpdateUsfmMarkerBehavior _styleBehavior;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -40,8 +40,8 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
-            UpdateUsfmIntraVerseMarkerBehavior embedBehavior = UpdateUsfmIntraVerseMarkerBehavior.Preserve,
-            UpdateUsfmIntraVerseMarkerBehavior styleBehavior = UpdateUsfmIntraVerseMarkerBehavior.Strip
+            UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
+            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -200,7 +200,7 @@ namespace SIL.Machine.Corpora
             base.EndChar(state, marker, attributes, closed);
         }
 
-        public override void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef)
+        protected override void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef)
         {
             _embedRowTexts = AdvanceRows(new[] { scriptureRef }).ToList();
             _embedUpdated = _embedRowTexts.Count > 0;
@@ -212,7 +212,7 @@ namespace SIL.Machine.Corpora
                 CollectTokens(state);
         }
 
-        public override void EndEmbed(
+        protected override void EndEmbed(
             UsfmParserState state,
             string marker,
             IReadOnlyList<UsfmAttribute> attributes,
@@ -383,7 +383,7 @@ namespace SIL.Machine.Corpora
 
             bool newText = _replace.Count > 0 && _replace.Peek();
             string marker = state?.Token?.Marker;
-            bool inEmbed = InEmbed(marker);
+            bool inEmbed = IsInEmbed(marker);
             bool inNestedEmbed = IsInNestedEmbed(marker);
             bool isStyleTag = marker != null && !IsEmbedPartStyle(marker);
 
@@ -395,10 +395,7 @@ namespace SIL.Machine.Corpora
             bool useNewTokens =
                 newText
                 && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew)
-                && (
-                    !inEmbed
-                    || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmIntraVerseMarkerBehavior.Preserve)
-                );
+                && (!inEmbed || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmMarkerBehavior.Preserve));
 
             if (useNewTokens)
                 AddNewTokens();
@@ -410,7 +407,7 @@ namespace SIL.Machine.Corpora
             bool embedInNewVerseText = _replace.Any(r => r) && inEmbed;
             if (embedInNewVerseText || _embedUpdated)
             {
-                if (_embedBehavior == UpdateUsfmIntraVerseMarkerBehavior.Strip)
+                if (_embedBehavior == UpdateUsfmMarkerBehavior.Strip)
                 {
                     ClearNewTokens();
                     return true;
@@ -424,7 +421,7 @@ namespace SIL.Machine.Corpora
 
             if (newText && isStyleTag)
             {
-                skipTokens = _styleBehavior == UpdateUsfmIntraVerseMarkerBehavior.Strip;
+                skipTokens = _styleBehavior == UpdateUsfmMarkerBehavior.Strip;
             }
             return skipTokens;
         }
