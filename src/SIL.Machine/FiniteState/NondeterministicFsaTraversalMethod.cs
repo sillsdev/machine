@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.ObjectModel;
@@ -35,8 +36,10 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var traversed = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
+            var traversed = new Dictionary<
+                Tuple<State<TData, TOffset>, int, VariableBindings>,
+                NondeterministicFsaTraversalInstance<TData, TOffset>>(
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, VariableBindings>>(
                     KeyEquals,
                     KeyGetHashCode
                 )
@@ -50,7 +53,7 @@ namespace SIL.Machine.FiniteState
                 int i = 0;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
                 {
-                    bool isInstReusable = i == inst.State.Arcs.Count - 1;
+                    bool isInstReusable = true;
                     if (arc.Input.IsEpsilon)
                     {
                         if (!inst.Visited.Contains(arc.Target))
@@ -75,15 +78,19 @@ namespace SIL.Machine.FiniteState
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
+                            Tuple<State<TData, TOffset>, int, VariableBindings> key = Tuple.Create(
                                 newInst.State,
                                 newInst.AnnotationIndex,
-                                newInst.Registers
+                                newInst.VariableBindings
                             );
-                            if (!traversed.Contains(key))
+                            if (traversed.Keys.Contains(key))
+                            {
+                                MergeCommands(newInst, traversed[key]);
+                            }
+                            else
                             {
                                 instStack.Push(newInst);
-                                traversed.Add(key);
+                                traversed[key] = newInst;
                             }
                             if (isInstReusable)
                                 releaseInstance = false;
@@ -111,15 +118,19 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
+                                Tuple<State<TData, TOffset>, int, VariableBindings> key = Tuple.Create(
                                     newInst.State,
                                     newInst.AnnotationIndex,
-                                    newInst.Registers
+                                    newInst.VariableBindings
                                 );
-                                if (!traversed.Contains(key))
+                                if (traversed.Keys.Contains(key))
+                                {
+                                    MergeCommands(newInst, traversed[key]);
+                                }
+                                else
                                 {
                                     instStack.Push(newInst);
-                                    traversed.Add(key);
+                                    traversed[key] = newInst;
                                 }
                             }
                             if (isInstReusable)
@@ -135,8 +146,8 @@ namespace SIL.Machine.FiniteState
             }
 
             var newResults = new List<FstResult<TData, TOffset>>();
-            GetFstResults(newResults, curResults);
-            return curResults;
+            GetFstResults(newResults);
+            return newResults;
         }
 
         protected override NondeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()
@@ -145,21 +156,21 @@ namespace SIL.Machine.FiniteState
         }
 
         private bool KeyEquals(
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> x,
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> y
+            Tuple<State<TData, TOffset>, int, VariableBindings> x,
+            Tuple<State<TData, TOffset>, int, VariableBindings> y
         )
         {
             return x.Item1.Equals(y.Item1)
                 && x.Item2.Equals(y.Item2)
-                && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3);
+                && (x.Item3 != null ? (y.Item3 != null && x.Item3.Equals(y.Item3)) : y.Item3 == null);
         }
 
-        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> m)
+        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, VariableBindings> m)
         {
             int code = 23;
             code = code * 31 + m.Item1.GetHashCode();
             code = code * 31 + m.Item2.GetHashCode();
-            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
+            code = code * 31 + (m.Item3 != null ? m.Item3.GetHashCode() : 0);
             return code;
         }
 

@@ -138,20 +138,6 @@ namespace SIL.Machine.FeatureModel
             get { return false; }
         }
 
-        public bool ValueEquals(VariableBindings other)
-        {
-            if (Count != other.Count)
-                return false;
-            foreach (string key in _varBindings.Keys)
-            {
-                if (!TryGetValue(key, out SimpleFeatureValue value))
-                    return false;
-                if (!value.ValueEquals(_varBindings[key]))
-                    return false;
-            }
-            return true;
-        }
-
         public VariableBindings Clone()
         {
             return new VariableBindings(this);
