@@ -38,12 +38,14 @@ namespace SIL.Machine.FiniteState
             var curResults = new List<FstResult<TData, TOffset>>();
             var traversed = new Dictionary<
                 Tuple<State<TData, TOffset>, int, VariableBindings>,
-                NondeterministicFsaTraversalInstance<TData, TOffset>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, VariableBindings>>(
-                    KeyEquals,
-                    KeyGetHashCode
-                )
-            );
+                NondeterministicFsaTraversalInstance<TData, TOffset>>
+                (
+                    AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, VariableBindings>>
+                    (
+                        KeyEquals,
+                        KeyGetHashCode
+                    )
+                );
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
@@ -76,7 +78,7 @@ namespace SIL.Machine.FiniteState
                             NondeterministicFsaTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(
                                 ti,
                                 arc,
-                                curResults
+                                null
                             );
                             Tuple<State<TData, TOffset>, int, VariableBindings> key = Tuple.Create(
                                 newInst.State,
@@ -113,7 +115,7 @@ namespace SIL.Machine.FiniteState
                                     ti,
                                     varBindings,
                                     arc,
-                                    curResults
+                                    null
                                 )
                             )
                             {
@@ -145,9 +147,8 @@ namespace SIL.Machine.FiniteState
                     ReleaseInstance(inst);
             }
 
-            var newResults = new List<FstResult<TData, TOffset>>();
-            GetFstResults(newResults);
-            return newResults;
+            GetFstResults(curResults);
+            return curResults;
         }
 
         protected override NondeterministicFsaTraversalInstance<TData, TOffset> CreateInstance()

@@ -20,6 +20,7 @@ namespace SIL.Machine.FiniteState
         private readonly bool _endAnchor;
         private readonly bool _useDefaults;
         private readonly List<Annotation<TOffset>> _annotations;
+        private readonly IDictionary<int, FeatureStruct> _frozenAnnotationFS;
         private readonly Queue<TInst> _cachedInstances;
         private readonly IDictionary<TInst, IList<CommandUpdate>> _commandUpdates;
         private readonly IDictionary<TInst, IList<TraverseOutput>> _outputs;
@@ -41,6 +42,7 @@ namespace SIL.Machine.FiniteState
             _endAnchor = endAnchor;
             _useDefaults = useDefaults;
             _annotations = new List<Annotation<TOffset>>();
+            _frozenAnnotationFS = new Dictionary<int, FeatureStruct>();
             // insertion sort
             foreach (Annotation<TOffset> topAnn in _data.Annotations.GetNodes(_fst.Direction))
             {
@@ -205,22 +207,26 @@ namespace SIL.Machine.FiniteState
 
         public void GetFstResults(ICollection<FstResult<TData, TOffset>> curResults, bool isTransducer = false)
         {
+            if (!_commandUpdates.ContainsKey(_finalInst))
+                return;
             var keys = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                 AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
                     KeyEquals,
                     KeyGetHashCode
             ));
-            IList<TraverseOutput> outputs = GetOutputs(_finalInst, isTransducer, keys);
-            foreach (TraverseOutput output in outputs)
+            foreach (CommandUpdate update in _commandUpdates[_finalInst])
             {
-                CheckAccepting(
-                    output.Instance.AnnotationIndex,
-                    output.Registers,
-                    isTransducer ? output.Output : Data,
-                    output.Instance.VariableBindings,
-                    output.Arc,
-                    curResults,
-                    output.Priorities);
+                foreach (TraverseOutput output in GetOutputs(update.Source, isTransducer, keys))
+                {
+                    CheckAccepting(
+                         update.Source.AnnotationIndex,
+                         output.Registers,
+                         output.Output,
+                         update.Source.VariableBindings,
+                         update.Arc,
+                         curResults,
+                         output.Priorities);
+                }
             }
         }
 
@@ -234,6 +240,8 @@ namespace SIL.Machine.FiniteState
             IList<int> priorities
         )
         {
+            if (curResults == null)
+                return;
             if (arc.Target.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
             {
                 Annotation<TOffset> ann =
@@ -289,8 +297,6 @@ namespace SIL.Machine.FiniteState
 
         protected class TraverseOutput
         {
-            public TInst Instance;
-            public Arc<TData, TOffset> Arc;
             public IList<int> Priorities;
             public Register<TOffset>[,] Registers;
             public TData Output;
@@ -346,8 +352,6 @@ namespace SIL.Machine.FiniteState
                 foreach (TraverseOutput output in sourceOutputs)
                 {
                     var newOutput = new TraverseOutput(output, isTransducer);
-                    newOutput.Instance = update.Source;
-                    newOutput.Arc = update.Arc;
                     if (update.Cmds != null)
                         ExecuteCommands(newOutput.Registers, update.Cmds, update.Start, update.End);
                     if (update.Arc != null && inst != _finalInst)
@@ -494,12 +498,15 @@ namespace SIL.Machine.FiniteState
             VariableBindings varBindings,
             Arc<TData, TOffset> arc,
             ICollection<FstResult<TData, TOffset>> curResults,
-            bool optional = false
+            bool optional = false,
+            HashSet<FeatureStruct> optionalFeatureStructs = null
         )
         {
             TInst source = inst;
-            inst = CopyInstance(inst);
-            inst.Priorities?.Add(arc.Priority);
+            if (curResults == null)
+                inst = CopyInstance(inst);
+            else
+                inst.Priorities?.Add(arc.Priority);
             int nextIndex = GetNextNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             TOffset nextOffset;
             bool nextStart;
@@ -529,44 +536,71 @@ namespace SIL.Machine.FiniteState
                     {
                         TInst ti = CopyInstance(source);
                         ti.AnnotationIndex = i;
-                        ti.Priorities?.Add(arc.Priority);
-                        RecordCommands(source, arc, null, new Register<TOffset>(), new Register<TOffset>(), ti);
-                        foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true))
+                        if (curResults == null)
+                            RecordCommands(source, arc, null, new Register<TOffset>(), new Register<TOffset>(), ti);
+                        if (optionalFeatureStructs == null)
+                            optionalFeatureStructs = new HashSet<FeatureStruct>(FreezableEqualityComparer<FeatureStruct>.Default);
+                        if (!_frozenAnnotationFS.ContainsKey(i))
+                        {
+                            _frozenAnnotationFS[i] = _annotations[i].FeatureStruct.Clone();
+                            _frozenAnnotationFS[i].Freeze();
+                        }
+                        FeatureStruct annFS = _frozenAnnotationFS[i];
+                        // If we skipped this optional annotation before, we cannot take it now.
+                        // This avoids spurious ambiguities.
+                        bool skipNonOptional = optionalFeatureStructs.Contains(annFS);
+                        optionalFeatureStructs.Add(annFS);
+                        foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true, optionalFeatureStructs))
                         {
                             yield return ni;
                             cloneOutputs = true;
                         }
+                        if (skipNonOptional)
+                            continue;
                     }
                     anns.Add(i);
                 }
 
-                RecordCommands(
-                    source,
-                    arc,
-                    arc.Commands,
-                    new Register<TOffset>(nextOffset, nextStart),
-                    new Register<TOffset>(end, false),
-                    inst
-                );
-                ExecuteCommands(
-                    inst.Registers,
-                    arc.Commands,
-                    new Register<TOffset>(nextOffset, nextStart),
-                    new Register<TOffset>(end, false)
-                );
+                if (curResults == null)
+                {
+                    RecordCommands(
+                        source,
+                        arc,
+                        arc.Commands,
+                        new Register<TOffset>(nextOffset, nextStart),
+                        new Register<TOffset>(end, false),
+                        inst
+                    );
+                }
+                else
+                {
+                    ExecuteCommands(
+                        inst.Registers,
+                        arc.Commands,
+                        new Register<TOffset>(nextOffset, nextStart),
+                        new Register<TOffset>(end, false)
+                    );
+                }
+
                 if (!optional || _endAnchor)
                 {
                     inst.AnnotationIndex = nextIndex;
-                    CheckAccepting(
-                        nextIndex,
-                        inst.Registers,
-                        inst.Output,
-                        varBindings,
-                        arc,
-                        curResults,
-                        inst.Priorities
-                    );
-                    RecordAccepting(inst, arc);
+                    if (curResults == null)
+                    {
+                        RecordAccepting(inst, arc);
+                    }
+                    else
+                    {
+                        CheckAccepting(
+                            nextIndex,
+                            inst.Registers,
+                            inst.Output,
+                            varBindings,
+                            arc,
+                            curResults,
+                            inst.Priorities
+                        );
+                    }
                 }
 
                 inst.State = arc.Target;
@@ -578,7 +612,8 @@ namespace SIL.Machine.FiniteState
                     ni.AnnotationIndex = curIndex;
                     if (varBindings != null)
                         inst.VariableBindings = cloneOutputs ? varBindings.Clone() : varBindings;
-                    RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ni);
+                    if (curResults == null)
+                        RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ni);
                     yield return ni;
                     cloneOutputs = true;
                     first = false;
@@ -586,26 +621,32 @@ namespace SIL.Machine.FiniteState
             }
             else
             {
-                RecordCommands(
-                    source,
-                    arc,
-                    arc.Commands,
-                    new Register<TOffset>(nextOffset, nextStart),
-                    new Register<TOffset>(end, false),
-                    inst
-                );
-                ExecuteCommands(
-                    inst.Registers,
-                    arc.Commands,
-                    new Register<TOffset>(nextOffset, nextStart),
-                    new Register<TOffset>(end, false)
-                );
-
                 inst.State = arc.Target;
                 inst.AnnotationIndex = nextIndex;
                 inst.VariableBindings = varBindings;
-                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
-                RecordAccepting(inst, arc);
+
+                if (curResults == null)
+                {
+                    RecordCommands(
+                        source,
+                        arc,
+                        arc.Commands,
+                        new Register<TOffset>(nextOffset, nextStart),
+                        new Register<TOffset>(end, false),
+                        inst
+                    );
+                    RecordAccepting(inst, arc);
+                }
+                else
+                {
+                    ExecuteCommands(
+                        inst.Registers,
+                        arc.Commands,
+                        new Register<TOffset>(nextOffset, nextStart),
+                        new Register<TOffset>(end, false)
+                    );
+                    CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
+                }
 
                 yield return inst;
             }
@@ -625,30 +666,36 @@ namespace SIL.Machine.FiniteState
                     : _data.Annotations.GetEnd(_fst.Direction);
             int prevIndex = GetPrevNonoverlappingAnnotationIndex(inst.AnnotationIndex);
             Annotation<TOffset> prevAnn = _annotations[prevIndex];
-            RecordCommands(
-                source,
-                arc,
-                arc.Commands,
-                new Register<TOffset>(ann.Range.GetStart(_fst.Direction), true),
-                new Register<TOffset>(prevAnn.Range.GetEnd(_fst.Direction), false),
-                inst
-            );
-            ExecuteCommands(
-                inst.Registers,
-                arc.Commands,
-                new Register<TOffset>(ann.Range.GetStart(_fst.Direction), true),
-                new Register<TOffset>(prevAnn.Range.GetEnd(_fst.Direction), false)
-            );
-            CheckAccepting(
-                inst.AnnotationIndex,
-                inst.Registers,
-                inst.Output,
-                inst.VariableBindings,
-                arc,
-                curResults,
-                inst.Priorities
-            );
-            RecordAccepting(inst, arc);
+            if (curResults == null)
+            {
+                RecordCommands(
+                    source,
+                    arc,
+                    arc.Commands,
+                    new Register<TOffset>(ann.Range.GetStart(_fst.Direction), true),
+                    new Register<TOffset>(prevAnn.Range.GetEnd(_fst.Direction), false),
+                    inst
+                );
+                RecordAccepting(inst, arc);
+            }
+            else
+            {
+                ExecuteCommands(
+                    inst.Registers,
+                    arc.Commands,
+                    new Register<TOffset>(ann.Range.GetStart(_fst.Direction), true),
+                    new Register<TOffset>(prevAnn.Range.GetEnd(_fst.Direction), false)
+                );
+                CheckAccepting(
+                    inst.AnnotationIndex,
+                    inst.Registers,
+                    inst.Output,
+                    inst.VariableBindings,
+                    arc,
+                    curResults,
+                    inst.Priorities
+                );
+            }
 
             inst.State = arc.Target;
             return inst;

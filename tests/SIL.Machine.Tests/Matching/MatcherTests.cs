@@ -1506,6 +1506,6 @@ public class MatcherTests : PhoneticTestsBase
             }
         );
         IList<Match<AnnotatedStringData, int>> matches = matcher.AllMatches(word).ToList();
-        Assert.That(matches, Has.Count.EqualTo(2));
+        Assert.That(matches, Has.Count.EqualTo(1));
     }
 }
