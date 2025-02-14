@@ -351,6 +351,17 @@ namespace SIL.Machine.FiniteState
                         useDefaults
                     );
                 }
+                else if (_registerCount > 0)
+                {
+                    traversalMethod = new LazyNondeterministicFsaTraversalMethod<TData, TOffset>(
+                        this,
+                        data,
+                        varBindings,
+                        startAnchor,
+                        endAnchor,
+                        useDefaults
+                    );
+                }
                 else
                 {
                     traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(

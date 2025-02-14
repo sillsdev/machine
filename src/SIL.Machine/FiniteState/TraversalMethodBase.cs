@@ -538,24 +538,26 @@ namespace SIL.Machine.FiniteState
                         ti.AnnotationIndex = i;
                         if (curResults == null)
                             RecordCommands(source, arc, null, new Register<TOffset>(), new Register<TOffset>(), ti);
-                        if (optionalFeatureStructs == null)
-                            optionalFeatureStructs = new HashSet<FeatureStruct>(FreezableEqualityComparer<FeatureStruct>.Default);
+                        HashSet<FeatureStruct> nextOptionalFeatureStructs = null;
+                        FeatureStruct annFS = null;
+                        nextOptionalFeatureStructs = new HashSet<FeatureStruct>(FreezableEqualityComparer<FeatureStruct>.Default);
+                        if (optionalFeatureStructs != null)
+                            nextOptionalFeatureStructs.AddRange(optionalFeatureStructs);
                         if (!_frozenAnnotationFS.ContainsKey(i))
                         {
                             _frozenAnnotationFS[i] = _annotations[i].FeatureStruct.Clone();
                             _frozenAnnotationFS[i].Freeze();
                         }
-                        FeatureStruct annFS = _frozenAnnotationFS[i];
-                        // If we skipped this optional annotation before, we cannot take it now.
-                        // This avoids spurious ambiguities.
-                        bool skipNonOptional = optionalFeatureStructs.Contains(annFS);
-                        optionalFeatureStructs.Add(annFS);
-                        foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true, optionalFeatureStructs))
+                        annFS = _frozenAnnotationFS[i];
+                        nextOptionalFeatureStructs.Add(annFS);
+                        foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true, nextOptionalFeatureStructs))
                         {
                             yield return ni;
                             cloneOutputs = true;
                         }
-                        if (skipNonOptional)
+                        // If we skipped this optional annotation before, we cannot take it now.
+                        // This avoids spurious ambiguities.
+                        if (optionalFeatureStructs != null && optionalFeatureStructs.Contains(annFS))
                             continue;
                     }
                     anns.Add(i);
