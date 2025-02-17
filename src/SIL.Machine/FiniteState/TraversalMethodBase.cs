@@ -25,6 +25,8 @@ namespace SIL.Machine.FiniteState
         private readonly IDictionary<TInst, IList<CommandUpdate>> _commandUpdates;
         private readonly IDictionary<TInst, IList<TraverseOutput>> _outputs;
         private readonly TInst _finalInst;
+        private readonly Register<TOffset> _emptyRegister;
+        private readonly bool _canonicalizeOptionalAnnotations;
 
         protected TraversalMethodBase(
             Fst<TData, TOffset> fst,
@@ -32,7 +34,8 @@ namespace SIL.Machine.FiniteState
             VariableBindings varBindings,
             bool startAnchor,
             bool endAnchor,
-            bool useDefaults
+            bool useDefaults,
+            bool canonicalizeOptionalAnnotations = false
         )
         {
             _fst = fst;
@@ -70,6 +73,8 @@ namespace SIL.Machine.FiniteState
             _commandUpdates = new Dictionary<TInst, IList<CommandUpdate>>();
             _outputs = new Dictionary<TInst, IList<TraverseOutput>>();
             _finalInst = CreateInstance();
+            _emptyRegister = new Register<TOffset>();
+            _canonicalizeOptionalAnnotations = canonicalizeOptionalAnnotations;
         }
 
         private int CompareAnnotations(Annotation<TOffset> x, Annotation<TOffset> y)
@@ -116,7 +121,8 @@ namespace SIL.Machine.FiniteState
                 Arc<TData, TOffset> arc,
                 IEnumerable<TagMapCommand> cmds,
                 Register<TOffset> start,
-                Register<TOffset> end)
+                Register<TOffset> end
+            )
             {
                 Source = source;
                 Arc = arc;
@@ -201,7 +207,7 @@ namespace SIL.Machine.FiniteState
         {
           if (arc.Target.IsAccepting && (!_endAnchor || inst.AnnotationIndex == _annotations.Count))
           {
-             RecordCommands(inst, arc, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>(), _finalInst);
+             RecordCommands(inst, arc, arc.Target.Finishers, _emptyRegister, _emptyRegister, _finalInst);
           }
         }
 
@@ -247,7 +253,7 @@ namespace SIL.Machine.FiniteState
                 Annotation<TOffset> ann =
                     annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_fst.Direction);
                 var matchRegisters = (Register<TOffset>[,])registers.Clone();
-                ExecuteCommands(matchRegisters, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>());
+                ExecuteCommands(matchRegisters, arc.Target.Finishers, _emptyRegister, _emptyRegister);
                 if (arc.Target.AcceptInfos.Count > 0)
                 {
                     foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
@@ -468,7 +474,7 @@ namespace SIL.Machine.FiniteState
                     startInst.Registers[i, j] = registers[i, j];
             }
 
-            ExecuteCommands(registers, cmds, new Register<TOffset>(offset, true), new Register<TOffset>());
+            ExecuteCommands(registers, cmds, new Register<TOffset>(offset, true), _emptyRegister);
 
             for (
                 ;
@@ -486,7 +492,7 @@ namespace SIL.Machine.FiniteState
                         inst.VariableBindings = _varBindings != null ? _varBindings.Clone() : new VariableBindings();
                     insts.Add(inst);
                     initAnns.Add(annIndex);
-                    RecordCommands(startInst, null, cmds, new Register<TOffset>(offset, true), new Register<TOffset>(), inst);
+                    RecordCommands(startInst, null, cmds, new Register<TOffset>(offset, true), _emptyRegister, inst);
                 }
             }
 
@@ -537,19 +543,22 @@ namespace SIL.Machine.FiniteState
                         TInst ti = CopyInstance(source);
                         ti.AnnotationIndex = i;
                         if (curResults == null)
-                            RecordCommands(source, arc, null, new Register<TOffset>(), new Register<TOffset>(), ti);
+                            RecordCommands(source, arc, null, _emptyRegister, _emptyRegister, ti);
                         HashSet<FeatureStruct> nextOptionalFeatureStructs = null;
                         FeatureStruct annFS = null;
-                        nextOptionalFeatureStructs = new HashSet<FeatureStruct>(FreezableEqualityComparer<FeatureStruct>.Default);
-                        if (optionalFeatureStructs != null)
-                            nextOptionalFeatureStructs.AddRange(optionalFeatureStructs);
-                        if (!_frozenAnnotationFS.ContainsKey(i))
+                        if (_canonicalizeOptionalAnnotations)
                         {
-                            _frozenAnnotationFS[i] = _annotations[i].FeatureStruct.Clone();
-                            _frozenAnnotationFS[i].Freeze();
+                             nextOptionalFeatureStructs = new HashSet<FeatureStruct>(FreezableEqualityComparer<FeatureStruct>.Default);
+                            if (optionalFeatureStructs != null)
+                                nextOptionalFeatureStructs.AddRange(optionalFeatureStructs);
+                            if (!_frozenAnnotationFS.ContainsKey(i))
+                            {
+                                _frozenAnnotationFS[i] = _annotations[i].FeatureStruct.Clone();
+                                _frozenAnnotationFS[i].Freeze();
+                            }
+                            annFS = _frozenAnnotationFS[i];
+                            nextOptionalFeatureStructs.Add(annFS);
                         }
-                        annFS = _frozenAnnotationFS[i];
-                        nextOptionalFeatureStructs.Add(annFS);
                         foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true, nextOptionalFeatureStructs))
                         {
                             yield return ni;
@@ -615,7 +624,7 @@ namespace SIL.Machine.FiniteState
                     if (varBindings != null)
                         inst.VariableBindings = cloneOutputs ? varBindings.Clone() : varBindings;
                     if (curResults == null)
-                        RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ni);
+                        RecordCommands(inst, null, null, _emptyRegister, _emptyRegister, ni);
                     yield return ni;
                     cloneOutputs = true;
                     first = false;

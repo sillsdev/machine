@@ -7,11 +7,11 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.FiniteState
 {
-    internal class LazyNondeterministicFsaTraversalMethod<TData, TOffset>
+    internal class TwoPassNondeterministicFsaTraversalMethod<TData, TOffset>
         : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        public LazyNondeterministicFsaTraversalMethod(
+        public TwoPassNondeterministicFsaTraversalMethod(
             Fst<TData, TOffset> fst,
             TData data,
             VariableBindings varBindings,
@@ -19,7 +19,7 @@ namespace SIL.Machine.FiniteState
             bool endAnchor,
             bool useDefaults
         )
-            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults, true) { }
 
         public override IEnumerable<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
@@ -38,45 +38,29 @@ namespace SIL.Machine.FiniteState
             var curResults = new List<FstResult<TData, TOffset>>();
             var traversed = new Dictionary<
                 Tuple<State<TData, TOffset>, int, VariableBindings>,
-                NondeterministicFsaTraversalInstance<TData, TOffset>>
+                NondeterministicFsaTraversalInstance<TData, TOffset>
+            >(
+                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, VariableBindings>>
                 (
-                    AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, VariableBindings>>
-                    (
-                        KeyEquals,
-                        KeyGetHashCode
-                    )
-                );
+                    KeyEquals,
+                    KeyGetHashCode
+                )
+            );
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
 
-                bool releaseInstance = true;
                 VariableBindings varBindings = null;
                 int i = 0;
                 foreach (Arc<TData, TOffset> arc in inst.State.Arcs)
                 {
-                    bool isInstReusable = true;
                     if (arc.Input.IsEpsilon)
                     {
                         if (!inst.Visited.Contains(arc.Target))
                         {
-                            NondeterministicFsaTraversalInstance<TData, TOffset> ti;
-                            if (isInstReusable)
-                            {
-                                ti = inst;
-                            }
-                            else
-                            {
-                                ti = CopyInstance(inst);
-                                if (inst.VariableBindings != null && varBindings == null)
-                                    varBindings = inst.VariableBindings.Clone();
-                                ti.VariableBindings = varBindings;
-                                RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
-                            }
-
-                            ti.Visited.Add(arc.Target);
+                            inst.Visited.Add(arc.Target);
                             NondeterministicFsaTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(
-                                ti,
+                                inst,
                                 arc,
                                 null
                             );
@@ -94,25 +78,18 @@ namespace SIL.Machine.FiniteState
                                 instStack.Push(newInst);
                                 traversed[key] = newInst;
                             }
-                            if (isInstReusable)
-                                releaseInstance = false;
                             varBindings = null;
                         }
                     }
                     else
                     {
                         if (inst.VariableBindings != null && varBindings == null)
-                            varBindings = isInstReusable ? inst.VariableBindings : inst.VariableBindings.Clone();
+                            varBindings = inst.VariableBindings;
                         if (CheckInputMatch(arc, inst.AnnotationIndex, varBindings))
                         {
-                            NondeterministicFsaTraversalInstance<TData, TOffset> ti = isInstReusable
-                                ? inst
-                                : CopyInstance(inst);
-                            RecordCommands(inst, null, null, new Register<TOffset>(), new Register<TOffset>(), ti);
-
                             foreach (
                                 NondeterministicFsaTraversalInstance<TData, TOffset> newInst in Advance(
-                                    ti,
+                                    inst,
                                     varBindings,
                                     arc,
                                     null
@@ -135,16 +112,11 @@ namespace SIL.Machine.FiniteState
                                     traversed[key] = newInst;
                                 }
                             }
-                            if (isInstReusable)
-                                releaseInstance = false;
                             varBindings = null;
                         }
                     }
                     i++;
                 }
-
-                if (releaseInstance)
-                    ReleaseInstance(inst);
             }
 
             GetFstResults(curResults);

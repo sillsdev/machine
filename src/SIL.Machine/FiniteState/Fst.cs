@@ -353,7 +353,7 @@ namespace SIL.Machine.FiniteState
                 }
                 else if (_registerCount > 0)
                 {
-                    traversalMethod = new LazyNondeterministicFsaTraversalMethod<TData, TOffset>(
+                    traversalMethod = new TwoPassNondeterministicFsaTraversalMethod<TData, TOffset>(
                         this,
                         data,
                         varBindings,
