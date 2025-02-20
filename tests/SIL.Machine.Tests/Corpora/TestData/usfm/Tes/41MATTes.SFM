@@ -1,5 +1,4 @@
 \id MAT - Test
-\f + \fr 1.0 \ft \f*
 \h Matthew
 \mt Matthew
 \ip An introduction to Matthew\fe + \ft This is an endnote.\fe*
@@ -8,13 +7,13 @@
 \p and a \weirdtaglookingthing that is not an actual tag.
 \c 1
 \s Chapter One
-\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote.\f*
+\v 1 Chapter \pn one\+pro WON\+pro*\pn*, verse one.\f + \fr 1:1: \ft This is a footnote for v1.\f*
 \li1
 \v 2 \bd C\bd*hapter one,
-\li2 verse\f + \fr 1:2: \ft This is a footnote.\f* two.
+\li2 verse\f + \fr 1:2: \ft This is a footnote for v2.\f* two.
 \v 3 Chapter one \w*,
 \li2 verse three.
-\v 4 Chapter one, 
+\v 4 Chapter one with odd whitespace, 
 \li2 verse four,
 \v 5 Chapter one,
 \li2 verse \fig Figure 1|src="image1.png" size="col" ref="1:5"\fig* five.
