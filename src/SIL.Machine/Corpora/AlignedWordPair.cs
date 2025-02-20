@@ -23,17 +23,50 @@ namespace SIL.Machine.Corpora
             {
                 int dashIndex = token.IndexOf('-');
                 int colonIndex = token.IndexOf(':', dashIndex + 1);
+                int secondColonIndex = -1;
+                if (colonIndex > 0)
+                {
+                    secondColonIndex = token.LastIndexOf(':');
+                }
                 int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
+                double translationScore = -1;
+                double alignmentScore = -1;
                 if (
                     !TryParseIndex(token.Substring(0, dashIndex), out int i)
                     || !TryParseIndex(token.Substring(dashIndex + 1, length), out int j)
+                    || (
+                        colonIndex > 0
+                        && colonIndex != secondColonIndex
+                        && (
+                            !double.TryParse(
+                                token.Substring(colonIndex + 1, secondColonIndex - (colonIndex + 1)),
+                                out translationScore
+                            )
+                            || !double.TryParse(
+                                token.Substring(secondColonIndex + 1, token.Length - (secondColonIndex + 1)),
+                                out alignmentScore
+                            )
+                        )
+                    )
                 )
                 {
                     alignedWordPairs = result;
                     return false;
                 }
 
-                result.Add(invert ? new AlignedWordPair(j, i) : new AlignedWordPair(i, j));
+                result.Add(
+                    invert
+                        ? new AlignedWordPair(j, i)
+                        {
+                            TranslationScore = translationScore,
+                            AlignmentScore = alignmentScore
+                        }
+                        : new AlignedWordPair(i, j)
+                        {
+                            TranslationScore = translationScore,
+                            AlignmentScore = alignmentScore
+                        }
+                );
             }
             alignedWordPairs = result;
             return true;
@@ -85,11 +118,10 @@ namespace SIL.Machine.Corpora
             string sourceIndex = SourceIndex < 0 ? "NULL" : SourceIndex.ToString();
             string targetIndex = TargetIndex < 0 ? "NULL" : TargetIndex.ToString();
             sb.Append($"{sourceIndex}-{targetIndex}");
-            if (TranslationScore >= 0)
+            if (TranslationScore >= 0 || AlignmentScore >= 0)
             {
                 sb.Append($":{TranslationScore:0.########}");
-                if (AlignmentScore >= 0)
-                    sb.Append($":{AlignmentScore:0.########}");
+                sb.Append($":{AlignmentScore:0.########}");
             }
             return sb.ToString();
         }
@@ -108,11 +140,6 @@ namespace SIL.Machine.Corpora
             }
             index = -1;
             return false;
-        }
-
-        public static int ParseIndex(string indexString)
-        {
-            return int.TryParse(indexString, out int index) ? index : -1;
         }
     }
 }
