@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Corpora
@@ -23,29 +24,39 @@ namespace SIL.Machine.Corpora
             {
                 int dashIndex = token.IndexOf('-');
                 int colonIndex = token.IndexOf(':', dashIndex + 1);
-                int secondColonIndex = -1;
-                if (colonIndex > 0)
-                {
-                    secondColonIndex = token.LastIndexOf(':');
-                }
+                int endOfTranslationScoreIndex = token.Length;
                 int length = (colonIndex == -1 ? token.Length : colonIndex) - (dashIndex + 1);
+
                 double translationScore = -1;
                 double alignmentScore = -1;
+
+                //If both translationScore and alignmentScore are specified
+                if (colonIndex > 0 && token.Count(c => c == ':') == 2)
+                {
+                    endOfTranslationScoreIndex = token.LastIndexOf(':');
+                    if (
+                        !double.TryParse(
+                            token.Substring(
+                                endOfTranslationScoreIndex + 1,
+                                token.Length - (endOfTranslationScoreIndex + 1)
+                            ),
+                            out alignmentScore
+                        )
+                    )
+                    {
+                        alignedWordPairs = result;
+                        return false;
+                    }
+                }
+
                 if (
                     !TryParseIndex(token.Substring(0, dashIndex), out int i)
                     || !TryParseIndex(token.Substring(dashIndex + 1, length), out int j)
                     || (
                         colonIndex > 0
-                        && colonIndex != secondColonIndex
-                        && (
-                            !double.TryParse(
-                                token.Substring(colonIndex + 1, secondColonIndex - (colonIndex + 1)),
-                                out translationScore
-                            )
-                            || !double.TryParse(
-                                token.Substring(secondColonIndex + 1, token.Length - (secondColonIndex + 1)),
-                                out alignmentScore
-                            )
+                        && !double.TryParse(
+                            token.Substring(colonIndex + 1, endOfTranslationScoreIndex - (colonIndex + 1)),
+                            out translationScore
                         )
                     )
                 )
