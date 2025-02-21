@@ -158,27 +158,6 @@ internal static class ToolHelpers
         return string.IsNullOrEmpty(value) || validTypes.Contains(value);
     }
 
-    public static ThotWordAlignmentModelType GetThotWordAlignmentModelType(string modelType)
-    {
-        switch (modelType)
-        {
-            case "fastAlign":
-            case FastAlign:
-                return ThotWordAlignmentModelType.FastAlign;
-            case Ibm1:
-                return ThotWordAlignmentModelType.Ibm1;
-            case Ibm2:
-                return ThotWordAlignmentModelType.Ibm2;
-            default:
-            case Hmm:
-                return ThotWordAlignmentModelType.Hmm;
-            case Ibm3:
-                return ThotWordAlignmentModelType.Ibm3;
-            case Ibm4:
-                return ThotWordAlignmentModelType.Ibm4;
-        }
-    }
-
     public static ITrainer CreateTranslationModelTrainer(
         string modelType,
         string modelConfigFileName,
@@ -186,7 +165,8 @@ internal static class ToolHelpers
         int maxSize
     )
     {
-        ThotWordAlignmentModelType wordAlignmentModelType = GetThotWordAlignmentModelType(modelType);
+        ThotWordAlignmentModelType wordAlignmentModelType =
+            ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(modelType);
 
         string modelDir = Path.GetDirectoryName(modelConfigFileName);
         if (!Directory.Exists(modelDir))

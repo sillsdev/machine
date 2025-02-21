@@ -67,9 +67,8 @@ public class TranslationModelCommandSpec : ICommandSpec
         if (_modelFactory != null)
             return _modelFactory.CreateModel(_modelArgument.Value);
 
-        ThotWordAlignmentModelType wordAlignmentModelType = ToolHelpers.GetThotWordAlignmentModelType(
-            _modelTypeOption.Value()
-        );
+        ThotWordAlignmentModelType wordAlignmentModelType =
+            ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
 
         return new ThotSmtModel(wordAlignmentModelType, _modelConfigFileName);
     }
