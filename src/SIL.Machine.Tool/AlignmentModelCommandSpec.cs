@@ -90,7 +90,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
         ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.Hmm;
         if (_modelTypeOption.HasValue())
         {
-            modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
+            modelType = ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
         }
         else
         {
@@ -103,7 +103,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
                     yaml.Load(reader);
                     var root = (YamlMappingNode)yaml.Documents.First().RootNode;
                     var modelTypeStr = (string)root[new YamlScalarNode("model")];
-                    modelType = ToolHelpers.GetThotWordAlignmentModelType(modelTypeStr);
+                    modelType = ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(modelTypeStr);
                 }
             }
         }
@@ -144,7 +144,9 @@ public class AlignmentModelCommandSpec : ICommandSpec
             return _modelFactory.CreateTrainer(_modelArgument.Value, corpus, maxSize, parameters, direct);
         }
 
-        ThotWordAlignmentModelType modelType = ToolHelpers.GetThotWordAlignmentModelType(_modelTypeOption.Value());
+        ThotWordAlignmentModelType modelType = ThotWordAlignmentModelTypeHelpers.GetThotWordAlignmentModelType(
+            _modelTypeOption.Value()
+        );
 
         string modelPath = _modelArgument.Value;
         if (ToolHelpers.IsDirectoryPath(modelPath))
