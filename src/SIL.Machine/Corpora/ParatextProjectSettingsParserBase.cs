@@ -46,7 +46,6 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    Versification.Table.Implementation.RemoveAllUnknownVersifications();
                     using (var reader = new StreamReader(Open("custom.vrs")))
                     {
                         versification = Versification.Table.Implementation.Load(
@@ -56,6 +55,7 @@ namespace SIL.Machine.Corpora
                             versName
                         );
                     }
+                    Versification.Table.Implementation.RemoveAllUnknownVersifications();
                 }
             }
 
