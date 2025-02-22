@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -11,7 +10,6 @@ namespace SIL.Machine.Corpora
         public FileParatextProjectSettingsParser(string projectDir)
         {
             _projectDir = projectDir;
-            Versification.Table.Implementation = new FileVersificationTable(projectDir);
         }
 
         protected override UsfmStylesheet CreateStylesheet(string fileName)
