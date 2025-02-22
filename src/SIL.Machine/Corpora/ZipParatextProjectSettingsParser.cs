@@ -12,7 +12,6 @@ namespace SIL.Machine.Corpora
         public ZipParatextProjectSettingsParser(ZipArchive archive)
         {
             _archive = archive;
-            Versification.Table.Implementation = new ZipVersificationTable(archive);
         }
 
         protected override bool Exists(string fileName)
