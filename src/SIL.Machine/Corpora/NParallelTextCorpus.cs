@@ -186,6 +186,8 @@ namespace SIL.Machine.Corpora
                     }
                     foreach (int i in minRefIndexes)
                     {
+                        if (completed[i])
+                            continue;
                         sameRefRows[i].Add(enumerators[i].Current);
                         bool isCompleted = !enumerators[i].MoveNext();
                         completed[i] = isCompleted;
@@ -215,6 +217,8 @@ namespace SIL.Machine.Corpora
 
                         for (int i = 0; i < rangeInfo.Rows.Count; i++)
                         {
+                            if (completed[i])
+                                continue;
                             rangeInfo.AddTextRow(currentRows[i], i);
                             sameRefRows[i].Clear();
                         }
@@ -241,6 +245,8 @@ namespace SIL.Machine.Corpora
 
                     for (int i = 0; i < rangeInfo.Rows.Count; i++)
                     {
+                        if (completed[i])
+                            continue;
                         sameRefRows[i].Add(currentRows[i]);
                         bool isCompleted = !enumerators[i].MoveNext();
                         completed[i] = isCompleted;

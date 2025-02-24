@@ -56,6 +56,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
             MaxUnapplications = 0;
+            MergeEquivalentAnalyses = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
 
@@ -77,6 +78,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// because there are too many unapplications.
         /// </summary>
         public int MaxUnapplications { get; set; }
+
+        /// <summary>
+        /// Merge analyses that have equivalent shapes.
+        /// Merged analyses will be expanded if lexical lookup succeeds.
+        /// </summary>
+        public bool MergeEquivalentAnalyses { get; set; }
 
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
@@ -139,10 +146,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     var lexicalGuesses = LexicalGuess(analysisWord).Distinct();
                     foreach (Word synthesisWord in lexicalGuesses)
                     {
-                        foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                        foreach (Word alternative in synthesisWord.ExpandAlternatives())
                         {
-                            if (IsMatch(word, validWord))
-                                matches.Add(validWord);
+                            foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                            {
+                                if (IsMatch(word, validWord))
+                                    matches.Add(validWord);
+                            }
                         }
                     }
                 }
@@ -278,10 +288,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
-                    foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                    foreach (Word alternative in synthesisWord.ExpandAlternatives())
                     {
-                        if (IsMatch(word, validWord))
-                            matches.Add(validWord);
+                        foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                        {
+                            if (IsMatch(word, validWord))
+                                matches.Add(validWord);
+                        }
                     }
                 }
             }
@@ -304,10 +317,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                             analyses.TryDequeue(out Word analysisWord);
                             foreach (Word synthesisWord in LexicalLookup(analysisWord))
                             {
-                                foreach (Word validWord in _synthesisRule.Apply(synthesisWord).Where(IsWordValid))
+                                foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
-                                    if (IsMatch(word, validWord))
-                                        matches.Add(validWord);
+                                    foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                                    {
+                                        if (IsMatch(word, validWord))
+                                            matches.Add(validWord);
+                                    }
                                 }
                             }
                         }

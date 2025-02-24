@@ -258,6 +258,11 @@ namespace SIL.Machine.Corpora
                 }
                 else if (text.Length > 0 && (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText))
                 {
+                    bool isEmbedOrNestedDontUpdate =
+                        IsInEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker));
+                    if (isEmbedOrNestedDontUpdate)
+                        return;
+
                     if (
                         state.PrevToken?.Type == UsfmTokenType.End
                         && (rowText.Length == 0 || char.IsWhiteSpace(rowText[rowText.Length - 1]))
@@ -293,7 +298,7 @@ namespace SIL.Machine.Corpora
                     _rows.Add(_text.CreateRow(scriptureRef, text, _sentenceStart));
             }
 
-            protected override void StartNoteText(UsfmParserState state, ScriptureRef scriptureRef)
+            protected override void StartNoteText(UsfmParserState state)
             {
                 if (_text._includeMarkers)
                     return;

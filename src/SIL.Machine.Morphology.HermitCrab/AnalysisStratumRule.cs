@@ -67,11 +67,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
+            Word origInput = input;
             input = input.Clone();
             input.Stratum = _stratum;
 
             _prulesRule.Apply(input);
             input.Freeze();
+            IDictionary<Shape, Word> shapeWord = null;
+            // Don't merge if tracing because it messes up the tracing.
+            bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
+            if (mergeEquivalentAnalyses)
+                shapeWord = new Dictionary<Shape, Word>(FreezableEqualityComparer<Shape>.Default);
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
             IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
@@ -82,6 +88,19 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
+                // Skip intermediate sources from phonological rules, templates, and morphological rules.
+                mruleOutWord.Source = origInput;
+                if (mergeEquivalentAnalyses)
+                {
+                    Shape shape = mruleOutWord.Shape;
+                    Word canonicalWord;
+                    if (shapeWord.TryGetValue(shape, out canonicalWord))
+                    {
+                        canonicalWord.Alternatives.Add(mruleOutWord);
+                        continue;
+                    }
+                    shapeWord[shape] = mruleOutWord;
+                }
                 output.Add(mruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
