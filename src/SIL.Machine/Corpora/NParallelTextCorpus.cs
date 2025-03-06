@@ -170,9 +170,11 @@ namespace SIL.Machine.Corpora
                                 minRefIndexes.ToArray(),
                                 nonMinRefIndexes.ToArray(),
                                 sameRefRows,
-                                forceInRange: minRefIndexes
+                                forceInRange: Enumerable
+                                    .Range(0, N)
                                     .Select(i =>
-                                        anyNonMinEnumeratorsMidRange
+                                        minRefIndexes.Contains(i)
+                                        && anyNonMinEnumeratorsMidRange
                                         && nonMinRefIndexes.All(j =>
                                             !completed[j] && currentRows[j].TextId == currentRows[i].TextId
                                         ) //All non-min rows have the same textId as the given min row
@@ -357,18 +359,16 @@ namespace SIL.Machine.Corpora
                 }
             }
             textRows = new TextRow[N];
-            var forceCurrentInRange = new bool[N];
             bool rowsHaveContent = false;
             foreach (int i in minRefIndexes.Where(i => AllRows[i]).Except(alreadyYielded))
             {
                 TextRow textRow = currentRows[i];
                 textRows[i] = textRow;
-                forceCurrentInRange[i] = forceCurrentInRange[i];
                 rowsHaveContent = true;
             }
             if (rowsHaveContent)
             {
-                foreach (NParallelTextRow row in CreateRows(rangeInfo, textRows, forceCurrentInRange))
+                foreach (NParallelTextRow row in CreateRows(rangeInfo, textRows, forceInRange))
                 {
                     yield return row;
                 }
