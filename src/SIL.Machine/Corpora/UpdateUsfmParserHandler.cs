@@ -26,8 +26,10 @@ namespace SIL.Machine.Corpora
         private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _newTokens;
+        private readonly List<UsfmToken> _newEmbedTokens;
         private readonly string _idText;
         private readonly UpdateUsfmTextBehavior _textBehavior;
+        private readonly UpdateUsfmMarkerBehavior _paragraphBehavior;
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
         private readonly Stack<bool> _replace;
@@ -40,6 +42,7 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
+            UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
         )
@@ -47,9 +50,11 @@ namespace SIL.Machine.Corpora
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
             _tokens = new List<UsfmToken>();
             _newTokens = new List<UsfmToken>();
+            _newEmbedTokens = new List<UsfmToken>();
             _idText = idText;
             _replace = new Stack<bool>();
             _textBehavior = textBehavior;
+            _paragraphBehavior = paragraphBehavior;
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
             _embedUpdated = false;
@@ -89,7 +94,18 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
-            CollectTokens(state);
+            if (
+                state.VerseRef.VerseNum != 0
+                && (HasNewText() || _textBehavior == UpdateUsfmTextBehavior.StripExisting)
+                && _paragraphBehavior == UpdateUsfmMarkerBehavior.Strip
+            )
+            {
+                SkipTokens(state);
+            }
+            else
+            {
+                CollectTokens(state);
+            }
 
             base.StartPara(state, marker, unknown, attributes);
         }
@@ -244,13 +260,13 @@ namespace SIL.Machine.Corpora
 
         public override void Text(UsfmParserState state, string text)
         {
+            base.Text(state, text);
+
             // strip out text in verses that are being replaced
             if (ReplaceWithNewTokens(state))
                 SkipTokens(state);
             else
                 CollectTokens(state);
-
-            base.Text(state, text);
         }
 
         public override void OptBreak(UsfmParserState state)
@@ -299,7 +315,7 @@ namespace SIL.Machine.Corpora
 
         protected override void StartNoteText(UsfmParserState state)
         {
-            PushNewTokens(_embedRowTexts.Select(t => new UsfmToken(t + " ")));
+            PushNewEmbedTokens(_embedRowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
         protected override void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef)
@@ -375,15 +391,9 @@ namespace SIL.Machine.Corpora
 
         private bool ReplaceWithNewTokens(UsfmParserState state, bool closed = true)
         {
-            if (_textBehavior == UpdateUsfmTextBehavior.StripExisting)
-            {
-                AddNewTokens();
-                return true;
-            }
-
-            bool newText = _replace.Count > 0 && _replace.Peek();
             string marker = state?.Token?.Marker;
             bool inEmbed = IsInEmbed(marker);
+
             bool inNestedEmbed = IsInNestedEmbed(marker);
             bool isStyleTag = marker != null && !IsEmbedPartStyle(marker);
 
@@ -393,23 +403,37 @@ namespace SIL.Machine.Corpora
                 .Any(t => t.Type == UsfmTokenType.Text && t.Text.Length > 0);
 
             bool useNewTokens =
-                newText
-                && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew)
+                (
+                    (_textBehavior == UpdateUsfmTextBehavior.StripExisting)
+                    || (HasNewText() && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew))
+                )
+                && !IsInPreservedParagraph(marker)
                 && (!inEmbed || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmMarkerBehavior.Preserve));
 
             if (useNewTokens)
-                AddNewTokens();
+            {
+                if (inEmbed)
+                    AddNewEmbedTokens();
+                else
+                    AddNewTokens();
+            }
 
             if (existingText && _textBehavior == UpdateUsfmTextBehavior.PreferExisting)
-                ClearNewTokens();
+            {
+                if (inEmbed)
+                    ClearNewEmbedTokens();
+                else
+                    ClearNewTokens();
+            }
 
             // figure out when to skip the existing text
-            bool embedInNewVerseText = _replace.Any(r => r) && inEmbed;
+            bool embedInNewVerseText =
+                (_replace.Any(r => r) || _textBehavior == UpdateUsfmTextBehavior.StripExisting) && inEmbed;
             if (embedInNewVerseText || _embedUpdated)
             {
                 if (_embedBehavior == UpdateUsfmMarkerBehavior.Strip)
                 {
-                    ClearNewTokens();
+                    ClearNewEmbedTokens();
                     return true;
                 }
 
@@ -419,11 +443,16 @@ namespace SIL.Machine.Corpora
 
             bool skipTokens = useNewTokens && closed;
 
-            if (newText && isStyleTag)
+            if (useNewTokens && isStyleTag)
             {
                 skipTokens = _styleBehavior == UpdateUsfmMarkerBehavior.Strip;
             }
             return skipTokens;
+        }
+
+        private bool HasNewText()
+        {
+            return _replace.Count > 0 && _replace.Peek();
         }
 
         private void PushNewTokens(IEnumerable<UsfmToken> tokens)
@@ -442,6 +471,25 @@ namespace SIL.Machine.Corpora
         private void ClearNewTokens()
         {
             _newTokens.Clear();
+        }
+
+        private void PushNewEmbedTokens(IEnumerable<UsfmToken> tokens)
+        {
+            _replace.Push(tokens.Any());
+            if (tokens.Any())
+                _newEmbedTokens.AddRange(tokens);
+        }
+
+        private void AddNewEmbedTokens()
+        {
+            if (_newEmbedTokens.Count > 0)
+                _tokens.AddRange(_newEmbedTokens);
+            _newEmbedTokens.Clear();
+        }
+
+        private void ClearNewEmbedTokens()
+        {
+            _newEmbedTokens.Clear();
         }
 
         private void PopNewTokens()
