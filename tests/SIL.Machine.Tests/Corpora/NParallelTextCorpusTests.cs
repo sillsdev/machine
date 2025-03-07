@@ -562,6 +562,33 @@ public class NParallelTextCorpusTests
         Assert.That(rows.Length, Is.EqualTo(10));
     }
 
+    [Test]
+    public void GetRows_ThreeCorpora_SameRefCorporaOfDifferentSizes()
+    {
+        var corpus1 = new DictionaryTextCorpus(
+            new MemoryText("text1", new[] { TextRow("text1", 2, "source segment 2 .") })
+        );
+        var corpus2 = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, "source segment 1 ."),
+                    TextRow("text1", 2, "source segment 2-1 ."),
+                    TextRow("text1", 2, "source segment 2-2 ."),
+                    TextRow("text1", 3, "source segment 3 . ")
+                }
+            )
+        );
+        var corpus3 = new DictionaryTextCorpus(
+            new MemoryText("text1", new[] { TextRow("text1", 1, "source segment 1 .") })
+        );
+        var nParallelCorpus = new NParallelTextCorpus([corpus1, corpus2, corpus3]) { AllRows = [true, true, true] };
+        NParallelTextRow[] rows = nParallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(4), JsonSerializer.Serialize(rows));
+        Assert.That(rows[0].NRefs[1], Is.EquivalentTo(new object[] { 1 }));
+    }
+
     private static TextRow TextRow(
         string textId,
         object rowRef,
