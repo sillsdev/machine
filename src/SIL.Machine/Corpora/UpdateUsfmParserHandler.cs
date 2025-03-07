@@ -34,11 +34,13 @@ namespace SIL.Machine.Corpora
         private int _rowIndex;
         private int _tokenIndex;
         private bool _embedUpdated;
+        private bool _addDisclaimer;
         private List<string> _embedRowTexts;
 
         public UpdateUsfmParserHandler(
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
             string idText = null,
+            bool addDisclaimer = false,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
@@ -48,6 +50,7 @@ namespace SIL.Machine.Corpora
             _tokens = new List<UsfmToken>();
             _newTokens = new List<UsfmToken>();
             _idText = idText;
+            _addDisclaimer = addDisclaimer;
             _replace = new Stack<bool>();
             _textBehavior = textBehavior;
             _embedBehavior = embedBehavior;
@@ -70,6 +73,11 @@ namespace SIL.Machine.Corpora
             var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
                 startBookTokens.Add(new UsfmToken(_idText + " "));
+            if (_addDisclaimer)
+            {
+                startBookTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
+                startBookTokens.Add(new UsfmToken("Info about the book"));
+            }
             PushNewTokens(startBookTokens);
 
             base.StartBook(state, marker, code);
