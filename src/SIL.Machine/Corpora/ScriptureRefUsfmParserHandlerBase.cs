@@ -20,6 +20,7 @@ namespace SIL.Machine.Corpora
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
         private bool _duplicateVerse = false;
+        private bool _inPreservedParagraph = false;
 
         private bool _inEmbed;
         protected bool InNoteText { get; private set; }
@@ -34,6 +35,7 @@ namespace SIL.Machine.Corpora
         protected ScriptureTextType CurrentTextType =>
             _curTextType.Count == 0 ? ScriptureTextType.None : _curTextType.Peek();
 
+        private static readonly string[] PreserveParagraphStyles = new[] { "r", "rem" };
         private static readonly string[] EmbedStyles = new[] { "f", "fe", "fig", "fm", "x" };
         private static readonly char[] EmbedPartStartCharStyles = new[] { 'f', 'x', 'z' };
 
@@ -93,6 +95,8 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
+            if (IsPreserveParagraphType(marker))
+                _inPreservedParagraph = true;
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
@@ -105,6 +109,7 @@ namespace SIL.Machine.Corpora
 
         public override void EndPara(UsfmParserState state, string marker)
         {
+            _inPreservedParagraph = false;
             if (CurrentTextType == ScriptureTextType.NonVerse)
             {
                 EndParentElement();
@@ -386,6 +391,11 @@ namespace SIL.Machine.Corpora
             return _inEmbed || IsEmbedStyle(marker);
         }
 
+        protected bool IsInPreservedParagraph(string marker)
+        {
+            return _inPreservedParagraph || IsPreserveParagraphType(marker);
+        }
+
         protected bool IsInNestedEmbed(string marker)
         {
             return _inNestedEmbed
@@ -409,7 +419,12 @@ namespace SIL.Machine.Corpora
 
         protected static bool IsEmbedStyle(string marker)
         {
-            return !(marker is null) && marker.IsOneOf(EmbedStyles);
+            return !(marker is null) && marker.Trim('*').IsOneOf(EmbedStyles);
+        }
+
+        protected static bool IsPreserveParagraphType(string marker)
+        {
+            return PreserveParagraphStyles.Contains(marker);
         }
     }
 }
