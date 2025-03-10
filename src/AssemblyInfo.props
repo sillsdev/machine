@@ -1,9 +1,9 @@
 <Project>
 	<PropertyGroup>
-		<Version>3.6.2</Version>
+		<Version>3.6.3</Version>
 		<Version Condition=" '$(VersionSuffix)' != '' ">$(Version)-$(VersionSuffix)</Version>
-		<AssemblyVersion>3.6.2.0</AssemblyVersion>
-		<FileVersion>3.6.2.0</FileVersion>
+		<AssemblyVersion>3.6.3.0</AssemblyVersion>
+		<FileVersion>3.6.3.0</FileVersion>
 		<Company>SIL Global</Company>
 		<Authors>SIL Global</Authors>
 		<Product>Machine</Product>
