@@ -10,7 +10,6 @@ namespace SIL.Machine.Corpora
         None,
         NonVerse,
         Verse,
-        Embed,
         NoteText
     }
 
@@ -20,7 +19,6 @@ namespace SIL.Machine.Corpora
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
         private bool _duplicateVerse = false;
-
         private bool _inEmbed;
         protected bool InNoteText { get; private set; }
         private bool _inNestedEmbed;
@@ -409,7 +407,7 @@ namespace SIL.Machine.Corpora
 
         protected static bool IsEmbedStyle(string marker)
         {
-            return !(marker is null) && marker.IsOneOf(EmbedStyles);
+            return !(marker is null) && marker.Trim('*').IsOneOf(EmbedStyles);
         }
     }
 }

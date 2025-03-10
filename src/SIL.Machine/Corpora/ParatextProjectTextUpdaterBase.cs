@@ -24,8 +24,10 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
             string fullName = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
+            UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
-            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
+            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
+            IReadOnlyCollection<string> preserveParagraphStyles = null
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -42,8 +44,10 @@ namespace SIL.Machine.Corpora
                 rows,
                 fullName is null ? null : $"- {fullName}",
                 textBehavior,
+                paragraphBehavior,
                 embedBehavior,
-                styleBehavior
+                styleBehavior,
+                preserveParagraphStyles
             );
             try
             {
