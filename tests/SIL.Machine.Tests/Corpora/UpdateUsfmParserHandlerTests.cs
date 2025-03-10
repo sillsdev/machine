@@ -945,7 +945,7 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-        ImmutableHashSet<string>? preserveParagraphStyles = null
+        IReadOnlyCollection<string>? preserveParagraphStyles = null
     )
     {
         if (source is null)

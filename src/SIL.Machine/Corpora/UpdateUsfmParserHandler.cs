@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
 {
@@ -33,7 +33,7 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _paragraphBehavior;
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
-        private readonly ImmutableHashSet<string> _preserveParagraphStyles;
+        private readonly IReadOnlySet<string> _preserveParagraphStyles;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -48,7 +48,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-            ImmutableHashSet<string> preserveParagraphStyles = null
+            IReadOnlyCollection<string> preserveParagraphStyles = null
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -62,9 +62,9 @@ namespace SIL.Machine.Corpora
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
             if (preserveParagraphStyles == null)
-                _preserveParagraphStyles = ImmutableHashSet.Create("r", "rem");
+                _preserveParagraphStyles = (IReadOnlySet<string>)new HashSet<string> { "r", "rem" };
             else
-                _preserveParagraphStyles = preserveParagraphStyles;
+                _preserveParagraphStyles = (IReadOnlySet<string>)new HashSet<string>(preserveParagraphStyles);
             _embedUpdated = false;
             _embedRowTexts = new List<string>();
         }
