@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Immutable;
+using NUnit.Framework;
 
 namespace SIL.Machine.Corpora;
 
@@ -33,11 +34,158 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_StripAllText()
     {
-        string target = UpdateUsfm(textBehavior: UpdateUsfmTextBehavior.StripExisting);
-        Assert.That(target, Contains.Substring("\\id MAT\r\n"));
-        Assert.That(target, Contains.Substring("\\v 1\r\n"));
-        Assert.That(target, Contains.Substring("\\s\r\n"));
-        Assert.That(target, Contains.Substring("\\ms\r\n"));
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update 1"),
+            (ScrRef("MAT 1:3"), "Update 3")
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\r keep this reference
+\rem and this reference too
+\ip but remove this text
+\v 1 Chapter \add one\add*, \p verse \f + \fr 2:1: \ft This is a \fm ∆\fm* footnote.\f*one.
+\v 2 Chapter \add one\add*, \p verse \f + \fr 2:1: \ft This is a \fm ∆\fm* footnote.\f*two.
+\v 3 Verse 3
+\v 4 Verse 4
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        var result =
+            @"\id MAT
+\c 1
+\r keep this reference
+\rem and this reference too
+\ip
+\v 1 Update 1 \add \add*
+\p \f + \fr 2:1: \ft \fm ∆\fm*\f*
+\v 2 \add \add*
+\p \f + \fr 2:1: \ft \fm ∆\fm*\f*
+\v 3 Update 3
+\v 4
+";
+        Assess(target, result);
+
+        target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+
+        result =
+            @"\id MAT
+\c 1
+\r keep this reference
+\rem and this reference too
+\ip
+\v 1 Update 1
+\v 2
+\v 3 Update 3
+\v 4
+";
+        Assess(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_PreserveParagraphs()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:0/1:rem"), "Update remark"),
+            (ScrRef("MAT 1:1"), "Update 1"),
+        };
+        string usfm =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip This is another remark, but with a different marker
+\v 1 This is a verse
+";
+
+        string target = UpdateUsfm(rows, usfm, textBehavior: UpdateUsfmTextBehavior.StripExisting);
+        string result =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip
+\v 1 Update 1
+";
+
+        Assess(target, result);
+
+        var targetDiffParagraph = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            preserveParagraphStyles: ImmutableHashSet.Create("ip")
+        );
+        string resultDiffParagraph =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r
+\ip This is another remark, but with a different marker
+\v 1 Update 1
+";
+
+        Assess(targetDiffParagraph, resultDiffParagraph);
+    }
+
+    [Test]
+    public void GetUsfm_ParagraphInVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1"), };
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse 1 \p inner verse paragraph
+\s1 Section Header
+\v 2 Verse 2 \p inner verse paragraph
+";
+
+        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+
+        string result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update 1
+\s1 Section Header
+\v 2 Verse 2
+\p inner verse paragraph
+";
+
+        Assess(target, result);
+
+        string targetStrip = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+
+        string resultStrip =
+            @"\id MAT
+\c 1
+\v 1 Update 1
+\s1
+\v 2
+";
+
+        Assess(targetStrip, resultStrip);
     }
 
     [Test]
@@ -549,6 +697,95 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void GetUsfm_StripParagraphs()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:0/2:p"), "Update Paragraph"),
+            (ScrRef("MAT 1:1"), "Update Verse 1")
+        };
+
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\p This is a paragraph before any verses
+\p This is a second paragraph before any verses
+\v 1 Hello
+\p World
+\v 2 Hello
+\p World
+";
+
+        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve);
+        var resultP =
+            @"\id MAT - Test
+\c 1
+\p This is a paragraph before any verses
+\p Update Paragraph
+\v 1 Update Verse 1
+\p
+\v 2 Hello
+\p World
+";
+        Assess(target, resultP);
+
+        target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+        var resultS =
+            @"\id MAT - Test
+\c 1
+\p This is a paragraph before any verses
+\p Update Paragraph
+\v 1 Update Verse 1
+\v 2 Hello
+\p World
+";
+        Assess(target, resultS);
+    }
+
+    [Test]
+    public void GetUsfm_PreservationRawStrings()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*")
+        };
+
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 \f \fr 1.1 \ft Some note \f*Hello World
+";
+
+        string target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update all in one row \f \fr 1.1 \ft Some note \f*
+";
+        Assess(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_BeginningOfVerseEmbed()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), @"Updated text") };
+
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 \f \fr 1.1 \ft Some note \f* Text after note
+";
+
+        string target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
+        var result =
+            @"\id MAT - Test
+\c 1
+\v 1 Updated text
+";
+        Assess(target, result);
+    }
+
+    [Test]
     public void EmptyNote()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1/1:f"), "Update the note") };
@@ -705,19 +942,38 @@ public class UpdateUsfmParserHandlerTests
         string? source = null,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
+        UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
-        UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
+        UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
+        IReadOnlyCollection<string>? preserveParagraphStyles = null
     )
     {
         if (source is null)
         {
             var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTestProjectPath);
-            return updater.UpdateUsfm("MAT", rows, idText, textBehavior, embedBehavior, styleBehavior);
+            return updater.UpdateUsfm(
+                "MAT",
+                rows,
+                idText,
+                textBehavior,
+                paragraphBehavior,
+                embedBehavior,
+                styleBehavior,
+                preserveParagraphStyles
+            );
         }
         else
         {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-            var updater = new UpdateUsfmParserHandler(rows, idText, textBehavior, embedBehavior, styleBehavior);
+            var updater = new UpdateUsfmParserHandler(
+                rows,
+                idText,
+                textBehavior,
+                paragraphBehavior,
+                embedBehavior,
+                styleBehavior,
+                preserveParagraphStyles
+            );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
         }
@@ -730,7 +986,7 @@ public class UpdateUsfmParserHandlerTests
         var truth_lines = truth.Split(new[] { "\n" }, StringSplitOptions.None);
         for (int i = 0; i < truth_lines.Length; i++)
         {
-            Assert.That(target_lines[i].Trim(), Is.EqualTo(truth_lines[i].Trim()));
+            Assert.That(target_lines[i].Trim(), Is.EqualTo(truth_lines[i].Trim()), message: $"Line {i}");
         }
     }
 }
