@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace SIL.Machine.Corpora
@@ -32,10 +33,12 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _paragraphBehavior;
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
+        private readonly ImmutableHashSet<string> _preserveParagraphStyles;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
         private bool _embedUpdated;
+        private bool _inPreservedParagraph;
         private List<string> _embedRowTexts;
 
         public UpdateUsfmParserHandler(
@@ -44,7 +47,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
-            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
+            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
+            ImmutableHashSet<string> preserveParagraphStyles = null
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -57,6 +61,10 @@ namespace SIL.Machine.Corpora
             _paragraphBehavior = paragraphBehavior;
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
+            if (preserveParagraphStyles == null)
+                _preserveParagraphStyles = ImmutableHashSet.Create("r", "rem");
+            else
+                _preserveParagraphStyles = preserveParagraphStyles;
             _embedUpdated = false;
             _embedRowTexts = new List<string>();
         }
@@ -94,8 +102,12 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
+            if (marker != null && _preserveParagraphStyles.Contains(marker))
+            {
+                _inPreservedParagraph = true;
+            }
             if (
-                state.VerseRef.VerseNum != 0
+                state.IsVerseText
                 && (HasNewText() || _textBehavior == UpdateUsfmTextBehavior.StripExisting)
                 && _paragraphBehavior == UpdateUsfmMarkerBehavior.Strip
             )
@@ -108,6 +120,12 @@ namespace SIL.Machine.Corpora
             }
 
             base.StartPara(state, marker, unknown, attributes);
+        }
+
+        public override void EndPara(UsfmParserState state, string marker)
+        {
+            base.EndPara(state, marker);
+            _inPreservedParagraph = false;
         }
 
         public override void StartRow(UsfmParserState state, string marker)
@@ -404,10 +422,9 @@ namespace SIL.Machine.Corpora
 
             bool useNewTokens =
                 (
-                    (_textBehavior == UpdateUsfmTextBehavior.StripExisting)
-                    || (HasNewText() && (!existingText || _textBehavior == UpdateUsfmTextBehavior.PreferNew))
+                    (_textBehavior == UpdateUsfmTextBehavior.StripExisting && !IsInPreservedParagraph(marker))
+                    || (HasNewText() && (!existingText || _textBehavior != UpdateUsfmTextBehavior.PreferExisting))
                 )
-                && !IsInPreservedParagraph(marker)
                 && (!inEmbed || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmMarkerBehavior.Preserve));
 
             if (useNewTokens)
@@ -495,6 +512,11 @@ namespace SIL.Machine.Corpora
         private void PopNewTokens()
         {
             _replace.Pop();
+        }
+
+        private bool IsInPreservedParagraph(string marker)
+        {
+            return _inPreservedParagraph || _preserveParagraphStyles.Contains(marker);
         }
     }
 }

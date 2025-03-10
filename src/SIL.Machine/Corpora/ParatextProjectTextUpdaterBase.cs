@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 
@@ -26,7 +27,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
-            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
+            UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
+            ImmutableHashSet<string> preserveParagraphStyles = null
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -45,7 +47,8 @@ namespace SIL.Machine.Corpora
                 textBehavior,
                 paragraphBehavior,
                 embedBehavior,
-                styleBehavior
+                styleBehavior,
+                preserveParagraphStyles
             );
             try
             {

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Immutable;
+using NUnit.Framework;
 
 namespace SIL.Machine.Corpora;
 
@@ -95,6 +96,96 @@ public class UpdateUsfmParserHandlerTests
 \v 4
 ";
         Assess(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_PreserveParagraphs()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:0/1:rem"), "Update remark"),
+            (ScrRef("MAT 1:1"), "Update 1"),
+        };
+        string usfm =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip This is another remark, but with a different marker
+\v 1 This is a verse
+";
+
+        string target = UpdateUsfm(rows, usfm, textBehavior: UpdateUsfmTextBehavior.StripExisting);
+        string result =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip
+\v 1 Update 1
+";
+
+        Assess(target, result);
+
+        var targetDiffParagraph = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            preserveParagraphStyles: ImmutableHashSet.Create("ip")
+        );
+        string resultDiffParagraph =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r
+\ip This is another remark, but with a different marker
+\v 1 Update 1
+";
+
+        Assess(targetDiffParagraph, resultDiffParagraph);
+    }
+
+    [Test]
+    public void GetUsfm_ParagraphInVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1"), };
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse 1 \p inner verse paragraph
+\s1 Section Header
+\v 2 Verse 2 \p inner verse paragraph
+";
+
+        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+
+        string result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update 1
+\s1 Section Header
+\v 2 Verse 2
+\p inner verse paragraph
+";
+
+        Assess(target, result);
+
+        string targetStrip = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+
+        string resultStrip =
+            @"\id MAT
+\c 1
+\v 1 Update 1
+\s1
+\v 2
+";
+
+        Assess(targetStrip, resultStrip);
     }
 
     [Test]
@@ -853,7 +944,8 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
         UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
-        UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip
+        UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
+        ImmutableHashSet<string>? preserveParagraphStyles = null
     )
     {
         if (source is null)
@@ -866,7 +958,8 @@ public class UpdateUsfmParserHandlerTests
                 textBehavior,
                 paragraphBehavior,
                 embedBehavior,
-                styleBehavior
+                styleBehavior,
+                preserveParagraphStyles
             );
         }
         else
@@ -878,7 +971,8 @@ public class UpdateUsfmParserHandlerTests
                 textBehavior,
                 paragraphBehavior,
                 embedBehavior,
-                styleBehavior
+                styleBehavior,
+                preserveParagraphStyles
             );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
