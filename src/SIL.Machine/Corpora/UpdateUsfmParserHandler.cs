@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
 {
@@ -33,7 +32,7 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _paragraphBehavior;
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
-        private readonly IReadOnlySet<string> _preserveParagraphStyles;
+        private readonly HashSet<string> _preserveParagraphStyles;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -62,9 +61,9 @@ namespace SIL.Machine.Corpora
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
             if (preserveParagraphStyles == null)
-                _preserveParagraphStyles = (IReadOnlySet<string>)new HashSet<string> { "r", "rem" };
+                _preserveParagraphStyles = new HashSet<string> { "r", "rem" };
             else
-                _preserveParagraphStyles = (IReadOnlySet<string>)new HashSet<string>(preserveParagraphStyles);
+                _preserveParagraphStyles = new HashSet<string>(preserveParagraphStyles);
             _embedUpdated = false;
             _embedRowTexts = new List<string>();
         }
