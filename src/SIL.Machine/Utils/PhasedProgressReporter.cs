@@ -10,6 +10,10 @@ namespace SIL.Machine.Utils
         private readonly double _defaultPercentage;
         private int _currentPhaseIndex = -1;
         private double _percentCompleted;
+
+        private readonly double _inferenceProgress = 0; // will perform the calculation
+        private readonly double _fineTuneProgress = 0; // will perform the calculation
+
         private int _step;
         private int _prevPhaseLastStep;
 
@@ -68,7 +72,9 @@ namespace SIL.Machine.Utils
 
             double percentCompleted = _percentCompleted + CurrentPhasePercentage * (value.PercentCompleted ?? 0);
             string message = value.Message ?? Phases[_currentPhaseIndex].Message;
-            _progress.Report(new ProgressStatus(_step, percentCompleted, message));
+            _progress.Report(
+                new ProgressStatus(_step, percentCompleted, _fineTuneProgress, _inferenceProgress, message)
+            );
         }
     }
 }
