@@ -95,9 +95,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         rightNode,
                         varBindings
                     );
-                    if (rightEnvMatch == null
+                    if (
+                        rightEnvMatch == null
                         || rightEnvMatch.Success
-                        || subruleSpec.RightEnvironmentMatcher.AcceptsEmpty())
+                        || subruleSpec.RightEnvironmentMatcher.AcceptsEmpty()
+                       )
                     {
                         if (rightEnvMatch != null && rightEnvMatch.VariableBindings != null)
                             varBindings = rightEnvMatch.VariableBindings;
