@@ -600,6 +600,61 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
+    public void GetRows_AdjacentRangesBothTexts_EmptyTargetSegments()
+    {
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow(
+                        "text1",
+                        1,
+                        "source segment 1 . source segment 2 .",
+                        TextRowFlags.InRange | TextRowFlags.RangeStart
+                    ),
+                    TextRow("text1", 2, flags: TextRowFlags.InRange),
+                    TextRow(
+                        "text1",
+                        3,
+                        "source segment 3 . source segment 4 .",
+                        TextRowFlags.InRange | TextRowFlags.RangeStart
+                    ),
+                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                }
+            )
+        );
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                new[]
+                {
+                    TextRow("text1", 1, flags: TextRowFlags.InRange | TextRowFlags.RangeStart),
+                    TextRow("text1", 2, flags: TextRowFlags.InRange),
+                    TextRow("text1", 3, flags: TextRowFlags.InRange | TextRowFlags.RangeStart),
+                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                }
+            )
+        );
+
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus)
+        {
+            AllSourceRows = true,
+            AllTargetRows = false
+        };
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(2));
+        Assert.That(rows[0].SourceRefs, Is.EqualTo(new[] { 1, 2 }));
+        Assert.That(rows[0].TargetRefs, Is.EqualTo(new[] { 1, 2 }));
+        Assert.That(rows[0].SourceSegment, Is.EqualTo("source segment 1 . source segment 2 .".Split()));
+        Assert.That(rows[0].TargetSegment, Is.Empty);
+        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { 3, 4 }));
+        Assert.That(rows[1].TargetRefs, Is.EqualTo(new[] { 3, 4 }));
+        Assert.That(rows[1].SourceSegment, Is.EqualTo("source segment 3 . source segment 4 .".Split()));
+        Assert.That(rows[1].TargetSegment, Is.Empty);
+    }
+
+    [Test]
     public void GetRows_AllSourceRows()
     {
         var sourceCorpus = new DictionaryTextCorpus(

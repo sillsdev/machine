@@ -71,9 +71,9 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private static bool AllInRangeHaveSegments(IList<TextRow> rows)
+        private static bool AllRangesAreNewRanges(IList<TextRow> rows)
         {
-            return rows.All(r => (r.IsInRange && !r.IsEmpty) || (!r.IsInRange));
+            return rows.All(r => r.IsRangeStart || !r.IsInRange);
         }
 
         private IList<int> MinRefIndexes(IList<object> refs)
@@ -211,7 +211,7 @@ namespace SIL.Machine.Corpora
                     {
                         if (
                             rangeInfo.IsInRange
-                            && AllInRangeHaveSegments(currentRows.Where((r, i) => !completed[i]).ToArray())
+                            && AllRangesAreNewRanges(currentRows.Where((r, i) => !completed[i]).ToArray())
                         )
                         {
                             yield return rangeInfo.CreateRow();
