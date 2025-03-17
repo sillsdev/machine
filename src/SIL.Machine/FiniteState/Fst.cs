@@ -2143,6 +2143,6 @@ namespace SIL.Machine.FiniteState
             }
 
             return curState.IsAccepting;
-         }
+        }
     }
 }
