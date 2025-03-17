@@ -50,9 +50,9 @@ public class RewriteRuleTests : HermitCrabTestBase
                 // the following should be a NOOP because it accepts the empty string.
                 LeftEnvironment = Pattern<Word, ShapeNode>
                     .New()
-                    .Annotation(nonCons).Optional
-                    .Annotation(nonCons).Optional
-                    .Value,
+                    .Annotation(nonCons)
+                    .Optional.Annotation(nonCons)
+                    .Optional.Value,
                 RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
             }
         );
