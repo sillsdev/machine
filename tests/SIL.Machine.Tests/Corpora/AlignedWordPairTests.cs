@@ -21,6 +21,11 @@ public class AlignedWordPairTests
         Assert.That(alignedWordPairs, Has.Count.EqualTo(1));
         Assert.That(alignedWordPairs.First().TranslationScore, Is.EqualTo(0.111111));
         Assert.That(alignedWordPairs.First().AlignmentScore, Is.EqualTo(-1));
+        alignmentString = "1-0";
+        Assert.That(AlignedWordPair.TryParse(alignmentString, out alignedWordPairs), Is.True);
+        Assert.That(alignedWordPairs, Has.Count.EqualTo(1));
+        Assert.That(alignedWordPairs.First().TranslationScore, Is.EqualTo(-1));
+        Assert.That(alignedWordPairs.First().AlignmentScore, Is.EqualTo(-1));
     }
 
     [Test]
