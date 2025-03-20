@@ -1482,4 +1482,26 @@ public class MatcherTests : PhoneticTestsBase
         Assert.That(match.GroupCaptures["first"].Range, Is.EqualTo(Range<int>.Create(1, 3)));
         Assert.That(match.GroupCaptures["second"].Range, Is.EqualTo(Range<int>.Create(3, 10)));
     }
+
+    [Test]
+    public void AcceptsEmpty()
+    {
+        AnnotatedStringData word = CreateStringData("a");
+
+        Pattern<AnnotatedStringData, int> pattern = Pattern<AnnotatedStringData, int>
+            .New()
+            .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Seg).Symbol("syl+").Value)
+            .Optional.Value;
+        var matcher = new Matcher<AnnotatedStringData, int>(pattern);
+
+        Match<AnnotatedStringData, int>[] matches = matcher.AllMatches(word).ToArray();
+        Assert.That(matches.Length, Is.EqualTo(2));
+        Assert.That(matches[0].Range, Is.EqualTo(Range<int>.Create(0, 1)));
+        Assert.That(matches[1].Range.IsEmpty, Is.True);
+
+        word = CreateStringData("k");
+        matches = matcher.AllMatches(word).ToArray();
+        Assert.That(matches.Length, Is.EqualTo(1));
+        Assert.That(matches[0].Range.IsEmpty, Is.True);
+    }
 }

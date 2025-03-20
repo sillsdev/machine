@@ -132,6 +132,8 @@ namespace SIL.Machine.FiniteState
                     ReleaseInstance(inst);
             }
 
+            CheckAcceptingStartState(initAnns, initRegisters, curResults);
+
             return curResults;
         }
 
