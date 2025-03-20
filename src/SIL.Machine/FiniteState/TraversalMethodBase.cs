@@ -132,20 +132,20 @@ namespace SIL.Machine.FiniteState
             Register<TOffset>[,] registers,
             TData output,
             VariableBindings varBindings,
-            Arc<TData, TOffset> arc,
+            State<TData, TOffset> state,
             ICollection<FstResult<TData, TOffset>> curResults,
             IList<int> priorities
         )
         {
-            if (arc.Target.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
+            if (state.IsAccepting && (!_endAnchor || annIndex == _annotations.Count))
             {
                 Annotation<TOffset> ann =
                     annIndex < _annotations.Count ? _annotations[annIndex] : _data.Annotations.GetEnd(_fst.Direction);
                 var matchRegisters = (Register<TOffset>[,])registers.Clone();
-                ExecuteCommands(matchRegisters, arc.Target.Finishers, new Register<TOffset>(), new Register<TOffset>());
-                if (arc.Target.AcceptInfos.Count > 0)
+                ExecuteCommands(matchRegisters, state.Finishers, new Register<TOffset>(), new Register<TOffset>());
+                if (state.AcceptInfos.Count > 0)
                 {
-                    foreach (AcceptInfo<TData, TOffset> acceptInfo in arc.Target.AcceptInfos)
+                    foreach (AcceptInfo<TData, TOffset> acceptInfo in state.AcceptInfos)
                     {
                         TData resOutput = output;
                         if (resOutput is ICloneable<TData> cloneable)
@@ -158,7 +158,7 @@ namespace SIL.Machine.FiniteState
                             resOutput,
                             varBindings?.Clone(),
                             acceptInfo.Priority,
-                            arc.Target.IsLazy,
+                            state.IsLazy,
                             ann,
                             priorities?.ToArray(),
                             curResults.Count
@@ -180,7 +180,7 @@ namespace SIL.Machine.FiniteState
                             resOutput,
                             varBindings?.Clone(),
                             -1,
-                            arc.Target.IsLazy,
+                            state.IsLazy,
                             ann,
                             priorities?.ToArray(),
                             curResults.Count
@@ -305,7 +305,7 @@ namespace SIL.Machine.FiniteState
                         inst.Registers,
                         inst.Output,
                         varBindings,
-                        arc,
+                        arc.Target,
                         curResults,
                         inst.Priorities
                     );
@@ -333,7 +333,15 @@ namespace SIL.Machine.FiniteState
                     new Register<TOffset>(nextOffset, nextStart),
                     new Register<TOffset>(end, false)
                 );
-                CheckAccepting(nextIndex, inst.Registers, inst.Output, varBindings, arc, curResults, inst.Priorities);
+                CheckAccepting(
+                    nextIndex,
+                    inst.Registers,
+                    inst.Output,
+                    varBindings,
+                    arc.Target,
+                    curResults,
+                    inst.Priorities
+                );
 
                 inst.State = arc.Target;
                 inst.AnnotationIndex = nextIndex;
@@ -365,13 +373,43 @@ namespace SIL.Machine.FiniteState
                 inst.Registers,
                 inst.Output,
                 inst.VariableBindings,
-                arc,
+                arc.Target,
                 curResults,
                 inst.Priorities
             );
 
             inst.State = arc.Target;
             return inst;
+        }
+
+        protected void CheckAcceptingStartState(
+            ISet<int> anns,
+            Register<TOffset>[,] registers,
+            ICollection<FstResult<TData, TOffset>> curResults
+        )
+        {
+            if (!_fst.StartState.IsAccepting)
+                return;
+
+            foreach (int annIndex in anns)
+            {
+                TInst inst = GetCachedInstance();
+                inst.State = _fst.StartState;
+                inst.AnnotationIndex = annIndex;
+                Array.Copy(registers, inst.Registers, registers.Length);
+                if (!_fst.IgnoreVariables)
+                    inst.VariableBindings = _varBindings != null ? _varBindings.Clone() : new VariableBindings();
+
+                CheckAccepting(
+                    inst.AnnotationIndex,
+                    inst.Registers,
+                    inst.Output,
+                    inst.VariableBindings,
+                    inst.State,
+                    curResults,
+                    inst.Priorities
+                );
+            }
         }
 
         private int GetNextNonoverlappingAnnotationIndex(int start)
