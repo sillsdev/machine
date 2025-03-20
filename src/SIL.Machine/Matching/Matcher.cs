@@ -197,6 +197,7 @@ namespace SIL.Machine.Matching
 
             return new Match<TData, TOffset>(
                 this,
+                true,
                 matchRange,
                 input,
                 groupCaptures,
@@ -272,7 +273,7 @@ namespace SIL.Machine.Matching
                 return CreatePatternMatch(input, result);
             }
 
-            return new Match<TData, TOffset>(this, Range<TOffset>.Null, input);
+            return new Match<TData, TOffset>(this, false, Range<TOffset>.Null, input);
         }
 
         internal IEnumerable<Match<TData, TOffset>> Matches(

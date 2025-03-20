@@ -90,6 +90,7 @@ namespace SIL.Machine.Rules
             IPatternRuleSpec<TData, TOffset> ruleSpec = _ruleIds[match.PatternPath.First()];
             var newMatch = new Match<TData, TOffset>(
                 match.Matcher,
+                match.Success,
                 match.Range,
                 match.Input,
                 match.GroupCaptures,

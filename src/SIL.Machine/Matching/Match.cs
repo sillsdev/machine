@@ -18,10 +18,12 @@ namespace SIL.Machine.Matching
         private readonly IList<string> _patternPath;
         private readonly TData _input;
         private readonly Annotation<TOffset> _nextAnn;
+        private readonly bool _success;
 
-        internal Match(Matcher<TData, TOffset> matcher, Range<TOffset> range, TData input)
+        internal Match(Matcher<TData, TOffset> matcher, bool success, Range<TOffset> range, TData input)
             : this(
                 matcher,
+                success,
                 range,
                 input,
                 Enumerable.Empty<GroupCapture<TOffset>>(),
@@ -32,6 +34,7 @@ namespace SIL.Machine.Matching
 
         internal Match(
             Matcher<TData, TOffset> matcher,
+            bool success,
             Range<TOffset> range,
             TData input,
             IEnumerable<GroupCapture<TOffset>> groupCaptures,
@@ -42,11 +45,17 @@ namespace SIL.Machine.Matching
             : base(Matcher<TData, TOffset>.EntireMatch, range)
         {
             _matcher = matcher;
+            _success = success;
             _groupCaptures = new GroupCaptureCollection<TOffset>(groupCaptures);
             _patternPath = patternPath;
             _varBindings = varBindings;
             _input = input;
             _nextAnn = nextAnn;
+        }
+
+        public override bool Success
+        {
+            get { return _success; }
         }
 
         public Matcher<TData, TOffset> Matcher
