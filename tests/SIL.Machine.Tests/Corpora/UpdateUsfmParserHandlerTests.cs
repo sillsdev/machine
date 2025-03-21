@@ -99,6 +99,60 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void GetUsfm_StripParagraphs_PreserveParagraphStyles()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:0/1:rem"), "New remark"),
+            (ScrRef("MAT 1:0/3:ip"), "Another new remark"),
+            (ScrRef("MAT 1:1"), "Update 1"),
+        };
+        string usfm =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip This is another remark, but with a different marker
+\v 1 This is a verse
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        string result =
+            @"\id MAT
+\c 1
+\rem Update remark
+\r reference
+\ip Another new remark
+\v 1 Update 1
+";
+
+        Assess(target, result);
+
+        var targetDiffParagraph = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            preserveParagraphStyles: ImmutableHashSet.Create("ip")
+        );
+        string resultDiffParagraph =
+            @"\id MAT
+\c 1
+\rem New remark
+\r
+\ip This is another remark, but with a different marker
+\v 1 Update 1
+";
+
+        Assess(targetDiffParagraph, resultDiffParagraph);
+    }
+
+    [Test]
     public void GetUsfm_PreserveParagraphs()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
@@ -167,7 +221,6 @@ public class UpdateUsfmParserHandlerTests
 \v 2 Verse 2
 \p inner verse paragraph
 ";
-
         Assess(target, result);
 
         string targetStrip = UpdateUsfm(
@@ -184,6 +237,7 @@ public class UpdateUsfmParserHandlerTests
 \s1
 \v 2
 ";
+        // Assert.Fail(targetStrip);
 
         Assess(targetStrip, resultStrip);
     }

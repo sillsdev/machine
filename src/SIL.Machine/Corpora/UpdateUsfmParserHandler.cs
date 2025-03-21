@@ -420,8 +420,9 @@ namespace SIL.Machine.Corpora
                 .Any(t => t.Type == UsfmTokenType.Text && t.Text.Length > 0);
 
             bool useNewTokens =
-                (
-                    (_textBehavior == UpdateUsfmTextBehavior.StripExisting && !IsInPreservedParagraph(marker))
+                !IsInPreservedParagraph(marker)
+                && (
+                    _textBehavior == UpdateUsfmTextBehavior.StripExisting
                     || (HasNewText() && (!existingText || _textBehavior != UpdateUsfmTextBehavior.PreferExisting))
                 )
                 && (!inEmbed || (InNoteText && !inNestedEmbed && _embedBehavior == UpdateUsfmMarkerBehavior.Preserve));
@@ -433,8 +434,10 @@ namespace SIL.Machine.Corpora
                 else
                     AddNewTokens();
             }
-
-            if (existingText && _textBehavior == UpdateUsfmTextBehavior.PreferExisting)
+            if (
+                existingText
+                && (_textBehavior == UpdateUsfmTextBehavior.PreferExisting || IsInPreservedParagraph(marker))
+            )
             {
                 if (inEmbed)
                     ClearNewEmbedTokens();
