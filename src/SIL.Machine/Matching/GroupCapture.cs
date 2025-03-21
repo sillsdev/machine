@@ -12,6 +12,6 @@ namespace SIL.Machine.Matching
 
         public string Name { get; }
         public Range<TOffset> Range { get; }
-        public bool Success => Range != Range<TOffset>.Null;
+        public virtual bool Success => Range != Range<TOffset>.Null;
     }
 }
