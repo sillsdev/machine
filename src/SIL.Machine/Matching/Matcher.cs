@@ -336,5 +336,10 @@ namespace SIL.Machine.Matching
                 startAnn = startAnn.GetNextDepthFirst(_settings.Direction, _settings.Filter);
             return startAnn;
         }
+
+        public bool AcceptsEmpty()
+        {
+            return _fsa.IsAcceptingState(_fsa.StartState);
+        }
     }
 }

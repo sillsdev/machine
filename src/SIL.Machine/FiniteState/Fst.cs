@@ -2130,5 +2130,19 @@ namespace SIL.Machine.FiniteState
         {
             return GetHashCode();
         }
+
+        internal bool IsAcceptingState(State<TData, TOffset> state)
+        {
+            State<TData, TOffset> curState = state;
+            while (!curState.IsAccepting)
+            {
+                Arc<TData, TOffset> highestPriArc = curState.Arcs.MinBy(a => a.Priority);
+                if (!highestPriArc.Input.IsEpsilon)
+                    break;
+                curState = highestPriArc.Target;
+            }
+
+            return curState.IsAccepting;
+        }
     }
 }
