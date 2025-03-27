@@ -237,7 +237,6 @@ public class UpdateUsfmParserHandlerTests
 \s1
 \v 2
 ";
-        // Assert.Fail(targetStrip);
 
         Assess(targetStrip, resultStrip);
     }
