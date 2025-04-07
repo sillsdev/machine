@@ -613,6 +613,33 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void GetUsfm_NonVerse_DualNoteOneVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update Text"),
+            (ScrRef("MAT 1:1/1:f"), "Note 1"),
+            (ScrRef("MAT 1:1/2:f"), "Note 2"),
+            (ScrRef("MAT 1:1/3:f"), "Note 3")
+        };
+
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Hello world \f + \fr 1.23 \ft This is  \fq Hello \ft A \fq World \ft Note text. \f*
+";
+
+        string target = UpdateUsfm(rows);
+        string result =
+            @"\id MAT - Test
+\c 1
+\v 1 Update Text \f + \fr 1.23 \ft Note 1 \fq Hello \ft Note 2 \fq World \ft Note 3 \f*
+";
+
+        Assess(target, result);
+    }
+
+    [Test]
     public void GetUsfm_Verse_DoubleVaVp()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
