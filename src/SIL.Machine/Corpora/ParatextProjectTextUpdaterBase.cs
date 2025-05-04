@@ -27,7 +27,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-            IReadOnlyCollection<string> preserveParagraphStyles = null
+            IReadOnlyCollection<string> preserveParagraphStyles = null,
+            IReadOnlyList<string> remarks = null
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -47,7 +48,8 @@ namespace SIL.Machine.Corpora
                 paragraphBehavior,
                 embedBehavior,
                 styleBehavior,
-                preserveParagraphStyles
+                preserveParagraphStyles,
+                remarks
             );
             try
             {

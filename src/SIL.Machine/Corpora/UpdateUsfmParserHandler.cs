@@ -33,6 +33,7 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _embedBehavior;
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
         private readonly HashSet<string> _preserveParagraphStyles;
+        private readonly List<string> _remarks;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
@@ -47,7 +48,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-            IReadOnlyCollection<string> preserveParagraphStyles = null
+            IReadOnlyCollection<string> preserveParagraphStyles = null,
+            IReadOnlyCollection<string> remarks = null
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -60,10 +62,11 @@ namespace SIL.Machine.Corpora
             _paragraphBehavior = paragraphBehavior;
             _embedBehavior = embedBehavior;
             _styleBehavior = styleBehavior;
-            if (preserveParagraphStyles == null)
-                _preserveParagraphStyles = new HashSet<string> { "r", "rem" };
-            else
-                _preserveParagraphStyles = new HashSet<string>(preserveParagraphStyles);
+            _preserveParagraphStyles =
+                preserveParagraphStyles == null
+                    ? new HashSet<string> { "r", "rem" }
+                    : new HashSet<string>(preserveParagraphStyles);
+            _remarks = remarks == null ? new List<string>() : remarks.ToList();
             _embedUpdated = false;
             _embedRowTexts = new List<string>();
         }
@@ -82,6 +85,14 @@ namespace SIL.Machine.Corpora
             var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
                 startBookTokens.Add(new UsfmToken(_idText + " "));
+            if (_remarks.Count > 0)
+            {
+                foreach (string remark in _remarks)
+                {
+                    startBookTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
+                    startBookTokens.Add(new UsfmToken(remark));
+                }
+            }
             PushNewTokens(startBookTokens);
 
             base.StartBook(state, marker, code);
