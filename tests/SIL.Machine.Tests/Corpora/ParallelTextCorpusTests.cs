@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using NUnit.Framework.Internal;
-using SIL.Machine.Tests;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
