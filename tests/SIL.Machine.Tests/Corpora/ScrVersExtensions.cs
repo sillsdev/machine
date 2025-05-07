@@ -1,6 +1,6 @@
 using SIL.Scripture;
 
-namespace SIL.Machine.Tests;
+namespace SIL.Machine;
 
 public static class ScrVersExtensions
 {
