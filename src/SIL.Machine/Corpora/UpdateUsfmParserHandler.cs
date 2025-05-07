@@ -49,7 +49,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IReadOnlyCollection<string> preserveParagraphStyles = null,
-            IReadOnlyCollection<string> remarks = null
+            IEnumerable<string> remarks = null
         )
         {
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
@@ -85,7 +85,7 @@ namespace SIL.Machine.Corpora
             var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
                 startBookTokens.Add(new UsfmToken(_idText + " "));
-            if (_remarks.Count > 0)
+            if (_remarks.Count() > 0)
             {
                 foreach (string remark in _remarks)
                 {
