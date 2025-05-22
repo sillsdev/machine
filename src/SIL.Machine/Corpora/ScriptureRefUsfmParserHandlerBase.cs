@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
         None,
         NonVerse,
         Verse,
-        NoteText
+        Embed
     }
 
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase
@@ -19,9 +19,6 @@ namespace SIL.Machine.Corpora
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
         private bool _duplicateVerse = false;
-        private bool _inEmbed;
-        protected bool InNoteText { get; private set; }
-        private bool _inNestedEmbed;
 
         protected ScriptureRefUsfmParserHandlerBase()
         {
@@ -32,8 +29,12 @@ namespace SIL.Machine.Corpora
         protected ScriptureTextType CurrentTextType =>
             _curTextType.Count == 0 ? ScriptureTextType.None : _curTextType.Peek();
 
-        private static readonly string[] EmbedStyles = new[] { "f", "fe", "fig", "fm", "x" };
-        private static readonly char[] EmbedPartStartCharStyles = new[] { 'f', 'x', 'z' };
+        private static readonly string[] EmbedStyles = new[] { "f", "fe", "x", "fig" };
+
+        private static bool IsEmbedStyle(string marker)
+        {
+            return marker != null && (EmbedStyles.Contains(marker.Trim('*')) || marker.StartsWith("z"));
+        }
 
         public override void EndUsfm(UsfmParserState state)
         {
@@ -158,36 +159,6 @@ namespace SIL.Machine.Corpora
             EndParentElement();
         }
 
-        public override void StartNote(UsfmParserState state, string marker, string caller, string category)
-        {
-            _inEmbed = true;
-            StartEmbed(state, marker);
-        }
-
-        public override void EndNote(UsfmParserState state, string marker, bool closed)
-        {
-            EndNoteTextWrapper(state);
-            EndEmbed(state, marker, null, closed);
-            _inEmbed = false;
-        }
-
-        protected void StartEmbed(UsfmParserState state, string marker)
-        {
-            if (_curVerseRef.IsDefault)
-                UpdateVerseRef(state.VerseRef, marker);
-
-            if (!_duplicateVerse)
-            {
-                // if we hit a note in a verse paragraph and we aren't in a verse, then start a non-verse segment
-                CheckConvertVerseParaToNonVerse(state);
-                NextElement(marker);
-            }
-
-            StartEmbed(state, CreateNonVerseRef());
-        }
-
-        protected virtual void StartEmbed(UsfmParserState state, ScriptureRef scriptureRef) { }
-
         protected virtual void EndEmbed(
             UsfmParserState state,
             string marker,
@@ -214,23 +185,11 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
-            if (IsEmbedPartStyle(markerWithoutPlus) & InNoteText)
-                _inNestedEmbed = true;
-
             // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
             // segment
             CheckConvertVerseParaToNonVerse(state);
-
             if (IsEmbedStyle(markerWithoutPlus))
-            {
-                _inEmbed = true;
-                StartEmbed(state, markerWithoutPlus);
-            }
-
-            if (IsNoteText(markerWithoutPlus))
-            {
-                StartNoteTextWrapper(state);
-            }
+                StartEmbedTextWrapper(state, markerWithoutPlus);
         }
 
         public override void EndChar(
@@ -240,22 +199,18 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
-            if (IsEmbedPartStyle(marker))
-            {
-                if (_inNestedEmbed)
-                {
-                    _inNestedEmbed = false;
-                }
-                else
-                {
-                    EndNoteTextWrapper(state);
-                }
-            }
             if (IsEmbedStyle(marker))
-            {
-                EndEmbed(state, marker, attributes, closed);
-                _inEmbed = false;
-            }
+                EndEmbedTextWrapper(state);
+        }
+
+        public override void StartNote(UsfmParserState state, string marker, string caller, string category)
+        {
+            StartEmbedTextWrapper(state, marker);
+        }
+
+        public override void EndNote(UsfmParserState state, string marker, bool closed)
+        {
+            EndEmbedTextWrapper(state);
         }
 
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
@@ -266,26 +221,9 @@ namespace SIL.Machine.Corpora
 
         protected virtual void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void StartNoteTextWrapper(UsfmParserState state)
-        {
-            InNoteText = true;
-            _curTextType.Push(ScriptureTextType.NoteText);
-            StartNoteText(state);
-        }
+        protected virtual void StartEmbedText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
-        protected virtual void StartNoteText(UsfmParserState state) { }
-
-        protected virtual void EndNoteTextWrapper(UsfmParserState state)
-        {
-            if (_curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.NoteText)
-            {
-                EndNoteText(state, CreateNonVerseRef());
-                _curTextType.Pop();
-                InNoteText = false;
-            }
-        }
-
-        protected virtual void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef) { }
+        protected virtual void EndEmbedText(UsfmParserState state, ScriptureRef scriptureRef) { }
 
         private void StartVerseText(UsfmParserState state)
         {
@@ -323,6 +261,28 @@ namespace SIL.Machine.Corpora
                 _curElements.Push(new ScriptureElement(0, marker));
             }
             _curVerseRef = verseRef;
+        }
+
+        private void StartEmbedTextWrapper(UsfmParserState state, string marker)
+        {
+            if (_curVerseRef.IsDefault)
+                UpdateVerseRef(state.VerseRef, marker);
+            if (!_duplicateVerse)
+            {
+                CheckConvertVerseParaToNonVerse(state);
+                NextElement(marker);
+                _curTextType.Push(ScriptureTextType.Embed);
+                StartEmbedText(state, CreateNonVerseRef());
+            }
+        }
+
+        private void EndEmbedTextWrapper(UsfmParserState state)
+        {
+            if (!_duplicateVerse && _curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.Embed)
+            {
+                EndEmbedText(state, CreateNonVerseRef());
+                _curTextType.Pop();
+            }
         }
 
         private void NextElement(string marker)
@@ -377,37 +337,6 @@ namespace SIL.Machine.Corpora
                 StartParentElement(paraTag.Marker);
                 StartNonVerseText(state);
             }
-        }
-
-        protected bool IsInEmbed(string marker)
-        {
-            return _inEmbed || IsEmbedStyle(marker);
-        }
-
-        protected bool IsInNestedEmbed(string marker)
-        {
-            return _inNestedEmbed
-                || (
-                    !(marker is null)
-                    && marker.StartsWith("+")
-                    && marker.Length > 1
-                    && IsEmbedPartStyle(marker.Substring(1))
-                );
-        }
-
-        protected static bool IsNoteText(string marker)
-        {
-            return marker == "ft";
-        }
-
-        protected static bool IsEmbedPartStyle(string marker)
-        {
-            return !(marker is null) && marker.Length > 0 && marker[0].IsOneOf(EmbedPartStartCharStyles);
-        }
-
-        protected static bool IsEmbedStyle(string marker)
-        {
-            return !(marker is null) && marker.Trim('*').IsOneOf(EmbedStyles);
         }
     }
 }

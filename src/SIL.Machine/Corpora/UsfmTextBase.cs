@@ -258,9 +258,7 @@ namespace SIL.Machine.Corpora
                 }
                 else if (text.Length > 0 && (CurrentTextType != ScriptureTextType.Verse || state.IsVerseText))
                 {
-                    bool isEmbedOrNestedDontUpdate =
-                        IsInEmbed(state.Token.Marker) && (!InNoteText || IsInNestedEmbed(state.Token.Marker));
-                    if (isEmbedOrNestedDontUpdate)
+                    if (CurrentTextType == ScriptureTextType.Embed)
                         return;
 
                     if (
@@ -293,24 +291,6 @@ namespace SIL.Machine.Corpora
 
             protected override void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
             {
-                string text = _rowTexts.Pop().ToString();
-                if (_text._includeAllText)
-                    _rows.Add(_text.CreateRow(scriptureRef, text, _sentenceStart));
-            }
-
-            protected override void StartNoteText(UsfmParserState state)
-            {
-                if (_text._includeMarkers)
-                    return;
-
-                _rowTexts.Push(new StringBuilder());
-            }
-
-            protected override void EndNoteText(UsfmParserState state, ScriptureRef scriptureRef)
-            {
-                if (_text._includeMarkers)
-                    return;
-
                 string text = _rowTexts.Pop().ToString();
                 if (_text._includeAllText)
                     _rows.Add(_text.CreateRow(scriptureRef, text, _sentenceStart));
