@@ -55,6 +55,7 @@ namespace SIL.Machine.Corpora
             _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
+            _updateBlocks = new Stack<UsfmUpdateBlock>();
             _embedTokens = new List<UsfmToken>();
             _idText = idText;
             _replace = new Stack<bool>();
