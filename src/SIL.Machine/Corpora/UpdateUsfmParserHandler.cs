@@ -47,8 +47,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-            IReadOnlyCollection<string> preserveParagraphStyles = null,
-            IReadOnlyCollection<UsfmUpdateBlockHandler> updateBlockHandlers = null,
+            IEnumerable<string> preserveParagraphStyles = null,
+            IEnumerable<UsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<string> remarks = null
         )
         {
@@ -71,7 +71,6 @@ namespace SIL.Machine.Corpora
                     ? new HashSet<string> { "r", "rem" }
                     : new HashSet<string>(preserveParagraphStyles);
             _remarks = remarks == null ? new List<string>() : remarks.ToList();
-            CurrentTextType = ScriptureTextType.None;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -451,7 +450,7 @@ namespace SIL.Machine.Corpora
             _tokenIndex = state.Index + state.SpecialTokenCount + 1;
         }
 
-        private bool ReplaceWithNewTokens(UsfmParserState state, bool closed = true)
+        private bool ReplaceWithNewTokens(UsfmParserState state)
         {
             if (CurrentTextType == ScriptureTextType.Embed)
                 return false;
@@ -495,7 +494,7 @@ namespace SIL.Machine.Corpora
         {
             _updateBlocks.Push(new UsfmUpdateBlock(scriptureRefs));
             IReadOnlyList<string> rowTexts = AdvanceRows(scriptureRefs);
-            PushUpdatedText(rowTexts.Select(t => new UsfmToken(UsfmTokenType.Text, text: t + " ")));
+            PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
         private void EndUpdateBlock(IReadOnlyList<ScriptureRef> scriptureRefs)

@@ -8,10 +8,13 @@ namespace SIL.Machine.Corpora
         public List<ScriptureRef> Refs { get; }
         public List<UsfmUpdateBlockElement> Elements { get; }
 
-        public UsfmUpdateBlock(IEnumerable<ScriptureRef> refs, IEnumerable<UsfmUpdateBlockElement> elements)
+        public UsfmUpdateBlock(
+            IEnumerable<ScriptureRef> refs = null,
+            IEnumerable<UsfmUpdateBlockElement> elements = null
+        )
         {
-            Refs = refs.ToList();
-            Elements = elements.ToList();
+            Refs = refs != null ? refs.ToList() : new List<ScriptureRef>();
+            Elements = elements != null ? elements.ToList() : new List<UsfmUpdateBlockElement>();
         }
 
         public void AddText(IEnumerable<UsfmToken> tokens)

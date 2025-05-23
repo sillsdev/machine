@@ -45,8 +45,8 @@ public class UpdateUsfmParserHandlerTests
 \r keep this reference
 \rem and this reference too
 \ip but remove this text
-\v 1 Chapter \add one\add*, \p verse \f + \fr 2:1: \ft This is a \fm ∆\fm* footnote.\f*one.
-\v 2 Chapter \add one\add*, \p verse \f + \fr 2:1: \ft This is a \fm ∆\fm* footnote.\f*two.
+\v 1 Chapter \add one\add*, \p verse \f + \fr 1:1: \ft This is a \+bd ∆\+bd* footnote.\f*one.
+\v 2 Chapter \add one\add*, \p verse \f + \fr 1:2: \ft This is a \+bd ∆\+bd* footnote.\f*two.
 \v 3 Verse 3
 \v 4 Verse 4
 ";
@@ -67,13 +67,13 @@ public class UpdateUsfmParserHandlerTests
 \rem and this reference too
 \ip
 \v 1 Update 1 \add \add*
-\p \f + \fr 2:1: \ft \fm ∆\fm*\f*
+\p \f + \fr 1:1: \ft This is a \+bd ∆\+bd* footnote.\f*
 \v 2 \add \add*
-\p \f + \fr 2:1: \ft \fm ∆\fm*\f*
+\p \f + \fr 1:2: \ft This is a \+bd ∆\+bd* footnote.\f*
 \v 3 Update 3
 \v 4
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
 
         target = UpdateUsfm(
             rows,
@@ -95,7 +95,7 @@ public class UpdateUsfmParserHandlerTests
 \v 3 Update 3
 \v 4
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -131,7 +131,7 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Update 1
 ";
 
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
 
         var targetDiffParagraph = UpdateUsfm(
             rows,
@@ -149,7 +149,7 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Update 1
 ";
 
-        Assess(targetDiffParagraph, resultDiffParagraph);
+        AssertUsfmEquals(targetDiffParagraph, resultDiffParagraph);
     }
 
     [Test]
@@ -179,7 +179,7 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Update 1
 ";
 
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
 
         var targetDiffParagraph = UpdateUsfm(
             rows,
@@ -196,7 +196,7 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Update 1
 ";
 
-        Assess(targetDiffParagraph, resultDiffParagraph);
+        AssertUsfmEquals(targetDiffParagraph, resultDiffParagraph);
     }
 
     [Test]
@@ -206,6 +206,7 @@ public class UpdateUsfmParserHandlerTests
         string usfm =
             @"\id MAT - Test
 \c 1
+\p paragraph not in a verse
 \v 1 verse 1 \p inner verse paragraph
 \s1 Section Header
 \v 2 Verse 2 \p inner verse paragraph
@@ -216,12 +217,13 @@ public class UpdateUsfmParserHandlerTests
         string result =
             @"\id MAT - Test
 \c 1
+\p paragraph not in a verse
 \v 1 Update 1
 \s1 Section Header
 \v 2 Verse 2
 \p inner verse paragraph
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
 
         string targetStrip = UpdateUsfm(
             rows,
@@ -233,12 +235,13 @@ public class UpdateUsfmParserHandlerTests
         string resultStrip =
             @"\id MAT
 \c 1
+\p
 \v 1 Update 1
 \s1
 \v 2
 ";
 
-        Assess(targetStrip, resultStrip);
+        AssertUsfmEquals(targetStrip, resultStrip);
     }
 
     [Test]
@@ -264,7 +267,7 @@ public class UpdateUsfmParserHandlerTests
 \v 2 Update 2
 \v 3 Other text
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -294,13 +297,9 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_Verse_ReplaceNote()
+    public void GetUsfm_Verse_ReplaceWithNote()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:1"), "updated text"),
-            (ScrRef("MAT 1:1/1:f"), "This is a new footnote.")
-        };
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "updated text") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -310,9 +309,9 @@ public class UpdateUsfmParserHandlerTests
         var result =
             @"\id MAT - Test
 \c 1
-\v 1 updated text \f + \fr 2:1: \ft This is a new footnote. \f*
+\v 1 updated text \f + \fr 2:1: \ft This is a footnote.\f*
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -434,7 +433,7 @@ public class UpdateUsfmParserHandlerTests
         };
 
         string target = UpdateUsfm(rows);
-        Assert.That(target, Contains.Substring("\\v 2-3 Verse 2. Verse 2a. Verse 2b. \\fm ∆\\fm*\r\n"));
+        Assert.That(target, Contains.Substring("\\v 2-3 Verse 2. Verse 2a. Verse 2b.\r\n"));
     }
 
     [Test]
@@ -533,7 +532,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 2:3/2:esb/1:ms"), "The first paragraph of the sidebar.")
+            (ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar.")
         };
 
         string target = UpdateUsfm(rows);
@@ -565,7 +564,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 2:3/2:esb/2:p"), "The second paragraph of the sidebar.")
+            (ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar.")
         };
 
         string target = UpdateUsfm(rows);
@@ -597,18 +596,17 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_NonVerse_ReplaceNote()
+    public void GetUsfm_NonVerse_ReplaceWithNote()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph."),
-            (ScrRef("MAT 1:0/3:ip/1:fe"), "This is a new endnote.")
+            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
         };
 
         string target = UpdateUsfm(rows);
         Assert.That(
             target,
-            Contains.Substring("\\ip The introductory paragraph. \\fe + \\ft This is a new endnote. \\fe*\r\n")
+            Contains.Substring("\\ip The introductory paragraph. \\fe + \\ft This is an endnote.\\fe*\r\n")
         );
     }
 
@@ -672,84 +670,6 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void EmbedStylePreservation()
-    {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:1"), "Update the greeting"),
-            (ScrRef("MAT 1:1/1:f"), "Update the comment"),
-            (ScrRef("MAT 1:2"), "Update the greeting only"),
-            (ScrRef("MAT 1:3/1:f"), "Update the comment only"),
-        };
-        var usfm =
-            @"\id MAT - Test
-\c 1
-\v 1 Hello \f \fr 1.1 \ft Some \+bd note\+bd* \f*\bd World \bd*
-\v 2 Good \f \fr 1.2 \ft Some other \+bd note\+bd* \f*\bd Morning \bd*
-\v 3 Pleasant \f \fr 1.3 \ft A third \+bd note\+bd* \f*\bd Evening \bd*
-";
-        var target = UpdateUsfm(
-            rows,
-            usfm,
-            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
-        );
-        var resultPp =
-            @"\id MAT - Test
-\c 1
-\v 1 Update the greeting \f \fr 1.1 \ft Update the comment \+bd \+bd*\f*\bd \bd*
-\v 2 Update the greeting only \f \fr 1.2 \ft Some other \+bd note\+bd* \f*\bd \bd*
-\v 3 Pleasant \f \fr 1.3 \ft Update the comment only \+bd \+bd*\f*\bd Evening \bd*
-";
-        Assess(target, resultPp);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            styleBehavior: UpdateUsfmMarkerBehavior.Strip
-        );
-        var resultPs =
-            @"\id MAT - Test
-\c 1
-\v 1 Update the greeting \f \fr 1.1 \ft Update the comment \f*
-\v 2 Update the greeting only \f \fr 1.2 \ft Some other \+bd note\+bd* \f*
-\v 3 Pleasant \f \fr 1.3 \ft Update the comment only \f*\bd Evening \bd*
-";
-        Assess(target, resultPs);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
-            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
-        );
-        var resultSp =
-            @"\id MAT - Test
-\c 1
-\v 1 Update the greeting \bd \bd*
-\v 2 Update the greeting only \bd \bd*
-\v 3 Pleasant \bd Evening \bd*
-";
-        Assess(target, resultSp);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
-            styleBehavior: UpdateUsfmMarkerBehavior.Strip
-        );
-        var resultSs =
-            @"\id MAT - Test
-\c 1
-\v 1 Update the greeting
-\v 2 Update the greeting only
-\v 3 Pleasant \bd Evening \bd*
-";
-        Assess(target, resultSs);
-    }
-
-    [Test]
     public void GetUsfm_StripParagraphs()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
@@ -780,7 +700,7 @@ public class UpdateUsfmParserHandlerTests
 \v 2 Hello
 \p World
 ";
-        Assess(target, resultP);
+        AssertUsfmEquals(target, resultP);
 
         target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
         var resultS =
@@ -792,7 +712,7 @@ public class UpdateUsfmParserHandlerTests
 \v 2 Hello
 \p World
 ";
-        Assess(target, resultS);
+        AssertUsfmEquals(target, resultS);
     }
 
     [Test]
@@ -815,7 +735,7 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \v 1 Update all in one row \f \fr 1.1 \ft Some note \f*
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -835,25 +755,7 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \v 1 Updated text
 ";
-        Assess(target, result);
-    }
-
-    [Test]
-    public void EmptyNote()
-    {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1/1:f"), "Update the note") };
-        var usfm =
-            @"\id MAT - Test
-\c 1
-\v 1 Empty Note \f \fr 1.1 \ft \f*
-";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
-            @"\id MAT - Test
-\c 1
-\v 1 Empty Note \f \fr 1.1 \ft Update the note \f*
-";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
@@ -874,29 +776,29 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \v 1 Cross reference verse \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void PreserveFigAndFm()
+    public void PreserveFig()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update"), };
         var usfm =
             @"\id MAT - Test
 \c 1
-\v 1 initial text \fig stuff\fig* more text \fm * \fm* and more.
+\v 1 initial text \fig stuff\fig* more text and more.
 ";
         var target = UpdateUsfm(rows, usfm);
         var result =
             @"\id MAT - Test
 \c 1
-\v 1 Update \fig stuff\fig*\fm * \fm*
+\v 1 Update \fig stuff\fig*
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
     }
 
     [Test]
-    public void NestedXt()
+    public void NoteExplicitEndMarkers()
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
@@ -906,15 +808,15 @@ public class UpdateUsfmParserHandlerTests
         var usfm =
             @"\id MAT - Test
 \c 1
-\v 1 initial text \f + \fr 15.8 \ft Text (\+xt reference\+xt*). And more.\f* and the end.
+\v 1 initial text \f + \fr 2.4\fr* \fk The \+nd Lord\+nd*:\fk* \ft See \+nd Lord\+nd* in Word List.\ft*\f* and the end.
 ";
         var target = UpdateUsfm(rows, usfm);
         var result =
             @"\id MAT - Test
 \c 1
-\v 1 Update text \f + \fr 15.8 \ft Update note \+xt reference\+xt*\f*
+\v 1 Update text \f + \fr 2.4\fr* \fk The \+nd Lord\+nd*:\fk* \ft See \+nd Lord\+nd* in Word List.\ft*\f*
 ";
-        Assess(target, result);
+        AssertUsfmEquals(target, result);
 
         target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         var result2 =
@@ -922,67 +824,327 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \v 1 Update text
 ";
-        Assess(target, result2);
+        AssertUsfmEquals(target, result2);
     }
 
     [Test]
-    public void NonNestedXt()
+    public void UpdateBlock_Verse_PreserveParas()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:1"), "Update text"),
-            (ScrRef("MAT 1:1/1:f"), "Update note"),
-        };
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
-\v 1 initial text \f + \fr 15.8 \ft Text \xt reference\f* and the end.
+\v 1 verse 1 \p inner verse paragraph
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
-            @"\id MAT - Test
-\c 1
-\v 1 Update text \f + \fr 15.8 \ft Update note \xt reference\f*
-";
-        Assess(target, result);
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
 
-        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var result2 =
-            @"\id MAT - Test
-\c 1
-\v 1 Update text
-";
-        Assess(target, result2);
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse 1 ", true),
+            (UsfmUpdateBlockElementType.Paragraph, "\\p ", false),
+            (UsfmUpdateBlockElementType.Text, "inner verse paragraph ", true)
+        );
     }
 
     [Test]
-    public void MultipleFtOnlyUpdateFirst()
+    public void UpdateBlock_Verse_StripParas()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:1"), "Update text"),
-            (ScrRef("MAT 1:1/1:f"), "Update note"),
-        };
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
-\v 1 initial text \f + \fr 15.8 \ft first note \ft second note\f* and the end.
+\v 1 verse 1 \p inner verse paragraph
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
-            @"\id MAT - Test
-\c 1
-\v 1 Update text \f + \fr 15.8 \ft Update note \ft second note\f*
-";
-        Assess(target, result);
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
 
-        target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var result2 =
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse 1 ", true),
+            (UsfmUpdateBlockElementType.Paragraph, "\\p ", true),
+            (UsfmUpdateBlockElementType.Text, "inner verse paragraph ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Verse_Range()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
             @"\id MAT - Test
 \c 1
-\v 1 Update text
+\v 1-3 verse 1 through 3
 ";
-        Assess(target, result2);
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1-3 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse 1 through 3 ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Footnote_PreserveEmbeds()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse\f \fr 1.1 \ft Some note \f* 1
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse", true),
+            (UsfmUpdateBlockElementType.Embed, "\\f \\fr 1.1 \\ft Some note \\f*", false),
+            (UsfmUpdateBlockElementType.Text, " 1 ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Footnote_StripEmbeds()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse\f \fr 1.1 \ft Some note \f* 1
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse", true),
+            (UsfmUpdateBlockElementType.Embed, "\\f \\fr 1.1 \\ft Some note \\f*", true),
+            (UsfmUpdateBlockElementType.Text, " 1 ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_NonVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:0/1:s"), "Updated section header")
+        };
+        var usfm =
+            @"\id MAT - Test
+\s Section header
+\c 1
+\v 1 verse 1
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(2));
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:0/1:s",
+            (UsfmUpdateBlockElementType.Text, "Updated section Header ", false),
+            (UsfmUpdateBlockElementType.Text, "Section header ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Verse_PreserveStyles()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse \bd 1\bd*
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse ", true),
+            (UsfmUpdateBlockElementType.Style, "\\bd ", false),
+            (UsfmUpdateBlockElementType.Text, "1", true),
+            (UsfmUpdateBlockElementType.Style, "\\bd*", false),
+            (UsfmUpdateBlockElementType.Text, " ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Verse_StripStyles()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 verse \bd 1\bd*
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(
+            rows,
+            usfm,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse ", true),
+            (UsfmUpdateBlockElementType.Style, "\\bd ", true),
+            (UsfmUpdateBlockElementType.Text, "1", true),
+            (UsfmUpdateBlockElementType.Style, "\\bd*", true),
+            (UsfmUpdateBlockElementType.Text, " ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Verse_SectionHeader()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\p
+\v 1 Verse 1
+\s Section header
+\p
+\v 2 Verse 2
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(4));
+        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], "MAT 1:0/1:p");
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[1],
+            "MAT 1:1/1:s",
+            (UsfmUpdateBlockElementType.Text, "Section header ", false)
+        );
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[2],
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Verse 1 ", true),
+            (UsfmUpdateBlockElementType.Paragraph, "\\s Section header ", false),
+            (UsfmUpdateBlockElementType.Paragraph, "\\p ", false)
+        );
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[3],
+            "MAT 1:2",
+            (UsfmUpdateBlockElementType.Other, "\\v 2 ", false),
+            (UsfmUpdateBlockElementType.Text, "Verse 2 ", false)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_Verse_SectionHeaderInVerse()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\p
+\v 1 Beginning of verse
+\s Section header
+\p end of verse
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(3));
+        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], "MAT 1:0/1:p");
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[1],
+            "MAT 1:1/1:s",
+            (UsfmUpdateBlockElementType.Text, "Section header ", false)
+        );
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[2],
+            "MAT 1:1",
+            (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Beginning of verse ", true),
+            (UsfmUpdateBlockElementType.Paragraph, "\\s Section header ", false),
+            (UsfmUpdateBlockElementType.Paragraph, "\\p ", false),
+            (UsfmUpdateBlockElementType.Text, "end of verse ", true)
+        );
     }
 
     private static ScriptureRef[] ScrRef(params string[] refs)
@@ -998,7 +1160,8 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-        IReadOnlyCollection<string>? preserveParagraphStyles = null
+        IEnumerable<string>? preserveParagraphStyles = null,
+        IEnumerable<UsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null
     )
     {
         if (source is null)
@@ -1012,7 +1175,8 @@ public class UpdateUsfmParserHandlerTests
                 paragraphBehavior,
                 embedBehavior,
                 styleBehavior,
-                preserveParagraphStyles
+                preserveParagraphStyles,
+                usfmUpdateBlockHandlers
             );
         }
         else
@@ -1032,14 +1196,52 @@ public class UpdateUsfmParserHandlerTests
         }
     }
 
-    private static void Assess(string target, string truth)
+    private static void AssertUsfmEquals(string target, string truth)
     {
         Assert.That(target, Is.Not.Null);
-        var target_lines = target.Split(new[] { "\n" }, StringSplitOptions.None);
-        var truth_lines = truth.Split(new[] { "\n" }, StringSplitOptions.None);
+        var target_lines = target.Split(["\n"], StringSplitOptions.None);
+        var truth_lines = truth.Split(["\n"], StringSplitOptions.None);
         for (int i = 0; i < truth_lines.Length; i++)
         {
             Assert.That(target_lines[i].Trim(), Is.EqualTo(truth_lines[i].Trim()), message: $"Line {i}");
+        }
+    }
+
+    private static void AssertUpdateBlockEquals(
+        UsfmUpdateBlock block,
+        string expectedRef,
+        params (UsfmUpdateBlockElementType, string, bool)[] expectedElements
+    )
+    {
+        Assert.That(block.Refs.SequenceEqual([ScriptureRef.Parse(expectedRef)]));
+        Assert.That(block.Elements.Count, Is.EqualTo(expectedElements.Length));
+        foreach (
+            (
+                UsfmUpdateBlockElement element,
+                (UsfmUpdateBlockElementType expectedType, string expectedUsfm, bool expectedMarkedForRemoval)
+            ) in block.Elements.Zip(expectedElements)
+        )
+        {
+            Assert.That(element.Type, Is.EqualTo(expectedType));
+            Assert.That(string.Join("", element.Tokens.Select(t => t.ToUsfm())), Is.EqualTo(expectedUsfm));
+            Assert.That(element.MarkedForRemoval, Is.EqualTo(expectedMarkedForRemoval));
+        }
+    }
+
+    private class TestUsfmUpdateBlockHandler : UsfmUpdateBlockHandler
+    {
+        public List<UsfmUpdateBlock> Blocks { get; }
+
+        public TestUsfmUpdateBlockHandler()
+        {
+            Blocks = new List<UsfmUpdateBlock>();
+        }
+
+        public override UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
+        {
+            UsfmUpdateBlock newBlock = block.Clone();
+            Blocks.Add(newBlock);
+            return newBlock;
         }
     }
 }
