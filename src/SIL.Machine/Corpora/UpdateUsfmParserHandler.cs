@@ -108,6 +108,7 @@ namespace SIL.Machine.Corpora
             PopNewTokens();
             UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
             _tokens.AddRange(updateBlock.GetTokens());
+
             base.EndBook(state, marker);
         }
 
@@ -174,6 +175,8 @@ namespace SIL.Machine.Corpora
             UseUpdatedText();
 
             base.Chapter(state, number, marker, altNumber, pubNumber);
+
+            CollectReadonlyTokens(state);
         }
 
         public override void Milestone(
@@ -400,8 +403,11 @@ namespace SIL.Machine.Corpora
                     _embedTokens.Add(token);
                 }
                 else if (
-                    CurrentTextType != ScriptureTextType.None
-                    || (state.ParaTag != null && state.ParaTag.Marker == "id") && _updateBlocks.Count > 0
+                    (
+                        CurrentTextType != ScriptureTextType.None
+                        || (state.ParaTag != null && state.ParaTag.Marker == "id")
+                    )
+                    && _updateBlocks.Count > 0
                 )
                 {
                     _updateBlocks.Peek().AddToken(token);
