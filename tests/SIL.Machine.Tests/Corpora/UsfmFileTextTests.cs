@@ -91,10 +91,10 @@ public class UsfmFileTextTests
             rows[6].Ref,
             Is.EqualTo(ScriptureRef.Parse("MAT 1:0/7:weirdtaglookingthing", corpus.Versification))
         );
-        Assert.That(rows[7].Text, Is.EqualTo("that is not an actual tag."));
+        Assert.That(rows[6].Text, Is.EqualTo("that is not an actual tag."));
 
-        Assert.That(rows[8].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/8:s", corpus.Versification)));
-        Assert.That(rows[8].Text, Is.EqualTo("Chapter One"));
+        Assert.That(rows[7].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/8:s", corpus.Versification)));
+        Assert.That(rows[7].Text, Is.EqualTo("Chapter One"));
 
         Assert.That(rows[16].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:0/1:tr/1:tc1", corpus.Versification)));
         Assert.That(rows[16].Text, Is.EqualTo("Row one, column one."));
@@ -114,10 +114,10 @@ public class UsfmFileTextTests
         Assert.That(rows[21].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:0/4:p", corpus.Versification)));
         Assert.That(rows[21].Text, Is.Empty);
 
-        Assert.That(rows[26].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/2:esb/1:ms", corpus.Versification)));
+        Assert.That(rows[26].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/1:esb/1:ms", corpus.Versification)));
         Assert.That(rows[26].Text, Is.EqualTo("This is a sidebar"));
 
-        Assert.That(rows[27].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/2:esb/2:p", corpus.Versification)));
+        Assert.That(rows[27].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/1:esb/2:p", corpus.Versification)));
         Assert.That(rows[27].Text, Is.EqualTo("Here is some sidebar content."));
 
         Assert.That(rows[33].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:7a/1:s", corpus.Versification)));
@@ -280,7 +280,7 @@ public class UsfmFileTextTests
             Is.EqualTo("Chapter \\add two\\add*, verse \\f + \\fr 2:1: \\ft This is a footnote.\\f*one.")
         );
 
-        Assert.That(rows[27].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/2:esb/2:p", corpus.Versification)));
+        Assert.That(rows[27].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:3/1:esb/2:p", corpus.Versification)));
         Assert.That(rows[27].Text, Is.EqualTo("Here is some sidebar // content."));
     }
 }
