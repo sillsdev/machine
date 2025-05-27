@@ -340,7 +340,7 @@ namespace SIL.Machine.Corpora
             _updateBlocks
                 .Peek()
                 .AddEmbed(_embedTokens, markedForRemoval: _embedBehavior == UpdateUsfmMarkerBehavior.Strip);
-            base.EndEmbedText(state, scriptureRef);
+            _embedTokens.Clear();
         }
 
         public string GetUsfm(string stylesheetFileName = "usfm.sty")

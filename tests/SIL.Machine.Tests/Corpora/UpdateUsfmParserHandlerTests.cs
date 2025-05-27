@@ -844,12 +844,12 @@ public class UpdateUsfmParserHandlerTests
             usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
         );
 
-        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
 
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse 1 ", true),
@@ -875,12 +875,12 @@ public class UpdateUsfmParserHandlerTests
             usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
         );
 
-        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
 
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse 1 ", true),
@@ -906,12 +906,12 @@ public class UpdateUsfmParserHandlerTests
             usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
         );
 
-        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
 
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1", "MAT 1:2", "MAT 1:3"],
             (UsfmUpdateBlockElementType.Other, "\\v 1-3 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse 1 through 3 ", true)
@@ -935,12 +935,12 @@ public class UpdateUsfmParserHandlerTests
             usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
         );
 
-        Assert.That(usfmUpdateBlockHandler.Blocks.Count == 1);
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
 
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse", true),
@@ -971,7 +971,7 @@ public class UpdateUsfmParserHandlerTests
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse", true),
@@ -985,7 +985,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
         {
-            (ScrRef("MAT 1:0/1:s"), "Updated section header")
+            (ScrRef("MAT 1:0/1:s"), "Updated section Header")
         };
         var usfm =
             @"\id MAT - Test
@@ -1001,7 +1001,7 @@ public class UpdateUsfmParserHandlerTests
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:0/1:s",
+            ["MAT 1:0/1:s"],
             (UsfmUpdateBlockElementType.Text, "Updated section Header ", false),
             (UsfmUpdateBlockElementType.Text, "Section header ", true)
         );
@@ -1029,7 +1029,7 @@ public class UpdateUsfmParserHandlerTests
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse ", true),
@@ -1062,7 +1062,7 @@ public class UpdateUsfmParserHandlerTests
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
         AssertUpdateBlockEquals(
             usfmUpdateBlock,
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "verse ", true),
@@ -1090,15 +1090,15 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
 
         Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(4));
-        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], "MAT 1:0/1:p");
+        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], ["MAT 1:0/1:p"]);
         AssertUpdateBlockEquals(
             usfmUpdateBlockHandler.Blocks[1],
-            "MAT 1:1/1:s",
+            ["MAT 1:1/1:s"],
             (UsfmUpdateBlockElementType.Text, "Section header ", false)
         );
         AssertUpdateBlockEquals(
             usfmUpdateBlockHandler.Blocks[2],
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Verse 1 ", true),
@@ -1107,7 +1107,7 @@ public class UpdateUsfmParserHandlerTests
         );
         AssertUpdateBlockEquals(
             usfmUpdateBlockHandler.Blocks[3],
-            "MAT 1:2",
+            ["MAT 1:2"],
             (UsfmUpdateBlockElementType.Other, "\\v 2 ", false),
             (UsfmUpdateBlockElementType.Text, "Verse 2 ", false)
         );
@@ -1129,15 +1129,15 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
 
         Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(3));
-        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], "MAT 1:0/1:p");
+        AssertUpdateBlockEquals(usfmUpdateBlockHandler.Blocks[0], ["MAT 1:0/1:p"]);
         AssertUpdateBlockEquals(
             usfmUpdateBlockHandler.Blocks[1],
-            "MAT 1:1/1:s",
+            ["MAT 1:1/1:s"],
             (UsfmUpdateBlockElementType.Text, "Section header ", false)
         );
         AssertUpdateBlockEquals(
             usfmUpdateBlockHandler.Blocks[2],
-            "MAT 1:1",
+            ["MAT 1:1"],
             (UsfmUpdateBlockElementType.Other, "\\v 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
             (UsfmUpdateBlockElementType.Text, "Beginning of verse ", true),
@@ -1189,7 +1189,8 @@ public class UpdateUsfmParserHandlerTests
                 paragraphBehavior,
                 embedBehavior,
                 styleBehavior,
-                preserveParagraphStyles
+                preserveParagraphStyles,
+                usfmUpdateBlockHandlers
             );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
@@ -1209,11 +1210,12 @@ public class UpdateUsfmParserHandlerTests
 
     private static void AssertUpdateBlockEquals(
         UsfmUpdateBlock block,
-        string expectedRef,
+        string[] expectedRefs,
         params (UsfmUpdateBlockElementType, string, bool)[] expectedElements
     )
     {
-        Assert.That(block.Refs.SequenceEqual([ScriptureRef.Parse(expectedRef)]));
+        var parsedExtractedRefs = expectedRefs.Select(r => ScriptureRef.Parse(r));
+        Assert.That(block.Refs.SequenceEqual(parsedExtractedRefs));
         Assert.That(block.Elements.Count, Is.EqualTo(expectedElements.Length));
         foreach (
             (
