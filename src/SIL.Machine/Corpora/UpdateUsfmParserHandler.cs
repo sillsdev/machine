@@ -449,7 +449,7 @@ namespace SIL.Machine.Corpora
                 {
                     if (_updateBlocks.Count > 0)
                     {
-                        _updateBlocks.Peek().AddToken(token);
+                        _updateBlocks.Peek().AddToken(token, markedForRemoval: true);
                     }
                     _tokenIndex++;
                 }
