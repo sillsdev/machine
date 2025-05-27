@@ -216,7 +216,6 @@ description
             @"\id MAT - Test
 \c 1
 //
-\p
 \v 1 This is the first verse.
 ",
             includeAllText: true,
