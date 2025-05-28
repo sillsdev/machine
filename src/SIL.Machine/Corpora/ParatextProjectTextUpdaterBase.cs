@@ -27,7 +27,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
-            IReadOnlyCollection<string> preserveParagraphStyles = null,
+            IEnumerable<string> preserveParagraphStyles = null,
+            IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<string> remarks = null
         )
         {
@@ -49,6 +50,7 @@ namespace SIL.Machine.Corpora
                 embedBehavior,
                 styleBehavior,
                 preserveParagraphStyles,
+                updateBlockHandlers,
                 remarks
             );
             try

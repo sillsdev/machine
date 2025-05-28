@@ -157,6 +157,10 @@ namespace SIL.Machine.Corpora
         {
             get
             {
+                // Anything before verse 1 is not verse text
+                if (VerseRef.VerseNum == 0)
+                    return false;
+
                 // Sidebars and notes are not verse text
                 if (_stack.Any(e => e.Type == UsfmElementType.Sidebar || e.Type == UsfmElementType.Note))
                     return false;
