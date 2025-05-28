@@ -216,6 +216,7 @@ description
             @"\id MAT - Test
 \c 1
 //
+\p
 \v 1 This is the first verse.
 ",
             includeAllText: true,
@@ -223,8 +224,9 @@ description
         );
         Assert.Multiple(() =>
         {
-            Assert.That(rows, Has.Length.EqualTo(1), string.Join(",", rows.Select(tr => tr.Text)));
-            Assert.That(rows[0].Text, Is.EqualTo("This is the first verse."));
+            Assert.That(rows, Has.Length.EqualTo(2), string.Join(",", rows.Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo(""));
+            Assert.That(rows[1].Text, Is.EqualTo("This is the first verse."));
         });
     }
 

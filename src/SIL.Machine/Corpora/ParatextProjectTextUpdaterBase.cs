@@ -28,7 +28,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
-            IEnumerable<UsfmUpdateBlockHandler> updateBlockHandlers = null,
+            IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<string> remarks = null
         )
         {

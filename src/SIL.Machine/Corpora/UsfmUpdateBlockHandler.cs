@@ -1,7 +1,7 @@
 namespace SIL.Machine.Corpora
 {
-    public abstract class UsfmUpdateBlockHandler
+    public interface IUsfmUpdateBlockHandler
     {
-        public abstract UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block);
+        UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block);
     }
 }

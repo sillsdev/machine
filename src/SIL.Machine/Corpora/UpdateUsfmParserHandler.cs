@@ -34,7 +34,7 @@ namespace SIL.Machine.Corpora
         private readonly UpdateUsfmMarkerBehavior _styleBehavior;
         private readonly HashSet<string> _preserveParagraphStyles;
         private readonly Stack<UsfmUpdateBlock> _updateBlocks;
-        private readonly Stack<UsfmUpdateBlockHandler> _updateBlockHandlers;
+        private readonly Stack<IUsfmUpdateBlockHandler> _updateBlockHandlers;
         private readonly List<string> _remarks;
         private readonly Stack<bool> _replace;
         private int _rowIndex;
@@ -48,7 +48,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
-            IEnumerable<UsfmUpdateBlockHandler> updateBlockHandlers = null,
+            IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<string> remarks = null
         )
         {
@@ -65,8 +65,8 @@ namespace SIL.Machine.Corpora
             _styleBehavior = styleBehavior;
             _updateBlockHandlers =
                 updateBlockHandlers == null
-                    ? new Stack<UsfmUpdateBlockHandler>()
-                    : new Stack<UsfmUpdateBlockHandler>(updateBlockHandlers);
+                    ? new Stack<IUsfmUpdateBlockHandler>()
+                    : new Stack<IUsfmUpdateBlockHandler>(updateBlockHandlers);
             _preserveParagraphStyles =
                 preserveParagraphStyles == null
                     ? new HashSet<string> { "r", "rem" }
@@ -403,10 +403,7 @@ namespace SIL.Machine.Corpora
                     _embedTokens.Add(token);
                 }
                 else if (
-                    (
-                        CurrentTextType != ScriptureTextType.None
-                        || (state.ParaTag != null && state.ParaTag.Marker == "id")
-                    )
+                    (CurrentTextType != ScriptureTextType.None || state.ParaTag?.Marker == "id")
                     && _updateBlocks.Count > 0
                 )
                 {
@@ -442,10 +439,7 @@ namespace SIL.Machine.Corpora
             while (_tokenIndex <= state.Index + state.SpecialTokenCount)
             {
                 UsfmToken token = state.Tokens[_tokenIndex];
-                if (
-                    CurrentTextType != ScriptureTextType.None
-                    || (state.ParaTag != null && state.ParaTag.Marker == "id")
-                )
+                if (CurrentTextType != ScriptureTextType.None || (state.ParaTag?.Marker == "id"))
                 {
                     if (_updateBlocks.Count > 0)
                     {
@@ -510,7 +504,7 @@ namespace SIL.Machine.Corpora
             PopNewTokens();
             UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
             updateBlock.UpdateRefs(scriptureRefs);
-            foreach (UsfmUpdateBlockHandler handler in _updateBlockHandlers)
+            foreach (IUsfmUpdateBlockHandler handler in _updateBlockHandlers)
             {
                 updateBlock = handler.ProcessBlock(updateBlock);
             }

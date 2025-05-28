@@ -189,7 +189,7 @@ namespace SIL.Machine.Corpora
             // segment
             CheckConvertVerseParaToNonVerse(state);
             if (IsEmbedStyle(markerWithoutPlus))
-                StartEmbedTextWrapper(state, markerWithoutPlus);
+                StartEmbedText(state, markerWithoutPlus);
         }
 
         public override void EndChar(
@@ -200,17 +200,17 @@ namespace SIL.Machine.Corpora
         )
         {
             if (IsEmbedStyle(marker))
-                EndEmbedTextWrapper(state);
+                EndEmbedText(state);
         }
 
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
-            StartEmbedTextWrapper(state, marker);
+            StartEmbedText(state, marker);
         }
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
         {
-            EndEmbedTextWrapper(state);
+            EndEmbedText(state);
         }
 
         protected virtual void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs) { }
@@ -263,7 +263,7 @@ namespace SIL.Machine.Corpora
             _curVerseRef = verseRef;
         }
 
-        private void StartEmbedTextWrapper(UsfmParserState state, string marker)
+        private void StartEmbedText(UsfmParserState state, string marker)
         {
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
@@ -276,7 +276,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private void EndEmbedTextWrapper(UsfmParserState state)
+        private void EndEmbedText(UsfmParserState state)
         {
             if (!_duplicateVerse && _curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.Embed)
             {

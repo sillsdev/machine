@@ -5,21 +5,30 @@ namespace SIL.Machine.Corpora
 {
     public class UsfmUpdateBlock
     {
-        public List<ScriptureRef> Refs { get; }
-        public List<UsfmUpdateBlockElement> Elements { get; }
+        public IReadOnlyList<ScriptureRef> Refs
+        {
+            get => _refs;
+        }
+        public IReadOnlyList<UsfmUpdateBlockElement> Elements
+        {
+            get => _elements;
+        }
+
+        private readonly List<ScriptureRef> _refs;
+        private readonly List<UsfmUpdateBlockElement> _elements;
 
         public UsfmUpdateBlock(
             IEnumerable<ScriptureRef> refs = null,
             IEnumerable<UsfmUpdateBlockElement> elements = null
         )
         {
-            Refs = refs != null ? refs.ToList() : new List<ScriptureRef>();
-            Elements = elements != null ? elements.ToList() : new List<UsfmUpdateBlockElement>();
+            _refs = refs != null ? refs.ToList() : new List<ScriptureRef>();
+            _elements = elements != null ? elements.ToList() : new List<UsfmUpdateBlockElement>();
         }
 
         public void AddText(IEnumerable<UsfmToken> tokens)
         {
-            Elements.Add(new UsfmUpdateBlockElement(UsfmUpdateBlockElementType.Text, tokens.ToList()));
+            _elements.Add(new UsfmUpdateBlockElement(UsfmUpdateBlockElementType.Text, tokens.ToList()));
         }
 
         public void AddToken(UsfmToken token, bool markedForRemoval = false)
@@ -41,30 +50,30 @@ namespace SIL.Machine.Corpora
                     type = UsfmUpdateBlockElementType.Other;
                     break;
             }
-            Elements.Add(new UsfmUpdateBlockElement(type, new List<UsfmToken> { token }, markedForRemoval));
+            _elements.Add(new UsfmUpdateBlockElement(type, new List<UsfmToken> { token }, markedForRemoval));
         }
 
         public void AddEmbed(IEnumerable<UsfmToken> tokens, bool markedForRemoval = false)
         {
-            Elements.Add(
+            _elements.Add(
                 new UsfmUpdateBlockElement(UsfmUpdateBlockElementType.Embed, tokens.ToList(), markedForRemoval)
             );
         }
 
         public void ExtendLastElement(IEnumerable<UsfmToken> tokens)
         {
-            Elements.Last().Tokens.AddRange(tokens);
+            _elements.Last().Tokens.AddRange(tokens);
         }
 
         public void UpdateRefs(IEnumerable<ScriptureRef> refs)
         {
-            Refs.Clear();
-            Refs.AddRange(refs);
+            _refs.Clear();
+            _refs.AddRange(refs);
         }
 
         public List<UsfmToken> GetTokens()
         {
-            return Elements.SelectMany(e => e.GetTokens()).ToList();
+            return _elements.SelectMany(e => e.GetTokens()).ToList();
         }
 
         public override bool Equals(object obj)
@@ -74,20 +83,20 @@ namespace SIL.Machine.Corpora
 
             UsfmUpdateBlock other = (UsfmUpdateBlock)obj;
 
-            return Refs.SequenceEqual(other.Refs) && Elements.SequenceEqual(other.Elements);
+            return _refs.SequenceEqual(other._refs) && _elements.SequenceEqual(other._elements);
         }
 
         public override int GetHashCode()
         {
             int hash = 23;
-            hash = hash * 31 + Refs.GetHashCode();
-            hash = hash * 31 + Elements.GetHashCode();
+            hash = hash * 31 + _refs.GetHashCode();
+            hash = hash * 31 + _elements.GetHashCode();
             return hash;
         }
 
         public UsfmUpdateBlock Clone()
         {
-            return new UsfmUpdateBlock(Refs, Elements);
+            return new UsfmUpdateBlock(_refs, _elements);
         }
     }
 }

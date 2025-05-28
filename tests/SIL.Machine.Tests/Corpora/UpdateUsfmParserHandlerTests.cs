@@ -1161,7 +1161,7 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
-        IEnumerable<UsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null
+        IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null
     )
     {
         if (source is null)
@@ -1230,7 +1230,7 @@ public class UpdateUsfmParserHandlerTests
         }
     }
 
-    private class TestUsfmUpdateBlockHandler : UsfmUpdateBlockHandler
+    private class TestUsfmUpdateBlockHandler : IUsfmUpdateBlockHandler
     {
         public List<UsfmUpdateBlock> Blocks { get; }
 
@@ -1239,7 +1239,7 @@ public class UpdateUsfmParserHandlerTests
             Blocks = new List<UsfmUpdateBlock>();
         }
 
-        public override UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
+        public UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
         {
             UsfmUpdateBlock newBlock = block.Clone();
             Blocks.Add(newBlock);
