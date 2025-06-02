@@ -10,19 +10,19 @@ namespace SIL.Machine.Corpora
     {
         public IReadOnlyList<string> Refs { get; }
         public IReadOnlyList<string> SourceTokens { get; }
-        public IReadOnlyList<string> TargetTokens { get; }
+        public IReadOnlyList<string> TranslationTokens { get; }
         public WordAlignmentMatrix Alignment { get; }
 
         public PlaceMarkersAlignmentInfo(
             IReadOnlyList<string> refs,
             IReadOnlyList<string> sourceTokens,
-            IReadOnlyList<string> targetTokens,
+            IReadOnlyList<string> translationTokens,
             WordAlignmentMatrix alignment
         )
         {
             Refs = refs;
             SourceTokens = sourceTokens;
-            TargetTokens = targetTokens;
+            TranslationTokens = translationTokens;
             Alignment = alignment;
         }
     }
@@ -79,6 +79,7 @@ namespace SIL.Machine.Corpora
                         if (eobEmptyParas)
                         {
                             endElements.Insert(0, element);
+                            elements.RemoveAt(i);
                         }
                     }
                 }
@@ -97,7 +98,7 @@ namespace SIL.Machine.Corpora
             }
 
             IReadOnlyList<string> sourceTokens = alignmentInfo.SourceTokens;
-            IReadOnlyList<string> targetTokens = alignmentInfo.TargetTokens;
+            IReadOnlyList<string> targetTokens = alignmentInfo.TranslationTokens;
             int sourceTokenIndex = 0;
 
             string sourceSentence = "";
@@ -206,7 +207,7 @@ namespace SIL.Machine.Corpora
                         placedElements.Add(headerElements[0].Element);
                         headerElements.RemoveAt(0);
                     }
-                    paraMarkersLeft++;
+                    paraMarkersLeft--;
                 }
 
                 placedElements.Add(element);
@@ -218,7 +219,9 @@ namespace SIL.Machine.Corpora
                     UsfmToken textToken;
                     if (j + 1 < toInsert.Count)
                     {
-                        textToken = new UsfmToken(targetSentence.Substring(insertIndex, toInsert[j + 1].Index));
+                        textToken = new UsfmToken(
+                            targetSentence.Substring(insertIndex, toInsert[j + 1].Index - insertIndex)
+                        );
                     }
                     else
                     {
@@ -317,9 +320,9 @@ namespace SIL.Machine.Corpora
             int bestHypothesis = -1;
             int bestNumCrossings = 200 ^ 2;
             HashSet<int> checkedHypotheses = new HashSet<int>();
-            foreach (int hypthesis in hypotheses)
+            foreach (int hypothesis in hypotheses)
             {
-                int sourceHypothesis = adjacentSourceToken + bestHypothesis;
+                int sourceHypothesis = adjacentSourceToken + hypothesis;
                 if (checkedHypotheses.Contains(sourceHypothesis))
                     continue;
                 targetHypothesis = -1;
@@ -331,11 +334,12 @@ namespace SIL.Machine.Corpora
                     {
                         // If aligning with a source token that precedes the marker,
                         // the target token predicted to be closest to the marker is the last aligned token rather than the first
-                        targetHypothesis = alignedTargetTokens[bestHypothesis < 0 ? -1 : 0];
+                        targetHypothesis = alignedTargetTokens[hypothesis < 0 ? -1 : 0];
                     }
                     else
                     {
-                        sourceHypothesis += bestHypothesis < 0 ? -1 : 0;
+                        // continue the search outwards
+                        sourceHypothesis += hypothesis < 0 ? -1 : 1;
                     }
                 }
                 if (targetHypothesis != -1)
