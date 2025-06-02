@@ -87,7 +87,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-         private IRule<Word, ShapeNode> CompilePhonologicalRule(IPhonologicalRule prule, Morpher morpher)
+        private IRule<Word, ShapeNode> CompilePhonologicalRule(IPhonologicalRule prule, Morpher morpher)
         {
             try
             {
