@@ -103,9 +103,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             public CompileException() { }
 
-            public CompileException(string message): base(message) { }
+            public CompileException(string message)
+                : base(message) { }
 
-            public CompileException(string message, Exception inner): base(message, inner) { }
+            public CompileException(string message, Exception inner)
+                : base(message, inner) { }
         }
 
         public IEnumerable<Word> Apply(Word input)
