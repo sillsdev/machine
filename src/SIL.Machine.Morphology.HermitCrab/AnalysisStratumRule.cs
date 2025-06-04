@@ -71,7 +71,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             catch (Exception e)
             {
-                throw new Exception("Could not compile affix template named " + template.Name, e);
+                throw new CompileException("Could not compile affix template named " + template.Name, e);
             }
         }
 
@@ -83,7 +83,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             catch (Exception e)
             {
-                throw new Exception("Could not compile morphological rule named " + mrule.Name, e);
+                throw new CompileException("Could not compile morphological rule named " + mrule.Name, e);
             }
         }
 
@@ -95,7 +95,24 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             catch (Exception e)
             {
-                throw new Exception("Could not compile phonological rule named " + prule.Name, e);
+                throw new CompileException("Could not compile phonological rule named " + prule.Name, e);
+            }
+        }
+
+        public class CompileException : Exception
+        {
+            public CompileException()
+            {
+            }
+
+            public CompileException(string message)
+                : base(message)
+            {
+            }
+
+            public CompileException(string message, Exception inner)
+                : base(message, inner)
+            {
             }
         }
 
