@@ -230,6 +230,30 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_ParagraphBeforeNonVerseParagraph()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\p
+\v 1 verse 1
+\b
+\s1 header
+\q1
+\v 2 verse 2
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.Select(tr => tr.Text)));
+            Assert.That(rows[0].Text, Is.EqualTo("verse 1 \\b \\q1"));
+            Assert.That(rows[1].Text, Is.EqualTo("header"));
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =
