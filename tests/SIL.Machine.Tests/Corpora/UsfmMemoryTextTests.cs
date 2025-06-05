@@ -249,8 +249,8 @@ description
         Assert.Multiple(() =>
         {
             Assert.That(rows, Has.Length.EqualTo(4), string.Join(",", rows.Select(tr => tr.Text)));
-            Assert.That(rows[0].Text, Is.EqualTo("verse 1 \\b \\q1"));
-            Assert.That(rows[1].Text, Is.EqualTo("header"));
+            Assert.That(rows[1].Text, Is.EqualTo("verse 1 \\b \\q1"));
+            Assert.That(rows[2].Text, Is.EqualTo("header"));
         });
     }
 
