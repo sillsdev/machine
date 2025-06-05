@@ -460,10 +460,10 @@ namespace SIL.Machine.Corpora
                     {
                         _updateBlocks.Peek().AddToken(token, markedForRemoval: true);
                     }
-                    _tokenIndex++;
                 }
+                _tokenIndex++;
             }
-            _tokenIndex = state.Index + state.SpecialTokenCount + 1;
+            _tokenIndex = state.Index + 1 + state.SpecialTokenCount;
         }
 
         private bool ReplaceWithNewTokens(UsfmParserState state)
@@ -524,7 +524,7 @@ namespace SIL.Machine.Corpora
             List<UsfmUpdateBlockElement> paraElems = new List<UsfmUpdateBlockElement>();
             while (updateBlock.Elements.Count > 0 && IsNonverseParagraph(state, updateBlock.Elements.Last()))
             {
-                paraElems.Append(updateBlock.Pop());
+                paraElems.Add(updateBlock.Pop());
             }
 
             foreach (IUsfmUpdateBlockHandler handler in _updateBlockHandlers)

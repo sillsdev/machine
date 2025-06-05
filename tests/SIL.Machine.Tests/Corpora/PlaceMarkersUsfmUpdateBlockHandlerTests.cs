@@ -625,7 +625,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         string target = UpdateUsfm(
             rows,
             usfm,
-            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
             usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
         );
 
