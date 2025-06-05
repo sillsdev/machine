@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
@@ -20,16 +21,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             _stratum = stratum;
             _morpher = morpher;
             _prulesRule = new LinearRuleCascade<Word, ShapeNode>(
-                stratum.PhonologicalRules.Select(prule => prule.CompileAnalysisRule(morpher)).Reverse()
+                stratum.PhonologicalRules.Select(prule => CompilePhonologicalRule(prule, morpher)).Reverse()
             );
             _templatesRule = new RuleBatch<Word, ShapeNode>(
-                stratum.AffixTemplates.Select(template => template.CompileAnalysisRule(morpher)),
+                stratum.AffixTemplates.Select(template => CompileAffixTemplate(template, morpher)),
                 false,
                 FreezableEqualityComparer<Word>.Default
             );
             _mrulesRule = null;
             IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
-                .MorphologicalRules.Select(mrule => mrule.CompileAnalysisRule(morpher))
+                .MorphologicalRules.Select(mrule => CompileMorphologicalRule(mrule, morpher))
                 .Reverse();
             switch (stratum.MorphologicalRuleOrder)
             {
@@ -59,6 +60,42 @@ namespace SIL.Machine.Morphology.HermitCrab
                     );
 #endif
                     break;
+            }
+        }
+
+        private IRule<Word, ShapeNode> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
+        {
+            try
+            {
+                return template.CompileAnalysisRule(morpher);
+            }
+            catch (Exception e)
+            {
+                throw new CompileException("Could not compile affix template named " + template.Name, e);
+            }
+        }
+
+        private IRule<Word, ShapeNode> CompileMorphologicalRule(IMorphologicalRule mrule, Morpher morpher)
+        {
+            try
+            {
+                return mrule.CompileAnalysisRule(morpher);
+            }
+            catch (Exception e)
+            {
+                throw new CompileException("Could not compile morphological rule named " + mrule.Name, e);
+            }
+        }
+
+        private IRule<Word, ShapeNode> CompilePhonologicalRule(IPhonologicalRule prule, Morpher morpher)
+        {
+            try
+            {
+                return prule.CompileAnalysisRule(morpher);
+            }
+            catch (Exception e)
+            {
+                throw new CompileException("Could not compile phonological rule named " + prule.Name, e);
             }
         }
 
