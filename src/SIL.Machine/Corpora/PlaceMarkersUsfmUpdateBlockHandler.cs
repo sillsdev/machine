@@ -106,11 +106,6 @@ namespace SIL.Machine.Corpora
             List<UsfmUpdateBlockElement> toPlace = new List<UsfmUpdateBlockElement>();
             List<int> adjacentSourceTokens = new List<int>();
             List<UsfmUpdateBlockElement> placedElements = new List<UsfmUpdateBlockElement>();
-            if (elements[0].Type == UsfmUpdateBlockElementType.Other)
-            {
-                placedElements.Add(elements[0]);
-                elements.RemoveAt(0);
-            }
             List<UsfmUpdateBlockElement> embedElements = new List<UsfmUpdateBlockElement>();
             List<UsfmUpdateBlockElement> ignoredElements = new List<UsfmUpdateBlockElement>();
             foreach (UsfmUpdateBlockElement element in elements)
@@ -154,6 +149,9 @@ namespace SIL.Machine.Corpora
                     adjacentSourceTokens.Add(sourceTokenIndex);
                 }
             }
+
+            if (targetSentence.Trim().Length == 0)
+                return block;
 
             List<int> targetTokenStarts = new List<int>();
             int prevLength = 0;

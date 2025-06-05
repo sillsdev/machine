@@ -238,14 +238,17 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             @"\id MAT
 \c 1
 \s1 Start of chapter header
+\p
 \v 1 A
 \p B
 \s1 Mid-verse header
 \p C
-\s1 End of verse header
+\s1 Header between verse text and empty end-of-verse paragraphs
 \p
 \p
-\s1 Header after all paragraphs
+\p
+\s1 Header after all verse paragraphs
+\p
 \v 2 A
 \s1 Header followed by a reference
 \r (reference)
@@ -280,14 +283,17 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             @"\id MAT
 \c 1
 \s1 Start of chapter header
+\p
 \v 1 X
 \p Y
 \s1 Mid-verse header
 \p Z
-\s1 End of verse header
+\s1 Header between verse text and empty end-of-verse paragraphs
 \p
 \p
-\s1 Header after all paragraphs
+\p
+\s1 Header after all verse paragraphs
+\p
 \v 2 X
 \s1 Header followed by a reference
 \r (reference)
@@ -579,6 +585,56 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \c 1
 \v 1 string
 \p ring
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_VersesOutOfOrder()
+    {
+        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        [
+            (ScrRef("MAT 1:1"), "new verse 1 new paragraph 2"),
+            (ScrRef("MAT 1:2"), "new verse 2")
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 2 verse 2
+\v 1 verse 1
+\p paragraph 2
+";
+
+        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
+        [
+            new PlaceMarkersAlignmentInfo(
+                refs: ["MAT 1:1"],
+                sourceTokens: ["verse", "1", "paragraph", "2"],
+                translationTokens: ["new", "verse", "1", "new", "paragraph", "2"],
+                alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5")
+            ),
+            new PlaceMarkersAlignmentInfo(
+                refs: ["MAT 1:2"],
+                sourceTokens: ["verse", "2"],
+                translationTokens: ["new", "verse", "2"],
+                alignment: ToWordAlignmentMatrix("0-1 1-2")
+            )
+        ];
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\v 2 new verse 2
+\v 1
+\p
 ";
 
         AssertUsfmEquals(target, result);
