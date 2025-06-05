@@ -1182,7 +1182,7 @@ public class UpdateUsfmParserHandlerTests
         };
 
         var usfm =
-            @"\\id MAT
+            @"\id MAT
 \c 1
 \s1 beginning-of-chapter header
 \p
