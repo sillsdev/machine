@@ -249,7 +249,7 @@ namespace SIL.Machine.Corpora
                             if (CurrentTextType == ScriptureTextType.Verse)
                             {
                                 foreach (UsfmToken token in _nextParaTokens)
-                                    rowText.Append(token);
+                                    rowText.Append(token.ToString() + " ");
                                 _nextParaTokens.Clear();
                             }
                             _nextParaTextStarted = true;
@@ -287,7 +287,7 @@ namespace SIL.Machine.Corpora
                 {
                     foreach (UsfmToken token in _nextParaTokens)
                     {
-                        text += token.Text + " ";
+                        text += token.ToString() + " ";
                     }
                 }
                 _rows.AddRange(_text.CreateRows(scriptureRefs, text, _sentenceStart));
