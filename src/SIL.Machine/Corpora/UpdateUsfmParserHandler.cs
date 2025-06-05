@@ -119,13 +119,17 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
-            if (
-                state.IsVerseText
-                && (HasNewText() || _textBehavior == UpdateUsfmTextBehavior.StripExisting)
-                && _paragraphBehavior == UpdateUsfmMarkerBehavior.Strip
-            )
+            if (state.IsVerseText)
             {
-                SkipUpdatableTokens(state);
+                // Only strip paragraph markers in a verse
+                if (_paragraphBehavior == UpdateUsfmMarkerBehavior.Preserve)
+                {
+                    CollectUpdatableTokens(state);
+                }
+                else
+                {
+                    SkipUpdatableTokens(state);
+                }
             }
             else
             {
@@ -200,6 +204,16 @@ namespace SIL.Machine.Corpora
         )
         {
             UseUpdatedText();
+
+            // Ensure that a paragraph that contains a verse is not marked for removal
+            if (_updateBlocks.Count > 0)
+            {
+                UsfmUpdateBlockElement lastParagraph = _updateBlocks.Peek().GetLastParagraph();
+                if (lastParagraph != null)
+                {
+                    lastParagraph.MarkedForRemoval = false;
+                }
+            }
 
             base.Verse(state, number, marker, altNumber, pubNumber);
 
@@ -317,12 +331,13 @@ namespace SIL.Machine.Corpora
 
         protected override void StartVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
+            CollectUpdatableTokens(state);
             StartUpdateBlock(scriptureRefs);
         }
 
         protected override void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
-            EndUpdateBlock(scriptureRefs);
+            EndUpdateBlock(state, scriptureRefs);
         }
 
         protected override void StartNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
@@ -332,7 +347,7 @@ namespace SIL.Machine.Corpora
 
         protected override void EndNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
         {
-            EndUpdateBlock(new[] { scriptureRef });
+            EndUpdateBlock(state, new[] { scriptureRef });
         }
 
         protected override void EndEmbedText(UsfmParserState state, ScriptureRef scriptureRef)
@@ -498,26 +513,40 @@ namespace SIL.Machine.Corpora
             PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
         }
 
-        private void EndUpdateBlock(IReadOnlyList<ScriptureRef> scriptureRefs)
+        private void EndUpdateBlock(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
             UseUpdatedText();
             PopNewTokens();
             UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
             updateBlock.UpdateRefs(scriptureRefs);
+
+            // Strip off any non-verse paragraphs that are at the end of the update block
+            List<UsfmUpdateBlockElement> paraElems = new List<UsfmUpdateBlockElement>();
+            while (updateBlock.Elements.Count > 0 && IsNonverseParagraph(state, updateBlock.Elements.Last()))
+            {
+                paraElems.Append(updateBlock.Pop());
+            }
+
             foreach (IUsfmUpdateBlockHandler handler in _updateBlockHandlers)
             {
                 updateBlock = handler.ProcessBlock(updateBlock);
+            }
+            List<UsfmToken> tokens = updateBlock.GetTokens();
+            paraElems.Reverse();
+            foreach (UsfmUpdateBlockElement elem in paraElems)
+            {
+                tokens.AddRange(elem.GetTokens());
             }
             if (
                 _updateBlocks.Count > 0
                 && _updateBlocks.Peek().Elements.Last().Type == UsfmUpdateBlockElementType.Paragraph
             )
             {
-                _updateBlocks.Peek().ExtendLastElement(updateBlock.GetTokens());
+                _updateBlocks.Peek().ExtendLastElement(tokens);
             }
             else
             {
-                _tokens.AddRange(updateBlock.GetTokens());
+                _tokens.AddRange(tokens);
             }
         }
 
@@ -548,6 +577,17 @@ namespace SIL.Machine.Corpora
         private bool IsInPreservedParagraph(UsfmParserState state)
         {
             return state.ParaTag != null && _preserveParagraphStyles.Contains(state.ParaTag.Marker);
+        }
+
+        private bool IsNonverseParagraph(UsfmParserState state, UsfmUpdateBlockElement element)
+        {
+            if (element.Type != UsfmUpdateBlockElementType.Paragraph)
+                return false;
+            UsfmToken paraToken = element.Tokens[0];
+            if (paraToken.Marker is null)
+                return false;
+            UsfmTag paraTag = state.Stylesheet.GetTag(paraToken.Marker);
+            return paraTag.TextType != UsfmTextType.VerseText && paraTag.TextType != UsfmTextType.NotSpecified;
         }
     }
 }

@@ -71,6 +71,23 @@ namespace SIL.Machine.Corpora
             _refs.AddRange(refs);
         }
 
+        public UsfmUpdateBlockElement GetLastParagraph()
+        {
+            foreach (UsfmUpdateBlockElement element in _elements)
+            {
+                if (element.Type == UsfmUpdateBlockElementType.Paragraph)
+                    return element;
+            }
+            return null;
+        }
+
+        public UsfmUpdateBlockElement Pop()
+        {
+            UsfmUpdateBlockElement element = _elements.Last();
+            _elements.RemoveAt(_elements.Count - 1);
+            return element;
+        }
+
         public List<UsfmToken> GetTokens()
         {
             return _elements.SelectMany(e => e.GetTokens()).ToList();
