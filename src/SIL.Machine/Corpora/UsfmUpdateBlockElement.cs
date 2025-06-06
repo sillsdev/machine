@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
     {
         public UsfmUpdateBlockElementType Type { get; }
         public List<UsfmToken> Tokens { get; }
-        public bool MarkedForRemoval { get; }
+        public bool MarkedForRemoval { get; set; }
 
         public UsfmUpdateBlockElement(
             UsfmUpdateBlockElementType type,

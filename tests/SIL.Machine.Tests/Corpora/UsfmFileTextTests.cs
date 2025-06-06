@@ -173,7 +173,7 @@ public class UsfmFileTextTests
         Assert.That(
             rows[0].Text,
             Is.EqualTo(
-                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*"
+                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f* \\li1"
             )
         );
 
@@ -216,16 +216,19 @@ public class UsfmFileTextTests
         Assert.That(rows[11].IsRangeStart, Is.False);
 
         Assert.That(rows[12].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:4b", corpus.Versification)));
-        Assert.That(rows[12].Text, Is.EqualTo("Chapter two, verse four."));
+        Assert.That(rows[12].Text, Is.EqualTo("Chapter two, verse four. \\p"));
 
         Assert.That(rows[13].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:5", corpus.Versification)));
         Assert.That(rows[13].Text, Is.EqualTo("Chapter two, verse five \\rq (MAT 3:1)\\rq*."));
 
         Assert.That(rows[14].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:6", corpus.Versification)));
-        Assert.That(rows[14].Text, Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*."));
+        Assert.That(rows[14].Text, Is.EqualTo("Chapter two, verse \\w six|strong=\"12345\" \\w*. \\p"));
+
+        Assert.That(rows[17].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:8", corpus.Versification)));
+        Assert.That(rows[17].Text, Is.EqualTo("This is a list: \\b \\tr \\tc1"));
 
         Assert.That(rows[18].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:9", corpus.Versification)));
-        Assert.That(rows[18].Text, Is.EqualTo("Chapter\\tcr2 2\\tc3 verse\\tcr4 9"));
+        Assert.That(rows[18].Text, Is.EqualTo("Chapter\\tcr2 2\\tc3 verse\\tcr4 9 \\tr \\tc1-2"));
 
         Assert.That(rows[19].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 2:10", corpus.Versification)));
         Assert.That(rows[19].Text, Is.EqualTo("\\tc3-4 Chapter 2 verse 10"));
@@ -253,7 +256,7 @@ public class UsfmFileTextTests
         Assert.That(
             rows[8].Text,
             Is.EqualTo(
-                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*"
+                "Chapter \\pn one\\+pro WON\\+pro*\\pn*, verse one.\\f + \\fr 1:1: \\ft This is a footnote for v1.\\f* \\li1"
             )
         );
 

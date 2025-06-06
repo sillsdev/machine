@@ -172,7 +172,7 @@ namespace SIL.Machine.Corpora
                 foreach (UsfmTag charTag in CharTags)
                 {
                     // Not specified text type is verse text
-                    if (charTag.TextType != UsfmTextType.VerseText && charTag.TextType != 0)
+                    if (charTag.TextType != UsfmTextType.VerseText && charTag.TextType != UsfmTextType.NotSpecified)
                         return false;
                 }
 
