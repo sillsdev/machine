@@ -521,7 +521,7 @@ namespace SIL.Machine.Corpora
             updateBlock.UpdateRefs(scriptureRefs);
 
             // Strip off any non-verse paragraphs that are at the end of the update block
-            List<UsfmUpdateBlockElement> paraElems = new List<UsfmUpdateBlockElement>();
+            var paraElems = new List<UsfmUpdateBlockElement>();
             while (updateBlock.Elements.Count > 0 && IsNonverseParagraph(state, updateBlock.Elements.Last()))
             {
                 paraElems.Add(updateBlock.Pop());
@@ -532,8 +532,7 @@ namespace SIL.Machine.Corpora
                 updateBlock = handler.ProcessBlock(updateBlock);
             }
             List<UsfmToken> tokens = updateBlock.GetTokens();
-            paraElems.Reverse();
-            foreach (UsfmUpdateBlockElement elem in paraElems)
+            foreach (UsfmUpdateBlockElement elem in Enumerable.Reverse(paraElems))
             {
                 tokens.AddRange(elem.GetTokens());
             }

@@ -73,9 +73,8 @@ namespace SIL.Machine.Corpora
 
         public UsfmUpdateBlockElement GetLastParagraph()
         {
-            for (int i = _elements.Count - 1; i >= 0; i--)
+            foreach (UsfmUpdateBlockElement element in Enumerable.Reverse(_elements))
             {
-                UsfmUpdateBlockElement element = _elements[i];
                 if (element.Type == UsfmUpdateBlockElementType.Paragraph)
                     return element;
             }

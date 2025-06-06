@@ -39,7 +39,7 @@ namespace SIL.Machine.Corpora
         public UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
         {
             string reference = block.Refs.FirstOrDefault().ToString();
-            List<UsfmUpdateBlockElement> elements = block.Elements.ToList();
+            var elements = block.Elements.ToList();
 
             // Nothing to do if there are no markers to place or no alignment to use
             if (
@@ -58,10 +58,9 @@ namespace SIL.Machine.Corpora
 
             // Paragraph markers at the end of the block should stay there
             // Section headers should be ignored but re-inserted in the same position relative to other paragraph markers
-            List<UsfmUpdateBlockElement> endElements = new List<UsfmUpdateBlockElement>();
+            var endElements = new List<UsfmUpdateBlockElement>();
             bool eobEmptyParas = true;
-            List<(int ParaMarkersLeft, UsfmUpdateBlockElement Element)> headerElements =
-                new List<(int paraMarkersLeft, UsfmUpdateBlockElement element)>();
+            var headerElements = new List<(int ParaMarkersLeft, UsfmUpdateBlockElement Element)>();
             int paraMarkersLeft = 0;
             foreach ((int i, UsfmUpdateBlockElement element) in elements.Select((e, i) => (i, e)).Reverse())
             {
@@ -88,7 +87,7 @@ namespace SIL.Machine.Corpora
                         element.Type == UsfmUpdateBlockElementType.Embed
                         || (
                             element.Type == UsfmUpdateBlockElementType.Text
-                            && element.Tokens[0].ToUsfm().Trim().Count() == 0
+                            && element.Tokens[0].ToUsfm().Trim().Length == 0
                         )
                     )
                 )
@@ -103,11 +102,11 @@ namespace SIL.Machine.Corpora
 
             string sourceSentence = "";
             string targetSentence = "";
-            List<UsfmUpdateBlockElement> toPlace = new List<UsfmUpdateBlockElement>();
-            List<int> adjacentSourceTokens = new List<int>();
-            List<UsfmUpdateBlockElement> placedElements = new List<UsfmUpdateBlockElement>();
-            List<UsfmUpdateBlockElement> embedElements = new List<UsfmUpdateBlockElement>();
-            List<UsfmUpdateBlockElement> ignoredElements = new List<UsfmUpdateBlockElement>();
+            var toPlace = new List<UsfmUpdateBlockElement>();
+            var adjacentSourceTokens = new List<int>();
+            var placedElements = new List<UsfmUpdateBlockElement>();
+            var embedElements = new List<UsfmUpdateBlockElement>();
+            var ignoredElements = new List<UsfmUpdateBlockElement>();
             foreach (UsfmUpdateBlockElement element in elements)
             {
                 if (element.Type == UsfmUpdateBlockElementType.Text)
@@ -153,7 +152,7 @@ namespace SIL.Machine.Corpora
             if (targetSentence.Trim().Length == 0)
                 return block;
 
-            List<int> targetTokenStarts = new List<int>();
+            var targetTokenStarts = new List<int>();
             int prevLength = 0;
             foreach (string token in targetTokens)
             {
@@ -161,8 +160,7 @@ namespace SIL.Machine.Corpora
                 prevLength = token.Length;
             }
 
-            List<(int Index, UsfmUpdateBlockElement Element)> toInsert =
-                new List<(int Index, UsfmUpdateBlockElement Element)>();
+            var toInsert = new List<(int Index, UsfmUpdateBlockElement Element)>();
             foreach (
                 (UsfmUpdateBlockElement element, int adjacentSourceToken) in toPlace
                     .Zip(adjacentSourceTokens)
@@ -236,7 +234,7 @@ namespace SIL.Machine.Corpora
                 headerElements.RemoveAt(0);
             }
 
-            UsfmUpdateBlock processedBlock = new UsfmUpdateBlock(
+            var processedBlock = new UsfmUpdateBlock(
                 refs: block.Refs,
                 elements: placedElements.Concat(ignoredElements)
             );
@@ -317,7 +315,7 @@ namespace SIL.Machine.Corpora
             int[] hypotheses = new int[] { 0, 1, 2 };
             int bestHypothesis = -1;
             int bestNumCrossings = 200 ^ 2;
-            HashSet<int> checkedHypotheses = new HashSet<int>();
+            var checkedHypotheses = new HashSet<int>();
             foreach (int hypothesis in hypotheses)
             {
                 int sourceHypothesis = adjacentSourceToken + hypothesis;

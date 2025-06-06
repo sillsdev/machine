@@ -7,13 +7,7 @@ using SIL.Machine.Translation;
 [TestFixture]
 public class PlaceMarkersUsfmUpdateBlockHandlerTests
 {
-    private LatinWordTokenizer Tokenizer { get; set; }
-
-    [OneTimeSetUp]
-    public void OneTimeSetup()
-    {
-        Tokenizer = new LatinWordTokenizer();
-    }
+    private static readonly LatinWordTokenizer Tokenizer = new LatinWordTokenizer();
 
     [Test]
     public void UpdateUsfm_ParagraphMarkers()
