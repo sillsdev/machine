@@ -5,6 +5,7 @@
     <SentencePiece4cDir>$(MSBuildProjectDirectory)\..\sentencepiece4c</SentencePiece4cDir>
     <SentencePiece4cDll Condition="'$(OS)' == 'Windows_NT'">sentencepiece4c.dll</SentencePiece4cDll>
     <SentencePiece4cDll Condition="'$(OS)' == 'Unix'">libsentencepiece4c.so</SentencePiece4cDll>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
