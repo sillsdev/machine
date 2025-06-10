@@ -28,7 +28,9 @@ namespace SIL.Machine.Corpora
 
                 IText text = new MemoryText(
                     textId,
-                    glosses.Select(kvp => new TextRow(textId, kvp.Item1) { Segment = kvp.Item2 })
+                    glosses.SelectMany(kvp =>
+                        kvp.Item2.Select(gloss => new TextRow(textId, kvp.Item1) { Segment = new string[] { gloss } })
+                    )
                 );
                 AddText(text);
             }
