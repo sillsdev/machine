@@ -24,7 +24,6 @@ public class ScriptureRefTests
     public int CompareTo(string ref1Str, string ref2Str)
     {
         var ref1 = ScriptureRef.Parse(ref1Str);
-
         var ref2 = ScriptureRef.Parse(ref2Str);
 
         return ref1.CompareTo(ref2);
