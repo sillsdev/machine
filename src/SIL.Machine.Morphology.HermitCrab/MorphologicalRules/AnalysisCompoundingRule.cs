@@ -71,6 +71,28 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         {
                             continue;
                         }
+                        // make sure any productivity restrictions on the stem are in the set the member has
+                        if (
+                            !_rule.CompoundMprFeaturesMatch(
+                                _rule.NonHeadProdRestrictionsMprFeatureSet,
+                                ((LexEntry)allo.Morpheme).MprFeatures
+                            )
+                        )
+                        {
+                            if (_morpher.TraceManager.IsTracing)
+                            {
+                                var tempInput = new Word(allo, null);
+                                tempInput.CurrentTrace = input.CurrentTrace;
+                                _morpher.TraceManager.MorphologicalRuleNotApplied(
+                                    _rule,
+                                    -1,
+                                    tempInput,
+                                    FailureReason.NonHeadProdRestrictMprFeatures,
+                                    _rule.NonHeadProdRestrictionsMprFeatureSet
+                                );
+                            }
+                            continue;
+                        }
 
                         // check to see if this is a duplicate of another output analysis, this is not strictly necessary, but
                         // it helps to reduce the search space
