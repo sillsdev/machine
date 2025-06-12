@@ -20,6 +20,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             Blockable = true;
             HeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
             NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
+            HeadProdRestrictionsMprFeatureSet = new MprFeatureSet();
+            NonHeadProdRestrictionsMprFeatureSet = new MprFeatureSet();
             OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
             _subrules = new List<CompoundingSubrule>();
@@ -40,6 +42,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public FeatureStruct NonHeadRequiredSyntacticFeatureStruct { get; set; }
 
+        public MprFeatureSet HeadProdRestrictionsMprFeatureSet { get; set; }
+
+        public MprFeatureSet NonHeadProdRestrictionsMprFeatureSet { get; set; }
+
         public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 
         public ICollection<Feature> ObligatorySyntacticFeatures
@@ -57,6 +63,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
         {
             return new SynthesisCompoundingRule(morpher, this);
+        }
+
+        public bool CompoundMprFeaturesMatch(MprFeatureSet ruleMprFeatures, MprFeatureSet stemMprFeatures)
+        {
+            if (ruleMprFeatures.Count > 0)
+            {
+                var prodRestricts = ruleMprFeatures.Clone();
+                prodRestricts.IntersectWith(stemMprFeatures);
+                if (prodRestricts.Count == 0)
+                    return false;
+            }
+            return true;
         }
     }
 }

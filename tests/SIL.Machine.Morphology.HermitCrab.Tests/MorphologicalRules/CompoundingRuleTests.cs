@@ -169,6 +169,44 @@ public class CompoundingRuleTests : HermitCrabTestBase
         AssertRootAllomorphsEquals(output, "Perc0", "Perc3");
     }
 
+    [Test]
+    public void ProdRestrictRule()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var rule1 = new CompoundingRule { Name = "rule1" };
+        Allophonic.MorphologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new CompoundingSubrule
+            {
+                HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+                NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        List<Word> output = morpher.ParseWord("pʰutdat").ToList();
+        AssertMorphsEqual(output, "5 8", "5 9");
+        AssertRootAllomorphsEquals(output, "5");
+
+        // Create an exception "feature"
+        var excFeat = new MprFeature();
+        excFeat.Name = "Allows compounding";
+        Language.MprFeatures.Add(excFeat);
+        // Add the exception "feature" to the head of the rule
+        rule1.HeadProdRestrictionsMprFeatureSet.Add(excFeat);
+        // The word should no longer parse
+        Assert.That(morpher.ParseWord("pʰutdat"), Is.Empty);
+
+        // Add the exception "feature" to the head root
+        var head = Allophonic.Entries.ElementAt(2);
+        head.MprFeatures.Add(excFeat);
+        // It should now parse
+        output = morpher.ParseWord("pʰutdat").ToList();
+        AssertMorphsEqual(output, "5 8", "5 9");
+        AssertRootAllomorphsEquals(output, "5");
+    }
+
     private static void AssertRootAllomorphsEquals(IEnumerable<Word> words, params string[] expected)
     {
         Assert.That(words.Select(w => w.RootAllomorph.Morpheme.Gloss).Distinct(), Is.EquivalentTo(expected));
