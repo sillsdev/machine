@@ -125,6 +125,60 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void AnalyzeWord_CannotAnalyzeDueToCooccurenceFailure_ReturnsEmptyEnumerable()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // Create co-occurence rule blocking sag +d
+        // get sag root
+        var sag = Language.Strata[0].Entries.ElementAt(6);
+        // create +ed suffix
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        // create co-occurence rule which blocks the analysis
+        var other1 = new List<Morpheme> { edSuffix };
+        var rule1 = new MorphemeCoOccurrenceRule(ConstraintType.Exclude, other1, MorphCoOccurrenceAdjacency.Anywhere);
+        sag.MorphemeCoOccurrenceRules.Add(rule1);
+        var morpher = new Morpher(TraceManager, Language);
+
+        Assert.That(morpher.AnalyzeWord("sagd"), Is.Empty);
+
+        // In FLEx, clitics occur as both a stem and an affix.
+        // LT-22156 notes that they can be ignored when they occur in a co-occurrence rule
+        // FLEx produces two rules for the key morpheme, one with the "other" using an affix and one using a stem
+        // Now create co-occurence rule blocking sag =d
+        var syntacticFeatSys = new SyntacticFeatureSystem();
+        syntacticFeatSys.AddPartsOfSpeech(
+            new FeatureSymbol("N", "Noun"),
+            new FeatureSymbol("V", "Verb"),
+            new FeatureSymbol("TV", "Transitive Verb"),
+            new FeatureSymbol("IV", "Intransitive Verb"),
+            new FeatureSymbol("A", "Adjective")
+        );
+        AddEntry("dEnclitic", FeatureStruct.New(syntacticFeatSys).Symbol("V").Value, Morphophonemic, "d");
+        var edEnclitic = Language.Strata[0].Entries.ElementAt(42);
+        var other2 = new List<Morpheme> { edEnclitic };
+        var rule2 = new MorphemeCoOccurrenceRule(ConstraintType.Exclude, other2, MorphCoOccurrenceAdjacency.Anywhere);
+        sag.MorphemeCoOccurrenceRules.Add(rule2);
+
+        Assert.That(morpher.AnalyzeWord("sagd"), Is.Empty);
+    }
+
+    [Test]
     public void AnalyzeWord_CanGuess_ReturnsCorrectAnalysis()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
