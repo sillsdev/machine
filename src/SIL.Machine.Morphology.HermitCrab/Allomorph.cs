@@ -175,22 +175,26 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return false;
             }
 
-            if (
-                Morpheme.MorphemeCoOccurrenceRules.Count > 0
-                && !Morpheme.MorphemeCoOccurrenceRules.Any(r => r.IsWordValid(Morpheme, word))
-            )
+            if (Morpheme.MorphemeCoOccurrenceRules.Count > 0)
             {
-                if (morpher != null && morpher.TraceManager.IsTracing)
+                foreach (MorphemeCoOccurrenceRule rule in Morpheme.MorphemeCoOccurrenceRules)
                 {
-                    morpher.TraceManager.Failed(
-                        morpher.Language,
-                        word,
-                        FailureReason.MorphemeCoOccurrenceRules,
-                        this,
-                        Morpheme.MorphemeCoOccurrenceRules
-                    );
+                    // We need to check each one in turn and report any failure
+                    if (!rule.IsWordValid(Morpheme, word))
+                    {
+                        if (morpher != null && morpher.TraceManager.IsTracing)
+                        {
+                            morpher.TraceManager.Failed(
+                            morpher.Language,
+                            word,
+                            FailureReason.MorphemeCoOccurrenceRules,
+                            this,
+                            rule
+                            );
+                        }
+                        return false;
+                    }
                 }
-                return false;
             }
 
             return true;
