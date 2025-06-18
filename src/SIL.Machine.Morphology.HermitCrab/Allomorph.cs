@@ -188,11 +188,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (morpher != null && morpher.TraceManager.IsTracing)
                         {
                             morpher.TraceManager.Failed(
-                            morpher.Language,
-                            word,
-                            FailureReason.MorphemeCoOccurrenceRules,
-                            this,
-                            rule
+                                morpher.Language,
+                                word,
+                                FailureReason.MorphemeCoOccurrenceRules,
+                                this,
+                                rule
                             );
                         }
                         return false;

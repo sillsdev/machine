@@ -565,12 +565,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return false;
             }
 
-            Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(f =>
-                !ContainsFeature(
-                    word.SyntacticFeatureStruct,
-                    f,
-                    new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())
-                )
+            Feature feature = word.ObligatorySyntacticFeatures.FirstOrDefault(
+                f =>
+                    !ContainsFeature(
+                        word.SyntacticFeatureStruct,
+                        f,
+                        new HashSet<FeatureStruct>(new ReferenceEqualityComparer<FeatureStruct>())
+                    )
             );
             if (feature != null)
             {
