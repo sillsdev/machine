@@ -15,6 +15,8 @@
         RequiredSyntacticFeatureStruct,
         HeadRequiredSyntacticFeatureStruct,
         NonHeadRequiredSyntacticFeatureStruct,
+        HeadProdRestrictMprFeatures,
+        NonHeadProdRestrictMprFeatures,
         RequiredMprFeatures,
         ExcludedMprFeatures,
         RequiredStemName,
