@@ -157,40 +157,47 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         protected virtual bool CheckAllomorphConstraints(Morpher morpher, Allomorph allomorph, Word word)
         {
-            if (
-                AllomorphCoOccurrenceRules.Count > 0
-                && !AllomorphCoOccurrenceRules.Any(r => r.IsWordValid(allomorph, word))
-            )
+            if (AllomorphCoOccurrenceRules.Count > 0)
             {
-                if (morpher != null && morpher.TraceManager.IsTracing)
+                foreach (AllomorphCoOccurrenceRule rule in AllomorphCoOccurrenceRules)
                 {
-                    morpher.TraceManager.Failed(
-                        morpher.Language,
-                        word,
-                        FailureReason.AllomorphCoOccurrenceRules,
-                        this,
-                        AllomorphCoOccurrenceRules
-                    );
+                    if (!rule.IsWordValid(allomorph, word))
+                    {
+                        if (morpher != null && morpher.TraceManager.IsTracing)
+                        {
+                            morpher.TraceManager.Failed(
+                                morpher.Language,
+                                word,
+                                FailureReason.AllomorphCoOccurrenceRules,
+                                this,
+                                rule
+                            );
+                        }
+                        return false;
+                    }
                 }
-                return false;
             }
 
-            if (
-                Morpheme.MorphemeCoOccurrenceRules.Count > 0
-                && !Morpheme.MorphemeCoOccurrenceRules.Any(r => r.IsWordValid(Morpheme, word))
-            )
+            if (Morpheme.MorphemeCoOccurrenceRules.Count > 0)
             {
-                if (morpher != null && morpher.TraceManager.IsTracing)
+                foreach (MorphemeCoOccurrenceRule rule in Morpheme.MorphemeCoOccurrenceRules)
                 {
-                    morpher.TraceManager.Failed(
-                        morpher.Language,
-                        word,
-                        FailureReason.MorphemeCoOccurrenceRules,
-                        this,
-                        Morpheme.MorphemeCoOccurrenceRules
-                    );
+                    // We need to check each one in turn and report any failure
+                    if (!rule.IsWordValid(Morpheme, word))
+                    {
+                        if (morpher != null && morpher.TraceManager.IsTracing)
+                        {
+                            morpher.TraceManager.Failed(
+                                morpher.Language,
+                                word,
+                                FailureReason.MorphemeCoOccurrenceRules,
+                                this,
+                                rule
+                            );
+                        }
+                        return false;
+                    }
                 }
-                return false;
             }
 
             return true;
