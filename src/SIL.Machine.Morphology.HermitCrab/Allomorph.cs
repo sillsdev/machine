@@ -159,7 +159,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (AllomorphCoOccurrenceRules.Count > 0)
             {
-                foreach (var rule in AllomorphCoOccurrenceRules)
+                foreach (AllomorphCoOccurrenceRule rule in AllomorphCoOccurrenceRules)
                 {
                     if (!rule.IsWordValid(allomorph, word))
                     {
