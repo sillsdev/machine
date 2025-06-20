@@ -194,7 +194,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
         excFeat.Name = "Allows compounding";
         Language.MprFeatures.Add(excFeat);
         // Add the exception "feature" to the head of the rule
-        rule1.HeadProdRestrictionsMprFeatureSet.Add(excFeat);
+        rule1.HeadProdRestrictionsMprFeatures.Add(excFeat);
         // The word should no longer parse
         Assert.That(morpher.ParseWord("pʰutdat"), Is.Empty);
 
@@ -204,6 +204,23 @@ public class CompoundingRuleTests : HermitCrabTestBase
         // It should now parse
         output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 8", "5 9");
+        AssertRootAllomorphsEquals(output, "5");
+
+        // Remove the exception "feature" from the head of the rule
+        // and add it to the nonhead
+        rule1.HeadProdRestrictionsMprFeatures.Remove(excFeat);
+        rule1.NonHeadProdRestrictionsMprFeatures.Add(excFeat);
+        // The word should no longer parse
+        Assert.That(morpher.ParseWord("pʰutdat"), Is.Empty);
+
+        // Removee the exception "feature" from the head root
+        head.MprFeatures.Remove(excFeat);
+        // Add the exception "feature" to the nonhead root
+        var nonhead = Allophonic.Entries.ElementAt(5);
+        nonhead.MprFeatures.Add(excFeat);
+        // It should now parse
+        output = morpher.ParseWord("pʰutdat").ToList();
+        AssertMorphsEqual(output, "5 8");
         AssertRootAllomorphsEquals(output, "5");
     }
 

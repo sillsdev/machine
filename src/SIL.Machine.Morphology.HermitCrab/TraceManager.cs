@@ -84,6 +84,42 @@
             );
         }
 
+        public void CompoundingRuleNotUnapplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        )
+        {
+            ((Trace)input.CurrentTrace).Children.Add(
+                new Trace(TraceType.CompoundingRuleAnalysis, rule)
+                {
+                    SubruleIndex = subruleIndex,
+                    Input = input,
+                    FailureReason = reason
+                }
+            );
+        }
+
+        public void CompoundingRuleNotApplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        )
+        {
+            ((Trace)input.CurrentTrace).Children.Add(
+                new Trace(TraceType.CompoundingRuleSynthesis, rule)
+                {
+                    SubruleIndex = subruleIndex,
+                    Input = input,
+                    FailureReason = reason
+                }
+            );
+        }
+
         public void LexicalLookup(Stratum stratum, Word input)
         {
             ((Trace)input.CurrentTrace).Children.Add(
