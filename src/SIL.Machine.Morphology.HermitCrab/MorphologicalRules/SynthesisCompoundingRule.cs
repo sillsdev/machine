@@ -113,16 +113,16 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
-            if (!_rule.CompoundMprFeaturesMatch(_rule.HeadProdRestrictionsMprFeatureSet, input.MprFeatures))
+            if (!_rule.HeadProdRestrictionsMprFeatures.CompoundMprFeaturesMatch(input.MprFeatures))
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
-                    _morpher.TraceManager.MorphologicalRuleNotApplied(
+                    _morpher.TraceManager.CompoundingRuleNotApplied(
                         _rule,
                         -1,
                         input,
                         FailureReason.HeadProdRestrictMprFeatures,
-                        _rule.HeadProdRestrictionsMprFeatureSet
+                        _rule.HeadProdRestrictionsMprFeatures
                     );
                 }
                 return Enumerable.Empty<Word>();

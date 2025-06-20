@@ -73,22 +73,22 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         }
                         // make sure any productivity restrictions on the stem are in the set the member has
                         if (
-                            !_rule.CompoundMprFeaturesMatch(
-                                _rule.NonHeadProdRestrictionsMprFeatureSet,
+                            !_rule.NonHeadProdRestrictionsMprFeatures.CompoundMprFeaturesMatch(
                                 ((LexEntry)allo.Morpheme).MprFeatures
                             )
                         )
                         {
                             if (_morpher.TraceManager.IsTracing)
                             {
-                                var tempInput = new Word(allo, null);
+                                Word tempInput = outWord.Clone();
+                                tempInput.CurrentNonHead.RootAllomorph = allo;
                                 tempInput.CurrentTrace = input.CurrentTrace;
-                                _morpher.TraceManager.MorphologicalRuleNotApplied(
+                                _morpher.TraceManager.CompoundingRuleNotUnapplied(
                                     _rule,
                                     -1,
                                     tempInput,
                                     FailureReason.NonHeadProdRestrictMprFeatures,
-                                    _rule.NonHeadProdRestrictionsMprFeatureSet
+                                    ((LexEntry)allo.Morpheme).MprFeatures
                                 );
                             }
                             continue;
