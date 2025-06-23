@@ -18,6 +18,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             IDictionary<string, int> capturedParts
         )
         {
+            if (!partLookup.ContainsKey(PartName))
+                // The key can be missing when using XAmple-style partial reduplication patterns
+                // and the environment does not have a matching indexed natural class.
+                // For example, [C^1][V^1][C^2][C^3] /[C^1][V^1][C^2]h_
+                // where there is no [C^3] in the environment.
+                // We skip it here.  N.B. XAmple does not give any warning message about it, either.
+                // This fixes LT-18767.
+                return;
             Pattern<Word, ShapeNode> pattern = partLookup[PartName];
             int count = capturedParts.GetOrCreate(PartName, () => 0);
             string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
