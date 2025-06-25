@@ -95,6 +95,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         MorphologicalRuleSynthesis,
 
         /// <summary>
+        /// Compounding rule analysis trace
+        /// </summary>
+        CompoundingRuleAnalysis,
+
+        /// <summary>
+        /// Compounding rule synthesis trace
+        /// </summary>
+        CompoundingRuleSynthesis,
+
+        /// <summary>
         /// Parse successful trace
         /// </summary>
         Successful,
