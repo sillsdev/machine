@@ -836,6 +836,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (nonHeadRequiredFootFS != null)
                 ruleElem.Add(new XElement("NonHeadRequiredFootFeatures", WriteFeatureStruct(nonHeadRequiredFootFS)));
 
+            MprFeatureSet headProdRestrictionsMprFeatures = crule.HeadProdRestrictionsMprFeatures;
+            if (headProdRestrictionsMprFeatures.Count > 0)
+                ruleElem.Add(
+                    WriteIDs("headProdRestrictionsMprFeatures", crule.HeadProdRestrictionsMprFeatures, _mprFeatures)
+                );
+            MprFeatureSet nonHeadProdRestrictionsMprFeatures = crule.NonHeadProdRestrictionsMprFeatures;
+            if (nonHeadProdRestrictionsMprFeatures.Count > 0)
+                ruleElem.Add(
+                    WriteIDs(
+                        "nonHeadProdRestrictionsMprFeatures",
+                        crule.NonHeadProdRestrictionsMprFeatures,
+                        _mprFeatures
+                    )
+                );
+            MprFeatureSet outputProdRestrictionsMprFeatures = crule.OutputProdRestrictionsMprFeatures;
+            if (outputProdRestrictionsMprFeatures.Count > 0)
+                ruleElem.Add(
+                    WriteIDs("outputProdRestrictionsMprFeatures", crule.OutputProdRestrictionsMprFeatures, _mprFeatures)
+                );
+
             return ruleElem;
         }
 

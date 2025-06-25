@@ -1214,6 +1214,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             fs.Freeze();
             compRule.OutSyntacticFeatureStruct = fs;
 
+            compRule.HeadProdRestrictionsMprFeatures.UnionWith(
+                LoadMprFeatures((string)compRuleElem.Attribute("headProdRestrictionsMprFeatures"))
+            );
+            compRule.NonHeadProdRestrictionsMprFeatures.UnionWith(
+                LoadMprFeatures((string)compRuleElem.Attribute("nonHeadProdRestrictionsMprFeatures"))
+            );
+            compRule.OutputProdRestrictionsMprFeatures.UnionWith(
+                LoadMprFeatures((string)compRuleElem.Attribute("outputProdRestrictionsMprFeatures"))
+            );
+
             var obligHeadIDsStr = (string)compRuleElem.Attribute("outputObligatoryFeatures");
             if (!string.IsNullOrEmpty(obligHeadIDsStr))
             {
