@@ -22,6 +22,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
             HeadProdRestrictionsMprFeatures = new MprFeatureSet();
             NonHeadProdRestrictionsMprFeatures = new MprFeatureSet();
+            OutputProdRestrictionsMprFeatures = new MprFeatureSet();
             OutSyntacticFeatureStruct = FeatureStruct.New().Value;
 
             _subrules = new List<CompoundingSubrule>();
@@ -45,6 +46,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         public MprFeatureSet HeadProdRestrictionsMprFeatures { get; set; }
 
         public MprFeatureSet NonHeadProdRestrictionsMprFeatures { get; set; }
+
+        public MprFeatureSet OutputProdRestrictionsMprFeatures { get; set; }
 
         public FeatureStruct OutSyntacticFeatureStruct { get; set; }
 

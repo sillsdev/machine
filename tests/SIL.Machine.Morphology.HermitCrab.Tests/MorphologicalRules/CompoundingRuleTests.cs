@@ -213,7 +213,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
         // The word should no longer parse
         Assert.That(morpher.ParseWord("pʰutdat"), Is.Empty);
 
-        // Removee the exception "feature" from the head root
+        // Remove the exception "feature" from the head root
         head.MprFeatures.Remove(excFeat);
         // Add the exception "feature" to the nonhead root
         var nonhead = Allophonic.Entries.ElementAt(5);
@@ -222,6 +222,17 @@ public class CompoundingRuleTests : HermitCrabTestBase
         output = morpher.ParseWord("pʰutdat").ToList();
         AssertMorphsEqual(output, "5 8");
         AssertRootAllomorphsEquals(output, "5");
+
+        // Test output exception "feature"
+        // The output should not have it yet
+        Assert.That(rule1.OutputProdRestrictionsMprFeatures.Count == 0);
+        // Add the exception "feature" to the output set
+        rule1.OutputProdRestrictionsMprFeatures.Add(excFeat);
+        // It should still parse and the output MprFeatures should have the exception "feature"
+        output = morpher.ParseWord("pʰutdat").ToList();
+        AssertMorphsEqual(output, "5 8");
+        AssertRootAllomorphsEquals(output, "5");
+        Assert.That(rule1.OutputProdRestrictionsMprFeatures.Contains(excFeat));
     }
 
     private static void AssertRootAllomorphsEquals(IEnumerable<Word> words, params string[] expected)
