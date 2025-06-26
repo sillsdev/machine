@@ -87,11 +87,9 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         string result =
             @"\id MAT
 \c 1
-\v 1 Esta es la \w primera \w*oración. Este texto está en \w inglés \w*y esta prueba es \w para \w*marcadores de estilo.
+\v 1 Esta es la \w primera\w* oración. Este texto está en \w inglés\w* y esta prueba es \w para\w* marcadores de estilo.
 ";
 
-        // NOTE: the spacing before/after end markers is incorrect,
-        // but this is an issue with how the is USFM is generated from the tokens
         AssertUsfmEquals(target, result);
 
         target = UpdateUsfm(
@@ -307,7 +305,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             @"\id MAT
 \c 1
 \v 1 Old verse 1
-\p \qt \+w word \+w* \qt*
+\p \qt \+w word\+w*\qt*
 ";
         IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
         [
@@ -331,7 +329,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             @"\id MAT
 \c 1
 \v 1 New verse 1
-\p \qt \+w WORD \+w*\qt*
+\p \qt \+w WORD\+w*\qt*
 ";
 
         AssertUsfmEquals(target, result);
