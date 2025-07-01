@@ -178,7 +178,7 @@ namespace SIL.Machine.Corpora
                 if (
                     adjacentSourceToken > 0
                     && element.Type == UsfmUpdateBlockElementType.Style
-                    && element.Tokens[0].Marker.Last() == '*'
+                    && element.Tokens[0].Marker[element.Tokens[0].Marker.Length - 1] == '*'
                 )
                 {
                     targetStringIndex =
