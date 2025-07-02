@@ -94,32 +94,15 @@ namespace SIL.Machine.Corpora
             private readonly List<TextRow> _rows;
             private readonly Stack<StringBuilder> _rowTexts;
             private bool _sentenceStart;
-            private readonly List<UsfmToken> _nextParaTokens;
-            private bool _nextParaTextStarted = false;
 
             public TextRowCollector(UsfmTextBase text)
             {
                 _text = text;
                 _rows = new List<TextRow>();
                 _rowTexts = new Stack<StringBuilder>();
-                _nextParaTokens = new List<UsfmToken>();
             }
 
             public IEnumerable<TextRow> Rows => _rows;
-
-            public override void Verse(
-                UsfmParserState state,
-                string number,
-                string marker,
-                string altNumber,
-                string pubNumber
-            )
-            {
-                base.Verse(state, number, marker, altNumber, pubNumber);
-
-                _nextParaTextStarted = true;
-                _nextParaTokens.Clear();
-            }
 
             public override void StartPara(
                 UsfmParserState state,
@@ -244,16 +227,6 @@ namespace SIL.Machine.Corpora
                     text = text.TrimEnd('\r', '\n');
                     if (text.Length > 0)
                     {
-                        if (!text.IsWhiteSpace())
-                        {
-                            if (CurrentTextType == ScriptureTextType.Verse)
-                            {
-                                foreach (UsfmToken token in _nextParaTokens)
-                                    rowText.Append(token.ToString() + " ");
-                                _nextParaTokens.Clear();
-                            }
-                            _nextParaTextStarted = true;
-                        }
                         if (rowText.Length == 0 || char.IsWhiteSpace(rowText[rowText.Length - 1]))
                             text = text.TrimStart();
                         rowText.Append(text);
@@ -283,13 +256,6 @@ namespace SIL.Machine.Corpora
             protected override void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
             {
                 string text = _rowTexts.Pop().ToString();
-                if (_text._includeMarkers)
-                {
-                    foreach (UsfmToken token in _nextParaTokens)
-                    {
-                        text += token.ToString() + " ";
-                    }
-                }
                 _rows.AddRange(_text.CreateRows(scriptureRefs, text, _sentenceStart));
                 _sentenceStart = state.Token.Marker == "c" || text.HasSentenceEnding();
             }
@@ -310,11 +276,7 @@ namespace SIL.Machine.Corpora
             {
                 if (!_text._includeMarkers || _rowTexts.Count == 0)
                     return;
-
-                if (_nextParaTextStarted)
-                    _rowTexts.Peek().Append(state.Token);
-                else
-                    _nextParaTokens.Add(state.Token);
+                _rowTexts.Peek().Append(state.Token.ToString());
             }
 
             private void HandlePara(UsfmParserState state)
@@ -327,10 +289,9 @@ namespace SIL.Machine.Corpora
                     if (rowText.Length > 0 && !char.IsWhiteSpace(rowText[rowText.Length - 1]))
                         rowText.Append(" ");
                 }
-                if (CurrentTextType == ScriptureTextType.Verse)
+                if (CurrentTextType == ScriptureTextType.Verse && _text._includeMarkers)
                 {
-                    _nextParaTokens.Add(state.Token);
-                    _nextParaTextStarted = false;
+                    _rowTexts.Peek().Append(state.Token.ToString() + " ");
                 }
                 if (!state.IsVersePara)
                     _sentenceStart = true;

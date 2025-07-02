@@ -50,6 +50,7 @@ namespace SIL.Machine.Corpora
                 || !elements.Any(e =>
                     e.Type.IsOneOf(UsfmUpdateBlockElementType.Paragraph, UsfmUpdateBlockElementType.Style)
                     && !e.MarkedForRemoval
+                    && e.Tokens.Count == 1
                 )
             )
             {
@@ -173,10 +174,24 @@ namespace SIL.Machine.Corpora
                     sourceTokens,
                     targetTokens
                 );
-                int targetStringIndex =
-                    adjacentTargetToken < targetTokenStarts.Count
-                        ? targetTokenStarts[adjacentTargetToken]
-                        : targetSentence.Length;
+                int targetStringIndex;
+                if (
+                    adjacentSourceToken > 0
+                    && element.Type == UsfmUpdateBlockElementType.Style
+                    && element.Tokens[0].Marker[element.Tokens[0].Marker.Length - 1] == '*'
+                )
+                {
+                    targetStringIndex =
+                        targetTokenStarts[adjacentTargetToken - 1] + targetTokens[adjacentTargetToken - 1].Length;
+                }
+                else if (adjacentTargetToken < targetTokenStarts.Count)
+                {
+                    targetStringIndex = targetTokenStarts[adjacentTargetToken];
+                }
+                else
+                {
+                    targetStringIndex = targetSentence.Length;
+                }
                 toInsert.Add((targetStringIndex, element));
             }
             toInsert.Sort((p1, p2) => p1.Index.CompareTo(p2.Index));
