@@ -371,8 +371,11 @@
   nonheadPartsOfSpeech refers to one or more PartOfSpeech IDs
   headSubcategorizedRules refers to one or more SyntacticRule IDs
   nonheadSubcategorizedRules refers to one or more SyntacticRule IDs
+  headProdRestrictionsMprFeatures refers to zero or more exception "features" IDs
+  nonHeadProdRestrictionsMprFeatures refers to zero or more exception "features" IDs
   outputPartOfSpeech refers to a PartOfSpeech ID
   outputSubcategorization refers to one or more SyntacticRule IDs
+  outputProdRestrictionsMprFeatures refers to zero or more exception "features" IDs
   outputObligatoryFeatures refers to one or more (HeadFeature) FeatureDefinition IDs
   (Note: what was Output Subcategorization (sub) in the text form of Hermit Crab has been split into
     the outputSubcategorization attribute plus the OutputSubcategorizationOverrides element (and its content).)
@@ -388,8 +391,11 @@
   nonHeadPartsOfSpeech IDREFS #IMPLIED
   headSubcategorizedRules IDREFS #IMPLIED
   nonHeadSubcategorizedRules IDREFS #IMPLIED
+  headProdRestrictionsMprFeatures IDREFS #IMPLIED
+  nonHeadProdRestrictionsMprFeatures IDREFS #IMPLIED
   outputPartOfSpeech IDREF #IMPLIED
   outputSubcategorization IDREFS #IMPLIED
+  outputProdRestrictionsMprFeatures IDREFS #IMPLIED
   outputObligatoryFeatures IDREFS #IMPLIED
 >
 
