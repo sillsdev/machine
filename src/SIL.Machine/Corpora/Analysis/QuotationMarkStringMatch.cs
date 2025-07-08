@@ -30,13 +30,13 @@ namespace SIL.Machine.Corpora.Analysis
         public bool IsValidClosingQuotationMark(QuoteConventionSet quoteConventionSet) =>
             quoteConventionSet.IsValidClosingQuotationMark(QuotationMark);
 
-        public bool QuotationMarkMatches(Regex regexPattern) => regexPattern.Matches(QuotationMark).Count > 0;
+        public bool QuotationMarkMatches(Regex regexPattern) => regexPattern.IsMatch(QuotationMark);
 
         public bool NextCharacterMatches(Regex regexPattern) =>
-            NextCharacter != null && regexPattern.Matches(NextCharacter).Count > 0;
+            NextCharacter != null && regexPattern.IsMatch(NextCharacter);
 
         public bool PreviousCharacterMatches(Regex regexPattern) =>
-            PreviousCharacter != null && regexPattern.Matches(PreviousCharacter).Count > 0;
+            PreviousCharacter != null && regexPattern.IsMatch(PreviousCharacter);
 
         public string PreviousCharacter
         {
@@ -73,10 +73,10 @@ namespace SIL.Machine.Corpora.Analysis
         }
 
         public bool LeadingSubstringMatches(Regex regexPattern) =>
-            regexPattern.Matches(TextSegment.SubstringBefore(StartIndex)).Count > 0;
+            regexPattern.IsMatch(TextSegment.SubstringBefore(StartIndex));
 
         public bool TrailingSubstringMatches(Regex regexPattern) =>
-            regexPattern.Matches(TextSegment.SubstringAfter(EndIndex)).Count > 0;
+            regexPattern.IsMatch(TextSegment.SubstringAfter(EndIndex));
 
         // this assumes that the two matches occur in the same verse
         public bool Precedes(QuotationMarkStringMatch other)

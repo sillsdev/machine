@@ -155,6 +155,14 @@ namespace SIL.Machine.Corpora.Analysis
                 && set.Contains(closingMark);
         }
 
+        public bool IsQuotationMarkDirectionAmbiguous(string quotationMark)
+        {
+            return (
+                ClosingMarksByOpeningMark.TryGetValue(quotationMark, out HashSet<string> closingMarks)
+                && closingMarks.Contains(quotationMark)
+            );
+        }
+
         public HashSet<string> GetPossiblePairedQuotationMarks(string quotationMark)
         {
             var pairedQuotationMarks = new HashSet<string>();
