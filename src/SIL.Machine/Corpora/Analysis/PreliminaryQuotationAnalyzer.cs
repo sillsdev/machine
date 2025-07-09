@@ -208,7 +208,7 @@ namespace SIL.Machine.Corpora.Analysis
     public class QuotationMarkGrouper
     {
         private readonly QuoteConventionSet _quoteConventionSet;
-        private Dictionary<string, List<QuotationMarkStringMatch>> _groupedQuotationMarks; //TODO Different data structure?
+        private Dictionary<string, List<QuotationMarkStringMatch>> _groupedQuotationMarks;
 
         public QuotationMarkGrouper(
             List<QuotationMarkStringMatch> quotationMarks,
@@ -387,7 +387,7 @@ namespace SIL.Machine.Corpora.Analysis
 
         public PreliminaryQuotationAnalyzer(QuoteConventionSet quoteConventions)
         {
-            _quoteConventions = quoteConventions; //TODO Naming inconsistency
+            _quoteConventions = quoteConventions;
             _apostropheAnalyzer = new PreliminaryApostropheAnalyzer();
             _quotationMarkSequences = new QuotationMarkSequences();
             Reset();
