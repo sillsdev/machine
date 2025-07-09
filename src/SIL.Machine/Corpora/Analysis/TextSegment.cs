@@ -92,7 +92,7 @@ namespace SIL.Machine.Corpora.Analysis
             }
         }
 
-        public void SetPreviousSegment(TextSegment previousSegment) //TODO why still here?
+        public void SetPreviousSegment(TextSegment previousSegment)
         {
             _previousSegment = previousSegment;
         }

@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora.Analysis
             return quotationMatches;
         }
 
-        public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInVerse(Verse verse) //TODO excessive?
+        public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInVerse(Verse verse)
         {
             return FindAllPotentialQuotationMarksInTextSegments(verse.TextSegments);
         }
