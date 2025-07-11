@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora.Analysis
         Regex GetClosingQuotationMarkRegex();
         bool AreMarksAValidPair(string openingMark, string closingMark);
         bool ShouldRelyOnParagraphMarkers();
-        HashSet<int> GetPOssibleDepths(string quotationMark, QuotationMarkDirection direction);
+        HashSet<int> GetPossibleDepths(string quotationMark, QuotationMarkDirection direction);
         bool MetadataMatchesQuotationMark(string quotationMark, int depth, QuotationMarkDirection direction);
     }
 }

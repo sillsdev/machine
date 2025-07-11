@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora.Analysis
         public QuotationMarkDirection Direction { get; }
         public TextSegment TextSegment { get; }
         public int StartIndex { get; }
-        private int EndIndex { get; }
+        public int EndIndex { get; }
 
         public QuotationMarkMetadata(
             string quotationMark,
