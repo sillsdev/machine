@@ -9,10 +9,10 @@ namespace SIL.Machine.Corpora
             QuoteConvention targetQuoteConvention,
             QuotationMarkUpdateSettings settings = null
         )
-        {
-            if (settings == null)
-                settings = new QuotationMarkUpdateSettings(); //TODO pass conventions?
-            base(sourceQuoteConvention.Normalize(), targetQuoteConvention, settings);
-        }
+            : base(
+                sourceQuoteConvention.Normalize(),
+                targetQuoteConvention,
+                settings == null ? new QuotationMarkUpdateSettings() : null //TODO pass conventions?
+            ) { }
     }
 }
