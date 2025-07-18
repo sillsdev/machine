@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>A library that provides an item-and-process, rule-based, morphological/phonological parser.</Description>
-    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <Import Project="../AssemblyInfo.props" />
