@@ -216,7 +216,7 @@
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" phonologicalRules="prule1 prule2" morphologicalRules="mrule1">
         <Name>stratum 1</Name>
         <MorphologicalRuleDefinitions>
-          <CompoundingRule id="mrule1" blockable="false" multipleApplication="3" headPartsOfSpeech="pos1" nonHeadPartsOfSpeech="pos2" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat2">
+          <CompoundingRule id="mrule1" blockable="false" multipleApplication="3" headPartsOfSpeech="pos1" nonHeadPartsOfSpeech="pos2" outputPartOfSpeech="pos2" outputObligatoryFeatures="hfeat2" headProdRestrictionsMprFeatures="mpr1" nonHeadProdRestrictionsMprFeatures="mpr2" outputProdRestrictionsMprFeatures="mpr3">
             <Name>compounding rule 1</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>

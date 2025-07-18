@@ -15,6 +15,8 @@
         RequiredSyntacticFeatureStruct,
         HeadRequiredSyntacticFeatureStruct,
         NonHeadRequiredSyntacticFeatureStruct,
+        HeadProdRestrictMprFeatures,
+        NonHeadProdRestrictMprFeatures,
         RequiredMprFeatures,
         ExcludedMprFeatures,
         RequiredStemName,
@@ -45,6 +47,22 @@
 
         void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
         void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input);
+
+        void CompoundingRuleNotUnapplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        );
+
+        void CompoundingRuleNotApplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        );
 
         void LexicalLookup(Stratum stratum, Word input);
 

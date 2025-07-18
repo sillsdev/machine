@@ -113,6 +113,21 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
+            if (!_rule.HeadProdRestrictionsMprFeatures.CompoundMprFeaturesMatch(input.MprFeatures))
+            {
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    _morpher.TraceManager.CompoundingRuleNotApplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.HeadProdRestrictMprFeatures,
+                        _rule.HeadProdRestrictionsMprFeatures
+                    );
+                }
+                return Enumerable.Empty<Word>();
+            }
+
             var output = new List<Word>();
             for (int i = 0; i < _rule.Subrules.Count; i++)
             {
@@ -161,6 +176,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
 
                         outWord.MprFeatures.AddOutput(_rule.Subrules[i].OutMprFeatures);
+                        outWord.MprFeatures.AddOutput(_rule.OutputProdRestrictionsMprFeatures);
 
                         outWord.SyntacticFeatureStruct = syntacticFS;
                         outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);

@@ -95,6 +95,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             return true;
         }
 
+        public bool CompoundMprFeaturesMatch(MprFeatureSet stemMprFeatures)
+        {
+            return Count == 0 || this.Intersect(stemMprFeatures).Any();
+        }
+
         public MprFeatureSet Clone()
         {
             return new MprFeatureSet(this);
