@@ -1,4 +1,4 @@
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public enum QuotationMarkDirection
     {

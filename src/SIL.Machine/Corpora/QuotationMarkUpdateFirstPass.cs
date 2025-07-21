@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Corpora.Analysis;
+using SIL.Machine.Corpora.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {
@@ -35,9 +35,9 @@ namespace SIL.Machine.Corpora
         )
         {
             var targetMarksBySourceMarks = new Dictionary<string, HashSet<string>>();
-            foreach (int level in Enumerable.Range(1, sourceQuoteConvention.NumLevels)) //TODO level vs depth
+            foreach (int level in Enumerable.Range(1, sourceQuoteConvention.NumLevels))
             {
-                string openingQuotationMark = sourceQuoteConvention.GetOpeningQuoteAtLevel(level);
+                string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtLevel(level);
                 if (!targetMarksBySourceMarks.TryGetValue(openingQuotationMark, out HashSet<string> marks))
                 {
                     marks = new HashSet<string>();
@@ -45,7 +45,7 @@ namespace SIL.Machine.Corpora
                 }
                 if (level <= targetQuoteConvention.NumLevels)
                 {
-                    marks.Add(targetQuoteConvention.GetClosingQuoteAtLevel(level));
+                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtLevel(level));
                 }
             }
 
@@ -77,7 +77,7 @@ namespace SIL.Machine.Corpora
 
         private QuotationMarkUpdateStrategy ChooseBestStrategyBasedOnObservedIssues(
             HashSet<QuotationMarkResolutionIssue> issues
-        ) //TODO type hinting
+        )
         {
             if (issues.Contains(QuotationMarkResolutionIssue.AmbiguousQuotationMark))
                 return QuotationMarkUpdateStrategy.Skip;

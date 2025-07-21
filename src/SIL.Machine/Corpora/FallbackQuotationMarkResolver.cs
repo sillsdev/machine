@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.Corpora.Analysis;
+using SIL.Machine.Corpora.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {
@@ -23,9 +23,11 @@ namespace SIL.Machine.Corpora
             _issues.Clear();
         }
 
-        public IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(List<QuotationMarkStringMatch> quoteMatches)
+        public IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
+            List<QuotationMarkStringMatch> quotationMarkMatches
+        )
         {
-            foreach (QuotationMarkStringMatch quoteMatch in quoteMatches)
+            foreach (QuotationMarkStringMatch quoteMatch in quotationMarkMatches)
             {
                 foreach (QuotationMarkMetadata quotationMarkMetadata in ResolveQuotationMark(quoteMatch))
                 {
@@ -34,26 +36,26 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        public IEnumerable<QuotationMarkMetadata> ResolveQuotationMark(QuotationMarkStringMatch quoteMatch)
+        public IEnumerable<QuotationMarkMetadata> ResolveQuotationMark(QuotationMarkStringMatch quotationMarkMatch)
         {
-            if (IsOpeningQuote(quoteMatch))
+            if (IsOpeningQuotationMark(quotationMarkMatch))
             {
-                QuotationMarkMetadata quote = ResolveOpeningMark(quoteMatch);
-                if (quote != null)
+                QuotationMarkMetadata quotationMark = ResolveOpeningMark(quotationMarkMatch);
+                if (quotationMark != null)
                 {
-                    yield return quote;
+                    yield return quotationMark;
                 }
                 else
                 {
                     _issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
                 }
             }
-            else if (IsClosingQuote(quoteMatch))
+            else if (IsClosingQuotationMark(quotationMarkMatch))
             {
-                QuotationMarkMetadata quote = ResolveClosingMark(quoteMatch);
-                if (quote != null)
+                QuotationMarkMetadata quotationMark = ResolveClosingMark(quotationMarkMatch);
+                if (quotationMark != null)
                 {
-                    yield return quote;
+                    yield return quotationMark;
                 }
                 else
                 {
@@ -66,7 +68,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private bool IsOpeningQuote(QuotationMarkStringMatch match)
+        private bool IsOpeningQuotationMark(QuotationMarkStringMatch match)
         {
             if (_settings.IsValidOpeningQuotationMark(match) && _settings.IsValidClosingQuotationMark(match))
             {
@@ -95,7 +97,7 @@ namespace SIL.Machine.Corpora
                 && _lastQuotationMark.EndIndex == match.StartIndex;
         }
 
-        private bool IsClosingQuote(QuotationMarkStringMatch match)
+        private bool IsClosingQuotationMark(QuotationMarkStringMatch match)
         {
             if (_settings.IsValidClosingQuotationMark(match) && _settings.IsValidClosingQuotationMark(match))
             {
@@ -110,30 +112,36 @@ namespace SIL.Machine.Corpora
             return false;
         }
 
-        private QuotationMarkMetadata ResolveOpeningMark(QuotationMarkStringMatch quoteMatch)
+        private QuotationMarkMetadata ResolveOpeningMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             HashSet<int> possibleDepths = _settings.GetPossibleDepths(
-                quoteMatch.QuotationMark,
+                quotationMarkMatch.QuotationMark,
                 QuotationMarkDirection.Opening
             );
             if (possibleDepths.Count == 0)
                 return null;
 
-            QuotationMarkMetadata quote = quoteMatch.Resolve(possibleDepths.Min(), QuotationMarkDirection.Opening);
-            _lastQuotationMark = quote;
-            return quote;
+            QuotationMarkMetadata quotationMark = quotationMarkMatch.Resolve(
+                possibleDepths.Min(),
+                QuotationMarkDirection.Opening
+            );
+            _lastQuotationMark = quotationMark;
+            return quotationMark;
         }
 
-        private QuotationMarkMetadata ResolveClosingMark(QuotationMarkStringMatch quoteMatch)
+        private QuotationMarkMetadata ResolveClosingMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             HashSet<int> possibleDepths = _settings.GetPossibleDepths(
-                quoteMatch.QuotationMark,
+                quotationMarkMatch.QuotationMark,
                 QuotationMarkDirection.Closing
             );
             if (possibleDepths.Count == 0)
                 return null;
 
-            QuotationMarkMetadata quote = quoteMatch.Resolve(possibleDepths.Min(), QuotationMarkDirection.Closing);
+            QuotationMarkMetadata quote = quotationMarkMatch.Resolve(
+                possibleDepths.Min(),
+                QuotationMarkDirection.Closing
+            );
             _lastQuotationMark = quote;
             return quote;
         }

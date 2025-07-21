@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using SIL.Machine.Corpora.Analysis;
+using SIL.Machine.Corpora.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {
@@ -65,14 +65,14 @@ namespace SIL.Machine.Corpora
 
         private UsfmUpdateBlock ApplyFallbackUpdating(UsfmUpdateBlock block)
         {
-            foreach (UsfmUpdateBlockElement element in block.Elements) //TODO use Elements not _elements
+            foreach (UsfmUpdateBlockElement element in block.Elements)
                 ProcessScriptureElement(element, _simpleQuotationMarkResolver);
             return block;
         }
 
         private UsfmUpdateBlock ApplyStandardUpdating(UsfmUpdateBlock block)
         {
-            foreach (UsfmUpdateBlockElement element in block.Elements) //TODO same
+            foreach (UsfmUpdateBlockElement element in block.Elements)
             {
                 if (element.Type == UsfmUpdateBlockElementType.Embed)
                 {
@@ -136,7 +136,7 @@ namespace SIL.Machine.Corpora
 
         private TextSegment CreateTextSegment(UsfmToken token)
         {
-            TextSegment textSegmentToReturn = null; //TODO cleaner
+            TextSegment textSegmentToReturn = null;
             _nextScriptureTextSegmentBuilder.SetUsfmToken(token);
             if (token.Text != null)
             {
@@ -166,7 +166,7 @@ namespace SIL.Machine.Corpora
                 if (scriptureRef.ChapterNum != _currentChapterNumber)
                 {
                     _currentChapterNumber = scriptureRef.ChapterNum;
-                    StartNewChapter(_currentChapterNumber); //TODO pass field in method?
+                    StartNewChapter(_currentChapterNumber);
                 }
             }
         }
@@ -186,7 +186,7 @@ namespace SIL.Machine.Corpora
                 if (scriptureRef.ChapterNum == _currentChapterNumber && scriptureRef.VerseNum != _currentVerseNumber)
                 {
                     _currentVerseNumber = scriptureRef.VerseNum;
-                    StartNewVerse(); //TODO same + unused
+                    StartNewVerse();
                 }
             }
         }

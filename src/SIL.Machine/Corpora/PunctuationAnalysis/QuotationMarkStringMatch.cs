@@ -1,12 +1,15 @@
 using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Unicode;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkStringMatch
     {
         private static readonly Regex LetterPattern = new Regex(@"[\p{L}\uD838[\uDE00-\uDE8F]]", RegexOptions.Compiled);
-        private static readonly Regex LatinLetterPattern = new Regex(@"^\p{IsBasicLatin}$", RegexOptions.Compiled);
+
+        // No LatinLetterPattern because C# does not support it. Using UnicodeInfo to mirror machine.py
         private static readonly Regex WhitespacePattern = new Regex(@"[\s~]", RegexOptions.Compiled);
         private static readonly Regex PunctuationPattern = new Regex(@"[\.,;\?!\)\]\-—۔،؛]", RegexOptions.Compiled);
         private static readonly Regex QuoteIntroducerPattern = new Regex(@"[:,]\s*$", RegexOptions.Compiled);
@@ -22,13 +25,14 @@ namespace SIL.Machine.Corpora.Analysis
             EndIndex = endIndex;
         }
 
-        public string QuotationMark => TextSegment.Text.Substring(StartIndex, EndIndex - StartIndex);
+        public string QuotationMark =>
+            new StringInfo(TextSegment.Text).SubstringByTextElements(StartIndex, EndIndex - StartIndex);
 
-        public bool IsValidOpeningQuotationMark(QuoteConventionSet quoteConventionSet) =>
-            quoteConventionSet.IsValidOpeningQuotationMark(QuotationMark);
+        public bool IsValidOpeningQuotationMark(QuoteConventionSet quoteConventions) =>
+            quoteConventions.IsValidOpeningQuotationMark(QuotationMark);
 
-        public bool IsValidClosingQuotationMark(QuoteConventionSet quoteConventionSet) =>
-            quoteConventionSet.IsValidClosingQuotationMark(QuotationMark);
+        public bool IsValidClosingQuotationMark(QuoteConventionSet quoteConventions) =>
+            quoteConventions.IsValidClosingQuotationMark(QuotationMark);
 
         public bool QuotationMarkMatches(Regex regexPattern) => regexPattern.IsMatch(QuotationMark);
 
@@ -47,11 +51,14 @@ namespace SIL.Machine.Corpora.Analysis
                     TextSegment previousSegment = TextSegment.PreviousSegment;
                     if (previousSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
                     {
-                        return previousSegment.Text[previousSegment.Text.Length - 1].ToString();
+                        return new StringInfo(previousSegment.Text).SubstringByTextElements(
+                            previousSegment.Text.Length - 1,
+                            1
+                        );
                     }
                     return null;
                 }
-                return TextSegment.Text[StartIndex - 1].ToString();
+                return new StringInfo(TextSegment.Text).SubstringByTextElements(StartIndex - 1, 1);
             }
         }
 
@@ -64,11 +71,11 @@ namespace SIL.Machine.Corpora.Analysis
                     TextSegment nextSegment = TextSegment.NextSegment;
                     if (nextSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
                     {
-                        return nextSegment.Text[0].ToString();
+                        return new StringInfo(nextSegment.Text).SubstringByTextElements(0, 1);
                     }
                     return null;
                 }
-                return TextSegment.Text[EndIndex].ToString();
+                return new StringInfo(TextSegment.Text).SubstringByTextElements(EndIndex, 1);
             }
         }
 
@@ -138,17 +145,34 @@ namespace SIL.Machine.Corpora.Analysis
 
         public bool HasLeadingLatinLetter()
         {
-            return PreviousCharacterMatches(LatinLetterPattern);
+            return PreviousCharacter != null && IsLatinScript(PreviousCharacter);
         }
 
         public bool HasTrailingLatinLetter()
         {
-            return NextCharacterMatches(LatinLetterPattern);
+            return NextCharacter != null && IsLatinScript(NextCharacter);
         }
 
         public bool HasQuoteIntroducerInLeadingSubstring()
         {
             return LeadingSubstringMatches(QuoteIntroducerPattern);
+        }
+
+        private bool IsLatinScript(string characterString)
+        {
+            string latinScriptAttribute = "LATIN";
+            if (characterString.Length == 1)
+            {
+                return UnicodeInfo.GetName(characterString[0]).Contains(latinScriptAttribute);
+            }
+            else if (char.IsSurrogatePair(characterString[0], characterString[1]))
+            {
+                //Get true unicode value
+                int combinedCharacterValue =
+                    (((int)characterString[0] - 0xD800) * 0x400) + ((int)characterString[1] - 0xDC00) + 0x10000;
+                return UnicodeInfo.GetName(combinedCharacterValue).Contains(latinScriptAttribute);
+            }
+            return false;
         }
     }
 }

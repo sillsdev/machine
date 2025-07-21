@@ -2,39 +2,35 @@ using System;
 using System.Collections.Generic;
 using SIL.Extensions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkCounts
     {
-        private readonly Dictionary<string, int> _stringCounts;
+        private readonly Dictionary<string, int> _quotationMarkCounter;
 
         public int TotalCount { get; private set; }
 
         public QuotationMarkCounts()
         {
-            _stringCounts = new Dictionary<string, int>();
+            _quotationMarkCounter = new Dictionary<string, int>();
             TotalCount = 0;
         }
 
         public void CountQuotationMark(string quotationMark)
         {
-            if (!_stringCounts.ContainsKey(quotationMark))
-            {
-                _stringCounts[quotationMark] = 0;
-            }
-            _stringCounts[quotationMark]++;
+            _quotationMarkCounter.UpdateValue(quotationMark, () => 0, i => i + 1);
             TotalCount++;
         }
 
         public (string BestString, int BestStringCount, int TotalStringCount) FindBestQuotationMarkProportion()
         {
-            string bestString = _stringCounts.MaxBy(kvp => kvp.Value).Key;
-            return (bestString, _stringCounts[bestString], TotalCount);
+            string bestString = _quotationMarkCounter.MaxBy(kvp => kvp.Value).Key;
+            return (bestString, _quotationMarkCounter[bestString], TotalCount);
         }
 
         public int CalculateNumDifferences(string expectedQuotationMark)
         {
-            if (!_stringCounts.TryGetValue(expectedQuotationMark, out int count))
+            if (!_quotationMarkCounter.TryGetValue(expectedQuotationMark, out int count))
             {
                 return TotalCount;
             }
@@ -67,25 +63,16 @@ namespace SIL.Machine.Corpora.Analysis
         {
             (int Depth, QuotationMarkDirection Direction) key = (quote.Depth, quote.Direction);
             string quotationMark = quote.QuotationMark;
-            if (!_quotationCountsByDepthAndDirection.ContainsKey(key))
-            {
-                _quotationCountsByDepthAndDirection[key] = new QuotationMarkCounts();
-            }
-            _quotationCountsByDepthAndDirection[key].CountQuotationMark(quotationMark);
+            _quotationCountsByDepthAndDirection.UpdateValue(
+                key,
+                () => new QuotationMarkCounts(),
+                counts =>
+                {
+                    counts.CountQuotationMark(quotationMark);
+                    return counts;
+                }
+            );
         }
-
-        // Used in print function
-        // private bool DepthAndDirectionObserved(int depth, QuotationMarkDirection direction) =>
-        //     _quotationCountsByDepthAndDirection.ContainsKey((depth, direction));
-
-        // private (
-        //     string BestQuotationMark,
-        //     int BestQuotationMarkCount,
-        //     int TotalQuotationMarkCount
-        // ) FindMostCommonQuotationMarkWithDepthAndDirection(int depth, QuotationMarkDirection direction)
-        // {
-        //     return _quotationCountsByDepthAndDirection[(depth, direction)].FindBestQuotationMarkProportion();
-        // }
 
         public double CalculateSimilarity(QuoteConvention quoteConvention)
         {

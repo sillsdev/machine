@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkUpdateResolutionSettings : IQuotationMarkResolutionSettings
     {
@@ -15,8 +15,8 @@ namespace SIL.Machine.Corpora.Analysis
         )
         {
             _sourceQuoteConvention = sourceQuoteConvention;
-            _quoteConventionSingletonSet = new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention }); //TODO also seems unnecessary to have both.
-            _targetQuoteConvention = targetQuoteConvention; //TODO unused
+            _quoteConventionSingletonSet = new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention });
+            _targetQuoteConvention = targetQuoteConvention;
         }
 
         public bool AreMarksAValidPair(string openingMark, string closingMark)

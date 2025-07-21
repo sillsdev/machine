@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public interface IQuotationMarkResolutionSettings
     {

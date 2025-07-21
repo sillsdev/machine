@@ -1,9 +1,10 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using SIL.Extensions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuoteConventionSet
     {
@@ -19,7 +20,7 @@ namespace SIL.Machine.Corpora.Analysis
         public QuoteConventionSet(List<QuoteConvention> conventions)
         {
             Conventions = conventions;
-            CreateQuoteRegexes();
+            CreateQuotationMarkRegexes();
             CreateQuotationMarkPairMap();
         }
 
@@ -36,55 +37,42 @@ namespace SIL.Machine.Corpora.Analysis
             return hashCode * 31 + Conventions.GetHashCode();
         }
 
-        private void CreateQuoteRegexes()
+        private void CreateQuotationMarkRegexes()
         {
+            OpeningQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
+            ClosingQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
+            AllQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
+
             var openingQuotationMarks = new HashSet<string>();
             var closingQuotationMarks = new HashSet<string>();
-            var allQuotationMarks = new HashSet<string>();
 
-            if (Conventions.Count > 0)
+            foreach (QuoteConvention convention in Conventions)
             {
-                foreach (QuoteConvention convention in Conventions)
+                for (int level = 1; level < convention.NumLevels + 1; level++)
                 {
-                    for (int level = 1; level < convention.NumLevels + 1; level++)
-                    {
-                        string openingQuote = convention.GetOpeningQuoteAtLevel(level);
-                        string closingQuote = convention.GetClosingQuoteAtLevel(level);
-                        openingQuotationMarks.Add(openingQuote);
-                        closingQuotationMarks.Add(closingQuote);
-                        allQuotationMarks.Add(openingQuote);
-                        allQuotationMarks.Add(closingQuote);
-                    }
-                }
-
-                if (allQuotationMarks.Count > 0)
-                {
-                    OpeningQuotationMarkRegex = new Regex(
-                        @"[" + string.Join("", openingQuotationMarks.OrderBy(q => q)) + "]",
-                        RegexOptions.Compiled
-                    );
-                    ClosingQuotationMarkRegex = new Regex(
-                        @"[" + string.Join("", closingQuotationMarks.OrderBy(q => q)) + "]",
-                        RegexOptions.Compiled
-                    );
-                    AllQuotationMarkRegex = new Regex(
-                        @"[" + string.Join("", allQuotationMarks.OrderBy(q => q)) + "]",
-                        RegexOptions.Compiled
-                    );
+                    string openingQuote = convention.GetOpeningQuotationMarkAtLevel(level);
+                    string closingQuote = convention.GetClosingQuotationMarkAtLevel(level);
+                    openingQuotationMarks.Add(openingQuote);
+                    closingQuotationMarks.Add(closingQuote);
                 }
             }
 
-            if (openingQuotationMarks.Count == 0)
+            var allQuotationMarks = openingQuotationMarks.Union(closingQuotationMarks).ToImmutableHashSet();
+
+            if (allQuotationMarks.Count > 0)
             {
-                OpeningQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
-            }
-            if (closingQuotationMarks.Count == 0)
-            {
-                ClosingQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
-            }
-            if (allQuotationMarks.Count == 0)
-            {
-                AllQuotationMarkRegex = new Regex(@"", RegexOptions.Compiled);
+                OpeningQuotationMarkRegex = new Regex(
+                    @"[" + string.Join("", openingQuotationMarks.OrderBy(q => q)) + "]",
+                    RegexOptions.Compiled
+                );
+                ClosingQuotationMarkRegex = new Regex(
+                    @"[" + string.Join("", closingQuotationMarks.OrderBy(q => q)) + "]",
+                    RegexOptions.Compiled
+                );
+                AllQuotationMarkRegex = new Regex(
+                    @"[" + string.Join("", allQuotationMarks.OrderBy(q => q)) + "]",
+                    RegexOptions.Compiled
+                );
             }
         }
 
@@ -96,20 +84,30 @@ namespace SIL.Machine.Corpora.Analysis
             {
                 for (int level = 1; level < convention.NumLevels + 1; level++)
                 {
-                    string openingQuote = convention.GetOpeningQuoteAtLevel(level);
-                    string closingQuote = convention.GetClosingQuoteAtLevel(level);
-                    if (!closingMarksByOpeningMark.ContainsKey(openingQuote))
-                    {
-                        closingMarksByOpeningMark[openingQuote] = new HashSet<string>();
-                    }
-                    closingMarksByOpeningMark[openingQuote].Add(closingQuote);
-                    if (!openingMarksByClosingMark.ContainsKey(closingQuote))
-                    {
-                        openingMarksByClosingMark[closingQuote] = new HashSet<string>();
-                    }
-                    closingMarksByOpeningMark[closingQuote].Add(openingQuote);
+                    string openingQuote = convention.GetOpeningQuotationMarkAtLevel(level);
+                    string closingQuote = convention.GetClosingQuotationMarkAtLevel(level);
+                    closingMarksByOpeningMark.UpdateValue(
+                        openingQuote,
+                        () => new HashSet<string>(),
+                        set =>
+                        {
+                            set.Add(closingQuote);
+                            return set;
+                        }
+                    );
+                    openingMarksByClosingMark.UpdateValue(
+                        closingQuote,
+                        () => new HashSet<string>(),
+                        set =>
+                        {
+                            set.Add(openingQuote);
+                            return set;
+                        }
+                    );
                 }
             }
+            ClosingMarksByOpeningMark = closingMarksByOpeningMark;
+            OpeningMarksByClosingMark = openingMarksByClosingMark;
         }
 
         public QuoteConvention GetQuoteConventionByName(string name)
