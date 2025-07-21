@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using SIL.Extensions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class ApostropheProportionStatistics
     {
@@ -41,9 +42,12 @@ namespace SIL.Machine.Corpora.Analysis
 
     public class QuotationMarkWordPositions
     {
+        private static readonly double MaximumProportionForRarity = 0.1;
+        private static readonly double MaximumProportionDifferenceThreshold = 0.3;
         private Dictionary<string, int> _wordInitialOccurrences;
         private Dictionary<string, int> _midWordOccurrences;
         private Dictionary<string, int> _wordFinalOccurrences;
+        private Dictionary<string, int> _totalOccurrences;
 
         public QuotationMarkWordPositions()
         {
@@ -55,33 +59,25 @@ namespace SIL.Machine.Corpora.Analysis
             _wordInitialOccurrences = new Dictionary<string, int>();
             _midWordOccurrences = new Dictionary<string, int>();
             _wordFinalOccurrences = new Dictionary<string, int>();
+            _totalOccurrences = new Dictionary<string, int>();
         }
 
         public void CountWordInitialApostrophe(string quotationMark)
         {
-            if (!_wordInitialOccurrences.ContainsKey(quotationMark))
-            {
-                _wordInitialOccurrences[quotationMark] = 0;
-            }
-            _wordInitialOccurrences[quotationMark]++;
+            _wordInitialOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
+            _totalOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
         }
 
         public void CountMidWordApostrophe(string quotationMark)
         {
-            if (!_midWordOccurrences.ContainsKey(quotationMark))
-            {
-                _midWordOccurrences[quotationMark] = 0;
-            }
-            _midWordOccurrences[quotationMark]++;
+            _midWordOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
+            _totalOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
         }
 
         public void CountWordFinalApostrophe(string quotationMark)
         {
-            if (!_wordFinalOccurrences.ContainsKey(quotationMark))
-            {
-                _wordFinalOccurrences[quotationMark] = 0;
-            }
-            _wordFinalOccurrences[quotationMark]++;
+            _wordFinalOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
+            _totalOccurrences.UpdateValue(quotationMark, () => 0, i => i + 1);
         }
 
         private int GetWordInitialOccurrences(string quotationMark)
@@ -110,14 +106,14 @@ namespace SIL.Machine.Corpora.Analysis
         {
             int numInitialMarks = GetWordInitialOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numInitialMarks / numTotalMarks) < 0.1;
+            return numTotalMarks > 0 && (numInitialMarks / numTotalMarks) < MaximumProportionForRarity;
         }
 
         public bool IsMarkRarelyFinal(string quotationMark)
         {
             int numFinalMarks = GetWordFinalOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numFinalMarks / numTotalMarks) < 0.1;
+            return numTotalMarks > 0 && (numFinalMarks / numTotalMarks) < MaximumProportionForRarity;
         }
 
         public bool AreInitialAndFinalRatesSimilar(string quotationMark)
@@ -125,19 +121,24 @@ namespace SIL.Machine.Corpora.Analysis
             int numInitialMarks = GetWordInitialOccurrences(quotationMark);
             int numFinalMarks = GetWordFinalOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (Math.Abs(numInitialMarks - numFinalMarks) / numTotalMarks) < 0.3;
+            return numTotalMarks > 0
+                && (Math.Abs(numInitialMarks - numFinalMarks) / numTotalMarks) < MaximumProportionDifferenceThreshold;
         }
 
         public bool IsMarkCommonlyMidWord(string quotationMark)
         {
             int numMidWordMarks = GetMidWordOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numMidWordMarks / numTotalMarks) > 0.3;
+            return numTotalMarks > 0 && (numMidWordMarks / numTotalMarks) > MaximumProportionDifferenceThreshold;
         }
     }
 
     public class QuotationMarkSequences
     {
+        private static readonly int SoleOccurrenceMinimumCount = 5;
+        private static readonly int MuchMoreCommonMinimumRatio = 10;
+        private static readonly double MaximumProportionDifferenceThreshold = 0.2;
+
         private Dictionary<string, int> _earlierQuotationMarkCounts;
         private Dictionary<string, int> _laterQuotationMarkCounts;
 
@@ -152,22 +153,14 @@ namespace SIL.Machine.Corpora.Analysis
             _laterQuotationMarkCounts = new Dictionary<string, int>();
         }
 
-        public void RecordEarlierQuotationMark(string quotationMark)
+        public void CountEarlierQuotationMark(string quotationMark)
         {
-            if (!_earlierQuotationMarkCounts.ContainsKey(quotationMark))
-            {
-                _earlierQuotationMarkCounts[quotationMark] = 0;
-            }
-            _earlierQuotationMarkCounts[quotationMark] += 1;
+            _earlierQuotationMarkCounts.UpdateValue(quotationMark, () => 0, i => i + 1);
         }
 
-        public void RecordLaterQuotationMark(string quotationMark)
+        public void CountLaterQuotationMark(string quotationMark)
         {
-            if (!_laterQuotationMarkCounts.ContainsKey(quotationMark))
-            {
-                _laterQuotationMarkCounts[quotationMark] = 0;
-            }
-            _laterQuotationMarkCounts[quotationMark] += 1;
+            _laterQuotationMarkCounts.UpdateValue(quotationMark, () => 0, i => i + 1);
         }
 
         private int GetEarlierOccurrences(string quotationMark)
@@ -184,30 +177,31 @@ namespace SIL.Machine.Corpora.Analysis
         {
             int numEarlyOccurrences = GetEarlierOccurrences(quotationMark);
             int numLateOccurrences = GetLaterOccurrences(quotationMark);
-            return (numLateOccurrences == 0 && numEarlyOccurrences > 5)
-                || numEarlyOccurrences > numLateOccurrences * 10;
+            return (numLateOccurrences == 0 && numEarlyOccurrences > SoleOccurrenceMinimumCount)
+                || numEarlyOccurrences > numLateOccurrences * MuchMoreCommonMinimumRatio;
         }
 
         public bool IsMarkMuchMoreCommonLater(string quotationMark)
         {
             int numEarlyOccurrences = GetEarlierOccurrences(quotationMark);
             int numLateOccurrences = GetLaterOccurrences(quotationMark);
-            return (numEarlyOccurrences == 0 && numLateOccurrences > 5)
-                || numLateOccurrences > numEarlyOccurrences * 10;
+            return (numEarlyOccurrences == 0 && numLateOccurrences > SoleOccurrenceMinimumCount)
+                || numLateOccurrences > numEarlyOccurrences * MuchMoreCommonMinimumRatio;
         }
 
-        public bool IsMarkCommonEarlyAndLate(string quotationMark)
+        public bool AreEarlyAndLateMarkRatesSimilar(string quotationMark)
         {
             int numEarlyOccurrences = GetEarlierOccurrences(quotationMark);
             int numLateOccurrences = GetLaterOccurrences(quotationMark);
             return numEarlyOccurrences > 0
-                && (Math.Abs(numLateOccurrences - numEarlyOccurrences) / numEarlyOccurrences) < 0.2;
+                && (Math.Abs(numLateOccurrences - numEarlyOccurrences) / numEarlyOccurrences)
+                    < MaximumProportionDifferenceThreshold;
         }
     }
 
     public class QuotationMarkGrouper
     {
-        private readonly QuoteConventionSet _quoteConventionSet;
+        private readonly QuoteConventionSet _quoteConventions;
         private Dictionary<string, List<QuotationMarkStringMatch>> _groupedQuotationMarks;
 
         public QuotationMarkGrouper(
@@ -215,7 +209,7 @@ namespace SIL.Machine.Corpora.Analysis
             QuoteConventionSet quoteConventionSet
         )
         {
-            _quoteConventionSet = quoteConventionSet;
+            _quoteConventions = quoteConventionSet;
             GroupQuotationMarks(quotationMarks);
         }
 
@@ -237,7 +231,7 @@ namespace SIL.Machine.Corpora.Analysis
                 // handle cases of identical opening/closing marks
                 if (
                     matches1.Count == 2
-                    && _quoteConventionSet.IsQuotationMarkDirectionAmbiguous(mark1)
+                    && _quoteConventions.IsQuotationMarkDirectionAmbiguous(mark1)
                     && !HasDistinctPairedQuotationMark(mark1)
                 )
                 {
@@ -258,7 +252,7 @@ namespace SIL.Machine.Corpora.Analysis
                 {
                     if (
                         matches2.Count == 1
-                        && _quoteConventionSet.MarksAreAValidPair(mark1, mark2)
+                        && _quoteConventions.MarksAreAValidPair(mark1, mark2)
                         && matches1[0].Precedes(matches2[0])
                     )
                     {
@@ -270,7 +264,7 @@ namespace SIL.Machine.Corpora.Analysis
 
         public bool HasDistinctPairedQuotationMark(string quotationMark)
         {
-            return _quoteConventionSet
+            return _quoteConventions
                 .GetPossiblePairedQuotationMarks(quotationMark)
                 .Any(m => m != quotationMark && _groupedQuotationMarks.ContainsKey(m));
         }
@@ -278,6 +272,7 @@ namespace SIL.Machine.Corpora.Analysis
 
     public class PreliminaryApostropheAnalyzer
     {
+        private static readonly double MaximumApostropheProportion = 0.02;
         private static readonly Regex ApostrophePattern = new Regex(@"[\'\u2019]", RegexOptions.Compiled);
         private readonly ApostropheProportionStatistics _apostropheProportionStatistics;
         private readonly QuotationMarkWordPositions _wordPositionStatistics;
@@ -370,7 +365,7 @@ namespace SIL.Machine.Corpora.Analysis
                 return true;
             }
 
-            if (_apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.02))
+            if (_apostropheProportionStatistics.IsApostropheProportionGreaterThan(MaximumApostropheProportion))
             {
                 return true;
             }
@@ -379,13 +374,13 @@ namespace SIL.Machine.Corpora.Analysis
         }
     }
 
-    public class PreliminaryQuotationAnalyzer
+    public class PreliminaryQuotationMarkAnalyzer
     {
         private readonly QuoteConventionSet _quoteConventions;
         private readonly PreliminaryApostropheAnalyzer _apostropheAnalyzer;
         private readonly QuotationMarkSequences _quotationMarkSequences;
 
-        public PreliminaryQuotationAnalyzer(QuoteConventionSet quoteConventions)
+        public PreliminaryQuotationMarkAnalyzer(QuoteConventionSet quoteConventions)
         {
             _quoteConventions = quoteConventions;
             _apostropheAnalyzer = new PreliminaryApostropheAnalyzer();
@@ -426,8 +421,8 @@ namespace SIL.Machine.Corpora.Analysis
             var quotationMarkGrouper = new QuotationMarkGrouper(quotationMarks, _quoteConventions);
             foreach ((string earlierMark, string laterMark) in quotationMarkGrouper.GetQuotationMarkPairs())
             {
-                _quotationMarkSequences.RecordEarlierQuotationMark(earlierMark);
-                _quotationMarkSequences.RecordLaterQuotationMark(laterMark);
+                _quotationMarkSequences.CountEarlierQuotationMark(earlierMark);
+                _quotationMarkSequences.CountLaterQuotationMark(laterMark);
             }
         }
 
@@ -455,7 +450,7 @@ namespace SIL.Machine.Corpora.Analysis
             if (_quotationMarkSequences.IsMarkMuchMoreCommonEarlier(quotationMark))
                 return true;
             if (
-                _quotationMarkSequences.IsMarkCommonEarlyAndLate(quotationMark)
+                _quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar(quotationMark)
                 && _quoteConventions.IsQuotationMarkDirectionAmbiguous(quotationMark)
             )
             {
@@ -480,7 +475,7 @@ namespace SIL.Machine.Corpora.Analysis
             if (_quotationMarkSequences.IsMarkMuchMoreCommonLater(quotationMark))
                 return true;
             if (
-                _quotationMarkSequences.IsMarkCommonEarlyAndLate(quotationMark)
+                _quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar(quotationMark)
                 && _quoteConventions.IsQuotationMarkDirectionAmbiguous(quotationMark)
             )
             {

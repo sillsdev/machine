@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class Chapter
     {

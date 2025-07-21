@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class TextSegment
     {
@@ -34,7 +34,10 @@ namespace SIL.Machine.Corpora.Analysis
             return _text.Equals(t._text)
                 && _indexInVerse.Equals(t._indexInVerse)
                 && _numSegmentsInVerse.Equals(t._numSegmentsInVerse)
-                && _usfmToken.Equals(t._usfmToken)
+                && (
+                    (_usfmToken == null && t._usfmToken == null)
+                    || (_usfmToken != null && t._usfmToken != null && _usfmToken.Equals(t._usfmToken))
+                )
                 && _immediatePrecedingMarker.Equals(t._immediatePrecedingMarker);
         }
 
@@ -60,7 +63,7 @@ namespace SIL.Machine.Corpora.Analysis
 
         public string SubstringBefore(int index)
         {
-            return _text.Substring(0, _text.Length - index);
+            return _text.Substring(0, index);
         }
 
         public string SubstringAfter(int index)

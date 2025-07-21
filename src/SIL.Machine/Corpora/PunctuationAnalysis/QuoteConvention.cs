@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class SingleLevelQuoteConvention
     {
@@ -22,24 +20,27 @@ namespace SIL.Machine.Corpora.Analysis
             { "\u300c", '"' },
             { "\u300d", '"' }
         };
-        public string OpeningQuote { get; }
-        public string ClosingQuote { get; }
+        public string OpeningQuotationMark { get; }
+        public string ClosingQuotationMark { get; }
 
-        public SingleLevelQuoteConvention(string openingQuote, string closingQuote)
+        public SingleLevelQuoteConvention(string openingQuotationMark, string closingQuotationMark)
         {
-            OpeningQuote = openingQuote;
-            ClosingQuote = closingQuote;
+            OpeningQuotationMark = openingQuotationMark;
+            ClosingQuotationMark = closingQuotationMark;
         }
 
         public SingleLevelQuoteConvention Normalize()
         {
-            string normalizedOpeningQuote = QuoteNormalizationMap.TryGetValue(OpeningQuote, out char quote)
+            string normalizedOpeningQuotationMark = QuoteNormalizationMap.TryGetValue(
+                OpeningQuotationMark,
+                out char quote
+            )
                 ? quote.ToString()
-                : OpeningQuote;
-            string normalizedClosingQuote = QuoteNormalizationMap.TryGetValue(ClosingQuote, out quote)
+                : OpeningQuotationMark;
+            string normalizedClosingQuotationMark = QuoteNormalizationMap.TryGetValue(ClosingQuotationMark, out quote)
                 ? quote.ToString()
-                : ClosingQuote;
-            return new SingleLevelQuoteConvention(normalizedOpeningQuote, normalizedClosingQuote);
+                : ClosingQuotationMark;
+            return new SingleLevelQuoteConvention(normalizedOpeningQuotationMark, normalizedClosingQuotationMark);
         }
     }
 
@@ -57,14 +58,14 @@ namespace SIL.Machine.Corpora.Analysis
 
         public int NumLevels => Levels.Count;
 
-        public string GetOpeningQuoteAtLevel(int level)
+        public string GetOpeningQuotationMarkAtLevel(int level)
         {
-            return Levels[level - 1].OpeningQuote;
+            return Levels[level - 1].OpeningQuotationMark;
         }
 
-        public string GetClosingQuoteAtLevel(int level)
+        public string GetClosingQuotationMarkAtLevel(int level)
         {
-            return Levels[level - 1].ClosingQuote;
+            return Levels[level - 1].ClosingQuotationMark;
         }
 
         public string GetExpectedQuotationMark(int depth, QuotationMarkDirection direction)
@@ -72,15 +73,15 @@ namespace SIL.Machine.Corpora.Analysis
             if (depth > NumLevels || depth < 1)
                 return "";
             return direction == QuotationMarkDirection.Opening
-                ? GetOpeningQuoteAtLevel(depth)
-                : GetClosingQuoteAtLevel(depth);
+                ? GetOpeningQuotationMarkAtLevel(depth)
+                : GetClosingQuotationMarkAtLevel(depth);
         }
 
         private bool IncludesOpeningQuotationMark(string openingQuotationMark)
         {
             foreach (SingleLevelQuoteConvention level in Levels)
             {
-                if (level.OpeningQuote == openingQuotationMark)
+                if (level.OpeningQuotationMark == openingQuotationMark)
                     return true;
             }
             return false;
@@ -90,7 +91,7 @@ namespace SIL.Machine.Corpora.Analysis
         {
             foreach (SingleLevelQuoteConvention level in Levels)
             {
-                if (level.ClosingQuote == closingQuotationMark)
+                if (level.ClosingQuotationMark == closingQuotationMark)
                     return true;
             }
             return false;
@@ -101,9 +102,9 @@ namespace SIL.Machine.Corpora.Analysis
             var depths = new HashSet<int>();
             foreach ((int depth, SingleLevelQuoteConvention level) in Levels.Select((l, i) => (i + 1, l)))
             {
-                if (direction == QuotationMarkDirection.Opening && level.OpeningQuote == quotationMark)
+                if (direction == QuotationMarkDirection.Opening && level.OpeningQuotationMark == quotationMark)
                     depths.Add(depth);
-                else if (direction == QuotationMarkDirection.Closing && level.ClosingQuote == quotationMark)
+                else if (direction == QuotationMarkDirection.Closing && level.ClosingQuotationMark == quotationMark)
                     depths.Add(depth);
             }
             return depths;
@@ -126,9 +127,9 @@ namespace SIL.Machine.Corpora.Analysis
             }
 
             // we require the first-level quotes to have been observed
-            if (!openingQuotationMarks.Contains(GetOpeningQuoteAtLevel(1)))
+            if (!openingQuotationMarks.Contains(GetOpeningQuotationMarkAtLevel(1)))
                 return false;
-            if (!closingQuotationMarks.Contains(GetClosingQuoteAtLevel(1)))
+            if (!closingQuotationMarks.Contains(GetClosingQuotationMarkAtLevel(1)))
                 return false;
             return true;
         }
@@ -136,39 +137,6 @@ namespace SIL.Machine.Corpora.Analysis
         public QuoteConvention Normalize()
         {
             return new QuoteConvention(Name + "_normalized", Levels.Select(l => l.Normalize()).ToList());
-        }
-
-        public void PrintSummary()
-        {
-            Console.WriteLine(GetSummaryMessage());
-        }
-
-        private string GetSummaryMessage()
-        {
-            var summary = new StringBuilder(Name + "\n");
-            foreach ((int level, SingleLevelQuoteConvention convention) in Levels.Select((l, i) => (i, l)))
-            {
-                string ordinalName = GetOrdinalName(level + 1);
-                summary.Append($"{convention.OpeningQuote}{ordinalName}-level quote{convention.ClosingQuote}\n");
-            }
-            return summary.ToString();
-        }
-
-        private string GetOrdinalName(int level)
-        {
-            switch (level)
-            {
-                case 1:
-                    return "First";
-                case 2:
-                    return "Second";
-                case 3:
-                    return "Third";
-                case 4:
-                    return "Fourth";
-                default:
-                    return level.ToString() + "th";
-            }
         }
     }
 }

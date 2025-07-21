@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public interface IQuotationMarkResolver
     {
-        IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(List<QuotationMarkStringMatch> quoteMatches);
+        IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(List<QuotationMarkStringMatch> quotationMarkMatches);
         void Reset();
         HashSet<QuotationMarkResolutionIssue> GetIssues();
     }

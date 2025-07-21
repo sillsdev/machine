@@ -2,16 +2,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkFinder
     {
-        private static readonly Regex QuotePattern = new Regex(@"(\p{Pi}|\p{Pf}|<<|>>|<|>)", RegexOptions.Compiled);
-        private readonly QuoteConventionSet _quoteConventionSet;
+        private static readonly Regex QuotationMarkPattern = new Regex(
+            @"(\p{Pi}|\p{Pf}|<<|>>|<|>)",
+            RegexOptions.Compiled
+        );
+        private readonly QuoteConventionSet _quoteConventions;
 
         public QuotationMarkFinder(QuoteConventionSet quoteConventionSet)
         {
-            _quoteConventionSet = quoteConventionSet;
+            _quoteConventions = quoteConventionSet;
         }
 
         public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInChapter(Chapter chapter)
@@ -36,12 +39,12 @@ namespace SIL.Machine.Corpora.Analysis
 
         public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegment(TextSegment textSegment)
         {
-            return QuotePattern
+            return QuotationMarkPattern
                 .Matches(textSegment.Text)
                 .Cast<Match>()
                 .Where(match =>
-                    _quoteConventionSet.IsValidOpeningQuotationMark(match.Groups[0].Value)
-                    || _quoteConventionSet.IsValidClosingQuotationMark(match.Groups[0].Value)
+                    _quoteConventions.IsValidOpeningQuotationMark(match.Groups[0].Value)
+                    || _quoteConventions.IsValidClosingQuotationMark(match.Groups[0].Value)
                 )
                 .Select(m => new QuotationMarkStringMatch(
                     textSegment,

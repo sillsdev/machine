@@ -43,6 +43,7 @@
 		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
 		<PackageReference Include="System.Threading.Tasks.Dataflow" Version="6.0.0" />
 		<PackageReference Include="CaseExtensions" Version="1.1.0" />
+		<PackageReference Include="UnicodeInformation" Version="2.7.1" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net461'">

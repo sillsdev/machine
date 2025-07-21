@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 
-namespace SIL.Machine.Corpora.Analysis
+namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class StandardQuoteConventions
     {
-        public static QuoteConventionSet QuoteConventionSet = new QuoteConventionSet(
+        public static QuoteConventionSet QuoteConventions = new QuoteConventionSet(
             new List<QuoteConvention>
             {
                 new QuoteConvention(
