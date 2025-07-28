@@ -210,6 +210,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         private bool MeetsQuoteContinuerPrerequisites(QuotationMarkStringMatch quotationMarkMatch)
         {
+            if (_quoteContinuerState.CurrentDepth >= _quotationMarkResolverState.CurrentDepth)
+                return false;
             if (
                 _settings.ShouldRelyOnParagraphMarkers()
                 && !quotationMarkMatch.TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph)
