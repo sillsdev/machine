@@ -45,7 +45,7 @@ namespace SIL.Machine.Corpora
                 }
                 if (depth <= targetQuoteConvention.NumLevels)
                 {
-                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth));
+                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth)); //TODO could cut this loop short
                 }
             }
 

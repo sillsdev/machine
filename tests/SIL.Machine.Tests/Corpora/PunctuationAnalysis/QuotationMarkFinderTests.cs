@@ -173,15 +173,15 @@ public class QuotationMarkFinderTests
                             new TextSegment.Builder()
                                 .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                                 .Build(),
-                            53,
-                            54
+                            45,
+                            47
                         ),
                         new QuotationMarkStringMatch(
                             new TextSegment.Builder()
                                 .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                                 .Build(),
-                            45,
-                            47
+                            53,
+                            54
                         ),
                     ]
                 )
@@ -382,15 +382,15 @@ public class QuotationMarkFinderTests
                             new TextSegment.Builder()
                                 .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                                 .Build(),
-                            53,
-                            54
+                            45,
+                            47
                         ),
                         new QuotationMarkStringMatch(
                             new TextSegment.Builder()
                                 .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                                 .Build(),
-                            45,
-                            47
+                            53,
+                            54
                         ),
                     ]
                 )
