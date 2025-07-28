@@ -8,12 +8,12 @@ namespace SIL.Machine.Corpora
         private readonly List<QuotationMarkUpdateStrategy> _chapterActions;
 
         public QuotationMarkUpdateSettings(
-            QuotationMarkUpdateStrategy defaultChapterAction = QuotationMarkUpdateStrategy.ApplyFull,
-            List<QuotationMarkUpdateStrategy> chapterActions = null
+            QuotationMarkUpdateStrategy defaultChapterStrategy = QuotationMarkUpdateStrategy.ApplyFull,
+            List<QuotationMarkUpdateStrategy> chapterStrategies = null
         )
         {
-            _defaultChapterAction = defaultChapterAction;
-            _chapterActions = chapterActions ?? new List<QuotationMarkUpdateStrategy>();
+            _defaultChapterAction = defaultChapterStrategy;
+            _chapterActions = chapterStrategies ?? new List<QuotationMarkUpdateStrategy>();
         }
 
         public QuotationMarkUpdateStrategy GetActionForChapter(int chapterNumber)

@@ -230,7 +230,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 )
             )
             {
-                // handle cases of identical opening/closing marks
+                // Handle cases of identical opening/closing marks
                 if (
                     matches1.Count == 2
                     && _quoteConventions.IsQuotationMarkDirectionAmbiguous(mark1)
@@ -241,11 +241,11 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                     continue;
                 }
 
-                // skip verses where quotation mark pairs are ambiguous
+                // Skip verses where quotation mark pairs are ambiguous
                 if (matches1.Count > 1)
                     continue;
 
-                // find matching closing marks
+                // Find matching closing marks
                 foreach (
                     (string mark2, List<QuotationMarkStringMatch> matches2) in _groupedQuotationMarks.Select(kvp =>
                         (kvp.Key, kvp.Value)

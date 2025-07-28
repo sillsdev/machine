@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkStringMatch
     {
-        // No LatinLetterPattern or LetternPattern because C# does not support it in the same way as Python. Using UnicodeInfo to mirror machine.py
+        // No LatinLetterPattern or LetterPattern because C# does not support it in the same way as Python. Using UnicodeInfo to mirror machine.py
         private static readonly Regex WhitespacePattern = new Regex(@"[\s~]", RegexOptions.Compiled);
         private static readonly Regex PunctuationPattern = new Regex(@"[\.,;\?!\)\]\-—۔،؛]", RegexOptions.Compiled);
         private static readonly Regex QuoteIntroducerPattern = new Regex(@"[:,]\s*$", RegexOptions.Compiled);
@@ -62,7 +62,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         {
             get
             {
-                if (StartIndex == 0)
+                if (IsAtStartOfSegment)
                 {
                     TextSegment previousSegment = TextSegment.PreviousSegment;
                     if (previousSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
@@ -101,14 +101,14 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         public bool TrailingSubstringMatches(Regex regexPattern) =>
             regexPattern.IsMatch(TextSegment.SubstringAfter(EndIndex));
 
-        // this assumes that the two matches occur in the same verse
+        // This assumes that the two matches occur in the same verse
         public bool Precedes(QuotationMarkStringMatch other)
         {
             return TextSegment.IndexInVerse < other.TextSegment.IndexInVerse
                 || (TextSegment.IndexInVerse == other.TextSegment.IndexInVerse && StartIndex < other.StartIndex);
         }
 
-        // not used, but a useful method for debugging
+        // Not used, but a useful method for debugging
         public string Context()
         {
             int contextStartIndex = Math.Max(StartIndex - 10, 0);

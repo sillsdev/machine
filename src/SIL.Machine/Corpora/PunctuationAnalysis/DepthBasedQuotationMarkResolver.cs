@@ -110,7 +110,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             );
             QuoteContinuerMarks.Push(quote);
             ContinuerStyle = quoteContinuerStyle;
-            if (QuoteContinuerMarks.Count == quotationMarkResolverState.Quotations.Count)
+            if (CurrentDepth == quotationMarkResolverState.CurrentDepth)
             {
                 QuoteContinuerMarks.Clear();
             }
@@ -158,7 +158,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 if (quotationMarkMatch.StartIndex > 0)
                     return false;
 
-                // check the next quotation mark match, since quote continuers must appear consecutively
+                // Check the next quotation mark match, since quote continuers must appear consecutively
                 if (_quotationMarkResolverState.AreMoreThanNQuotesOpen(1))
                 {
                     if (nextMatch == null || nextMatch.StartIndex != quotationMarkMatch.EndIndex)
@@ -194,11 +194,11 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 if (quotationMarkMatch.StartIndex > 0)
                     return false;
 
-                // this has only been observed with guillemets so far
+                // This has only been observed with guillemets so far
                 if (quotationMarkMatch.QuotationMark != "»")
                     return false;
 
-                // check the next quotation mark match, since quote continuers must appear consecutively
+                // Check the next quotation mark match, since quote continuers must appear consecutively
                 if (_quotationMarkResolverState.AreMoreThanNQuotesOpen(1))
                 {
                     if (nextMatch == null || nextMatch.StartIndex != quotationMarkMatch.EndIndex)
@@ -227,7 +227,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             if (!_settings.IsValidOpeningQuotationMark(quotationMarkMatch))
                 return false;
 
-            // if the quote is ambiguous, use whitespace as clue
+            // If the quote is ambiguous, use whitespace as clue
             if (_settings.IsValidClosingQuotationMark(quotationMarkMatch))
             {
                 return (
@@ -244,7 +244,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             if (!_settings.IsValidClosingQuotationMark(quotationMarkMatch))
                 return false;
 
-            // if the quote is ambiguous, use whitespace as clue
+            // If the quote is ambiguous, use whitespace as clue
             if (_settings.IsValidOpeningQuotationMark(quotationMarkMatch))
             {
                 return (
@@ -332,13 +332,13 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 return true;
             }
 
-            // potential final s possessive (e.g. Moses')
+            // Potential final s possessive (e.g. Moses')
             if (
                 quotationMarkMatch.PreviousCharacterMatches(new Regex(@"s", RegexOptions.Compiled))
                 && (quotationMarkMatch.HasTrailingWhitespace() || quotationMarkMatch.HasTrailingPunctuation())
             )
             {
-                // check whether it could be a closing quotation mark
+                // Check whether it could be a closing quotation mark
                 if (!_quotationMarkResolverState.HasOpenQuotationMark)
                     return true;
                 if (
@@ -362,7 +362,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 }
             }
 
-            // for languages that use apostrophes at teh start and end of words //TODO misspelled comment
+            // For languages that use apostrophes at teh start and end of words //TODO misspelled comment
             if (
                 !_quotationMarkResolverState.HasOpenQuotationMark && quotationMarkMatch.QuotationMark == "'"
                 || _quotationMarkResolverState.HasOpenQuotationMark

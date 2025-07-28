@@ -415,7 +415,7 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var categorizerForDenorm = new QuotationMarkCategorizer(
-            new QuotationMarkUpdateResolutionSettings(standardEnglish, standardEnglish),
+            new QuotationMarkUpdateResolutionSettings(standardEnglish),
             resolverState,
             continuerState
         );
@@ -720,7 +720,7 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var categorizerForDenorm = new QuotationMarkCategorizer(
-            new QuotationMarkUpdateResolutionSettings(westernEuropeanQuoteConvention, westernEuropeanQuoteConvention),
+            new QuotationMarkUpdateResolutionSettings(westernEuropeanQuoteConvention),
             resolverState,
             continuerState
         );

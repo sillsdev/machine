@@ -6,8 +6,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         public int Depth { get; }
         public QuotationMarkDirection Direction { get; }
         public TextSegment TextSegment { get; }
-        public int StartIndex { get; }
-        public int EndIndex { get; }
+        public int StartIndex { get; private set; }
+        public int EndIndex { get; private set; }
 
         public QuotationMarkMetadata(
             string quotationMark,
@@ -24,6 +24,14 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             TextSegment = textSegment;
             StartIndex = startIndex;
             EndIndex = endIndex;
+        }
+
+        public int Length => EndIndex - StartIndex;
+
+        public void ShiftIndices(int shiftAmount)
+        {
+            StartIndex += shiftAmount;
+            EndIndex += shiftAmount;
         }
 
         public override bool Equals(object obj)
@@ -56,11 +64,14 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         {
             string updatedQuotationMark = quoteConvention.GetExpectedQuotationMark(Depth, Direction);
             if (updatedQuotationMark.Equals(QuotationMark))
-            {
                 return;
-            }
 
             TextSegment.ReplaceSubstring(StartIndex, EndIndex, updatedQuotationMark);
+
+            if (updatedQuotationMark.Length != QuotationMark.Length)
+            {
+                EndIndex += updatedQuotationMark.Length - QuotationMark.Length;
+            }
         }
     }
 }

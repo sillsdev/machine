@@ -106,7 +106,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             {
                 _nextTextSegmentBuilder.SetText(text);
                 TextSegment textSegment = _nextTextSegmentBuilder.Build();
-                // don't look past verse boundaries, to enable identical functionality in the
+                // Don't look past verse boundaries, to enable identical functionality in the
                 // online one-verse-at-a-time (QuotationMarkDenormalizationScriptureUpdateBlockHandler)
                 // and offline whole-book-at-once settings (QuoteConventionDetector)
                 if (_textSegments.Count > 0 && !textSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse))

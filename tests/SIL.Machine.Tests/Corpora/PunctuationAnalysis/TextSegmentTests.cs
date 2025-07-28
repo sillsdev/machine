@@ -105,8 +105,8 @@ public class TextSegmentTests
         segmentWithDifferentIndex.IndexInVerse = 2;
 
         Assert.That(segmentWithIndex, Is.EqualTo(segmentWithSameIndex));
-        Assert.IsTrue(segmentWithIndex != segmentWithDifferentIndex);
-        Assert.IsTrue(segmentWithIndex != basicSegment);
+        Assert.That(segmentWithIndex, Is.Not.EqualTo(segmentWithDifferentIndex));
+        Assert.That(segmentWithIndex, Is.Not.EqualTo(basicSegment));
 
         var segmentWithPrecedingMarker = (
             new TextSegment.Builder().SetText("text1").AddPrecedingMarker(UsfmMarkerType.Verse).Build()
@@ -145,13 +145,13 @@ public class TextSegmentTests
         segmentWithDifferentNumVerses.NumSegmentsInVerse = 4;
 
         Assert.That(segmentWithNumVerses, Is.EqualTo(segmentWithSameNumVerses));
-        Assert.IsTrue(segmentWithNumVerses != segmentWithDifferentNumVerses);
-        Assert.IsTrue(segmentWithNumVerses != basicSegment);
+        Assert.That(segmentWithNumVerses, Is.Not.EqualTo(segmentWithDifferentNumVerses));
+        Assert.That(segmentWithNumVerses, Is.Not.EqualTo(basicSegment));
 
         Assert.That(segmentWithPrecedingMarker, Is.EqualTo(segmentWithSamePrecedingMarker));
-        Assert.IsTrue(segmentWithPrecedingMarker != segmentWithDifferentPrecedingMarker);
+        Assert.That(segmentWithPrecedingMarker, Is.Not.EqualTo(segmentWithDifferentPrecedingMarker));
         Assert.That(segmentWithPrecedingMarker, Is.EqualTo(segmentWithMultiplePrecedingMarkers));
-        Assert.IsTrue(segmentWithPrecedingMarker != basicSegment);
+        Assert.That(segmentWithPrecedingMarker, Is.Not.EqualTo(basicSegment));
 
         var segmentWithPreviousSegment = new TextSegment.Builder().SetText("text1").Build();
         segmentWithPreviousSegment.PreviousSegment = segmentWithNumVerses;
