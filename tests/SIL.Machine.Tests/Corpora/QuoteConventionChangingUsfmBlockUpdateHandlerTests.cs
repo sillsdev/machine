@@ -706,7 +706,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(multiCharacterQuotationMarks[3].TextSegment, Is.EqualTo(multiCharacterTextSegment));
 
         QuoteConventionChangingUsfmUpdateBlockHandler singleCharToMultiCharQuoteConventionChanger =
-            CreateQuoteConventionChangingUsfmUpdateBlockHandler("typewriter_french", "standard_english");
+            CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "typewriter_french");
 
         TextSegment singleCharacterTextSegment = new TextSegment.Builder()
             .SetText("this “is ‘a test segment’ ”")
@@ -757,7 +757,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(singleCharacterQuotationMarks[1].StartIndex, Is.EqualTo(10));
         Assert.That(singleCharacterQuotationMarks[1].EndIndex, Is.EqualTo(11));
         Assert.That(singleCharacterQuotationMarks[1].TextSegment, Is.EqualTo(singleCharacterTextSegment));
-        Assert.That(multiCharacterQuotationMarks[2].StartIndex, Is.EqualTo(25));
+        Assert.That(singleCharacterQuotationMarks[2].StartIndex, Is.EqualTo(25));
         Assert.That(singleCharacterQuotationMarks[2].EndIndex, Is.EqualTo(26));
         Assert.That(singleCharacterQuotationMarks[2].TextSegment, Is.EqualTo(singleCharacterTextSegment));
         Assert.That(singleCharacterQuotationMarks[3].StartIndex, Is.EqualTo(27));

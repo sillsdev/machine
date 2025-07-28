@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace SIL.Machine.Corpora.PunctuationAnalysis;
 
 [TestFixture]
-public class QuoteConventionDetectorTests
+public class QuotationConventionDetectorTests
 {
     // Text comes from the World English Bible, which is in the public domain.
     [Test]

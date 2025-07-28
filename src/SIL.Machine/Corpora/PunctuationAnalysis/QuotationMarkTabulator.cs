@@ -108,7 +108,9 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             int totalOpeningCount
         ) FindMostCommonQuotationMarkWithDepthAndDirection(int depth, QuotationMarkDirection direction)
         {
-            return _quotationCountsByDepthAndDirection[(depth, direction)].FindBestQuotationMarkProportion();
+            return _quotationCountsByDepthAndDirection.TryGetValue((depth, direction), out QuotationMarkCounts counts)
+                ? counts.FindBestQuotationMarkProportion()
+                : (null, 0, 0);
         }
 
         public string GetSummaryMessage()
