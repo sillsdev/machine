@@ -7,20 +7,20 @@ namespace SIL.Machine.Corpora
     public class FallbackQuotationMarkResolver : IQuotationMarkResolver
     {
         private readonly IQuotationMarkResolutionSettings _settings;
-        private QuotationMarkMetadata _lastQuotationMark;
-        private readonly HashSet<QuotationMarkResolutionIssue> _issues;
+        public QuotationMarkMetadata LastQuotationMark { get; set; }
+        public HashSet<QuotationMarkResolutionIssue> Issues { get; }
 
         public FallbackQuotationMarkResolver(IQuotationMarkResolutionSettings settings)
         {
             _settings = settings;
-            _lastQuotationMark = null;
-            _issues = new HashSet<QuotationMarkResolutionIssue>();
+            LastQuotationMark = null;
+            Issues = new HashSet<QuotationMarkResolutionIssue>();
         }
 
         public void Reset()
         {
-            _lastQuotationMark = null;
-            _issues.Clear();
+            LastQuotationMark = null;
+            Issues.Clear();
         }
 
         public IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
@@ -47,7 +47,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    _issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
+                    Issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
                 }
             }
             else if (IsClosingQuotationMark(quotationMarkMatch))
@@ -59,13 +59,13 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    _issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
+                    Issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
                 }
             }
             else
             {
                 // Make a reasonable guess about the direction of the quotation mark
-                if (_lastQuotationMark == null || _lastQuotationMark.Direction == QuotationMarkDirection.Closing)
+                if (LastQuotationMark == null || LastQuotationMark.Direction == QuotationMarkDirection.Closing)
                 {
                     QuotationMarkMetadata quotationMark = ResolveOpeningMark(quotationMarkMatch);
                     if (quotationMark != null)
@@ -77,11 +77,11 @@ namespace SIL.Machine.Corpora
                     if (quotationMark != null)
                         yield return quotationMark;
                 }
-                _issues.Add(QuotationMarkResolutionIssue.AmbiguousQuotationMark);
+                Issues.Add(QuotationMarkResolutionIssue.AmbiguousQuotationMark);
             }
         }
 
-        private bool IsOpeningQuotationMark(QuotationMarkStringMatch match)
+        public bool IsOpeningQuotationMark(QuotationMarkStringMatch match)
         {
             if (_settings.IsValidOpeningQuotationMark(match) && _settings.IsValidClosingQuotationMark(match))
             {
@@ -100,19 +100,19 @@ namespace SIL.Machine.Corpora
             return false;
         }
 
-        private bool DoesMostRecentOpeningMarkImmediatelyPrecede(QuotationMarkStringMatch match)
+        public bool DoesMostRecentOpeningMarkImmediatelyPrecede(QuotationMarkStringMatch match)
         {
-            if (_lastQuotationMark == null || _lastQuotationMark.Direction != QuotationMarkDirection.Opening)
+            if (LastQuotationMark == null || LastQuotationMark.Direction != QuotationMarkDirection.Opening)
             {
                 return false;
             }
-            return _lastQuotationMark.TextSegment == match.TextSegment
-                && _lastQuotationMark.EndIndex == match.StartIndex;
+            return LastQuotationMark.TextSegment.Equals(match.TextSegment)
+                && LastQuotationMark.EndIndex == match.StartIndex;
         }
 
-        private bool IsClosingQuotationMark(QuotationMarkStringMatch match)
+        public bool IsClosingQuotationMark(QuotationMarkStringMatch match)
         {
-            if (_settings.IsValidClosingQuotationMark(match) && _settings.IsValidClosingQuotationMark(match))
+            if (_settings.IsValidOpeningQuotationMark(match) && _settings.IsValidClosingQuotationMark(match))
             {
                 return (match.HasTrailingWhitespace() || match.HasTrailingPunctuation() || match.IsAtEndOfSegment)
                     && !match.HasLeadingWhitespace();
@@ -125,7 +125,7 @@ namespace SIL.Machine.Corpora
             return false;
         }
 
-        private QuotationMarkMetadata ResolveOpeningMark(QuotationMarkStringMatch quotationMarkMatch)
+        public QuotationMarkMetadata ResolveOpeningMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             HashSet<int> possibleDepths = _settings.GetPossibleDepths(
                 quotationMarkMatch.QuotationMark,
@@ -138,11 +138,11 @@ namespace SIL.Machine.Corpora
                 possibleDepths.Min(),
                 QuotationMarkDirection.Opening
             );
-            _lastQuotationMark = quotationMark;
+            LastQuotationMark = quotationMark;
             return quotationMark;
         }
 
-        private QuotationMarkMetadata ResolveClosingMark(QuotationMarkStringMatch quotationMarkMatch)
+        public QuotationMarkMetadata ResolveClosingMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             HashSet<int> possibleDepths = _settings.GetPossibleDepths(
                 quotationMarkMatch.QuotationMark,
@@ -155,13 +155,13 @@ namespace SIL.Machine.Corpora
                 possibleDepths.Min(),
                 QuotationMarkDirection.Closing
             );
-            _lastQuotationMark = quote;
+            LastQuotationMark = quote;
             return quote;
         }
 
         public HashSet<QuotationMarkResolutionIssue> GetIssues()
         {
-            return _issues;
+            return Issues;
         }
     }
 }
