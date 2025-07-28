@@ -5,7 +5,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis;
 [TestFixture]
 public class PreliminaryQuotationMarkAnalyzerTests
 {
-    // ApostropheProportionStatistics tests
+    # region ApostropheProportionStatistics
     [Test]
     public void ApostropheProportionStatisticsReset()
     {
@@ -39,9 +39,10 @@ public class PreliminaryQuotationMarkAnalyzerTests
         apostropheProportionStatistics.CountCharacters(new TextSegment.Builder().SetText("ef").Build());
         Assert.IsTrue(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.3));
         Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.4));
-
-        // QuotationMarkWordPosition tests
     }
+
+    #endregion
+    #region QuotationMarkWordPosition
 
     [Test]
     public void IsMarkRarelyInitial()
@@ -179,9 +180,9 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkWordPositions.Reset();
 
         Assert.IsFalse(quotationMarkWordPositions.IsMarkCommonlyMidWord("\u201d"));
-
-        // QuotationMarkSequence tests
     }
+    #endregion
+    #region QuotationMarkSequence
 
     [Test]
     public void IsMarkMuchMoreCommonEarlier()
@@ -267,9 +268,10 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
         Assert.IsFalse(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
-
-        // QuotationMarkGrouper tests
     }
+
+    #endregion
+    #region QuotationMarkGrouper
 
     [Test]
     public void GetQuotationMarkPairs()
@@ -523,9 +525,10 @@ public class PreliminaryQuotationMarkAnalyzerTests
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
         Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\""));
-
-        // PreliminaryApostropheAnalyzer tests
     }
+
+    #endregion
+    #region PreliminaryApostropheAnalyzer
 
     [Test]
     public void ThatTheMarkMustBeAnApostrophe()
@@ -890,9 +893,10 @@ public class PreliminaryQuotationMarkAnalyzerTests
             ]
         );
         Assert.IsTrue(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
-
-        // PreliminaryQuotationMarkAnalyzer tests
     }
+
+    #endregion
+    #region  PreliminaryQuotationMarkAnalyzer
 
     [Test]
     public void ThatQuotationMarkSequenceIsUsedToDetermineOpeningAndClosingQuotes()
@@ -1171,4 +1175,5 @@ public class PreliminaryQuotationMarkAnalyzerTests
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
     }
+    #endregion
 }
