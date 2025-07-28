@@ -267,7 +267,7 @@ public class QuotationMarkStringMatchTests
             new TextSegment.Builder().SetText("sample text").Build(),
             11,
             11
-        ); //TODO 12 does not exist?
+        );
         Assert.IsFalse(quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)));
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(

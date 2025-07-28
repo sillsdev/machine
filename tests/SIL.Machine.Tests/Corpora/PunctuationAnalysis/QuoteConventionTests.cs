@@ -419,24 +419,4 @@ public class QuoteConventionTests
             Is.EqualTo("\"")
         );
     }
-
-    // [Test]
-    // public void PrintSummary()
-    // {
-    //     var quoteConvention = new QuoteConvention(
-    //         "test-quote-convention", //TODO why kebab case?
-    //         [
-    //             new SingleLevelQuoteConvention("\u201c", "\u201D"),
-    //             new SingleLevelQuoteConvention("\u2018", "\u2019"),
-    //             new SingleLevelQuoteConvention("\u201D", "\u201D"),
-    //         ]
-    //     );
-    //     var expectedSummaryMessage = (
-    //         "test-quote-convention\n"
-    //         + "\u201CFirst-level quote\u201D\n"
-    //         + "\u2018Second-level quote\u2019\n"
-    //         + "\u201DThird-level quote\u201D\n"
-    //     );
-    //     Assert.That(quoteConvention.ToString(), Is.EqualTo(expectedSummaryMessage));
-    // }
 }

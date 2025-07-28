@@ -92,8 +92,8 @@ public class TextSegmentTests
         var sameTextSegment = new TextSegment.Builder().SetText("text1").Build();
         var differentTextSegment = new TextSegment.Builder().SetText("different text").Build();
 
-        // Assert.That(basicSegment, Is.EqualTo(basicSegment)); //TODO fix
-        // Assert.That(basicSegment , Is.Not.EqualTo(new UsfmToken("text1"))); //TODO also here
+        // Assert.That(basicSegment, Is.EqualTo(basicSegment));
+        // Assert.That(basicSegment , Is.Not.EqualTo(new UsfmToken("text1")));
         Assert.That(basicSegment, Is.EqualTo(sameTextSegment));
         Assert.That(basicSegment, Is.Not.EqualTo(differentTextSegment));
 

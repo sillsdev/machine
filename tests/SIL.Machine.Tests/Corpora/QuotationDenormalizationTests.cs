@@ -55,6 +55,6 @@ public class QuotationDenormalizationTests
 
         var actualDenormalizedUsfm = updater.GetUsfm();
 
-        Assert.That(actualDenormalizedUsfm, Is.EqualTo(expectedDenormalizedUsfm).IgnoreLineEndings()); //TODO use ignore_line_endings
+        Assert.That(actualDenormalizedUsfm, Is.EqualTo(expectedDenormalizedUsfm).IgnoreLineEndings());
     }
 }
