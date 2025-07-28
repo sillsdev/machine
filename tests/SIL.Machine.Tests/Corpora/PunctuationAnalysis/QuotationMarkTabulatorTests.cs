@@ -60,8 +60,6 @@ public class QuotationMarkTabulatorTests
         Assert.That(counts.CalculateNumDifferences("\""), Is.EqualTo(2));
         Assert.That(counts.CalculateNumDifferences("'"), Is.EqualTo(2));
         Assert.That(counts.CalculateNumDifferences("\u201c"), Is.EqualTo(4));
-
-        // QuotationMarkTabulator tests
     }
 
     [Test]
@@ -209,7 +207,5 @@ public class QuotationMarkTabulatorTests
             ),
             Is.EqualTo(0.33333333333333).Within(1e-9)
         );
-        //
-        //
     }
 }
