@@ -11,7 +11,7 @@ namespace SIL.Machine.Corpora
         private readonly QuoteConvention _targetQuoteConvention;
         private readonly QuotationMarkFinder _quotationMarkFinder;
         private readonly DepthBasedQuotationMarkResolver _quotationMarkResolver;
-        private readonly bool _willFallbackModeWork;
+        public bool WillFallbackModeWork;
 
         public QuotationMarkUpdateFirstPass(
             QuoteConvention sourceQuoteConvention,
@@ -26,26 +26,26 @@ namespace SIL.Machine.Corpora
             _quotationMarkResolver = new DepthBasedQuotationMarkResolver(
                 new QuotationMarkUpdateResolutionSettings(sourceQuoteConvention, targetQuoteConvention)
             );
-            _willFallbackModeWork = CheckWhetherFallbackModeWillWork(sourceQuoteConvention, targetQuoteConvention);
+            WillFallbackModeWork = CheckWhetherFallbackModeWillWork(sourceQuoteConvention, targetQuoteConvention);
         }
 
-        private bool CheckWhetherFallbackModeWillWork(
+        public bool CheckWhetherFallbackModeWillWork(
             QuoteConvention sourceQuoteConvention,
             QuoteConvention targetQuoteConvention
         )
         {
             var targetMarksBySourceMarks = new Dictionary<string, HashSet<string>>();
-            foreach (int level in Enumerable.Range(1, sourceQuoteConvention.NumLevels))
+            foreach (int depth in Enumerable.Range(1, sourceQuoteConvention.NumLevels))
             {
-                string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtLevel(level);
+                string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtDepth(depth);
                 if (!targetMarksBySourceMarks.TryGetValue(openingQuotationMark, out HashSet<string> marks))
                 {
                     marks = new HashSet<string>();
                     targetMarksBySourceMarks[openingQuotationMark] = marks;
                 }
-                if (level <= targetQuoteConvention.NumLevels)
+                if (depth <= targetQuoteConvention.NumLevels)
                 {
-                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtLevel(level));
+                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth));
                 }
             }
 
@@ -62,7 +62,7 @@ namespace SIL.Machine.Corpora
             return bestActionsByChapter;
         }
 
-        private QuotationMarkUpdateStrategy FindBestStrategyForChapter(Chapter chapter)
+        public QuotationMarkUpdateStrategy FindBestStrategyForChapter(Chapter chapter)
         {
             List<QuotationMarkStringMatch> quotationMarkMatches =
                 _quotationMarkFinder.FindAllPotentialQuotationMarksInChapter(chapter);
@@ -75,7 +75,7 @@ namespace SIL.Machine.Corpora
             return ChooseBestStrategyBasedOnObservedIssues(_quotationMarkResolver.GetIssues());
         }
 
-        private QuotationMarkUpdateStrategy ChooseBestStrategyBasedOnObservedIssues(
+        public QuotationMarkUpdateStrategy ChooseBestStrategyBasedOnObservedIssues(
             HashSet<QuotationMarkResolutionIssue> issues
         )
         {
@@ -87,7 +87,7 @@ namespace SIL.Machine.Corpora
                 || issues.Contains(QuotationMarkResolutionIssue.TooDeepNesting)
             )
             {
-                if (_willFallbackModeWork)
+                if (WillFallbackModeWork)
                     return QuotationMarkUpdateStrategy.ApplyFallback;
                 return QuotationMarkUpdateStrategy.Skip;
             }

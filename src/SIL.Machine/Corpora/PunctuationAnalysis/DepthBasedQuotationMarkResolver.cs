@@ -78,9 +78,9 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
     public class QuoteContinuerState
     {
-        private Stack<QuotationMarkMetadata> _quoteContinuerMarks;
+        public Stack<QuotationMarkMetadata> QuoteContinuerMarks { get; private set; }
         public QuoteContinuerStyle ContinuerStyle { get; protected set; }
-        public int CurrentDepth => _quoteContinuerMarks.Count;
+        public int CurrentDepth => QuoteContinuerMarks.Count;
 
         public QuoteContinuerState()
         {
@@ -89,13 +89,13 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         public void Reset()
         {
-            _quoteContinuerMarks = new Stack<QuotationMarkMetadata>();
+            QuoteContinuerMarks = new Stack<QuotationMarkMetadata>();
             ContinuerStyle = QuoteContinuerStyle.Undetermined;
         }
 
         public bool ContinuerHasBeenObserved()
         {
-            return _quoteContinuerMarks.Count > 0;
+            return QuoteContinuerMarks.Count > 0;
         }
 
         public QuotationMarkMetadata AddQuoteContinuer(
@@ -105,14 +105,14 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         )
         {
             QuotationMarkMetadata quote = quotationMarkMatch.Resolve(
-                _quoteContinuerMarks.Count + 1,
+                QuoteContinuerMarks.Count + 1,
                 QuotationMarkDirection.Opening
             );
-            _quoteContinuerMarks.Push(quote);
+            QuoteContinuerMarks.Push(quote);
             ContinuerStyle = quoteContinuerStyle;
-            if (_quoteContinuerMarks.Count == quotationMarkResolverState.Quotations.Count)
+            if (QuoteContinuerMarks.Count == quotationMarkResolverState.Quotations.Count)
             {
-                _quoteContinuerMarks.Clear();
+                QuoteContinuerMarks.Clear();
             }
             return quote;
         }
@@ -381,33 +381,33 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
     public class DepthBasedQuotationMarkResolver : IQuotationMarkResolver
     {
-        private readonly IQuotationMarkResolutionSettings _settings;
-        private readonly QuotationMarkResolverState _quotationMarkResolverState;
-        private readonly QuoteContinuerState _quoteContinuerState;
-        private readonly QuotationMarkCategorizer _quotationMarkCategorizer;
-        private readonly HashSet<QuotationMarkResolutionIssue> _issues;
+        public readonly IQuotationMarkResolutionSettings Settings;
+        public readonly QuotationMarkResolverState QuotationMarkResolverState;
+        public readonly QuoteContinuerState QuoteContinuerState;
+        public readonly QuotationMarkCategorizer QuotationMarkCategorizer;
+        protected readonly HashSet<QuotationMarkResolutionIssue> Issues;
 
         public DepthBasedQuotationMarkResolver(IQuotationMarkResolutionSettings settings)
         {
-            _settings = settings;
-            _quotationMarkResolverState = new QuotationMarkResolverState();
-            _quoteContinuerState = new QuoteContinuerState();
-            _quotationMarkCategorizer = new QuotationMarkCategorizer(
-                _settings,
-                _quotationMarkResolverState,
-                _quoteContinuerState
+            Settings = settings;
+            QuotationMarkResolverState = new QuotationMarkResolverState();
+            QuoteContinuerState = new QuoteContinuerState();
+            QuotationMarkCategorizer = new QuotationMarkCategorizer(
+                Settings,
+                QuotationMarkResolverState,
+                QuoteContinuerState
             );
-            _issues = new HashSet<QuotationMarkResolutionIssue>();
+            Issues = new HashSet<QuotationMarkResolutionIssue>();
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
-            _quotationMarkResolverState.Reset();
-            _quoteContinuerState.Reset();
-            _issues.Clear();
+            QuotationMarkResolverState.Reset();
+            QuoteContinuerState.Reset();
+            Issues.Clear();
         }
 
-        public IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
+        public virtual IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
             List<QuotationMarkStringMatch> quotationMarkMatches
         )
         {
@@ -423,8 +423,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 foreach (QuotationMarkMetadata q in ResolveQuotationMark(quotationMarkMatch, previousMark, nextMark))
                     yield return q;
             }
-            if (_quotationMarkResolverState.HasOpenQuotationMark)
-                _issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
+            if (QuotationMarkResolverState.HasOpenQuotationMark)
+                Issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
         }
 
         public IEnumerable<QuotationMarkMetadata> ResolveQuotationMark(
@@ -433,9 +433,9 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             QuotationMarkStringMatch nextMatch
         )
         {
-            if (_quotationMarkCategorizer.IsOpeningQuotationMark(quotationMarkMatch))
+            if (QuotationMarkCategorizer.IsOpeningQuotationMark(quotationMarkMatch))
             {
-                if (_quotationMarkCategorizer.IsEnglishQuoteContinuer(quotationMarkMatch, previousMatch, nextMatch))
+                if (QuotationMarkCategorizer.IsEnglishQuoteContinuer(quotationMarkMatch, previousMatch, nextMatch))
                 {
                     yield return ProcessQuoteContinuer(quotationMarkMatch, QuoteContinuerStyle.English);
                 }
@@ -443,23 +443,23 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 {
                     if (IsDepthTooGreat())
                     {
-                        _issues.Add(QuotationMarkResolutionIssue.TooDeepNesting);
+                        Issues.Add(QuotationMarkResolutionIssue.TooDeepNesting);
                         yield break;
                     }
 
                     yield return ProcessOpeningMark(quotationMarkMatch);
                 }
             }
-            else if (_quotationMarkCategorizer.IsApostrophe(quotationMarkMatch, nextMatch)) { }
-            else if (_quotationMarkCategorizer.IsClosingQuotationMark(quotationMarkMatch))
+            else if (QuotationMarkCategorizer.IsApostrophe(quotationMarkMatch, nextMatch)) { }
+            else if (QuotationMarkCategorizer.IsClosingQuotationMark(quotationMarkMatch))
             {
-                if (_quotationMarkCategorizer.IsSpanishQuoteContinuer(quotationMarkMatch, previousMatch, nextMatch))
+                if (QuotationMarkCategorizer.IsSpanishQuoteContinuer(quotationMarkMatch, previousMatch, nextMatch))
                 {
                     yield return ProcessQuoteContinuer(quotationMarkMatch, QuoteContinuerStyle.Spanish);
                 }
-                else if (!_quotationMarkResolverState.HasOpenQuotationMark)
+                else if (!QuotationMarkResolverState.HasOpenQuotationMark)
                 {
-                    _issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
+                    Issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
                     yield break;
                 }
                 else
@@ -467,21 +467,21 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                     yield return ProcessClosingMark(quotationMarkMatch);
                 }
             }
-            else if (_quotationMarkCategorizer.IsMalformedClosingQuotationMark(quotationMarkMatch))
+            else if (QuotationMarkCategorizer.IsMalformedClosingQuotationMark(quotationMarkMatch))
             {
                 yield return ProcessClosingMark(quotationMarkMatch);
             }
-            else if (_quotationMarkCategorizer.IsMalformedOpeningQuotationMark(quotationMarkMatch))
+            else if (QuotationMarkCategorizer.IsMalformedOpeningQuotationMark(quotationMarkMatch))
             {
                 yield return ProcessOpeningMark(quotationMarkMatch);
             }
-            else if (_quotationMarkCategorizer.IsUnpairedClosingQuotationMark(quotationMarkMatch))
+            else if (QuotationMarkCategorizer.IsUnpairedClosingQuotationMark(quotationMarkMatch))
             {
-                _issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
+                Issues.Add(QuotationMarkResolutionIssue.UnpairedQuotationMark);
             }
             else
             {
-                _issues.Add(QuotationMarkResolutionIssue.AmbiguousQuotationMark);
+                Issues.Add(QuotationMarkResolutionIssue.AmbiguousQuotationMark);
             }
         }
 
@@ -490,51 +490,51 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             QuoteContinuerStyle continuerStyle
         )
         {
-            return _quoteContinuerState.AddQuoteContinuer(
+            return QuoteContinuerState.AddQuoteContinuer(
                 quotationMarkMatch,
-                _quotationMarkResolverState,
+                QuotationMarkResolverState,
                 continuerStyle
             );
         }
 
         private bool IsDepthTooGreat()
         {
-            return _quotationMarkResolverState.AreMoreThanNQuotesOpen(3);
+            return QuotationMarkResolverState.AreMoreThanNQuotesOpen(3);
         }
 
         private QuotationMarkMetadata ProcessOpeningMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             if (
-                !_settings.MetadataMatchesQuotationMark(
+                !Settings.MetadataMatchesQuotationMark(
                     quotationMarkMatch.QuotationMark,
-                    _quotationMarkResolverState.CurrentDepth + 1,
+                    QuotationMarkResolverState.CurrentDepth + 1,
                     QuotationMarkDirection.Opening
                 )
             )
             {
-                _issues.Add(QuotationMarkResolutionIssue.IncompatibleQuotationMark);
+                Issues.Add(QuotationMarkResolutionIssue.IncompatibleQuotationMark);
             }
-            return _quotationMarkResolverState.AddOpeningQuotationMark(quotationMarkMatch);
+            return QuotationMarkResolverState.AddOpeningQuotationMark(quotationMarkMatch);
         }
 
         private QuotationMarkMetadata ProcessClosingMark(QuotationMarkStringMatch quotationMarkMatch)
         {
             if (
-                !_settings.MetadataMatchesQuotationMark(
+                !Settings.MetadataMatchesQuotationMark(
                     quotationMarkMatch.QuotationMark,
-                    _quotationMarkResolverState.CurrentDepth,
+                    QuotationMarkResolverState.CurrentDepth,
                     QuotationMarkDirection.Closing
                 )
             )
             {
-                _issues.Add(QuotationMarkResolutionIssue.IncompatibleQuotationMark);
+                Issues.Add(QuotationMarkResolutionIssue.IncompatibleQuotationMark);
             }
-            return _quotationMarkResolverState.AddClosingQuotationMark(quotationMarkMatch);
+            return QuotationMarkResolverState.AddClosingQuotationMark(quotationMarkMatch);
         }
 
-        public HashSet<QuotationMarkResolutionIssue> GetIssues()
+        public virtual HashSet<QuotationMarkResolutionIssue> GetIssues()
         {
-            return _issues;
+            return Issues;
         }
     }
 }

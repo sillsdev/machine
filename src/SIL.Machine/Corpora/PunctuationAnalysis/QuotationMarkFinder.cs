@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -6,15 +7,12 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkFinder
     {
-        private static readonly Regex QuotationMarkPattern = new Regex(
-            @"(\p{Pi}|\p{Pf}|<<|>>|<|>)",
-            RegexOptions.Compiled
-        );
+        private static readonly Regex TypewriterGuillemetsPattern = new Regex(@"(<<|>>|<|>)", RegexOptions.Compiled);
         private readonly QuoteConventionSet _quoteConventions;
 
-        public QuotationMarkFinder(QuoteConventionSet quoteConventionSet)
+        public QuotationMarkFinder(QuoteConventionSet quoteConventions)
         {
-            _quoteConventions = quoteConventionSet;
+            _quoteConventions = quoteConventions;
         }
 
         public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInChapter(Chapter chapter)
@@ -30,7 +28,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             return FindAllPotentialQuotationMarksInTextSegments(verse.TextSegments);
         }
 
-        public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegments(
+        public virtual List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegments(
             List<TextSegment> textSegments
         )
         {
@@ -39,7 +37,28 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         public List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegment(TextSegment textSegment)
         {
-            return QuotationMarkPattern
+            TextElementEnumerator charactersEnumerator = StringInfo.GetTextElementEnumerator(textSegment.Text);
+            int index = 0;
+            List<QuotationMarkStringMatch> quotationMarkStringMatches = new List<QuotationMarkStringMatch>();
+            while (charactersEnumerator.MoveNext())
+            {
+                string currentCharacterString = charactersEnumerator.Current.ToString();
+                if (
+                    (
+                        QuotationMarkStringMatch.HasUnicodeProperty(currentCharacterString, "QUOTATION MARK")
+                        || QuotationMarkStringMatch.HasUnicodeProperty(currentCharacterString, "APOSTROPHE")
+                    )
+                    && (
+                        _quoteConventions.IsValidOpeningQuotationMark(charactersEnumerator.Current.ToString())
+                        || _quoteConventions.IsValidClosingQuotationMark(charactersEnumerator.Current.ToString())
+                    )
+                )
+                {
+                    quotationMarkStringMatches.Add(new QuotationMarkStringMatch(textSegment, index, index + 1));
+                }
+                index++;
+            }
+            List<QuotationMarkStringMatch> typewriterGuillemetMatches = TypewriterGuillemetsPattern
                 .Matches(textSegment.Text)
                 .Cast<Match>()
                 .Where(match =>
@@ -51,6 +70,11 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                     m.Groups[0].Index,
                     m.Groups[0].Index + m.Groups[0].Length
                 ))
+                .ToList();
+
+            return quotationMarkStringMatches
+                .Concat(typewriterGuillemetMatches)
+                .OrderBy(match => match.StartIndex)
                 .ToList();
         }
     }

@@ -17,8 +17,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         {
             foreach ((int index, TextSegment textSegment) in TextSegments.Select((t, i) => (i, t)))
             {
-                textSegment.SetIndexInVerse(index);
-                textSegment.SetNumSegmentsInVerse(TextSegments.Count);
+                textSegment.IndexInVerse = index;
+                textSegment.NumSegmentsInVerse = TextSegments.Count;
             }
         }
     }

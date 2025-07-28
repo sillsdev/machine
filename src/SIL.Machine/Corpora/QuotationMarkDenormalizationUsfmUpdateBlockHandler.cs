@@ -2,10 +2,10 @@ using SIL.Machine.Corpora.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {
-    public class QuotationDenormalizationUsfmUpdateBlockHandler : QuoteConventionChangingUsfmUpdateBlockHandler
+    public class QuotationMarkDenormalizationUsfmUpdateBlockHandler : QuoteConventionChangingUsfmUpdateBlockHandler
     {
         // This is a convenience class so that users don't have to know to normalize the source quote convention
-        public QuotationDenormalizationUsfmUpdateBlockHandler(
+        public QuotationMarkDenormalizationUsfmUpdateBlockHandler(
             QuoteConvention sourceQuoteConvention,
             QuoteConvention targetQuoteConvention,
             QuotationMarkUpdateSettings settings = null
@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
             : base(
                 sourceQuoteConvention.Normalize(),
                 targetQuoteConvention,
-                settings == null ? new QuotationMarkUpdateSettings() : null
+                settings ?? new QuotationMarkUpdateSettings()
             ) { }
     }
 }

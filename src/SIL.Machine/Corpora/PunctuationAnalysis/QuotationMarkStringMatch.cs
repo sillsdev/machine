@@ -7,9 +7,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuotationMarkStringMatch
     {
-        private static readonly Regex LetterPattern = new Regex(@"[\p{L}\uD838[\uDE00-\uDE8F]]", RegexOptions.Compiled);
-
-        // No LatinLetterPattern because C# does not support it. Using UnicodeInfo to mirror machine.py
+        // No LatinLetterPattern or LetternPattern because C# does not support it in the same way as Python. Using UnicodeInfo to mirror machine.py
         private static readonly Regex WhitespacePattern = new Regex(@"[\s~]", RegexOptions.Compiled);
         private static readonly Regex PunctuationPattern = new Regex(@"[\.,;\?!\)\]\-—۔،؛]", RegexOptions.Compiled);
         private static readonly Regex QuoteIntroducerPattern = new Regex(@"[:,]\s*$", RegexOptions.Compiled);
@@ -23,6 +21,24 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             TextSegment = textSegment;
             StartIndex = startIndex;
             EndIndex = endIndex;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is QuotationMarkStringMatch other))
+                return false;
+            return TextSegment.Equals(other.TextSegment)
+                && StartIndex == other.StartIndex
+                && EndIndex == other.EndIndex;
+        }
+
+        public override int GetHashCode()
+        {
+            int code = 23;
+            code = code * 31 + TextSegment.GetHashCode();
+            code = code * 31 + StartIndex.GetHashCode();
+            code = code * 31 + EndIndex.GetHashCode();
+            return code;
         }
 
         public string QuotationMark =>
@@ -135,12 +151,31 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         public bool HasLetterInLeadingSubstring()
         {
-            return LeadingSubstringMatches(LetterPattern);
+            string leadingSubstring = TextSegment.SubstringBefore(StartIndex);
+            if (leadingSubstring.Length == 0)
+                return false;
+
+            TextElementEnumerator charactersEnumerator = StringInfo.GetTextElementEnumerator(leadingSubstring);
+            while (charactersEnumerator.MoveNext())
+            {
+                if (!IsLetter(charactersEnumerator.Current.ToString()))
+                    return false;
+            }
+            return true;
         }
 
         public bool HasLetterInTrailingSubstring()
         {
-            return TrailingSubstringMatches(LetterPattern);
+            string trailingSubstring = TextSegment.SubstringAfter(EndIndex);
+            if (trailingSubstring.Length == 0)
+                return false;
+            TextElementEnumerator charactersEnumerator = StringInfo.GetTextElementEnumerator(trailingSubstring);
+            while (charactersEnumerator.MoveNext())
+            {
+                if (!IsLetter(charactersEnumerator.Current.ToString()))
+                    return false;
+            }
+            return true;
         }
 
         public bool HasLeadingLatinLetter()
@@ -158,21 +193,30 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             return LeadingSubstringMatches(QuoteIntroducerPattern);
         }
 
-        private bool IsLatinScript(string characterString)
+        public static bool HasUnicodeProperty(string characterString, string attribute)
         {
-            string latinScriptAttribute = "LATIN";
             if (characterString.Length == 1)
             {
-                return UnicodeInfo.GetName(characterString[0]).Contains(latinScriptAttribute);
+                return UnicodeInfo.GetName(characterString[0]).Contains(attribute);
             }
             else if (char.IsSurrogatePair(characterString[0], characterString[1]))
             {
                 //Get true unicode value
                 int combinedCharacterValue =
                     (((int)characterString[0] - 0xD800) * 0x400) + ((int)characterString[1] - 0xDC00) + 0x10000;
-                return UnicodeInfo.GetName(combinedCharacterValue).Contains(latinScriptAttribute);
+                return UnicodeInfo.GetName(combinedCharacterValue).Contains(attribute);
             }
             return false;
+        }
+
+        private bool IsLatinScript(string characterString)
+        {
+            return HasUnicodeProperty(characterString, "LATIN");
+        }
+
+        private bool IsLetter(string characterString)
+        {
+            return HasUnicodeProperty(characterString, "LETTER");
         }
     }
 }

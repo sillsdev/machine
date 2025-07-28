@@ -76,25 +76,24 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         public double CalculateSimilarity(QuoteConvention quoteConvention)
         {
-            double numDifferences = 0.0;
-            double numTotalQuotationMarks = 0.0;
+            double weightedDifference = 0.0;
+            double totalWeight = 0.0;
             foreach ((int depth, QuotationMarkDirection direction) in _quotationCountsByDepthAndDirection.Keys)
             {
                 string expectedQuotationMark = quoteConvention.GetExpectedQuotationMark(depth, direction);
 
                 // give higher weight to shallower depths, since deeper marks are more likely to be mistakes
-                numDifferences += (
+                weightedDifference += (
                     _quotationCountsByDepthAndDirection[(depth, direction)]
                         .CalculateNumDifferences(expectedQuotationMark) * Math.Pow(2, -depth)
                 );
-                numTotalQuotationMarks +=
-                    _quotationCountsByDepthAndDirection[(depth, direction)].TotalCount * Math.Pow(2, -depth);
+                totalWeight += _quotationCountsByDepthAndDirection[(depth, direction)].TotalCount * Math.Pow(2, -depth);
             }
-            if (numTotalQuotationMarks == 0.0)
+            if (totalWeight == 0.0)
             {
                 return 0.0;
             }
-            return 1 - (numDifferences / numTotalQuotationMarks);
+            return 1 - (weightedDifference / totalWeight);
         }
     }
 }

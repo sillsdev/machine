@@ -7,7 +7,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
     {
         public static readonly IReadOnlyDictionary<string, char> QuoteNormalizationMap = new Dictionary<string, char>()
         {
-            { "\u00ab", '\'' },
+            { "\u00ab", '\"' },
             { "\u00bb", '"' },
             { "\u2018", '\'' },
             { "\u2019", '\'' },
@@ -48,24 +48,24 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
     {
         public string Name { get; }
 
-        public IReadOnlyList<SingleLevelQuoteConvention> Levels { get; }
+        public IReadOnlyList<SingleLevelQuoteConvention> LevelConventions { get; }
 
         public QuoteConvention(string name, List<SingleLevelQuoteConvention> levels)
         {
             Name = name;
-            Levels = levels;
+            LevelConventions = levels;
         }
 
-        public int NumLevels => Levels.Count;
+        public int NumLevels => LevelConventions.Count;
 
-        public string GetOpeningQuotationMarkAtLevel(int level)
+        public string GetOpeningQuotationMarkAtDepth(int depth)
         {
-            return Levels[level - 1].OpeningQuotationMark;
+            return LevelConventions[depth - 1].OpeningQuotationMark;
         }
 
-        public string GetClosingQuotationMarkAtLevel(int level)
+        public string GetClosingQuotationMarkAtDepth(int depth)
         {
-            return Levels[level - 1].ClosingQuotationMark;
+            return LevelConventions[depth - 1].ClosingQuotationMark;
         }
 
         public string GetExpectedQuotationMark(int depth, QuotationMarkDirection direction)
@@ -73,13 +73,13 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             if (depth > NumLevels || depth < 1)
                 return "";
             return direction == QuotationMarkDirection.Opening
-                ? GetOpeningQuotationMarkAtLevel(depth)
-                : GetClosingQuotationMarkAtLevel(depth);
+                ? GetOpeningQuotationMarkAtDepth(depth)
+                : GetClosingQuotationMarkAtDepth(depth);
         }
 
-        private bool IncludesOpeningQuotationMark(string openingQuotationMark)
+        public bool IncludesOpeningQuotationMark(string openingQuotationMark)
         {
-            foreach (SingleLevelQuoteConvention level in Levels)
+            foreach (SingleLevelQuoteConvention level in LevelConventions)
             {
                 if (level.OpeningQuotationMark == openingQuotationMark)
                     return true;
@@ -87,9 +87,9 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             return false;
         }
 
-        private bool IncludesClosingQuotationMark(string closingQuotationMark)
+        public bool IncludesClosingQuotationMark(string closingQuotationMark)
         {
-            foreach (SingleLevelQuoteConvention level in Levels)
+            foreach (SingleLevelQuoteConvention level in LevelConventions)
             {
                 if (level.ClosingQuotationMark == closingQuotationMark)
                     return true;
@@ -100,7 +100,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         public HashSet<int> GetPossibleDepths(string quotationMark, QuotationMarkDirection direction)
         {
             var depths = new HashSet<int>();
-            foreach ((int depth, SingleLevelQuoteConvention level) in Levels.Select((l, i) => (i + 1, l)))
+            foreach ((int depth, SingleLevelQuoteConvention level) in LevelConventions.Select((l, i) => (i + 1, l)))
             {
                 if (direction == QuotationMarkDirection.Opening && level.OpeningQuotationMark == quotationMark)
                     depths.Add(depth);
@@ -127,16 +127,16 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             }
 
             // we require the first-level quotes to have been observed
-            if (!openingQuotationMarks.Contains(GetOpeningQuotationMarkAtLevel(1)))
+            if (!openingQuotationMarks.Contains(GetOpeningQuotationMarkAtDepth(1)))
                 return false;
-            if (!closingQuotationMarks.Contains(GetClosingQuotationMarkAtLevel(1)))
+            if (!closingQuotationMarks.Contains(GetClosingQuotationMarkAtDepth(1)))
                 return false;
             return true;
         }
 
         public QuoteConvention Normalize()
         {
-            return new QuoteConvention(Name + "_normalized", Levels.Select(l => l.Normalize()).ToList());
+            return new QuoteConvention(Name + "_normalized", LevelConventions.Select(l => l.Normalize()).ToList());
         }
     }
 }

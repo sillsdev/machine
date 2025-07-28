@@ -4,25 +4,37 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class TextSegment
     {
-        private string _text;
-        private UsfmMarkerType _immediatePrecedingMarker;
-        private readonly HashSet<UsfmMarkerType> _markersInPrecedingContext;
-        private TextSegment _previousSegment;
-        private TextSegment _nextSegment;
-        private int _indexInVerse;
-        private int _numSegmentsInVerse;
-        private UsfmToken _usfmToken;
+        public string Text { get; private set; }
+        public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
+        public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
+        public TextSegment PreviousSegment { get; set; }
+        public TextSegment NextSegment { get; set; }
+        public int IndexInVerse { get; set; }
+        public int NumSegmentsInVerse { get; set; }
+        public UsfmToken UsfmToken { get; private set; }
 
         public TextSegment()
         {
-            _text = "";
-            _immediatePrecedingMarker = UsfmMarkerType.NoMarker;
-            _markersInPrecedingContext = new HashSet<UsfmMarkerType>();
-            _previousSegment = null;
-            _nextSegment = null;
-            _indexInVerse = 0;
-            _numSegmentsInVerse = 0;
-            _usfmToken = null;
+            Text = "";
+            ImmediatePrecedingMarker = UsfmMarkerType.NoMarker;
+            MarkersInPrecedingContext = new HashSet<UsfmMarkerType>();
+            PreviousSegment = null;
+            NextSegment = null;
+            IndexInVerse = 0;
+            NumSegmentsInVerse = 0;
+            UsfmToken = null;
+        }
+
+        public TextSegment(string text)
+        {
+            Text = text;
+            ImmediatePrecedingMarker = UsfmMarkerType.NoMarker;
+            MarkersInPrecedingContext = new HashSet<UsfmMarkerType>();
+            PreviousSegment = null;
+            NextSegment = null;
+            IndexInVerse = 0;
+            NumSegmentsInVerse = 0;
+            UsfmToken = null;
         }
 
         public override bool Equals(object obj)
@@ -31,88 +43,60 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             {
                 return false;
             }
-            return _text.Equals(t._text)
-                && _indexInVerse.Equals(t._indexInVerse)
-                && _numSegmentsInVerse.Equals(t._numSegmentsInVerse)
+            return Text.Equals(t.Text)
+                && IndexInVerse.Equals(t.IndexInVerse)
+                && NumSegmentsInVerse.Equals(t.NumSegmentsInVerse)
                 && (
-                    (_usfmToken == null && t._usfmToken == null)
-                    || (_usfmToken != null && t._usfmToken != null && _usfmToken.Equals(t._usfmToken))
+                    (UsfmToken == null && t.UsfmToken == null)
+                    || (UsfmToken != null && t.UsfmToken != null && UsfmToken.Equals(t.UsfmToken))
                 )
-                && _immediatePrecedingMarker.Equals(t._immediatePrecedingMarker);
+                && ImmediatePrecedingMarker.Equals(t.ImmediatePrecedingMarker);
         }
 
         public override int GetHashCode()
         {
             int hashCode = 23;
-            hashCode = hashCode * 31 + _text.GetHashCode();
-            hashCode = hashCode * 31 + _indexInVerse.GetHashCode();
-            hashCode = hashCode * 31 + _numSegmentsInVerse.GetHashCode();
-            hashCode = hashCode * 31 + _usfmToken.GetHashCode();
-            return hashCode * 31 + _immediatePrecedingMarker.GetHashCode();
+            hashCode = hashCode * 31 + Text.GetHashCode();
+            hashCode = hashCode * 31 + IndexInVerse.GetHashCode();
+            hashCode = hashCode * 31 + NumSegmentsInVerse.GetHashCode();
+            hashCode = hashCode * 31 + UsfmToken.GetHashCode();
+            return hashCode * 31 + ImmediatePrecedingMarker.GetHashCode();
         }
 
-        public string Text => _text;
-
-        public TextSegment PreviousSegment => _previousSegment;
-
-        public TextSegment NextSegment => _nextSegment;
-
-        public int IndexInVerse => _indexInVerse;
-
-        public int Length => _text.Length;
+        public int Length => Text.Length;
 
         public string SubstringBefore(int index)
         {
-            return _text.Substring(0, index);
+            return Text.Substring(0, index);
         }
 
         public string SubstringAfter(int index)
         {
-            return _text.Substring(index);
+            return Text.Substring(index);
         }
 
         public bool MarkerIsInPrecedingContext(UsfmMarkerType marker)
         {
-            return _markersInPrecedingContext.Contains(marker);
+            return MarkersInPrecedingContext.Contains(marker);
         }
 
         public bool IsFirstSegmentInVerse()
         {
-            return _indexInVerse == 0;
+            return IndexInVerse == 0;
         }
 
         public bool IsLastSegmentInVerse()
         {
-            return _indexInVerse == _numSegmentsInVerse - 1;
+            return IndexInVerse == NumSegmentsInVerse - 1;
         }
 
         public void ReplaceSubstring(int startIndex, int endIndex, string replacement)
         {
-            _text = SubstringBefore(startIndex) + replacement + SubstringAfter(endIndex);
-            if (_usfmToken != null)
+            Text = SubstringBefore(startIndex) + replacement + SubstringAfter(endIndex);
+            if (UsfmToken != null)
             {
-                _usfmToken.Text = _text;
+                UsfmToken.Text = Text;
             }
-        }
-
-        public void SetPreviousSegment(TextSegment previousSegment)
-        {
-            _previousSegment = previousSegment;
-        }
-
-        public void SetNextSegment(TextSegment nextSegment)
-        {
-            _nextSegment = nextSegment;
-        }
-
-        public void SetIndexInVerse(int indexInVerse)
-        {
-            _indexInVerse = indexInVerse;
-        }
-
-        public void SetNumSegmentsInVerse(int numSegmentsInVerse)
-        {
-            _numSegmentsInVerse = numSegmentsInVerse;
         }
 
         public class Builder
@@ -126,26 +110,26 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
             public Builder SetPreviousSegment(TextSegment previousSegment)
             {
-                _textSegment._previousSegment = previousSegment;
+                _textSegment.PreviousSegment = previousSegment;
                 return this;
             }
 
             public Builder AddPrecedingMarker(UsfmMarkerType marker)
             {
-                _textSegment._immediatePrecedingMarker = marker;
-                _textSegment._markersInPrecedingContext.Add(marker);
+                _textSegment.ImmediatePrecedingMarker = marker;
+                _textSegment.MarkersInPrecedingContext.Add(marker);
                 return this;
             }
 
             public Builder SetUsfmToken(UsfmToken token)
             {
-                _textSegment._usfmToken = token;
+                _textSegment.UsfmToken = token;
                 return this;
             }
 
             public Builder SetText(string text)
             {
-                _textSegment._text = text;
+                _textSegment.Text = text;
                 return this;
             }
 
