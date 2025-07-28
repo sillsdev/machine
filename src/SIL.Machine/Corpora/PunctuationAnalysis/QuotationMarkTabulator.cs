@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using SIL.Extensions;
 
 namespace SIL.Machine.Corpora.PunctuationAnalysis
@@ -82,7 +83,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             {
                 string expectedQuotationMark = quoteConvention.GetExpectedQuotationMark(depth, direction);
 
-                // give higher weight to shallower depths, since deeper marks are more likely to be mistakes
+                // Give higher weight to shallower depths, since deeper marks are more likely to be mistakes
                 weightedDifference += (
                     _quotationCountsByDepthAndDirection[(depth, direction)]
                         .CalculateNumDifferences(expectedQuotationMark) * Math.Pow(2, -depth)
@@ -94,6 +95,43 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 return 0.0;
             }
             return 1 - (weightedDifference / totalWeight);
+        }
+
+        private bool DepthAndDirectionObserved(int depth, QuotationMarkDirection direction)
+        {
+            return _quotationCountsByDepthAndDirection.ContainsKey((depth, direction));
+        }
+
+        private (
+            string openingQuotationMark,
+            int observedOpeningCount,
+            int totalOpeningCount
+        ) FindMostCommonQuotationMarkWithDepthAndDirection(int depth, QuotationMarkDirection direction)
+        {
+            return _quotationCountsByDepthAndDirection[(depth, direction)].FindBestQuotationMarkProportion();
+        }
+
+        public string GetSummaryMessage()
+        {
+            var message = new StringBuilder();
+            for (int depth = 1; depth < 5; depth++)
+            {
+                (string openingQuotationMark, int observedOpeningCount, int totalOpeningCount) =
+                    FindMostCommonQuotationMarkWithDepthAndDirection(depth, QuotationMarkDirection.Opening);
+                (string closingQuotationMark, int observedClosingCount, int totalClosingCount) =
+                    FindMostCommonQuotationMarkWithDepthAndDirection(depth, QuotationMarkDirection.Closing);
+
+                if (
+                    DepthAndDirectionObserved(depth, QuotationMarkDirection.Opening)
+                    && DepthAndDirectionObserved(depth, QuotationMarkDirection.Closing)
+                )
+                {
+                    message.AppendLine(
+                        $"The most common level {depth} quotation marks are {openingQuotationMark} ({observedOpeningCount} of {totalOpeningCount} opening marks) and {closingQuotationMark} ({observedClosingCount} of {totalClosingCount} closing marks)"
+                    );
+                }
+            }
+            return message.ToString();
         }
     }
 }

@@ -7,16 +7,11 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
     {
         private readonly QuoteConvention _sourceQuoteConvention;
         private readonly QuoteConventionSet _quoteConventionSingletonSet;
-        private readonly QuoteConvention _targetQuoteConvention;
 
-        public QuotationMarkUpdateResolutionSettings(
-            QuoteConvention sourceQuoteConvention,
-            QuoteConvention targetQuoteConvention
-        )
+        public QuotationMarkUpdateResolutionSettings(QuoteConvention sourceQuoteConvention)
         {
             _sourceQuoteConvention = sourceQuoteConvention;
             _quoteConventionSingletonSet = new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention });
-            _targetQuoteConvention = targetQuoteConvention;
         }
 
         public bool AreMarksAValidPair(string openingMark, string closingMark)

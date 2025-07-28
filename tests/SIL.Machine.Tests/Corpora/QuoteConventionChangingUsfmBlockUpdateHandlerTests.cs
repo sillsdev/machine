@@ -140,7 +140,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "british_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFallback)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
         );
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
@@ -165,7 +165,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "british_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFallback)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
         );
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
@@ -190,7 +190,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "british_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFallback)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
         );
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
@@ -215,7 +215,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "british_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFallback)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
         );
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
@@ -255,7 +255,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFull)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFull)
         );
         AssertUsfmEqual(observedUsfm, expectedFullUsfm);
 
@@ -263,7 +263,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.ApplyFallback)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
         );
         AssertUsfmEqual(observedUsfm, expectedBasicUsfm);
 
@@ -271,7 +271,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(defaultChapterAction: QuotationMarkUpdateStrategy.Skip)
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.Skip)
         );
         AssertUsfmEqual(observedUsfm, expectedSkippedUsfm);
     }
@@ -308,7 +308,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(chapterActions: [QuotationMarkUpdateStrategy.ApplyFull])
+            new QuotationMarkUpdateSettings(chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFull])
         );
         AssertUsfmEqual(observedUsfm, expectedFullUsfm);
 
@@ -316,7 +316,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(chapterActions: [QuotationMarkUpdateStrategy.ApplyFallback])
+            new QuotationMarkUpdateSettings(chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFallback])
         );
         AssertUsfmEqual(observedUsfm, expectedBasicUsfm);
 
@@ -324,7 +324,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
-            new QuotationMarkUpdateSettings(chapterActions: [QuotationMarkUpdateStrategy.Skip])
+            new QuotationMarkUpdateSettings(chapterStrategies: [QuotationMarkUpdateStrategy.Skip])
         );
         AssertUsfmEqual(observedUsfm, expectedSkippedUsfm);
     }
@@ -359,7 +359,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             "typewriter_english",
             "standard_english",
             new QuotationMarkUpdateSettings(
-                chapterActions: [QuotationMarkUpdateStrategy.ApplyFull, QuotationMarkUpdateStrategy.ApplyFull]
+                chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFull, QuotationMarkUpdateStrategy.ApplyFull]
             )
         );
         AssertUsfmEqual(observedUsfm, expectedFullUsfm);
@@ -369,7 +369,11 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             "typewriter_english",
             "standard_english",
             new QuotationMarkUpdateSettings(
-                chapterActions: [QuotationMarkUpdateStrategy.ApplyFallback, QuotationMarkUpdateStrategy.ApplyFallback]
+                chapterStrategies:
+                [
+                    QuotationMarkUpdateStrategy.ApplyFallback,
+                    QuotationMarkUpdateStrategy.ApplyFallback
+                ]
             )
         );
         AssertUsfmEqual(observedUsfm, expectedFallbackUsfm);
@@ -412,7 +416,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             "typewriter_english",
             "standard_english",
             new QuotationMarkUpdateSettings(
-                chapterActions: [QuotationMarkUpdateStrategy.ApplyFull, QuotationMarkUpdateStrategy.ApplyFallback]
+                chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFull, QuotationMarkUpdateStrategy.ApplyFallback]
             )
         );
         AssertUsfmEqual(observedUsfm, expectedFullThenFallbackUsfm);
@@ -422,7 +426,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             "typewriter_english",
             "standard_english",
             new QuotationMarkUpdateSettings(
-                chapterActions: [QuotationMarkUpdateStrategy.ApplyFallback, QuotationMarkUpdateStrategy.ApplyFull]
+                chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFallback, QuotationMarkUpdateStrategy.ApplyFull]
             )
         );
         AssertUsfmEqual(observedUsfm, expectedFallbackThenFullUsfm);
@@ -432,10 +436,60 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             "typewriter_english",
             "standard_english",
             new QuotationMarkUpdateSettings(
-                chapterActions: [QuotationMarkUpdateStrategy.ApplyFallback, QuotationMarkUpdateStrategy.Skip]
+                chapterStrategies: [QuotationMarkUpdateStrategy.ApplyFallback, QuotationMarkUpdateStrategy.Skip]
             )
         );
         AssertUsfmEqual(observedUsfm, expectedFallbackThenSkipUsfm);
+    }
+
+    [Test]
+    public void MultiCharacterQuotationMarksInSourceQuoteConvention()
+    {
+        var normalizedUsfm =
+            @"\c 1
+    \v 1 Now the serpent was more subtle than any animal
+    of the field which Yahweh God had made.
+    He said to the woman, <<Has God really said,
+    <You shall not eat of any tree of the garden>?>>
+    ";
+        var expectedUsfm = (
+            "\\c 1\n"
+            + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
+            + "the woman, “Has God really said, ‘You shall not eat of any tree of the garden’?”"
+        );
+
+        var observedUsfm = ChangeQuotationMarks(
+            normalizedUsfm,
+            "typewriter_french",
+            "standard_english",
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
+        );
+        AssertUsfmEqual(observedUsfm, expectedUsfm);
+    }
+
+    [Test]
+    public void MultiCharacterQuotationMarksInTargetQuoteConvention()
+    {
+        var normalizedUsfm =
+            @"\c 1
+    \v 1 Now the serpent was more subtle than any animal
+    of the field which Yahweh God had made.
+    He said to the woman, “Has God really said,
+    ‘You shall not eat of any tree of the garden’?”
+    ";
+        var expectedUsfm = (
+            "\\c 1\n"
+            + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
+            + "the woman, <<Has God really said, <You shall not eat of any tree of the garden>?>>"
+        );
+
+        var observedUsfm = ChangeQuotationMarks(
+            normalizedUsfm,
+            "standard_english",
+            "typewriter_french",
+            new QuotationMarkUpdateSettings(defaultChapterStrategy: QuotationMarkUpdateStrategy.ApplyFallback)
+        );
+        AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
 
     [Test]
@@ -590,6 +644,128 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     }
 
     [Test]
+    public void UpdateQuotationMarks()
+    {
+        QuoteConventionChangingUsfmUpdateBlockHandler multiCharToSingleCharQuoteConventionChanger =
+            CreateQuoteConventionChangingUsfmUpdateBlockHandler("typewriter_french", "standard_english");
+
+        TextSegment multiCharacterTextSegment = new TextSegment.Builder()
+            .SetText("this <<is <a test segment> >>")
+            .Build();
+
+        List<QuotationMarkMetadata> multiCharacterQuotationMarks =
+        [
+            new QuotationMarkMetadata(
+                quotationMark: "<<",
+                depth: 1,
+                direction: QuotationMarkDirection.Opening,
+                textSegment: multiCharacterTextSegment,
+                startIndex: 5,
+                endIndex: 7
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: "<",
+                depth: 2,
+                direction: QuotationMarkDirection.Opening,
+                textSegment: multiCharacterTextSegment,
+                startIndex: 10,
+                endIndex: 11
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: ">",
+                depth: 2,
+                direction: QuotationMarkDirection.Closing,
+                textSegment: multiCharacterTextSegment,
+                startIndex: 25,
+                endIndex: 26
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: ">>",
+                depth: 1,
+                direction: QuotationMarkDirection.Closing,
+                textSegment: multiCharacterTextSegment,
+                startIndex: 27,
+                endIndex: 29
+            )
+        ];
+
+        multiCharToSingleCharQuoteConventionChanger.UpdateQuotationMarks(multiCharacterQuotationMarks);
+
+        Assert.That(multiCharacterTextSegment.Text, Is.EqualTo("this “is ‘a test segment’ ”"));
+        Assert.That(multiCharacterQuotationMarks[0].StartIndex, Is.EqualTo(5));
+        Assert.That(multiCharacterQuotationMarks[0].EndIndex, Is.EqualTo(6));
+        Assert.That(multiCharacterQuotationMarks[0].TextSegment, Is.EqualTo(multiCharacterTextSegment));
+        Assert.That(multiCharacterQuotationMarks[1].StartIndex, Is.EqualTo(9));
+        Assert.That(multiCharacterQuotationMarks[1].EndIndex, Is.EqualTo(10));
+        Assert.That(multiCharacterQuotationMarks[1].TextSegment, Is.EqualTo(multiCharacterTextSegment));
+        Assert.That(multiCharacterQuotationMarks[2].StartIndex, Is.EqualTo(24));
+        Assert.That(multiCharacterQuotationMarks[2].EndIndex, Is.EqualTo(25));
+        Assert.That(multiCharacterQuotationMarks[2].TextSegment, Is.EqualTo(multiCharacterTextSegment));
+        Assert.That(multiCharacterQuotationMarks[3].StartIndex, Is.EqualTo(26));
+        Assert.That(multiCharacterQuotationMarks[3].EndIndex, Is.EqualTo(27));
+        Assert.That(multiCharacterQuotationMarks[3].TextSegment, Is.EqualTo(multiCharacterTextSegment));
+
+        QuoteConventionChangingUsfmUpdateBlockHandler singleCharToMultiCharQuoteConventionChanger =
+            CreateQuoteConventionChangingUsfmUpdateBlockHandler("typewriter_french", "standard_english");
+
+        TextSegment singleCharacterTextSegment = new TextSegment.Builder()
+            .SetText("this “is ‘a test segment’ ”")
+            .Build();
+
+        List<QuotationMarkMetadata> singleCharacterQuotationMarks =
+        [
+            new QuotationMarkMetadata(
+                quotationMark: "“",
+                depth: 1,
+                direction: QuotationMarkDirection.Opening,
+                textSegment: singleCharacterTextSegment,
+                startIndex: 5,
+                endIndex: 6
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: "‘",
+                depth: 2,
+                direction: QuotationMarkDirection.Opening,
+                textSegment: singleCharacterTextSegment,
+                startIndex: 9,
+                endIndex: 10
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: "’",
+                depth: 2,
+                direction: QuotationMarkDirection.Closing,
+                textSegment: singleCharacterTextSegment,
+                startIndex: 24,
+                endIndex: 25
+            ),
+            new QuotationMarkMetadata(
+                quotationMark: "”",
+                depth: 1,
+                direction: QuotationMarkDirection.Closing,
+                textSegment: singleCharacterTextSegment,
+                startIndex: 26,
+                endIndex: 27
+            )
+        ];
+
+        singleCharToMultiCharQuoteConventionChanger.UpdateQuotationMarks(singleCharacterQuotationMarks);
+
+        Assert.That(singleCharacterTextSegment.Text, Is.EqualTo("this <<is <a test segment> >>"));
+        Assert.That(singleCharacterQuotationMarks[0].StartIndex, Is.EqualTo(5));
+        Assert.That(singleCharacterQuotationMarks[0].EndIndex, Is.EqualTo(7));
+        Assert.That(singleCharacterQuotationMarks[0].TextSegment, Is.EqualTo(singleCharacterTextSegment));
+        Assert.That(singleCharacterQuotationMarks[1].StartIndex, Is.EqualTo(10));
+        Assert.That(singleCharacterQuotationMarks[1].EndIndex, Is.EqualTo(11));
+        Assert.That(singleCharacterQuotationMarks[1].TextSegment, Is.EqualTo(singleCharacterTextSegment));
+        Assert.That(multiCharacterQuotationMarks[2].StartIndex, Is.EqualTo(25));
+        Assert.That(singleCharacterQuotationMarks[2].EndIndex, Is.EqualTo(26));
+        Assert.That(singleCharacterQuotationMarks[2].TextSegment, Is.EqualTo(singleCharacterTextSegment));
+        Assert.That(singleCharacterQuotationMarks[3].StartIndex, Is.EqualTo(27));
+        Assert.That(singleCharacterQuotationMarks[3].EndIndex, Is.EqualTo(29));
+        Assert.That(singleCharacterQuotationMarks[3].TextSegment, Is.EqualTo(singleCharacterTextSegment));
+    }
+
+    [Test]
     public void CheckForChapterChange()
     {
         var quoteConventionChanger = (
@@ -617,7 +793,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 "standard_english",
                 "standard_english",
                 new QuotationMarkUpdateSettings(
-                    chapterActions:
+                    chapterStrategies:
                     [
                         QuotationMarkUpdateStrategy.Skip,
                         QuotationMarkUpdateStrategy.ApplyFull,

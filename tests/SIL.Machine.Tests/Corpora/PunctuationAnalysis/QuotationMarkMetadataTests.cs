@@ -56,7 +56,7 @@ public class QuotationMarkMetadataTests
         quotationMarkMetadata.UpdateQuotationMark(GetQuoteConventionByName("typewriter_french"));
         Assert.That(quotationMarkMetadata.TextSegment.Text, Is.EqualTo("He said to the woman, <<Has God really said,"));
         Assert.That(quotationMarkMetadata.StartIndex, Is.EqualTo(22));
-        // Assert.That(quotationMarkMetadata.EndIndex, Is.EqualTo(24)); //TODO why???
+        Assert.That(quotationMarkMetadata.EndIndex, Is.EqualTo(24));
 
         quotationMarkMetadata = new QuotationMarkMetadata(
             quotationMark: "<<",
@@ -69,7 +69,7 @@ public class QuotationMarkMetadataTests
         quotationMarkMetadata.UpdateQuotationMark(GetQuoteConventionByName("standard_english"));
         Assert.That(quotationMarkMetadata.TextSegment.Text, Is.EqualTo("He said to the woman, “Has God really said,"));
         Assert.That(quotationMarkMetadata.StartIndex, Is.EqualTo(22));
-        // Assert.That(quotationMarkMetadata.EndIndex, Is.EqualTo(23));
+        Assert.That(quotationMarkMetadata.EndIndex, Is.EqualTo(23));
     }
 
     public QuoteConvention GetQuoteConventionByName(string name)

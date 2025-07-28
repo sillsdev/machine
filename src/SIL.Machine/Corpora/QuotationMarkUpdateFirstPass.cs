@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
                 new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention, targetQuoteConvention })
             );
             _quotationMarkResolver = new DepthBasedQuotationMarkResolver(
-                new QuotationMarkUpdateResolutionSettings(sourceQuoteConvention, targetQuoteConvention)
+                new QuotationMarkUpdateResolutionSettings(sourceQuoteConvention)
             );
             WillFallbackModeWork = CheckWhetherFallbackModeWillWork(sourceQuoteConvention, targetQuoteConvention);
         }
@@ -69,7 +69,7 @@ namespace SIL.Machine.Corpora
 
             _quotationMarkResolver.Reset();
 
-            // use ToList() to force evaluation of the generator
+            // Use ToList() to force evaluation of the generator
             _quotationMarkResolver.ResolveQuotationMarks(quotationMarkMatches).ToList();
 
             return ChooseBestStrategyBasedOnObservedIssues(_quotationMarkResolver.GetIssues());

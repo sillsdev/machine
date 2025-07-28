@@ -47,7 +47,7 @@ public class QuotationDenormalizationTests
         var quotationMarkDenormalizer = new QuotationMarkDenormalizationUsfmUpdateBlockHandler(
             standardEnglishQuoteConvention,
             standardEnglishQuoteConvention,
-            new QuotationMarkUpdateSettings(chapterActions: bestChapterStrategies)
+            new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
         );
 
         var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer]);

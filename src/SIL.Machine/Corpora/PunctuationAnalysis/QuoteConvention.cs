@@ -100,12 +100,24 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         public HashSet<int> GetPossibleDepths(string quotationMark, QuotationMarkDirection direction)
         {
             var depths = new HashSet<int>();
-            foreach ((int depth, SingleLevelQuoteConvention level) in LevelConventions.Select((l, i) => (i + 1, l)))
+            foreach (
+                (int depth, SingleLevelQuoteConvention levelConvention) in LevelConventions.Select((l, i) => (i + 1, l))
+            )
             {
-                if (direction == QuotationMarkDirection.Opening && level.OpeningQuotationMark == quotationMark)
+                if (
+                    direction == QuotationMarkDirection.Opening
+                    && levelConvention.OpeningQuotationMark == quotationMark
+                )
+                {
                     depths.Add(depth);
-                else if (direction == QuotationMarkDirection.Closing && level.ClosingQuotationMark == quotationMark)
+                }
+                else if (
+                    direction == QuotationMarkDirection.Closing
+                    && levelConvention.ClosingQuotationMark == quotationMark
+                )
+                {
                     depths.Add(depth);
+                }
             }
             return depths;
         }

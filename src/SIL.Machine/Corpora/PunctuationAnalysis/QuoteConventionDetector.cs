@@ -5,13 +5,19 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 {
     public class QuoteConventionAnalysis
     {
-        public QuoteConvention BestQuoteConvention { get; set; }
-        public double BestQuoteConventionScore { get; set; }
+        public QuoteConvention BestQuoteConvention { get; private set; }
+        public double BestQuoteConventionScore { get; private set; }
+        public string AnalysisSummary { get; private set; }
 
-        public QuoteConventionAnalysis(QuoteConvention bestQuoteConvention, double bestQuoteConventionScore)
+        public QuoteConventionAnalysis(
+            QuoteConvention bestQuoteConvention,
+            double bestQuoteConventionScore,
+            string analysisSummary
+        )
         {
             BestQuoteConvention = bestQuoteConvention;
             BestQuoteConventionScore = bestQuoteConventionScore;
+            AnalysisSummary = analysisSummary;
         }
     }
 
@@ -27,12 +33,12 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         private void CountQuotationMarksInChapters(List<Chapter> chapters)
         {
-            QuoteConventionSet possibleQuoteConvetions = new PreliminaryQuotationMarkAnalyzer(
+            QuoteConventionSet possibleQuoteConventions = new PreliminaryQuotationMarkAnalyzer(
                 StandardQuoteConventions.QuoteConventions
             ).NarrowDownPossibleQuoteConventions(chapters);
 
             foreach (Chapter chapter in chapters)
-                CountQuotationMarksInChapter(chapter, possibleQuoteConvetions);
+                CountQuotationMarksInChapter(chapter, possibleQuoteConventions);
         }
 
         private void CountQuotationMarksInChapter(Chapter chapter, QuoteConventionSet possibleQuoteConventions)
@@ -58,7 +64,13 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 StandardQuoteConventions.QuoteConventions.FindMostSimilarConvention(_quotationMarkTabulator);
 
             if (score > 0 && bestQuoteConvention != null)
-                return new QuoteConventionAnalysis(bestQuoteConvention, score);
+            {
+                return new QuoteConventionAnalysis(
+                    bestQuoteConvention,
+                    score,
+                    _quotationMarkTabulator.GetSummaryMessage()
+                );
+            }
             return null;
         }
     }

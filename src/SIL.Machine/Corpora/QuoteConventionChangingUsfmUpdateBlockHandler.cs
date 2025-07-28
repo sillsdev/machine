@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Corpora.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
@@ -34,8 +35,7 @@ namespace SIL.Machine.Corpora
             _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
 
             IQuotationMarkResolutionSettings resolutionSettings = new QuotationMarkUpdateResolutionSettings(
-                sourceQuoteConvention,
-                targetQuoteConvention
+                sourceQuoteConvention
             );
 
             // Each embed represents a separate context for quotation marks
@@ -95,14 +95,10 @@ namespace SIL.Machine.Corpora
             List<TextSegment> textSegments = CreateTextSegments(element);
             List<QuotationMarkStringMatch> quotationMarkMatches =
                 _quotationMarkFinder.FindAllPotentialQuotationMarksInTextSegments(textSegments);
-            foreach (
-                QuotationMarkMetadata resolvedQuotationMark in quotationMarkResolver.ResolveQuotationMarks(
-                    quotationMarkMatches
-                )
-            )
-            {
-                resolvedQuotationMark.UpdateQuotationMark(_targetQuoteConvention);
-            }
+            List<QuotationMarkMetadata> resolvedQuotationMarkMatches = quotationMarkResolver
+                .ResolveQuotationMarks(quotationMarkMatches)
+                .ToList();
+            UpdateQuotationMarks(resolvedQuotationMarkMatches);
         }
 
         protected List<TextSegment> CreateTextSegments(UsfmUpdateBlockElement element)
@@ -132,6 +128,40 @@ namespace SIL.Machine.Corpora
                 }
             }
             return SetPreviousAndNextForSegments(textSegments);
+        }
+
+        public void UpdateQuotationMarks(List<QuotationMarkMetadata> resolvedQuotationMarkMatches)
+        {
+            foreach (
+                (
+                    int quotationMarkIndex,
+                    QuotationMarkMetadata resolvedQuotationMarkMatch
+                ) in resolvedQuotationMarkMatches.Select((r, i) => (i, r))
+            )
+            {
+                int previousLength = resolvedQuotationMarkMatch.Length;
+                resolvedQuotationMarkMatch.UpdateQuotationMark(_targetQuoteConvention);
+                int updatedLength = resolvedQuotationMarkMatch.Length;
+
+                if (previousLength != updatedLength)
+                {
+                    ShiftQuotationMarkMetadataIndices(
+                        resolvedQuotationMarkMatches.Skip(quotationMarkIndex + 1).ToList(),
+                        updatedLength - previousLength
+                    );
+                }
+            }
+        }
+
+        private void ShiftQuotationMarkMetadataIndices(
+            List<QuotationMarkMetadata> quotationMarkMetadataList,
+            int shiftAmount
+        )
+        {
+            foreach (QuotationMarkMetadata quotationMarkMetadata in quotationMarkMetadataList)
+            {
+                quotationMarkMetadata.ShiftIndices(shiftAmount);
+            }
         }
 
         protected TextSegment CreateTextSegment(UsfmToken token)
@@ -165,15 +195,15 @@ namespace SIL.Machine.Corpora
             {
                 if (scriptureRef.ChapterNum != _currentChapterNumber)
                 {
-                    _currentChapterNumber = scriptureRef.ChapterNum;
-                    StartNewChapter(_currentChapterNumber);
+                    StartNewChapter(scriptureRef.ChapterNum);
                 }
             }
         }
 
-        protected void StartNewChapter(int newChapterNum)
+        protected void StartNewChapter(int newChapterNumber)
         {
-            _currentStrategy = _settings.GetActionForChapter(newChapterNum);
+            _currentChapterNumber = newChapterNumber;
+            _currentStrategy = _settings.GetActionForChapter(newChapterNumber);
             _verseTextQuotationMarkResolver.Reset();
             _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
             _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
@@ -185,14 +215,14 @@ namespace SIL.Machine.Corpora
             {
                 if (scriptureRef.ChapterNum == _currentChapterNumber && scriptureRef.VerseNum != _currentVerseNumber)
                 {
-                    _currentVerseNumber = scriptureRef.VerseNum;
-                    StartNewVerse();
+                    StartNewVerse(scriptureRef.VerseNum);
                 }
             }
         }
 
-        private void StartNewVerse()
+        private void StartNewVerse(int newVerseNumber)
         {
+            _currentVerseNumber = newVerseNumber;
             _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
         }
     }
