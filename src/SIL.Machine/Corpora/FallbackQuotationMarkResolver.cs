@@ -64,6 +64,19 @@ namespace SIL.Machine.Corpora
             }
             else
             {
+                // Make a reasonable guess about the direction of the quotation mark
+                if (_lastQuotationMark == null || _lastQuotationMark.Direction == QuotationMarkDirection.Closing)
+                {
+                    QuotationMarkMetadata quotationMark = ResolveOpeningMark(quotationMarkMatch);
+                    if (quotationMark != null)
+                        yield return quotationMark;
+                }
+                else
+                {
+                    QuotationMarkMetadata quotationMark = ResolveClosingMark(quotationMarkMatch);
+                    if (quotationMark != null)
+                        yield return quotationMark;
+                }
                 _issues.Add(QuotationMarkResolutionIssue.AmbiguousQuotationMark);
             }
         }
