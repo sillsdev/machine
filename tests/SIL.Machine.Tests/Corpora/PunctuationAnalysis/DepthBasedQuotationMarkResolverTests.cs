@@ -1239,7 +1239,7 @@ public class DepthBasedQuotationMarkResolverTests
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
             )
-        ); //TODO 0,1 not 1,2?
+        );
         Assert.IsTrue(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u201d").Build(), 1, 2)
@@ -3145,7 +3145,6 @@ public class DepthBasedQuotationMarkResolverTests
                         new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 6, 7),
                         new QuotationMarkMetadata("\u201c", 3, QuotationMarkDirection.Opening, textSegment, 10, 11),
                         new QuotationMarkMetadata("\u2018", 4, QuotationMarkDirection.Opening, textSegment, 13, 14),
-                        // new QuotationMarkMetadata("\u201c", 5, QuotationMarkDirection.Opening, textSegment, 20, 21), //TODO Why commented out?
                     ]
                 )
         );

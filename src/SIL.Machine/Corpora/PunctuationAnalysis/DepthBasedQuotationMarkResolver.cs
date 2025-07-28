@@ -364,7 +364,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 }
             }
 
-            // For languages that use apostrophes at teh start and end of words //TODO misspelled comment
+            // For languages that use apostrophes at the start and end of words
             if (
                 !_quotationMarkResolverState.HasOpenQuotationMark && quotationMarkMatch.QuotationMark == "'"
                 || _quotationMarkResolverState.HasOpenQuotationMark
