@@ -54,7 +54,7 @@ namespace SIL.Machine.Corpora
         /// <summary>
         /// Current verse reference
         /// </summary>
-        public VerseRef VerseRef { get; internal set; }
+        public VerseRef VerseRef { get; protected internal set; }
 
         /// <summary>
         /// Offset of start of token in verse

@@ -36,7 +36,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         {
             if (_numCharacters == 0)
                 return false;
-            return (_numApostrophes / _numCharacters) > threshold;
+            return ((double)_numApostrophes / _numCharacters) > threshold;
         }
     }
 
@@ -106,14 +106,14 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
         {
             int numInitialMarks = GetWordInitialOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numInitialMarks / numTotalMarks) < MaximumProportionForRarity;
+            return numTotalMarks > 0 && ((double)numInitialMarks / numTotalMarks) < MaximumProportionForRarity;
         }
 
         public bool IsMarkRarelyFinal(string quotationMark)
         {
             int numFinalMarks = GetWordFinalOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numFinalMarks / numTotalMarks) < MaximumProportionForRarity;
+            return numTotalMarks > 0 && ((double)numFinalMarks / numTotalMarks) < MaximumProportionForRarity;
         }
 
         public bool AreInitialAndFinalRatesSimilar(string quotationMark)
@@ -122,14 +122,16 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             int numFinalMarks = GetWordFinalOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
             return numTotalMarks > 0
-                && (Math.Abs(numInitialMarks - numFinalMarks) / numTotalMarks) < MaximumProportionDifferenceThreshold;
+                && ((double)Math.Abs(numInitialMarks - numFinalMarks) / numTotalMarks)
+                    < MaximumProportionDifferenceThreshold;
         }
 
         public bool IsMarkCommonlyMidWord(string quotationMark)
         {
             int numMidWordMarks = GetMidWordOccurrences(quotationMark);
             int numTotalMarks = GetTotalOccurrences(quotationMark);
-            return numTotalMarks > 0 && (numMidWordMarks / numTotalMarks) > MaximumProportionDifferenceThreshold;
+            return numTotalMarks > 0
+                && ((double)numMidWordMarks / numTotalMarks) > MaximumProportionDifferenceThreshold;
         }
     }
 
@@ -194,7 +196,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             int numEarlyOccurrences = GetEarlierOccurrences(quotationMark);
             int numLateOccurrences = GetLaterOccurrences(quotationMark);
             return numEarlyOccurrences > 0
-                && (Math.Abs(numLateOccurrences - numEarlyOccurrences) / numEarlyOccurrences)
+                && ((double)Math.Abs(numLateOccurrences - numEarlyOccurrences) / numEarlyOccurrences)
                     < MaximumProportionDifferenceThreshold;
         }
     }

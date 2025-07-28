@@ -50,8 +50,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             {
                 for (int level = 1; level < convention.NumLevels + 1; level++)
                 {
-                    string openingQuote = convention.GetOpeningQuotationMarkAtLevel(level);
-                    string closingQuote = convention.GetClosingQuotationMarkAtLevel(level);
+                    string openingQuote = convention.GetOpeningQuotationMarkAtDepth(level);
+                    string closingQuote = convention.GetClosingQuotationMarkAtDepth(level);
                     openingQuotationMarks.Add(openingQuote);
                     closingQuotationMarks.Add(closingQuote);
                 }
@@ -84,8 +84,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
             {
                 for (int level = 1; level < convention.NumLevels + 1; level++)
                 {
-                    string openingQuote = convention.GetOpeningQuotationMarkAtLevel(level);
-                    string closingQuote = convention.GetClosingQuotationMarkAtLevel(level);
+                    string openingQuote = convention.GetOpeningQuotationMarkAtDepth(level);
+                    string closingQuote = convention.GetClosingQuotationMarkAtDepth(level);
                     closingMarksByOpeningMark.UpdateValue(
                         openingQuote,
                         () => new HashSet<string>(),

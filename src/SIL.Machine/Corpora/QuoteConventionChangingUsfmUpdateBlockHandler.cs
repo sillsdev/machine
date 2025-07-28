@@ -8,13 +8,13 @@ namespace SIL.Machine.Corpora
         private readonly QuoteConvention _sourceQuoteConvention;
         private readonly QuoteConvention _targetQuoteConvention;
         private readonly QuotationMarkUpdateSettings _settings;
-        private readonly QuotationMarkFinder _quotationMarkFinder;
-        private TextSegment.Builder _nextScriptureTextSegmentBuilder;
-        private readonly IQuotationMarkResolver _verseTextQuotationMarkResolver;
+        protected QuotationMarkFinder _quotationMarkFinder;
+        protected TextSegment.Builder _nextScriptureTextSegmentBuilder;
+        protected IQuotationMarkResolver _verseTextQuotationMarkResolver;
         private readonly IQuotationMarkResolver _embedQuotationMarkResolver;
         private readonly IQuotationMarkResolver _simpleQuotationMarkResolver;
-        private QuotationMarkUpdateStrategy _currentStrategy;
-        private int _currentChapterNumber;
+        protected QuotationMarkUpdateStrategy _currentStrategy;
+        protected int _currentChapterNumber;
         private int _currentVerseNumber;
 
         public QuoteConventionChangingUsfmUpdateBlockHandler(
@@ -87,7 +87,7 @@ namespace SIL.Machine.Corpora
             return block;
         }
 
-        private void ProcessScriptureElement(
+        protected void ProcessScriptureElement(
             UsfmUpdateBlockElement element,
             IQuotationMarkResolver quotationMarkResolver
         )
@@ -105,7 +105,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private List<TextSegment> CreateTextSegments(UsfmUpdateBlockElement element)
+        protected List<TextSegment> CreateTextSegments(UsfmUpdateBlockElement element)
         {
             var textSegments = new List<TextSegment>();
             foreach (UsfmToken token in element.GetTokens())
@@ -134,7 +134,7 @@ namespace SIL.Machine.Corpora
             return SetPreviousAndNextForSegments(textSegments);
         }
 
-        private TextSegment CreateTextSegment(UsfmToken token)
+        protected TextSegment CreateTextSegment(UsfmToken token)
         {
             TextSegment textSegmentToReturn = null;
             _nextScriptureTextSegmentBuilder.SetUsfmToken(token);
@@ -147,19 +147,19 @@ namespace SIL.Machine.Corpora
             return textSegmentToReturn;
         }
 
-        private List<TextSegment> SetPreviousAndNextForSegments(List<TextSegment> textSegments)
+        protected List<TextSegment> SetPreviousAndNextForSegments(List<TextSegment> textSegments)
         {
             for (int i = 0; i < textSegments.Count; i++)
             {
                 if (i > 0)
-                    textSegments[i].SetPreviousSegment(textSegments[i - 1]);
+                    textSegments[i].PreviousSegment = textSegments[i - 1];
                 if (i < textSegments.Count - 1)
-                    textSegments[i].SetNextSegment(textSegments[i + 1]);
+                    textSegments[i].NextSegment = textSegments[i + 1];
             }
             return textSegments;
         }
 
-        private void CheckForChapterChange(UsfmUpdateBlock block)
+        protected void CheckForChapterChange(UsfmUpdateBlock block)
         {
             foreach (ScriptureRef scriptureRef in block.Refs)
             {
@@ -171,12 +171,12 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        private void StartNewChapter(int newChapterNum)
+        protected void StartNewChapter(int newChapterNum)
         {
             _currentStrategy = _settings.GetActionForChapter(newChapterNum);
             _verseTextQuotationMarkResolver.Reset();
             _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
-            _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Character);
+            _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
         }
 
         private void CheckForVerseChange(UsfmUpdateBlock block)

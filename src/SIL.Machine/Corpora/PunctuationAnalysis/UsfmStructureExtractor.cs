@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
 
         public void Chapter(UsfmParserState state, string number, string marker, string altNumber, string pubNumber)
         {
-            _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Character);
+            _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
         }
 
         public void EndBook(UsfmParserState state, string marker) { }
@@ -111,8 +111,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                 // and offline whole-book-at-once settings (QuoteConventionDetector)
                 if (_textSegments.Count > 0 && !textSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse))
                 {
-                    _textSegments[_textSegments.Count - 1].SetNextSegment(textSegment);
-                    textSegment.SetPreviousSegment(_textSegments[_textSegments.Count - 1]);
+                    _textSegments[_textSegments.Count - 1].NextSegment = textSegment;
+                    textSegment.PreviousSegment = _textSegments[_textSegments.Count - 1];
                 }
                 _textSegments.Add(textSegment);
             }
@@ -139,7 +139,7 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                     {
                         currentChapterVerses.Add(new Verse(currentVerseSegments));
                     }
-                    currentVerseSegments.Clear();
+                    currentVerseSegments = new List<TextSegment>();
                 }
                 if (textSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter))
                 {
@@ -147,9 +147,9 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                     {
                         chapters.Add(new Chapter(currentChapterVerses));
                     }
-                    currentChapterVerses.Clear();
+                    currentChapterVerses = new List<Verse>();
                 }
-                currentChapterVerses.Clear();
+                currentVerseSegments.Add(textSegment);
             }
             if (currentVerseSegments.Count > 0)
             {
