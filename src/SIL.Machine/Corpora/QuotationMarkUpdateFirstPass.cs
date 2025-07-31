@@ -35,18 +35,27 @@ namespace SIL.Machine.Corpora
             QuoteConvention targetQuoteConvention
         )
         {
-            var sourceMarks = new HashSet<string>();
+            var targetMarkBySourceMark = new Dictionary<string, string>();
             foreach (
                 int depth in Enumerable.Range(
                     1,
-                    Math.Min(sourceQuoteConvention.NumLevels, targetQuoteConvention.NumLevels) + 1
+                    Math.Min(sourceQuoteConvention.NumLevels, targetQuoteConvention.NumLevels)
                 )
             )
             {
                 string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtDepth(depth);
-                if (sourceMarks.Contains(openingQuotationMark))
+                string closingQuotationMark = targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth);
+                if (
+                    targetMarkBySourceMark.TryGetValue(
+                        openingQuotationMark,
+                        out string correspondingClosingQuotationMark
+                    )
+                    && correspondingClosingQuotationMark != closingQuotationMark
+                )
+                {
                     return false;
-                sourceMarks.Add(openingQuotationMark);
+                }
+                targetMarkBySourceMark[openingQuotationMark] = closingQuotationMark;
             }
             return true;
         }
