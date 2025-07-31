@@ -265,7 +265,7 @@ public class QuotationMarkStringMatchTests
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
-            11,
+            10,
             11
         );
         Assert.IsFalse(quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)));

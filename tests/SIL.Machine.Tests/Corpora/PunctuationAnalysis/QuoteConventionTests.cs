@@ -92,23 +92,23 @@ public class QuoteConventionTests
     [Test]
     public void GetNumLevels()
     {
-        var emptyQuoteConvention = new QuoteConvention("empty-quote-convention", []);
+        var emptyQuoteConvention = new QuoteConvention("empty_quote_convention", []);
         Assert.That(emptyQuoteConvention.NumLevels, Is.EqualTo(0));
 
         var oneLevelQuoteConvention = new QuoteConvention(
-            "one-level-quote-convention",
+            "one_level_quote_convention",
             [new SingleLevelQuoteConvention("\u201c", "\u201d")]
         );
         Assert.That(oneLevelQuoteConvention.NumLevels, Is.EqualTo(1));
 
         var twoLevelQuoteConvention = new QuoteConvention(
-            "two-level-quote-convention",
+            "two_level_quote_convention",
             [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019"),]
         );
         Assert.That(twoLevelQuoteConvention.NumLevels, Is.EqualTo(2));
 
         var threeLevelQuoteConvention = new QuoteConvention(
-            "three-level-quote-convention",
+            "three_level_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -122,7 +122,7 @@ public class QuoteConventionTests
     public void GetOpeningQuoteAtLevel()
     {
         var quoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -138,7 +138,7 @@ public class QuoteConventionTests
     public void GetClosingQuoteAtLevel()
     {
         var quoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -154,7 +154,7 @@ public class QuoteConventionTests
     public void GetExpectedQuotationMark()
     {
         var quoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -271,7 +271,7 @@ public class QuoteConventionTests
     public void GetPossibleDepths()
     {
         var quoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -295,7 +295,7 @@ public class QuoteConventionTests
     public void IsCompatibleWithObservedQuotationMarks()
     {
         var quoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -322,7 +322,7 @@ public class QuoteConventionTests
             quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u201d", "\u201f"])
         );
 
-        // must have observed the first-level quotes
+        // must have observed the first_level quotes
         Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u2018"], ["\u201d"]));
         Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u00ab"]));
     }
@@ -330,13 +330,13 @@ public class QuoteConventionTests
     [Test]
     public void Normalize()
     {
-        var emptyQuoteConvention = new QuoteConvention("empty-quote-convention", []);
+        var emptyQuoteConvention = new QuoteConvention("empty_quote_convention", []);
         var normalizedEmptyQuoteConvention = emptyQuoteConvention.Normalize();
-        Assert.That(normalizedEmptyQuoteConvention.Name, Is.EqualTo("empty-quote-convention_normalized"));
+        Assert.That(normalizedEmptyQuoteConvention.Name, Is.EqualTo("empty_quote_convention_normalized"));
         Assert.That(normalizedEmptyQuoteConvention.NumLevels, Is.EqualTo(0));
 
         var standardEnglishQuoteConvention = new QuoteConvention(
-            "standard-english-quote-convention",
+            "standard_english_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
@@ -347,7 +347,7 @@ public class QuoteConventionTests
         var normalizedStandardEnglishQuoteConvention = standardEnglishQuoteConvention.Normalize();
         Assert.That(
             normalizedStandardEnglishQuoteConvention.Name,
-            Is.EqualTo("standard-english-quote-convention_normalized")
+            Is.EqualTo("standard_english_quote_convention_normalized")
         );
         Assert.That(normalizedStandardEnglishQuoteConvention.NumLevels, Is.EqualTo(4));
         Assert.That(normalizedStandardEnglishQuoteConvention.GetOpeningQuotationMarkAtDepth(1), Is.EqualTo("\""));
@@ -360,7 +360,7 @@ public class QuoteConventionTests
         Assert.That(normalizedStandardEnglishQuoteConvention.GetClosingQuotationMarkAtDepth(4), Is.EqualTo("'"));
 
         var westernEuropeanQuoteConvention = new QuoteConvention(
-            "test-quote-convention",
+            "test_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u201c", "\u201d"),
                 new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
@@ -368,7 +368,7 @@ public class QuoteConventionTests
             ]
         );
         var normalizedWesternEuropeanQuoteConvention = westernEuropeanQuoteConvention.Normalize();
-        Assert.That(normalizedWesternEuropeanQuoteConvention.Name, Is.EqualTo("test-quote-convention_normalized"));
+        Assert.That(normalizedWesternEuropeanQuoteConvention.Name, Is.EqualTo("test_quote_convention_normalized"));
         Assert.That(normalizedWesternEuropeanQuoteConvention.NumLevels, Is.EqualTo(3));
         Assert.That(normalizedWesternEuropeanQuoteConvention.GetOpeningQuotationMarkAtDepth(1), Is.EqualTo("\""));
         Assert.That(normalizedWesternEuropeanQuoteConvention.GetClosingQuotationMarkAtDepth(1), Is.EqualTo("\""));
@@ -378,7 +378,7 @@ public class QuoteConventionTests
         Assert.That(normalizedWesternEuropeanQuoteConvention.GetClosingQuotationMarkAtDepth(3), Is.EqualTo("'"));
 
         var hybridBritishTypewriterEnglishQuoteConvention = new QuoteConvention(
-            "hybrid-british-typewriter-english-quote-convention",
+            "hybrid_british_typewriter_english_quote_convention",
             [
                 new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
                 new SingleLevelQuoteConvention("'", "'"),
@@ -391,7 +391,7 @@ public class QuoteConventionTests
         );
         Assert.IsTrue(
             normalizedHybridBritishTypewriterEnglishQuoteConvention.Name
-                == "hybrid-british-typewriter-english-quote-convention_normalized"
+                == "hybrid_british_typewriter_english_quote_convention_normalized"
         );
         Assert.That(normalizedHybridBritishTypewriterEnglishQuoteConvention.NumLevels, Is.EqualTo(3));
         Assert.That(

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Corpora.PunctuationAnalysis;
@@ -34,22 +35,20 @@ namespace SIL.Machine.Corpora
             QuoteConvention targetQuoteConvention
         )
         {
-            var targetMarksBySourceMarks = new Dictionary<string, HashSet<string>>();
-            foreach (int depth in Enumerable.Range(1, sourceQuoteConvention.NumLevels))
+            var sourceMarks = new HashSet<string>();
+            foreach (
+                int depth in Enumerable.Range(
+                    1,
+                    Math.Min(sourceQuoteConvention.NumLevels, targetQuoteConvention.NumLevels) + 1
+                )
+            )
             {
                 string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtDepth(depth);
-                if (!targetMarksBySourceMarks.TryGetValue(openingQuotationMark, out HashSet<string> marks))
-                {
-                    marks = new HashSet<string>();
-                    targetMarksBySourceMarks[openingQuotationMark] = marks;
-                }
-                if (depth <= targetQuoteConvention.NumLevels)
-                {
-                    marks.Add(targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth));
-                }
+                if (sourceMarks.Contains(openingQuotationMark))
+                    return false;
+                sourceMarks.Add(openingQuotationMark);
             }
-
-            return !targetMarksBySourceMarks.Keys.Any(sourceMark => targetMarksBySourceMarks[sourceMark].Count > 1);
+            return true;
         }
 
         public List<QuotationMarkUpdateStrategy> FindBestChapterStrategies()
