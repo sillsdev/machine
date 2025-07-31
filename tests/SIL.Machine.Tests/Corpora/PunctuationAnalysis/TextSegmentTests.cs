@@ -91,9 +91,12 @@ public class TextSegmentTests
         var basicSegment = new TextSegment.Builder().SetText("text1").Build();
         var sameTextSegment = new TextSegment.Builder().SetText("text1").Build();
         var differentTextSegment = new TextSegment.Builder().SetText("different text").Build();
-
-        // Assert.That(basicSegment, Is.EqualTo(basicSegment));
-        // Assert.That(basicSegment , Is.Not.EqualTo(new UsfmToken("text1")));
+#pragma warning disable NUnit2009 // The same value has been provided as both the actual and the expected argument
+        Assert.That(basicSegment, Is.EqualTo(basicSegment));
+#pragma warning restore NUnit2009 // The same value has been provided as both the actual and the expected argument
+#pragma warning disable NUnit2021 // Incompatible types for EqualTo constraint
+        Assert.That(basicSegment, Is.Not.EqualTo(new UsfmToken("text1")));
+#pragma warning restore NUnit2021 // Incompatible types for EqualTo constraint
         Assert.That(basicSegment, Is.EqualTo(sameTextSegment));
         Assert.That(basicSegment, Is.Not.EqualTo(differentTextSegment));
 
