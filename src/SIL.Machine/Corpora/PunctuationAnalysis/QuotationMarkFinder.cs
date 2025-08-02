@@ -49,8 +49,8 @@ namespace SIL.Machine.Corpora.PunctuationAnalysis
                         || QuotationMarkStringMatch.HasUnicodeProperty(currentCharacterString, "APOSTROPHE")
                     )
                     && (
-                        _quoteConventions.IsValidOpeningQuotationMark(charactersEnumerator.Current.ToString())
-                        || _quoteConventions.IsValidClosingQuotationMark(charactersEnumerator.Current.ToString())
+                        _quoteConventions.IsValidOpeningQuotationMark(currentCharacterString)
+                        || _quoteConventions.IsValidClosingQuotationMark(currentCharacterString)
                     )
                 )
                 {
