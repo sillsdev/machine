@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using SIL.Scripture;
 
@@ -101,6 +102,16 @@ namespace SIL.Machine.Corpora
             else
                 bookPart = GetBookFileNameDigits(bookId) + bookId;
             return FileNamePrefix + bookPart + FileNameSuffix;
+        }
+
+        public IEnumerable<string> GetAllBookFileNames()
+        {
+            BookSet scriptureBooks = Canon.ScriptureBooks;
+            scriptureBooks.SelectAll();
+            foreach (string bookId in scriptureBooks.SelectedBookIds)
+            {
+                yield return GetBookFileName(bookId);
+            }
         }
 
         private static string GetBookFileNameDigits(string bookId)
