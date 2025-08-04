@@ -19,9 +19,9 @@ namespace SIL.Machine.Corpora
             _settings = settingsParser.Parse();
         }
 
-        public QuoteConventionAnalysis GetQuoteConventionAnalysis()
+        public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
         {
-            var handler = new QuoteConventionDetector();
+            handler = handler ?? new QuoteConventionDetector();
             foreach (string fileName in _settings.GetAllBookFileNames())
             {
                 if (!Exists(fileName))
