@@ -1224,6 +1224,39 @@ public class UpdateUsfmParserHandlerTests
         AssertUsfmEquals(target, resultP);
     }
 
+    [Test]
+    public void GetUsfm_PreferExisting_AddRemark()
+    {
+        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        {
+            (ScrRef("MAT 1:1"), "Update 1"),
+            (ScrRef("MAT 1:2"), "Update 2"),
+        };
+        var usfm =
+            @"\id MAT - Test
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+";
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: ["New remark"]
+        );
+        var result =
+            @"\id MAT - Test
+\rem New remark
+\c 1
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
@@ -1238,7 +1271,8 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior embedBehavior = UpdateUsfmMarkerBehavior.Preserve,
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
-        IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null
+        IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
+        IEnumerable<string>? remarks = null
     )
     {
         if (source is null)
@@ -1253,7 +1287,8 @@ public class UpdateUsfmParserHandlerTests
                 embedBehavior,
                 styleBehavior,
                 preserveParagraphStyles,
-                usfmUpdateBlockHandlers
+                usfmUpdateBlockHandlers,
+                remarks
             );
         }
         else
@@ -1267,7 +1302,8 @@ public class UpdateUsfmParserHandlerTests
                 embedBehavior,
                 styleBehavior,
                 preserveParagraphStyles,
-                usfmUpdateBlockHandlers
+                usfmUpdateBlockHandlers,
+                remarks
             );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
