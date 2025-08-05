@@ -104,7 +104,7 @@ namespace SIL.Machine.Corpora
             return FileNamePrefix + bookPart + FileNameSuffix;
         }
 
-        public IEnumerable<string> GetAllBookFileNames()
+        public IEnumerable<string> GetAllScriptureBookFileNames()
         {
             BookSet scriptureBooks = Canon.ScriptureBooks;
             scriptureBooks.SelectAll();

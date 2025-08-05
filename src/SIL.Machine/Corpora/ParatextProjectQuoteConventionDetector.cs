@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
         {
             handler = handler ?? new QuoteConventionDetector();
-            foreach (string fileName in _settings.GetAllBookFileNames())
+            foreach (string fileName in _settings.GetAllScriptureBookFileNames())
             {
                 if (!Exists(fileName))
                     continue;
