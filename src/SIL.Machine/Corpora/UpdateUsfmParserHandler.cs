@@ -89,14 +89,6 @@ namespace SIL.Machine.Corpora
             var startBookTokens = new List<UsfmToken>();
             if (_idText != null)
                 startBookTokens.Add(new UsfmToken(_idText + " "));
-            if (_remarks.Count() > 0)
-            {
-                foreach (string remark in _remarks)
-                {
-                    startBookTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
-                    startBookTokens.Add(new UsfmToken(remark));
-                }
-            }
             PushUpdatedText(startBookTokens);
 
             base.StartBook(state, marker, code);
@@ -366,7 +358,29 @@ namespace SIL.Machine.Corpora
         public string GetUsfm(UsfmStylesheet stylesheet)
         {
             var tokenizer = new UsfmTokenizer(stylesheet);
-            return tokenizer.Detokenize(_tokens);
+            List<UsfmToken> tokens = new List<UsfmToken>(_tokens);
+            if (_remarks.Count() > 0)
+            {
+                var remarkTokens = new List<UsfmToken>();
+                foreach (string remark in _remarks)
+                {
+                    remarkTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
+                    remarkTokens.Add(new UsfmToken(remark));
+                }
+
+                if (tokens.Count > 0 && tokens[0].Marker == "id")
+                {
+                    if (tokens.Count > 1 && tokens[1].Type == UsfmTokenType.Text)
+                    {
+                        tokens.InsertRange(2, remarkTokens);
+                    }
+                    else
+                    {
+                        tokens.InsertRange(1, remarkTokens);
+                    }
+                }
+            }
+            return tokenizer.Detokenize(tokens);
         }
 
         private IReadOnlyList<string> AdvanceRows(IReadOnlyList<ScriptureRef> segScrRefs)
