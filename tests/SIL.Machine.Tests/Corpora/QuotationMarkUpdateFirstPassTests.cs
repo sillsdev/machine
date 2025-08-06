@@ -680,14 +680,10 @@ public class QuotationMarkUpdateFirstPassTests
         string targetQuoteConventionName
     )
     {
-        var sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            sourceQuoteConventionName
-        );
+        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            targetQuoteConventionName
-        );
+        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
         Assert.IsNotNull(targetQuoteConvention);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
@@ -702,14 +698,10 @@ public class QuotationMarkUpdateFirstPassTests
         string targetQuoteConventionName
     )
     {
-        var sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            sourceQuoteConventionName
-        );
+        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            targetQuoteConventionName
-        );
+        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
         Assert.IsNotNull(targetQuoteConvention);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
@@ -723,7 +715,7 @@ public class QuotationMarkUpdateFirstPassTests
 
     public QuoteConvention GetQuoteConventionByName(string name)
     {
-        var quoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(name);
+        var quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
         Assert.IsNotNull(quoteConvention);
         return quoteConvention;
     }

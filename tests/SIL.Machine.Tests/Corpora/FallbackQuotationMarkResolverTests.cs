@@ -9,9 +9,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void Reset()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -36,9 +34,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void SimpleQuotationMarkResolutionWithNoPreviousMark()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -68,9 +64,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void SimpleQuotationMarkResolutionWithPreviousOpeningMark()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -111,9 +105,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void SimpleQuotationMarkResolutionWithPreviousClosingMark()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -154,9 +146,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void IsOpeningQuote()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -199,9 +189,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void IsOpeningQuoteWithUnambiguousQuoteConvention()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -228,9 +216,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void IsOpeningQuoteStateful()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -260,9 +246,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void DoesMostRecentOpeningMarkImmediatelyPrecede()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -330,9 +314,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void IsClosingQuote()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -379,9 +361,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void IsClosingQuoteWithUnambiguousQuoteConvention()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -408,9 +388,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void ResolveOpeningQuote()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
@@ -435,9 +413,7 @@ public class FallbackQuotationMarkResolverTests
     [Test]
     public void ResolveClosingQuote()
     {
-        var englishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(englishQuoteConvention);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(

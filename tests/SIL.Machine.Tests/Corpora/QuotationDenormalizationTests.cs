@@ -31,9 +31,7 @@ public class QuotationDenormalizationTests
 \v 3 but not the fruit of the tree which is in the middle of the garden. God has said, ‘You shall not eat of it. You shall not touch it, lest you die.’”
 ";
 
-        var standardEnglishQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "standard_english"
-        );
+        var standardEnglishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(standardEnglishQuoteConvention);
 
         var quotationMarkDenormalizationFirstPass = new QuotationMarkDenormalizationFirstPass(

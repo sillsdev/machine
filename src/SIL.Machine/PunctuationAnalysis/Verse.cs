@@ -5,7 +5,7 @@ namespace SIL.Machine.PunctuationAnalysis
 {
     public class Verse
     {
-        public List<TextSegment> TextSegments { get; private set; }
+        public IReadOnlyList<TextSegment> TextSegments { get; private set; }
 
         public Verse(List<TextSegment> textSegments)
         {

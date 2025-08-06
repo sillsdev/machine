@@ -1,9 +1,10 @@
+using System;
 using System.Collections.Generic;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
-    public class TextSegment
+    public class TextSegment : IEquatable<TextSegment>
     {
         public string Text { get; private set; }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
@@ -40,18 +41,23 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public override bool Equals(object obj)
         {
-            if (!(obj is TextSegment t))
+            if (!(obj is TextSegment other))
             {
                 return false;
             }
-            return Text.Equals(t.Text)
-                && IndexInVerse.Equals(t.IndexInVerse)
-                && NumSegmentsInVerse.Equals(t.NumSegmentsInVerse)
+            return Equals(other);
+        }
+
+        public bool Equals(TextSegment other)
+        {
+            return Text.Equals(other.Text)
+                && IndexInVerse.Equals(other.IndexInVerse)
+                && NumSegmentsInVerse.Equals(other.NumSegmentsInVerse)
                 && (
-                    (UsfmToken == null && t.UsfmToken == null)
-                    || (UsfmToken != null && t.UsfmToken != null && UsfmToken.Equals(t.UsfmToken))
+                    (UsfmToken == null && other.UsfmToken == null)
+                    || (UsfmToken != null && other.UsfmToken != null && UsfmToken.Equals(other.UsfmToken))
                 )
-                && ImmediatePrecedingMarker.Equals(t.ImmediatePrecedingMarker);
+                && ImmediatePrecedingMarker.Equals(other.ImmediatePrecedingMarker);
         }
 
         public override int GetHashCode()

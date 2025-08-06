@@ -1,6 +1,8 @@
+using System;
+
 namespace SIL.Machine.PunctuationAnalysis
 {
-    public class QuotationMarkMetadata
+    public class QuotationMarkMetadata : IEquatable<QuotationMarkMetadata>
     {
         public string QuotationMark { get; }
         public int Depth { get; }
@@ -40,6 +42,11 @@ namespace SIL.Machine.PunctuationAnalysis
             {
                 return false;
             }
+            return Equals(other);
+        }
+
+        public bool Equals(QuotationMarkMetadata other)
+        {
             return QuotationMark.Equals(other.QuotationMark)
                 && Depth.Equals(other.Depth)
                 && Direction.Equals(other.Direction)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -7,19 +8,24 @@ namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuotationMarkResolverState
     {
-        public Stack<QuotationMarkMetadata> Quotations { get; private set; }
+        public ImmutableStack<QuotationMarkMetadata> Quotations
+        {
+            get => ImmutableStack.CreateRange(_quotations);
+        }
+
+        private readonly Stack<QuotationMarkMetadata> _quotations;
 
         public QuotationMarkResolverState()
         {
-            Reset();
+            _quotations = new Stack<QuotationMarkMetadata>();
         }
 
         public void Reset()
         {
-            Quotations = new Stack<QuotationMarkMetadata>();
+            _quotations.Clear();
         }
 
-        public int CurrentDepth => Quotations.Count;
+        public int CurrentDepth => _quotations.Count;
 
         public bool HasOpenQuotationMark => CurrentDepth > 0;
 
@@ -31,7 +37,7 @@ namespace SIL.Machine.PunctuationAnalysis
                 CurrentDepth + 1,
                 QuotationMarkDirection.Opening
             );
-            Quotations.Push(quotationMark);
+            _quotations.Push(quotationMark);
             return quotationMark;
         }
 
@@ -41,7 +47,7 @@ namespace SIL.Machine.PunctuationAnalysis
                 CurrentDepth,
                 QuotationMarkDirection.Closing
             );
-            Quotations.Pop();
+            _quotations.Pop();
             return quotationMark;
         }
 
@@ -54,7 +60,7 @@ namespace SIL.Machine.PunctuationAnalysis
                 );
             }
             // Stack is stored in reverse order
-            return Quotations.ToArray()[CurrentDepth - depth].QuotationMark;
+            return _quotations.ToArray()[CurrentDepth - depth].QuotationMark;
         }
 
         public string GetDeepestOpeningQuotationMark()
@@ -65,7 +71,7 @@ namespace SIL.Machine.PunctuationAnalysis
                     "The deepest opening quotation mark was requested from an empty quotation stack."
                 );
             }
-            return Quotations.Peek().QuotationMark;
+            return _quotations.Peek().QuotationMark;
         }
     }
 
@@ -78,24 +84,29 @@ namespace SIL.Machine.PunctuationAnalysis
 
     public class QuoteContinuerState
     {
-        public Stack<QuotationMarkMetadata> QuoteContinuerMarks { get; private set; }
+        private readonly Stack<QuotationMarkMetadata> _quoteContinuerMarks;
+        public ImmutableStack<QuotationMarkMetadata> QuoteContinuerMarks
+        {
+            get => ImmutableStack.CreateRange(_quoteContinuerMarks);
+        }
         public QuoteContinuerStyle ContinuerStyle { get; protected set; }
-        public int CurrentDepth => QuoteContinuerMarks.Count;
+        public int CurrentDepth => _quoteContinuerMarks.Count;
 
         public QuoteContinuerState()
         {
-            Reset();
+            _quoteContinuerMarks = new Stack<QuotationMarkMetadata>();
+            ContinuerStyle = QuoteContinuerStyle.Undetermined;
         }
 
         public void Reset()
         {
-            QuoteContinuerMarks = new Stack<QuotationMarkMetadata>();
+            _quoteContinuerMarks.Clear();
             ContinuerStyle = QuoteContinuerStyle.Undetermined;
         }
 
         public bool ContinuerHasBeenObserved()
         {
-            return QuoteContinuerMarks.Count > 0;
+            return _quoteContinuerMarks.Count > 0;
         }
 
         public QuotationMarkMetadata AddQuoteContinuer(
@@ -105,14 +116,14 @@ namespace SIL.Machine.PunctuationAnalysis
         )
         {
             QuotationMarkMetadata quote = quotationMarkMatch.Resolve(
-                QuoteContinuerMarks.Count + 1,
+                _quoteContinuerMarks.Count + 1,
                 QuotationMarkDirection.Opening
             );
-            QuoteContinuerMarks.Push(quote);
+            _quoteContinuerMarks.Push(quote);
             ContinuerStyle = quoteContinuerStyle;
             if (CurrentDepth == quotationMarkResolverState.CurrentDepth)
             {
-                QuoteContinuerMarks.Clear();
+                _quoteContinuerMarks.Clear();
             }
             return quote;
         }
@@ -383,11 +394,11 @@ namespace SIL.Machine.PunctuationAnalysis
 
     public class DepthBasedQuotationMarkResolver : IQuotationMarkResolver
     {
-        public readonly IQuotationMarkResolutionSettings Settings;
-        public readonly QuotationMarkResolverState QuotationMarkResolverState;
-        public readonly QuoteContinuerState QuoteContinuerState;
-        public readonly QuotationMarkCategorizer QuotationMarkCategorizer;
-        protected readonly HashSet<QuotationMarkResolutionIssue> Issues;
+        public IQuotationMarkResolutionSettings Settings { get; }
+        public QuotationMarkResolverState QuotationMarkResolverState { get; }
+        public QuoteContinuerState QuoteContinuerState { get; }
+        public QuotationMarkCategorizer QuotationMarkCategorizer { get; }
+        protected HashSet<QuotationMarkResolutionIssue> Issues { get; }
 
         public DepthBasedQuotationMarkResolver(IQuotationMarkResolutionSettings settings)
         {
@@ -410,7 +421,7 @@ namespace SIL.Machine.PunctuationAnalysis
         }
 
         public virtual IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
-            List<QuotationMarkStringMatch> quotationMarkMatches
+            IReadOnlyList<QuotationMarkStringMatch> quotationMarkMatches
         )
         {
             foreach (

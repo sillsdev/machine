@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -6,7 +7,7 @@ using SIL.Extensions;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
-    public class QuoteConventionSet
+    public class QuoteConventionSet : IEquatable<QuoteConventionSet>
     {
         public IReadOnlyList<QuoteConvention> Conventions { get; }
 
@@ -26,9 +27,14 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public override bool Equals(object obj)
         {
-            if (!(obj is QuoteConventionSet quoteConventionSet))
+            if (!(obj is QuoteConventionSet other))
                 return false;
-            return Conventions.SequenceEqual(quoteConventionSet.Conventions);
+            return Equals(other);
+        }
+
+        public bool Equals(QuoteConventionSet other)
+        {
+            return Conventions.SequenceEqual(other.Conventions);
         }
 
         public override int GetHashCode()

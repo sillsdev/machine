@@ -344,7 +344,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsEnglishQuotationContinuer()
     {
-        var standardEnglish = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english");
+        var standardEnglish = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
         Assert.IsNotNull(standardEnglish);
 
         var settings = new QuoteConventionDetectionResolutionSettings(new QuoteConventionSet([standardEnglish]));
@@ -645,9 +645,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsSpanishQuotationContinuer()
     {
-        var westernEuropeanQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "western_european"
-        );
+        var westernEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("western_european");
         Assert.IsNotNull(westernEuropeanQuoteConvention);
 
         var settings = new QuoteConventionDetectionResolutionSettings(
@@ -950,9 +948,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsOpeningQuote()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -965,9 +961,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var britishEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("british_english")
-        );
+        var britishEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("british_english"));
         Assert.IsNotNull(britishEnglishQuoteConvention);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
@@ -978,9 +972,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -1292,9 +1284,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsClosingQuote()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -1307,9 +1297,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var britishEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("british_english")
-        );
+        var britishEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("british_english"));
         Assert.IsNotNull(britishEnglishQuoteConvention);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
@@ -1320,9 +1308,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -1333,9 +1319,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardFrenchQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_french")
-        );
+        var standardFrenchQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_french"));
         Assert.IsNotNull(standardFrenchQuoteConvention);
         var standardFrenchResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardFrenchQuoteConvention])
@@ -1564,9 +1548,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsMalformedOpeningQuote()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -1579,9 +1561,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var britishEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("british_english")
-        );
+        var britishEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("british_english"));
         Assert.IsNotNull(britishEnglishQuoteConvention);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
@@ -1592,9 +1572,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -1869,9 +1847,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsMalformedClosingQuote()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -1884,9 +1860,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var britishEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("british_english")
-        );
+        var britishEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("british_english"));
         Assert.IsNotNull(britishEnglishQuoteConvention);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
@@ -1897,9 +1871,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -2151,9 +2123,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsUnpairedClosingQuote()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -2166,9 +2136,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var britishEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("british_english")
-        );
+        var britishEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("british_english"));
         Assert.IsNotNull(britishEnglishQuoteConvention);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
@@ -2179,9 +2147,7 @@ public class DepthBasedQuotationMarkResolverTests
             quotationContinuerState
         );
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -2430,9 +2396,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IsApostrophe()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2446,7 +2410,7 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var typewriterEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("typewriter_english")
+            QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
         Assert.IsNotNull(typewriterEnglishQuoteConvention);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
@@ -2699,9 +2663,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void DepthBasedQuotationMarkResolverReset()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2745,9 +2707,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void BasicQuotationMarkRecognition()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2780,9 +2740,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void ResolutionOnlyOfPassedMatches()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2820,9 +2778,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void ResolutionAcrossSegments()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2856,9 +2812,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void ResolutionWithApostrophes()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2894,7 +2848,7 @@ public class DepthBasedQuotationMarkResolverTests
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
 
         var typewriterEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("typewriter_english")
+            QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
         Assert.IsNotNull(typewriterEnglishQuoteConvention);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
@@ -2934,9 +2888,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void EnglishQuoteContinuers()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -2979,9 +2931,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void SpanishQuoteContinuers()
     {
-        var westernEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("western_european")
-        );
+        var westernEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("western_european"));
         Assert.IsNotNull(westernEuropeanQuoteConvention);
         var westernEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([westernEuropeanQuoteConvention])
@@ -3024,9 +2974,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void MalformedQuotationMarks()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -3065,9 +3013,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void UnpairedQuotationMarkIssue()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -3116,9 +3062,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void TooDeepNestingIssue()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -3160,9 +3104,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void IncompatibleQuotationMarkIssue()
     {
-        var standardEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_english")
-        );
+        var standardEnglishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_english"));
         Assert.IsNotNull(standardEnglishQuoteConvention);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -3200,7 +3142,7 @@ public class DepthBasedQuotationMarkResolverTests
     public void AmbiguousQuotationMarkIssue()
     {
         var typewriterEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("typewriter_english")
+            QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
         Assert.IsNotNull(typewriterEnglishQuoteConvention);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
@@ -3242,7 +3184,7 @@ public class DepthBasedQuotationMarkResolverTests
     public void TypewriterEnglishQuotationMarkRecognition()
     {
         var typewriterEnglishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("typewriter_english")
+            QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
         Assert.IsNotNull(typewriterEnglishQuoteConvention);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
@@ -3283,9 +3225,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void TypewriterFrenchMarkRecognition()
     {
-        var typewriterFrenchQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("typewriter_french")
-        );
+        var typewriterFrenchQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("typewriter_french"));
         Assert.IsNotNull(typewriterFrenchQuoteConvention);
         var typewriterFrenchResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterFrenchQuoteConvention])
@@ -3320,9 +3260,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void CentralEuropeanQuotationMarkRecognition()
     {
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
@@ -3360,9 +3298,7 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void StandardSwedishQuotationMarkRecognition()
     {
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
@@ -3400,20 +3336,14 @@ public class DepthBasedQuotationMarkResolverTests
     [Test]
     public void MultipleConventionsQuotationMarkRecognition()
     {
-        var typewriterFrenchQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            "typewriter_french"
-        );
+        var typewriterFrenchQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("typewriter_french");
 
         Assert.IsNotNull(typewriterFrenchQuoteConvention);
 
-        var centralEuropeanQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("central_european")
-        );
+        var centralEuropeanQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("central_european"));
         Assert.IsNotNull(centralEuropeanQuoteConvention);
 
-        var standardSwedishQuoteConvention = (
-            StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName("standard_swedish")
-        );
+        var standardSwedishQuoteConvention = (QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish"));
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var multipleConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet(
