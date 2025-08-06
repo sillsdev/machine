@@ -9,9 +9,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_CharStyle()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "First verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -34,10 +34,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_StripAllText()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "Update 1"),
-            (ScrRef("MAT 1:3"), "Update 3")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Update 3")
         };
         var usfm =
             @"\id MAT - Test
@@ -103,11 +103,11 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_StripParagraphs_PreserveParagraphStyles()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:0/1:rem"), "New remark"),
-            (ScrRef("MAT 1:0/3:ip"), "Another new remark"),
-            (ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:rem"), "New remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "Another new remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
         };
         string usfm =
             @"\id MAT
@@ -157,10 +157,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PreserveParagraphs()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:0/1:rem"), "Update remark"),
-            (ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:rem"), "Update remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
         };
         string usfm =
             @"\id MAT
@@ -204,7 +204,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_ParagraphInVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1"), };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"), };
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -248,10 +248,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PreferExisting()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "Update 1"),
-            (ScrRef("MAT 1:2"), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
         var usfm =
             @"\id MAT - Test
@@ -274,10 +274,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PreferRows()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:6"), "Text 6"),
-            (ScrRef("MAT 1:7"), "Text 7"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6"), "Text 6"),
+            new UpdateUsfmRow(ScrRef("MAT 1:7"), "Text 7"),
         };
         string target = UpdateUsfm(rows, textBehavior: UpdateUsfmTextBehavior.PreferNew);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
@@ -288,9 +288,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_StripNote()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:1"), "First verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:1"), "First verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
@@ -300,7 +300,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_ReplaceWithNote()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "updated text") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "updated text") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -318,9 +318,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RowVerseSegment()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:1a"), "First verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:1a"), "First verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -335,9 +335,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_UsfmVerseSegment()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:7"), "Seventh verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:7"), "Seventh verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -347,9 +347,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_MultipleParas()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:2"), "Second verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Second verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -364,9 +364,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Table()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:9"), "Ninth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:9"), "Ninth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -376,9 +376,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RangeSingleRowMultipleVerses()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (
+            new UpdateUsfmRow(
                 ScrRef("MAT 2:11", "MAT 2:12"),
                 "Eleventh verse of the second chapter. Twelfth verse of the second chapter."
             )
@@ -396,9 +396,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RangeSingleRowSingleVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:11"), "Eleventh verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -408,10 +408,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RangeMultipleRowsSingleVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:11"), "Eleventh verse of the second chapter."),
-            (ScrRef("MAT 2:12"), "Twelfth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:12"), "Twelfth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -426,11 +426,11 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_MergeVerseSegments()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:2"), "Verse 2."),
-            (ScrRef("MAT 2:2a"), "Verse 2a."),
-            (ScrRef("MAT 2:2b"), "Verse 2b.")
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Verse 2."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2a"), "Verse 2a."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2b"), "Verse 2b.")
         };
 
         string target = UpdateUsfm(rows);
@@ -440,10 +440,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_OptBreak()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:2"), "Second verse of the second chapter."),
-            (ScrRef("MAT 2:3"), "Third verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Second verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:3"), "Third verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
@@ -456,9 +456,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Milestone()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:10"), "Tenth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:10"), "Tenth verse of the second chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -471,9 +471,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Unmatched()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:3"), "Third verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Third verse of the first chapter.")
         };
 
         string target = UpdateUsfm(rows);
@@ -483,7 +483,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_CharStyle()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 2:0/3:s1"), "The second chapter.") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 2:0/3:s1"), "The second chapter.") };
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s1 The second chapter.\r\n"));
@@ -492,7 +492,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Paragraph()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:0/8:s"), "The first chapter.") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:0/8:s"), "The first chapter.") };
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s The first chapter.\r\n"));
@@ -501,13 +501,13 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Relaxed()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:0/s"), "The first chapter."),
-            (ScrRef("MAT 1:1"), "First verse of the first chapter."),
-            (ScrRef("MAT 2:0/tr/tc1"), "The first cell of the table."),
-            (ScrRef("MAT 2:0/tr/tc2"), "The second cell of the table."),
-            (ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table.")
+            new UpdateUsfmRow(ScrRef("MAT 1:0/s"), "The first chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The first cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc2"), "The second cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table.")
         };
 
         string target = UpdateUsfm(rows);
@@ -531,9 +531,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Sidebar()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar.")
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar.")
         };
 
         string target = UpdateUsfm(rows);
@@ -543,10 +543,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Table()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:0/1:tr/1:tc1"), "The first cell of the table."),
-            (ScrRef("MAT 2:0/2:tr/1:tc1"), "The third cell of the table.")
+            new UpdateUsfmRow(ScrRef("MAT 2:0/1:tr/1:tc1"), "The first cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/2:tr/1:tc1"), "The third cell of the table.")
         };
 
         string target = UpdateUsfm(rows);
@@ -563,9 +563,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_OptBreak()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar.")
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar.")
         };
 
         string target = UpdateUsfm(rows);
@@ -575,10 +575,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Milestone()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 2:7a/1:s"), "A new section header.")
-        };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 2:7a/1:s"), "A new section header.") };
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s A new section header. \\ts-s\\*\r\n"));
@@ -587,10 +584,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_SkipNote()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
-        };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.") };
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(target, Contains.Substring("\\ip The introductory paragraph.\r\n"));
@@ -599,10 +593,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_ReplaceWithNote()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
-        };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.") };
 
         string target = UpdateUsfm(rows);
         Assert.That(
@@ -614,9 +605,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_DoubleVaVp()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 3:1"), "Updating later in the book to start.")
+            new UpdateUsfmRow(ScrRef("MAT 3:1"), "Updating later in the book to start.")
         };
 
         string target = UpdateUsfm(rows);
@@ -630,7 +621,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_LastSegment()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Updating the last verse.") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Updating the last verse.") };
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -653,14 +644,14 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_PretranslationsBeforeText()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("GEN 1:1"), "Pretranslations before the start"),
-            (ScrRef("GEN 1:2"), "Pretranslations before the start"),
-            (ScrRef("GEN 1:3"), "Pretranslations before the start"),
-            (ScrRef("GEN 1:4"), "Pretranslations before the start"),
-            (ScrRef("GEN 1:5"), "Pretranslations before the start"),
-            (ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
+            new UpdateUsfmRow(ScrRef("GEN 1:1"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:2"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:3"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:4"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:5"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
         };
 
         string target = UpdateUsfm(rows);
@@ -673,10 +664,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_StripParagraphs()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:0/2:p"), "Update Paragraph"),
-            (ScrRef("MAT 1:1"), "Update Verse 1")
+            new UpdateUsfmRow(ScrRef("MAT 1:0/2:p"), "Update Paragraph"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update Verse 1")
         };
 
         var usfm =
@@ -721,9 +712,9 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PreservationRawStrings()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*")
         };
 
         var usfm =
@@ -744,7 +735,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_BeginningOfVerseEmbed()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), @"Updated text") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Updated text") };
 
         var usfm =
             @"\id MAT - Test
@@ -764,10 +755,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void CrossReferenceDontUpdate()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:1/1:x"), "Update the cross reference"),
-        };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1/1:x"), "Update the cross reference"), };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -785,7 +773,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void PreserveFig()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update"), };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update"), };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -803,10 +791,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void NoteExplicitEndMarkers()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "Update text"),
-            (ScrRef("MAT 1:1/1:f"), "Update note"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update text"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1/1:f"), "Update note"),
         };
         var usfm =
             @"\id MAT - Test
@@ -833,7 +821,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_PreserveParas()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -863,7 +851,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_StripParas()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -893,7 +881,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_Range()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -921,7 +909,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Footnote_PreserveEmbeds()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -951,7 +939,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Footnote_StripEmbeds()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -981,10 +969,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_NonVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
-        {
-            (ScrRef("MAT 1:0/1:s"), "Updated section Header")
-        };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:0/1:s"), "Updated section Header") };
         var usfm =
             @"\id MAT - Test
 \s Section header
@@ -1008,7 +993,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_PreserveStyles()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -1040,7 +1025,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_StripStyles()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -1072,7 +1057,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_SectionHeader()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -1110,7 +1095,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_SectionHeaderInVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -1143,7 +1128,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_NonVerse_ParagraphEndOfVerse()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)> { (ScrRef("MAT 1:1"), "Update 1") };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         var usfm =
             @"\id MAT - Test
 \c 1
@@ -1172,13 +1157,13 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_HeaderReferenceParagraphs()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "new verse 1"),
-            (ScrRef("MAT 1:2"), "new verse 2"),
-            (ScrRef("MAT 1:3"), "new verse 3"),
-            (ScrRef("MAT 2:1"), "new verse 1"),
-            (ScrRef("MAT 2:2"), "new verse 2")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 2:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "new verse 2")
         };
 
         var usfm =
@@ -1227,10 +1212,10 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PreferExisting_AddRemark()
     {
-        var rows = new List<(IReadOnlyList<ScriptureRef>, string)>
+        var rows = new List<UpdateUsfmRow>
         {
-            (ScrRef("MAT 1:1"), "Update 1"),
-            (ScrRef("MAT 1:2"), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
         var usfm =
             @"\id MAT - Test
@@ -1263,7 +1248,7 @@ public class UpdateUsfmParserHandlerTests
     }
 
     private static string UpdateUsfm(
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)>? rows = null,
+        IReadOnlyList<UpdateUsfmRow>? rows = null,
         string? source = null,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,

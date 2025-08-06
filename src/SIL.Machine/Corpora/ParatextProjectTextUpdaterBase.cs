@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
 
         public string UpdateUsfm(
             string bookId,
-            IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
+            IReadOnlyList<UpdateUsfmRow> rows,
             string fullName = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,

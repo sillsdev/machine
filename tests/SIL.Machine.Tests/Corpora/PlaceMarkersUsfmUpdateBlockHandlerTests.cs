@@ -15,7 +15,23 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         string source = "This is the first paragraph. This text is in English, and this test is for paragraph markers.";
         string pretranslation =
             "Este es el primer párrafo. Este texto está en inglés y esta prueba es para marcadores de párrafo.";
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), pretranslation)];
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix(
+                "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
+            ),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            )
+        ];
         string usfm =
             @"\id MAT
 \c 1
@@ -23,23 +39,12 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \p This text is in English,
 \p and this test is for paragraph markers.
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: Tokenizer.Tokenize(source).ToList(),
-                translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
-                alignment: ToWordAlignmentMatrix(
-                    "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
-                )
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -59,29 +64,34 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         string source = "This is the first sentence. This text is in English, and this test is for style markers.";
         string pretranslation =
             "Esta es la primera oración. Este texto está en inglés y esta prueba es para marcadores de estilo.";
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), pretranslation)];
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix(
+                "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
+            ),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            )
+        ];
         string usfm =
             @"\id MAT
 \c 1
 \v 1 This is the \w first\w* sentence. This text is in \w English\w*, and this test is \w for\w* style markers.
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: Tokenizer.Tokenize(source).ToList(),
-                translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
-                alignment: ToWordAlignmentMatrix(
-                    "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
-                )
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -94,11 +104,29 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         // but this is an issue with how the is USFM is generated from the tokens
         AssertUsfmEquals(target, result);
 
+        alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            alignment: ToWordAlignmentMatrix(
+                "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
+            ),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                pretranslation,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            )
+        ];
+
         target = UpdateUsfm(
             rows,
             usfm,
             styleBehavior: UpdateUsfmMarkerBehavior.Strip,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         result =
@@ -114,16 +142,16 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_EmbedMarkers()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        IReadOnlyList<UpdateUsfmRow> rows =
         [
-            (ScrRef("MAT 1:1"), "New verse 1"),
-            (ScrRef("MAT 1:2"), "New verse 2"),
-            (ScrRef("MAT 1:3"), "New verse 3"),
-            (ScrRef("MAT 1:4"), "New verse 4"),
-            (ScrRef("MAT 1:4/1:f"), "New embed text"),
-            (ScrRef("MAT 1:5"), "New verse 5"),
-            (ScrRef("MAT 1:6"), "New verse 6"),
-            (ScrRef("MAT 1:6/1:f"), "New verse 6 embed text")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "New verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "New verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "New verse 4"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4/1:f"), "New embed text"),
+            new UpdateUsfmRow(ScrRef("MAT 1:5"), "New verse 5"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6"), "New verse 6"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6/1:f"), "New verse 6 embed text")
         ];
         string usfm =
             @"\id MAT
@@ -135,13 +163,12 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \v 5 Embed with style markers \f \fr 1.5 \ft A \+w stylish\+w* note \f*
 \v 6 Updated embed with style markers \f \fr 1.6 \ft Another \+w stylish\+w* note \f*
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo = [];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -161,7 +188,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             rows,
             usfm,
             embedBehavior: UpdateUsfmMarkerBehavior.Strip,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         result =
@@ -181,7 +208,21 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_TrailingEmptyParagraphs()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), "New verse 1")];
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: ["Verse", "1"],
+            translationTokens: ["New", "verse", "1"],
+            alignment: ToWordAlignmentMatrix("0-1 1-2"),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "New verse 1",
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            )
+        ];
         string usfm =
             @"\id MAT
 \c 1
@@ -190,21 +231,12 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \b
 \q1 \f embed 2 \f*
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["Verse", "1"],
-                translationTokens: ["New", "verse", "1"],
-                alignment: ToWordAlignmentMatrix("0-1 1-2")
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -221,12 +253,44 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_Headers()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        IReadOnlyList<UpdateUsfmRow> rows =
         [
-            (ScrRef("MAT 1:1"), "X Y Z"),
-            (ScrRef("MAT 1:2"), "X"),
-            (ScrRef("MAT 1:3"), "Y"),
-            (ScrRef("MAT 1:3/1:s1"), "Updated header")
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "X Y Z",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["A", "B", "C"],
+                            translationTokens: ["X", "Y", "Z"],
+                            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:2"),
+                "X",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["A"],
+                            translationTokens: ["X"],
+                            alignment: ToWordAlignmentMatrix("0-0"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Y"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3/1:s1"), "Updated header")
         ];
         string usfm =
             @"\id MAT
@@ -250,27 +314,12 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \v 3 B
 \s1 Header to be updated
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["A", "B", "C"],
-                translationTokens: ["X", "Y", "Z"],
-                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2")
-            ),
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:2"],
-                sourceTokens: ["A"],
-                translationTokens: ["X"],
-                alignment: ToWordAlignmentMatrix("0-0")
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -302,29 +351,39 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_ConsecutiveMarkers()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), "New verse 1 WORD"),];
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "New verse 1 WORD",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["Old", "verse", "1", "word"],
+                            translationTokens: ["New", "verse", "1", "WORD"],
+                            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+                        )
+                    }
+                }
+            ),
+        ];
         string usfm =
             @"\id MAT
 \c 1
 \v 1 Old verse 1
 \p \qt \+w word \+w* \qt*
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["Old", "verse", "1", "word"],
-                translationTokens: ["New", "verse", "1", "WORD"],
-                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3")
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
             styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -340,34 +399,38 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_VerseRanges()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
-        [
-            (
-                Enumerable.Range(1, 6).Select(i => ScriptureRef.Parse($"MAT 1:{i}")).ToList(),
-                "New verse range text new paragraph 2"
-            )
-        ];
+        IReadOnlyList<UpdateUsfmRow> rows = Enumerable
+            .Range(1, 6)
+            .Select(i => new UpdateUsfmRow(
+                [ScriptureRef.Parse($"MAT 1:{i}")],
+                "New verse range text new paragraph 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["Verse", "range", "old", "paragraph", "2"],
+                            translationTokens: ["New", "verse", "range", "text", "new", "paragraph", "2"],
+                            alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5 4-6"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ))
+            .ToList();
         string usfm =
             @"\id MAT
 \c 1
 \v 1-5 Verse range
 \p old paragraph 2
 ";
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: Enumerable.Range(1, 6).Select(i => ScriptureRef.Parse($"MAT 1:{i}").ToString()).ToList(),
-                sourceTokens: ["Verse", "range", "old", "paragraph", "2"],
-                translationTokens: ["New", "verse", "range", "text", "new", "paragraph", "2"],
-                alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5 4-6")
-            )
-        ];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -383,9 +446,26 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_NoUpdate()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        //Strip paragraphs
+        IReadOnlyList<UpdateUsfmRow> rows =
         [
-            (ScrRef("MAT 1:1"), "New paragraph 1 New paragraph 2"),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "New paragraph 1 New paragraph 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["Old", "paragraph", "1", "Old", "paragraph", "2"],
+                            translationTokens: ["New", "paragraph", "1", "New", "paragraph", "2"],
+                            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -394,22 +474,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \p Old paragraph 2
 ";
 
-        //Strip paragraphs
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["Old", "paragraph", "1", "Old", "paragraph", "2"],
-                translationTokens: ["New", "paragraph", "1", "New", "paragraph", "2"],
-                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5")
-            )
-        ];
-
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -421,21 +490,32 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         AssertUsfmEquals(target, result);
 
         //No alignment
-        alignInfo =
+        rows =
         [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: [],
-                translationTokens: [],
-                alignment: ToWordAlignmentMatrix("")
-            )
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "New paragraph 1 New paragraph 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: [],
+                            translationTokens: [],
+                            alignment: ToWordAlignmentMatrix(""),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
         ];
 
         target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         result =
@@ -449,12 +529,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 
         // No text update
         rows = [];
-        alignInfo = [];
         target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         result =
@@ -469,9 +548,25 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_SplitTokens()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        IReadOnlyList<UpdateUsfmRow> rows =
         [
-            (ScrRef("MAT 1:1"), "words split words split words split"),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "words split words split words split",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["words", "split", "words", "split", "words", "split"],
+                            translationTokens: ["words", "split", "words", "split", "words", "split"],
+                            alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -481,21 +576,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \p it words split
 ";
 
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["words", "split", "words", "split", "words", "split"],
-                translationTokens: ["words", "split", "words", "split", "words", "split"],
-                alignment: ToWordAlignmentMatrix("0-0 1-1 2-2 3-3 4-4 5-5")
-            )
-        ];
-
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -512,29 +597,38 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_NoText()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), ""),];
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: [],
+                            translationTokens: [],
+                            alignment: ToWordAlignmentMatrix(""),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+                        )
+                    }
+                }
+            ),
+        ];
         string usfm =
             @"\id MAT
 \c 1
 \v 1 \w \w*
 ";
 
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: [],
-                translationTokens: [],
-                alignment: ToWordAlignmentMatrix("")
-            )
-        ];
-
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
             styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -549,7 +643,26 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_ConsecutiveSubstring()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = [(ScrRef("MAT 1:1"), "string ring"),];
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "string ring",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["string", "ring"],
+                            translationTokens: ["string", "ring"],
+                            alignment: ToWordAlignmentMatrix("0-0 1-1"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
+        ];
         string usfm =
             @"\id MAT
 \c 1
@@ -557,21 +670,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \p ring
 ";
 
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["string", "ring"],
-                translationTokens: ["string", "ring"],
-                alignment: ToWordAlignmentMatrix("0-0 1-1")
-            )
-        ];
-
         string target = UpdateUsfm(
             rows,
             usfm,
             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -587,10 +690,42 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     [Test]
     public void UpdateUsfm_VersesOutOfOrder()
     {
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows =
+        IReadOnlyList<UpdateUsfmRow> rows =
         [
-            (ScrRef("MAT 1:1"), "new verse 1 new paragraph 2"),
-            (ScrRef("MAT 1:2"), "new verse 2")
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "new verse 1 new paragraph 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["verse", "1", "paragraph", "2"],
+                            translationTokens: ["new", "verse", "1", "new", "paragraph", "2"],
+                            alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            ),
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:2"),
+                "new verse 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["verse", "2"],
+                            translationTokens: ["new", "verse", "2"],
+                            alignment: ToWordAlignmentMatrix("0-1 1-2"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+                        )
+                    }
+                }
+            )
         ];
         string usfm =
             @"\id MAT
@@ -600,27 +735,13 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \p paragraph 2
 ";
 
-        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo =
-        [
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:1"],
-                sourceTokens: ["verse", "1", "paragraph", "2"],
-                translationTokens: ["new", "verse", "1", "new", "paragraph", "2"],
-                alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5")
-            ),
-            new PlaceMarkersAlignmentInfo(
-                refs: ["MAT 1:2"],
-                sourceTokens: ["verse", "2"],
-                translationTokens: ["new", "verse", "2"],
-                alignment: ToWordAlignmentMatrix("0-1 1-2")
-            )
-        ];
+        IReadOnlyList<PlaceMarkersAlignmentInfo> alignInfo = [];
 
         string target = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.StripExisting,
-            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler(alignInfo)]
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
         );
 
         string result =
@@ -629,6 +750,58 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 \v 2 new verse 2
 \v 1
 \p
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void UpdateUsfm_StripParagraphsWithHeaders()
+    {
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                "new verse 1 new paragraph 2",
+                new Dictionary<string, object>
+                {
+                    {
+                        "alignment_info",
+                        new PlaceMarkersAlignmentInfo(
+                            sourceTokens: ["verse", "1", "paragraph", "2"],
+                            translationTokens: ["new", "verse", "1", "new", "paragraph", "2"],
+                            alignment: ToWordAlignmentMatrix("0-1 1-2 2-4 3-5"),
+                            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+                            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+                        )
+                    }
+                }
+            ),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1 verse 1
+\s header
+\p paragraph 2
+\v 2 verse 2
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1 new verse 1 new paragraph 2
+\s header
+\p
+\v 2 verse 2
 ";
 
         AssertUsfmEquals(target, result);
@@ -655,7 +828,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     }
 
     private static string UpdateUsfm(
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows,
+        IReadOnlyList<UpdateUsfmRow> rows,
         string source,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
