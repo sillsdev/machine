@@ -17,13 +17,31 @@ namespace SIL.Machine.Corpora
         Strip,
     }
 
+    public class UpdateUsfmRow
+    {
+        public IReadOnlyList<ScriptureRef> Refs { get; }
+        public string Text { get; }
+        public IReadOnlyDictionary<string, object> Metadata { get; }
+
+        public UpdateUsfmRow(
+            IReadOnlyList<ScriptureRef> refs,
+            string text,
+            IReadOnlyDictionary<string, object> metadata = null
+        )
+        {
+            Refs = refs;
+            Text = text;
+            Metadata = metadata ?? new Dictionary<string, object>();
+        }
+    }
+
     /***
      * This is a USFM parser handler that can be used to replace the existing text in a USFM file with the specified
      * text.
      */
     public class UpdateUsfmParserHandler : ScriptureRefUsfmParserHandlerBase
     {
-        private readonly IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> _rows;
+        private readonly IReadOnlyList<UpdateUsfmRow> _rows;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _updatedText;
         private readonly List<UsfmToken> _embedTokens;
@@ -41,7 +59,7 @@ namespace SIL.Machine.Corpora
         private int _tokenIndex;
 
         public UpdateUsfmParserHandler(
-            IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> rows = null,
+            IReadOnlyList<UpdateUsfmRow> rows = null,
             string idText = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
@@ -52,7 +70,7 @@ namespace SIL.Machine.Corpora
             IEnumerable<string> remarks = null
         )
         {
-            _rows = rows ?? Array.Empty<(IReadOnlyList<ScriptureRef>, string)>();
+            _rows = rows ?? Array.Empty<UpdateUsfmRow>();
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
             _updateBlocks = new Stack<UsfmUpdateBlock>();
@@ -383,16 +401,24 @@ namespace SIL.Machine.Corpora
             return tokenizer.Detokenize(tokens);
         }
 
-        private IReadOnlyList<string> AdvanceRows(IReadOnlyList<ScriptureRef> segScrRefs)
+        private (IReadOnlyList<string> RowTexts, Dictionary<string, object> Metadata) AdvanceRows(
+            IReadOnlyList<ScriptureRef> segScrRefs
+        )
         {
             var rowTexts = new List<string>();
+            Dictionary<string, object> rowMetadata = null;
             int sourceIndex = 0;
             // search the sorted rows with updated text, starting from where we left off last.
             while (_rowIndex < _rows.Count && sourceIndex < segScrRefs.Count)
             {
                 // get the set of references for the current row
                 int compare = 0;
-                (IReadOnlyList<ScriptureRef> rowScrRefs, string text) = _rows[_rowIndex];
+                UpdateUsfmRow row = _rows[_rowIndex];
+                (IReadOnlyList<ScriptureRef> rowScrRefs, string text, IReadOnlyDictionary<string, object> metadata) = (
+                    row.Refs,
+                    row.Text,
+                    row.Metadata
+                );
                 foreach (ScriptureRef rowScrRef in rowScrRefs)
                 {
                     while (sourceIndex < segScrRefs.Count)
@@ -409,6 +435,7 @@ namespace SIL.Machine.Corpora
                         // source and row match
                         // grab the text - both source and row will be incremented in due time...
                         rowTexts.Add(text);
+                        rowMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                         break;
                     }
                 }
@@ -418,7 +445,7 @@ namespace SIL.Machine.Corpora
                     _rowIndex++;
                 }
             }
-            return rowTexts;
+            return (rowTexts, rowMetadata);
         }
 
         private void CollectUpdatableTokens(UsfmParserState state)
@@ -522,8 +549,10 @@ namespace SIL.Machine.Corpora
 
         private void StartUpdateBlock(IReadOnlyList<ScriptureRef> scriptureRefs)
         {
-            _updateBlocks.Push(new UsfmUpdateBlock(scriptureRefs));
-            IReadOnlyList<string> rowTexts = AdvanceRows(scriptureRefs);
+            (IReadOnlyList<string> rowTexts, Dictionary<string, object> metadata) = AdvanceRows(scriptureRefs);
+            _updateBlocks.Push(
+                new UsfmUpdateBlock(scriptureRefs, metadata: metadata ?? new Dictionary<string, object>())
+            );
             PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
         }
 

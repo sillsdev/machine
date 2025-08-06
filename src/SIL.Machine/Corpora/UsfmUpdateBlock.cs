@@ -13,17 +13,24 @@ namespace SIL.Machine.Corpora
         {
             get => _elements;
         }
+        public IReadOnlyDictionary<string, object> Metadata
+        {
+            get => _metadata;
+        }
 
         private readonly List<ScriptureRef> _refs;
         private readonly List<UsfmUpdateBlockElement> _elements;
+        private readonly Dictionary<string, object> _metadata;
 
         public UsfmUpdateBlock(
             IEnumerable<ScriptureRef> refs = null,
-            IEnumerable<UsfmUpdateBlockElement> elements = null
+            IEnumerable<UsfmUpdateBlockElement> elements = null,
+            Dictionary<string, object> metadata = null
         )
         {
-            _refs = refs != null ? refs.ToList() : new List<ScriptureRef>();
-            _elements = elements != null ? elements.ToList() : new List<UsfmUpdateBlockElement>();
+            _refs = refs?.ToList() ?? new List<ScriptureRef>();
+            _elements = elements?.ToList() ?? new List<UsfmUpdateBlockElement>();
+            _metadata = metadata ?? new Dictionary<string, object>();
         }
 
         public void AddText(IEnumerable<UsfmToken> tokens)
@@ -100,7 +107,10 @@ namespace SIL.Machine.Corpora
 
             UsfmUpdateBlock other = (UsfmUpdateBlock)obj;
 
-            return _refs.SequenceEqual(other._refs) && _elements.SequenceEqual(other._elements);
+            return _refs.SequenceEqual(other._refs)
+                && _elements.SequenceEqual(other._elements)
+                && _metadata.Count == other.Metadata.Count
+                && !_metadata.Except(other.Metadata).Any();
         }
 
         public override int GetHashCode()
