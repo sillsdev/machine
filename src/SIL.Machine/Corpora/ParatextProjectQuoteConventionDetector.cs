@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
-using SIL.Machine.Corpora.PunctuationAnalysis;
+using SIL.Machine.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {

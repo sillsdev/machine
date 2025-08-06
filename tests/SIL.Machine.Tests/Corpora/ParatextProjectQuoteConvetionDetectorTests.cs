@@ -1,6 +1,6 @@
 using System.Text;
 using NUnit.Framework;
-using SIL.Machine.Corpora.PunctuationAnalysis;
+using SIL.Machine.PunctuationAnalysis;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;

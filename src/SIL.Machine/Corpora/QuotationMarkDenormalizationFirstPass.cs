@@ -1,4 +1,4 @@
-using SIL.Machine.Corpora.PunctuationAnalysis;
+using SIL.Machine.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora
 {
