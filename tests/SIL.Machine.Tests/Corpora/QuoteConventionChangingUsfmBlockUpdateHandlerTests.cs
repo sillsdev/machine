@@ -984,7 +984,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
 
         public override void Reset()
         {
-            Reset();
+            base.Reset();
             NumTimesCalled = 0;
         }
 
