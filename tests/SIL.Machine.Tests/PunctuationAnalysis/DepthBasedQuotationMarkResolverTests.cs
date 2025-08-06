@@ -1,4 +1,3 @@
-using System.Unicode;
 using NUnit.Framework;
 
 namespace SIL.Machine.PunctuationAnalysis;
@@ -2512,7 +2511,6 @@ public class DepthBasedQuotationMarkResolverTests
                 null
             )
         );
-        var charInfo = UnicodeInfo.GetCharInfo('ℵ');
 
         Assert.IsFalse(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
