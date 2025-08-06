@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
-    public class StandardQuoteConventions
+    public class QuoteConventions
     {
-        public static QuoteConventionSet QuoteConventions = new QuoteConventionSet(
+        public static readonly QuoteConventionSet Standard = new QuoteConventionSet(
             new List<QuoteConvention>
             {
                 new QuoteConvention(

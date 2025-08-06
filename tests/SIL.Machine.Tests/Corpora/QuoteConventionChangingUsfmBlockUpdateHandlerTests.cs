@@ -499,7 +499,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "british_english")
         );
         var quotationMarkFinder = new MockQuotationMarkFinder();
-        quoteConventionChanger.QuotationMarkFinder = quotationMarkFinder;
+        quoteConventionChanger.InternalQuotationMarkFinder = quotationMarkFinder;
 
         var updateElement = new UsfmUpdateBlockElement(
             UsfmUpdateBlockElementType.Text,
@@ -772,17 +772,17 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
-        Assert.That(quoteConventionChanger.CurrentChapterNumber, Is.EqualTo(0));
+        Assert.That(quoteConventionChanger.InternalCurrentChapterNumber, Is.EqualTo(0));
 
         quoteConventionChanger.InternalCheckForChapterChange(new UsfmUpdateBlock([ScriptureRef.Parse("MAT 1:1")], []));
 
-        Assert.That(quoteConventionChanger.CurrentChapterNumber, Is.EqualTo(1));
+        Assert.That(quoteConventionChanger.InternalCurrentChapterNumber, Is.EqualTo(1));
 
         quoteConventionChanger.InternalCheckForChapterChange(
             new UsfmUpdateBlock([ScriptureRef.Parse("ISA 15:22")], [])
         );
 
-        Assert.That(quoteConventionChanger.CurrentChapterNumber, Is.EqualTo(15));
+        Assert.That(quoteConventionChanger.InternalCurrentChapterNumber, Is.EqualTo(15));
     }
 
     [Test]
@@ -803,28 +803,31 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             )
         );
 
-        quoteConventionChanger.VerseTextQuotationMarkResolver = new MockQuotationMarkResolver();
+        quoteConventionChanger.InternalVerseTextQuotationMarkResolver = new MockQuotationMarkResolver();
 
         quoteConventionChanger
-            .NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Embed)
+            .InternalNextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Embed)
             .SetText("this text should be erased");
-        quoteConventionChanger.VerseTextQuotationMarkResolver.InternalIssues.Add(
+        quoteConventionChanger.InternalVerseTextQuotationMarkResolver.InternalIssues.Add(
             QuotationMarkResolutionIssue.IncompatibleQuotationMark
         );
 
         quoteConventionChanger.InternalStartNewChapter(1);
-        var segment = quoteConventionChanger.NextScriptureTextSegmentBuilder.Build();
-        Assert.That(quoteConventionChanger.CurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.Skip));
+        var segment = quoteConventionChanger.InternalNextScriptureTextSegmentBuilder.Build();
+        Assert.That(quoteConventionChanger.InternalCurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.Skip));
         Assert.That(segment.ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Chapter));
         Assert.That(segment.Text, Is.EqualTo(""));
         Assert.That(!segment.MarkersInPrecedingContext.Contains(UsfmMarkerType.Embed));
-        Assert.That(quoteConventionChanger.VerseTextQuotationMarkResolver.InternalIssues, Has.Count.EqualTo(0));
+        Assert.That(quoteConventionChanger.InternalVerseTextQuotationMarkResolver.InternalIssues, Has.Count.EqualTo(0));
 
         quoteConventionChanger.InternalStartNewChapter(2);
-        Assert.That(quoteConventionChanger.CurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFull));
+        Assert.That(quoteConventionChanger.InternalCurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFull));
 
         quoteConventionChanger.InternalStartNewChapter(3);
-        Assert.That(quoteConventionChanger.CurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFallback));
+        Assert.That(
+            quoteConventionChanger.InternalCurrentStrategy,
+            Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFallback)
+        );
     }
 
     private static string ChangeQuotationMarks(
@@ -856,14 +859,10 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     )
     {
         quotationMarkUpdateSettings ??= new QuotationMarkUpdateSettings();
-        var sourceQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            sourceQuoteConventionName
-        );
+        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(
-            targetQuoteConventionName
-        );
+        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
         Assert.IsNotNull(targetQuoteConvention);
 
         return new MockQuoteConventionChangingUsfmUpdateBlockHandler(
@@ -885,34 +884,34 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         QuotationMarkUpdateSettings settings
     ) : QuoteConventionChangingUsfmUpdateBlockHandler(sourceQuoteConvention, targetQuoteConvention, settings)
     {
-        public QuotationMarkFinder QuotationMarkFinder
+        public QuotationMarkFinder InternalQuotationMarkFinder
         {
-            set => _quotationMarkFinder = value;
+            set => QuotationMarkFinder = value;
         }
 
-        public TextSegment.Builder NextScriptureTextSegmentBuilder
+        public TextSegment.Builder InternalNextScriptureTextSegmentBuilder
         {
-            get => _nextScriptureTextSegmentBuilder;
+            get => NextScriptureTextSegmentBuilder;
         }
-        public MockQuotationMarkResolver VerseTextQuotationMarkResolver
+        public MockQuotationMarkResolver InternalVerseTextQuotationMarkResolver
         {
             get =>
-                _verseTextQuotationMarkResolver is MockQuotationMarkResolver mqmr
+                VerseTextQuotationMarkResolver is MockQuotationMarkResolver mqmr
                     ? mqmr
                     : throw new InvalidOperationException(
                         "Unable to use implementations of IQuotationMarkResolver other than MockQuotationMarkResolver"
                     );
-            set => _verseTextQuotationMarkResolver = value;
+            set => VerseTextQuotationMarkResolver = value;
         }
-        public int CurrentChapterNumber
+        public int InternalCurrentChapterNumber
         {
-            get => _currentChapterNumber;
-            set => _currentChapterNumber = value;
+            get => CurrentChapterNumber;
+            set => CurrentChapterNumber = value;
         }
-        public QuotationMarkUpdateStrategy CurrentStrategy
+        public QuotationMarkUpdateStrategy InternalCurrentStrategy
         {
-            get => _currentStrategy;
-            set => _currentStrategy = value;
+            get => CurrentStrategy;
+            set => CurrentStrategy = value;
         }
 
         public void InternalProcessScriptureElement(
@@ -966,7 +965,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         }
 
         public override List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegments(
-            List<TextSegment> textSegments
+            IReadOnlyList<TextSegment> textSegments
         )
         {
             NumTimesCalled++;
@@ -985,12 +984,12 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
 
         public override void Reset()
         {
-            base.Reset();
+            Reset();
             NumTimesCalled = 0;
         }
 
         public override IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
-            List<QuotationMarkStringMatch> quoteMatches
+            IReadOnlyList<QuotationMarkStringMatch> quoteMatches
         )
         {
             NumTimesCalled++;

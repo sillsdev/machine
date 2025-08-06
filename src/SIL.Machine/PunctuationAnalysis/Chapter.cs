@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class Chapter
     {
-        public Chapter(List<Verse> verses)
+        public Chapter(IEnumerable<Verse> verses)
         {
-            Verses = verses;
+            Verses = verses.ToList();
         }
 
         public List<Verse> Verses { get; set; }

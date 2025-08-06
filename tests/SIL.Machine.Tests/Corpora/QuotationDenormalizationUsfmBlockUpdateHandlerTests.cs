@@ -488,7 +488,7 @@ public class QuotationMarkDenormalizationUsfmUpdateBlockHandlerTests
 
     public QuoteConvention GetQuoteConventionByName(string name)
     {
-        QuoteConvention quoteConvention = StandardQuoteConventions.QuoteConventions.GetQuoteConventionByName(name);
+        QuoteConvention quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
         Assert.IsNotNull(quoteConvention);
         return quoteConvention;
     }

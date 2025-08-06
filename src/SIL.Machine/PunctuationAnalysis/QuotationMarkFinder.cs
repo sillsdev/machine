@@ -29,7 +29,7 @@ namespace SIL.Machine.PunctuationAnalysis
         }
 
         public virtual List<QuotationMarkStringMatch> FindAllPotentialQuotationMarksInTextSegments(
-            List<TextSegment> textSegments
+            IReadOnlyList<TextSegment> textSegments
         )
         {
             return textSegments.SelectMany(ts => FindAllPotentialQuotationMarksInTextSegment(ts)).ToList();

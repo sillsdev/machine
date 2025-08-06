@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
         }
 
         public IEnumerable<QuotationMarkMetadata> ResolveQuotationMarks(
-            List<QuotationMarkStringMatch> quotationMarkMatches
+            IReadOnlyList<QuotationMarkStringMatch> quotationMarkMatches
         )
         {
             foreach (QuotationMarkStringMatch quoteMatch in quotationMarkMatches)

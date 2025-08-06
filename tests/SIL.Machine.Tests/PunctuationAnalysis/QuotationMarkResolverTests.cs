@@ -9,18 +9,18 @@ public class QuotationMarkResolverTests
     public void Reset()
     {
         DepthBasedQuotationMarkResolver quotationMarkResolver = new DepthBasedQuotationMarkResolver(
-            new QuoteConventionDetectionResolutionSettings(StandardQuoteConventions.QuoteConventions)
+            new QuoteConventionDetectionResolutionSettings(QuoteConventions.Standard)
         );
 
-        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations, Has.Count.EqualTo(0));
-        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks, Has.Count.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations.Count(), Is.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks.Count(), Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth, Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuoteContinuerState.CurrentDepth, Is.EqualTo(0));
 
         quotationMarkResolver.Reset();
 
-        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations, Has.Count.EqualTo(0));
-        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks, Has.Count.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations.Count(), Is.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks.Count(), Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth, Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuoteContinuerState.CurrentDepth, Is.EqualTo(0));
 
@@ -39,13 +39,13 @@ public class QuotationMarkResolverTests
         ];
 
         quotationMarkResolver.ResolveQuotationMarks(quotationMarkStringMatches).ToList();
-        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations, Has.Count.GreaterThan(0));
+        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations.Count(), Is.GreaterThan(0));
         Assert.IsTrue(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth > 0);
 
         quotationMarkResolver.Reset();
 
-        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations, Has.Count.EqualTo(0));
-        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks, Has.Count.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations.Count(), Is.EqualTo(0));
+        Assert.That(quotationMarkResolver.QuoteContinuerState.QuoteContinuerMarks.Count(), Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth, Is.EqualTo(0));
         Assert.That(quotationMarkResolver.QuoteContinuerState.CurrentDepth, Is.EqualTo(0));
     }

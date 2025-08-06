@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,7 +22,7 @@ namespace SIL.Machine.Corpora
         Unknown
     }
 
-    public class UsfmToken
+    public class UsfmToken : IEquatable<UsfmToken>
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
         private static readonly Regex AttributeRegex = new Regex(
@@ -68,15 +69,20 @@ namespace SIL.Machine.Corpora
         {
             if (obj is UsfmToken other)
             {
-                return Type == other.Type
-                    && Marker == other.Marker
-                    && Text == other.Text
-                    && EndMarker == other.EndMarker
-                    && Data == other.Data
-                    && LineNumber == other.LineNumber
-                    && ColumnNumber == other.ColumnNumber;
+                return Equals(other);
             }
             return false;
+        }
+
+        public bool Equals(UsfmToken other)
+        {
+            return Type == other.Type
+                && Marker == other.Marker
+                && Text == other.Text
+                && EndMarker == other.EndMarker
+                && Data == other.Data
+                && LineNumber == other.LineNumber
+                && ColumnNumber == other.ColumnNumber;
         }
 
         public override int GetHashCode()

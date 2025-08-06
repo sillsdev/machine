@@ -34,7 +34,7 @@ namespace SIL.Machine.PunctuationAnalysis
         private void CountQuotationMarksInChapters(List<Chapter> chapters)
         {
             QuoteConventionSet possibleQuoteConventions = new PreliminaryQuotationMarkAnalyzer(
-                StandardQuoteConventions.QuoteConventions
+                QuoteConventions.Standard
             ).NarrowDownPossibleQuoteConventions(chapters);
 
             foreach (Chapter chapter in chapters)
@@ -60,8 +60,9 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             CountQuotationMarksInChapters(GetChapters());
 
-            (QuoteConvention bestQuoteConvention, double score) =
-                StandardQuoteConventions.QuoteConventions.FindMostSimilarConvention(_quotationMarkTabulator);
+            (QuoteConvention bestQuoteConvention, double score) = QuoteConventions.Standard.FindMostSimilarConvention(
+                _quotationMarkTabulator
+            );
 
             if (score > 0 && bestQuoteConvention != null)
             {

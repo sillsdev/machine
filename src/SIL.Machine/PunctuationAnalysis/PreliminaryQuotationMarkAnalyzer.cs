@@ -44,22 +44,25 @@ namespace SIL.Machine.PunctuationAnalysis
     {
         private static readonly double MaximumProportionForRarity = 0.1;
         private static readonly double MaximumProportionDifferenceThreshold = 0.3;
-        private Dictionary<string, int> _wordInitialOccurrences;
-        private Dictionary<string, int> _midWordOccurrences;
-        private Dictionary<string, int> _wordFinalOccurrences;
-        private Dictionary<string, int> _totalOccurrences;
+        private readonly Dictionary<string, int> _wordInitialOccurrences;
+        private readonly Dictionary<string, int> _midWordOccurrences;
+        private readonly Dictionary<string, int> _wordFinalOccurrences;
+        private readonly Dictionary<string, int> _totalOccurrences;
 
         public QuotationMarkWordPositions()
-        {
-            Reset();
-        }
-
-        public void Reset()
         {
             _wordInitialOccurrences = new Dictionary<string, int>();
             _midWordOccurrences = new Dictionary<string, int>();
             _wordFinalOccurrences = new Dictionary<string, int>();
             _totalOccurrences = new Dictionary<string, int>();
+        }
+
+        public void Reset()
+        {
+            _wordInitialOccurrences.Clear();
+            _midWordOccurrences.Clear();
+            _wordFinalOccurrences.Clear();
+            _totalOccurrences.Clear();
         }
 
         public void CountWordInitialApostrophe(string quotationMark)
@@ -141,18 +144,19 @@ namespace SIL.Machine.PunctuationAnalysis
         private static readonly int MuchMoreCommonMinimumRatio = 10;
         private static readonly double MaximumProportionDifferenceThreshold = 0.2;
 
-        private Dictionary<string, int> _earlierQuotationMarkCounts;
-        private Dictionary<string, int> _laterQuotationMarkCounts;
+        private readonly Dictionary<string, int> _earlierQuotationMarkCounts;
+        private readonly Dictionary<string, int> _laterQuotationMarkCounts;
 
         public QuotationMarkSequences()
         {
-            Reset();
+            _earlierQuotationMarkCounts = new Dictionary<string, int>();
+            _laterQuotationMarkCounts = new Dictionary<string, int>();
         }
 
         public void Reset()
         {
-            _earlierQuotationMarkCounts = new Dictionary<string, int>();
-            _laterQuotationMarkCounts = new Dictionary<string, int>();
+            _earlierQuotationMarkCounts.Clear();
+            _laterQuotationMarkCounts.Clear();
         }
 
         public void CountEarlierQuotationMark(string quotationMark)
@@ -204,7 +208,7 @@ namespace SIL.Machine.PunctuationAnalysis
     public class QuotationMarkGrouper
     {
         private readonly QuoteConventionSet _quoteConventions;
-        private Dictionary<string, List<QuotationMarkStringMatch>> _groupedQuotationMarks;
+        private readonly Dictionary<string, List<QuotationMarkStringMatch>> _groupedQuotationMarks;
 
         public QuotationMarkGrouper(
             List<QuotationMarkStringMatch> quotationMarks,
@@ -212,14 +216,14 @@ namespace SIL.Machine.PunctuationAnalysis
         )
         {
             _quoteConventions = quoteConventionSet;
-            GroupQuotationMarks(quotationMarks);
+            _groupedQuotationMarks = GroupQuotationMarks(quotationMarks);
         }
 
-        private void GroupQuotationMarks(List<QuotationMarkStringMatch> quotationMarks)
+        private Dictionary<string, List<QuotationMarkStringMatch>> GroupQuotationMarks(
+            List<QuotationMarkStringMatch> quotationMarks
+        )
         {
-            _groupedQuotationMarks = quotationMarks
-                .GroupBy(qmm => qmm.QuotationMark)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            return quotationMarks.GroupBy(qmm => qmm.QuotationMark).ToDictionary(g => g.Key, g => g.ToList());
         }
 
         public IEnumerable<(string Mark1, string Mark2)> GetQuotationMarkPairs()
@@ -415,7 +419,7 @@ namespace SIL.Machine.PunctuationAnalysis
                 _quoteConventions
             ).FindAllPotentialQuotationMarksInVerse(verse);
             AnalyzeQuotationMarkSequence(quotationMarks);
-            _apostropheAnalyzer.ProcessQuotationMarks(verse.TextSegments, quotationMarks);
+            _apostropheAnalyzer.ProcessQuotationMarks(verse.TextSegments.ToList(), quotationMarks);
         }
 
         private void AnalyzeQuotationMarkSequence(List<QuotationMarkStringMatch> quotationMarks)

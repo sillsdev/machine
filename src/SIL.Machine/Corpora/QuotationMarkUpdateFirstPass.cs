@@ -8,19 +8,15 @@ namespace SIL.Machine.Corpora
     // Determines the best strategy to take for each chapter
     public class QuotationMarkUpdateFirstPass : UsfmStructureExtractor
     {
-        private readonly QuoteConvention _sourceQuoteConvention;
-        private readonly QuoteConvention _targetQuoteConvention;
         private readonly QuotationMarkFinder _quotationMarkFinder;
         private readonly DepthBasedQuotationMarkResolver _quotationMarkResolver;
-        public bool WillFallbackModeWork;
+        public bool WillFallbackModeWork { get; set; }
 
         public QuotationMarkUpdateFirstPass(
             QuoteConvention sourceQuoteConvention,
             QuoteConvention targetQuoteConvention
         )
         {
-            _sourceQuoteConvention = sourceQuoteConvention;
-            _targetQuoteConvention = targetQuoteConvention;
             _quotationMarkFinder = new QuotationMarkFinder(
                 new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention, targetQuoteConvention })
             );

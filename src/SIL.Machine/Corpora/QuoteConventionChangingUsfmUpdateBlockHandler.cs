@@ -9,13 +9,13 @@ namespace SIL.Machine.Corpora
         private readonly QuoteConvention _sourceQuoteConvention;
         private readonly QuoteConvention _targetQuoteConvention;
         private readonly QuotationMarkUpdateSettings _settings;
-        protected QuotationMarkFinder _quotationMarkFinder;
-        protected TextSegment.Builder _nextScriptureTextSegmentBuilder;
-        protected IQuotationMarkResolver _verseTextQuotationMarkResolver;
+        protected QuotationMarkFinder QuotationMarkFinder { get; set; }
+        protected TextSegment.Builder NextScriptureTextSegmentBuilder { get; set; }
+        protected IQuotationMarkResolver VerseTextQuotationMarkResolver { get; set; }
         private readonly IQuotationMarkResolver _embedQuotationMarkResolver;
         private readonly IQuotationMarkResolver _simpleQuotationMarkResolver;
-        protected QuotationMarkUpdateStrategy _currentStrategy;
-        protected int _currentChapterNumber;
+        protected QuotationMarkUpdateStrategy CurrentStrategy { get; set; }
+        protected int CurrentChapterNumber { get; set; }
         private int _currentVerseNumber;
 
         public QuoteConventionChangingUsfmUpdateBlockHandler(
@@ -28,11 +28,11 @@ namespace SIL.Machine.Corpora
             _targetQuoteConvention = targetQuoteConvention;
             _settings = settings;
 
-            _quotationMarkFinder = new QuotationMarkFinder(
+            QuotationMarkFinder = new QuotationMarkFinder(
                 new QuoteConventionSet(new List<QuoteConvention> { _sourceQuoteConvention })
             );
 
-            _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
+            NextScriptureTextSegmentBuilder = new TextSegment.Builder();
 
             IQuotationMarkResolutionSettings resolutionSettings = new QuotationMarkUpdateResolutionSettings(
                 sourceQuoteConvention
@@ -41,12 +41,12 @@ namespace SIL.Machine.Corpora
             // Each embed represents a separate context for quotation marks
             // (i.e. you can't open a quote in one context and close it in another)
             // so we need to keep track of the verse and embed contexts separately.
-            _verseTextQuotationMarkResolver = new DepthBasedQuotationMarkResolver(resolutionSettings);
+            VerseTextQuotationMarkResolver = new DepthBasedQuotationMarkResolver(resolutionSettings);
             _embedQuotationMarkResolver = new DepthBasedQuotationMarkResolver(resolutionSettings);
             _simpleQuotationMarkResolver = new FallbackQuotationMarkResolver(resolutionSettings);
 
-            _currentStrategy = QuotationMarkUpdateStrategy.ApplyFull;
-            _currentChapterNumber = 0;
+            CurrentStrategy = QuotationMarkUpdateStrategy.ApplyFull;
+            CurrentChapterNumber = 0;
             _currentVerseNumber = 0;
         }
 
@@ -54,9 +54,9 @@ namespace SIL.Machine.Corpora
         {
             CheckForChapterChange(block);
             CheckForVerseChange(block);
-            if (_currentStrategy == QuotationMarkUpdateStrategy.Skip)
+            if (CurrentStrategy == QuotationMarkUpdateStrategy.Skip)
                 return block;
-            if (_currentStrategy == QuotationMarkUpdateStrategy.ApplyFallback)
+            if (CurrentStrategy == QuotationMarkUpdateStrategy.ApplyFallback)
             {
                 return ApplyFallbackUpdating(block);
             }
@@ -81,7 +81,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    ProcessScriptureElement(element, _verseTextQuotationMarkResolver);
+                    ProcessScriptureElement(element, VerseTextQuotationMarkResolver);
                 }
             }
             return block;
@@ -94,7 +94,7 @@ namespace SIL.Machine.Corpora
         {
             List<TextSegment> textSegments = CreateTextSegments(element);
             List<QuotationMarkStringMatch> quotationMarkMatches =
-                _quotationMarkFinder.FindAllPotentialQuotationMarksInTextSegments(textSegments);
+                QuotationMarkFinder.FindAllPotentialQuotationMarksInTextSegments(textSegments);
             List<QuotationMarkMetadata> resolvedQuotationMarkMatches = quotationMarkResolver
                 .ResolveQuotationMarks(quotationMarkMatches)
                 .ToList();
@@ -109,16 +109,16 @@ namespace SIL.Machine.Corpora
                 switch (token.Type)
                 {
                     case UsfmTokenType.Verse:
-                        _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
+                        NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
                         break;
                     case UsfmTokenType.Paragraph:
-                        _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Paragraph);
+                        NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Paragraph);
                         break;
                     case UsfmTokenType.Character:
-                        _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Character);
+                        NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Character);
                         break;
                     case UsfmTokenType.Note:
-                        _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Embed);
+                        NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Embed);
                         break;
                     case UsfmTokenType.Text:
                         TextSegment textSegment = CreateTextSegment(token);
@@ -167,13 +167,13 @@ namespace SIL.Machine.Corpora
         protected TextSegment CreateTextSegment(UsfmToken token)
         {
             TextSegment textSegmentToReturn = null;
-            _nextScriptureTextSegmentBuilder.SetUsfmToken(token);
+            NextScriptureTextSegmentBuilder.SetUsfmToken(token);
             if (token.Text != null)
             {
-                _nextScriptureTextSegmentBuilder.SetText(token.Text);
-                textSegmentToReturn = _nextScriptureTextSegmentBuilder.Build();
+                NextScriptureTextSegmentBuilder.SetText(token.Text);
+                textSegmentToReturn = NextScriptureTextSegmentBuilder.Build();
             }
-            _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
+            NextScriptureTextSegmentBuilder = new TextSegment.Builder();
             return textSegmentToReturn;
         }
 
@@ -193,7 +193,7 @@ namespace SIL.Machine.Corpora
         {
             foreach (ScriptureRef scriptureRef in block.Refs)
             {
-                if (scriptureRef.ChapterNum != _currentChapterNumber)
+                if (scriptureRef.ChapterNum != CurrentChapterNumber)
                 {
                     StartNewChapter(scriptureRef.ChapterNum);
                 }
@@ -202,18 +202,18 @@ namespace SIL.Machine.Corpora
 
         protected void StartNewChapter(int newChapterNumber)
         {
-            _currentChapterNumber = newChapterNumber;
-            _currentStrategy = _settings.GetActionForChapter(newChapterNumber);
-            _verseTextQuotationMarkResolver.Reset();
-            _nextScriptureTextSegmentBuilder = new TextSegment.Builder();
-            _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
+            CurrentChapterNumber = newChapterNumber;
+            CurrentStrategy = _settings.GetActionForChapter(newChapterNumber);
+            VerseTextQuotationMarkResolver.Reset();
+            NextScriptureTextSegmentBuilder = new TextSegment.Builder();
+            NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
         }
 
         private void CheckForVerseChange(UsfmUpdateBlock block)
         {
             foreach (ScriptureRef scriptureRef in block.Refs)
             {
-                if (scriptureRef.ChapterNum == _currentChapterNumber && scriptureRef.VerseNum != _currentVerseNumber)
+                if (scriptureRef.ChapterNum == CurrentChapterNumber && scriptureRef.VerseNum != _currentVerseNumber)
                 {
                     StartNewVerse(scriptureRef.VerseNum);
                 }
@@ -223,7 +223,7 @@ namespace SIL.Machine.Corpora
         private void StartNewVerse(int newVerseNumber)
         {
             _currentVerseNumber = newVerseNumber;
-            _nextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
+            NextScriptureTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
         }
     }
 }
