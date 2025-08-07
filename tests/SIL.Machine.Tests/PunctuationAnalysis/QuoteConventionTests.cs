@@ -9,82 +9,89 @@ public class QuoteConventionTests
     public void SingleLevelQuoteConventionNormalize()
     {
         var englishLevel1QuoteConvention = new SingleLevelQuoteConvention("\u201c", "\u201d");
-        var normalizedEnglishLevel1QuoteConvention = englishLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedEnglishLevel1QuoteConvention = englishLevel1QuoteConvention.Normalize();
         Assert.That(normalizedEnglishLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedEnglishLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var englishLevel2QuoteConvention = new SingleLevelQuoteConvention("\u2018", "\u2019");
-        var normalizedEnglishLevel2QuoteConvention = englishLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedEnglishLevel2QuoteConvention = englishLevel2QuoteConvention.Normalize();
         Assert.That(normalizedEnglishLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("'"));
         Assert.That(normalizedEnglishLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("'"));
 
         var alreadyNormalizedEnglishLevel1QuoteConvention = new SingleLevelQuoteConvention("\"", "\"");
-        var doublyNormalizedEnglishLevel1QuoteConvention = alreadyNormalizedEnglishLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention doublyNormalizedEnglishLevel1QuoteConvention =
+            alreadyNormalizedEnglishLevel1QuoteConvention.Normalize();
         Assert.That(doublyNormalizedEnglishLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(doublyNormalizedEnglishLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var alreadyNormalizedEnglishLevel2QuoteConvention = new SingleLevelQuoteConvention("'", "'");
-        var doublyNormalizedEnglishLevel2QuoteConvention = alreadyNormalizedEnglishLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention doublyNormalizedEnglishLevel2QuoteConvention =
+            alreadyNormalizedEnglishLevel2QuoteConvention.Normalize();
         Assert.That(doublyNormalizedEnglishLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("'"));
         Assert.That(doublyNormalizedEnglishLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("'"));
 
         var frenchLevel1QuoteConvention = new SingleLevelQuoteConvention("\u00ab", "\u00bb");
-        var normalizedFrenchLevel1QuoteConvention = frenchLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedFrenchLevel1QuoteConvention = frenchLevel1QuoteConvention.Normalize();
         Assert.That(normalizedFrenchLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedFrenchLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var frenchLevel2QuoteConvention = new SingleLevelQuoteConvention("\u2039", "\u203a");
-        var normalizedFrenchLevel2QuoteConvention = frenchLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedFrenchLevel2QuoteConvention = frenchLevel2QuoteConvention.Normalize();
         Assert.That(normalizedFrenchLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("\u2039"));
         Assert.That(normalizedFrenchLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("\u203a"));
 
         var typewriterFrenchLevel1QuoteConvention = new SingleLevelQuoteConvention("<<", ">>");
-        var normalizedTypewriterFrenchLevel1QuoteConvention = typewriterFrenchLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedTypewriterFrenchLevel1QuoteConvention =
+            typewriterFrenchLevel1QuoteConvention.Normalize();
         Assert.That(normalizedTypewriterFrenchLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("<<"));
         Assert.That(normalizedTypewriterFrenchLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo(">>"));
 
         var typewriterFrenchLevel2QuoteConvention = new SingleLevelQuoteConvention("<", ">");
-        var normalizedTypewriterFrenchLevel2QuoteConvention = typewriterFrenchLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedTypewriterFrenchLevel2QuoteConvention =
+            typewriterFrenchLevel2QuoteConvention.Normalize();
         Assert.That(normalizedTypewriterFrenchLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("<"));
         Assert.That(normalizedTypewriterFrenchLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo(">"));
 
         var centralEuropeanLevel1QuoteConvention = new SingleLevelQuoteConvention("\u201e", "\u201c");
-        var normalizedCentralEuropeanLevel1QuoteConvention = centralEuropeanLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedCentralEuropeanLevel1QuoteConvention =
+            centralEuropeanLevel1QuoteConvention.Normalize();
         Assert.That(normalizedCentralEuropeanLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedCentralEuropeanLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var centralEuropeanLevel2QuoteConvention = new SingleLevelQuoteConvention("\u201a", "\u2018");
-        var normalizedCentralEuropeanLevel2QuoteConvention = centralEuropeanLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedCentralEuropeanLevel2QuoteConvention =
+            centralEuropeanLevel2QuoteConvention.Normalize();
         Assert.That(normalizedCentralEuropeanLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("'"));
         Assert.That(normalizedCentralEuropeanLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("'"));
 
         var centralEuropeanGuillemetsQuoteConvention = new SingleLevelQuoteConvention("\u00bb", "\u00ab");
-        var normalizedCentralEuropeanGuillemetsQuoteConvention = centralEuropeanGuillemetsQuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedCentralEuropeanGuillemetsQuoteConvention =
+            centralEuropeanGuillemetsQuoteConvention.Normalize();
         Assert.That(normalizedCentralEuropeanGuillemetsQuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedCentralEuropeanGuillemetsQuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var swedishLevel1QuoteConvention = new SingleLevelQuoteConvention("\u201d", "\u201d");
-        var normalizedSwedishLevel1QuoteConvention = swedishLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedSwedishLevel1QuoteConvention = swedishLevel1QuoteConvention.Normalize();
         Assert.That(normalizedSwedishLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedSwedishLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var swedishLevel2QuoteConvention = new SingleLevelQuoteConvention("\u2019", "\u2019");
-        var normalizedSwedishLevel2QuoteConvention = swedishLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedSwedishLevel2QuoteConvention = swedishLevel2QuoteConvention.Normalize();
         Assert.That(normalizedSwedishLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("'"));
         Assert.That(normalizedSwedishLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("'"));
 
         var finnishLevel1QuoteConvention = new SingleLevelQuoteConvention("\u00bb", "\u00bb");
-        var normalizedFinnishLevel1QuoteConvention = finnishLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedFinnishLevel1QuoteConvention = finnishLevel1QuoteConvention.Normalize();
         Assert.That(normalizedFinnishLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedFinnishLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var arabicLevel1QuoteConvention = new SingleLevelQuoteConvention("\u201d", "\u201c");
-        var normalizedArabicLevel1QuoteConvention = arabicLevel1QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedArabicLevel1QuoteConvention = arabicLevel1QuoteConvention.Normalize();
         Assert.That(normalizedArabicLevel1QuoteConvention.OpeningQuotationMark, Is.EqualTo("\""));
         Assert.That(normalizedArabicLevel1QuoteConvention.ClosingQuotationMark, Is.EqualTo("\""));
 
         var arabicLevel2QuoteConvention = new SingleLevelQuoteConvention("\u2019", "\u2018");
-        var normalizedArabicLevel2QuoteConvention = arabicLevel2QuoteConvention.Normalize();
+        SingleLevelQuoteConvention normalizedArabicLevel2QuoteConvention = arabicLevel2QuoteConvention.Normalize();
         Assert.That(normalizedArabicLevel2QuoteConvention.OpeningQuotationMark, Is.EqualTo("'"));
         Assert.That(normalizedArabicLevel2QuoteConvention.ClosingQuotationMark, Is.EqualTo("'"));
     }
@@ -331,7 +338,7 @@ public class QuoteConventionTests
     public void Normalize()
     {
         var emptyQuoteConvention = new QuoteConvention("empty_quote_convention", []);
-        var normalizedEmptyQuoteConvention = emptyQuoteConvention.Normalize();
+        QuoteConvention normalizedEmptyQuoteConvention = emptyQuoteConvention.Normalize();
         Assert.That(normalizedEmptyQuoteConvention.Name, Is.EqualTo("empty_quote_convention_normalized"));
         Assert.That(normalizedEmptyQuoteConvention.NumLevels, Is.EqualTo(0));
 
@@ -344,7 +351,7 @@ public class QuoteConventionTests
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
             ]
         );
-        var normalizedStandardEnglishQuoteConvention = standardEnglishQuoteConvention.Normalize();
+        QuoteConvention normalizedStandardEnglishQuoteConvention = standardEnglishQuoteConvention.Normalize();
         Assert.That(
             normalizedStandardEnglishQuoteConvention.Name,
             Is.EqualTo("standard_english_quote_convention_normalized")
@@ -367,7 +374,7 @@ public class QuoteConventionTests
                 new SingleLevelQuoteConvention("\u2018", "\u2019"),
             ]
         );
-        var normalizedWesternEuropeanQuoteConvention = westernEuropeanQuoteConvention.Normalize();
+        QuoteConvention normalizedWesternEuropeanQuoteConvention = westernEuropeanQuoteConvention.Normalize();
         Assert.That(normalizedWesternEuropeanQuoteConvention.Name, Is.EqualTo("test_quote_convention_normalized"));
         Assert.That(normalizedWesternEuropeanQuoteConvention.NumLevels, Is.EqualTo(3));
         Assert.That(normalizedWesternEuropeanQuoteConvention.GetOpeningQuotationMarkAtDepth(1), Is.EqualTo("\""));
@@ -386,7 +393,7 @@ public class QuoteConventionTests
             ]
         );
 
-        var normalizedHybridBritishTypewriterEnglishQuoteConvention = (
+        QuoteConvention normalizedHybridBritishTypewriterEnglishQuoteConvention = (
             hybridBritishTypewriterEnglishQuoteConvention.Normalize()
         );
         Assert.IsTrue(

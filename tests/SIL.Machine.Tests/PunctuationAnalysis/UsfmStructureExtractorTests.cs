@@ -41,7 +41,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -74,7 +74,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -107,7 +107,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -140,7 +140,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -173,7 +173,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -206,7 +206,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -239,7 +239,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -272,7 +272,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -314,7 +314,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -363,7 +363,7 @@ public class UsfmStructureExtractorTests
             ),
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
         Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
@@ -404,7 +404,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.That(
             actualChapters[0].Verses[0].TextSegments[1].PreviousSegment,
@@ -451,7 +451,7 @@ public class UsfmStructureExtractorTests
             )
         ];
 
-        var actualChapters = usfmStructureExtractor.GetChapters();
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
         Assert.That(
             actualChapters[0].Verses[0].TextSegments[1].PreviousSegment,
@@ -489,7 +489,7 @@ public class UsfmStructureExtractorTests
     {
         public void SetVerseNum(int verseNum)
         {
-            var vref = VerseRef;
+            VerseRef vref = VerseRef;
             vref.VerseNum = verseNum;
             VerseRef = vref;
         }

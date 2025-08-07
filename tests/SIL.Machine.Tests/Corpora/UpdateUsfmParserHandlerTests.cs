@@ -39,7 +39,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:3"), "Update 3")
         };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \r keep this reference
@@ -60,7 +60,7 @@ public class UpdateUsfmParserHandlerTests
             styleBehavior: UpdateUsfmMarkerBehavior.Preserve
         );
 
-        var result =
+        string result =
             @"\id MAT
 \c 1
 \r keep this reference
@@ -135,7 +135,7 @@ public class UpdateUsfmParserHandlerTests
 
         AssertUsfmEquals(target, result);
 
-        var targetDiffParagraph = UpdateUsfm(
+        string targetDiffParagraph = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.StripExisting,
@@ -183,7 +183,7 @@ public class UpdateUsfmParserHandlerTests
 
         AssertUsfmEquals(target, result);
 
-        var targetDiffParagraph = UpdateUsfm(
+        string targetDiffParagraph = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.StripExisting,
@@ -253,7 +253,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 Some text
@@ -261,7 +261,7 @@ public class UpdateUsfmParserHandlerTests
 \v 3 Other text
 ";
         string target = UpdateUsfm(rows, usfm, textBehavior: UpdateUsfmTextBehavior.PreferExisting);
-        var result =
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Some text
@@ -301,13 +301,13 @@ public class UpdateUsfmParserHandlerTests
     public void GetUsfm_Verse_ReplaceWithNote()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "updated text") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 Chapter \add one\add*, verse \f + \fr 2:1: \ft This is a footnote.\f*one.
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
+        string target = UpdateUsfm(rows, usfm);
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 updated text \f + \fr 2:1: \ft This is a footnote.\f*
@@ -670,7 +670,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update Verse 1")
         };
 
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \p This is a paragraph before any verses
@@ -683,7 +683,7 @@ public class UpdateUsfmParserHandlerTests
 ";
 
         string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve);
-        var resultP =
+        string resultP =
             @"\id MAT - Test
 \c 1
 \p This is a paragraph before any verses
@@ -697,7 +697,7 @@ public class UpdateUsfmParserHandlerTests
         AssertUsfmEquals(target, resultP);
 
         target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var resultS =
+        string resultS =
             @"\id MAT - Test
 \c 1
 \p This is a paragraph before any verses
@@ -717,14 +717,14 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*")
         };
 
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 \f \fr 1.1 \ft Some note \f*Hello World
 ";
 
         string target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var result =
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Update all in one row \f \fr 1.1 \ft Some note \f*
@@ -737,14 +737,14 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Updated text") };
 
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 \f \fr 1.1 \ft Some note \f* Text after note
 ";
 
         string target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var result =
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Updated text
@@ -756,13 +756,13 @@ public class UpdateUsfmParserHandlerTests
     public void CrossReferenceDontUpdate()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1/1:x"), "Update the cross reference"), };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 Cross reference verse \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
+        string target = UpdateUsfm(rows, usfm);
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Cross reference verse \x - \xo 2:3-4 \xt Cool Book 3:24 \xta The annotation \x* and more content.
@@ -774,13 +774,13 @@ public class UpdateUsfmParserHandlerTests
     public void PreserveFig()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update"), };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 initial text \fig stuff\fig* more text and more.
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
+        string target = UpdateUsfm(rows, usfm);
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Update \fig stuff\fig*
@@ -796,13 +796,13 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update text"),
             new UpdateUsfmRow(ScrRef("MAT 1:1/1:f"), "Update note"),
         };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 initial text \f + \fr 2.4\fr* \fk The \+nd Lord\+nd*:\fk* \ft See \+nd Lord\+nd* in Word List.\ft*\f* and the end.
 ";
-        var target = UpdateUsfm(rows, usfm);
-        var result =
+        string target = UpdateUsfm(rows, usfm);
+        string result =
             @"\id MAT - Test
 \c 1
 \v 1 Update text \f + \fr 2.4\fr* \fk The \+nd Lord\+nd*:\fk* \ft See \+nd Lord\+nd* in Word List.\ft*\f*
@@ -810,7 +810,7 @@ public class UpdateUsfmParserHandlerTests
         AssertUsfmEquals(target, result);
 
         target = UpdateUsfm(rows, usfm, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var result2 =
+        string result2 =
             @"\id MAT - Test
 \c 1
 \v 1 Update text
@@ -822,7 +822,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_PreserveParas()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse 1 \p inner verse paragraph
@@ -852,7 +852,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_StripParas()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse 1 \p inner verse paragraph
@@ -882,7 +882,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_Range()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1-3 verse 1 through 3
@@ -910,7 +910,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Footnote_PreserveEmbeds()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse\f \fr 1.1 \ft Some note \f* 1
@@ -940,7 +940,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Footnote_StripEmbeds()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse\f \fr 1.1 \ft Some note \f* 1
@@ -970,7 +970,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_NonVerse()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:0/1:s"), "Updated section Header") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \s Section header
 \c 1
@@ -994,7 +994,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_PreserveStyles()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse \bd 1\bd*
@@ -1026,7 +1026,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_StripStyles()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 verse \bd 1\bd*
@@ -1058,7 +1058,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_SectionHeader()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \p
@@ -1096,7 +1096,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_Verse_SectionHeaderInVerse()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \p
@@ -1129,7 +1129,7 @@ public class UpdateUsfmParserHandlerTests
     public void UpdateBlock_NonVerse_ParagraphEndOfVerse()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \p
@@ -1166,7 +1166,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 2:2"), "new verse 2")
         };
 
-        var usfm =
+        string usfm =
             @"\id MAT
 \c 1
 \s1 beginning-of-chapter header
@@ -1187,7 +1187,7 @@ public class UpdateUsfmParserHandlerTests
 ";
 
         string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
-        var resultP =
+        string resultP =
             @"\id MAT
 \c 1
 \s1 beginning-of-chapter header
@@ -1217,7 +1217,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
-        var usfm =
+        string usfm =
             @"\id MAT - Test
 \c 1
 \v 1 Some text
@@ -1230,7 +1230,7 @@ public class UpdateUsfmParserHandlerTests
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
             remarks: ["New remark"]
         );
-        var result =
+        string result =
             @"\id MAT - Test
 \rem New remark
 \c 1
@@ -1298,8 +1298,8 @@ public class UpdateUsfmParserHandlerTests
     private static void AssertUsfmEquals(string target, string truth)
     {
         Assert.That(target, Is.Not.Null);
-        var target_lines = target.Split(["\n"], StringSplitOptions.None);
-        var truth_lines = truth.Split(["\n"], StringSplitOptions.None);
+        string[] target_lines = target.Split(["\n"], StringSplitOptions.None);
+        string[] truth_lines = truth.Split(["\n"], StringSplitOptions.None);
         for (int i = 0; i < truth_lines.Length; i++)
         {
             Assert.That(target_lines[i].Trim(), Is.EqualTo(truth_lines[i].Trim()), message: $"Line {i}");
@@ -1312,7 +1312,7 @@ public class UpdateUsfmParserHandlerTests
         params (UsfmUpdateBlockElementType, string, bool)[] expectedElements
     )
     {
-        var parsedExtractedRefs = expectedRefs.Select(r => ScriptureRef.Parse(r));
+        IEnumerable<ScriptureRef> parsedExtractedRefs = expectedRefs.Select(r => ScriptureRef.Parse(r));
         Assert.That(block.Refs.SequenceEqual(parsedExtractedRefs));
         Assert.That(block.Elements.Count, Is.EqualTo(expectedElements.Length));
         foreach (
