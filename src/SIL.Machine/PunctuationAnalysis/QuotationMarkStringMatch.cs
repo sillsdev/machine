@@ -1,13 +1,14 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Unicode;
+using PCRE;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuotationMarkStringMatch
     {
-        // No LatinLetterPattern or LetterPattern because C# does not support it in the same way as Python. Using UnicodeInfo to mirror machine.py
+        private static readonly PcreRegex LetterPattern = new PcreRegex(@"[\p{L}\N{U+0001E200}-\N{U+0001E28F}]");
+        private static readonly PcreRegex LatinLetterPattern = new PcreRegex(@"^\p{Script_Extensions=Latin}$");
         private static readonly Regex WhitespacePattern = new Regex(@"[\s~]", RegexOptions.Compiled);
         private static readonly Regex PunctuationPattern = new Regex(@"[\.,;\?!\)\]\-—۔،؛]", RegexOptions.Compiled);
         private static readonly Regex QuoteIntroducerPattern = new Regex(@"[:,]\s*$", RegexOptions.Compiled);
@@ -55,7 +56,13 @@ namespace SIL.Machine.PunctuationAnalysis
         public bool NextCharacterMatches(Regex regexPattern) =>
             NextCharacter != null && regexPattern.IsMatch(NextCharacter);
 
+        public bool NextCharacterMatches(PcreRegex regexPattern) =>
+            NextCharacter != null && regexPattern.IsMatch(NextCharacter);
+
         public bool PreviousCharacterMatches(Regex regexPattern) =>
+            PreviousCharacter != null && regexPattern.IsMatch(PreviousCharacter);
+
+        public bool PreviousCharacterMatches(PcreRegex regexPattern) =>
             PreviousCharacter != null && regexPattern.IsMatch(PreviousCharacter);
 
         public string PreviousCharacter
@@ -98,7 +105,13 @@ namespace SIL.Machine.PunctuationAnalysis
         public bool LeadingSubstringMatches(Regex regexPattern) =>
             regexPattern.IsMatch(TextSegment.SubstringBefore(StartIndex));
 
+        public bool LeadingSubstringMatches(PcreRegex regexPattern) =>
+            regexPattern.IsMatch(TextSegment.SubstringBefore(StartIndex));
+
         public bool TrailingSubstringMatches(Regex regexPattern) =>
+            regexPattern.IsMatch(TextSegment.SubstringAfter(EndIndex));
+
+        public bool TrailingSubstringMatches(PcreRegex regexPattern) =>
             regexPattern.IsMatch(TextSegment.SubstringAfter(EndIndex));
 
         // This assumes that the two matches occur in the same verse
@@ -151,72 +164,27 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public bool HasLetterInLeadingSubstring()
         {
-            string leadingSubstring = TextSegment.SubstringBefore(StartIndex);
-            if (leadingSubstring.Length == 0)
-                return false;
-
-            TextElementEnumerator charactersEnumerator = StringInfo.GetTextElementEnumerator(leadingSubstring);
-            while (charactersEnumerator.MoveNext())
-            {
-                if (!IsLetter(charactersEnumerator.Current.ToString()))
-                    return false;
-            }
-            return true;
+            return LeadingSubstringMatches(LetterPattern);
         }
 
         public bool HasLetterInTrailingSubstring()
         {
-            string trailingSubstring = TextSegment.SubstringAfter(EndIndex);
-            if (trailingSubstring.Length == 0)
-                return false;
-            TextElementEnumerator charactersEnumerator = StringInfo.GetTextElementEnumerator(trailingSubstring);
-            while (charactersEnumerator.MoveNext())
-            {
-                if (!IsLetter(charactersEnumerator.Current.ToString()))
-                    return false;
-            }
-            return true;
+            return TrailingSubstringMatches(LetterPattern);
         }
 
         public bool HasLeadingLatinLetter()
         {
-            return PreviousCharacter != null && IsLatinScript(PreviousCharacter);
+            return PreviousCharacterMatches(LatinLetterPattern);
         }
 
         public bool HasTrailingLatinLetter()
         {
-            return NextCharacter != null && IsLatinScript(NextCharacter);
+            return NextCharacterMatches(LatinLetterPattern);
         }
 
         public bool HasQuoteIntroducerInLeadingSubstring()
         {
             return LeadingSubstringMatches(QuoteIntroducerPattern);
-        }
-
-        public static bool HasUnicodeProperty(string characterString, string attribute)
-        {
-            if (characterString.Length == 1)
-            {
-                return UnicodeInfo.GetName(characterString[0]).Contains(attribute);
-            }
-            else if (char.IsSurrogatePair(characterString[0], characterString[1]))
-            {
-                //Get true unicode value
-                int combinedCharacterValue =
-                    (((int)characterString[0] - 0xD800) * 0x400) + ((int)characterString[1] - 0xDC00) + 0x10000;
-                return UnicodeInfo.GetName(combinedCharacterValue).Contains(attribute);
-            }
-            return false;
-        }
-
-        private bool IsLatinScript(string characterString)
-        {
-            return HasUnicodeProperty(characterString, "LATIN");
-        }
-
-        private bool IsLetter(string characterString)
-        {
-            return HasUnicodeProperty(characterString, "LETTER");
         }
     }
 }
