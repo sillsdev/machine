@@ -313,7 +313,7 @@ public class QuotationMarkStringMatchTests
     [Test]
     public void Resolve()
     {
-        var textSegment = new TextSegment.Builder().SetText("'").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("'").Build();
         var quotationMarkStringMatch = new QuotationMarkStringMatch(textSegment, 0, 1);
         Assert.That(
             quotationMarkStringMatch.Resolve(2, QuotationMarkDirection.Opening),

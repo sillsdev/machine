@@ -9,7 +9,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void QuotesSpanningVerses()
     {
-        var inputUsfm =
+        string inputUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -17,62 +17,62 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     \v 2 “You shall not eat of any tree of the garden”?»
     ";
 
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, \n"
             + "\\v 2 ‘You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
 
     [Test]
     public void SingleEmbed()
     {
-        var inputUsfm =
+        string inputUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     \f + \ft «This is a “footnote”» \f*
     of the field which Yahweh God had made.
     ";
 
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal "
             + "\\f + \\ft “This is a ‘footnote’” \\f* of the field which Yahweh God had made."
         );
 
-        var observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
 
     [Test]
     public void MultipleEmbeds()
     {
-        var inputUsfm =
+        string inputUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     \f + \ft «This is a “footnote”» \f*
     of the field \f + \ft Second «footnote» here \f* which Yahweh God had made.
     ";
 
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal "
             + "\\f + \\ft “This is a ‘footnote’” \\f* of the field \\f + \\ft Second "
             + "“footnote” here \\f* which Yahweh God had made."
         );
 
-        var observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
 
     [Test]
     public void QuotesInTextAndEmbed()
     {
-        var inputUsfm =
+        string inputUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -81,21 +81,21 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     “You shall not eat of any tree of the garden”?»
     ";
 
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really \\f + \\ft a “footnote” in the “midst of ‘text’” \\f* "
             + "said, ‘You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedUsfm);
     }
 
     [Test]
     public void QuotesInMultipleVersesAndEmbed()
     {
-        var inputUsfm =
+        string inputUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -105,7 +105,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     “You shall not eat of any tree of the garden”?»
     ";
 
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God\n"
@@ -113,7 +113,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             + "said, ‘You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "western_european", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedUsfm);
 
         // Fallback mode does not consider the nesting of quotation marks,
@@ -123,20 +123,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void FallbackStrategySameAsFull()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, ‘Has God really said,
     “You shall not eat of any tree of the garden”?’
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, ‘You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "british_english",
             "standard_english",
@@ -148,20 +148,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void FallbackStrategyIncorrectlyNested()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, ‘Has God really said,
     ‘You shall not eat of any tree of the garden’?’
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, “You shall not eat of any tree of the garden”?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "british_english",
             "standard_english",
@@ -173,20 +173,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void FallbackStrategyIncorrectlyNestedSecondCase()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, “Has God really said,
     ‘You shall not eat of any tree of the garden’?’
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, ‘Has God really said, “You shall not eat of any tree of the garden”?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "british_english",
             "standard_english",
@@ -198,20 +198,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void FallbackStrategyUnclosedQuote()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, ‘Has God really said,
     You shall not eat of any tree of the garden”?’
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "british_english",
             "standard_english",
@@ -223,32 +223,32 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void DefaultQuotationMarkUpdateStrategy()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, ""Has God really said,
         You shall not eat of any tree of the garden'?""
     ";
-        var expectedFullUsfm = (
+        string expectedFullUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, You shall not eat of any tree of the garden'?”"
         );
 
-        var expectedBasicUsfm = (
+        string expectedBasicUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, You shall not eat of any tree of the garden’?”"
         );
 
-        var expectedSkippedUsfm = (
+        string expectedSkippedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, \"Has God really said, You shall not eat of any tree of the garden\'?\""
         );
 
-        var observedUsfm = ChangeQuotationMarks(normalizedUsfm, "typewriter_english", "standard_english");
+        string observedUsfm = ChangeQuotationMarks(normalizedUsfm, "typewriter_english", "standard_english");
         AssertUsfmEqual(observedUsfm, expectedFullUsfm);
 
         observedUsfm = ChangeQuotationMarks(
@@ -279,32 +279,32 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void SingleChapterQuotationMarkUpdateStrategy()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, ""Has God really said,
         You shall not eat of any tree of the garden'?""
     ";
-        var expectedFullUsfm = (
+        string expectedFullUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, You shall not eat of any tree of the garden'?”"
         );
 
-        var expectedBasicUsfm = (
+        string expectedBasicUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, You shall not eat of any tree of the garden’?”"
         );
 
-        var expectedSkippedUsfm = (
+        string expectedSkippedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, \"Has God really said, You shall not eat of any tree of the garden\'?\""
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
@@ -332,7 +332,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void MultipleChapterSameStrategy()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle"" than any animal
         of the field which Yahweh God had made.
@@ -340,21 +340,21 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     \v 1 He said to the woman, ""Has God really said,
     You shall not eat of any tree of the garden'?""
     ";
-        var expectedFullUsfm = (
+        string expectedFullUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle\" than any animal of the field which Yahweh God had made.\n"
             + "\\c 2\n"
             + "\\v 1 He said to the woman, “Has God really said, You shall not eat of any tree of the garden'?”"
         );
 
-        var expectedFallbackUsfm = (
+        string expectedFallbackUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle” than any animal of the field which Yahweh God had made.\n"
             + "\\c 2\n"
             + "\\v 1 He said to the woman, “Has God really said, You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
@@ -382,7 +382,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void MultipleChapterMultipleStrategies()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle"" than any animal
         of the field which Yahweh God had made.
@@ -390,28 +390,28 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     \v 1 He said to the woman, ""Has God really said,
     You shall not eat of any tree of the garden'?""
     ";
-        var expectedFullThenFallbackUsfm = (
+        string expectedFullThenFallbackUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle\" than any animal of the field which Yahweh God had made.\n"
             + "\\c 2\n"
             + "\\v 1 He said to the woman, “Has God really said, You shall not eat of any tree of the garden’?”"
         );
 
-        var expectedFallbackThenFullUsfm = (
+        string expectedFallbackThenFullUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle” than any animal of the field which Yahweh God had made.\n"
             + "\\c 2\n"
             + "\\v 1 He said to the woman, “Has God really said, You shall not eat of any tree of the garden'?”"
         );
 
-        var expectedFallbackThenSkipUsfm = (
+        string expectedFallbackThenSkipUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle” than any animal of the field which Yahweh God had made.\n"
             + "\\c 2\n"
             + "\\v 1 He said to the woman, \"Has God really said, You shall not eat of any tree of the garden\'?\""
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "typewriter_english",
             "standard_english",
@@ -445,20 +445,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void MultiCharacterQuotationMarksInSourceQuoteConvention()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, <<Has God really said,
     <You shall not eat of any tree of the garden>?>>
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, “Has God really said, ‘You shall not eat of any tree of the garden’?”"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "typewriter_french",
             "standard_english",
@@ -470,20 +470,20 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void MultiCharacterQuotationMarksInTargetQuoteConvention()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
     He said to the woman, “Has God really said,
     ‘You shall not eat of any tree of the garden’?”
     ";
-        var expectedUsfm = (
+        string expectedUsfm = (
             "\\c 1\n"
             + "\\v 1 Now the serpent was more subtle than any animal of the field which Yahweh God had made. He said to "
             + "the woman, <<Has God really said, <You shall not eat of any tree of the garden>?>>"
         );
 
-        var observedUsfm = ChangeQuotationMarks(
+        string observedUsfm = ChangeQuotationMarks(
             normalizedUsfm,
             "standard_english",
             "typewriter_french",
@@ -495,7 +495,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void ProcessScriptureElement()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "british_english")
         );
         var quotationMarkFinder = new MockQuotationMarkFinder();
@@ -517,7 +517,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void CreateTextSegmentsBasic()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
@@ -525,7 +525,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
             UsfmUpdateBlockElementType.Text,
             tokens: [new UsfmToken("test segment")]
         );
-        var textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
+        List<TextSegment> textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
 
         Assert.That(textSegments, Has.Count.EqualTo(1));
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment"));
@@ -538,7 +538,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void CreateTextSegmentsWithPrecedingMarkers()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
@@ -551,7 +551,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 new UsfmToken("test segment"),
             ]
         );
-        var textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
+        List<TextSegment> textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
 
         Assert.That(textSegments, Has.Count.EqualTo(1));
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment"));
@@ -566,7 +566,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void CreateTextSegmentsWithMultipleTextTokens()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
@@ -583,7 +583,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 new UsfmToken(UsfmTokenType.Paragraph, null, null, null),
             ]
         );
-        var textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
+        List<TextSegment> textSegments = quoteConventionChanger.InternalCreateTextSegments(updateElement);
 
         Assert.That(textSegments, Has.Count.EqualTo(2));
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment1"));
@@ -605,12 +605,12 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void CreateTextSegment()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
         var usfmToken = new UsfmToken("test segment");
-        var segment = quoteConventionChanger.InternalCreateTextSegment(usfmToken);
+        TextSegment segment = quoteConventionChanger.InternalCreateTextSegment(usfmToken);
 
         Assert.IsNotNull(segment);
         Assert.That(segment.Text, Is.EqualTo("test segment"));
@@ -622,7 +622,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void SetPreviousAndNextForSegments()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
@@ -768,7 +768,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void CheckForChapterChange()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler("standard_english", "standard_english")
         );
 
@@ -788,7 +788,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     [Test]
     public void StartNewChapter()
     {
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler(
                 "standard_english",
                 "standard_english",
@@ -813,7 +813,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         );
 
         quoteConventionChanger.InternalStartNewChapter(1);
-        var segment = quoteConventionChanger.InternalNextScriptureTextSegmentBuilder.Build();
+        TextSegment segment = quoteConventionChanger.InternalNextScriptureTextSegmentBuilder.Build();
         Assert.That(quoteConventionChanger.InternalCurrentStrategy, Is.EqualTo(QuotationMarkUpdateStrategy.Skip));
         Assert.That(segment.ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Chapter));
         Assert.That(segment.Text, Is.EqualTo(""));
@@ -838,7 +838,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     )
     {
         quotationMarkUpdateSettings ??= new QuotationMarkUpdateSettings();
-        var quoteConventionChanger = (
+        MockQuoteConventionChangingUsfmUpdateBlockHandler quoteConventionChanger = (
             CreateQuoteConventionChangingUsfmUpdateBlockHandler(
                 sourceQuoteConventionName,
                 targetQuoteConventionName,
@@ -859,10 +859,14 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
     )
     {
         quotationMarkUpdateSettings ??= new QuotationMarkUpdateSettings();
-        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
+        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            sourceQuoteConventionName
+        );
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            targetQuoteConventionName
+        );
         Assert.IsNotNull(targetQuoteConvention);
 
         return new MockQuoteConventionChangingUsfmUpdateBlockHandler(
@@ -994,7 +998,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         {
             NumTimesCalled++;
             int currentDepth = 1;
-            var currentDirection = QuotationMarkDirection.Opening;
+            QuotationMarkDirection currentDirection = QuotationMarkDirection.Opening;
             foreach (QuotationMarkStringMatch quoteMatch in quoteMatches)
             {
                 yield return quoteMatch.Resolve(currentDepth, currentDirection);

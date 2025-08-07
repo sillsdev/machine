@@ -1711,7 +1711,7 @@ public class QuoteConventionSetTests
                 ),
             ]
         );
-        var (convention, similarity) = allThreeQuoteConventionSet.FindMostSimilarConvention(
+        (QuoteConvention convention, double similarity) = allThreeQuoteConventionSet.FindMostSimilarConvention(
             noisyMultipleEnglishQuotesTabulator
         );
         Assert.That(convention, Is.EqualTo(standardEnglishQuoteConvention));

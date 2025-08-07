@@ -10,7 +10,7 @@ public class TextSegmentTests
     public void BuilderInitialization()
     {
         var builder = new TextSegment.Builder();
-        var textSegment = builder.Build();
+        TextSegment textSegment = builder.Build();
 
         Assert.That(textSegment.Text, Is.EqualTo(""));
         Assert.IsNull(textSegment.PreviousSegment);
@@ -26,7 +26,7 @@ public class TextSegmentTests
     public void BuilderSetText()
     {
         var builder = new TextSegment.Builder();
-        var text = "Example text";
+        string text = "Example text";
         builder.SetText(text);
 
         Assert.That(builder.Build().Text, Is.EqualTo(text));
@@ -36,9 +36,9 @@ public class TextSegmentTests
     public void BuilderSetPreviousSegment()
     {
         var builder = new TextSegment.Builder();
-        var previousSegment = new TextSegment.Builder().SetText("previous segment text").Build();
+        TextSegment previousSegment = new TextSegment.Builder().SetText("previous segment text").Build();
         builder.SetPreviousSegment(previousSegment);
-        var textSegment = builder.Build();
+        TextSegment textSegment = builder.Build();
 
         Assert.That(textSegment.PreviousSegment, Is.EqualTo(previousSegment));
         Assert.IsNull(textSegment.NextSegment);
@@ -53,7 +53,7 @@ public class TextSegmentTests
     {
         var builder = new TextSegment.Builder();
         builder.AddPrecedingMarker(UsfmMarkerType.Chapter);
-        var textSegment = builder.Build();
+        TextSegment textSegment = builder.Build();
 
         Assert.IsTrue(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.Chapter);
         Assert.That(textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter]));
@@ -76,7 +76,7 @@ public class TextSegmentTests
     {
         var builder = new TextSegment.Builder();
         builder.SetUsfmToken(new UsfmToken("USFM token text"));
-        var textSegment = builder.Build();
+        TextSegment textSegment = builder.Build();
 
         Assert.IsNotNull(textSegment.UsfmToken);
         Assert.That(textSegment.UsfmToken.Type, Is.EqualTo(UsfmTokenType.Text));
@@ -89,9 +89,9 @@ public class TextSegmentTests
     [Test]
     public void Equals()
     {
-        var basicSegment = new TextSegment.Builder().SetText("text1").Build();
-        var sameTextSegment = new TextSegment.Builder().SetText("text1").Build();
-        var differentTextSegment = new TextSegment.Builder().SetText("different text").Build();
+        TextSegment basicSegment = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment sameTextSegment = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment differentTextSegment = new TextSegment.Builder().SetText("different text").Build();
 #pragma warning disable NUnit2009 // The same value has been provided as both the actual and the expected argument
         Assert.That(basicSegment, Is.EqualTo(basicSegment));
 #pragma warning restore NUnit2009 // The same value has been provided as both the actual and the expected argument
@@ -101,27 +101,27 @@ public class TextSegmentTests
         Assert.That(basicSegment, Is.EqualTo(sameTextSegment));
         Assert.That(basicSegment, Is.Not.EqualTo(differentTextSegment));
 
-        var segmentWithIndex = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithIndex = new TextSegment.Builder().SetText("text1").Build();
         segmentWithIndex.IndexInVerse = 1;
-        var segmentWithSameIndex = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithSameIndex = new TextSegment.Builder().SetText("text1").Build();
         segmentWithSameIndex.IndexInVerse = 1;
-        var segmentWithDifferentIndex = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithDifferentIndex = new TextSegment.Builder().SetText("text1").Build();
         segmentWithDifferentIndex.IndexInVerse = 2;
 
         Assert.That(segmentWithIndex, Is.EqualTo(segmentWithSameIndex));
         Assert.That(segmentWithIndex, Is.Not.EqualTo(segmentWithDifferentIndex));
         Assert.That(segmentWithIndex, Is.Not.EqualTo(basicSegment));
 
-        var segmentWithPrecedingMarker = (
+        TextSegment segmentWithPrecedingMarker = (
             new TextSegment.Builder().SetText("text1").AddPrecedingMarker(UsfmMarkerType.Verse).Build()
         );
-        var segmentWithSamePrecedingMarker = (
+        TextSegment segmentWithSamePrecedingMarker = (
             new TextSegment.Builder().SetText("text1").AddPrecedingMarker(UsfmMarkerType.Verse).Build()
         );
-        var segmentWithDifferentPrecedingMarker = (
+        TextSegment segmentWithDifferentPrecedingMarker = (
             new TextSegment.Builder().SetText("text1").AddPrecedingMarker(UsfmMarkerType.Chapter).Build()
         );
-        var segmentWithMultiplePrecedingMarkers = (
+        TextSegment segmentWithMultiplePrecedingMarkers = (
             new TextSegment.Builder()
                 .SetText("text1")
                 .AddPrecedingMarker(UsfmMarkerType.Chapter)
@@ -130,9 +130,12 @@ public class TextSegmentTests
         );
 
         var usfmToken = new UsfmToken("USFM token text");
-        var segmentWithUsfmToken = new TextSegment.Builder().SetText("text1").SetUsfmToken(usfmToken).Build();
-        var segmentWithSameUsfmToken = new TextSegment.Builder().SetText("text1").SetUsfmToken(usfmToken).Build();
-        var segmentWithDifferentUsfmToken = (
+        TextSegment segmentWithUsfmToken = new TextSegment.Builder().SetText("text1").SetUsfmToken(usfmToken).Build();
+        TextSegment segmentWithSameUsfmToken = new TextSegment.Builder()
+            .SetText("text1")
+            .SetUsfmToken(usfmToken)
+            .Build();
+        TextSegment segmentWithDifferentUsfmToken = (
             new TextSegment.Builder().SetText("text1").SetUsfmToken(new UsfmToken("Different USFM token text")).Build()
         );
 
@@ -141,11 +144,11 @@ public class TextSegmentTests
         Assert.IsTrue(basicSegment != segmentWithUsfmToken);
 
         // attributes that are not used in equality checks
-        var segmentWithNumVerses = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithNumVerses = new TextSegment.Builder().SetText("text1").Build();
         segmentWithNumVerses.NumSegmentsInVerse = 3;
-        var segmentWithSameNumVerses = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithSameNumVerses = new TextSegment.Builder().SetText("text1").Build();
         segmentWithSameNumVerses.NumSegmentsInVerse = 3;
-        var segmentWithDifferentNumVerses = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithDifferentNumVerses = new TextSegment.Builder().SetText("text1").Build();
         segmentWithDifferentNumVerses.NumSegmentsInVerse = 4;
 
         Assert.That(segmentWithNumVerses, Is.EqualTo(segmentWithSameNumVerses));
@@ -157,10 +160,10 @@ public class TextSegmentTests
         Assert.That(segmentWithPrecedingMarker, Is.EqualTo(segmentWithMultiplePrecedingMarkers));
         Assert.That(segmentWithPrecedingMarker, Is.Not.EqualTo(basicSegment));
 
-        var segmentWithPreviousSegment = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithPreviousSegment = new TextSegment.Builder().SetText("text1").Build();
         segmentWithPreviousSegment.PreviousSegment = segmentWithNumVerses;
 
-        var segmentWithNextSegment = new TextSegment.Builder().SetText("text1").Build();
+        TextSegment segmentWithNextSegment = new TextSegment.Builder().SetText("text1").Build();
         segmentWithNextSegment.NextSegment = segmentWithNumVerses;
 
         Assert.That(basicSegment, Is.EqualTo(segmentWithPreviousSegment));
@@ -170,7 +173,7 @@ public class TextSegmentTests
     [Test]
     public void GetText()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         Assert.That(textSegment.Text, Is.EqualTo("example text"));
 
         textSegment = new TextSegment.Builder().SetText("new example text").Build();
@@ -180,7 +183,7 @@ public class TextSegmentTests
     [Test]
     public void Length()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         Assert.That(textSegment.Length, Is.EqualTo("example text".Length));
 
         textSegment = new TextSegment.Builder().SetText("new example text").Build();
@@ -190,7 +193,7 @@ public class TextSegmentTests
     [Test]
     public void SubstringBefore()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         Assert.That(textSegment.SubstringBefore(7), Is.EqualTo("example"));
         Assert.That(textSegment.SubstringBefore(8), Is.EqualTo("example "));
         Assert.That(textSegment.SubstringBefore(0), Is.EqualTo(""));
@@ -200,7 +203,7 @@ public class TextSegmentTests
     [Test]
     public void SubstringAfter()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         Assert.That(textSegment.SubstringAfter(7), Is.EqualTo(" text"));
         Assert.That(textSegment.SubstringAfter(8), Is.EqualTo("text"));
         Assert.That(textSegment.SubstringAfter(0), Is.EqualTo("example text"));
@@ -211,12 +214,12 @@ public class TextSegmentTests
     [Test]
     public void IsMarkerInPrecedingContext()
     {
-        var noPrecedingMarkerSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment noPrecedingMarkerSegment = new TextSegment.Builder().SetText("example text").Build();
         Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
         Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
         Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
 
-        var onePrecedingMarkerTextSegment = (
+        TextSegment onePrecedingMarkerTextSegment = (
             new TextSegment.Builder().SetText("example text").AddPrecedingMarker(UsfmMarkerType.Character).Build()
         );
 
@@ -224,7 +227,7 @@ public class TextSegmentTests
         Assert.IsFalse(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
         Assert.IsFalse(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
 
-        var twoPrecedingMarkersTextSegment = (
+        TextSegment twoPrecedingMarkersTextSegment = (
             new TextSegment.Builder()
                 .SetText("example text")
                 .AddPrecedingMarker(UsfmMarkerType.Chapter)
@@ -235,7 +238,7 @@ public class TextSegmentTests
         Assert.IsTrue(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
         Assert.IsFalse(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
 
-        var threePrecedingMarkersTextSegment = (
+        TextSegment threePrecedingMarkersTextSegment = (
             new TextSegment.Builder()
                 .SetText("example text")
                 .AddPrecedingMarker(UsfmMarkerType.Chapter)
@@ -251,7 +254,7 @@ public class TextSegmentTests
     [Test]
     public void IsFirstSegmentInVerse()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         textSegment.IndexInVerse = 0;
         Assert.IsTrue(textSegment.IsFirstSegmentInVerse());
 
@@ -262,7 +265,7 @@ public class TextSegmentTests
     [Test]
     public void IsLastSegmentInVerse()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         textSegment.IndexInVerse = 0;
         textSegment.NumSegmentsInVerse = 1;
         Assert.IsTrue(textSegment.IsLastSegmentInVerse());
@@ -278,7 +281,7 @@ public class TextSegmentTests
     [Test]
     public void ReplaceSubstring()
     {
-        var textSegment = new TextSegment.Builder().SetText("example text").Build();
+        TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         textSegment.ReplaceSubstring(0, 7, "sample");
         Assert.That(textSegment.Text, Is.EqualTo("sample text"));
 

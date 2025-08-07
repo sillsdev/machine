@@ -10,7 +10,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardEnglish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -18,7 +18,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, “Has God really said,
     ‘You shall not eat of any tree of the garden’?”
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
     }
@@ -26,7 +26,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void TypewriterEnglish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -34,7 +34,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, ""Has God really said,
     'You shall not eat of any tree of the garden'?\""
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_english"));
     }
@@ -42,7 +42,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void BritishEnglish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -50,7 +50,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, ‘Has God really said,
     “You shall not eat of any tree of the garden”?’
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_english"));
     }
@@ -58,7 +58,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void BritishTypewriterEnglish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -66,7 +66,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, 'Has God really said,
     ""You shall not eat of any tree of the garden""?'
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_typewriter_english"));
     }
@@ -74,7 +74,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void HybridTypewriterEnglish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -82,7 +82,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, “Has God really said,
     'You shall not eat of any tree of the garden'?”
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_typewriter_english"));
     }
@@ -90,7 +90,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardFrench()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -98,7 +98,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     ‹You shall not eat of any tree of the garden›?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
     }
@@ -106,7 +106,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void TypewriterFrench()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -114,7 +114,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, <<Has God really said,
     <You shall not eat of any tree of the garden>?>>
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_french"));
     }
@@ -123,7 +123,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void WesternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -131,7 +131,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     “You shall not eat of any tree of the garden”?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("western_european"));
     }
@@ -139,7 +139,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void BritishInspiredWesternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -147,7 +147,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     ‘You shall not eat of any tree of the garden’?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_inspired_western_european"));
     }
@@ -155,7 +155,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void TypewriterWesternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -163,7 +163,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, <<Has God really said,
     ""You shall not eat of any tree of the garden""?>>
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_western_european"));
     }
@@ -171,7 +171,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void TypewriterWesternEuropeanVariant()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -179,7 +179,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, ""Has God really said,
     <You shall not eat of any tree of the garden>?""
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_western_european_variant"));
     }
@@ -187,7 +187,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void HybridTypewriterWesternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -195,7 +195,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     ""You shall not eat of any tree of the garden""?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_typewriter_western_european"));
     }
@@ -203,7 +203,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void HybridBritishTypewriterWesternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -211,7 +211,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     'You shall not eat of any tree of the garden'?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_british_typewriter_western_european"));
     }
@@ -219,7 +219,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void CentralEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -227,7 +227,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, „Has God really said,
     ‚You shall not eat of any tree of the garden‘?“
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("central_european"));
     }
@@ -235,7 +235,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void CentralEuropeanGuillemets()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -243,7 +243,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, »Has God really said,
     ›You shall not eat of any tree of the garden‹?«
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("central_european_guillemets"));
     }
@@ -251,7 +251,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardSwedish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -259,7 +259,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, ”Has God really said,
     ’You shall not eat of any tree of the garden’?”
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_swedish"));
     }
@@ -267,7 +267,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardFinnish()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -275,7 +275,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, »Has God really said,
     ’You shall not eat of any tree of the garden’?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_finnish"));
     }
@@ -283,7 +283,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void EasternEuropean()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -291,7 +291,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, „Has God really said,
     ‚You shall not eat of any tree of the garden’?”
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("eastern_european"));
     }
@@ -299,7 +299,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardRussian()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -307,7 +307,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     „You shall not eat of any tree of the garden“?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_russian"));
     }
@@ -315,7 +315,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void StandardArabic()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -323,7 +323,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, ”Has God really said,
     ’You shall not eat of any tree of the garden‘?“
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_arabic"));
     }
@@ -331,7 +331,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void NonStandardArabic()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -339,7 +339,7 @@ public class QuotationConventionDetectorTests
     He said to the woman, «Has God really said,
     ’You shall not eat of any tree of the garden‘?»
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("non-standard_arabic"));
     }
@@ -347,7 +347,7 @@ public class QuotationConventionDetectorTests
     [Test]
     public void MismatchedQuotationMarks()
     {
-        var usfm =
+        string usfm =
             @"
 \c 1
 \v 1 Now the serpent was more subtle than any animal
@@ -359,7 +359,7 @@ public class QuotationConventionDetectorTests
     \\v 3 but not the fruit of the tree which is in the middle of the garden.
     God has said, ‘You shall not eat of it. You shall not touch it, lest you die.’
     ";
-        var analysis = DetectQuotationConvention(usfm);
+        QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
         Assert.IsNotNull(analysis);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
     }

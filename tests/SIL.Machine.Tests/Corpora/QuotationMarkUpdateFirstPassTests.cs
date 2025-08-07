@@ -204,7 +204,7 @@ public class QuotationMarkUpdateFirstPassTests
     public void ChooseBestActionForChapter()
     {
         // Verse text with no issues
-        var actualAction = RunFirstPassOnChapter(
+        QuotationMarkUpdateStrategy actualAction = RunFirstPassOnChapter(
             [
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
@@ -214,7 +214,7 @@ public class QuotationMarkUpdateFirstPassTests
             "standard_english",
             "standard_english"
         );
-        var expectedAction = QuotationMarkUpdateStrategy.ApplyFull;
+        QuotationMarkUpdateStrategy expectedAction = QuotationMarkUpdateStrategy.ApplyFull;
         Assert.That(actualAction, Is.EqualTo(expectedAction));
 
         // Verse text with unpaired opening quotation mark
@@ -312,7 +312,7 @@ public class QuotationMarkUpdateFirstPassTests
         firstPassAnalyzer.WillFallbackModeWork = false;
 
         // Test with no issue
-        var bestAction = firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([]);
+        QuotationMarkUpdateStrategy bestAction = firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([]);
         Assert.That(bestAction, Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFull));
 
         // Test with one issue
@@ -367,7 +367,7 @@ public class QuotationMarkUpdateFirstPassTests
         firstPassAnalyzer.WillFallbackModeWork = true;
 
         // Test with no issues
-        var bestAction = firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([]);
+        QuotationMarkUpdateStrategy bestAction = firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([]);
         Assert.That(bestAction, Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFull));
 
         // Test with one issue
@@ -417,7 +417,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void NoIssuesInUsfm()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -425,7 +425,11 @@ public class QuotationMarkUpdateFirstPassTests
     ‘You shall not eat of any tree of the garden’?”
     ";
         List<QuotationMarkUpdateStrategy> expectedActions = [QuotationMarkUpdateStrategy.ApplyFull];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -433,7 +437,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedOpeningMark()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -441,7 +445,11 @@ public class QuotationMarkUpdateFirstPassTests
     ‘You shall not eat of any tree of the garden’?
     ";
         List<QuotationMarkUpdateStrategy> expectedActions = [QuotationMarkUpdateStrategy.ApplyFallback];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -449,7 +457,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedClosingMark()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -457,7 +465,11 @@ public class QuotationMarkUpdateFirstPassTests
     You shall not eat of any tree of the garden?”
     ";
         List<QuotationMarkUpdateStrategy> expectedActions = [QuotationMarkUpdateStrategy.ApplyFallback];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -465,7 +477,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void TooDeepNesting()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 “Now the serpent was more “subtle than any animal
     of the “field which “Yahweh God had made.
@@ -473,7 +485,11 @@ public class QuotationMarkUpdateFirstPassTests
     “You shall not eat of any tree of the garden?
     ";
         List<QuotationMarkUpdateStrategy> expectedActions = [QuotationMarkUpdateStrategy.ApplyFallback];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -481,7 +497,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void AmbiguousQuotationMark()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -489,7 +505,11 @@ public class QuotationMarkUpdateFirstPassTests
     You shall not eat of any tree of the garden?
     ";
         List<QuotationMarkUpdateStrategy> expectedActions = [QuotationMarkUpdateStrategy.Skip];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -497,7 +517,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void NoIssuesInMultipleChapters()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -509,7 +529,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFull,
             QuotationMarkUpdateStrategy.ApplyFull
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -517,7 +541,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedQuotationMarkInSecondChapter()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -529,7 +553,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFull,
             QuotationMarkUpdateStrategy.ApplyFallback
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -537,7 +565,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedQuotationMarkInFirstChapter()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had” made.
@@ -549,7 +577,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFallback,
             QuotationMarkUpdateStrategy.ApplyFull
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -557,7 +589,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void AmbiguousQuotationMarkInSecondChapter()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.
@@ -569,7 +601,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFull,
             QuotationMarkUpdateStrategy.Skip
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -577,7 +613,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void AmbiguousQuotationMarkInFirstChapter()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field""which Yahweh God had made.
@@ -589,7 +625,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.Skip,
             QuotationMarkUpdateStrategy.ApplyFull
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -597,7 +637,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedQuotationMarkInBothChapters()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had” made.
@@ -609,7 +649,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFallback,
             QuotationMarkUpdateStrategy.ApplyFallback
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "standard_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "standard_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -617,7 +661,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void AmbiguousQuotationMarkInBothChapters()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had""made.
@@ -629,7 +673,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.Skip,
             QuotationMarkUpdateStrategy.Skip
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -637,7 +685,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void UnpairedInFirstAmbiguousInSecond()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God had made.""
@@ -649,7 +697,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.ApplyFallback,
             QuotationMarkUpdateStrategy.Skip
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -657,7 +709,7 @@ public class QuotationMarkUpdateFirstPassTests
     [Test]
     public void AmbiguousInFirstUnpairedInSecond()
     {
-        var normalizedUsfm =
+        string normalizedUsfm =
             @"\c 1
     \v 1 Now the serpent was more subtle than any animal
     of the field which Yahweh God""had made.
@@ -669,7 +721,11 @@ public class QuotationMarkUpdateFirstPassTests
             QuotationMarkUpdateStrategy.Skip,
             QuotationMarkUpdateStrategy.ApplyFallback
         ];
-        var observedActions = RunFirstPass(normalizedUsfm, "typewriter_english", "standard_english");
+        List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
+            normalizedUsfm,
+            "typewriter_english",
+            "standard_english"
+        );
 
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
@@ -680,10 +736,14 @@ public class QuotationMarkUpdateFirstPassTests
         string targetQuoteConventionName
     )
     {
-        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
+        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            sourceQuoteConventionName
+        );
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            targetQuoteConventionName
+        );
         Assert.IsNotNull(targetQuoteConvention);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
@@ -698,10 +758,14 @@ public class QuotationMarkUpdateFirstPassTests
         string targetQuoteConventionName
     )
     {
-        var sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(sourceQuoteConventionName);
+        QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            sourceQuoteConventionName
+        );
         Assert.IsNotNull(sourceQuoteConvention);
 
-        var targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(targetQuoteConventionName);
+        QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
+            targetQuoteConventionName
+        );
         Assert.IsNotNull(targetQuoteConvention);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
@@ -715,7 +779,7 @@ public class QuotationMarkUpdateFirstPassTests
 
     public QuoteConvention GetQuoteConventionByName(string name)
     {
-        var quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
+        QuoteConvention quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
         Assert.IsNotNull(quoteConvention);
         return quoteConvention;
     }
