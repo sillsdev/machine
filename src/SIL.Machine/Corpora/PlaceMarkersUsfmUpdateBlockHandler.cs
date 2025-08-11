@@ -53,11 +53,6 @@ namespace SIL.Machine.Corpora
                 || alignmentInfo.Alignment.RowCount == 0
                 || alignmentInfo.Alignment.ColumnCount == 0
                 || !elements.Any(e =>
-<<<<<<< HEAD
-                    e.Type.IsOneOf(UsfmUpdateBlockElementType.Paragraph, UsfmUpdateBlockElementType.Style)
-                    && !e.MarkedForRemoval
-                    && e.Tokens.Count == 1
-=======
                     (
                         e.Type == UsfmUpdateBlockElementType.Paragraph
                         && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Preserve
@@ -67,7 +62,6 @@ namespace SIL.Machine.Corpora
                         e.Type == UsfmUpdateBlockElementType.Style
                         && alignmentInfo.StyleBehavior == UpdateUsfmMarkerBehavior.Preserve
                     )
->>>>>>> 55d91e41 (Port add metadata to update block and marker behavior metadata)
                 )
             )
             {
