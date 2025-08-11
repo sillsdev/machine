@@ -28,9 +28,10 @@ public class UsfmManualTests
         Assert.That(rows, Has.Count.GreaterThan(0));
 
         // insert the source into the target as pretranslations to make sure that USFM generation works
-        IReadOnlyList<(IReadOnlyList<ScriptureRef>, string)> pretranslations = rows.Select(r =>
-                ((IReadOnlyList<ScriptureRef>)r.SourceRefs.Select(s => (ScriptureRef)s).ToList(), r.SourceText)
-            )
+        IReadOnlyList<UpdateUsfmRow> pretranslations = rows.Select(r => new UpdateUsfmRow(
+                (IReadOnlyList<ScriptureRef>)r.SourceRefs.Select(s => (ScriptureRef)s).ToList(),
+                r.SourceText
+            ))
             .ToList();
 
         ParatextProjectSettings targetSettings = new FileParatextProjectSettingsParser(
@@ -96,20 +97,17 @@ public class UsfmManualTests
 
             // Read text from pretranslations file
             using Stream pretranslationStream = File.OpenRead(PretranslationPath);
-            (IReadOnlyList<ScriptureRef>, string)[] pretranslations = await JsonSerializer
+            UpdateUsfmRow[] pretranslations = await JsonSerializer
                 .DeserializeAsyncEnumerable<PretranslationDto>(
                     pretranslationStream,
                     new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
                 )
-                .Select(p =>
-                    (
-                        (IReadOnlyList<ScriptureRef>)(
-                            p?.Refs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray()
-                            ?? []
-                        ),
-                        p?.Translation ?? ""
-                    )
-                )
+                .Select(p => new UpdateUsfmRow(
+                    (IReadOnlyList<ScriptureRef>)(
+                        p?.Refs.Select(r => ScriptureRef.Parse(r, settings.Versification).ToRelaxed()).ToArray() ?? []
+                    ),
+                    p?.Translation ?? ""
+                ))
                 .ToArrayAsync();
             List<string> bookIds = [];
             ParatextProjectTextUpdaterBase updater;

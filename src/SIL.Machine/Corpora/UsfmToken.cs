@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,7 +22,7 @@ namespace SIL.Machine.Corpora
         Unknown
     }
 
-    public class UsfmToken
+    public class UsfmToken : IEquatable<UsfmToken>
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
         private static readonly Regex AttributeRegex = new Regex(
@@ -62,6 +63,39 @@ namespace SIL.Machine.Corpora
         public string NestlessMarker
         {
             get { return Marker != null && Marker[0] == '+' ? Marker.Substring(1) : Marker; }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is UsfmToken other)
+            {
+                return Equals(other);
+            }
+            return false;
+        }
+
+        public bool Equals(UsfmToken other)
+        {
+            return Type == other.Type
+                && Marker == other.Marker
+                && Text == other.Text
+                && EndMarker == other.EndMarker
+                && Data == other.Data
+                && LineNumber == other.LineNumber
+                && ColumnNumber == other.ColumnNumber;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 23;
+            hashCode = hashCode * 31 + Type.GetHashCode();
+            hashCode = hashCode * 31 + (Marker?.GetHashCode() ?? 0);
+            hashCode = hashCode * 31 + (Text?.GetHashCode() ?? 0);
+            hashCode = hashCode * 31 + (EndMarker?.GetHashCode() ?? 0);
+            hashCode = hashCode * 31 + (Data?.GetHashCode() ?? 0);
+            hashCode = hashCode * 31 + LineNumber.GetHashCode();
+            hashCode = hashCode * 31 + ColumnNumber.GetHashCode();
+            return hashCode;
         }
 
         public string GetAttribute(string name)

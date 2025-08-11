@@ -8,49 +8,60 @@ namespace SIL.Machine.Corpora
 {
     public class PlaceMarkersAlignmentInfo
     {
-        public IReadOnlyList<string> Refs { get; }
+        public const string MetadataKey = "alignment_info";
+
         public IReadOnlyList<string> SourceTokens { get; }
         public IReadOnlyList<string> TranslationTokens { get; }
         public WordAlignmentMatrix Alignment { get; }
+        public UpdateUsfmMarkerBehavior ParagraphBehavior { get; }
+        public UpdateUsfmMarkerBehavior StyleBehavior { get; }
 
         public PlaceMarkersAlignmentInfo(
-            IReadOnlyList<string> refs,
             IReadOnlyList<string> sourceTokens,
             IReadOnlyList<string> translationTokens,
-            WordAlignmentMatrix alignment
+            WordAlignmentMatrix alignment,
+            UpdateUsfmMarkerBehavior paragraphBehavior,
+            UpdateUsfmMarkerBehavior styleBehavior
         )
         {
-            Refs = refs;
             SourceTokens = sourceTokens;
             TranslationTokens = translationTokens;
             Alignment = alignment;
+            ParagraphBehavior = paragraphBehavior;
+            StyleBehavior = styleBehavior;
         }
     }
 
     public class PlaceMarkersUsfmUpdateBlockHandler : IUsfmUpdateBlockHandler
     {
-        private readonly IDictionary<string, PlaceMarkersAlignmentInfo> _alignmentInfo;
-
-        public PlaceMarkersUsfmUpdateBlockHandler(IEnumerable<PlaceMarkersAlignmentInfo> alignmentInfo)
-        {
-            _alignmentInfo = alignmentInfo.ToDictionary(info => info.Refs.First(), info => info);
-        }
-
         public UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
         {
             string reference = block.Refs.FirstOrDefault().ToString();
             var elements = block.Elements.ToList();
 
             // Nothing to do if there are no markers to place or no alignment to use
+            if (!block.Metadata.TryGetValue(PlaceMarkersAlignmentInfo.MetadataKey, out object alignmentObject))
+            {
+                return block;
+            }
+            if (!(alignmentObject is PlaceMarkersAlignmentInfo alignmentInfo))
+            {
+                return block;
+            }
             if (
                 elements.Count == 0
-                || !_alignmentInfo.TryGetValue(reference, out PlaceMarkersAlignmentInfo alignmentInfo)
                 || alignmentInfo.Alignment.RowCount == 0
                 || alignmentInfo.Alignment.ColumnCount == 0
                 || !elements.Any(e =>
-                    e.Type.IsOneOf(UsfmUpdateBlockElementType.Paragraph, UsfmUpdateBlockElementType.Style)
-                    && !e.MarkedForRemoval
-                    && e.Tokens.Count == 1
+                    (
+                        e.Type == UsfmUpdateBlockElementType.Paragraph
+                        && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Preserve
+                        && e.Tokens.Count == 1
+                    )
+                    || (
+                        e.Type == UsfmUpdateBlockElementType.Style
+                        && alignmentInfo.StyleBehavior == UpdateUsfmMarkerBehavior.Preserve
+                    )
                 )
             )
             {
@@ -112,7 +123,13 @@ namespace SIL.Machine.Corpora
             {
                 if (element.Type == UsfmUpdateBlockElementType.Text)
                 {
-                    if (element.MarkedForRemoval)
+                    if (
+                        element.MarkedForRemoval
+                        || (
+                            element.Type == UsfmUpdateBlockElementType.Paragraph
+                            && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Strip
+                        )
+                    )
                     {
                         string text = element.Tokens[0].ToUsfm();
                         sourceSentence += text;
