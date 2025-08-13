@@ -1219,6 +1219,7 @@ public class UpdateUsfmParserHandlerTests
         };
         string usfm =
             @"\id MAT - Test
+\rem Existing remark
 \c 1
 \v 1 Some text
 \v 2
@@ -1232,7 +1233,27 @@ public class UpdateUsfmParserHandlerTests
         );
         string result =
             @"\id MAT - Test
+\rem Existing remark
 \rem New remark
+\c 1
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+";
+
+        AssertUsfmEquals(target, result);
+
+        target = UpdateUsfm(
+            rows,
+            target,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: ["New remark 2"]
+        );
+        result =
+            @"\id MAT - Test
+\rem Existing remark
+\rem New remark
+\rem New remark 2
 \c 1
 \v 1 Some text
 \v 2 Update 2
