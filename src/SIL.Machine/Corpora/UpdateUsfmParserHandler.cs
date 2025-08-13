@@ -388,14 +388,18 @@ namespace SIL.Machine.Corpora
 
                 if (tokens.Count > 0 && tokens[0].Marker == "id")
                 {
+                    int index = 1;
                     if (tokens.Count > 1 && tokens[1].Type == UsfmTokenType.Text)
                     {
-                        tokens.InsertRange(2, remarkTokens);
+                        index = 2;
                     }
-                    else
+                    while (tokens[index].Marker == "rem")
                     {
-                        tokens.InsertRange(1, remarkTokens);
+                        index++;
+                        if (tokens.Count > index && tokens[index].Type == UsfmTokenType.Text)
+                            index++;
                     }
+                    tokens.InsertRange(index, remarkTokens);
                 }
             }
             return tokenizer.Detokenize(tokens);
