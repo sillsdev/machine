@@ -1450,7 +1450,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var varID = (string)varElem.Attribute("variableFeature");
                 Tuple<string, SymbolicFeature> variable = variables[varID];
                 ctxtVars.Add(
-                    new SymbolicFeatureValue(
+                    SymbolicFeatureValueFactory.Instance.Create(
                         variable.Item2,
                         variable.Item1,
                         ((string)varElem.Attribute("polarity") ?? "plus") == "plus"

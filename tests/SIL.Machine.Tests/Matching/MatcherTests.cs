@@ -1111,7 +1111,17 @@ public class MatcherTests : PhoneticTestsBase
 
         matcher = new Matcher<AnnotatedStringData, int>(
             pattern,
-            new MatcherSettings<int> { Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word }
+            new MatcherSettings<int>
+            {
+                Filter = ann =>
+                {
+                    FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        ann.FeatureStruct,
+                        Word.Feature
+                    );
+                    return fSym == Word;
+                }
+            }
         );
         Match<AnnotatedStringData, int> match = matcher.Match(sentence);
         Assert.IsTrue(match.Success);
@@ -1189,7 +1199,17 @@ public class MatcherTests : PhoneticTestsBase
 
         matcher = new Matcher<AnnotatedStringData, int>(
             pattern,
-            new MatcherSettings<int> { Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word }
+            new MatcherSettings<int>
+            {
+                Filter = ann =>
+                {
+                    FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        ann.FeatureStruct,
+                        Word.Feature
+                    );
+                    return fSym == Word;
+                }
+            }
         );
         match = matcher.Match(sentence);
         Assert.IsTrue(match.Success);
@@ -1199,7 +1219,14 @@ public class MatcherTests : PhoneticTestsBase
             pattern,
             new MatcherSettings<int>
             {
-                Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word,
+                Filter = ann =>
+                {
+                    FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        ann.FeatureStruct,
+                        Word.Feature
+                    );
+                    return fSym == Word;
+                },
                 Direction = Direction.RightToLeft
             }
         );
@@ -1217,7 +1244,15 @@ public class MatcherTests : PhoneticTestsBase
             pattern,
             new MatcherSettings<int>
             {
-                Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) != Word,
+                Filter = ann =>
+                {
+                    FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        ann.FeatureStruct,
+                        Word.Feature
+                    );
+                    return fSym != Word;
+                },
+
                 MatchingMethod = MatchingMethod.Unification
             }
         );
@@ -1228,7 +1263,14 @@ public class MatcherTests : PhoneticTestsBase
             pattern,
             new MatcherSettings<int>
             {
-                Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) != Word,
+                Filter = ann =>
+                {
+                    FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        ann.FeatureStruct,
+                        Word.Feature
+                    );
+                    return fSym != Word;
+                },
                 UseDefaults = true,
                 MatchingMethod = MatchingMethod.Unification
             }

@@ -851,7 +851,7 @@ public abstract class HermitCrabTestBase
         foreach (string symbolID in symbols)
         {
             FeatureSymbol symbol = phoneticFeatSys.GetSymbol(symbolID);
-            fs.AddValue(symbol.Feature, new SymbolicFeatureValue(symbol));
+            fs.AddValue(symbol.Feature, SymbolicFeatureValueFactory.Instance.Create(symbol));
         }
         table.AddSegment(strRep, fs);
     }
@@ -898,7 +898,7 @@ public abstract class HermitCrabTestBase
 
     protected SymbolicFeatureValue Variable(string featureID, string variable, bool agree = true)
     {
-        return new SymbolicFeatureValue(
+        return SymbolicFeatureValueFactory.Instance.Create(
             Language.PhonologicalFeatureSystem.GetFeature<SymbolicFeature>(featureID),
             variable,
             agree

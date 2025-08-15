@@ -53,6 +53,7 @@ namespace SIL.Machine.FeatureModel
 
         private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
         private int? _hashCode;
+        private readonly SymbolicFeatureValueFactory _valueFactory = SymbolicFeatureValueFactory.Instance;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureStruct"/> class.
@@ -126,15 +127,12 @@ namespace SIL.Machine.FeatureModel
                 throw new ArgumentNullException("values");
 
             FeatureSymbol[] vals = values.ToArray();
-            AddValue(feature, vals.Length == 0 ? new SymbolicFeatureValue(feature) : new SymbolicFeatureValue(vals));
+            AddValue(feature, vals.Length == 0 ? _valueFactory.Create(feature) : _valueFactory.Create(vals));
         }
 
         public void AddValue(SymbolicFeature feature, params FeatureSymbol[] values)
         {
-            AddValue(
-                feature,
-                values.Length == 0 ? new SymbolicFeatureValue(feature) : new SymbolicFeatureValue(values)
-            );
+            AddValue(feature, values.Length == 0 ? _valueFactory.Create(feature) : _valueFactory.Create(values));
         }
 
         public void AddValue(StringFeature feature, IEnumerable<string> values)
@@ -456,7 +454,7 @@ namespace SIL.Machine.FeatureModel
                             else if (otherValue is StringFeatureValue)
                                 thisValue = new StringFeatureValue();
                             else
-                                thisValue = new SymbolicFeatureValue((SymbolicFeature)featVal.Key);
+                                thisValue = _valueFactory.Create((SymbolicFeature)featVal.Key);
                             _definite[featVal.Key] = thisValue;
                         }
                         if (!thisValue.AddImpl(otherValue, varBindings, visited))

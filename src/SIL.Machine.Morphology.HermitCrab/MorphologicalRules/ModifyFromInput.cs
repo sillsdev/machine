@@ -44,7 +44,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 Constraint<Word, ShapeNode> constraint in group
                     .GetNodesDepthFirst()
                     .OfType<Constraint<Word, ShapeNode>>()
-                    .Where(c => c.Type() == (FeatureSymbol)_simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type))
+                    .Where(c =>
+                        c.Type()
+                        == SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                            _simpleCtxt.FeatureStruct,
+                            HCFeatureSystem.Type
+                        )
+                    )
             )
             {
                 constraint.FeatureStruct.PriorityUnion(_simpleCtxt.FeatureStruct);
@@ -65,7 +71,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 ShapeNode outputNode = inputNode.Clone();
                 if (
                     outputNode.Annotation.Type()
-                    == (FeatureSymbol)_simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type)
+                    == SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        _simpleCtxt.FeatureStruct,
+                        HCFeatureSystem.Type
+                    )
                 )
                 {
                     outputNode.Annotation.FeatureStruct.PriorityUnion(

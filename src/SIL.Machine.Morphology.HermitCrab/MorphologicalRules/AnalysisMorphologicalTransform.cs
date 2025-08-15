@@ -96,7 +96,11 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 {
                     foreach (ShapeNode node in output.GetNodes(outputRange))
                     {
-                        if ((FeatureSymbol)modifyFromFS.GetValue(HCFeatureSystem.Type) == node.Annotation.Type())
+                        FeatureSymbol fsym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                            modifyFromFS,
+                            HCFeatureSystem.Type
+                        );
+                        if (fsym == node.Annotation.Type())
                             node.Annotation.FeatureStruct.Add(modifyFromFS, match.VariableBindings);
                     }
                 }

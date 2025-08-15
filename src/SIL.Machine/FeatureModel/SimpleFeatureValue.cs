@@ -8,11 +8,15 @@ namespace SIL.Machine.FeatureModel
     {
         public static implicit operator SimpleFeatureValue(FeatureSymbol symbol)
         {
-            return new SymbolicFeatureValue(symbol);
+            return SymbolicFeatureValueFactory.Instance.Create(symbol);
         }
 
         public static explicit operator FeatureSymbol(SimpleFeatureValue sfv)
         {
+            if (sfv is SymbolicFeatureValueBA sfvBA)
+            {
+                return (FeatureSymbol)sfvBA;
+            }
             return (FeatureSymbol)((SymbolicFeatureValue)sfv);
         }
 

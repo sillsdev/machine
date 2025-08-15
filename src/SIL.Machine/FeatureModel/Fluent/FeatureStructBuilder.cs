@@ -10,6 +10,7 @@ namespace SIL.Machine.FeatureModel.Fluent
         private readonly FeatureStruct _fs;
         private readonly IDictionary<int, FeatureValue> _ids;
         private readonly bool _mutable;
+        private readonly SymbolicFeatureValueFactory _valueFactory = SymbolicFeatureValueFactory.Instance;
 
         private Feature _lastFeature;
         private bool _not;
@@ -242,7 +243,7 @@ namespace SIL.Machine.FeatureModel.Fluent
             if (symbols.Any(s => s.Feature != feature))
                 return false;
             var symbolFeature = (SymbolicFeature)feature;
-            var value = new SymbolicFeatureValue(_not ? symbolFeature.PossibleSymbols.Except(symbols) : symbols);
+            var value = _valueFactory.Create(_not ? symbolFeature.PossibleSymbols.Except(symbols) : symbols);
             _fs.AddValue(symbolFeature, value);
             _not = false;
             if (id > -1)
@@ -441,7 +442,7 @@ namespace SIL.Machine.FeatureModel.Fluent
             if (_lastFeature is StringFeature)
                 vfv = new StringFeatureValue(name, !_not);
             else
-                vfv = new SymbolicFeatureValue((SymbolicFeature)_lastFeature, name, !_not);
+                vfv = _valueFactory.Create((SymbolicFeature)_lastFeature, name, !_not);
             _fs.AddValue(_lastFeature, vfv);
             _not = false;
             if (id > -1)

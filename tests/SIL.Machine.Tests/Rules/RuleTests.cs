@@ -118,7 +118,14 @@ public class RuleTests : PhoneticTestsBase
             },
             input =>
                 input
-                    .Annotations.Single(ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word)
+                    .Annotations.Single(ann =>
+                    {
+                        FeatureSymbol f = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                            ann.FeatureStruct,
+                            Type
+                        );
+                        return f == Word;
+                    })
                     .FeatureStruct.IsUnifiable(FeatureStruct.New(WordFeatSys).Symbol("verb").Value)
         );
 
