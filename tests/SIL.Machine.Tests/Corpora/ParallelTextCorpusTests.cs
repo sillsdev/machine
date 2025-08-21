@@ -695,12 +695,12 @@ public class ParallelTextCorpusTests
         ParallelTextRow[] rows = parallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(7));
         Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { 2 }));
-        Assert.That(rows[1].TargetRefs, Is.Empty);
+        Assert.That(rows[1].TargetRefs, Is.EqualTo(new[] { 2 }));
         Assert.That(rows[1].SourceSegment, Is.EqualTo("source segment 2 .".Split()));
         Assert.That(rows[1].TargetSegment, Is.Empty);
 
         Assert.That(rows[4].SourceRefs, Is.EqualTo(new[] { 5 }));
-        Assert.That(rows[4].TargetRefs, Is.Empty);
+        Assert.That(rows[4].TargetRefs, Is.EqualTo(new[] { 5 }));
         Assert.That(rows[4].SourceSegment, Is.EqualTo("source segment 5 .".Split()));
         Assert.That(rows[4].TargetSegment, Is.Empty);
     }

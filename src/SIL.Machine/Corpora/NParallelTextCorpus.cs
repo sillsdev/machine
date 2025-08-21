@@ -302,7 +302,18 @@ namespace SIL.Machine.Corpora
                 if (rows[i] != null)
                 {
                     textId = textId ?? rows[i]?.TextId;
-                    refs[i] = CorrectVersification(rows[i].Ref == null ? defaultRefs : new object[] { rows[i].Ref }, i);
+                    if (Corpora[i].IsScripture())
+                    {
+                        refs[i] = CorrectVersification(
+                            rows[i].Ref == null ? defaultRefs : new object[] { rows[i].Ref },
+                            i
+                        );
+                    }
+                    else
+                    {
+                        refs[i] = defaultRefs;
+                    }
+
                     flags[i] = rows[i].Flags;
                 }
                 else
@@ -310,11 +321,11 @@ namespace SIL.Machine.Corpora
                     if (Corpora[i].IsScripture())
                         refs[i] = CorrectVersification(defaultRefs, i);
                     else
-                        refs[i] = new object[] { };
+                        refs[i] = defaultRefs;
                     flags[i] = forceInRange != null && forceInRange[i] ? TextRowFlags.InRange : TextRowFlags.None;
                 }
             }
-            refs = refs.Select(r => r ?? (new object[] { })).ToArray();
+            refs = refs.Select(r => r ?? defaultRefs).ToArray();
 
             yield return new NParallelTextRow(textId, refs)
             {
