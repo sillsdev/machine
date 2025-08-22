@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using PCRE;
+using SIL.Extensions;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
@@ -43,11 +45,18 @@ namespace SIL.Machine.PunctuationAnalysis
                     _quoteConventions.IsValidOpeningQuotationMark(match.Groups[0].Value)
                     || _quoteConventions.IsValidClosingQuotationMark(match.Groups[0].Value)
                 )
-                .Select(m => new QuotationMarkStringMatch(
-                    textSegment,
-                    m.Groups[0].Index,
-                    m.Groups[0].Index + m.Groups[0].Length
-                ))
+                .Select(m =>
+                {
+                    int[] textElementBeginnings = StringInfo.ParseCombiningCharacters(textSegment.Text);
+                    int endIndex = textElementBeginnings.IndexOf(m.Groups[0].EndIndex);
+                    if (endIndex == -1)
+                        endIndex = textElementBeginnings.Length;
+                    return new QuotationMarkStringMatch(
+                        textSegment,
+                        textElementBeginnings.IndexOf(m.Groups[0].Index),
+                        endIndex
+                    );
+                })
                 .ToList();
         }
     }
