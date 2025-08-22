@@ -19,7 +19,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public FeatureSymbol Type
         {
-            get { return (FeatureSymbol)_fs.GetValue(HCFeatureSystem.Type); }
+            get
+            {
+                FeatureSymbol fsym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(_fs, HCFeatureSystem.Type);
+                return fsym;
+            }
         }
 
         public ReadOnlyCollection<string> Representations

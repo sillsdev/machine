@@ -1139,7 +1139,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (node is Constraint<Word, ShapeNode> constraint)
             {
                 return constraint.Type() == HCFeatureSystem.Anchor
-                    && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
+                    && SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                        constraint.FeatureStruct,
+                        HCFeatureSystem.AnchorType
+                    ) == type;
             }
 
             return false;

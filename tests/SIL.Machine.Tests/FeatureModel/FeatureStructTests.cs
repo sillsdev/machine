@@ -21,7 +21,7 @@ public class FeatureStructTests
         {
             return fs1.Unify(fs2, varBindings, out FeatureStruct res) ? res : null;
         };
-        TestBinaryOperation(
+        TestBinaryOperationUlongAndBitArray(
             FreezableEqualityComparer<FeatureStruct?>.Default,
             resultsSelector,
             varResultsSelector,
@@ -205,7 +205,7 @@ public class FeatureStructTests
         Func<FeatureStruct, FeatureStruct, bool> resultsSelector = (fs1, fs2) => fs1.IsUnifiable(fs2);
         Func<FeatureStruct, FeatureStruct, VariableBindings, bool> varResultsSelector = (fs1, fs2, varBindings) =>
             fs1.IsUnifiable(fs2, varBindings);
-        TestBinaryOperation(
+        TestBinaryOperationUlongAndBitArray(
             EqualityComparer<bool>.Default,
             resultsSelector,
             varResultsSelector,
@@ -256,7 +256,7 @@ public class FeatureStructTests
             fs1.PriorityUnion(fs2, varBindings);
             return fs1;
         };
-        TestBinaryOperation(
+        TestBinaryOperationUlongAndBitArray(
             FreezableEqualityComparer<FeatureStruct>.Default,
             resultsSelector,
             varResultsSelector,
@@ -412,7 +412,7 @@ public class FeatureStructTests
             return fs1;
         };
 
-        TestBinaryOperation(
+        TestBinaryOperationUlongAndBitArray(
             FreezableEqualityComparer<FeatureStruct>.Default,
             resultsSelector,
             varResultsSelector,
@@ -490,7 +490,7 @@ public class FeatureStructTests
             return fs1;
         };
 
-        TestBinaryOperation(
+        TestBinaryOperationUlongAndBitArray(
             FreezableEqualityComparer<FeatureStruct>.Default,
             resultsSelector,
             varResultsSelector,
@@ -587,6 +587,21 @@ public class FeatureStructTests
             featSys => FeatureStruct.New().Value,
             featSys => FeatureStruct.New(featSys).Symbol("a+").Value
         );
+    }
+
+    private static void TestBinaryOperationUlongAndBitArray<TResult>(
+        IEqualityComparer<TResult> comparer,
+        Func<FeatureStruct, FeatureStruct, TResult> resultsSelector,
+        Func<FeatureStruct, FeatureStruct, VariableBindings, TResult> varResultsSelector,
+        params Func<FeatureSystem, TResult>[] expectedSelectors
+    )
+    {
+        // Use default ulong for values
+        TestBinaryOperation(comparer, resultsSelector, varResultsSelector, expectedSelectors);
+        // Use BitArray for values
+        SymbolicFeatureValueFactory.Instance.NeedToUseBitArray = 0;
+        TestBinaryOperation(comparer, resultsSelector, varResultsSelector, expectedSelectors);
+        SymbolicFeatureValueFactory.Instance.NeedToUseBitArray = sizeof(ulong) * 8;
     }
 
     private static void TestBinaryOperation<TResult>(
@@ -880,7 +895,7 @@ public class FeatureStructTests
         fs2 = FeatureStruct.NewMutable(featSys).Feature("a").Not.EqualToVariable("var1").Symbol("b-").Value;
 
         var varBindings = new VariableBindings();
-        varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a-"));
+        varBindings["var1"] = SymbolicFeatureValueFactory.Instance.Create(featSys.GetSymbol("a-"));
         Assert.That(
             varResultsSelector(fs1, fs2, varBindings),
             Is.EqualTo(expectedSelectors[20](featSys)).Using(comparer)
@@ -891,10 +906,130 @@ public class FeatureStructTests
         fs2 = FeatureStruct.NewMutable(featSys).Feature("a").Not.EqualToVariable("var1").Symbol("b-").Value;
 
         varBindings = new VariableBindings();
-        varBindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a+"));
+        varBindings["var1"] = SymbolicFeatureValueFactory.Instance.Create(featSys.GetSymbol("a+"));
         Assert.That(
             varResultsSelector(fs1, fs2, varBindings),
             Is.EqualTo(expectedSelectors[21](featSys)).Using(comparer)
         );
+    }
+
+    [Test]
+    public void BitArray()
+    {
+        // Parts of Speech for Ket has more than 64 values.
+        // Using ulong alone in SymbolicFeatureValue can result in extra values being matched.
+        var featSys = new FeatureSystem
+        {
+            new SymbolicFeature(
+                "POS",
+                new FeatureSymbol("adv"),
+                new FeatureSymbol("adv.inc"),
+                new FeatureSymbol("n"),
+                new FeatureSymbol("nprop"),
+                new FeatureSymbol("n.inc"),
+                new FeatureSymbol("pro"),
+                new FeatureSymbol("pers"),
+                new FeatureSymbol("dempro"),
+                new FeatureSymbol("posspro"),
+                new FeatureSymbol("reflpro"),
+                new FeatureSymbol("que"),
+                new FeatureSymbol("adj"),
+                new FeatureSymbol("adj.inc"),
+                new FeatureSymbol("actn"),
+                new FeatureSymbol("v"),
+                new FeatureSymbol("v.inc"),
+                new FeatureSymbol("vi"),
+                new FeatureSymbol("v1"),
+                new FeatureSymbol("v1.aoln"),
+                new FeatureSymbol("v1.ao"),
+                new FeatureSymbol("v1.sln"),
+                new FeatureSymbol("v1.ln"),
+                new FeatureSymbol("v2"),
+                new FeatureSymbol("v2.aoln"),
+                new FeatureSymbol("v2.ao"),
+                new FeatureSymbol("v2.sln"),
+                new FeatureSymbol("v2.ln"),
+                new FeatureSymbol("v3"),
+                new FeatureSymbol("v3.aoln"),
+                new FeatureSymbol("v3.ao"),
+                new FeatureSymbol("v3.sln"),
+                new FeatureSymbol("v3.ln"),
+                new FeatureSymbol("v4"),
+                new FeatureSymbol("v4.aoln"),
+                new FeatureSymbol("v4.ao"),
+                new FeatureSymbol("v4.sln"),
+                new FeatureSymbol("v4.ln"),
+                new FeatureSymbol("v5"),
+                new FeatureSymbol("v5.aoln"),
+                new FeatureSymbol("v5.ao"),
+                new FeatureSymbol("v5.sln"),
+                new FeatureSymbol("v5.ln"),
+                new FeatureSymbol("v2.appl"),
+                new FeatureSymbol("v2.appl.ao"),
+                new FeatureSymbol("v2.appl.aoln"),
+                new FeatureSymbol("vt"),
+                new FeatureSymbol("vt1"),
+                new FeatureSymbol("vt1.aoln"),
+                new FeatureSymbol("vt1.ao"),
+                new FeatureSymbol("vt1.sln"),
+                new FeatureSymbol("vt1.ln"),
+                new FeatureSymbol("vt2"),
+                new FeatureSymbol("vt2.aoln"),
+                new FeatureSymbol("vt2.ao"),
+                new FeatureSymbol("vt2.sln"),
+                new FeatureSymbol("vt2.ln"),
+                new FeatureSymbol("vt3"),
+                new FeatureSymbol("vt3.aoln"),
+                new FeatureSymbol("vt3.ao"),
+                new FeatureSymbol("vt3.sln"),
+                new FeatureSymbol("vt3.ln"),
+                new FeatureSymbol("vt4"),
+                new FeatureSymbol("vt4.aoln"),
+                new FeatureSymbol("vt4.ao"),
+                new FeatureSymbol("vt4.sln"),
+                new FeatureSymbol("vt4.ln"),
+                new FeatureSymbol("vt2/appl"),
+                new FeatureSymbol("vt2.appl.aoln"),
+                new FeatureSymbol("vt2.appl.ln"),
+                new FeatureSymbol("vt1.appl"),
+                new FeatureSymbol("vt1.appl.ln"),
+                new FeatureSymbol("v.irr"),
+                new FeatureSymbol("ptcl"),
+                new FeatureSymbol("sub"),
+                new FeatureSymbol("pp"),
+                new FeatureSymbol("vpred"),
+                new FeatureSymbol("conj"),
+                new FeatureSymbol("interj"),
+                new FeatureSymbol("num"),
+                new FeatureSymbol("ncp")
+            )
+        };
+        featSys.Freeze();
+        // 80 values
+        CheckFirstAndLastValues(featSys, "adv");
+
+        SymbolicFeature featPos = (SymbolicFeature)featSys.GetFeature("POS");
+        // 65 values
+        SkipAndCheck(featPos, 15, "v.inc");
+        // 64 values ( = sizeof(ulong) )
+        SkipAndCheck(featPos, 16, "vi");
+        // 63 values
+        SkipAndCheck(featPos, 17, "v1");
+    }
+
+    private static void SkipAndCheck(SymbolicFeature featPos, int iSkip, string sFirst)
+    {
+        var symbols = featPos.PossibleSymbols.Skip(iSkip);
+        Assert.That(symbols.Count, Is.EqualTo(80 - iSkip));
+        FeatureSystem featSys = new FeatureSystem { new SymbolicFeature("POS", symbols) };
+        CheckFirstAndLastValues(featSys, sFirst);
+    }
+
+    private static void CheckFirstAndLastValues(FeatureSystem featSys, string sFirst)
+    {
+        FeatureStruct fs1 = FeatureStruct.NewMutable(featSys).Symbol(sFirst).Value;
+        Assert.That(fs1.ToString(), Is.EqualTo("[POS:" + sFirst + "]"));
+        FeatureStruct fs2 = FeatureStruct.NewMutable(featSys).Symbol("ncp").Value;
+        Assert.That(fs2.ToString(), Is.EqualTo("[POS:ncp]"));
     }
 }

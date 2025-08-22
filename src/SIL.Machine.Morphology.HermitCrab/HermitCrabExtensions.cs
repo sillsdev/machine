@@ -13,17 +13,29 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         public static FeatureSymbol Type(this ShapeNode node)
         {
-            return (FeatureSymbol)node.Annotation.FeatureStruct.GetValue(HCFeatureSystem.Type);
+            FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                node.Annotation.FeatureStruct,
+                HCFeatureSystem.Type
+            );
+            return fSym;
         }
 
         public static FeatureSymbol Type(this Annotation<ShapeNode> ann)
         {
-            return (FeatureSymbol)ann.FeatureStruct.GetValue(HCFeatureSystem.Type);
+            FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                ann.FeatureStruct,
+                HCFeatureSystem.Type
+            );
+            return fSym;
         }
 
         public static FeatureSymbol Type(this Constraint<Word, ShapeNode> constraint)
         {
-            return (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.Type);
+            FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                constraint.FeatureStruct,
+                HCFeatureSystem.Type
+            );
+            return fSym;
         }
 
         internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
@@ -55,8 +67,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal static bool IsDirty(this ShapeNode node)
         {
-            return ((FeatureSymbol)node.Annotation.FeatureStruct.GetValue(HCFeatureSystem.Modified))
-                == HCFeatureSystem.Dirty;
+            FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                node.Annotation.FeatureStruct,
+                HCFeatureSystem.Modified
+            );
+            return fSym == HCFeatureSystem.Dirty;
+            //return ((FeatureSymbol)node.Annotation.FeatureStruct.GetValue(HCFeatureSystem.Modified))
+            //    == HCFeatureSystem.Dirty;
         }
 
         internal static void SetDirty(this ShapeNode node, bool dirty)
@@ -71,7 +88,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             SymbolicFeatureValue sfv;
             if (ann.FeatureStruct.TryGetValue(HCFeatureSystem.Deletion, out sfv))
-                return ((FeatureSymbol)sfv) == HCFeatureSystem.Deleted;
+            {
+                FeatureSymbol fSym = SymbolicFeatureValue.GetFeatureSymbolFromFeatureStruct(
+                    ann.FeatureStruct,
+                    HCFeatureSystem.Deleted.Feature
+                );
+                return fSym == HCFeatureSystem.Deleted;
+            }
             return false;
         }
 
