@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using PCRE;
 
@@ -43,11 +44,21 @@ namespace SIL.Machine.PunctuationAnalysis
                     _quoteConventions.IsValidOpeningQuotationMark(match.Groups[0].Value)
                     || _quoteConventions.IsValidClosingQuotationMark(match.Groups[0].Value)
                 )
-                .Select(m => new QuotationMarkStringMatch(
-                    textSegment,
-                    m.Groups[0].Index,
-                    m.Groups[0].Index + m.Groups[0].Length
-                ))
+                .Select(m =>
+                {
+                    int[] textElementIndices = StringInfo.ParseCombiningCharacters(textSegment.Text);
+                    int startIndex = 0;
+                    int endIndex = textElementIndices.Length;
+                    for (int textElementIndex = 0; textElementIndex < textElementIndices.Length; textElementIndex++)
+                    {
+                        int stringIndex = textElementIndices[textElementIndex];
+                        if (stringIndex == m.Groups[0].Index)
+                            startIndex = textElementIndex;
+                        if (stringIndex == m.Groups[0].EndIndex)
+                            endIndex = textElementIndex;
+                    }
+                    return new QuotationMarkStringMatch(textSegment, startIndex, endIndex);
+                })
                 .ToList();
         }
     }

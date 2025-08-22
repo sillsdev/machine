@@ -282,6 +282,22 @@ public class QuotationMarkFinderTests
                     ]
                 )
         );
+
+        Assert.That(
+            quotationMarkFinder
+                .FindAllPotentialQuotationMarksInTextSegment(
+                    new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build()
+                )
+                .SequenceEqual(
+                    [
+                        new QuotationMarkStringMatch(
+                            new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build(),
+                            6,
+                            7
+                        ),
+                    ]
+                )
+        );
     }
 
     [Test]

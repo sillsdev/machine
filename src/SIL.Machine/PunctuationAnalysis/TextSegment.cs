@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.PunctuationAnalysis
@@ -70,7 +71,7 @@ namespace SIL.Machine.PunctuationAnalysis
             return hashCode * 31 + ImmediatePrecedingMarker.GetHashCode();
         }
 
-        public int Length => Text.Length;
+        public int Length => StringInfo.ParseCombiningCharacters(Text).Length;
 
         public string SubstringBefore(int index)
         {

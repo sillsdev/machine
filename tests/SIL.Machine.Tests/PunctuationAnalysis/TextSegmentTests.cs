@@ -188,6 +188,8 @@ public class TextSegmentTests
 
         textSegment = new TextSegment.Builder().SetText("new example text").Build();
         Assert.That(textSegment.Length, Is.EqualTo("new example text".Length));
+        textSegment = new TextSegment.Builder().SetText("उत्पत्ति पुस्तकले").Build();
+        Assert.That(textSegment.Length, Is.EqualTo(11));
     }
 
     [Test]

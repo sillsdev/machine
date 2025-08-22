@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
 using NUnit.Framework;
+using SIL.Machine.PunctuationAnalysis;
 
 namespace SIL.Machine.Corpora;
 
@@ -169,5 +170,29 @@ public class UsfmManualTests
         {
             await GetUsfmAsync(ParatextProjectPath);
         }
+    }
+
+    [Test]
+    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
+    public void AnalyzeCorporaQuoteConventions()
+    {
+        var sourceHandler = new QuoteConventionDetector();
+        using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
+        var quoteConventionDetector = new ZipParatextProjectQuoteConventionDetector(zipArchive);
+        quoteConventionDetector.GetQuoteConventionAnalysis(sourceHandler);
+
+        var targetHandler = new QuoteConventionDetector();
+        using ZipArchive zipArchive2 = ZipFile.OpenRead(CorporaTestHelpers.UsfmTargetProjectZipPath);
+        var quoteConventionDetector2 = new ZipParatextProjectQuoteConventionDetector(zipArchive2);
+        quoteConventionDetector2.GetQuoteConventionAnalysis(targetHandler);
+
+        QuoteConventionAnalysis sourceAnalysis = sourceHandler.DetectQuotationConvention();
+        QuoteConventionAnalysis targetAnalysis = targetHandler.DetectQuotationConvention();
+
+        Assert.Multiple(() =>
+        {
+            Assert.NotNull(sourceAnalysis);
+            Assert.NotNull(targetAnalysis);
+        });
     }
 }
