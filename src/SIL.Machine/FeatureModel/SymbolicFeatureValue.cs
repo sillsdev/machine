@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,15 +17,26 @@ namespace SIL.Machine.FeatureModel
 
         public static explicit operator FeatureSymbol(SymbolicFeatureValue sfv)
         {
-            return sfv._first;
+            return sfv.First;
         }
 
+        private SymbolicFeatureValueUlong _sfvUlong;
+        private SymbolicFeatureValueBitArray _sfvBitArray;
         private readonly SymbolicFeature _feature;
-        private ulong _flags;
+        private ulong _flagsUlong;
         private FeatureSymbol _first;
+        private BitArray _flagsBitArray = null;
+        private int _bitArraySize = 0;
+
+        // this can be set to 0 for testing the BitArray code
+        public static int NeedToUseBitArray { get; set; } = sizeof(ulong) * 8;
+
+        // To test using the BitArray method, comment the preceding line and uncomment the following line
+        //public static int NeedToUseBitArray { get; set; } = 0;
 
         public SymbolicFeatureValue(SymbolicFeature feature)
         {
+            MakeValueItemToUse(feature.PossibleSymbols.Count);
             _feature = feature;
         }
 
@@ -34,20 +46,23 @@ namespace SIL.Machine.FeatureModel
             if (symbols.Length == 0)
                 throw new ArgumentException("values cannot be empty", "values");
             _feature = symbols[0].Feature;
-            _first = symbols[0];
+            MakeValueItemToUse(_feature.PossibleSymbols.Count);
+            First = symbols[0];
             Set(symbols);
         }
 
         public SymbolicFeatureValue(FeatureSymbol value)
         {
             _feature = value.Feature;
-            _first = value;
+            MakeValueItemToUse(_feature.PossibleSymbols.Count);
+            First = value;
             Set(value.ToEnumerable());
         }
 
         public SymbolicFeatureValue(SymbolicFeature feature, string varName, bool agree)
             : base(varName, agree)
         {
+            MakeValueItemToUse(feature.PossibleSymbols.Count);
             _feature = feature;
         }
 
@@ -55,24 +70,47 @@ namespace SIL.Machine.FeatureModel
             : base(sfv)
         {
             _feature = sfv._feature;
-            _first = sfv._first;
-            _flags = sfv._flags;
+            MakeValueItemToUse(_feature.PossibleSymbols.Count);
+            First = sfv.First;
+            FlagsUlong = sfv.FlagsUlong;
+            if (sfv.FlagsBitArray != null)
+                FlagsBitArray = new BitArray(sfv.FlagsBitArray);
         }
 
         private SymbolicFeatureValue(SymbolicFeature feature, ulong flags)
         {
+            MakeValueItemToUse(feature.PossibleSymbols.Count);
             _feature = feature;
-            _flags = flags;
+            FlagsUlong = flags;
             SetFirst();
+        }
+
+        public SymbolicFeatureValue(SymbolicFeature feature, BitArray notFlagsAndFeatureMask)
+            : this(feature)
+        {
+            FlagsBitArray = new BitArray(notFlagsAndFeatureMask);
+        }
+
+        private void MakeValueItemToUse(int size)
+        {
+            BitArraySize = size;
+            if (BitArraySize <= NeedToUseBitArray)
+            {
+                SfvUlong = new SymbolicFeatureValueUlong();
+            }
+            else
+            {
+                _flagsBitArray = new BitArray(BitArraySize, false);
+                SfvBitArray = new SymbolicFeatureValueBitArray();
+            }
         }
 
         private void Set(IEnumerable<FeatureSymbol> symbols)
         {
-            foreach (FeatureSymbol symbol in symbols)
-            {
-                ulong mask = 1UL << symbol.Index;
-                _flags |= mask;
-            }
+            if (SfvUlong != null)
+                SfvUlong.Set(this, symbols);
+            else
+                SfvBitArray.Set(this, symbols);
         }
 
         public IEnumerable<FeatureSymbol> Values
@@ -92,12 +130,18 @@ namespace SIL.Machine.FeatureModel
 
         private void SetFirst()
         {
-            _first = _flags == 0 ? null : _feature.PossibleSymbols.First(Get);
+            if (SfvUlong != null)
+                SfvUlong.SetFirst(this, _feature);
+            else
+                SfvBitArray.SetFirst(this, _feature);
         }
 
-        private bool Get(FeatureSymbol symbol)
+        public bool Get(FeatureSymbol symbol)
         {
-            return (_flags & (1UL << symbol.Index)) != 0;
+            if (SfvUlong != null)
+                return SfvUlong.Get(this, symbol);
+            else
+                return SfvBitArray.Get(this, symbol);
         }
 
         public SymbolicFeature Feature
@@ -107,12 +151,62 @@ namespace SIL.Machine.FeatureModel
 
         protected override bool IsSatisfiable
         {
-            get { return base.IsSatisfiable || _flags != 0; }
+            get
+            {
+                bool sfvValue = false;
+                if (SfvUlong != null)
+                    sfvValue = SfvUlong.IsSatisfiable(this);
+                else
+                    sfvValue = SfvBitArray.IsSatisfiable(this);
+                return base.IsSatisfiable || sfvValue;
+            }
         }
 
         protected override bool IsUninstantiated
         {
-            get { return base.IsUninstantiated && _flags == _feature.Mask; }
+            get
+            {
+                bool sfvValue = false;
+                if (SfvUlong != null)
+                    sfvValue = SfvUlong.IsUninstantiated(this, _feature);
+                else
+                    sfvValue = SfvBitArray.IsUninstantiated(this, _feature);
+                return base.IsUninstantiated && sfvValue;
+            }
+        }
+
+        public BitArray FlagsBitArray
+        {
+            get => _flagsBitArray;
+            set => _flagsBitArray = value;
+        }
+
+        public ulong FlagsUlong
+        {
+            get => _flagsUlong;
+            set => _flagsUlong = value;
+        }
+        public FeatureSymbol First
+        {
+            get => _first;
+            set => _first = value;
+        }
+
+        internal SymbolicFeatureValueUlong SfvUlong
+        {
+            get => _sfvUlong;
+            set => _sfvUlong = value;
+        }
+
+        internal SymbolicFeatureValueBitArray SfvBitArray
+        {
+            get => _sfvBitArray;
+            set => _sfvBitArray = value;
+        }
+        public int BitArraySize
+        {
+            get => _bitArraySize;
+            set => _bitArraySize = value;
         }
 
         protected override bool IsSupersetOf(bool not, SimpleFeatureValue other, bool notOther)
@@ -120,14 +214,10 @@ namespace SIL.Machine.FeatureModel
             if (!(other is SymbolicFeatureValue otherSfv))
                 return false;
 
-            if (!not && !notOther)
-                return (_flags & otherSfv._flags) == otherSfv._flags;
-            if (!not)
-                return (_flags & (~otherSfv._flags & _feature.Mask)) == (~otherSfv._flags & _feature.Mask);
-            if (!notOther)
-                return ((~_flags & _feature.Mask) & otherSfv._flags) == otherSfv._flags;
-            return ((~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask))
-                == (~otherSfv._flags & _feature.Mask);
+            if (SfvUlong != null)
+                return SfvUlong.IsSupersetOf(not, this, otherSfv, notOther, _feature);
+            else
+                return SfvBitArray.IsSupersetOf(not, this, otherSfv, notOther, _feature);
         }
 
         protected override bool Overlaps(bool not, SimpleFeatureValue other, bool notOther)
@@ -135,13 +225,10 @@ namespace SIL.Machine.FeatureModel
             if (!(other is SymbolicFeatureValue otherSfv))
                 return false;
 
-            if (!not && !notOther)
-                return (_flags & otherSfv._flags) != 0;
-            if (!not)
-                return (_flags & (~otherSfv._flags & _feature.Mask)) != 0;
-            if (!notOther)
-                return ((~_flags & _feature.Mask) & otherSfv._flags) != 0;
-            return ((~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask)) != 0;
+            if (SfvUlong != null)
+                return SfvUlong.Overlaps(not, this, otherSfv, notOther, _feature);
+            else
+                return SfvBitArray.Overlaps(not, this, otherSfv, notOther, _feature);
         }
 
         protected override void IntersectWith(bool not, SimpleFeatureValue other, bool notOther)
@@ -149,14 +236,10 @@ namespace SIL.Machine.FeatureModel
             if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
-            if (!not && !notOther)
-                _flags = _flags & otherSfv._flags;
-            else if (!not)
-                _flags = _flags & (~otherSfv._flags & _feature.Mask);
-            else if (!notOther)
-                _flags = (~_flags & _feature.Mask) & otherSfv._flags;
+            if (SfvUlong != null)
+                SfvUlong.IntersectWith(not, this, otherSfv, notOther, _feature);
             else
-                _flags = (~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask);
+                SfvBitArray.IntersectWith(not, this, otherSfv, notOther, _feature);
             SetFirst();
         }
 
@@ -165,14 +248,11 @@ namespace SIL.Machine.FeatureModel
             if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
-            if (!not && !notOther)
-                _flags = _flags | otherSfv._flags;
-            else if (!not)
-                _flags = _flags | (~otherSfv._flags & _feature.Mask);
-            else if (!notOther)
-                _flags = (~_flags & _feature.Mask) | otherSfv._flags;
+            if (SfvUlong != null)
+                SfvUlong.UnionWith(not, this, otherSfv, notOther, _feature);
             else
-                _flags = (~_flags & _feature.Mask) | (~otherSfv._flags & _feature.Mask);
+                SfvBitArray.UnionWith(not, this, otherSfv, notOther, _feature);
+
             SetFirst();
         }
 
@@ -181,14 +261,10 @@ namespace SIL.Machine.FeatureModel
             if (!(other is SymbolicFeatureValue otherSfv))
                 return;
 
-            if (!not && !notOther)
-                _flags = _flags & (~otherSfv._flags & _feature.Mask);
-            else if (!not)
-                _flags = _flags & otherSfv._flags;
-            else if (!notOther)
-                _flags = (~_flags & _feature.Mask) & (~otherSfv._flags & _feature.Mask);
+            if (SfvUlong != null)
+                SfvUlong.ExceptWith(not, this, otherSfv, notOther, _feature);
             else
-                _flags = (~_flags & _feature.Mask) & otherSfv._flags;
+                SfvBitArray.ExceptWith(not, this, otherSfv, notOther, _feature);
         }
 
         protected override SimpleFeatureValue CloneImpl()
@@ -198,9 +274,21 @@ namespace SIL.Machine.FeatureModel
 
         public override SimpleFeatureValue Negation()
         {
-            return IsVariable
-                ? new SymbolicFeatureValue(_feature, VariableName, !Agree)
-                : new SymbolicFeatureValue(_feature, (~_flags & _feature.Mask));
+            if (SfvUlong != null)
+            {
+                return IsVariable
+                    ? new SymbolicFeatureValue(_feature, VariableName, !Agree)
+                    : new SymbolicFeatureValue(_feature, (~FlagsUlong & _feature.MaskUlong));
+            }
+            else
+            {
+                // Since logical operations on BitArrays change the BitArray variable, we need to create temp variables
+                BitArray flags = new BitArray(_flagsBitArray);
+                BitArray notFlagsAndFeatureMask = flags.Not().And(_feature.MaskBitArray);
+                return IsVariable
+                    ? new SymbolicFeatureValue(_feature, VariableName, !Agree)
+                    : new SymbolicFeatureValue(_feature, notFlagsAndFeatureMask);
+            }
         }
 
         public override bool ValueEquals(SimpleFeatureValue other)
@@ -213,13 +301,21 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 return false;
 
-            return base.ValueEquals(other) && _flags == other._flags;
+            bool sfvValue = false;
+            if (SfvUlong != null)
+                sfvValue = SfvUlong.ValueEquals(this, other);
+            else
+                sfvValue = SfvBitArray.ValueEquals(this, other);
+            return base.ValueEquals(other) && sfvValue;
         }
 
         protected override int GetValuesHashCode()
         {
             int code = base.GetValuesHashCode();
-            return code * 31 + _flags.GetHashCode();
+            if (SfvUlong != null)
+                return SfvUlong.GetValuesHashCode(this, code);
+            else
+                return SfvBitArray.GetValuesHashCode(this, code);
         }
 
         public new SymbolicFeatureValue Clone()
