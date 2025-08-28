@@ -75,7 +75,7 @@ namespace SIL.Machine.PunctuationAnalysis
                     if (previousSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
                     {
                         return new StringInfo(previousSegment.Text).SubstringByTextElements(
-                            previousSegment.Text.Length - 1,
+                            StringInfo.ParseCombiningCharacters(previousSegment.Text).Length - 1,
                             1
                         );
                     }
