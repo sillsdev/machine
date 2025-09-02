@@ -599,9 +599,9 @@ public class FeatureStructTests
         // Use default ulong for values
         TestBinaryOperation(comparer, resultsSelector, varResultsSelector, expectedSelectors);
         // Use BitArray for values
-        SymbolicFeatureValue.NeedToUseBitArray = 0;
+        SymbolicFeatureValue.ForceBitArrayFlagsImplementation();
         TestBinaryOperation(comparer, resultsSelector, varResultsSelector, expectedSelectors);
-        SymbolicFeatureValue.NeedToUseBitArray = sizeof(ulong) * 8;
+        SymbolicFeatureValue.ResetFlagsImplementation();
     }
 
     private static void TestBinaryOperation<TResult>(
