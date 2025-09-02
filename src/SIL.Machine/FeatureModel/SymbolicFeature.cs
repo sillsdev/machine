@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using SIL.ObjectModel;
 
@@ -7,8 +6,6 @@ namespace SIL.Machine.FeatureModel
     public class SymbolicFeature : Feature
     {
         private readonly PossibleSymbolCollection _possibleSymbols;
-        private readonly ulong _mask;
-        private readonly BitArray _maskBA = new BitArray(sizeof(ulong) * 8, false);
 
         public SymbolicFeature(string id, params FeatureSymbol[] possibleSymbols)
             : this(id, (IEnumerable<FeatureSymbol>)possibleSymbols) { }
@@ -22,16 +19,6 @@ namespace SIL.Machine.FeatureModel
             {
                 symbol.Feature = this;
                 symbol.Index = i++;
-            }
-
-            int symbolCount = _possibleSymbols.Count;
-            if (symbolCount > SymbolicFeatureValue.NeedToUseBitArray)
-            {
-                _maskBA = new BitArray(symbolCount, true);
-            }
-            else
-            {
-                _mask = (1UL << symbolCount) - 1UL;
             }
         }
 
@@ -47,15 +34,6 @@ namespace SIL.Machine.FeatureModel
         public string DefaultSymbolID
         {
             set { DefaultValue = new SymbolicFeatureValue(_possibleSymbols[value]); }
-        }
-
-        internal ulong MaskUlong
-        {
-            get { return _mask; }
-        }
-        internal BitArray MaskBitArray
-        {
-            get { return _maskBA; }
         }
     }
 }
