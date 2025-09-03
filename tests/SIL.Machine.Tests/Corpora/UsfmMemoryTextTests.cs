@@ -278,6 +278,62 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_VerseZero()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\h
+\mt
+\c 1
+\p \v 0
+\s
+\p \v 1 Verse one.
+"
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[0].Text, Is.EqualTo("Verse one."), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+        });
+    }
+
+    [Test]
+    public void GetRows_PrivateUseMarker()
+    {
+        TextRow[] rows = GetRows(
+            @"\id FRT - Test English Apocrypha
+\mt1 Test English Apocrypha
+\pc Copyright Statement \zimagecopyrights
+\pc Further copyright statements
+",
+            includeAllText: true
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(3));
+
+            Assert.That(
+                rows[1].Ref,
+                Is.EqualTo(ScriptureRef.Parse("FRT 1:0/2:pc")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[1].Text,
+                Is.EqualTo("Copyright Statement"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =

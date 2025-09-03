@@ -33,7 +33,7 @@ namespace SIL.Machine.Corpora
 
         private static bool IsEmbedStyle(string marker)
         {
-            return marker != null && (EmbedStyles.Contains(marker.Trim('*')) || marker.StartsWith("z"));
+            return marker != null && EmbedStyles.Contains(marker.Trim('*'));
         }
 
         public override void EndUsfm(UsfmParserState state)
@@ -63,9 +63,12 @@ namespace SIL.Machine.Corpora
         {
             if (state.VerseRef.Equals(_curVerseRef) && !_duplicateVerse)
             {
-                EndVerseText(state, CreateVerseRefs());
-                // ignore duplicate verses
-                _duplicateVerse = true;
+                if (state.VerseRef.VerseNum > 0)
+                {
+                    EndVerseText(state, CreateVerseRefs());
+                    // ignore duplicate verses
+                    _duplicateVerse = true;
+                }
             }
             else if (VerseRef.AreOverlappingVersesRanges(verse1: number, verse2: _curVerseRef.Verse))
             {
@@ -92,6 +95,10 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
+            // ignore private-use markers
+            if (marker.StartsWith("z"))
+                return;
+
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
 
@@ -104,6 +111,10 @@ namespace SIL.Machine.Corpora
 
         public override void EndPara(UsfmParserState state, string marker)
         {
+            // ignore private-use markers
+            if (marker.StartsWith("z"))
+                return;
+
             if (CurrentTextType == ScriptureTextType.NonVerse)
             {
                 EndParentElement();
@@ -185,6 +196,10 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<UsfmAttribute> attributes
         )
         {
+            // ignore private-use markers
+            if (markerWithoutPlus.StartsWith("z"))
+                return;
+
             // if we hit a character marker in a verse paragraph and we aren't in a verse, then start a non-verse
             // segment
             CheckConvertVerseParaToNonVerse(state);
@@ -199,6 +214,10 @@ namespace SIL.Machine.Corpora
             bool closed
         )
         {
+            // ignore private-use markers
+            if (marker.StartsWith("z"))
+                return;
+
             if (IsEmbedStyle(marker))
                 EndEmbedText(state);
         }
