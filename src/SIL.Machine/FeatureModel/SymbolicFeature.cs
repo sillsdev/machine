@@ -6,7 +6,6 @@ namespace SIL.Machine.FeatureModel
     public class SymbolicFeature : Feature
     {
         private readonly PossibleSymbolCollection _possibleSymbols;
-        private readonly ulong _mask;
 
         public SymbolicFeature(string id, params FeatureSymbol[] possibleSymbols)
             : this(id, (IEnumerable<FeatureSymbol>)possibleSymbols) { }
@@ -21,7 +20,6 @@ namespace SIL.Machine.FeatureModel
                 symbol.Feature = this;
                 symbol.Index = i++;
             }
-            _mask = (1UL << _possibleSymbols.Count) - 1UL;
         }
 
         /// <summary>
@@ -36,11 +34,6 @@ namespace SIL.Machine.FeatureModel
         public string DefaultSymbolID
         {
             set { DefaultValue = new SymbolicFeatureValue(_possibleSymbols[value]); }
-        }
-
-        internal ulong Mask
-        {
-            get { return _mask; }
         }
     }
 }
