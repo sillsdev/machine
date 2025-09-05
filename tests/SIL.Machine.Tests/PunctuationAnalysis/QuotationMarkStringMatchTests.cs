@@ -188,13 +188,24 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        ;
+        Assert.IsNull(quotationMarkStringMatch.PreviousCharacter);
+
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201c\u201d").Build(),
             1,
             2
         );
         Assert.That(quotationMarkStringMatch.PreviousCharacter, Is.EqualTo("“"));
+
+        quotationMarkStringMatch = new QuotationMarkStringMatch(
+            new TextSegment.Builder()
+                .SetText("\"उत्पत्ति पुस्तकले")
+                .SetPreviousSegment(new TextSegment.Builder().SetText("उत्पत्ति पुस्तकले").Build())
+                .Build(),
+            0,
+            1
+        );
+        Assert.That(quotationMarkStringMatch.PreviousCharacter, Is.EqualTo("ले"));
     }
 
     [Test]
