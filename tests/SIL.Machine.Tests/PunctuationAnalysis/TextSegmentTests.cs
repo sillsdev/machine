@@ -188,8 +188,14 @@ public class TextSegmentTests
 
         textSegment = new TextSegment.Builder().SetText("new example text").Build();
         Assert.That(textSegment.Length, Is.EqualTo("new example text".Length));
+
+        //Combining characters
         textSegment = new TextSegment.Builder().SetText("उत्पत्ति पुस्तकले").Build();
         Assert.That(textSegment.Length, Is.EqualTo(11));
+
+        //Surrogate pairs
+        textSegment = new TextSegment.Builder().SetText("𝜺𝜺").Build();
+        Assert.That(textSegment.Length, Is.EqualTo(2));
     }
 
     [Test]
