@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using PCRE;
 
@@ -42,8 +41,7 @@ namespace SIL.Machine.PunctuationAnalysis
             return code;
         }
 
-        public string QuotationMark =>
-            new StringInfo(TextSegment.Text).SubstringByTextElements(StartIndex, EndIndex - StartIndex);
+        public string QuotationMark => TextSegment.Substring(StartIndex, EndIndex - StartIndex);
 
         public bool IsValidOpeningQuotationMark(QuoteConventionSet quoteConventions) =>
             quoteConventions.IsValidOpeningQuotationMark(QuotationMark);
@@ -74,14 +72,11 @@ namespace SIL.Machine.PunctuationAnalysis
                     TextSegment previousSegment = TextSegment.PreviousSegment;
                     if (previousSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
                     {
-                        return new StringInfo(previousSegment.Text).SubstringByTextElements(
-                            StringInfo.ParseCombiningCharacters(previousSegment.Text).Length - 1,
-                            1
-                        );
+                        return previousSegment.Substring(previousSegment.Length - 1, 1);
                     }
                     return null;
                 }
-                return new StringInfo(TextSegment.Text).SubstringByTextElements(StartIndex - 1, 1);
+                return TextSegment.Substring(StartIndex - 1, 1);
             }
         }
 
@@ -94,11 +89,11 @@ namespace SIL.Machine.PunctuationAnalysis
                     TextSegment nextSegment = TextSegment.NextSegment;
                     if (nextSegment != null && !TextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Paragraph))
                     {
-                        return new StringInfo(nextSegment.Text).SubstringByTextElements(0, 1);
+                        return nextSegment.Substring(0, 1);
                     }
                     return null;
                 }
-                return new StringInfo(TextSegment.Text).SubstringByTextElements(EndIndex, 1);
+                return TextSegment.Substring(EndIndex, 1);
             }
         }
 

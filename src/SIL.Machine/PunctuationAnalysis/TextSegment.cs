@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class TextSegment : IEquatable<TextSegment>
     {
-        public string Text { get; private set; }
+        public string Text
+        {
+            get => _text;
+            private set
+            {
+                _codePointString = new CodePointString(value);
+                _text = value;
+            }
+        }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
         public TextSegment PreviousSegment { get; set; }
@@ -15,6 +23,9 @@ namespace SIL.Machine.PunctuationAnalysis
         public int IndexInVerse { get; set; }
         public int NumSegmentsInVerse { get; set; }
         public UsfmToken UsfmToken { get; private set; }
+
+        private string _text;
+        private CodePointString _codePointString;
 
         public TextSegment()
         {
@@ -71,16 +82,21 @@ namespace SIL.Machine.PunctuationAnalysis
             return hashCode * 31 + ImmediatePrecedingMarker.GetHashCode();
         }
 
-        public int Length => StringInfo.ParseCombiningCharacters(Text).Length;
+        public int Length => _codePointString.Length;
+
+        public string Substring(int startIndex, int length)
+        {
+            return _codePointString.Substring(startIndex, length);
+        }
 
         public string SubstringBefore(int index)
         {
-            return Text.Substring(0, index);
+            return Substring(0, index);
         }
 
         public string SubstringAfter(int index)
         {
-            return Text.Substring(index);
+            return Substring(index, Length - index);
         }
 
         public bool MarkerIsInPrecedingContext(UsfmMarkerType marker)
@@ -145,6 +161,80 @@ namespace SIL.Machine.PunctuationAnalysis
             {
                 return _textSegment;
             }
+        }
+    }
+
+    public class CodePointString
+    {
+        public string String => _stringValue;
+        public int Length => _stringIndexByCodePointIndex.Count;
+
+        private readonly string _stringValue;
+        private readonly Dictionary<int, int> _codePointIndexByStringIndex;
+        private readonly Dictionary<int, int> _stringIndexByCodePointIndex;
+
+        public CodePointString(string stringValue)
+        {
+            _stringValue = stringValue;
+            IEnumerable<(int CodePointIndex, int StringIndex)> indexPairs = _stringValue
+                .Select((c, i) => (c, i))
+                .Where(tup => !char.IsLowSurrogate(tup.c))
+                .Select((tup, i) => (tup.i, i));
+            _codePointIndexByStringIndex = indexPairs.ToDictionary(tup => tup.StringIndex, tup => tup.CodePointIndex);
+            _stringIndexByCodePointIndex = indexPairs.ToDictionary(tup => tup.CodePointIndex, tup => tup.StringIndex);
+        }
+
+        public string this[int codePointIndex]
+        {
+            get
+            {
+                if (codePointIndex < 0 || codePointIndex > Length)
+                {
+                    throw new IndexOutOfRangeException(
+                        $"Index {codePointIndex} is out of bounds for CodePointString with length {Length}."
+                    );
+                }
+                int stringIndex = _stringIndexByCodePointIndex[codePointIndex];
+                char characterAtStringIndex = _stringValue[stringIndex];
+                if (
+                    stringIndex < _stringValue.Length
+                    && char.IsSurrogatePair(characterAtStringIndex, _stringValue[stringIndex + 1])
+                )
+                {
+                    return _stringValue.Substring(stringIndex, 2);
+                }
+                return characterAtStringIndex.ToString();
+            }
+        }
+
+        public int GetCodePointIndexForStringIndex(int stringIndex)
+        {
+            if (stringIndex == _stringValue.Length)
+            {
+                return _codePointIndexByStringIndex.Count;
+            }
+            if (!_codePointIndexByStringIndex.TryGetValue(stringIndex, out int codePointIndex))
+            {
+                throw new ArgumentException($"No non-surrogate code point begins at index {stringIndex}");
+            }
+            return codePointIndex;
+        }
+
+        public string Substring(int startCodePointIndex, int length)
+        {
+            int endCodePointIndex = startCodePointIndex + length;
+            int startStringIndex = GetStringIndexForCodePointIndex(startCodePointIndex);
+            int endStringIndex = GetStringIndexForCodePointIndex(endCodePointIndex);
+            return _stringValue.Substring(startStringIndex, endStringIndex - startStringIndex);
+        }
+
+        public int GetStringIndexForCodePointIndex(int codePointIndex)
+        {
+            if (codePointIndex == _codePointIndexByStringIndex.Count)
+            {
+                return _stringValue.Length;
+            }
+            return _codePointIndexByStringIndex[codePointIndex];
         }
     }
 }
