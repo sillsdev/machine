@@ -9,12 +9,8 @@ namespace SIL.Machine.PunctuationAnalysis
     {
         public string Text
         {
-            get => _text;
-            private set
-            {
-                _codePointString = new CodePointString(value);
-                _text = value;
-            }
+            get => _codePointString.ToString();
+            private set { _codePointString = new CodePointString(value); }
         }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
@@ -23,8 +19,6 @@ namespace SIL.Machine.PunctuationAnalysis
         public int IndexInVerse { get; set; }
         public int NumSegmentsInVerse { get; set; }
         public UsfmToken UsfmToken { get; private set; }
-
-        private string _text;
         private CodePointString _codePointString;
 
         public TextSegment()
@@ -164,6 +158,9 @@ namespace SIL.Machine.PunctuationAnalysis
         }
     }
 
+    /// <summary>
+    /// Class to handle indexing of strings by unicode code point, treating surrogate pairs as single characters.
+    /// </summary>
     public class CodePointString
     {
         public string String => _stringValue;
@@ -180,8 +177,18 @@ namespace SIL.Machine.PunctuationAnalysis
                 .Select((c, i) => (c, i))
                 .Where(tup => !char.IsLowSurrogate(tup.c))
                 .Select((tup, i) => (tup.i, i));
-            _codePointIndexByStringIndex = indexPairs.ToDictionary(tup => tup.StringIndex, tup => tup.CodePointIndex);
-            _stringIndexByCodePointIndex = indexPairs.ToDictionary(tup => tup.CodePointIndex, tup => tup.StringIndex);
+            _codePointIndexByStringIndex = new Dictionary<int, int>();
+            _stringIndexByCodePointIndex = new Dictionary<int, int>();
+            foreach ((int codePointIndex, int stringIndex) in indexPairs)
+            {
+                _codePointIndexByStringIndex[stringIndex] = codePointIndex;
+                _stringIndexByCodePointIndex[codePointIndex] = stringIndex;
+            }
+        }
+
+        public override string ToString()
+        {
+            return _stringValue;
         }
 
         public string this[int codePointIndex]
