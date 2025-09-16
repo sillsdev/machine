@@ -10,7 +10,7 @@ namespace SIL.Machine.PunctuationAnalysis
         public string Text
         {
             get => _codePointString.ToString();
-            private set { _codePointString = new CodePointString(value); }
+            private set => _codePointString = new CodePointString(value);
         }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
