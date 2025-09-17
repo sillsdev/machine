@@ -9,8 +9,8 @@ namespace SIL.Machine.PunctuationAnalysis
     {
         public string Text
         {
-            get => _codePointString.ToString();
-            private set => _codePointString = new CodePointString(value);
+            get => _surrogatePairString.ToString();
+            private set => _surrogatePairString = new SurrogatePairString(value);
         }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
@@ -19,7 +19,7 @@ namespace SIL.Machine.PunctuationAnalysis
         public int IndexInVerse { get; set; }
         public int NumSegmentsInVerse { get; set; }
         public UsfmToken UsfmToken { get; private set; }
-        private CodePointString _codePointString;
+        private SurrogatePairString _surrogatePairString;
 
         public TextSegment()
         {
@@ -76,11 +76,11 @@ namespace SIL.Machine.PunctuationAnalysis
             return hashCode * 31 + ImmediatePrecedingMarker.GetHashCode();
         }
 
-        public int Length => _codePointString.Length;
+        public int Length => _surrogatePairString.Length;
 
         public string Substring(int startIndex, int length)
         {
-            return _codePointString.Substring(startIndex, length);
+            return _surrogatePairString.Substring(startIndex, length);
         }
 
         public string SubstringBefore(int index)
@@ -161,28 +161,28 @@ namespace SIL.Machine.PunctuationAnalysis
     /// <summary>
     /// Class to handle indexing of strings by unicode code point, treating surrogate pairs as single characters.
     /// </summary>
-    public class CodePointString
+    public class SurrogatePairString
     {
         public string String => _stringValue;
-        public int Length => _stringIndexByCodePointIndex.Count;
+        public int Length => _stringIndexBySurrogatePairIndex.Count;
 
         private readonly string _stringValue;
-        private readonly Dictionary<int, int> _codePointIndexByStringIndex;
-        private readonly Dictionary<int, int> _stringIndexByCodePointIndex;
+        private readonly Dictionary<int, int> _surrogatePairIndexByStringIndex;
+        private readonly Dictionary<int, int> _stringIndexBySurrogatePairIndex;
 
-        public CodePointString(string stringValue)
+        public SurrogatePairString(string stringValue)
         {
             _stringValue = stringValue;
-            IEnumerable<(int CodePointIndex, int StringIndex)> indexPairs = _stringValue
+            IEnumerable<(int SurrogatePairIndex, int StringIndex)> indexPairs = _stringValue
                 .Select((c, i) => (c, i))
                 .Where(tup => !char.IsLowSurrogate(tup.c))
                 .Select((tup, i) => (tup.i, i));
-            _codePointIndexByStringIndex = new Dictionary<int, int>();
-            _stringIndexByCodePointIndex = new Dictionary<int, int>();
-            foreach ((int codePointIndex, int stringIndex) in indexPairs)
+            _surrogatePairIndexByStringIndex = new Dictionary<int, int>();
+            _stringIndexBySurrogatePairIndex = new Dictionary<int, int>();
+            foreach ((int surrogatePairIndex, int stringIndex) in indexPairs)
             {
-                _codePointIndexByStringIndex[stringIndex] = codePointIndex;
-                _stringIndexByCodePointIndex[codePointIndex] = stringIndex;
+                _surrogatePairIndexByStringIndex[stringIndex] = surrogatePairIndex;
+                _stringIndexBySurrogatePairIndex[surrogatePairIndex] = stringIndex;
             }
         }
 
@@ -191,17 +191,17 @@ namespace SIL.Machine.PunctuationAnalysis
             return _stringValue;
         }
 
-        public string this[int codePointIndex]
+        public string this[int surrogatePairIndex]
         {
             get
             {
-                if (codePointIndex < 0 || codePointIndex > Length)
+                if (surrogatePairIndex < 0 || surrogatePairIndex > Length)
                 {
                     throw new IndexOutOfRangeException(
-                        $"Index {codePointIndex} is out of bounds for CodePointString with length {Length}."
+                        $"Index {surrogatePairIndex} is out of bounds for SurrogatePairString with length {Length}."
                     );
                 }
-                int stringIndex = _stringIndexByCodePointIndex[codePointIndex];
+                int stringIndex = _stringIndexBySurrogatePairIndex[surrogatePairIndex];
                 char characterAtStringIndex = _stringValue[stringIndex];
                 if (
                     stringIndex < _stringValue.Length
@@ -214,34 +214,34 @@ namespace SIL.Machine.PunctuationAnalysis
             }
         }
 
-        public int GetCodePointIndexForStringIndex(int stringIndex)
+        public int GetSurrogatePairIndexForStringIndex(int stringIndex)
         {
             if (stringIndex == _stringValue.Length)
             {
-                return _codePointIndexByStringIndex.Count;
+                return _surrogatePairIndexByStringIndex.Count;
             }
-            if (!_codePointIndexByStringIndex.TryGetValue(stringIndex, out int codePointIndex))
+            if (!_surrogatePairIndexByStringIndex.TryGetValue(stringIndex, out int surrogatePairIndex))
             {
                 throw new ArgumentException($"No non-surrogate code point begins at index {stringIndex}");
             }
-            return codePointIndex;
+            return surrogatePairIndex;
         }
 
-        public string Substring(int startCodePointIndex, int length)
+        public string Substring(int startSurrogatePairIndex, int length)
         {
-            int endCodePointIndex = startCodePointIndex + length;
-            int startStringIndex = GetStringIndexForCodePointIndex(startCodePointIndex);
-            int endStringIndex = GetStringIndexForCodePointIndex(endCodePointIndex);
+            int endSurrogatePairIndex = startSurrogatePairIndex + length;
+            int startStringIndex = GetStringIndexForSurrogatePairIndex(startSurrogatePairIndex);
+            int endStringIndex = GetStringIndexForSurrogatePairIndex(endSurrogatePairIndex);
             return _stringValue.Substring(startStringIndex, endStringIndex - startStringIndex);
         }
 
-        public int GetStringIndexForCodePointIndex(int codePointIndex)
+        public int GetStringIndexForSurrogatePairIndex(int surrogatePairIndex)
         {
-            if (codePointIndex == _codePointIndexByStringIndex.Count)
+            if (surrogatePairIndex == _surrogatePairIndexByStringIndex.Count)
             {
                 return _stringValue.Length;
             }
-            return _codePointIndexByStringIndex[codePointIndex];
+            return _surrogatePairIndexByStringIndex[surrogatePairIndex];
         }
     }
 }

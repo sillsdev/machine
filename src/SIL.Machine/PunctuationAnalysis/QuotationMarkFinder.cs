@@ -45,9 +45,9 @@ namespace SIL.Machine.PunctuationAnalysis
                 )
                 .Select(m =>
                 {
-                    CodePointString codePointString = new CodePointString(textSegment.Text);
-                    int startIndex = codePointString.GetCodePointIndexForStringIndex(m.Groups[0].Index);
-                    int endIndex = codePointString.GetCodePointIndexForStringIndex(m.Groups[0].EndIndex);
+                    SurrogatePairString surrogatePairString = new SurrogatePairString(textSegment.Text);
+                    int startIndex = surrogatePairString.GetSurrogatePairIndexForStringIndex(m.Groups[0].Index);
+                    int endIndex = surrogatePairString.GetSurrogatePairIndexForStringIndex(m.Groups[0].EndIndex);
                     return new QuotationMarkStringMatch(textSegment, startIndex, endIndex);
                 })
                 .ToList();
