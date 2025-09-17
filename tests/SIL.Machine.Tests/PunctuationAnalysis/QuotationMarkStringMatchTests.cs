@@ -205,7 +205,7 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.That(quotationMarkStringMatch.PreviousCharacter, Is.EqualTo("ले"));
+        Assert.That(quotationMarkStringMatch.PreviousCharacter, Is.EqualTo("\u0947"));
     }
 
     [Test]

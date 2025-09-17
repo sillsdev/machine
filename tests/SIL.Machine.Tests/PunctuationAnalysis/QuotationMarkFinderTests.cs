@@ -292,8 +292,8 @@ public class QuotationMarkFinderTests
                     [
                         new QuotationMarkStringMatch(
                             new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build(),
-                            6,
-                            7
+                            9,
+                            10
                         ),
                     ]
                 )

@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using SIL.Machine.Corpora;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class TextSegment : IEquatable<TextSegment>
     {
-        public string Text { get; private set; }
+        public string Text
+        {
+            get => _surrogatePairString.ToString();
+            private set => _surrogatePairString = new SurrogatePairString(value);
+        }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
         public TextSegment PreviousSegment { get; set; }
@@ -15,6 +19,7 @@ namespace SIL.Machine.PunctuationAnalysis
         public int IndexInVerse { get; set; }
         public int NumSegmentsInVerse { get; set; }
         public UsfmToken UsfmToken { get; private set; }
+        private SurrogatePairString _surrogatePairString;
 
         public TextSegment()
         {
@@ -71,16 +76,21 @@ namespace SIL.Machine.PunctuationAnalysis
             return hashCode * 31 + ImmediatePrecedingMarker.GetHashCode();
         }
 
-        public int Length => StringInfo.ParseCombiningCharacters(Text).Length;
+        public int Length => _surrogatePairString.Length;
+
+        public string Substring(int startIndex, int length)
+        {
+            return _surrogatePairString.Substring(startIndex, length);
+        }
 
         public string SubstringBefore(int index)
         {
-            return Text.Substring(0, index);
+            return Substring(0, index);
         }
 
         public string SubstringAfter(int index)
         {
-            return Text.Substring(index);
+            return Substring(index, Length - index);
         }
 
         public bool MarkerIsInPrecedingContext(UsfmMarkerType marker)
@@ -145,6 +155,93 @@ namespace SIL.Machine.PunctuationAnalysis
             {
                 return _textSegment;
             }
+        }
+    }
+
+    /// <summary>
+    /// Class to handle indexing of strings by unicode code point, treating surrogate pairs as single characters.
+    /// </summary>
+    public class SurrogatePairString
+    {
+        public string String => _stringValue;
+        public int Length => _stringIndexBySurrogatePairIndex.Count;
+
+        private readonly string _stringValue;
+        private readonly Dictionary<int, int> _surrogatePairIndexByStringIndex;
+        private readonly Dictionary<int, int> _stringIndexBySurrogatePairIndex;
+
+        public SurrogatePairString(string stringValue)
+        {
+            _stringValue = stringValue;
+            IEnumerable<(int SurrogatePairIndex, int StringIndex)> indexPairs = _stringValue
+                .Select((c, i) => (c, i))
+                .Where(tup => !char.IsLowSurrogate(tup.c))
+                .Select((tup, i) => (tup.i, i));
+            _surrogatePairIndexByStringIndex = new Dictionary<int, int>();
+            _stringIndexBySurrogatePairIndex = new Dictionary<int, int>();
+            foreach ((int surrogatePairIndex, int stringIndex) in indexPairs)
+            {
+                _surrogatePairIndexByStringIndex[stringIndex] = surrogatePairIndex;
+                _stringIndexBySurrogatePairIndex[surrogatePairIndex] = stringIndex;
+            }
+        }
+
+        public override string ToString()
+        {
+            return _stringValue;
+        }
+
+        public string this[int surrogatePairIndex]
+        {
+            get
+            {
+                if (surrogatePairIndex < 0 || surrogatePairIndex > Length)
+                {
+                    throw new IndexOutOfRangeException(
+                        $"Index {surrogatePairIndex} is out of bounds for SurrogatePairString with length {Length}."
+                    );
+                }
+                int stringIndex = _stringIndexBySurrogatePairIndex[surrogatePairIndex];
+                char characterAtStringIndex = _stringValue[stringIndex];
+                if (
+                    stringIndex < _stringValue.Length
+                    && char.IsSurrogatePair(characterAtStringIndex, _stringValue[stringIndex + 1])
+                )
+                {
+                    return _stringValue.Substring(stringIndex, 2);
+                }
+                return characterAtStringIndex.ToString();
+            }
+        }
+
+        public int GetSurrogatePairIndexForStringIndex(int stringIndex)
+        {
+            if (stringIndex == _stringValue.Length)
+            {
+                return _surrogatePairIndexByStringIndex.Count;
+            }
+            if (!_surrogatePairIndexByStringIndex.TryGetValue(stringIndex, out int surrogatePairIndex))
+            {
+                throw new ArgumentException($"No non-surrogate code point begins at index {stringIndex}");
+            }
+            return surrogatePairIndex;
+        }
+
+        public string Substring(int startSurrogatePairIndex, int length)
+        {
+            int endSurrogatePairIndex = startSurrogatePairIndex + length;
+            int startStringIndex = GetStringIndexForSurrogatePairIndex(startSurrogatePairIndex);
+            int endStringIndex = GetStringIndexForSurrogatePairIndex(endSurrogatePairIndex);
+            return _stringValue.Substring(startStringIndex, endStringIndex - startStringIndex);
+        }
+
+        public int GetStringIndexForSurrogatePairIndex(int surrogatePairIndex)
+        {
+            if (surrogatePairIndex == _surrogatePairIndexByStringIndex.Count)
+            {
+                return _stringValue.Length;
+            }
+            return _surrogatePairIndexByStringIndex[surrogatePairIndex];
         }
     }
 }

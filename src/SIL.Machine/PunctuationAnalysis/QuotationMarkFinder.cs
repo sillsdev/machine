@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using PCRE;
 
@@ -46,17 +45,9 @@ namespace SIL.Machine.PunctuationAnalysis
                 )
                 .Select(m =>
                 {
-                    int[] textElementIndices = StringInfo.ParseCombiningCharacters(textSegment.Text);
-                    int startIndex = 0;
-                    int endIndex = textElementIndices.Length;
-                    for (int textElementIndex = 0; textElementIndex < textElementIndices.Length; textElementIndex++)
-                    {
-                        int stringIndex = textElementIndices[textElementIndex];
-                        if (stringIndex == m.Groups[0].Index)
-                            startIndex = textElementIndex;
-                        if (stringIndex == m.Groups[0].EndIndex)
-                            endIndex = textElementIndex;
-                    }
+                    SurrogatePairString surrogatePairString = new SurrogatePairString(textSegment.Text);
+                    int startIndex = surrogatePairString.GetSurrogatePairIndexForStringIndex(m.Groups[0].Index);
+                    int endIndex = surrogatePairString.GetSurrogatePairIndexForStringIndex(m.Groups[0].EndIndex);
                     return new QuotationMarkStringMatch(textSegment, startIndex, endIndex);
                 })
                 .ToList();
