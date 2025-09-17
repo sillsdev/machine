@@ -14,7 +14,7 @@ namespace SIL.Machine.Corpora
 
         protected override UsfmStylesheet CreateStylesheet(string fileName)
         {
-            string customStylesheetFileName = Path.Combine(_projectDir, fileName);
+            string customStylesheetFileName = Path.Combine(_projectDir, "custom.sty");
             return new UsfmStylesheet(
                 fileName,
                 File.Exists(customStylesheetFileName) ? customStylesheetFileName : null
