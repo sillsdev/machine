@@ -72,6 +72,8 @@ namespace SIL.Machine.Corpora
             IEnumerable<string> remarks = null
         )
         {
+            // We need two maps so that update rows can be specified per segment
+            // but be handled correctly whether or not the USFM has segments for that verse
             (_rowMapIgnoreSegments, _rowMapCheckSegments) = GetRowMap(rows ?? Array.Empty<UpdateUsfmRow>());
             _updateRowsVersification = ScrVers.English;
             if (rows != null && rows.Count > 0)
