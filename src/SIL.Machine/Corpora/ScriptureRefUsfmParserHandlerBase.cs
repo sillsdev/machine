@@ -18,7 +18,7 @@ namespace SIL.Machine.Corpora
         private VerseRef _curVerseRef;
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
-        private bool _duplicateVerse = false;
+        protected bool _duplicateVerse = false;
 
         protected ScriptureRefUsfmParserHandlerBase()
         {
