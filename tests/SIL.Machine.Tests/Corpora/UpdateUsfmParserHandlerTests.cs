@@ -428,12 +428,13 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Verse 2."),
             new UpdateUsfmRow(ScrRef("MAT 2:2a"), "Verse 2a."),
             new UpdateUsfmRow(ScrRef("MAT 2:2b"), "Verse 2b.")
         };
 
         string target = UpdateUsfm(rows);
-        Assert.That(target, Contains.Substring("\\v 2-3 Verse 2a. Verse 2b.\r\n"));
+        Assert.That(target, Contains.Substring("\\v 2-3 Verse 2. Verse 2a. Verse 2b.\r\n"));
     }
 
     [Test]
@@ -517,12 +518,13 @@ public class UpdateUsfmParserHandlerTests
                 "\\v 1 First verse of the first chapter. \\f + \\fr 1:1: \\ft This is a footnote for v1.\\f*\r\n"
             )
         );
-        // Updating using relaxed refs will not be perfect, but it's the best we can do while allowing for out of order rows
         Assert.That(
             target,
-            Contains.Substring(
-                "\\tr \\tc1 The first cell of the table. The third cell of the table. \\tc2 The second cell of the table.\r\n"
-            )
+            Contains.Substring("\\tr \\tc1 The first cell of the table. \\tc2 The second cell of the table.\r\n")
+        );
+        Assert.That(
+            target,
+            Contains.Substring("\\tr \\tc1 The third cell of the table. \\tc2 Row two, column two.\r\n")
         );
     }
 
@@ -1241,7 +1243,12 @@ public class UpdateUsfmParserHandlerTests
 \v 6a verse 6a
 ";
 
-        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            compareSegments: true
+        );
         string resultP =
             @"\id MAT
 \c 1
@@ -1371,7 +1378,8 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
         IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
-        IEnumerable<string>? remarks = null
+        IEnumerable<string>? remarks = null,
+        bool compareSegments = false
     )
     {
         if (source is null)
@@ -1387,7 +1395,8 @@ public class UpdateUsfmParserHandlerTests
                 styleBehavior,
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
-                remarks
+                remarks,
+                compareSegments
             );
         }
         else
@@ -1402,7 +1411,8 @@ public class UpdateUsfmParserHandlerTests
                 styleBehavior,
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
-                remarks
+                remarks,
+                compareSegments
             );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();
