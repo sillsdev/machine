@@ -18,7 +18,6 @@ namespace SIL.Machine.Corpora
         private VerseRef _curVerseRef;
         private readonly Stack<ScriptureElement> _curElements;
         private readonly Stack<ScriptureTextType> _curTextType;
-        private bool _duplicateVerse = false;
 
         protected ScriptureRefUsfmParserHandlerBase()
         {
@@ -28,6 +27,8 @@ namespace SIL.Machine.Corpora
 
         protected ScriptureTextType CurrentTextType =>
             _curTextType.Count == 0 ? ScriptureTextType.None : _curTextType.Peek();
+
+        protected bool DuplicateVerse { get; private set; }
 
         private static readonly string[] EmbedStyles = new[] { "f", "fe", "x", "fig" };
 
@@ -66,13 +67,13 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
-            if (state.VerseRef.Equals(_curVerseRef) && !_duplicateVerse)
+            if (state.VerseRef.Equals(_curVerseRef) && !DuplicateVerse)
             {
                 if (state.VerseRef.VerseNum > 0)
                 {
                     EndVerseText(state, CreateVerseRefs());
                     // ignore duplicate verses
-                    _duplicateVerse = true;
+                    DuplicateVerse = true;
                 }
             }
             else if (VerseRef.AreOverlappingVersesRanges(verse1: number, verse2: _curVerseRef.Verse))
@@ -251,14 +252,14 @@ namespace SIL.Machine.Corpora
 
         private void StartVerseText(UsfmParserState state)
         {
-            _duplicateVerse = false;
+            DuplicateVerse = false;
             _curTextType.Push(ScriptureTextType.Verse);
             StartVerseText(state, CreateVerseRefs());
         }
 
         private void EndVerseText(UsfmParserState state)
         {
-            if (!_duplicateVerse && _curVerseRef.VerseNum > 0)
+            if (!DuplicateVerse && _curVerseRef.VerseNum > 0)
                 EndVerseText(state, CreateVerseRefs());
             if (_curVerseRef.VerseNum > 0)
                 _curTextType.Pop();
@@ -291,7 +292,7 @@ namespace SIL.Machine.Corpora
         {
             if (_curVerseRef.IsDefault)
                 UpdateVerseRef(state.VerseRef, marker);
-            if (!_duplicateVerse)
+            if (!DuplicateVerse)
             {
                 CheckConvertVerseParaToNonVerse(state);
                 NextElement(marker);
@@ -302,7 +303,7 @@ namespace SIL.Machine.Corpora
 
         private void EndEmbedText(UsfmParserState state)
         {
-            if (!_duplicateVerse && _curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.Embed)
+            if (!DuplicateVerse && _curTextType.Count > 0 && _curTextType.Peek() == ScriptureTextType.Embed)
             {
                 EndEmbedText(state, CreateNonVerseRef());
                 _curTextType.Pop();
