@@ -57,6 +57,7 @@ namespace SIL.Machine.Corpora
         private readonly Stack<bool> _replace;
         private int _rowIndex;
         private int _tokenIndex;
+        private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
 
         public UpdateUsfmParserHandler(
             IReadOnlyList<UpdateUsfmRow> rows = null,
@@ -67,7 +68,8 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
-            IEnumerable<string> remarks = null
+            IEnumerable<string> remarks = null,
+            Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null
         )
         {
             _rows = rows ?? Array.Empty<UpdateUsfmRow>();
@@ -90,6 +92,9 @@ namespace SIL.Machine.Corpora
                     ? new HashSet<string> { "r", "rem" }
                     : new HashSet<string>(preserveParagraphStyles);
             _remarks = remarks == null ? new List<string>() : remarks.ToList();
+            _errorHandler = errorHandler;
+            if (_errorHandler == null)
+                _errorHandler = (error) => false;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -576,7 +581,16 @@ namespace SIL.Machine.Corpora
 
             foreach (IUsfmUpdateBlockHandler handler in _updateBlockHandlers)
             {
-                updateBlock = handler.ProcessBlock(updateBlock);
+                try
+                {
+                    updateBlock = handler.ProcessBlock(updateBlock);
+                }
+                catch (UsfmUpdateBlockHandlerException e)
+                {
+                    bool shouldContinue = _errorHandler(e);
+                    if (!shouldContinue)
+                        throw;
+                }
             }
             List<UsfmToken> tokens = updateBlock.GetTokens();
             foreach (UsfmUpdateBlockElement elem in Enumerable.Reverse(paraElems))
