@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Scripture;
@@ -107,7 +107,7 @@ namespace SIL.Machine.Corpora
                 preserveParagraphStyles == null
                     ? new HashSet<string> { "r", "rem" }
                     : new HashSet<string>(preserveParagraphStyles);
-            _remarks = remarks == null ? new List<string>() : remarks.ToList();
+            _remarks = remarks?.ToList() ?? new List<string>();
             _errorHandler = errorHandler;
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
@@ -457,6 +457,12 @@ namespace SIL.Machine.Corpora
             var rowTexts = new List<string>();
             Dictionary<string, object> rowMetadata = null;
             int sourceIndex = 0;
+
+            // handle the special case of verse 0, which although first in the rows,
+            // it will be retrieved some of other segments in the verse.
+            if (segScrRefs.Count > 0 && segScrRefs[0].VerseNum == 0 && segScrRefs[0].Path.Count == 0)
+                _verseRowIndex = 0;
+
             // search the sorted rows with updated text, starting from where we left off last.
             while (_verseRowIndex < _verseRows.Count && sourceIndex < segScrRefs.Count)
             {

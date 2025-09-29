@@ -805,6 +805,63 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateUsfm_SupportVerseZero()
+    {
+        // Note: Verse 0 has an empty paragraph as the paragraph occurs before verse text,
+        // so is not included in the verse text as it is for the paragraphs for the other verses.
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:0"), "New verse 0"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:mt"), "New book header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/2:s"), "New chapter header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:p"), ""),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/4:ms"), "New major section header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/5:s"), "New section header 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1/1:s"), "New section header 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "New verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "New verse 3"),
+        ];
+        string usfm =
+            @"\id MAT
+\mt Old book header
+\c 1
+\s Old chapter header
+\p
+\v 0 Old verse 0
+\ms Old major section header
+\s Old section header 1
+\p
+\v 1 Old verse 1
+\s Old section header 2
+\p
+\v 2 Old verse 2
+\v 3 Old verse 3
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\mt New book header
+\c 1
+\s New chapter header
+\p
+\v 0 New verse 0
+\ms New major section header
+\s New section header 1
+\p
+\v 1 New verse 1
+\s New section header 2
+\p
+\v 2 New verse 2
+\v 3 New verse 3
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
