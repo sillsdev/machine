@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using SIL.Machine.PunctuationAnalysis;
-
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.PunctuationAnalysis
 {
     // Determines the best strategy to take for each chapter
     public class QuotationMarkUpdateFirstPass : UsfmStructureExtractor
@@ -12,46 +7,37 @@ namespace SIL.Machine.Corpora
         private readonly DepthBasedQuotationMarkResolver _quotationMarkResolver;
         public bool WillFallbackModeWork { get; set; }
 
-        public QuotationMarkUpdateFirstPass(
-            QuoteConvention sourceQuoteConvention,
-            QuoteConvention targetQuoteConvention
-        )
+        public QuotationMarkUpdateFirstPass(QuoteConvention oldQuoteConvention, QuoteConvention newQuoteConvention)
         {
             _quotationMarkFinder = new QuotationMarkFinder(
-                new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention, targetQuoteConvention })
+                new QuoteConventionSet(new List<QuoteConvention> { oldQuoteConvention, newQuoteConvention })
             );
             _quotationMarkResolver = new DepthBasedQuotationMarkResolver(
-                new QuotationMarkUpdateResolutionSettings(sourceQuoteConvention)
+                new QuotationMarkUpdateResolutionSettings(oldQuoteConvention)
             );
-            WillFallbackModeWork = CheckWhetherFallbackModeWillWork(sourceQuoteConvention, targetQuoteConvention);
+            WillFallbackModeWork = CheckWhetherFallbackModeWillWork(oldQuoteConvention, newQuoteConvention);
         }
 
         public bool CheckWhetherFallbackModeWillWork(
-            QuoteConvention sourceQuoteConvention,
-            QuoteConvention targetQuoteConvention
+            QuoteConvention oldQuoteConvention,
+            QuoteConvention newQuoteConvention
         )
         {
-            var targetMarkBySourceMark = new Dictionary<string, string>();
+            var newMarkByOldMark = new Dictionary<string, string>();
             foreach (
-                int depth in Enumerable.Range(
-                    1,
-                    Math.Min(sourceQuoteConvention.NumLevels, targetQuoteConvention.NumLevels)
-                )
+                int depth in Enumerable.Range(1, Math.Min(oldQuoteConvention.NumLevels, newQuoteConvention.NumLevels))
             )
             {
-                string openingQuotationMark = sourceQuoteConvention.GetOpeningQuotationMarkAtDepth(depth);
-                string closingQuotationMark = targetQuoteConvention.GetClosingQuotationMarkAtDepth(depth);
+                string openingQuotationMark = oldQuoteConvention.GetOpeningQuotationMarkAtDepth(depth);
+                string closingQuotationMark = newQuoteConvention.GetClosingQuotationMarkAtDepth(depth);
                 if (
-                    targetMarkBySourceMark.TryGetValue(
-                        openingQuotationMark,
-                        out string correspondingClosingQuotationMark
-                    )
+                    newMarkByOldMark.TryGetValue(openingQuotationMark, out string correspondingClosingQuotationMark)
                     && correspondingClosingQuotationMark != closingQuotationMark
                 )
                 {
                     return false;
                 }
-                targetMarkBySourceMark[openingQuotationMark] = closingQuotationMark;
+                newMarkByOldMark[openingQuotationMark] = closingQuotationMark;
             }
             return true;
         }

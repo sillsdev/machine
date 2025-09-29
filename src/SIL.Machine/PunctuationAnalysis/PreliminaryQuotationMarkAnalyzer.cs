@@ -6,6 +6,42 @@ using SIL.Extensions;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
+    public class QuotationMarkCounter
+    {
+        private const double NegligibleProportionThreshold = 0.01;
+        private Dictionary<string, int> _quotationMarkCounts;
+        private int _totalQuotationMarkCount;
+
+        public QuotationMarkCounter()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            _quotationMarkCounts = new Dictionary<string, int>();
+            _totalQuotationMarkCount = 0;
+        }
+
+        public void CountQuotationMarks(List<QuotationMarkStringMatch> quotationMarks)
+        {
+            foreach (var quotationMarkMatch in quotationMarks)
+            {
+                string mark = quotationMarkMatch.QuotationMark;
+                _quotationMarkCounts.UpdateValue(mark, () => 0, i => i + 1);
+                _totalQuotationMarkCount++;
+            }
+        }
+
+        public bool IsQuotationMarkProportionNegligible(string quotationMark)
+        {
+            if (_totalQuotationMarkCount == 0)
+                return true;
+            int quotationMarkCount = _quotationMarkCounts.TryGetValue(quotationMark, out int count) ? count : 0;
+            return ((double)quotationMarkCount / _totalQuotationMarkCount) < NegligibleProportionThreshold;
+        }
+    }
+
     public class ApostropheProportionStatistics
     {
         private int _numCharacters;
@@ -385,12 +421,14 @@ namespace SIL.Machine.PunctuationAnalysis
         private readonly QuoteConventionSet _quoteConventions;
         private readonly PreliminaryApostropheAnalyzer _apostropheAnalyzer;
         private readonly QuotationMarkSequences _quotationMarkSequences;
+        private readonly QuotationMarkCounter _quotationMarkCounts;
 
         public PreliminaryQuotationMarkAnalyzer(QuoteConventionSet quoteConventions)
         {
             _quoteConventions = quoteConventions;
             _apostropheAnalyzer = new PreliminaryApostropheAnalyzer();
             _quotationMarkSequences = new QuotationMarkSequences();
+            _quotationMarkCounts = new QuotationMarkCounter();
             Reset();
         }
 
@@ -398,6 +436,7 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             _apostropheAnalyzer.Reset();
             _quotationMarkSequences.Reset();
+            _quotationMarkCounts.Reset();
         }
 
         public QuoteConventionSet NarrowDownPossibleQuoteConventions(List<Chapter> chapters)
@@ -420,6 +459,7 @@ namespace SIL.Machine.PunctuationAnalysis
             ).FindAllPotentialQuotationMarksInVerse(verse);
             AnalyzeQuotationMarkSequence(quotationMarks);
             _apostropheAnalyzer.ProcessQuotationMarks(verse.TextSegments.ToList(), quotationMarks);
+            _quotationMarkCounts.CountQuotationMarks(quotationMarks);
         }
 
         private void AnalyzeQuotationMarkSequence(List<QuotationMarkStringMatch> quotationMarks)
@@ -450,6 +490,9 @@ namespace SIL.Machine.PunctuationAnalysis
 
         private bool IsOpeningQuotationMark(string quotationMark)
         {
+            if (_quotationMarkCounts.IsQuotationMarkProportionNegligible(quotationMark))
+                return false;
+
             if (_apostropheAnalyzer.IsApostropheOnly(quotationMark))
                 return false;
 
@@ -475,6 +518,9 @@ namespace SIL.Machine.PunctuationAnalysis
 
         private bool IsClosingQuotationMark(string quotationMark)
         {
+            if (_quotationMarkCounts.IsQuotationMarkProportionNegligible(quotationMark))
+                return false;
+
             if (_apostropheAnalyzer.IsApostropheOnly(quotationMark))
                 return false;
 

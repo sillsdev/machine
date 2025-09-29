@@ -37,7 +37,6 @@ public class QuotationDenormalizationTests
         Assert.IsNotNull(standardEnglishQuoteConvention);
 
         var quotationMarkDenormalizationFirstPass = new QuotationMarkDenormalizationFirstPass(
-            standardEnglishQuoteConvention,
             standardEnglishQuoteConvention
         );
 
@@ -46,7 +45,6 @@ public class QuotationDenormalizationTests
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
 
         var quotationMarkDenormalizer = new QuotationMarkDenormalizationUsfmUpdateBlockHandler(
-            standardEnglishQuoteConvention,
             standardEnglishQuoteConvention,
             new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
         );

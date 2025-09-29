@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using SIL.Extensions;
 using SIL.Machine.Translation;
 
 namespace SIL.Machine.Corpora

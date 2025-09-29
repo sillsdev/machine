@@ -1,17 +1,14 @@
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuotationMarkUpdateResolutionSettings : IQuotationMarkResolutionSettings
     {
-        private readonly QuoteConvention _sourceQuoteConvention;
+        private readonly QuoteConvention _oldQuoteConvention;
         private readonly QuoteConventionSet _quoteConventionSingletonSet;
 
-        public QuotationMarkUpdateResolutionSettings(QuoteConvention sourceQuoteConvention)
+        public QuotationMarkUpdateResolutionSettings(QuoteConvention oldQuoteConvention)
         {
-            _sourceQuoteConvention = sourceQuoteConvention;
-            _quoteConventionSingletonSet = new QuoteConventionSet(new List<QuoteConvention> { sourceQuoteConvention });
+            _oldQuoteConvention = oldQuoteConvention;
+            _quoteConventionSingletonSet = new QuoteConventionSet(new List<QuoteConvention> { oldQuoteConvention });
         }
 
         public bool AreMarksAValidPair(string openingMark, string closingMark)
@@ -31,7 +28,7 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public HashSet<int> GetPossibleDepths(string quotationMark, QuotationMarkDirection direction)
         {
-            return _sourceQuoteConvention.GetPossibleDepths(quotationMark, direction);
+            return _oldQuoteConvention.GetPossibleDepths(quotationMark, direction);
         }
 
         public bool IsValidClosingQuotationMark(QuotationMarkStringMatch quotationMarkMatch)
@@ -46,7 +43,7 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public bool MetadataMatchesQuotationMark(string quotationMark, int depth, QuotationMarkDirection direction)
         {
-            return _sourceQuoteConvention.GetExpectedQuotationMark(depth, direction) == quotationMark;
+            return _oldQuoteConvention.GetExpectedQuotationMark(depth, direction) == quotationMark;
         }
 
         public bool ShouldRelyOnParagraphMarkers()
