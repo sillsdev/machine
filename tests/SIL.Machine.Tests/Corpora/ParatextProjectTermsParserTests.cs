@@ -159,15 +159,22 @@ public class ParatextProjectTermsParserTests
 
     [Test]
     [TestCase("", new string[] { })]
-    [TestCase("*Abba* /", new string[] { "Abba" })]
-    [TestCase("Abba|| ", new string[] { "Abba" })]
-    [TestCase("Abba||Abbah?", new string[] { "Abba", "Abbah" })]
-    [TestCase("Abba (note)", new string[] { "Abba" })]
     [TestCase("Abba (note)", new string[] { "Abba" })]
     [TestCase("Ahasuerus, Xerxes; Assuerus", new string[] { "Ahasuerus", "Xerxes", "Assuerus" })]
     public void TestGetGlosses(string glossString, IReadOnlyList<string> expectedOutput)
     {
         Assert.That(ParatextProjectTermsParserBase.GetGlosses(glossString), Is.EqualTo(expectedOutput));
+    }
+
+    [Test]
+    [TestCase("", new string[] { })]
+    [TestCase("*Abba*", new string[] { "Abba" })]
+    [TestCase("Abba|| ", new string[] { "Abba" })]
+    [TestCase("Abba||Abbah", new string[] { "Abba", "Abbah" })]
+    [TestCase("Abba (note)", new string[] { "Abba" })]
+    public void TestGetRenderings(string renderingString, IReadOnlyList<string> expectedOutput)
+    {
+        Assert.That(ParatextProjectTermsParserBase.GetRenderings(renderingString), Is.EqualTo(expectedOutput));
     }
 
     private class TestEnvironment(

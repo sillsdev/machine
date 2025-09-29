@@ -231,7 +231,7 @@ namespace SIL.Machine.Corpora
         {
             return Regex
                 .Split(rendering.Trim(), @"\|\|")
-                .Select(r => CleanTerm(r))
+                .Select(r => CleanTerm(r).Trim())
                 .Select(r => r.Replace("*", ""))
                 .Where(r => r != "")
                 .ToList();
