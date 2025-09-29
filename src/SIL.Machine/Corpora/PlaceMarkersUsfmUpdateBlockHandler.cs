@@ -112,7 +112,6 @@ namespace SIL.Machine.Corpora
             IReadOnlyList<string> targetTokens = alignmentInfo.TranslationTokens;
             int sourceTokenIndex = 0;
 
-            string sourceSentence = "";
             string targetSentence = "";
             var toPlace = new List<UsfmUpdateBlockElement>();
             var adjacentSourceTokens = new List<int>();
@@ -123,16 +122,9 @@ namespace SIL.Machine.Corpora
             {
                 if (element.Type == UsfmUpdateBlockElementType.Text)
                 {
-                    if (
-                        element.MarkedForRemoval
-                        || (
-                            element.Type == UsfmUpdateBlockElementType.Paragraph
-                            && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Strip
-                        )
-                    )
+                    if (element.MarkedForRemoval)
                     {
                         string text = element.Tokens[0].ToUsfm();
-                        sourceSentence += text;
 
                         // Track seen tokens
                         while (sourceTokenIndex < sourceTokens.Count && text.Contains(sourceTokens[sourceTokenIndex]))
@@ -152,7 +144,13 @@ namespace SIL.Machine.Corpora
                     }
                 }
 
-                if (element.MarkedForRemoval)
+                if (
+                    element.MarkedForRemoval
+                    || (
+                        element.Type == UsfmUpdateBlockElementType.Paragraph
+                        && alignmentInfo.ParagraphBehavior == UpdateUsfmMarkerBehavior.Strip
+                    )
+                )
                 {
                     ignoredElements.Add(element);
                 }
@@ -174,7 +172,18 @@ namespace SIL.Machine.Corpora
             int prevLength = 0;
             foreach (string token in targetTokens)
             {
-                targetTokenStarts.Add(targetSentence.IndexOf(token, targetTokenStarts.LastOrDefault() + prevLength));
+                int indexOfTargetTokenInSentence = targetSentence.IndexOf(
+                    token,
+                    targetTokenStarts.LastOrDefault() + prevLength
+                );
+                if (indexOfTargetTokenInSentence == -1)
+                {
+                    throw new UsfmUpdateBlockHandlerException(
+                        $"No token \"{token}\" found in text \"{targetSentence}\" at or beyond index {targetTokenStarts.LastOrDefault() + prevLength}. Is the versification correctly specified?",
+                        block
+                    );
+                }
+                targetTokenStarts.Add(indexOfTargetTokenInSentence);
                 prevLength = token.Length;
             }
 
