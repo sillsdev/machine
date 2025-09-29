@@ -135,9 +135,9 @@ namespace SIL.Machine.Corpora
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
-                        string gloss = kvp.Item2.Element("Renderings").Value;
-                        IReadOnlyList<string> glosses = GetGlosses(gloss);
-                        return (id, glosses);
+                        string rendering = kvp.Item2.Element("Renderings").Value;
+                        IReadOnlyList<string> renderings = GetRenderings(rendering);
+                        return (id, renderings);
                     })
                     .GroupBy(kvp => kvp.Item1, kvp => kvp.Item2) //Handle duplicate term ids (which do exist) e.g. שִׁלֵּמִי
                     .Select(grouping => (grouping.Key, grouping.SelectMany(g => g)))
@@ -202,27 +202,39 @@ namespace SIL.Machine.Corpora
                 );
         }
 
+        private static string CleanTerm(string term)
+        {
+            term = term.Trim();
+            term = StripParens(term);
+            term = string.Join(" ", term.Split());
+            return term;
+        }
+
         public static IReadOnlyList<string> GetGlosses(string gloss)
         {
             //If entire term rendering is surrounded in square brackets, remove them
             Match match = ContentInBracketsRegex.Match(gloss);
             if (match.Success)
-                gloss = match.Groups[0].Value;
+                gloss = match.Groups[1].Value;
             gloss = gloss.Replace("?", "");
-            gloss = gloss.Replace("*", "");
-            gloss = gloss.Replace("/", " ");
-            gloss = gloss.Trim();
-            gloss = StripParens(gloss);
+            gloss = CleanTerm(gloss);
             gloss = StripParens(gloss, left: '[', right: ']');
             gloss = gloss.Trim();
             foreach (Match m in NumericalInformationRegex.Matches(gloss))
             {
                 gloss.Replace(m.Value, "");
             }
-            IEnumerable<string> glosses = Regex.Split(gloss, @"\|\|");
-            glosses = glosses.SelectMany(g => g.Split(new char[] { ',', ';' }));
-            glosses = glosses.Select(g => g.Trim()).Where(s => s != "").Distinct().ToList();
-            return (IReadOnlyList<string>)glosses;
+            return Regex.Split(gloss, @"[;,/]").Select(g => g.Trim()).Where(s => s != "").Distinct().ToList();
+        }
+
+        public static IReadOnlyList<string> GetRenderings(string rendering)
+        {
+            return Regex
+                .Split(rendering.Trim(), @"\|\|")
+                .Select(r => CleanTerm(r).Trim())
+                .Select(r => r.Replace("*", ""))
+                .Where(r => r != "")
+                .ToList();
         }
 
         /// <summary>
