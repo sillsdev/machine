@@ -355,6 +355,7 @@ namespace SIL.Machine.Corpora
                     vref = State.VerseRef;
                     vref.Chapter = token.Data;
                     vref.VerseNum = 0;
+                    State.ChapterHasVerseZero = false;
                     State.VerseRef = vref;
                     // Verse offset is not zeroed for chapter 1, as it is part of intro
                     if (State.VerseRef.ChapterNum != 1)
@@ -391,6 +392,8 @@ namespace SIL.Machine.Corpora
                     // Verse
                     vref = State.VerseRef;
                     vref.Verse = token.Data;
+                    if (vref.VerseNum == 0)
+                        State.ChapterHasVerseZero = true;
                     State.VerseRef = vref;
                     State.VerseOffset = 0;
 

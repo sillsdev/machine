@@ -91,7 +91,7 @@ namespace SIL.Machine.Corpora
                 preserveParagraphStyles == null
                     ? new HashSet<string> { "r", "rem" }
                     : new HashSet<string>(preserveParagraphStyles);
-            _remarks = remarks == null ? new List<string>() : remarks.ToList();
+            _remarks = remarks?.ToList() ?? new List<string>();
             _errorHandler = errorHandler;
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
@@ -420,9 +420,14 @@ namespace SIL.Machine.Corpora
             // search the sorted rows with updated text, starting from where we left off last.
             while (_rowIndex < _rows.Count && sourceIndex < segScrRefs.Count)
             {
+                // Handle the special case of verse 0, which although first in the rows, will be retrieved after other segments
+                int rowIndex = _rowIndex;
+                if (segScrRefs.Count > 0 && segScrRefs[0].VerseNum == 0 && segScrRefs[0].Path.Count == 0)
+                    rowIndex = 0;
+
                 // get the set of references for the current row
                 int compare = 0;
-                UpdateUsfmRow row = _rows[_rowIndex];
+                UpdateUsfmRow row = _rows[rowIndex];
                 (IReadOnlyList<ScriptureRef> rowScrRefs, string text, IReadOnlyDictionary<string, object> metadata) = (
                     row.Refs,
                     row.Text,
@@ -447,6 +452,12 @@ namespace SIL.Machine.Corpora
                         rowMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
                         break;
                     }
+                }
+
+                if (rowIndex != _rowIndex)
+                {
+                    // We are just looking for the verse 0, so return the rows
+                    break;
                 }
                 if (compare <= 0)
                 {

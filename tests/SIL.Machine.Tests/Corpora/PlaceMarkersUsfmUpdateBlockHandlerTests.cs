@@ -805,6 +805,44 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateUsfm_SupportVerseZero()
+    {
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:0"), "New verse 0"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:mt"), "New book header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/2:s"), "New chapter header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "New verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "New verse 2"),
+        ];
+        string usfm =
+            @"\id MAT
+\mt Old book header
+\c 1
+\s Old chapter header
+\p
+\v 0 Old verse 0
+\v 1 Old verse 1
+\v 2 Old verse 2
+";
+
+        string target = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]);
+
+        string result =
+            @"\id MAT
+\mt New book header
+\c 1
+\s New chapter header
+\p
+\v 0 New verse 0
+\v 1 New verse 1
+\v 2 New verse 2
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();

@@ -77,6 +77,11 @@ namespace SIL.Machine.Corpora
         public int SpecialTokenCount { get; internal set; }
 
         /// <summary>
+        /// <c>true</c> if a chapter has verse 0 specified.
+        /// </summary>
+        public bool ChapterHasVerseZero { get; internal set; }
+
+        /// <summary>
         /// True if the token processed is a figure.
         /// </summary>
         public bool IsFigure => CharTag?.Marker == "fig";
@@ -104,10 +109,7 @@ namespace SIL.Machine.Corpora
         /// <summary>
         /// Innermost character tag or null for none
         /// </summary>
-        public UsfmTag CharTag
-        {
-            get { return CharTags.FirstOrDefault(); }
-        }
+        public UsfmTag CharTag => CharTags.FirstOrDefault();
 
         /// <summary>
         /// Current note tag or null for none
@@ -157,8 +159,8 @@ namespace SIL.Machine.Corpora
         {
             get
             {
-                // Anything before verse 1 is not verse text
-                if (VerseRef.VerseNum == 0)
+                // Anything before verse 1 is not verse text, unless the USFM specified verse 0
+                if (VerseRef.VerseNum == 0 && !ChapterHasVerseZero)
                     return false;
 
                 // Sidebars and notes are not verse text

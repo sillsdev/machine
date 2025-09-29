@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using SIL.Extensions;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -66,7 +65,11 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
-            if (state.VerseRef.Equals(_curVerseRef) && !_duplicateVerse)
+            if (state.ChapterHasVerseZero && state.VerseRef.VerseNum == 0)
+            {
+                // Fall through for the special case of verse 0 being specified in the USFM
+            }
+            else if (state.VerseRef.Equals(_curVerseRef) && !_duplicateVerse)
             {
                 if (state.VerseRef.VerseNum > 0)
                 {
@@ -74,6 +77,8 @@ namespace SIL.Machine.Corpora
                     // ignore duplicate verses
                     _duplicateVerse = true;
                 }
+
+                return;
             }
             else if (VerseRef.AreOverlappingVersesRanges(verse1: number, verse2: _curVerseRef.Verse))
             {
@@ -81,16 +86,15 @@ namespace SIL.Machine.Corpora
                 VerseRef verseRef = _curVerseRef.Clone();
                 verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _curVerseRef.Verse);
                 UpdateVerseRef(verseRef, marker);
+                return;
             }
+
+            if (CurrentTextType == ScriptureTextType.NonVerse)
+                EndNonVerseText(state);
             else
-            {
-                if (CurrentTextType == ScriptureTextType.NonVerse)
-                    EndNonVerseText(state);
-                else
-                    EndVerseText(state);
-                UpdateVerseRef(state.VerseRef, marker);
-                StartVerseText(state);
-            }
+                EndVerseText(state);
+            UpdateVerseRef(state.VerseRef, marker);
+            StartVerseText(state);
         }
 
         public override void StartPara(
@@ -258,9 +262,9 @@ namespace SIL.Machine.Corpora
 
         private void EndVerseText(UsfmParserState state)
         {
-            if (!_duplicateVerse && _curVerseRef.VerseNum > 0)
+            if (!_duplicateVerse && (_curVerseRef.VerseNum > 0 || state.ChapterHasVerseZero))
                 EndVerseText(state, CreateVerseRefs());
-            if (_curVerseRef.VerseNum > 0)
+            if (_curVerseRef.VerseNum > 0 || state.ChapterHasVerseZero)
                 _curTextType.Pop();
         }
 
@@ -356,6 +360,7 @@ namespace SIL.Machine.Corpora
                 && paraTag.Marker != "tr"
                 && state.IsVersePara
                 && _curVerseRef.VerseNum == 0
+                && !state.ChapterHasVerseZero
                 && !IsPrivateUseMarker(paraTag.Marker)
             )
             {
