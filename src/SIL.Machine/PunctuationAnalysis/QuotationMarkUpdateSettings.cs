@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuotationMarkUpdateSettings

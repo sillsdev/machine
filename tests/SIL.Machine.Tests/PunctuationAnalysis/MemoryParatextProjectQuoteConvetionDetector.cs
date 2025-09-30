@@ -1,6 +1,7 @@
 using System.Text;
+using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Corpora;
+namespace SIL.Machine.PunctuationAnalysis;
 
 public class MemoryParatextProjectQuoteConventionDetector(
     ParatextProjectSettings settings,

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SIL.Machine.PunctuationAnalysis
 {
     // Determines the best strategy to take for each chapter

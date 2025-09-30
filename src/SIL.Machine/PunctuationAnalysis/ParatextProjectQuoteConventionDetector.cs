@@ -1,3 +1,8 @@
+using System;
+using System.IO;
+using System.Text;
+using SIL.Machine.Corpora;
+
 namespace SIL.Machine.PunctuationAnalysis
 {
     public abstract class ParatextProjectQuoteConventionDetector

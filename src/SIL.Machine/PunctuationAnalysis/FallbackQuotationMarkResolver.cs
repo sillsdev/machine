@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SIL.Machine.PunctuationAnalysis
 {
     public class FallbackQuotationMarkResolver : IQuotationMarkResolver

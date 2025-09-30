@@ -1,7 +1,8 @@
 using System.IO;
 using System.IO.Compression;
+using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.PunctuationAnalysis
 {
     public class ZipParatextProjectQuoteConventionDetector : ParatextProjectQuoteConventionDetector
     {
