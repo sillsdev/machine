@@ -81,20 +81,13 @@ namespace SIL.Machine.Corpora
         )
         {
             _rows = rows ?? Array.Empty<UpdateUsfmRow>();
-            _rows = _rows
-                .Where(r => r.Refs.Count > 0)
-                .OrderBy(
-                    r => r.Refs[0].VerseRef,
-                    compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments
-                )
-                .ToArray();
             _verseRows = new List<int>();
             _verseRowsMap = new Dictionary<VerseRef, List<RowInfo>>(
                 compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments
             );
             _updateRowsVersification = ScrVers.English;
             if (_rows.Count > 0)
-                _updateRowsVersification = _rows[0].Refs[0].Versification;
+                _updateRowsVersification = _rows.First(r => r.Refs.Count > 0).Refs[0].Versification;
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
             _updateBlocks = new Stack<UsfmUpdateBlock>();
