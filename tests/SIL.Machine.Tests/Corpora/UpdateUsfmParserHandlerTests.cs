@@ -1396,6 +1396,7 @@ public class UpdateUsfmParserHandlerTests
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
                 remarks,
+                (_) => false,
                 compareSegments
             );
         }
@@ -1412,6 +1413,7 @@ public class UpdateUsfmParserHandlerTests
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
                 remarks,
+                (_) => false,
                 compareSegments
             );
             UsfmParser.Parse(source, updater);

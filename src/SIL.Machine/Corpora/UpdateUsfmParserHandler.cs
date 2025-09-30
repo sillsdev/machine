@@ -84,8 +84,8 @@ namespace SIL.Machine.Corpora
             _rows = _rows
                 .Where(r => r.Refs.Count > 0)
                 .OrderBy(
-                    r => r.Refs[0],
-                    compareSegments ? ScriptureRefComparer.Default : ScriptureRefComparer.IgnoreSegments
+                    r => r.Refs[0].VerseRef,
+                    compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments
                 )
                 .ToArray();
             _verseRows = new List<int>();
