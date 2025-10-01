@@ -456,7 +456,7 @@ namespace SIL.Machine.Corpora
             var rowTexts = new List<string>();
             Dictionary<string, object> rowMetadata = null;
             int sourceIndex = 0;
-            // search the sorted rows with updated text, starting from where we left off last.
+            // search the rows with updated text, starting from where we left off last.
             while (_verseRowIndex < _verseRows.Count && sourceIndex < segScrRefs.Count)
             {
                 // get the set of references for the current row
