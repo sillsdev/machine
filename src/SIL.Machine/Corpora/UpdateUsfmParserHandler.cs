@@ -66,6 +66,7 @@ namespace SIL.Machine.Corpora
         private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
         private readonly bool _compareSegments;
 
+        /// <param name="rows">UpdateUsfmRows must be in order</param>
         public UpdateUsfmParserHandler(
             IReadOnlyList<UpdateUsfmRow> rows = null,
             string idText = null,
