@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuotationMarkUpdateSettings
     {

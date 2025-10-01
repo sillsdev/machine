@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Machine.PunctuationAnalysis;
+using SIL.Machine.Corpora;
 
-namespace SIL.Machine.Corpora
+namespace SIL.Machine.PunctuationAnalysis
 {
     public class QuoteConventionChangingUsfmUpdateBlockHandler : IUsfmUpdateBlockHandler
     {
-        private readonly QuoteConvention _sourceQuoteConvention;
-        private readonly QuoteConvention _targetQuoteConvention;
+        private readonly QuoteConvention _oldQuoteConvention;
+        private readonly QuoteConvention _newQuoteConvention;
         private readonly QuotationMarkUpdateSettings _settings;
         protected QuotationMarkFinder QuotationMarkFinder { get; set; }
         protected TextSegment.Builder NextScriptureTextSegmentBuilder { get; set; }
@@ -19,23 +19,23 @@ namespace SIL.Machine.Corpora
         private int _currentVerseNumber;
 
         public QuoteConventionChangingUsfmUpdateBlockHandler(
-            QuoteConvention sourceQuoteConvention,
-            QuoteConvention targetQuoteConvention,
+            QuoteConvention oldQuoteConvention,
+            QuoteConvention newQuoteConvention,
             QuotationMarkUpdateSettings settings
         )
         {
-            _sourceQuoteConvention = sourceQuoteConvention;
-            _targetQuoteConvention = targetQuoteConvention;
+            _oldQuoteConvention = oldQuoteConvention;
+            _newQuoteConvention = newQuoteConvention;
             _settings = settings;
 
             QuotationMarkFinder = new QuotationMarkFinder(
-                new QuoteConventionSet(new List<QuoteConvention> { _sourceQuoteConvention })
+                new QuoteConventionSet(new List<QuoteConvention> { _oldQuoteConvention })
             );
 
             NextScriptureTextSegmentBuilder = new TextSegment.Builder();
 
             IQuotationMarkResolutionSettings resolutionSettings = new QuotationMarkUpdateResolutionSettings(
-                sourceQuoteConvention
+                oldQuoteConvention
             );
 
             // Each embed represents a separate context for quotation marks
@@ -140,7 +140,7 @@ namespace SIL.Machine.Corpora
             )
             {
                 int previousLength = resolvedQuotationMarkMatch.Length;
-                resolvedQuotationMarkMatch.UpdateQuotationMark(_targetQuoteConvention);
+                resolvedQuotationMarkMatch.UpdateQuotationMark(_newQuoteConvention);
                 int updatedLength = resolvedQuotationMarkMatch.Length;
 
                 if (previousLength != updatedLength)
