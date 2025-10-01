@@ -29,7 +29,9 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
-            IEnumerable<string> remarks = null
+            IEnumerable<string> remarks = null,
+            Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
+            bool compareSegments = false
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -51,7 +53,9 @@ namespace SIL.Machine.Corpora
                 styleBehavior,
                 preserveParagraphStyles,
                 updateBlockHandlers,
-                remarks
+                remarks,
+                errorHandler,
+                compareSegments
             );
             try
             {

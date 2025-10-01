@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -42,6 +43,12 @@ namespace SIL.Machine.Corpora
     public class UpdateUsfmParserHandler : ScriptureRefUsfmParserHandlerBase
     {
         private readonly IReadOnlyList<UpdateUsfmRow> _rows;
+        private int _rowIndex;
+        private VerseRef _verseRowsRef;
+        private readonly List<int> _verseRows;
+        private int _verseRowIndex;
+        private readonly Dictionary<VerseRef, List<RowInfo>> _verseRowsMap;
+        private readonly ScrVers _updateRowsVersification;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _updatedText;
         private readonly List<UsfmToken> _embedTokens;
@@ -55,10 +62,11 @@ namespace SIL.Machine.Corpora
         private readonly Stack<IUsfmUpdateBlockHandler> _updateBlockHandlers;
         private readonly List<string> _remarks;
         private readonly Stack<bool> _replace;
-        private int _rowIndex;
         private int _tokenIndex;
         private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
+        private readonly bool _compareSegments;
 
+        /// <param name="rows">UpdateUsfmRows must be in order</param>
         public UpdateUsfmParserHandler(
             IReadOnlyList<UpdateUsfmRow> rows = null,
             string idText = null,
@@ -69,10 +77,18 @@ namespace SIL.Machine.Corpora
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<string> remarks = null,
-            Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null
+            Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
+            bool compareSegments = false
         )
         {
             _rows = rows ?? Array.Empty<UpdateUsfmRow>();
+            _verseRows = new List<int>();
+            _verseRowsMap = new Dictionary<VerseRef, List<RowInfo>>(
+                compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments
+            );
+            _updateRowsVersification = ScrVers.English;
+            if (_rows.Count > 0)
+                _updateRowsVersification = _rows.First(r => r.Refs.Count > 0).Refs[0].Versification;
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
             _updateBlocks = new Stack<UsfmUpdateBlock>();
@@ -95,6 +111,7 @@ namespace SIL.Machine.Corpora
             _errorHandler = errorHandler;
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
+            _compareSegments = compareSegments;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -107,6 +124,10 @@ namespace SIL.Machine.Corpora
 
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
+            _verseRowsRef = state.VerseRef;
+            UpdateVerseRowsMap();
+            UpdateVerseRows();
+
             CollectReadonlyTokens(state);
             _updateBlocks.Push(new UsfmUpdateBlock());
             var startBookTokens = new List<UsfmToken>();
@@ -137,7 +158,7 @@ namespace SIL.Machine.Corpora
             if (state.IsVerseText)
             {
                 // Only strip paragraph markers in a verse
-                if (_paragraphBehavior == UpdateUsfmMarkerBehavior.Preserve)
+                if (_paragraphBehavior == UpdateUsfmMarkerBehavior.Preserve && !DuplicateVerse)
                 {
                     CollectUpdatableTokens(state);
                 }
@@ -193,6 +214,13 @@ namespace SIL.Machine.Corpora
         {
             UseUpdatedText();
 
+            if (!_verseRowsRef.Equals(state.VerseRef))
+            {
+                _verseRowsRef = state.VerseRef;
+                UpdateVerseRowsMap();
+                UpdateVerseRows();
+            }
+
             base.Chapter(state, number, marker, altNumber, pubNumber);
 
             CollectReadonlyTokens(state);
@@ -230,16 +258,31 @@ namespace SIL.Machine.Corpora
                 }
             }
 
+            if (!_verseRowsRef.Equals(state.VerseRef))
+            {
+                _verseRowsRef = state.VerseRef;
+                UpdateVerseRows();
+            }
+
             base.Verse(state, number, marker, altNumber, pubNumber);
 
-            CollectReadonlyTokens(state);
+            if (DuplicateVerse)
+            {
+                SkipUpdatableTokens(state);
+            }
+            else
+            {
+                CollectReadonlyTokens(state);
+            }
         }
 
         public override void StartNote(UsfmParserState state, string marker, string caller, string category)
         {
             base.StartNote(state, marker, caller, category);
-
-            CollectUpdatableTokens(state);
+            if (!DuplicateVerse)
+                CollectUpdatableTokens(state);
+            else
+                SkipUpdatableTokens(state);
         }
 
         public override void EndNote(UsfmParserState state, string marker, bool closed)
@@ -319,7 +362,7 @@ namespace SIL.Machine.Corpora
             base.Text(state, text);
 
             // strip out text in verses that are being replaced
-            if (ReplaceWithNewTokens(state))
+            if (ReplaceWithNewTokens(state) || (DuplicateVerse && CurrentTextType == ScriptureTextType.Verse))
                 SkipUpdatableTokens(state);
             else
                 CollectUpdatableTokens(state);
@@ -390,15 +433,11 @@ namespace SIL.Machine.Corpora
                     remarkTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
                     remarkTokens.Add(new UsfmToken(remark));
                 }
-
-                if (tokens.Count > 0 && tokens[0].Marker == "id")
+                if (tokens.Count > 0)
                 {
-                    int index = 1;
-                    if (tokens.Count > 1 && tokens[1].Type == UsfmTokenType.Text)
-                    {
-                        index = 2;
-                    }
-                    while (tokens[index].Marker == "rem")
+                    int index = 0;
+                    HashSet<string> markersToSkip = new HashSet<string>() { "id", "ide", "rem" };
+                    while (markersToSkip.Contains(tokens[index].Marker))
                     {
                         index++;
                         if (tokens.Count > index && tokens[index].Type == UsfmTokenType.Text)
@@ -407,6 +446,7 @@ namespace SIL.Machine.Corpora
                     tokens.InsertRange(index, remarkTokens);
                 }
             }
+
             return tokenizer.Detokenize(tokens);
         }
 
@@ -418,11 +458,11 @@ namespace SIL.Machine.Corpora
             Dictionary<string, object> rowMetadata = null;
             int sourceIndex = 0;
             // search the sorted rows with updated text, starting from where we left off last.
-            while (_rowIndex < _rows.Count && sourceIndex < segScrRefs.Count)
+            while (_verseRowIndex < _verseRows.Count && sourceIndex < segScrRefs.Count)
             {
                 // get the set of references for the current row
                 int compare = 0;
-                UpdateUsfmRow row = _rows[_rowIndex];
+                UpdateUsfmRow row = _rows[_verseRows[_verseRowIndex]];
                 (IReadOnlyList<ScriptureRef> rowScrRefs, string text, IReadOnlyDictionary<string, object> metadata) = (
                     row.Refs,
                     row.Text,
@@ -432,7 +472,7 @@ namespace SIL.Machine.Corpora
                 {
                     while (sourceIndex < segScrRefs.Count)
                     {
-                        compare = rowScrRef.CompareTo(segScrRefs[sourceIndex], compareSegments: false);
+                        compare = rowScrRef.CompareTo(segScrRefs[sourceIndex], compareSegments: _compareSegments);
                         if (compare > 0)
                             // row is ahead of source, increment source
                             sourceIndex++;
@@ -451,7 +491,7 @@ namespace SIL.Machine.Corpora
                 if (compare <= 0)
                 {
                     // source is ahead row, increment row
-                    _rowIndex++;
+                    _verseRowIndex++;
                 }
             }
             return (rowTexts, rowMetadata);
@@ -648,6 +688,64 @@ namespace SIL.Machine.Corpora
                 return false;
             UsfmTag paraTag = state.Stylesheet.GetTag(paraToken.Marker);
             return paraTag.TextType != UsfmTextType.VerseText && paraTag.TextType != UsfmTextType.NotSpecified;
+        }
+
+        private void UpdateVerseRowsMap()
+        {
+            _verseRowsMap.Clear();
+            while (_rowIndex < _rows.Count && _rows[_rowIndex].Refs[0].ChapterNum == _verseRowsRef.ChapterNum)
+            {
+                UpdateUsfmRow row = _rows[_rowIndex];
+                var ri = new RowInfo(_rowIndex);
+                foreach (ScriptureRef sr in row.Refs)
+                {
+                    if (!_verseRowsMap.TryGetValue(sr.VerseRef, out List<RowInfo> rows))
+                    {
+                        rows = new List<RowInfo>();
+                        _verseRowsMap[sr.VerseRef] = rows;
+                    }
+                    rows.Add(ri);
+                }
+                _rowIndex++;
+            }
+        }
+
+        private void UpdateVerseRows()
+        {
+            VerseRef vref = _verseRowsRef;
+            // We are using a dictionary, which uses an equality comparer. As a result, we need to change the
+            // source verse ref to use the row versification. If we used a SortedList, it wouldn't be necessary, but it
+            // would be less efficient.
+            vref.ChangeVersification(_updateRowsVersification);
+
+            _verseRows.Clear();
+            _verseRowIndex = 0;
+
+            foreach (VerseRef vr in vref.AllVerses())
+            {
+                if (_verseRowsMap.TryGetValue(vr, out List<RowInfo> rows))
+                {
+                    foreach (RowInfo row in rows)
+                    {
+                        if (!row.IsConsumed)
+                        {
+                            _verseRows.Add(row.RowIndex);
+                            row.IsConsumed = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        private class RowInfo
+        {
+            public RowInfo(int rowIndex)
+            {
+                RowIndex = rowIndex;
+            }
+
+            public int RowIndex { get; set; }
+            public bool IsConsumed { get; set; }
         }
     }
 }

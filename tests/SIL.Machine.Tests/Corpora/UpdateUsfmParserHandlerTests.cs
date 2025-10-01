@@ -1210,6 +1210,103 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void GetUsfm_OutOfOrderVerses()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
+            new UpdateUsfmRow(ScrRef("MAT 1:5"), "new verse 5"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6a"), "new verse 6a"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6b"), "new verse 6b"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6b/1:s"), "new section"),
+            new UpdateUsfmRow(ScrRef("MAT 1:7"), "new verse 7"),
+            new UpdateUsfmRow(ScrRef("MAT 1:8"), "new verse 8"),
+        };
+
+        string usfm =
+            @"\id MAT
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 verse 1
+\v 2 verse 2
+\v 3 verse 3
+\v 6b verse 6b
+\s section
+\v 7 verse 7
+\v 8 verse 8
+\v 4 verse 4
+\v 5 verse 5
+\v 6a verse 6a
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
+            compareSegments: true
+        );
+        string resultP =
+            @"\id MAT
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 new verse 1
+\v 2 new verse 2
+\v 3 new verse 3
+\v 6b new verse 6b
+\s new section
+\v 7 new verse 7
+\v 8 new verse 8
+\v 4 new verse 4
+\v 5 new verse 5
+\v 6a new verse 6a
+";
+        AssertUsfmEquals(target, resultP);
+    }
+
+    [Test]
+    public void GetUsfm_DuplicateVerses()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
+        };
+
+        string usfm =
+            @"\id MAT
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 verse 1
+\v 2 verse 2
+\v 3 verse 3
+\v 3 another verse 3\f \fr 1.3 \ft Some duplicate verse three note \f* 1
+\p more verse three
+\v 4 verse 4
+";
+
+        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+        string resultP =
+            @"\id MAT
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 new verse 1
+\v 2 new verse 2
+\v 3 new verse 3
+\v 4 new verse 4
+";
+        AssertUsfmEquals(target, resultP);
+    }
+
+    [Test]
     public void GetUsfm_PreferExisting_AddRemark()
     {
         var rows = new List<UpdateUsfmRow>
@@ -1219,6 +1316,7 @@ public class UpdateUsfmParserHandlerTests
         };
         string usfm =
             @"\id MAT - Test
+\ide UTF-8
 \rem Existing remark
 \c 1
 \v 1 Some text
@@ -1233,6 +1331,7 @@ public class UpdateUsfmParserHandlerTests
         );
         string result =
             @"\id MAT - Test
+\ide UTF-8
 \rem Existing remark
 \rem New remark
 \c 1
@@ -1251,6 +1350,7 @@ public class UpdateUsfmParserHandlerTests
         );
         result =
             @"\id MAT - Test
+\ide UTF-8
 \rem Existing remark
 \rem New remark
 \rem New remark 2
@@ -1278,7 +1378,8 @@ public class UpdateUsfmParserHandlerTests
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
         IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
-        IEnumerable<string>? remarks = null
+        IEnumerable<string>? remarks = null,
+        bool compareSegments = false
     )
     {
         if (source is null)
@@ -1294,7 +1395,9 @@ public class UpdateUsfmParserHandlerTests
                 styleBehavior,
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
-                remarks
+                remarks,
+                (_) => false,
+                compareSegments
             );
         }
         else
@@ -1309,7 +1412,9 @@ public class UpdateUsfmParserHandlerTests
                 styleBehavior,
                 preserveParagraphStyles,
                 usfmUpdateBlockHandlers,
-                remarks
+                remarks,
+                (_) => false,
+                compareSegments
             );
             UsfmParser.Parse(source, updater);
             return updater.GetUsfm();

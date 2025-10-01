@@ -6,10 +6,10 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public class VerseRefComparer : IComparer<VerseRef>
+    public class VerseRefComparer : IComparer<VerseRef>, IEqualityComparer<VerseRef>
     {
-        public static IComparer<VerseRef> Default { get; } = new VerseRefComparer(compareSegments: true);
-        public static IComparer<VerseRef> IgnoreSegments { get; } = new VerseRefComparer(compareSegments: false);
+        public static VerseRefComparer Default { get; } = new VerseRefComparer(compareSegments: true);
+        public static VerseRefComparer IgnoreSegments { get; } = new VerseRefComparer(compareSegments: false);
 
         private readonly bool _compareSegments;
 
@@ -36,6 +36,19 @@ namespace SIL.Machine.Corpora
                     return compare;
             }
             return xArray.Length.CompareTo(yArray.Length);
+        }
+
+        public bool Equals(VerseRef x, VerseRef y)
+        {
+            return Compare(x, y) == 0;
+        }
+
+        public int GetHashCode(VerseRef obj)
+        {
+            int hashCode = 23;
+            hashCode = hashCode * 31 + (_compareSegments ? obj.BBBCCCVVVS.GetHashCode() : obj.BBBCCCVVV.GetHashCode());
+            hashCode = hashCode * 31 + obj.Versification.GetHashCode();
+            return hashCode;
         }
     }
 }
