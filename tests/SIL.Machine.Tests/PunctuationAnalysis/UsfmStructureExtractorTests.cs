@@ -17,6 +17,60 @@ public class UsfmStructureExtractorTests
     }
 
     [Test]
+    public void GetChaptersFilterByBook()
+    {
+        var usfmStructureExtractor = new UsfmStructureExtractor();
+        usfmStructureExtractor.StartBook(_verseTextParserState, "id", "GEN");
+        usfmStructureExtractor.Chapter(_verseTextParserState, "1", "c", null, null);
+        usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
+        usfmStructureExtractor.Text(_verseTextParserState, "test");
+
+        Assert.That(
+            usfmStructureExtractor.GetChapters(new Dictionary<int, List<int>> { { 2, [1] } }), // EXO 1
+            Has.Count.EqualTo(0)
+        );
+    }
+
+    [Test]
+    public void GetChaptersFilterByChapter()
+    {
+        var usfmStructureExtractor = new UsfmStructureExtractor();
+        usfmStructureExtractor.StartBook(_verseTextParserState, "id", "MAT");
+        usfmStructureExtractor.Chapter(_verseTextParserState, "1", "c", null, null);
+        usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
+        usfmStructureExtractor.Text(_verseTextParserState, "test");
+        usfmStructureExtractor.Chapter(_verseTextParserState, "2", "c", null, null);
+        usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
+        usfmStructureExtractor.Text(_verseTextParserState, "test2");
+        usfmStructureExtractor.Chapter(_verseTextParserState, "3", "c", null, null);
+        usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
+        usfmStructureExtractor.Text(_verseTextParserState, "test3");
+
+        List<Chapter> expectedChapters =
+        [
+            new Chapter(
+                [
+                    new Verse(
+                        [
+                            new TextSegment.Builder()
+                                .SetText("test2")
+                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                                .AddPrecedingMarker(UsfmMarkerType.Verse)
+                                .Build()
+                        ]
+                    )
+                ]
+            )
+        ];
+        List<Chapter> actualChapters = usfmStructureExtractor.GetChapters(
+            new Dictionary<int, List<int>> { { 40, [2] } }
+        );
+        AssertChapterEqual(expectedChapters, actualChapters);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
+    }
+
+    [Test]
     public void ChapterAndVerseMarkers()
     {
         var usfmStructureExtractor = new UsfmStructureExtractor();
