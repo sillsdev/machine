@@ -368,6 +368,6 @@ public class QuotationConventionDetectorTests
     {
         var quoteConventionDetector = new QuoteConventionDetector();
         UsfmParser.Parse(usfm, quoteConventionDetector);
-        return quoteConventionDetector.DetectQuotationConvention();
+        return quoteConventionDetector.DetectQuoteConvention();
     }
 }

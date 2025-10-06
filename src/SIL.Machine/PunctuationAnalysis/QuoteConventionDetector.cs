@@ -56,9 +56,9 @@ namespace SIL.Machine.PunctuationAnalysis
             _quotationMarkTabulator.Tabulate(resolvedQuotationMarks);
         }
 
-        public QuoteConventionAnalysis DetectQuotationConvention()
+        public QuoteConventionAnalysis DetectQuoteConvention(Dictionary<int, List<int>> includeChapters = null)
         {
-            CountQuotationMarksInChapters(GetChapters());
+            CountQuotationMarksInChapters(GetChapters(includeChapters));
 
             (QuoteConvention bestQuoteConvention, double score) = QuoteConventions.Standard.FindMostSimilarConvention(
                 _quotationMarkTabulator

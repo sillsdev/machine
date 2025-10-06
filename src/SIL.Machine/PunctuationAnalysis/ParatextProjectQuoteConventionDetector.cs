@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SIL.Machine.Corpora;
+using SIL.Scripture;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
@@ -19,11 +22,22 @@ namespace SIL.Machine.PunctuationAnalysis
             _settings = settingsParser.Parse();
         }
 
-        public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
+        public QuoteConventionAnalysis GetQuoteConventionAnalysis(
+            QuoteConventionDetector handler = null,
+            Dictionary<int, List<int>> includeChapters = null
+        )
         {
             handler = handler ?? new QuoteConventionDetector();
-            foreach (string fileName in _settings.GetAllScriptureBookFileNames())
+            foreach (
+                string bookId in Canon
+                    .AllBookNumbers.Where(num => Canon.IsCanonical(num))
+                    .Select(num => Canon.BookNumberToId(num))
+            )
             {
+                if (includeChapters != null && includeChapters.ContainsKey(Canon.BookIdToNumber(bookId)))
+                    continue;
+
+                string fileName = _settings.GetBookFileName(bookId);
                 if (!Exists(fileName))
                     continue;
 
@@ -47,7 +61,7 @@ namespace SIL.Machine.PunctuationAnalysis
                     throw new InvalidOperationException(sb.ToString(), ex);
                 }
             }
-            return handler.DetectQuotationConvention();
+            return handler.DetectQuoteConvention(includeChapters);
         }
 
         protected abstract bool Exists(string fileName);

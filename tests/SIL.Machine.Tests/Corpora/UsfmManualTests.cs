@@ -186,8 +186,8 @@ public class UsfmManualTests
         var quoteConventionDetector2 = new ZipParatextProjectQuoteConventionDetector(zipArchive2);
         quoteConventionDetector2.GetQuoteConventionAnalysis(targetHandler);
 
-        QuoteConventionAnalysis sourceAnalysis = sourceHandler.DetectQuotationConvention();
-        QuoteConventionAnalysis targetAnalysis = targetHandler.DetectQuotationConvention();
+        QuoteConventionAnalysis sourceAnalysis = sourceHandler.DetectQuoteConvention();
+        QuoteConventionAnalysis targetAnalysis = targetHandler.DetectQuoteConvention();
 
         Assert.Multiple(() =>
         {
