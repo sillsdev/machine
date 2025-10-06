@@ -22,6 +22,12 @@ namespace SIL.Machine.PunctuationAnalysis
             _settings = settingsParser.Parse();
         }
 
+        public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
+        {
+            Dictionary<int, List<int>> includeChapters = null;
+            return GetQuoteConventionAnalysis(handler, includeChapters);
+        }
+
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(
             QuoteConventionDetector handler = null,
             Dictionary<string, List<int>> includeChapters = null
