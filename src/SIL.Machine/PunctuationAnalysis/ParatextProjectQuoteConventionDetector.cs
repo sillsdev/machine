@@ -24,6 +24,17 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(
             QuoteConventionDetector handler = null,
+            Dictionary<string, List<int>> includeChapters = null
+        )
+        {
+            return GetQuoteConventionAnalysis(
+                handler,
+                includeChapters.ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value)
+            );
+        }
+
+        public QuoteConventionAnalysis GetQuoteConventionAnalysis(
+            QuoteConventionDetector handler = null,
             Dictionary<int, List<int>> includeChapters = null
         )
         {
