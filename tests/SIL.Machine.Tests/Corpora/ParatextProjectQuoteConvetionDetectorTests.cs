@@ -142,7 +142,7 @@ public class ParatextProjectQuoteConventionDetectorTests
             {
                 chapters = ScriptureRangeParser
                     .GetChapters(scriptureRange)
-                    .ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key) - 1, kvp => kvp.Value); // make 0-indexed
+                    .ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value);
             }
             return Detector.GetQuoteConventionAnalysis(includeChapters: chapters);
         }

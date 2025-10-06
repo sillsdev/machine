@@ -142,7 +142,7 @@ namespace SIL.Machine.PunctuationAnalysis
             foreach (TextSegment textSegment in _textSegments)
             {
                 if (textSegment.Book != null)
-                    currentBook = Canon.BookIdToNumber(textSegment.Book) - 1; //make 0-indexed
+                    currentBook = Canon.BookIdToNumber(textSegment.Book);
                 if (textSegment.Chapter > 0)
                     currentChapter = textSegment.Chapter;
                 if (includeChapters != null && currentBook > 0)

@@ -34,7 +34,7 @@ namespace SIL.Machine.PunctuationAnalysis
                     .Select(num => Canon.BookNumberToId(num))
             )
             {
-                if (includeChapters != null && includeChapters.ContainsKey(Canon.BookIdToNumber(bookId)))
+                if (includeChapters != null && !includeChapters.ContainsKey(Canon.BookIdToNumber(bookId)))
                     continue;
 
                 string fileName = _settings.GetBookFileName(bookId);
