@@ -56,7 +56,7 @@ namespace SIL.Machine.PunctuationAnalysis
             _quotationMarkTabulator.Tabulate(resolvedQuotationMarks);
         }
 
-        public QuoteConventionAnalysis DetectQuoteConvention(Dictionary<int, List<int>> includeChapters = null)
+        public QuoteConventionAnalysis DetectQuoteConvention(IReadOnlyDictionary<int, List<int>> includeChapters = null)
         {
             CountQuotationMarksInChapters(GetChapters(includeChapters));
 

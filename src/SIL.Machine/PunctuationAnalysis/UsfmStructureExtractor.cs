@@ -23,7 +23,7 @@ namespace SIL.Machine.PunctuationAnalysis
         public void Chapter(UsfmParserState state, string number, string marker, string altNumber, string pubNumber)
         {
             _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
-            _nextTextSegmentBuilder.SetChapter(int.Parse(number));
+            _nextTextSegmentBuilder.SetChapter(state.VerseRef.ChapterNum);
         }
 
         public void EndBook(UsfmParserState state, string marker) { }
@@ -132,7 +132,7 @@ namespace SIL.Machine.PunctuationAnalysis
             _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
         }
 
-        public List<Chapter> GetChapters(Dictionary<int, List<int>> includeChapters = null)
+        public List<Chapter> GetChapters(IReadOnlyDictionary<int, List<int>> includeChapters = null)
         {
             var chapters = new List<Chapter>();
             int currentBook = 0;

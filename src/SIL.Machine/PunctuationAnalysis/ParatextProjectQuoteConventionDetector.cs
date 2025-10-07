@@ -30,7 +30,7 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(
             QuoteConventionDetector handler = null,
-            Dictionary<string, List<int>> includeChapters = null
+            IReadOnlyDictionary<string, List<int>> includeChapters = null
         )
         {
             return GetQuoteConventionAnalysis(
@@ -41,7 +41,7 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(
             QuoteConventionDetector handler = null,
-            Dictionary<int, List<int>> includeChapters = null
+            IReadOnlyDictionary<int, List<int>> includeChapters = null
         )
         {
             handler = handler ?? new QuoteConventionDetector();
