@@ -642,15 +642,15 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_Verse_PretranslationsBeforeText()
+    public void GetUsfm_Verse_UpdateRowsBeforeText()
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("GEN 1:1"), "Pretranslations before the start"),
-            new UpdateUsfmRow(ScrRef("GEN 1:2"), "Pretranslations before the start"),
-            new UpdateUsfmRow(ScrRef("GEN 1:3"), "Pretranslations before the start"),
-            new UpdateUsfmRow(ScrRef("GEN 1:4"), "Pretranslations before the start"),
-            new UpdateUsfmRow(ScrRef("GEN 1:5"), "Pretranslations before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:1"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:2"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:3"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:4"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:5"), "Update rows before the start"),
             new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
         };
 

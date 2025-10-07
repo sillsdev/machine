@@ -13,11 +13,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     public void UpdateUsfm_ParagraphMarkers()
     {
         string source = "This is the first paragraph. This text is in English, and this test is for paragraph markers.";
-        string pretranslation =
+        string updateRows =
             "Este es el primer párrafo. Este texto está en inglés y esta prueba es para marcadores de párrafo.";
         PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
             sourceTokens: Tokenizer.Tokenize(source).ToList(),
-            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            translationTokens: Tokenizer.Tokenize(updateRows).ToList(),
             alignment: ToWordAlignmentMatrix(
                 "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
             ),
@@ -28,7 +28,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         [
             new UpdateUsfmRow(
                 ScrRef("MAT 1:1"),
-                pretranslation,
+                updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
             )
         ];
@@ -62,11 +62,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
     public void UpdateUsfm_StyleMarkers()
     {
         string source = "This is the first sentence. This text is in English, and this test is for style markers.";
-        string pretranslation =
+        string updateRows =
             "Esta es la primera oración. Este texto está en inglés y esta prueba es para marcadores de estilo.";
         PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
             sourceTokens: Tokenizer.Tokenize(source).ToList(),
-            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            translationTokens: Tokenizer.Tokenize(updateRows).ToList(),
             alignment: ToWordAlignmentMatrix(
                 "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
             ),
@@ -77,7 +77,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         [
             new UpdateUsfmRow(
                 ScrRef("MAT 1:1"),
-                pretranslation,
+                updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
             )
         ];
@@ -104,7 +104,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
 
         alignInfo = new PlaceMarkersAlignmentInfo(
             sourceTokens: Tokenizer.Tokenize(source).ToList(),
-            translationTokens: Tokenizer.Tokenize(pretranslation).ToList(),
+            translationTokens: Tokenizer.Tokenize(updateRows).ToList(),
             alignment: ToWordAlignmentMatrix(
                 "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 12-11 13-12 14-13 15-14 16-15 17-18 18-16 19-19"
             ),
@@ -115,7 +115,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         [
             new UpdateUsfmRow(
                 ScrRef("MAT 1:1"),
-                pretranslation,
+                updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
             )
         ];
