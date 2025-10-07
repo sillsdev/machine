@@ -36,12 +36,15 @@ public class UsfmStructureExtractorTests
     {
         var usfmStructureExtractor = new UsfmStructureExtractor();
         usfmStructureExtractor.StartBook(_verseTextParserState, "id", "MAT");
+        _verseTextParserState.SetChapterNum(1);
         usfmStructureExtractor.Chapter(_verseTextParserState, "1", "c", null, null);
         usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
         usfmStructureExtractor.Text(_verseTextParserState, "test");
+        _verseTextParserState.SetChapterNum(2);
         usfmStructureExtractor.Chapter(_verseTextParserState, "2", "c", null, null);
         usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
         usfmStructureExtractor.Text(_verseTextParserState, "test2");
+        _verseTextParserState.SetChapterNum(3);
         usfmStructureExtractor.Chapter(_verseTextParserState, "3", "c", null, null);
         usfmStructureExtractor.Verse(_verseTextParserState, "1", "v", null, null);
         usfmStructureExtractor.Text(_verseTextParserState, "test3");
@@ -545,6 +548,13 @@ public class UsfmStructureExtractorTests
         {
             VerseRef vref = VerseRef;
             vref.VerseNum = verseNum;
+            VerseRef = vref;
+        }
+
+        public void SetChapterNum(int chapterNum)
+        {
+            VerseRef vref = VerseRef;
+            vref.ChapterNum = chapterNum;
             VerseRef = vref;
         }
     }
