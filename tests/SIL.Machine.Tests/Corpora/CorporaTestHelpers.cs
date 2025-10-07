@@ -17,7 +17,6 @@ internal static class CorporaTestHelpers
     public static readonly string UsfmTestProjectPath = Path.Combine(TestDataPath, "usfm", "Tes");
     public static readonly string UsfmTargetProjectPath = Path.Combine(TestDataPath, "usfm", "target");
     public static readonly string UsfmTargetProjectZipPath = Path.Combine(TestDataPath, "project", "target");
-    public static readonly string UsfmTargetCustomVrsPath = Path.Combine(TestDataPath, "usfm", "target", "custom.vrs");
     public static readonly string UsfmSourceProjectPath = Path.Combine(TestDataPath, "usfm", "source");
     public static readonly string UsfmSourceProjectZipPath = Path.Combine(TestDataPath, "project", "source");
     public static readonly string UsxTestProjectPath = Path.Combine(TestDataPath, "usx", "Tes");
