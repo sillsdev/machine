@@ -35,7 +35,7 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             return GetQuoteConventionAnalysis(
                 handler,
-                includeChapters.ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value)
+                includeChapters.ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value) ?? null
             );
         }
 
