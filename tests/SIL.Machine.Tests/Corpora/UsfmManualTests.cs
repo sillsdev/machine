@@ -78,4 +78,19 @@ public class UsfmManualTests
             Assert.NotNull(targetAnalysis);
         });
     }
+
+    [Test]
+    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
+    public void ValidateUsfmVersification()
+    {
+        using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
+        var quoteConventionDetector = new ZipParatextProjectVersificationMismatchDetector(zipArchive);
+        IReadOnlyList<UsfmVersificationMismatch> mismatches = quoteConventionDetector.GetUsfmVersificationMismatches();
+
+        Assert.That(
+            mismatches,
+            Has.Count.EqualTo(0),
+            JsonSerializer.Serialize(mismatches, new JsonSerializerOptions { WriteIndented = true })
+        );
+    }
 }
