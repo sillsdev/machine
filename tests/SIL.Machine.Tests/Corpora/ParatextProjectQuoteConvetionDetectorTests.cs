@@ -8,6 +8,11 @@ namespace SIL.Machine.Corpora;
 [TestFixture]
 public class ParatextProjectQuoteConventionDetectorTests
 {
+    private static readonly QuoteConvention StandardEnglishQuoteConvention =
+        QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
+    private static readonly QuoteConvention StandardFrenchQuoteConvention =
+        QuoteConventions.Standard.GetQuoteConventionByName("standard_french");
+
     [Test]
     public void TestGetQuotationAnalysis()
     {
@@ -16,18 +21,9 @@ public class ParatextProjectQuoteConventionDetectorTests
             {
                 {
                     "41MATTest.SFM",
-                    @"\id MAT
-\c 1
-\v 1 Someone said, “This is something I am saying!
-\v 2 This is also something I am saying” (that is, “something I am speaking”).
-\p
-\v 3 Other text, and someone else said,
-\q1
-\v 4 “Things
-\q2 someone else said!
-\q3 and more things someone else said.”
-\m That is why he said “things someone else said.”
-\v 5 Then someone said, “More things someone said.”"
+                    $@"\id MAT
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+"
                 }
             }
         );
@@ -35,6 +31,100 @@ public class ParatextProjectQuoteConventionDetectorTests
         Assert.That(analysis, Is.Not.Null);
         Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.8));
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
+    }
+
+    [Test]
+    public void TestGetQuotationByBook()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "41MATTest.SFM",
+                    $@"\id MAT
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+"
+                },
+                {
+                    "42MRKTest.SFM",
+                    $@"\id MRK
+{GetTestChapter(1, StandardFrenchQuoteConvention)}
+"
+                }
+            }
+        );
+        QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK");
+        Assert.That(analysis, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.8));
+        Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
+    }
+
+    [Test]
+    public void TestGetQuotationConventionByChapter()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "41MATTest.SFM",
+                    $@"\id MAT
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+"
+                },
+                {
+                    "42MRKTest.SFM",
+                    $@"\id MRK
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+{GetTestChapter(2, StandardFrenchQuoteConvention)}
+{GetTestChapter(3, StandardEnglishQuoteConvention)}
+{GetTestChapter(4, StandardEnglishQuoteConvention)}
+{GetTestChapter(5, StandardFrenchQuoteConvention)}
+"
+                }
+            }
+        );
+        QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK2,4-5");
+        Assert.That(analysis, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.66));
+        Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
+    }
+
+    [Test]
+    public void TestGetQuotationConventionByChapterIndeterminate()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "41MATTest.SFM",
+                    $@"\id MAT
+{GetTestChapter(1)}
+{GetTestChapter(2, StandardEnglishQuoteConvention)}
+{GetTestChapter(3)}
+"
+                }
+            }
+        );
+        QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT1,3");
+        Assert.That(analysis, Is.Null);
+    }
+
+    [Test]
+    public void TestGetQuotationConventionInvalidBookCode()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "41MATTest.SFM",
+                    $@"\id LUK
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+"
+                }
+            }
+        );
+        QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT");
+        Assert.That(analysis, Is.Null);
     }
 
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
@@ -45,10 +135,35 @@ public class ParatextProjectQuoteConventionDetectorTests
                 files ?? new()
             );
 
-        public QuoteConventionAnalysis GetQuoteConvention()
+        public QuoteConventionAnalysis GetQuoteConvention(string? scriptureRange = null)
         {
-            return Detector.GetQuoteConventionAnalysis();
+            Dictionary<int, List<int>>? chapters = null;
+            if (scriptureRange != null)
+            {
+                chapters = ScriptureRangeParser
+                    .GetChapters(scriptureRange)
+                    .ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value);
+            }
+            return Detector.GetQuoteConventionAnalysis(includeChapters: chapters);
         }
+    }
+
+    private static string GetTestChapter(int number, QuoteConvention? quoteConvention = null)
+    {
+        string leftQuote = quoteConvention != null ? quoteConvention.GetOpeningQuotationMarkAtDepth(1) : "";
+        string rightQuote = quoteConvention != null ? quoteConvention.GetClosingQuotationMarkAtDepth(1) : "";
+        return $@"\c {number}
+\v 1 Someone said, {leftQuote}This is something I am saying!
+\v 2 This is also something I am saying{rightQuote} (that is, {leftQuote}something I am speaking{rightQuote}).
+\p
+\v 3 Other text, and someone else said,
+\q1
+\v 4 {leftQuote}Things
+\q2 someone else said!
+\q3 and more things someone else said.{rightQuote}
+\m That is why he said {leftQuote}things someone else said.{rightQuote}
+\v 5 Then someone said, {leftQuote}More things someone said.{rightQuote}
+        ";
     }
 
     private class DefaultParatextProjectSettings(

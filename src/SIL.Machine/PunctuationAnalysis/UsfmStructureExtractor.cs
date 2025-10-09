@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SIL.Machine.Corpora;
+using SIL.Scripture;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
@@ -14,9 +15,15 @@ namespace SIL.Machine.PunctuationAnalysis
             _nextTextSegmentBuilder = new TextSegment.Builder();
         }
 
+        public void StartBook(UsfmParserState state, string marker, string code)
+        {
+            _nextTextSegmentBuilder.SetBook(code);
+        }
+
         public void Chapter(UsfmParserState state, string number, string marker, string altNumber, string pubNumber)
         {
             _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Chapter);
+            _nextTextSegmentBuilder.SetChapter(state.VerseRef.ChapterNum);
         }
 
         public void EndBook(UsfmParserState state, string marker) { }
@@ -64,8 +71,6 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Embed);
         }
-
-        public void StartBook(UsfmParserState state, string marker, string code) { }
 
         public void StartCell(UsfmParserState state, string marker, string align, int colspan) { }
 
@@ -127,13 +132,26 @@ namespace SIL.Machine.PunctuationAnalysis
             _nextTextSegmentBuilder.AddPrecedingMarker(UsfmMarkerType.Verse);
         }
 
-        public List<Chapter> GetChapters()
+        public List<Chapter> GetChapters(IReadOnlyDictionary<int, List<int>> includeChapters = null)
         {
             var chapters = new List<Chapter>();
+            int currentBook = 0;
+            int currentChapter = 0;
             var currentChapterVerses = new List<Verse>();
             var currentVerseSegments = new List<TextSegment>();
             foreach (TextSegment textSegment in _textSegments)
             {
+                if (textSegment.Book != null)
+                    currentBook = Canon.BookIdToNumber(textSegment.Book);
+                if (textSegment.Chapter > 0)
+                    currentChapter = textSegment.Chapter;
+                if (includeChapters != null && currentBook > 0)
+                {
+                    if (!includeChapters.TryGetValue(currentBook, out List<int> bookChapters))
+                        continue;
+                    if (currentChapter > 0 && bookChapters.Count > 0 && !bookChapters.Contains(currentChapter))
+                        continue;
+                }
                 if (textSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse))
                 {
                     if (currentVerseSegments.Count > 0)

@@ -12,6 +12,8 @@ namespace SIL.Machine.PunctuationAnalysis
             get => _surrogatePairString.ToString();
             private set => _surrogatePairString = new SurrogatePairString(value);
         }
+        public string Book { get; private set; }
+        public int Chapter { get; private set; }
         public UsfmMarkerType ImmediatePrecedingMarker { get; private set; }
         public HashSet<UsfmMarkerType> MarkersInPrecedingContext { get; private set; }
         public TextSegment PreviousSegment { get; set; }
@@ -136,6 +138,18 @@ namespace SIL.Machine.PunctuationAnalysis
             {
                 _textSegment.ImmediatePrecedingMarker = marker;
                 _textSegment.MarkersInPrecedingContext.Add(marker);
+                return this;
+            }
+
+            public Builder SetBook(string code)
+            {
+                _textSegment.Book = code;
+                return this;
+            }
+
+            public Builder SetChapter(int number)
+            {
+                _textSegment.Chapter = number;
                 return this;
             }
 
