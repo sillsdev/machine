@@ -9,11 +9,10 @@ namespace SIL.Machine.Corpora
     {
         MissingChapter,
         MissingVerse,
-        MissingVerseSegment,
-        ExtraVerseSegment,
         ExtraVerse,
-        UnknownVersification,
-        InvalidVerseRange
+        InvalidVerseRange,
+        MissingVerseSegment,
+        ExtraVerseSegment
     }
 
     public class UsfmVersificationMismatch
@@ -47,7 +46,8 @@ namespace SIL.Machine.Corpora
         // Returns true if there is a mismatch
         public bool CheckMismatch()
         {
-            if (_expectedChapter > _actualChapter)
+            //A non-empty chapter is expected
+            if (_expectedChapter > _actualChapter && _expectedVerse != 0)
             {
                 Type = UsfmVersificationMismatchType.MissingChapter;
                 return true;
@@ -57,9 +57,6 @@ namespace SIL.Machine.Corpora
                 Type = UsfmVersificationMismatchType.MissingVerse;
                 return true;
             }
-            // VerseRef's internal validation covers the other cases as well,
-            // but in order to provide a user-friendly taxonomy, the others
-            // have been checked separately
             if (_verseRef != null)
             {
                 if (string.IsNullOrEmpty(_verseRef.Value.Segment()) && _verseRef.Value.HasSegmentsDefined)
@@ -85,8 +82,6 @@ namespace SIL.Machine.Corpora
         {
             switch (validStatus)
             {
-                case VerseRef.ValidStatusType.UnknownVersification:
-                    return UsfmVersificationMismatchType.UnknownVersification;
                 case VerseRef.ValidStatusType.OutOfRange:
                     return UsfmVersificationMismatchType.ExtraVerse;
                 case VerseRef.ValidStatusType.VerseRepeated:
@@ -177,7 +172,7 @@ namespace SIL.Machine.Corpora
                 var versificationMismatch = new UsfmVersificationMismatch(
                     _currentBook,
                     _versification.GetLastChapter(_currentBook),
-                    _versification.GetLastVerse(_currentBook, _currentChapter),
+                    _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum
                 );
