@@ -37,15 +37,12 @@ namespace SIL.Machine.Corpora
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
         private readonly ParatextProjectSettings _settings;
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectTermsParserBase(ParatextProjectSettings settings)
+        protected ParatextProjectTermsParserBase(IParatextProjectFileHandler paratextProjectFileHandler)
         {
-            _settings = settings;
-        }
-
-        protected ParatextProjectTermsParserBase(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
+            _settings = paratextProjectFileHandler.GetSettings();
+            _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
         public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> Parse(
@@ -299,8 +296,8 @@ namespace SIL.Machine.Corpora
                 );
         }
 
-        protected abstract Stream Open(string fileName);
+        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
 
-        protected abstract bool Exists(string fileName);
+        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
     }
 }

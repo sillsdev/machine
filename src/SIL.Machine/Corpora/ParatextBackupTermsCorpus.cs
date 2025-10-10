@@ -15,13 +15,11 @@ namespace SIL.Machine.Corpora
         {
             using (var archive = ZipFile.OpenRead(fileName))
             {
-                ParatextProjectSettings settings = new ZipParatextProjectSettingsParser(archive).Parse();
-                IEnumerable<(string, IReadOnlyList<string>)> glosses = new ZipParatextProjectTermsParser(
-                    archive,
-                    settings
-                )
+                IEnumerable<(string, IReadOnlyList<string>)> glosses = new ZipParatextProjectTermsParser(archive)
                     .Parse(termCategories, useTermGlosses, chapters)
                     .OrderBy(g => g.TermId);
+
+                ParatextProjectSettings settings = new ZipParatextProjectSettingsParser(archive).Parse();
 
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";

@@ -1,6 +1,4 @@
-using System.Text;
 using NUnit.Framework;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
@@ -47,7 +45,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings()
     {
         var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
+            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
@@ -62,7 +60,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings_DoNotUseTermGlosses()
     {
         var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
+            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
@@ -76,7 +74,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations()
     {
         var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
+            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "fr"
@@ -92,7 +90,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_FilterByChapters()
     {
         var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
+            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "fr"
@@ -115,7 +113,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_TermRenderingsExists_PreferLocalization()
     {
         var env = new TestEnvironment(
-            new DefaultParatextProjectSettings(
+            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
@@ -187,41 +185,11 @@ public class ParatextProjectTermsParserTests
         private readonly bool _useTermGlosses = useTermGlosses;
         private readonly IDictionary<string, HashSet<int>>? _chapters = chapters;
 
-        public ParatextProjectTermsParserBase Parser { get; } =
-            new MemoryParatextProjectTermsParser(settings ?? new DefaultParatextProjectSettings(), files ?? new());
+        public ParatextProjectTermsParserBase Parser { get; } = new MemoryParatextProjectTermsParser(files, settings);
 
         public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> GetGlosses()
         {
             return Parser.Parse(new string[] { "PN" }, _useTermGlosses, _chapters);
         }
     }
-
-    private class DefaultParatextProjectSettings(
-        string name = "Test",
-        string fullName = "TestProject",
-        Encoding? encoding = null,
-        ScrVers? versification = null,
-        UsfmStylesheet? stylesheet = null,
-        string fileNamePrefix = "",
-        string fileNameForm = "41MAT",
-        string fileNameSuffix = "Test.SFM",
-        string biblicalTermsListType = "Project",
-        string biblicalTermsProjectName = "Test",
-        string biblicalTermsFileName = "ProjectBiblicalTerms.xml",
-        string languageCode = "en"
-    )
-        : ParatextProjectSettings(
-            name,
-            fullName,
-            encoding ?? Encoding.UTF8,
-            versification ?? ScrVers.English,
-            stylesheet ?? new UsfmStylesheet("usfm.sty"),
-            fileNamePrefix,
-            fileNameForm,
-            fileNameSuffix,
-            biblicalTermsListType,
-            biblicalTermsProjectName,
-            biblicalTermsFileName,
-            languageCode
-        ) { }
 }

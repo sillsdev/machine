@@ -8,15 +8,12 @@ namespace SIL.Machine.Corpora
     public abstract class ParatextProjectVersificationMismatchDetector
     {
         private readonly ParatextProjectSettings _settings;
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectVersificationMismatchDetector(ParatextProjectSettings settings)
+        protected ParatextProjectVersificationMismatchDetector(IParatextProjectFileHandler paratextProjectFileHandler)
         {
-            _settings = settings;
-        }
-
-        protected ParatextProjectVersificationMismatchDetector(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
+            _settings = _paratextProjectFileHandler.GetSettings();
+            _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
         public IReadOnlyList<UsfmVersificationMismatch> GetUsfmVersificationMismatches(
@@ -52,7 +49,8 @@ namespace SIL.Machine.Corpora
             return handler.Errors;
         }
 
-        protected abstract bool Exists(string fileName);
-        protected abstract Stream Open(string fileName);
+        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
+
+        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
     }
 }
