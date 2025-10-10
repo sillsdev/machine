@@ -8,15 +8,12 @@ namespace SIL.Machine.Corpora
     public abstract class ParatextProjectTextUpdaterBase
     {
         private readonly ParatextProjectSettings _settings;
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectTextUpdaterBase(ParatextProjectSettings settings)
+        protected ParatextProjectTextUpdaterBase(IParatextProjectFileHandler paratextProjectFileHandler)
         {
-            _settings = settings;
-        }
-
-        protected ParatextProjectTextUpdaterBase(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
+            _settings = paratextProjectFileHandler.GetSettings();
+            _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
         public string UpdateUsfm(
@@ -73,7 +70,8 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        protected abstract bool Exists(string fileName);
-        protected abstract Stream Open(string fileName);
+        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
+
+        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
     }
 }
