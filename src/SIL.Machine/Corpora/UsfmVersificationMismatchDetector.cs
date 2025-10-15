@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
         MissingChapter,
         MissingVerse,
         ExtraVerse,
-        InvalidVerseRange,
+        InvalidVerseRange, //TODO This would be a nice thing to detect, but does it really fit into the UsfmVersificationMismatch category?
         MissingVerseSegment,
         ExtraVerseSegment
     }
@@ -165,6 +165,22 @@ namespace SIL.Machine.Corpora
         public bool HasError => _errors.Count > 0;
         public IReadOnlyList<UsfmVersificationMismatch> Errors => _errors;
 
+        public override void EndUsfm(UsfmParserState state)
+        {
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook))
+            {
+                var versificationMismatch = new UsfmVersificationMismatch(
+                    _currentBook,
+                    _versification.GetLastChapter(_currentBook),
+                    _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum
+                );
+                if (versificationMismatch.CheckMismatch())
+                    _errors.Add(versificationMismatch);
+            }
+        }
+
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
             if (_currentBook > 0 && Canon.IsCanonical(_currentBook))
@@ -179,31 +195,9 @@ namespace SIL.Machine.Corpora
                 if (versificationMismatch.CheckMismatch())
                     _errors.Add(versificationMismatch);
             }
-
             _currentBook = state.VerseRef.BookNum;
             _currentChapter = 0;
             _currentVerse = new VerseRef();
-        }
-
-        public override void Verse(
-            UsfmParserState state,
-            string number,
-            string marker,
-            string altNumber,
-            string pubNumber
-        )
-        {
-            _currentVerse = state.VerseRef;
-            var versificationMismatch = new UsfmVersificationMismatch(
-                _currentBook,
-                _currentChapter,
-                _currentVerse.AllVerses().Last().VerseNum,
-                _currentChapter,
-                _currentVerse.AllVerses().Last().VerseNum,
-                _currentVerse
-            );
-            if (versificationMismatch.CheckMismatch())
-                _errors.Add(versificationMismatch);
         }
 
         public override void Chapter(
@@ -229,6 +223,27 @@ namespace SIL.Machine.Corpora
 
             _currentChapter = state.VerseRef.ChapterNum;
             _currentVerse = new VerseRef();
+        }
+
+        public override void Verse(
+            UsfmParserState state,
+            string number,
+            string marker,
+            string altNumber,
+            string pubNumber
+        )
+        {
+            _currentVerse = state.VerseRef;
+            var versificationMismatch = new UsfmVersificationMismatch(
+                _currentBook,
+                _currentChapter,
+                _currentVerse.AllVerses().Last().VerseNum,
+                _currentChapter,
+                _currentVerse.AllVerses().Last().VerseNum,
+                _currentVerse
+            );
+            if (versificationMismatch.CheckMismatch())
+                _errors.Add(versificationMismatch);
         }
     }
 }

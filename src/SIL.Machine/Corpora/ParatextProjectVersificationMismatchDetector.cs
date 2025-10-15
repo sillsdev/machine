@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 
         protected ParatextProjectVersificationMismatchDetector(IParatextProjectFileHandler paratextProjectFileHandler)
         {
-            _settings = _paratextProjectFileHandler.GetSettings();
+            _settings = paratextProjectFileHandler.GetSettings();
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
