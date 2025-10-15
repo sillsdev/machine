@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using SIL.Machine.PunctuationAnalysis;
+using SIL.Machine.Corpora;
 using SIL.Scripture;
 
-namespace SIL.Machine.Corpora;
+namespace SIL.Machine.PunctuationAnalysis;
 
 [TestFixture]
 public class ParatextProjectQuoteConventionDetectorTests
