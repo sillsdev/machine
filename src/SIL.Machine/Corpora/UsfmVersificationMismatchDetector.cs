@@ -52,7 +52,7 @@ namespace SIL.Machine.Corpora
                 Type = UsfmVersificationMismatchType.MissingChapter;
                 return true;
             }
-            if (_expectedVerse > _actualVerse)
+            if (_expectedVerse > _actualVerse && _expectedChapter == _actualChapter)
             {
                 Type = UsfmVersificationMismatchType.MissingVerse;
                 return true;
@@ -162,7 +162,6 @@ namespace SIL.Machine.Corpora
             _errors = new List<UsfmVersificationMismatch>();
         }
 
-        public bool HasError => _errors.Count > 0;
         public IReadOnlyList<UsfmVersificationMismatch> Errors => _errors;
 
         public override void EndUsfm(UsfmParserState state)
@@ -183,18 +182,6 @@ namespace SIL.Machine.Corpora
 
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
-            if (_currentBook > 0 && Canon.IsCanonical(_currentBook))
-            {
-                var versificationMismatch = new UsfmVersificationMismatch(
-                    _currentBook,
-                    _versification.GetLastChapter(_currentBook),
-                    _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
-                    _currentChapter,
-                    _currentVerse.AllVerses().Last().VerseNum
-                );
-                if (versificationMismatch.CheckMismatch())
-                    _errors.Add(versificationMismatch);
-            }
             _currentBook = state.VerseRef.BookNum;
             _currentChapter = 0;
             _currentVerse = new VerseRef();

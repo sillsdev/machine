@@ -291,6 +291,92 @@ public class ParatextProjectQuoteConventionDetectorTests
         Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerse));
     }
 
+    [Test]
+    public void GetUsfmVersificationMismatches_MultipleBooks()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "642JNTest.SFM",
+                    @"\id 2JN
+        \c 1
+        \v 1
+        \v 2
+        \v 3
+        \v 4
+        \v 5
+        \v 6
+        \v 7
+        \v 8
+        \v 9
+        \v 10
+        \v 11
+        \v 12
+        "
+                },
+                {
+                    "653JNTest.SFM",
+                    @"\id 3JN
+        \c 1
+        \v 1
+        \v 2
+        \v 3
+        \v 4
+        \v 5
+        \v 6
+        \v 7
+        \v 8
+        \v 9
+        \v 10
+        \v 11
+        \v 12
+        \v 13
+        \v 14
+        \v 15
+        "
+                }
+            }
+        );
+        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
+        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
+        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerse));
+    }
+
+    [Test]
+    public void GetUsfmVersificationMismatches_MultipleChapters()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "642JNTest.SFM",
+                    @"\id 2JN
+        \c 1
+        \v 1
+        \v 2
+        \v 3
+        \v 4
+        \v 5
+        \v 6
+        \v 7
+        \v 8
+        \v 9
+        \v 10
+        \v 11
+        \v 12
+        \c 2
+        \v 1
+        "
+                }
+            }
+        );
+        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
+        Assert.That(mismatches, Has.Count.EqualTo(2), JsonSerializer.Serialize(mismatches));
+        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerse));
+        Assert.That(mismatches[1].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerse));
+    }
+
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
     {
         public ParatextProjectVersificationMismatchDetector Detector { get; } =
