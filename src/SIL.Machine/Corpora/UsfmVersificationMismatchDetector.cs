@@ -208,7 +208,7 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
-            if (_currentChapter != 0)
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
             {
                 var versificationMismatch = new UsfmVersificationMismatch(
                     _currentBook,
@@ -234,16 +234,19 @@ namespace SIL.Machine.Corpora
         )
         {
             _currentVerse = state.VerseRef;
-            var versificationMismatch = new UsfmVersificationMismatch(
-                _currentBook,
-                _currentChapter,
-                _currentVerse.AllVerses().Last().VerseNum,
-                _currentChapter,
-                _currentVerse.AllVerses().Last().VerseNum,
-                _currentVerse
-            );
-            if (versificationMismatch.CheckMismatch())
-                _errors.Add(versificationMismatch);
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
+            {
+                var versificationMismatch = new UsfmVersificationMismatch(
+                    _currentBook,
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _currentVerse
+                );
+                if (versificationMismatch.CheckMismatch())
+                    _errors.Add(versificationMismatch);
+            }
         }
     }
 }
