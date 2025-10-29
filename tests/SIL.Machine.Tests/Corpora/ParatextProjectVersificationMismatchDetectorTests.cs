@@ -379,7 +379,7 @@ public class ParatextProjectQuoteConventionDetectorTests
 
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
     {
-        public ParatextProjectVersificationMismatchDetector Detector { get; } =
+        public ParatextProjectVersificationMismatchDetectorBase Detector { get; } =
             new MemoryParatextProjectVersificationMismatchDetector(files, settings);
 
         public IReadOnlyList<UsfmVersificationMismatch> GetUsfmVersificationMismatches()

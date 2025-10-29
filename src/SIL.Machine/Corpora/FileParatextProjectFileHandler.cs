@@ -1,16 +1,15 @@
 using System.IO;
+using System.Linq;
 
 namespace SIL.Machine.Corpora
 {
     public class FileParatextProjectFileHandler : IParatextProjectFileHandler
     {
         private readonly string _projectDir;
-        private readonly ParatextProjectSettings _settings;
 
         public FileParatextProjectFileHandler(string projectDir)
         {
             _projectDir = projectDir;
-            _settings = new FileParatextProjectSettingsParser(projectDir).Parse();
         }
 
         public bool Exists(string fileName)
@@ -23,9 +22,18 @@ namespace SIL.Machine.Corpora
             return File.OpenRead(Path.Combine(_projectDir, fileName));
         }
 
-        public ParatextProjectSettings GetSettings()
+        public UsfmStylesheet CreateStylesheet(string fileName)
         {
-            return _settings;
+            string customStylesheetFileName = Path.Combine(_projectDir, "custom.sty");
+            return new UsfmStylesheet(
+                fileName,
+                File.Exists(customStylesheetFileName) ? customStylesheetFileName : null
+            );
+        }
+
+        public string Find(string extension)
+        {
+            return Directory.EnumerateFiles(_projectDir, "*" + extension).FirstOrDefault();
         }
     }
 }

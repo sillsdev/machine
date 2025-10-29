@@ -10,9 +10,12 @@ namespace SIL.Machine.Corpora
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectTextUpdaterBase(IParatextProjectFileHandler paratextProjectFileHandler)
+        protected ParatextProjectTextUpdaterBase(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings settings
+        )
         {
-            _settings = paratextProjectFileHandler.GetSettings();
+            _settings = settings;
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 

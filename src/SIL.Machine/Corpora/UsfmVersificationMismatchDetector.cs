@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
         MissingChapter,
         MissingVerse,
         ExtraVerse,
-        InvalidVerseRange, //TODO This would be a nice thing to detect, but does it really fit into the UsfmVersificationMismatch category?
+        InvalidVerseRange,
         MissingVerseSegment,
         ExtraVerseSegment
     }
@@ -100,7 +100,10 @@ namespace SIL.Machine.Corpora
         {
             get
             {
-                VerseRef defaultVerseRef = new VerseRef(_bookNum, _expectedChapter, _expectedVerse);
+                if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
+                {
+                    return "";
+                }
                 if (Type == UsfmVersificationMismatchType.ExtraVerse)
                     return "";
                 if (

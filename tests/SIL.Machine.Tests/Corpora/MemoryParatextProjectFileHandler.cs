@@ -3,17 +3,23 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
-public class MemoryParatextProjectFileHandler(
-    IDictionary<string, string>? files = null,
-    ParatextProjectSettings? settings = null
-) : IParatextProjectFileHandler
+public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files = null) : IParatextProjectFileHandler
 {
     public IDictionary<string, string> Files { get; } = files ?? new Dictionary<string, string>();
-    private readonly ParatextProjectSettings _settings = settings ?? new DefaultParatextProjectSettings();
+
+    public UsfmStylesheet CreateStylesheet(string fileName)
+    {
+        throw new NotImplementedException();
+    }
 
     public bool Exists(string fileName)
     {
         return Files.ContainsKey(fileName);
+    }
+
+    public string Find(string extension)
+    {
+        throw new NotImplementedException();
     }
 
     public Stream? Open(string fileName)
@@ -21,11 +27,6 @@ public class MemoryParatextProjectFileHandler(
         if (!Files.TryGetValue(fileName, out string? contents))
             return null;
         return new MemoryStream(Encoding.UTF8.GetBytes(contents));
-    }
-
-    public ParatextProjectSettings GetSettings()
-    {
-        return _settings;
     }
 
     public class DefaultParatextProjectSettings(

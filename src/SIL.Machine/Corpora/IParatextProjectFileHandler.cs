@@ -6,6 +6,9 @@ namespace SIL.Machine.Corpora
     {
         bool Exists(string fileName);
         Stream Open(string fileName);
-        ParatextProjectSettings GetSettings();
+        string Find(string extension);
+        UsfmStylesheet CreateStylesheet(string fileName);
+
+        // ParatextProjectSettings GetSettings();
     }
 }

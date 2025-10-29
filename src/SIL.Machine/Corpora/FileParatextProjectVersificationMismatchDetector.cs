@@ -1,8 +1,11 @@
 namespace SIL.Machine.Corpora
 {
-    public class FileParatextProjectVersificationMismatchDetector : ParatextProjectVersificationMismatchDetector
+    public class FileParatextProjectVersificationMismatchDetector : ParatextProjectVersificationMismatchDetectorBase
     {
         public FileParatextProjectVersificationMismatchDetector(string projectDir)
-            : base(new FileParatextProjectFileHandler(projectDir)) { }
+            : base(
+                new FileParatextProjectFileHandler(projectDir),
+                new FileParatextProjectSettingsParser(projectDir).Parse()
+            ) { }
     }
 }

@@ -2,9 +2,10 @@ using System.IO.Compression;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextProjectVersificationMismatchDetector : ParatextProjectVersificationMismatchDetector
+    public class ZipParatextProjectVersificationMismatchDetector : ParatextProjectVersificationMismatchDetectorBase
     {
         public ZipParatextProjectVersificationMismatchDetector(ZipArchive archive)
-            : base(new ZipParatextProjectFileHandler(archive)) { }
+            : base(new ZipParatextProjectFileHandler(archive), new ZipParatextProjectSettingsParser(archive).Parse())
+        { }
     }
 }

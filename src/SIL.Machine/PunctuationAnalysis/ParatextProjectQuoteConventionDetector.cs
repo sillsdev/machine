@@ -13,9 +13,12 @@ namespace SIL.Machine.PunctuationAnalysis
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectQuoteConventionDetector(IParatextProjectFileHandler paratextProjectFileHandler)
+        protected ParatextProjectQuoteConventionDetector(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings settings
+        )
         {
-            _settings = paratextProjectFileHandler.GetSettings();
+            _settings = settings;
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 

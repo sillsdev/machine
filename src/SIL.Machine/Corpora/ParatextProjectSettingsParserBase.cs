@@ -8,16 +8,23 @@ namespace SIL.Machine.Corpora
 {
     public abstract class ParatextProjectSettingsParserBase
     {
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
+
+        public ParatextProjectSettingsParserBase(IParatextProjectFileHandler paratextProjectFileHandler)
+        {
+            _paratextProjectFileHandler = paratextProjectFileHandler;
+        }
+
         public ParatextProjectSettings Parse()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string settingsFileName = "Settings.xml";
-            if (!Exists(settingsFileName))
-                settingsFileName = Find(".ssf");
+            if (!_paratextProjectFileHandler.Exists(settingsFileName))
+                settingsFileName = _paratextProjectFileHandler.Find(".ssf");
             if (string.IsNullOrEmpty(settingsFileName))
                 throw new InvalidOperationException("The project does not contain a settings file.");
             XDocument settingsDoc;
-            using (Stream stream = Open(settingsFileName))
+            using (Stream stream = _paratextProjectFileHandler.Open(settingsFileName))
             {
                 settingsDoc = XDocument.Load(stream);
             }
@@ -36,7 +43,7 @@ namespace SIL.Machine.Corpora
 
             var scrVersType = (int?)settingsDoc.Root.Element("Versification") ?? (int)ScrVersType.English;
             var versification = new ScrVers((ScrVersType)scrVersType);
-            if (Exists("custom.vrs"))
+            if (_paratextProjectFileHandler.Exists("custom.vrs"))
             {
                 var guid = (string)settingsDoc.Root.Element("Guid");
                 string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
@@ -46,7 +53,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    using (var reader = new StreamReader(Open("custom.vrs")))
+                    using (var reader = new StreamReader(_paratextProjectFileHandler.Open("custom.vrs")))
                     {
                         versification = Versification.Table.Implementation.Load(
                             reader,
@@ -60,9 +67,9 @@ namespace SIL.Machine.Corpora
             }
 
             var stylesheetFileName = (string)settingsDoc.Root.Element("StyleSheet") ?? "usfm.sty";
-            if (!Exists(stylesheetFileName) && stylesheetFileName != "usfm_sb.sty")
+            if (!_paratextProjectFileHandler.Exists(stylesheetFileName) && stylesheetFileName != "usfm_sb.sty")
                 stylesheetFileName = "usfm.sty";
-            UsfmStylesheet stylesheet = CreateStylesheet(stylesheetFileName);
+            UsfmStylesheet stylesheet = _paratextProjectFileHandler.CreateStylesheet(stylesheetFileName);
 
             string prefix = "";
             string form = "41MAT";
@@ -122,10 +129,5 @@ namespace SIL.Machine.Corpora
                 languageCode
             );
         }
-
-        protected abstract bool Exists(string fileName);
-        protected abstract string Find(string extension);
-        protected abstract Stream Open(string fileName);
-        protected abstract UsfmStylesheet CreateStylesheet(string fileName);
     }
 }

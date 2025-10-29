@@ -5,14 +5,17 @@ using System.Text;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextProjectVersificationMismatchDetector
+    public abstract class ParatextProjectVersificationMismatchDetectorBase
     {
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectVersificationMismatchDetector(IParatextProjectFileHandler paratextProjectFileHandler)
+        protected ParatextProjectVersificationMismatchDetectorBase(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings settings
+        )
         {
-            _settings = paratextProjectFileHandler.GetSettings();
+            _settings = settings;
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
@@ -23,11 +26,11 @@ namespace SIL.Machine.Corpora
             handler = handler ?? new UsfmVersificationMismatchDetector(_settings.Versification);
             foreach (string fileName in _settings.GetAllScriptureBookFileNames())
             {
-                if (!Exists(fileName))
+                if (!_paratextProjectFileHandler.Exists(fileName))
                     continue;
 
                 string usfm;
-                using (var reader = new StreamReader(Open(fileName)))
+                using (var reader = new StreamReader(_paratextProjectFileHandler.Open(fileName)))
                 {
                     usfm = reader.ReadToEnd();
                 }
@@ -48,9 +51,5 @@ namespace SIL.Machine.Corpora
             }
             return handler.Errors;
         }
-
-        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
-
-        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
     }
 }
