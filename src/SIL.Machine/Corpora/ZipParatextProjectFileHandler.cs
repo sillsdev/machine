@@ -8,12 +8,10 @@ namespace SIL.Machine.Corpora
     public class ZipParatextProjectFileHandler : IParatextProjectFileHandler
     {
         private readonly ZipArchive _archive;
-        private readonly ParatextProjectSettings _settings;
 
         public ZipParatextProjectFileHandler(ZipArchive archive)
         {
             _archive = archive;
-            _settings = new ZipParatextProjectSettingsParser(archive).Parse();
         }
 
         public bool Exists(string fileName)
@@ -27,11 +25,6 @@ namespace SIL.Machine.Corpora
             if (entry == null)
                 return null;
             return entry.Open();
-        }
-
-        public ParatextProjectSettings GetSettings()
-        {
-            return _settings;
         }
 
         public string Find(string extension)
