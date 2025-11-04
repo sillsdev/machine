@@ -8,7 +8,5 @@ namespace SIL.Machine.Corpora
         Stream Open(string fileName);
         string Find(string extension);
         UsfmStylesheet CreateStylesheet(string fileName);
-
-        // ParatextProjectSettings GetSettings();
     }
 }

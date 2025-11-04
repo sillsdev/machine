@@ -5,7 +5,7 @@ namespace SIL.Machine.Corpora
         public FileParatextProjectVersificationMismatchDetector(string projectDir)
             : base(
                 new FileParatextProjectFileHandler(projectDir),
-                new FileParatextProjectSettingsParser(projectDir).Parse()
+                FileParatextProjectSettingsParser.Parse(projectDir)
             ) { }
     }
 }

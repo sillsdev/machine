@@ -59,9 +59,9 @@ namespace SIL.Machine.Corpora
             IDictionary<string, ImmutableHashSet<VerseRef>> termIdToReferences;
             if (_settings.BiblicalTermsListType == "Project")
             {
-                if (Exists(_settings.BiblicalTermsFileName))
+                if (_paratextProjectFileHandler.Exists(_settings.BiblicalTermsFileName))
                 {
-                    using (Stream keyTermsFile = Open(_settings.BiblicalTermsFileName))
+                    using (Stream keyTermsFile = _paratextProjectFileHandler.Open(_settings.BiblicalTermsFileName))
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -115,9 +115,9 @@ namespace SIL.Machine.Corpora
             }
 
             XDocument termRenderingsDoc = null;
-            if (Exists("TermRenderings.xml"))
+            if (_paratextProjectFileHandler.Exists("TermRenderings.xml"))
             {
-                using (Stream keyTermsFile = Open("TermRenderings.xml"))
+                using (Stream keyTermsFile = _paratextProjectFileHandler.Open("TermRenderings.xml"))
                 {
                     termRenderingsDoc = XDocument.Load(keyTermsFile);
                 }
@@ -298,9 +298,5 @@ namespace SIL.Machine.Corpora
                             .ToImmutableHashSet()
                 );
         }
-
-        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
-
-        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
     }
 }

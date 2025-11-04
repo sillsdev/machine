@@ -19,7 +19,7 @@ namespace SIL.Machine.Corpora
                     .Parse(termCategories, useTermGlosses, chapters)
                     .OrderBy(g => g.TermId);
 
-                ParatextProjectSettings settings = new ZipParatextProjectSettingsParser(archive).Parse();
+                ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
 
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";

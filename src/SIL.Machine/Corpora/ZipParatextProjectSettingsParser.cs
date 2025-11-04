@@ -6,5 +6,10 @@ namespace SIL.Machine.Corpora
     {
         public ZipParatextProjectSettingsParser(ZipArchive archive)
             : base(new ZipParatextProjectFileHandler(archive)) { }
+
+        public static ParatextProjectSettings Parse(ZipArchive archive)
+        {
+            return new ZipParatextProjectSettingsParser(archive).Parse();
+        }
     }
 }

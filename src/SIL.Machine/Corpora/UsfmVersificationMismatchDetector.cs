@@ -100,6 +100,8 @@ namespace SIL.Machine.Corpora
         {
             get
             {
+                // We do not want to throw an exception here, and the VerseRef constructor can throw
+                // an exception with certain invalid verse data; use TryParse instead.
                 if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
                 {
                     return "";
