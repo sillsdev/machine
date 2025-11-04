@@ -85,13 +85,13 @@ public class UsfmManualTests
     public void ValidateUsfmVersification()
     {
         using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
-        var quoteConventionDetector = new ZipParatextProjectVersificationMismatchDetector(zipArchive);
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = quoteConventionDetector.GetUsfmVersificationMismatches();
+        var versificationErrorDetector = new ZipParatextProjectVersificationErrorDetector(zipArchive);
+        IReadOnlyList<UsfmVersificationError> errors = versificationErrorDetector.GetUsfmVersificationErrors();
 
         Assert.That(
-            mismatches,
+            errors,
             Has.Count.EqualTo(0),
-            JsonSerializer.Serialize(mismatches, new JsonSerializerOptions { WriteIndented = true })
+            JsonSerializer.Serialize(errors, new JsonSerializerOptions { WriteIndented = true })
         );
     }
 }

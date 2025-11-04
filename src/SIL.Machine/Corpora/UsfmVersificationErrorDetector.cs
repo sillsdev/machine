@@ -5,7 +5,7 @@ using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public enum UsfmVersificationMismatchType
+    public enum UsfmVersificationErrorType
     {
         MissingChapter,
         MissingVerse,
@@ -15,7 +15,7 @@ namespace SIL.Machine.Corpora
         ExtraVerseSegment
     }
 
-    public class UsfmVersificationMismatch
+    public class UsfmVersificationError
     {
         private readonly int _bookNum;
         private readonly int _expectedChapter;
@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
         private readonly int _actualVerse;
         private VerseRef? _verseRef = null;
 
-        public UsfmVersificationMismatch(
+        public UsfmVersificationError(
             int bookNum,
             int expectedChapter,
             int expectedVerse,
@@ -41,32 +41,32 @@ namespace SIL.Machine.Corpora
             _verseRef = verseRef;
         }
 
-        public UsfmVersificationMismatchType Type { get; private set; }
+        public UsfmVersificationErrorType Type { get; private set; }
 
-        // Returns true if there is a mismatch
-        public bool CheckMismatch()
+        // Returns true if there is an error
+        public bool CheckError()
         {
             //A non-empty chapter is expected
             if (_expectedChapter > _actualChapter && _expectedVerse != 0)
             {
-                Type = UsfmVersificationMismatchType.MissingChapter;
+                Type = UsfmVersificationErrorType.MissingChapter;
                 return true;
             }
             if (_expectedVerse > _actualVerse && _expectedChapter == _actualChapter)
             {
-                Type = UsfmVersificationMismatchType.MissingVerse;
+                Type = UsfmVersificationErrorType.MissingVerse;
                 return true;
             }
             if (_verseRef != null)
             {
                 if (string.IsNullOrEmpty(_verseRef.Value.Segment()) && _verseRef.Value.HasSegmentsDefined)
                 {
-                    Type = UsfmVersificationMismatchType.MissingVerseSegment;
+                    Type = UsfmVersificationErrorType.MissingVerseSegment;
                     return true;
                 }
                 if (!string.IsNullOrEmpty(_verseRef.Value.Segment()) && !_verseRef.Value.HasSegmentsDefined)
                 {
-                    Type = UsfmVersificationMismatchType.ExtraVerseSegment;
+                    Type = UsfmVersificationErrorType.ExtraVerseSegment;
                     return true;
                 }
                 if (!_verseRef.Value.Valid)
@@ -78,15 +78,15 @@ namespace SIL.Machine.Corpora
             return false;
         }
 
-        private static UsfmVersificationMismatchType Map(VerseRef.ValidStatusType validStatus)
+        private static UsfmVersificationErrorType Map(VerseRef.ValidStatusType validStatus)
         {
             switch (validStatus)
             {
                 case VerseRef.ValidStatusType.OutOfRange:
-                    return UsfmVersificationMismatchType.ExtraVerse;
+                    return UsfmVersificationErrorType.ExtraVerse;
                 case VerseRef.ValidStatusType.VerseRepeated:
                 case VerseRef.ValidStatusType.VerseOutOfOrder:
-                    return UsfmVersificationMismatchType.InvalidVerseRange;
+                    return UsfmVersificationErrorType.InvalidVerseRange;
                 default:
                     throw new InvalidEnumArgumentException(
                         nameof(validStatus),
@@ -106,10 +106,10 @@ namespace SIL.Machine.Corpora
                 {
                     return "";
                 }
-                if (Type == UsfmVersificationMismatchType.ExtraVerse)
+                if (Type == UsfmVersificationErrorType.ExtraVerse)
                     return "";
                 if (
-                    Type == UsfmVersificationMismatchType.MissingVerseSegment
+                    Type == UsfmVersificationErrorType.MissingVerseSegment
                     && VerseRef.TryParse(
                         $"{defaultVerseRef.Book} {defaultVerseRef.Chapter}:{defaultVerseRef.Verse}a",
                         out VerseRef verseWithSegment
@@ -118,7 +118,7 @@ namespace SIL.Machine.Corpora
                 {
                     return verseWithSegment.ToString();
                 }
-                if (Type == UsfmVersificationMismatchType.InvalidVerseRange)
+                if (Type == UsfmVersificationErrorType.InvalidVerseRange)
                 {
                     List<VerseRef> sortedAllUniqueVerses = _verseRef
                         .Value.AllVerses()
@@ -150,38 +150,38 @@ namespace SIL.Machine.Corpora
                 : new VerseRef(_bookNum, _actualChapter, _actualVerse).ToString();
     }
 
-    public class UsfmVersificationMismatchDetector : UsfmParserHandlerBase
+    public class UsfmVersificationErrorDetector : UsfmParserHandlerBase
     {
         private readonly ScrVers _versification;
         private int _currentBook;
         private int _currentChapter;
         private VerseRef _currentVerse;
-        private readonly List<UsfmVersificationMismatch> _errors;
+        private readonly List<UsfmVersificationError> _errors;
 
-        public UsfmVersificationMismatchDetector(ScrVers versification)
+        public UsfmVersificationErrorDetector(ScrVers versification)
         {
             _versification = versification;
             _currentBook = 0;
             _currentChapter = 0;
             _currentVerse = new VerseRef();
-            _errors = new List<UsfmVersificationMismatch>();
+            _errors = new List<UsfmVersificationError>();
         }
 
-        public IReadOnlyList<UsfmVersificationMismatch> Errors => _errors;
+        public IReadOnlyList<UsfmVersificationError> Errors => _errors;
 
         public override void EndUsfm(UsfmParserState state)
         {
             if (_currentBook > 0 && Canon.IsCanonical(_currentBook))
             {
-                var versificationMismatch = new UsfmVersificationMismatch(
+                var versificationError = new UsfmVersificationError(
                     _currentBook,
                     _versification.GetLastChapter(_currentBook),
                     _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum
                 );
-                if (versificationMismatch.CheckMismatch())
-                    _errors.Add(versificationMismatch);
+                if (versificationError.CheckError())
+                    _errors.Add(versificationError);
             }
         }
 
@@ -202,15 +202,15 @@ namespace SIL.Machine.Corpora
         {
             if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
             {
-                var versificationMismatch = new UsfmVersificationMismatch(
+                var versificationError = new UsfmVersificationError(
                     _currentBook,
                     _currentChapter,
                     _versification.GetLastVerse(_currentBook, _currentChapter),
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum
                 );
-                if (versificationMismatch.CheckMismatch())
-                    _errors.Add(versificationMismatch);
+                if (versificationError.CheckError())
+                    _errors.Add(versificationError);
             }
 
             _currentChapter = state.VerseRef.ChapterNum;
@@ -228,7 +228,7 @@ namespace SIL.Machine.Corpora
             _currentVerse = state.VerseRef;
             if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
             {
-                var versificationMismatch = new UsfmVersificationMismatch(
+                var versificationError = new UsfmVersificationError(
                     _currentBook,
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum,
@@ -236,8 +236,8 @@ namespace SIL.Machine.Corpora
                     _currentVerse.AllVerses().Last().VerseNum,
                     _currentVerse
                 );
-                if (versificationMismatch.CheckMismatch())
-                    _errors.Add(versificationMismatch);
+                if (versificationError.CheckError())
+                    _errors.Add(versificationError);
             }
         }
     }

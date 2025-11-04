@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora;
 public class ParatextProjectQuoteConventionDetectorTests
 {
     [Test]
-    public void GetUsfmVersificationMismatches_NoMismatches()
+    public void GetUsfmVersificationErrors_Noerrors()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -38,14 +38,14 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         Assert.That(
-            env.GetUsfmVersificationMismatches(),
+            env.GetUsfmVersificationErrors(),
             Has.Count.EqualTo(0),
-            JsonSerializer.Serialize(env.GetUsfmVersificationMismatches())
+            JsonSerializer.Serialize(env.GetUsfmVersificationErrors())
         );
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_MissingVerse()
+    public void GetUsfmVersificationErrors_MissingVerse()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -72,13 +72,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerse));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_MissingChapter()
+    public void GetUsfmVersificationErrors_MissingChapter()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -90,13 +90,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingChapter));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingChapter));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_ExtraVerse()
+    public void GetUsfmVersificationErrors_ExtraVerse()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -125,13 +125,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerse));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_InvalidVerse()
+    public void GetUsfmVersificationErrors_InvalidVerse()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -158,13 +158,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.InvalidVerseRange));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.InvalidVerseRange));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_ExtraVerseSegment()
+    public void GetUsfmVersificationErrors_ExtraVerseSegment()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -193,13 +193,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(2), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerseSegment));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerseSegment));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_MissingVerseSegment()
+    public void GetUsfmVersificationErrors_MissingVerseSegment()
     {
         var env = new TestEnvironment(
             settings: new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
@@ -230,13 +230,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerseSegment));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerseSegment));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_IgnoreNonCanonicals()
+    public void GetUsfmVersificationErrors_IgnoreNonCanonicals()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -250,12 +250,12 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(0), JsonSerializer.Serialize(mismatches));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(0), JsonSerializer.Serialize(errors));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_ExtraVerse_ExcludedInCustomVrs()
+    public void GetUsfmVersificationErrors_ExtraVerse_ExcludedInCustomVrs()
     {
         var env = new TestEnvironment(
             settings: new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
@@ -286,13 +286,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerse));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_MultipleBooks()
+    public void GetUsfmVersificationErrors_MultipleBooks()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -338,13 +338,13 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(1), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerse));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
     }
 
     [Test]
-    public void GetUsfmVersificationMismatches_MultipleChapters()
+    public void GetUsfmVersificationErrors_MultipleChapters()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -371,20 +371,20 @@ public class ParatextProjectQuoteConventionDetectorTests
                 }
             }
         );
-        IReadOnlyList<UsfmVersificationMismatch> mismatches = env.GetUsfmVersificationMismatches();
-        Assert.That(mismatches, Has.Count.EqualTo(2), JsonSerializer.Serialize(mismatches));
-        Assert.That(mismatches[0].Type, Is.EqualTo(UsfmVersificationMismatchType.MissingVerse));
-        Assert.That(mismatches[1].Type, Is.EqualTo(UsfmVersificationMismatchType.ExtraVerse));
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[1].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
     }
 
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
     {
-        public ParatextProjectVersificationMismatchDetectorBase Detector { get; } =
-            new MemoryParatextProjectVersificationMismatchDetector(files, settings);
+        public ParatextProjectVersificationErrorDetectorBase Detector { get; } =
+            new MemoryParatextProjectVersificationErrorDetector(files, settings);
 
-        public IReadOnlyList<UsfmVersificationMismatch> GetUsfmVersificationMismatches()
+        public IReadOnlyList<UsfmVersificationError> GetUsfmVersificationErrors()
         {
-            return Detector.GetUsfmVersificationMismatches();
+            return Detector.GetUsfmVersificationErrors();
         }
     }
 

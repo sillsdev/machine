@@ -5,12 +5,12 @@ using System.Text;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextProjectVersificationMismatchDetectorBase
+    public abstract class ParatextProjectVersificationErrorDetectorBase
     {
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectVersificationMismatchDetectorBase(
+        protected ParatextProjectVersificationErrorDetectorBase(
             IParatextProjectFileHandler paratextProjectFileHandler,
             ParatextProjectSettings settings
         )
@@ -19,11 +19,11 @@ namespace SIL.Machine.Corpora
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
-        public IReadOnlyList<UsfmVersificationMismatch> GetUsfmVersificationMismatches(
-            UsfmVersificationMismatchDetector handler = null
+        public IReadOnlyList<UsfmVersificationError> GetUsfmVersificationErrors(
+            UsfmVersificationErrorDetector handler = null
         )
         {
-            handler = handler ?? new UsfmVersificationMismatchDetector(_settings.Versification);
+            handler = handler ?? new UsfmVersificationErrorDetector(_settings.Versification);
             foreach (string fileName in _settings.GetAllScriptureBookFileNames())
             {
                 if (!_paratextProjectFileHandler.Exists(fileName))

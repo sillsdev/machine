@@ -1,10 +1,10 @@
 namespace SIL.Machine.Corpora;
 
-public class MemoryParatextProjectVersificationMismatchDetector(
+public class MemoryParatextProjectVersificationErrorDetector(
     IDictionary<string, string>? files = null,
     ParatextProjectSettings? settings = null
 )
-    : ParatextProjectVersificationMismatchDetectorBase(
+    : ParatextProjectVersificationErrorDetectorBase(
         new MemoryParatextProjectFileHandler(files),
         settings ?? new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings()
     ) { }
