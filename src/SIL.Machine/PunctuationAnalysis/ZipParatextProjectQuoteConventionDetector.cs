@@ -6,7 +6,6 @@ namespace SIL.Machine.PunctuationAnalysis
     public class ZipParatextProjectQuoteConventionDetector : ParatextProjectQuoteConventionDetector
     {
         public ZipParatextProjectQuoteConventionDetector(ZipArchive archive)
-            : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive))
-        { }
+            : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive)) { }
     }
 }

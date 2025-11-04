@@ -5,7 +5,6 @@ namespace SIL.Machine.Corpora
     public class ZipParatextProjectTermsParser : ParatextProjectTermsParserBase
     {
         public ZipParatextProjectTermsParser(ZipArchive archive)
-            : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive))
-        { }
+            : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive)) { }
     }
 }
