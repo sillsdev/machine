@@ -4,6 +4,6 @@
     {
         public FileParatextProjectTextUpdater(string projectDir)
             : base(new FileParatextProjectFileHandler(projectDir), FileParatextProjectSettingsParser.Parse(projectDir))
-            { }
+        { }
     }
 }
