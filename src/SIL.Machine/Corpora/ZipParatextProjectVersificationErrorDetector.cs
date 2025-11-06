@@ -2,9 +2,9 @@ using System.IO.Compression;
 
 namespace SIL.Machine.Corpora
 {
-    public class ZipParatextProjectTextUpdater : ParatextProjectTextUpdaterBase
+    public class ZipParatextProjectVersificationErrorDetector : ParatextProjectVersificationErrorDetectorBase
     {
-        public ZipParatextProjectTextUpdater(ZipArchive archive)
+        public ZipParatextProjectVersificationErrorDetector(ZipArchive archive)
             : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive)) { }
     }
 }

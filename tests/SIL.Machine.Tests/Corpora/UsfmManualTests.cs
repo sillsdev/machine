@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Text.Json;
 using NUnit.Framework;
 using SIL.Machine.PunctuationAnalysis;
 
@@ -77,5 +78,20 @@ public class UsfmManualTests
             Assert.NotNull(sourceAnalysis);
             Assert.NotNull(targetAnalysis);
         });
+    }
+
+    [Test]
+    [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
+    public void ValidateUsfmVersification()
+    {
+        using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
+        var versificationErrorDetector = new ZipParatextProjectVersificationErrorDetector(zipArchive);
+        IReadOnlyList<UsfmVersificationError> errors = versificationErrorDetector.GetUsfmVersificationErrors();
+
+        Assert.That(
+            errors,
+            Has.Count.EqualTo(0),
+            JsonSerializer.Serialize(errors, new JsonSerializerOptions { WriteIndented = true })
+        );
     }
 }

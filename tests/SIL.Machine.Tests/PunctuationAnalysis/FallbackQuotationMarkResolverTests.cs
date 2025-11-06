@@ -1,7 +1,6 @@
 using NUnit.Framework;
-using SIL.Machine.PunctuationAnalysis;
 
-namespace SIL.Machine.Corpora;
+namespace SIL.Machine.PunctuationAnalysis;
 
 [TestFixture]
 public class FallbackQuotationMarkResolverTests

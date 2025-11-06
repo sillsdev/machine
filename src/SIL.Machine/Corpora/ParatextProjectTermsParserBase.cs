@@ -37,15 +37,15 @@ namespace SIL.Machine.Corpora
         private static readonly Regex NumericalInformationRegex = new Regex(@"\s+\d+(\.\d+)*$", RegexOptions.Compiled);
 
         private readonly ParatextProjectSettings _settings;
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectTermsParserBase(ParatextProjectSettings settings)
+        protected ParatextProjectTermsParserBase(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings settings
+        )
         {
             _settings = settings;
-        }
-
-        protected ParatextProjectTermsParserBase(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
+            _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
         public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> Parse(
@@ -59,9 +59,9 @@ namespace SIL.Machine.Corpora
             IDictionary<string, ImmutableHashSet<VerseRef>> termIdToReferences;
             if (_settings.BiblicalTermsListType == "Project")
             {
-                if (Exists(_settings.BiblicalTermsFileName))
+                if (_paratextProjectFileHandler.Exists(_settings.BiblicalTermsFileName))
                 {
-                    using (Stream keyTermsFile = Open(_settings.BiblicalTermsFileName))
+                    using (Stream keyTermsFile = _paratextProjectFileHandler.Open(_settings.BiblicalTermsFileName))
                     {
                         biblicalTermsDoc = XDocument.Load(keyTermsFile);
                         termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
@@ -115,9 +115,9 @@ namespace SIL.Machine.Corpora
             }
 
             XDocument termRenderingsDoc = null;
-            if (Exists("TermRenderings.xml"))
+            if (_paratextProjectFileHandler.Exists("TermRenderings.xml"))
             {
-                using (Stream keyTermsFile = Open("TermRenderings.xml"))
+                using (Stream keyTermsFile = _paratextProjectFileHandler.Open("TermRenderings.xml"))
                 {
                     termRenderingsDoc = XDocument.Load(keyTermsFile);
                 }
@@ -298,9 +298,5 @@ namespace SIL.Machine.Corpora
                             .ToImmutableHashSet()
                 );
         }
-
-        protected abstract Stream Open(string fileName);
-
-        protected abstract bool Exists(string fileName);
     }
 }

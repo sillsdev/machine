@@ -1,11 +1,41 @@
-﻿using System.IO;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using SIL.IO;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ZipParatextProjectSettingsParserBase : ParatextProjectSettingsParserBase
+    public class ZipParatextProjectFileHandler : IParatextProjectFileHandler
     {
-        protected override UsfmStylesheet CreateStylesheet(string fileName)
+        private readonly ZipArchive _archive;
+
+        public ZipParatextProjectFileHandler(ZipArchive archive)
+        {
+            _archive = archive;
+        }
+
+        public bool Exists(string fileName)
+        {
+            return _archive.GetEntry(fileName) != null;
+        }
+
+        public Stream Open(string fileName)
+        {
+            ZipArchiveEntry entry = _archive.GetEntry(fileName);
+            if (entry == null)
+                return null;
+            return entry.Open();
+        }
+
+        public string Find(string extension)
+        {
+            ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(extension));
+            if (entry == null)
+                return null;
+            return entry.FullName;
+        }
+
+        public UsfmStylesheet CreateStylesheet(string fileName)
         {
             TempFile stylesheetTempFile = null;
             TempFile customStylesheetTempFile = null;

@@ -11,15 +11,15 @@ namespace SIL.Machine.PunctuationAnalysis
     public abstract class ParatextProjectQuoteConventionDetector
     {
         private readonly ParatextProjectSettings _settings;
+        private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectQuoteConventionDetector(ParatextProjectSettings settings)
+        protected ParatextProjectQuoteConventionDetector(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings settings
+        )
         {
             _settings = settings;
-        }
-
-        protected ParatextProjectQuoteConventionDetector(ParatextProjectSettingsParserBase settingsParser)
-        {
-            _settings = settingsParser.Parse();
+            _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
@@ -81,7 +81,8 @@ namespace SIL.Machine.PunctuationAnalysis
             return handler.DetectQuoteConvention(includeChapters);
         }
 
-        protected abstract bool Exists(string fileName);
-        protected abstract Stream Open(string fileName);
+        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
+
+        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
     }
 }
