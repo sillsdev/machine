@@ -43,14 +43,28 @@ namespace SIL.Machine.Corpora
             return new ScriptureRef(new VerseRef(vref, versification ?? ScrVers.English), path);
         }
 
-        public static bool TryParse(string str, out ScriptureRef scriptureRef, ScrVers versification = null)
+        public static bool TryParse(string str, out ScriptureRef scriptureRef)
+        {
+            try
+            {
+                scriptureRef = Parse(str);
+                return true;
+            }
+            catch (VerseRefException)
+            {
+                scriptureRef = Empty;
+                return false;
+            }
+        }
+
+        public static bool TryParse(string str, ScrVers versification, out ScriptureRef scriptureRef)
         {
             try
             {
                 scriptureRef = Parse(str, versification);
                 return true;
             }
-            catch
+            catch (VerseRefException)
             {
                 scriptureRef = Empty;
                 return false;
