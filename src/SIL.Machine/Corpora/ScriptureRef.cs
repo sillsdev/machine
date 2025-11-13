@@ -45,16 +45,7 @@ namespace SIL.Machine.Corpora
 
         public static bool TryParse(string str, out ScriptureRef scriptureRef)
         {
-            try
-            {
-                scriptureRef = Parse(str);
-                return true;
-            }
-            catch (VerseRefException)
-            {
-                scriptureRef = Empty;
-                return false;
-            }
+            return TryParse(str, null, out scriptureRef);
         }
 
         public static bool TryParse(string str, ScrVers versification, out ScriptureRef scriptureRef)
