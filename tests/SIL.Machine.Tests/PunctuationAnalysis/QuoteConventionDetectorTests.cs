@@ -4,7 +4,7 @@ using SIL.Machine.Corpora;
 namespace SIL.Machine.PunctuationAnalysis;
 
 [TestFixture]
-public class QuotationConventionDetectorTests
+public class QuoteConventionDetectorTests
 {
     // Text comes from the World English Bible, which is in the public domain.
     [Test]
@@ -19,7 +19,7 @@ public class QuotationConventionDetectorTests
     ‘You shall not eat of any tree of the garden’?”
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
     }
 
@@ -35,7 +35,7 @@ public class QuotationConventionDetectorTests
     'You shall not eat of any tree of the garden'?\""
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_english"));
     }
 
@@ -51,7 +51,7 @@ public class QuotationConventionDetectorTests
     “You shall not eat of any tree of the garden”?’
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_english"));
     }
 
@@ -67,7 +67,7 @@ public class QuotationConventionDetectorTests
     ""You shall not eat of any tree of the garden""?'
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_typewriter_english"));
     }
 
@@ -83,7 +83,7 @@ public class QuotationConventionDetectorTests
     'You shall not eat of any tree of the garden'?”
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_typewriter_english"));
     }
 
@@ -99,7 +99,7 @@ public class QuotationConventionDetectorTests
     ‹You shall not eat of any tree of the garden›?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
     }
 
@@ -115,7 +115,7 @@ public class QuotationConventionDetectorTests
     <You shall not eat of any tree of the garden>?>>
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_french"));
     }
 
@@ -132,7 +132,7 @@ public class QuotationConventionDetectorTests
     “You shall not eat of any tree of the garden”?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("western_european"));
     }
 
@@ -148,7 +148,7 @@ public class QuotationConventionDetectorTests
     ‘You shall not eat of any tree of the garden’?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("british_inspired_western_european"));
     }
 
@@ -164,7 +164,7 @@ public class QuotationConventionDetectorTests
     ""You shall not eat of any tree of the garden""?>>
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_western_european"));
     }
 
@@ -180,7 +180,7 @@ public class QuotationConventionDetectorTests
     <You shall not eat of any tree of the garden>?""
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("typewriter_western_european_variant"));
     }
 
@@ -196,7 +196,7 @@ public class QuotationConventionDetectorTests
     ""You shall not eat of any tree of the garden""?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_typewriter_western_european"));
     }
 
@@ -212,7 +212,7 @@ public class QuotationConventionDetectorTests
     'You shall not eat of any tree of the garden'?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("hybrid_british_typewriter_western_european"));
     }
 
@@ -228,7 +228,7 @@ public class QuotationConventionDetectorTests
     ‚You shall not eat of any tree of the garden‘?“
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("central_european"));
     }
 
@@ -244,7 +244,7 @@ public class QuotationConventionDetectorTests
     ›You shall not eat of any tree of the garden‹?«
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("central_european_guillemets"));
     }
 
@@ -260,7 +260,7 @@ public class QuotationConventionDetectorTests
     ’You shall not eat of any tree of the garden’?”
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_swedish"));
     }
 
@@ -276,7 +276,7 @@ public class QuotationConventionDetectorTests
     ’You shall not eat of any tree of the garden’?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_finnish"));
     }
 
@@ -292,7 +292,7 @@ public class QuotationConventionDetectorTests
     ‚You shall not eat of any tree of the garden’?”
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("eastern_european"));
     }
 
@@ -308,7 +308,7 @@ public class QuotationConventionDetectorTests
     „You shall not eat of any tree of the garden“?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_russian"));
     }
 
@@ -324,7 +324,7 @@ public class QuotationConventionDetectorTests
     ’You shall not eat of any tree of the garden‘?“
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_arabic"));
     }
 
@@ -340,7 +340,7 @@ public class QuotationConventionDetectorTests
     ’You shall not eat of any tree of the garden‘?»
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("non-standard_arabic"));
     }
 
@@ -360,7 +360,7 @@ public class QuotationConventionDetectorTests
     God has said, ‘You shall not eat of it. You shall not touch it, lest you die.’
     ";
         QuoteConventionAnalysis analysis = DetectQuotationConvention(usfm);
-        Assert.IsNotNull(analysis);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
     }
 

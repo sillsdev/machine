@@ -3,24 +3,6 @@ using System.Linq;
 
 namespace SIL.Machine.PunctuationAnalysis
 {
-    public class QuoteConventionAnalysis
-    {
-        public QuoteConvention BestQuoteConvention { get; private set; }
-        public double BestQuoteConventionScore { get; private set; }
-        public string AnalysisSummary { get; private set; }
-
-        public QuoteConventionAnalysis(
-            QuoteConvention bestQuoteConvention,
-            double bestQuoteConventionScore,
-            string analysisSummary
-        )
-        {
-            BestQuoteConvention = bestQuoteConvention;
-            BestQuoteConventionScore = bestQuoteConventionScore;
-            AnalysisSummary = analysisSummary;
-        }
-    }
-
     public class QuoteConventionDetector : UsfmStructureExtractor
     {
         private readonly QuotationMarkTabulator _quotationMarkTabulator;
@@ -60,19 +42,7 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             CountQuotationMarksInChapters(GetChapters(includeChapters));
 
-            (QuoteConvention bestQuoteConvention, double score) = QuoteConventions.Standard.FindMostSimilarConvention(
-                _quotationMarkTabulator
-            );
-
-            if (score > 0 && bestQuoteConvention != null)
-            {
-                return new QuoteConventionAnalysis(
-                    bestQuoteConvention,
-                    score,
-                    _quotationMarkTabulator.GetSummaryMessage()
-                );
-            }
-            return null;
+            return QuoteConventions.Standard.ScoreAllQuoteConventions(_quotationMarkTabulator);
         }
     }
 }

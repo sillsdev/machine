@@ -27,7 +27,7 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention();
-        Assert.That(analysis, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.8));
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
     }
@@ -53,13 +53,13 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK");
-        Assert.That(analysis, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.8));
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
     }
 
     [Test]
-    public void TestGetQuotationConventionByChapter()
+    public void TestGetQuoteConventionByChapter()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -83,13 +83,13 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK2,4-5");
-        Assert.That(analysis, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
         Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.66));
         Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_french"));
     }
 
     [Test]
-    public void TestGetQuotationConventionByChapterIndeterminate()
+    public void TestGetQuoteConventionByChapterIndeterminate()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -105,11 +105,11 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT1,3");
-        Assert.That(analysis, Is.Null);
+        Assert.That(analysis.BestQuoteConvention, Is.Null);
     }
 
     [Test]
-    public void TestGetQuotationConventionInvalidBookCode()
+    public void TestGetQuoteConventionInvalidBookCode()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
@@ -123,7 +123,35 @@ public class ParatextProjectQuoteConventionDetectorTests
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT");
-        Assert.That(analysis, Is.Null);
+        Assert.That(analysis.BestQuoteConvention, Is.Null);
+    }
+
+    [Test]
+    public void TestGetQuoteConventionWeightedAverageOfMultipleBooks()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "41MATTest.SFM",
+                    $@"\id MAT
+{GetTestChapter(1, StandardEnglishQuoteConvention)}
+"
+                },
+                {
+                    "42MRKTest.SFM",
+                    $@"\id MRK
+\c 1
+\v 1 This ""sentence uses a different"" convention
+"
+                }
+            }
+        );
+        QuoteConventionAnalysis analysis = env.GetQuoteConvention();
+        Assert.That(analysis.BestQuoteConvention, Is.Not.Null);
+        Assert.That(analysis.BestQuoteConvention.Name, Is.EqualTo("standard_english"));
+        Assert.That(analysis.BestQuoteConventionScore, Is.GreaterThan(0.8));
+        Assert.That(analysis.BestQuoteConventionScore, Is.LessThan(0.9));
     }
 
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)

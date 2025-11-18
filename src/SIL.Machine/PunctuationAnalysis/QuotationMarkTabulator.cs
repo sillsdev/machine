@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using SIL.Extensions;
 
@@ -21,6 +21,16 @@ namespace SIL.Machine.PunctuationAnalysis
         {
             _quotationMarkCounter.UpdateValue(quotationMark, () => 0, i => i + 1);
             TotalCount++;
+        }
+
+        public void CountFrom(QuotationMarkCounts quotationMarkCounts)
+        {
+            foreach (KeyValuePair<string, int> kvp in quotationMarkCounts._quotationMarkCounter)
+            {
+                (string quotationMark, int count) = (kvp.Key, kvp.Value);
+                _quotationMarkCounter.UpdateValue(quotationMark, () => 0, i => i + count);
+            }
+            TotalCount += quotationMarkCounts.TotalCount;
         }
 
         public (string BestString, int BestStringCount, int TotalStringCount) FindBestQuotationMarkProportion()
@@ -60,6 +70,24 @@ namespace SIL.Machine.PunctuationAnalysis
             }
         }
 
+        public void TabulateFrom(QuotationMarkTabulator tabulatedQuotationMarks)
+        {
+            foreach (
+                KeyValuePair<
+                    (int, QuotationMarkDirection),
+                    QuotationMarkCounts
+                > kvp in tabulatedQuotationMarks._quotationCountsByDepthAndDirection
+            )
+            {
+                ((int depth, QuotationMarkDirection direction), QuotationMarkCounts counts) = (kvp.Key, kvp.Value);
+                if (!_quotationCountsByDepthAndDirection.ContainsKey((depth, direction)))
+                {
+                    _quotationCountsByDepthAndDirection[(depth, direction)] = new QuotationMarkCounts();
+                }
+                _quotationCountsByDepthAndDirection[(depth, direction)].CountFrom(counts);
+            }
+        }
+
         private void CountQuotationMark(QuotationMarkMetadata quote)
         {
             (int Depth, QuotationMarkDirection Direction) key = (quote.Depth, quote.Direction);
@@ -75,26 +103,52 @@ namespace SIL.Machine.PunctuationAnalysis
             );
         }
 
+        public int GetTotalQuotationMarkCount()
+        {
+            return _quotationCountsByDepthAndDirection.Values.Select(c => c.TotalCount).Sum();
+        }
+
         public double CalculateSimilarity(QuoteConvention quoteConvention)
         {
-            double weightedDifference = 0.0;
-            double totalWeight = 0.0;
-            foreach ((int depth, QuotationMarkDirection direction) in _quotationCountsByDepthAndDirection.Keys)
+            var numMarksByDepth = new Dictionary<int, int>();
+            var numMatchingMarksByDepth = new Dictionary<int, int>();
+            foreach (
+                (int depth, QuotationMarkDirection direction) in _quotationCountsByDepthAndDirection.Keys.OrderBy(k =>
+                    k
+                )
+            )
             {
                 string expectedQuotationMark = quoteConvention.GetExpectedQuotationMark(depth, direction);
-
-                // Give higher weight to shallower depths, since deeper marks are more likely to be mistakes
-                weightedDifference += (
-                    _quotationCountsByDepthAndDirection[(depth, direction)]
-                        .CalculateNumDifferences(expectedQuotationMark) * Math.Pow(2, -depth)
+                int numMatchingMarks = _quotationCountsByDepthAndDirection[(depth, direction)].TotalCount;
+                numMarksByDepth.UpdateValue(depth, () => 0, i => i + numMatchingMarks);
+                numMatchingMarksByDepth.UpdateValue(
+                    depth,
+                    () => 0,
+                    i =>
+                        i
+                        + numMatchingMarks
+                        - _quotationCountsByDepthAndDirection[(depth, direction)]
+                            .CalculateNumDifferences(expectedQuotationMark)
                 );
-                totalWeight += _quotationCountsByDepthAndDirection[(depth, direction)].TotalCount * Math.Pow(2, -depth);
             }
-            if (totalWeight == 0.0)
+
+            // The scores of greater depths depend on the scores of shallower depths
+            var scoresByDepth = new Dictionary<int, double>();
+            foreach (int depth in numMarksByDepth.Keys.OrderBy(k => k))
             {
-                return 0.0;
+                double previousDepthScore = 1;
+                if (scoresByDepth.TryGetValue(depth - 1, out double score))
+                {
+                    previousDepthScore = score / numMarksByDepth[depth - 1];
+                }
+                scoresByDepth[depth] = previousDepthScore * numMatchingMarksByDepth[depth];
             }
-            return 1 - (weightedDifference / totalWeight);
+            int totalMarks = numMarksByDepth.Values.Sum();
+            double totalScore = scoresByDepth.Values.Sum();
+
+            if (totalMarks == 0)
+                return 0;
+            return totalScore / totalMarks;
         }
 
         private bool DepthAndDirectionObserved(int depth, QuotationMarkDirection direction)

@@ -1715,12 +1715,12 @@ public class QuoteConventionSetTests
             noisyMultipleEnglishQuotesTabulator
         );
         Assert.That(convention, Is.EqualTo(standardEnglishQuoteConvention));
-        Assert.That(similarity, Is.EqualTo(0.9).Within(1e-9));
+        Assert.That(similarity, Is.EqualTo(0.8333333333333).Within(1e-9));
         (convention, similarity) = twoFrenchQuoteConventionSet.FindMostSimilarConvention(
             noisyMultipleEnglishQuotesTabulator
         );
         Assert.That(convention, Is.EqualTo(westernEuropeanQuoteConvention));
-        Assert.That(similarity, Is.EqualTo(0.1).Within(1e-9));
+        Assert.That(similarity, Is.EqualTo(0));
 
         var noisyMultipleFrenchQuotesTabulator = new QuotationMarkTabulator();
         noisyMultipleFrenchQuotesTabulator.Tabulate(
@@ -1795,7 +1795,7 @@ public class QuoteConventionSetTests
             noisyMultipleFrenchQuotesTabulator
         );
         Assert.That(convention, Is.EqualTo(standardFrenchQuoteConvention));
-        Assert.That(similarity, Is.EqualTo(0.916666666666).Within(1e-9));
+        Assert.That(similarity, Is.EqualTo(0.875).Within(1e-9));
 
         var tooDeepEnglishQuotesTabulator = new QuotationMarkTabulator();
         tooDeepEnglishQuotesTabulator.Tabulate(
@@ -1844,7 +1844,7 @@ public class QuoteConventionSetTests
         );
         (convention, similarity) = allThreeQuoteConventionSet.FindMostSimilarConvention(tooDeepEnglishQuotesTabulator);
         Assert.That(convention, Is.EqualTo(standardEnglishQuoteConvention));
-        Assert.That(similarity, Is.EqualTo(0.967741935483871).Within(1e-9));
+        Assert.That(similarity, Is.EqualTo(0.8).Within(1e-9));
 
         // in case of ties, the earlier convention in the list should be returned
         var unknownQuoteTabulator = new QuotationMarkTabulator();

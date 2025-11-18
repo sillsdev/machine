@@ -169,7 +169,7 @@ public class QuotationMarkTabulatorTests
             twoLevelQuotationMarkTabulator.CalculateSimilarity(
                 new QuoteConvention("", [new SingleLevelQuoteConvention("\u201c", "\u201d")])
             ),
-            Is.EqualTo(0.66666666666667).Within(1e-9)
+            Is.EqualTo(0.5).Within(1e-9)
         );
         Assert.That(
             twoLevelQuotationMarkTabulator.CalculateSimilarity(
@@ -193,7 +193,7 @@ public class QuotationMarkTabulatorTests
                     ]
                 )
             ),
-            Is.EqualTo(0.66666666666667).Within(1e-9)
+            Is.EqualTo(0.5).Within(1e-9)
         );
         Assert.That(
             twoLevelQuotationMarkTabulator.CalculateSimilarity(
@@ -205,7 +205,7 @@ public class QuotationMarkTabulatorTests
                     ]
                 )
             ),
-            Is.EqualTo(0.33333333333333).Within(1e-9)
+            Is.EqualTo(0.0)
         );
     }
 }
