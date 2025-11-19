@@ -73,18 +73,22 @@ namespace SIL.Machine.PunctuationAnalysis
         public void TabulateFrom(QuotationMarkTabulator tabulatedQuotationMarks)
         {
             foreach (
-                KeyValuePair<
-                    (int, QuotationMarkDirection),
-                    QuotationMarkCounts
-                > kvp in tabulatedQuotationMarks._quotationCountsByDepthAndDirection
+                (
+                    (int depth, QuotationMarkDirection direction),
+                    QuotationMarkCounts otherCounts
+                ) in tabulatedQuotationMarks._quotationCountsByDepthAndDirection.Select(kvp => (kvp.Key, kvp.Value))
             )
             {
-                ((int depth, QuotationMarkDirection direction), QuotationMarkCounts counts) = (kvp.Key, kvp.Value);
-                if (!_quotationCountsByDepthAndDirection.TryGetValue((depth, direction), out QuotationMarkCounts count))
+                if (
+                    !_quotationCountsByDepthAndDirection.TryGetValue(
+                        (depth, direction),
+                        out QuotationMarkCounts currentCounts
+                    )
+                )
                 {
-                    _quotationCountsByDepthAndDirection[(depth, direction)] = new QuotationMarkCounts();
+                    currentCounts = new QuotationMarkCounts();
                 }
-                counts.CountFrom(counts);
+                currentCounts.CountFrom(otherCounts);
             }
         }
 
