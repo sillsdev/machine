@@ -22,29 +22,12 @@ namespace SIL.Machine.PunctuationAnalysis
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
-        public QuoteConventionAnalysis GetQuoteConventionAnalysis(QuoteConventionDetector handler = null)
-        {
-            Dictionary<int, List<int>> includeChapters = null;
-            return GetQuoteConventionAnalysis(handler, includeChapters);
-        }
-
         public QuoteConventionAnalysis GetQuoteConventionAnalysis(
-            QuoteConventionDetector handler = null,
-            IReadOnlyDictionary<string, List<int>> includeChapters = null
-        )
-        {
-            return GetQuoteConventionAnalysis(
-                handler,
-                includeChapters?.ToDictionary(kvp => Canon.BookIdToNumber(kvp.Key), kvp => kvp.Value)
-            );
-        }
-
-        public QuoteConventionAnalysis GetQuoteConventionAnalysis(
-            QuoteConventionDetector handler = null,
             IReadOnlyDictionary<int, List<int>> includeChapters = null
         )
         {
-            handler = handler ?? new QuoteConventionDetector();
+            var bookQuoteConventionsAnalyses = new List<QuoteConventionAnalysis>();
+
             foreach (
                 string bookId in Canon
                     .AllBookNumbers.Where(num => Canon.IsCanonical(num))
@@ -54,12 +37,14 @@ namespace SIL.Machine.PunctuationAnalysis
                 if (includeChapters != null && !includeChapters.ContainsKey(Canon.BookIdToNumber(bookId)))
                     continue;
 
+                var handler = new QuoteConventionDetector();
+
                 string fileName = _settings.GetBookFileName(bookId);
-                if (!Exists(fileName))
+                if (!_paratextProjectFileHandler.Exists(fileName))
                     continue;
 
                 string usfm;
-                using (var reader = new StreamReader(Open(fileName)))
+                using (var reader = new StreamReader(_paratextProjectFileHandler.Open(fileName)))
                 {
                     usfm = reader.ReadToEnd();
                 }
@@ -77,12 +62,9 @@ namespace SIL.Machine.PunctuationAnalysis
                     sb.Append($". Error: '{ex.Message}'");
                     throw new InvalidOperationException(sb.ToString(), ex);
                 }
+                bookQuoteConventionsAnalyses.Add(handler.DetectQuoteConvention(includeChapters));
             }
-            return handler.DetectQuoteConvention(includeChapters);
+            return QuoteConventionAnalysis.CombineWithWeightedAverage(bookQuoteConventionsAnalyses);
         }
-
-        private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
-
-        private Stream Open(string fileName) => _paratextProjectFileHandler.Open(fileName);
     }
 }

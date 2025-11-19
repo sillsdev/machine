@@ -42,6 +42,14 @@ namespace SIL.Machine.PunctuationAnalysis
                 : ClosingQuotationMark;
             return new SingleLevelQuoteConvention(normalizedOpeningQuotationMark, normalizedClosingQuotationMark);
         }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 23;
+            hashCode = hashCode * 31 + OpeningQuotationMark.GetHashCode();
+            hashCode = hashCode * 31 + ClosingQuotationMark.GetHashCode();
+            return hashCode;
+        }
     }
 
     public class QuoteConvention
@@ -149,6 +157,16 @@ namespace SIL.Machine.PunctuationAnalysis
         public QuoteConvention Normalize()
         {
             return new QuoteConvention(Name + "_normalized", LevelConventions.Select(l => l.Normalize()).ToList());
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 23;
+            foreach (SingleLevelQuoteConvention quoteConvention in LevelConventions)
+            {
+                hashCode = hashCode * 31 + quoteConvention.GetHashCode();
+            }
+            return hashCode;
         }
     }
 }

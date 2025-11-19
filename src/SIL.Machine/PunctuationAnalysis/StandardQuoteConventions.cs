@@ -215,6 +215,15 @@ namespace SIL.Machine.PunctuationAnalysis
                         new SingleLevelQuoteConvention("\u2019", "\u2018"),
                     }
                 ),
+                new QuoteConvention(
+                    "arabic_inspired_western_european",
+                    new List<SingleLevelQuoteConvention>
+                    {
+                        new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
+                        new SingleLevelQuoteConvention("\u201d", "\u201c"),
+                        new SingleLevelQuoteConvention("\u2019", "\u2018"),
+                    }
+                ),
             }
         );
     }

@@ -230,5 +230,16 @@ namespace SIL.Machine.PunctuationAnalysis
             }
             return (bestQuoteConvention, bestSimilarity);
         }
+
+        public QuoteConventionAnalysis ScoreAllQuoteConventions(QuotationMarkTabulator tabulatedQuotationMarks)
+        {
+            var builder = new QuoteConventionAnalysis.Builder(tabulatedQuotationMarks);
+            foreach (QuoteConvention convention in Conventions)
+            {
+                double score = tabulatedQuotationMarks.CalculateSimilarity(convention);
+                builder.RecordConventionScore(convention, score);
+            }
+            return builder.Build();
+        }
     }
 }
