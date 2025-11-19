@@ -86,7 +86,7 @@ namespace SIL.Machine.PunctuationAnalysis
                     )
                 )
                 {
-                    thisCounts = new QuotationMarkCounts();
+                    _quotationCountsByDepthAndDirection[(depth, direction)] = new QuotationMarkCounts();
                 }
                 thisCounts.CountFrom(otherCounts);
             }
