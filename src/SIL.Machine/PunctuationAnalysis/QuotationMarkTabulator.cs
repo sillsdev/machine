@@ -80,11 +80,11 @@ namespace SIL.Machine.PunctuationAnalysis
             )
             {
                 ((int depth, QuotationMarkDirection direction), QuotationMarkCounts counts) = (kvp.Key, kvp.Value);
-                if (!_quotationCountsByDepthAndDirection.ContainsKey((depth, direction)))
+                if (!_quotationCountsByDepthAndDirection.TryGetValue((depth, direction), out QuotationMarkCounts count))
                 {
                     _quotationCountsByDepthAndDirection[(depth, direction)] = new QuotationMarkCounts();
                 }
-                _quotationCountsByDepthAndDirection[(depth, direction)].CountFrom(counts);
+                counts.CountFrom(counts);
             }
         }
 
