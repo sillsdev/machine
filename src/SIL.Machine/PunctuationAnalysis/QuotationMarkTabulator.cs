@@ -82,13 +82,13 @@ namespace SIL.Machine.PunctuationAnalysis
                 if (
                     !_quotationCountsByDepthAndDirection.TryGetValue(
                         (depth, direction),
-                        out QuotationMarkCounts currentCounts
+                        out QuotationMarkCounts thisCounts
                     )
                 )
                 {
-                    currentCounts = new QuotationMarkCounts();
+                    thisCounts = new QuotationMarkCounts();
                 }
-                currentCounts.CountFrom(otherCounts);
+                thisCounts.CountFrom(otherCounts);
             }
         }
 
