@@ -172,6 +172,9 @@ namespace SIL.Machine.Corpora
 
         public override void StartSidebar(UsfmParserState state, string marker, string category)
         {
+            if (_curVerseRef.IsDefault)
+                UpdateVerseRef(state.VerseRef, marker);
+
             StartParentElement(marker);
         }
 
