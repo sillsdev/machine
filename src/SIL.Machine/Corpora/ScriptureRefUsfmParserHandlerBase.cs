@@ -143,7 +143,12 @@ namespace SIL.Machine.Corpora
         public override void StartRow(UsfmParserState state, string marker)
         {
             if (CurrentTextType == ScriptureTextType.NonVerse || CurrentTextType == ScriptureTextType.None)
+            {
+                if (_curVerseRef.IsDefault)
+                    UpdateVerseRef(state.VerseRef, marker);
+
                 StartParentElement(marker);
+            }
         }
 
         public override void EndRow(UsfmParserState state, string marker)
