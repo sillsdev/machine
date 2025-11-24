@@ -132,6 +132,55 @@ public class UsfmMemoryTextTests
     }
 
     [Test]
+    public void GetRows_Sidebar_FirstTag()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\esb
+\ip My sidebar text
+\esbe
+\c 1
+\p
+\v 1 First verse
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+
+        Assert.That(rows, Has.Length.EqualTo(3), string.Join(",", rows.Select(tr => tr.Text)));
+        Assert.That(rows[0].Text, Is.EqualTo("My sidebar text"));
+        Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:esb/1:ip")));
+        Assert.That(rows[1].Text, Is.Empty);
+        Assert.That(rows[1].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/2:p")));
+        Assert.That(rows[2].Text, Is.EqualTo("First verse"));
+        Assert.That(rows[2].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1")));
+    }
+
+    [Test]
+    public void GetRows_TableRow_FirstTag()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\tr \th1 Day \th2 Tribe \th3 Leader
+\tr \tcr1 1st \tc2 Judah \tc3 Nahshon son of Amminadab
+\c 1
+\p
+\v 1 First verse
+",
+            includeAllText: true,
+            includeMarkers: true
+        );
+
+        Assert.That(rows, Has.Length.EqualTo(8), string.Join(",", rows.Select(tr => tr.Text)));
+        Assert.That(rows[0].Text, Is.EqualTo("\\th1 Day"));
+        Assert.That(rows[0].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:tr/1:th1")));
+        Assert.That(rows[6].Text, Is.Empty);
+        Assert.That(rows[6].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:0/3:p")));
+        Assert.That(rows[7].Text, Is.EqualTo("First verse"));
+        Assert.That(rows[7].Ref, Is.EqualTo(ScriptureRef.Parse("MAT 1:1")));
+    }
+
+    [Test]
     public void GetRows_VersePara_BeginningNonVerseSegment()
     {
         TextRow[] rows = GetRows(
