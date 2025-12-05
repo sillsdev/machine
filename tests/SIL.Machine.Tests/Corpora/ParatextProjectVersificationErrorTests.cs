@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora;
 public class ParatextProjectQuoteConventionDetectorTests
 {
     [Test]
-    public void GetUsfmVersificationErrors_Noerrors()
+    public void GetUsfmVersificationErrors_NoErrors()
     {
         var env = new TestEnvironment(
             files: new Dictionary<string, string>()
