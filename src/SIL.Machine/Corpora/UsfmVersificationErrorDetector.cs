@@ -104,7 +104,7 @@ namespace SIL.Machine.Corpora
                 // an exception with certain invalid verse data; use TryParse instead.
                 if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
                 {
-                    return "";
+                    return DefaultVerse(_expectedChapter, _expectedVerse);
                 }
                 if (Type == UsfmVersificationErrorType.ExtraVerse)
                     return "";
@@ -144,10 +144,30 @@ namespace SIL.Machine.Corpora
                 return defaultVerseRef.ToString();
             }
         }
-        public string ActualVerseRef =>
-            _verseRef != null
-                ? _verseRef.Value.ToString()
-                : new VerseRef(_bookNum, _actualChapter, _actualVerse).ToString();
+        public string ActualVerseRef
+        {
+            get
+            {
+                if (_verseRef != null)
+                {
+                    return _verseRef.ToString();
+                }
+                else
+                {
+                    if (VerseRef.TryParse($"{_bookNum} {_actualChapter}:{_actualVerse}", out VerseRef actualVerseRef))
+                    {
+                        return actualVerseRef.ToString();
+                    }
+                }
+                return DefaultVerse(_actualChapter, _actualVerse);
+            }
+        }
+
+        private string DefaultVerse(int chapter, int verse)
+        {
+            string verseString = _actualVerse == -1 ? "" : verse.ToString();
+            return $"{Canon.BookNumberToId(_bookNum)} {chapter}:{verseString}";
+        }
     }
 
     public class UsfmVersificationErrorDetector : UsfmParserHandlerBase
