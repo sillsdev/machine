@@ -187,13 +187,13 @@ namespace SIL.Machine.PunctuationAnalysis
         public SurrogatePairString(string stringValue)
         {
             _stringValue = stringValue;
-            IEnumerable<(int SurrogatePairIndex, int StringIndex)> indexPairs = _stringValue
-                .Select((c, i) => (c, i))
+            IEnumerable<(int StringIndex, int SurrogatePairIndex)> indexPairs = _stringValue
+                .Select((c, stringIndex) => (c, stringIndex))
                 .Where(tup => !char.IsLowSurrogate(tup.c))
-                .Select((tup, i) => (tup.i, i));
+                .Select((tup, surrogatePairIndex) => (tup.stringIndex, surrogatePairIndex));
             _surrogatePairIndexByStringIndex = new Dictionary<int, int>();
             _stringIndexBySurrogatePairIndex = new Dictionary<int, int>();
-            foreach ((int surrogatePairIndex, int stringIndex) in indexPairs)
+            foreach ((int stringIndex, int surrogatePairIndex) in indexPairs)
             {
                 _surrogatePairIndexByStringIndex[stringIndex] = surrogatePairIndex;
                 _stringIndexBySurrogatePairIndex[surrogatePairIndex] = stringIndex;
@@ -251,11 +251,11 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public int GetStringIndexForSurrogatePairIndex(int surrogatePairIndex)
         {
-            if (surrogatePairIndex == _surrogatePairIndexByStringIndex.Count)
+            if (surrogatePairIndex == _stringIndexBySurrogatePairIndex.Count)
             {
                 return _stringValue.Length;
             }
-            return _surrogatePairIndexByStringIndex[surrogatePairIndex];
+            return _stringIndexBySurrogatePairIndex[surrogatePairIndex];
         }
     }
 }
