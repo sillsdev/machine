@@ -441,4 +441,32 @@ public class QuotationMarkFinderTests
                 )
         );
     }
+
+    [Test]
+    public void SupportsMultibyteUnicodeCharacters()
+    {
+        var quotationMarkFinder = new QuotationMarkFinder(QuoteConventions.Standard);
+
+        // [grinning face], [left double quotation mark][grinning face with big eyes][right double quotation mark]
+        Assert.That(
+            quotationMarkFinder
+                .FindAllPotentialQuotationMarksInTextSegment(
+                    new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build()
+                )
+                .SequenceEqual(
+                    [
+                        new QuotationMarkStringMatch(
+                            new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
+                            3,
+                            4
+                        ),
+                        new QuotationMarkStringMatch(
+                            new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
+                            5,
+                            6
+                        ),
+                    ]
+                )
+        );
+    }
 }
