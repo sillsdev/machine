@@ -124,9 +124,12 @@ namespace SIL.Machine.Corpora
 
         public override void StartBook(UsfmParserState state, string marker, string code)
         {
-            _verseRowsRef = state.VerseRef;
-            UpdateVerseRowsMap();
-            UpdateVerseRows();
+            if (_verseRowsRef.BookNum != state.VerseRef.BookNum)
+            {
+                _verseRowsRef = state.VerseRef;
+                UpdateVerseRowsMap();
+                UpdateVerseRows();
+            }
 
             CollectReadonlyTokens(state);
             _updateBlocks.Push(new UsfmUpdateBlock());
