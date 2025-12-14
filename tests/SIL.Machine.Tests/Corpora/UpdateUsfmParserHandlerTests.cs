@@ -1307,6 +1307,51 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void GetUsfm_IdTags()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:s"), "new section header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
+        };
+
+        string usfm =
+            @"\id MAT
+\s section header
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 verse 1
+\id
+\v 2 verse 2
+\id MAT
+\v 3 verse 3
+\id MRK
+\v 4 verse 4
+";
+
+        string target = UpdateUsfm(rows, usfm, paragraphBehavior: UpdateUsfmMarkerBehavior.Strip);
+        string resultP =
+            @"\id MAT
+\s new section header
+\c 1
+\s1 beginning-of-chapter header
+\p
+\v 1 new verse 1
+\id
+\v 2 new verse 2
+\id MAT
+\v 3 new verse 3
+\id MRK
+\v 4 new verse 4
+";
+        AssertUsfmEquals(target, resultP);
+    }
+
+    [Test]
     public void GetUsfm_PreferExisting_AddRemark()
     {
         var rows = new List<UpdateUsfmRow>
