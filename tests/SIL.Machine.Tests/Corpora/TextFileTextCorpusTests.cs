@@ -20,6 +20,18 @@ public class TextFileTextCorpusTests
     }
 
     [Test]
+    public void MultipleFiles()
+    {
+        var corpus = new TextFileTextCorpus(
+            Path.Combine(CorporaTestHelpers.TextTestProjectPath, "Test1.txt"),
+            Path.Combine(CorporaTestHelpers.TextTestProjectPath, "Test2.txt"),
+            Path.Combine(CorporaTestHelpers.TextTestProjectPath, "Test3.txt")
+        );
+
+        Assert.That(corpus.Texts.Select(t => t.Id), Is.EquivalentTo(new[] { "0", "1", "2" }));
+    }
+
+    [Test]
     public void SingleFile()
     {
         var corpus = new TextFileTextCorpus(Path.Combine(CorporaTestHelpers.TextTestProjectPath, "Test1.txt"));
