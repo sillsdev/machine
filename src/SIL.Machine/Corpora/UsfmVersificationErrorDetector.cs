@@ -100,14 +100,15 @@ namespace SIL.Machine.Corpora
         {
             get
             {
+                if (Type == UsfmVersificationErrorType.ExtraVerse)
+                    return "";
+
                 // We do not want to throw an exception here, and the VerseRef constructor can throw
                 // an exception with certain invalid verse data; use TryParse instead.
                 if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
                 {
                     return DefaultVerse(_expectedChapter, _expectedVerse);
                 }
-                if (Type == UsfmVersificationErrorType.ExtraVerse)
-                    return "";
                 if (
                     Type == UsfmVersificationErrorType.MissingVerseSegment
                     && VerseRef.TryParse(
@@ -178,9 +179,10 @@ namespace SIL.Machine.Corpora
         private VerseRef _currentVerse;
         private readonly List<UsfmVersificationError> _errors;
 
-        public UsfmVersificationErrorDetector(ScrVers versification)
+        public UsfmVersificationErrorDetector(ParatextProjectSettings settings)
         {
-            _versification = versification;
+            ProjectName = settings.Name;
+            _versification = settings.Versification;
             _currentBook = 0;
             _currentChapter = 0;
             _currentVerse = new VerseRef();
@@ -188,6 +190,7 @@ namespace SIL.Machine.Corpora
         }
 
         public IReadOnlyList<UsfmVersificationError> Errors => _errors;
+        public string ProjectName { get; private set; }
 
         public override void EndUsfm(UsfmParserState state)
         {
