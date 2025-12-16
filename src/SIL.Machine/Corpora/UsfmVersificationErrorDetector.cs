@@ -30,6 +30,7 @@ namespace SIL.Machine.Corpora
             int expectedVerse,
             int actualChapter,
             int actualVerse,
+            string projectName,
             VerseRef? verseRef = null
         )
         {
@@ -39,7 +40,10 @@ namespace SIL.Machine.Corpora
             _actualChapter = actualChapter;
             _actualVerse = actualVerse;
             _verseRef = verseRef;
+            ProjectName = projectName;
         }
+
+        public string ProjectName { get; private set; }
 
         public UsfmVersificationErrorType Type { get; private set; }
 
@@ -183,6 +187,7 @@ namespace SIL.Machine.Corpora
 
     public class UsfmVersificationErrorDetector : UsfmParserHandlerBase
     {
+        private readonly string _projectName;
         private readonly ScrVers _versification;
         private int _currentBook;
         private int _currentChapter;
@@ -191,7 +196,7 @@ namespace SIL.Machine.Corpora
 
         public UsfmVersificationErrorDetector(ParatextProjectSettings settings)
         {
-            ProjectName = settings.Name;
+            _projectName = settings.Name;
             _versification = settings.Versification;
             _currentBook = 0;
             _currentChapter = 0;
@@ -200,7 +205,6 @@ namespace SIL.Machine.Corpora
         }
 
         public IReadOnlyList<UsfmVersificationError> Errors => _errors;
-        public string ProjectName { get; private set; }
 
         public override void EndUsfm(UsfmParserState state)
         {
@@ -211,7 +215,8 @@ namespace SIL.Machine.Corpora
                     _versification.GetLastChapter(_currentBook),
                     _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
                     _currentChapter,
-                    _currentVerse.AllVerses().Last().VerseNum
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
                 );
                 if (versificationError.CheckError())
                     _errors.Add(versificationError);
@@ -240,7 +245,8 @@ namespace SIL.Machine.Corpora
                     _currentChapter,
                     _versification.GetLastVerse(_currentBook, _currentChapter),
                     _currentChapter,
-                    _currentVerse.AllVerses().Last().VerseNum
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
                 );
                 if (versificationError.CheckError())
                     _errors.Add(versificationError);
@@ -267,6 +273,7 @@ namespace SIL.Machine.Corpora
                     _currentVerse.AllVerses().Last().VerseNum,
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName,
                     _currentVerse
                 );
                 if (versificationError.CheckError())
