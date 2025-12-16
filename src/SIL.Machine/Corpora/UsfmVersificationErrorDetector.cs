@@ -105,7 +105,12 @@ namespace SIL.Machine.Corpora
 
                 // We do not want to throw an exception here, and the VerseRef constructor can throw
                 // an exception with certain invalid verse data; use TryParse instead.
-                if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
+                if (
+                    !VerseRef.TryParse(
+                        $"{Canon.BookNumberToId(_bookNum)} {_expectedChapter}:{_expectedVerse}",
+                        out VerseRef defaultVerseRef
+                    )
+                )
                 {
                     return DefaultVerse(_expectedChapter, _expectedVerse);
                 }
@@ -155,7 +160,12 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    if (VerseRef.TryParse($"{_bookNum} {_actualChapter}:{_actualVerse}", out VerseRef actualVerseRef))
+                    if (
+                        VerseRef.TryParse(
+                            $"{Canon.BookNumberToId(_bookNum)} {_actualChapter}:{_actualVerse}",
+                            out VerseRef actualVerseRef
+                        )
+                    )
                     {
                         return actualVerseRef.ToString();
                     }
