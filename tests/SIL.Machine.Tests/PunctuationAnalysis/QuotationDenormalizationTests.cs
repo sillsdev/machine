@@ -44,12 +44,12 @@ public class QuotationDenormalizationTests
         List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
 
-        Assert.That(bestChapterStrategies.Select(tup => tup.ChapterNumber).SequenceEqual([1]));
+        Assert.That(bestChapterStrategies.Select(tuple => tuple.ChapterNumber).SequenceEqual([1]));
 
         var quotationMarkDenormalizer = new QuotationMarkDenormalizationUsfmUpdateBlockHandler(
             standardEnglishQuoteConvention,
             new QuotationMarkUpdateSettings(
-                chapterStrategies: bestChapterStrategies.Select(tup => tup.Strategy).ToList()
+                chapterStrategies: bestChapterStrategies.Select(tuple => tuple.Strategy).ToList()
             )
         );
 

@@ -749,7 +749,7 @@ public class QuotationMarkUpdateFirstPassTests
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
         UsfmParser.Parse(normalizedUsfm, firstPassAnalyzer);
 
-        return firstPassAnalyzer.FindBestChapterStrategies().Select(tup => tup.Strategy).ToList();
+        return firstPassAnalyzer.FindBestChapterStrategies().Select(tuple => tuple.Strategy).ToList();
     }
 
     private static QuotationMarkUpdateStrategy RunFirstPassOnChapter(
