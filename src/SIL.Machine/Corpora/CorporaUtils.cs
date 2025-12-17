@@ -84,8 +84,15 @@ namespace SIL.Machine.Corpora
             }
             else
             {
-                foreach (string filePattern in filePatternArray)
+                for (int i = 0; i < filePatternArray.Length; i++)
                 {
+                    string filePattern = filePatternArray[i];
+                    if (File.Exists(filePattern))
+                    {
+                        yield return (i.ToString(CultureInfo.InvariantCulture), filePattern);
+                        continue;
+                    }
+
                     if (
                         !filePattern.Contains("*")
                         && !filePattern.Contains("?")
@@ -126,14 +133,14 @@ namespace SIL.Machine.Corpora
                         if (match.Success)
                         {
                             var sb = new StringBuilder();
-                            for (int i = 1; i < match.Groups.Count; i++)
+                            for (int j = 1; j < match.Groups.Count; j++)
                             {
-                                if (!match.Groups[i].Success)
+                                if (!match.Groups[j].Success)
                                     continue;
 
                                 if (sb.Length > 0)
                                     sb.Append("-");
-                                sb.Append(match.Groups[i].Value);
+                                sb.Append(match.Groups[j].Value);
                             }
                             if (sb.Length > 0)
                                 id = sb.ToString();
