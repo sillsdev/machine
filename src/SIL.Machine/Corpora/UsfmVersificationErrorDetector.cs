@@ -30,6 +30,7 @@ namespace SIL.Machine.Corpora
             int expectedVerse,
             int actualChapter,
             int actualVerse,
+            string projectName,
             VerseRef? verseRef = null
         )
         {
@@ -39,7 +40,10 @@ namespace SIL.Machine.Corpora
             _actualChapter = actualChapter;
             _actualVerse = actualVerse;
             _verseRef = verseRef;
+            ProjectName = projectName;
         }
+
+        public string ProjectName { get; private set; }
 
         public UsfmVersificationErrorType Type { get; private set; }
 
@@ -100,14 +104,20 @@ namespace SIL.Machine.Corpora
         {
             get
             {
+                if (Type == UsfmVersificationErrorType.ExtraVerse)
+                    return "";
+
                 // We do not want to throw an exception here, and the VerseRef constructor can throw
                 // an exception with certain invalid verse data; use TryParse instead.
-                if (!VerseRef.TryParse($"{_bookNum} {_expectedChapter}:{_expectedVerse}", out VerseRef defaultVerseRef))
+                if (
+                    !VerseRef.TryParse(
+                        $"{Canon.BookNumberToId(_bookNum)} {_expectedChapter}:{_expectedVerse}",
+                        out VerseRef defaultVerseRef
+                    )
+                )
                 {
                     return DefaultVerse(_expectedChapter, _expectedVerse);
                 }
-                if (Type == UsfmVersificationErrorType.ExtraVerse)
-                    return "";
                 if (
                     Type == UsfmVersificationErrorType.MissingVerseSegment
                     && VerseRef.TryParse(
@@ -154,7 +164,12 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    if (VerseRef.TryParse($"{_bookNum} {_actualChapter}:{_actualVerse}", out VerseRef actualVerseRef))
+                    if (
+                        VerseRef.TryParse(
+                            $"{Canon.BookNumberToId(_bookNum)} {_actualChapter}:{_actualVerse}",
+                            out VerseRef actualVerseRef
+                        )
+                    )
                     {
                         return actualVerseRef.ToString();
                     }
@@ -172,15 +187,17 @@ namespace SIL.Machine.Corpora
 
     public class UsfmVersificationErrorDetector : UsfmParserHandlerBase
     {
+        private readonly string _projectName;
         private readonly ScrVers _versification;
         private int _currentBook;
         private int _currentChapter;
         private VerseRef _currentVerse;
         private readonly List<UsfmVersificationError> _errors;
 
-        public UsfmVersificationErrorDetector(ScrVers versification)
+        public UsfmVersificationErrorDetector(ParatextProjectSettings settings)
         {
-            _versification = versification;
+            _projectName = settings.Name;
+            _versification = settings.Versification;
             _currentBook = 0;
             _currentChapter = 0;
             _currentVerse = new VerseRef();
@@ -198,7 +215,8 @@ namespace SIL.Machine.Corpora
                     _versification.GetLastChapter(_currentBook),
                     _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
                     _currentChapter,
-                    _currentVerse.AllVerses().Last().VerseNum
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
                 );
                 if (versificationError.CheckError())
                     _errors.Add(versificationError);
@@ -227,7 +245,8 @@ namespace SIL.Machine.Corpora
                     _currentChapter,
                     _versification.GetLastVerse(_currentBook, _currentChapter),
                     _currentChapter,
-                    _currentVerse.AllVerses().Last().VerseNum
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
                 );
                 if (versificationError.CheckError())
                     _errors.Add(versificationError);
@@ -254,6 +273,7 @@ namespace SIL.Machine.Corpora
                     _currentVerse.AllVerses().Last().VerseNum,
                     _currentChapter,
                     _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName,
                     _currentVerse
                 );
                 if (versificationError.CheckError())

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
@@ -20,13 +21,19 @@ namespace SIL.Machine.Corpora
         }
 
         public IReadOnlyList<UsfmVersificationError> GetUsfmVersificationErrors(
-            UsfmVersificationErrorDetector handler = null
+            UsfmVersificationErrorDetector handler = null,
+            HashSet<int> books = null
         )
         {
-            handler = handler ?? new UsfmVersificationErrorDetector(_settings.Versification);
-            foreach (string fileName in _settings.GetAllScriptureBookFileNames())
+            handler = handler ?? new UsfmVersificationErrorDetector(_settings);
+            foreach (string bookId in _settings.GetAllScriptureBookIds())
             {
+                string fileName = _settings.GetBookFileName(bookId);
+
                 if (!_paratextProjectFileHandler.Exists(fileName))
+                    continue;
+
+                if (books != null && !books.Contains(Canon.BookIdToNumber(bookId)))
                     continue;
 
                 string usfm;

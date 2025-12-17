@@ -6,7 +6,7 @@ using SIL.Scripture;
 namespace SIL.Machine.Corpora;
 
 [TestFixture]
-public class ParatextProjectQuoteConventionDetectorTests
+public class ParatextProjectVersificationErrorDetectorTests
 {
     [Test]
     public void GetUsfmVersificationErrors_NoErrors()
@@ -75,6 +75,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("3JN 1:15"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:14"));
     }
 
     [Test]
@@ -93,6 +95,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingChapter));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("3JN 1:15"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 0:0"));
     }
 
     [Test]
@@ -128,6 +132,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo(""));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:16"));
     }
 
     [Test]
@@ -161,6 +167,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.InvalidVerseRange));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("3JN 1:12-13"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:13-12"));
     }
 
     [Test]
@@ -196,6 +204,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerseSegment));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("3JN 1:14"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:14a"));
     }
 
     [Test]
@@ -233,6 +243,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerseSegment));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("3JN 1:13a"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:13"));
     }
 
     [Test]
@@ -289,6 +301,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo(""));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:13"));
     }
 
     [Test]
@@ -341,6 +355,8 @@ public class ParatextProjectQuoteConventionDetectorTests
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
         Assert.That(errors, Has.Count.EqualTo(1), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("2JN 1:13"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("2JN 1:12"));
     }
 
     [Test]
@@ -375,6 +391,10 @@ public class ParatextProjectQuoteConventionDetectorTests
         Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
         Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
         Assert.That(errors[1].Type, Is.EqualTo(UsfmVersificationErrorType.ExtraVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.EqualTo("2JN 1:13"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("2JN 1:12"));
+        Assert.That(errors[1].ExpectedVerseRef, Is.EqualTo(""));
+        Assert.That(errors[1].ActualVerseRef, Is.EqualTo("2JN 2:1"));
     }
 
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
