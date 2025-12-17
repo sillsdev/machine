@@ -46,12 +46,12 @@ namespace SIL.Machine.PunctuationAnalysis
             return true;
         }
 
-        public List<QuotationMarkUpdateStrategy> FindBestChapterStrategies()
+        public List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> FindBestChapterStrategies()
         {
-            var bestActionsByChapter = new List<QuotationMarkUpdateStrategy>();
+            var bestActionsByChapter = new List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)>();
             foreach (Chapter chapter in GetChapters())
             {
-                bestActionsByChapter.Add(FindBestStrategyForChapter(chapter));
+                bestActionsByChapter.Add((chapter.ChapterNumber, FindBestStrategyForChapter(chapter)));
             }
             return bestActionsByChapter;
         }

@@ -41,12 +41,16 @@ public class QuotationDenormalizationTests
         );
 
         UsfmParser.Parse(normalizedUsfm, quotationMarkDenormalizationFirstPass);
-        List<QuotationMarkUpdateStrategy> bestChapterStrategies =
+        List<(int ChapterNumber, QuotationMarkUpdateStrategy Strategy)> bestChapterStrategies =
             quotationMarkDenormalizationFirstPass.FindBestChapterStrategies();
+
+        Assert.That(bestChapterStrategies.Select(tup => tup.ChapterNumber).SequenceEqual([1]));
 
         var quotationMarkDenormalizer = new QuotationMarkDenormalizationUsfmUpdateBlockHandler(
             standardEnglishQuoteConvention,
-            new QuotationMarkUpdateSettings(chapterStrategies: bestChapterStrategies)
+            new QuotationMarkUpdateSettings(
+                chapterStrategies: bestChapterStrategies.Select(tup => tup.Strategy).ToList()
+            )
         );
 
         var updater = new UpdateUsfmParserHandler(updateBlockHandlers: [quotationMarkDenormalizer]);

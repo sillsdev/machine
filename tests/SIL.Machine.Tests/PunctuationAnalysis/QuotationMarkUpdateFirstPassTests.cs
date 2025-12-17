@@ -730,7 +730,7 @@ public class QuotationMarkUpdateFirstPassTests
         Assert.That(expectedActions.SequenceEqual(observedActions));
     }
 
-    public List<QuotationMarkUpdateStrategy> RunFirstPass(
+    private static List<QuotationMarkUpdateStrategy> RunFirstPass(
         string normalizedUsfm,
         string sourceQuoteConventionName,
         string targetQuoteConventionName
@@ -749,10 +749,10 @@ public class QuotationMarkUpdateFirstPassTests
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
         UsfmParser.Parse(normalizedUsfm, firstPassAnalyzer);
 
-        return firstPassAnalyzer.FindBestChapterStrategies();
+        return firstPassAnalyzer.FindBestChapterStrategies().Select(tup => tup.Strategy).ToList();
     }
 
-    public QuotationMarkUpdateStrategy RunFirstPassOnChapter(
+    private static QuotationMarkUpdateStrategy RunFirstPassOnChapter(
         List<string> verseTexts,
         string sourceQuoteConventionName,
         string targetQuoteConventionName
@@ -777,7 +777,7 @@ public class QuotationMarkUpdateFirstPassTests
         return firstPassAnalyzer.FindBestStrategyForChapter(chapter);
     }
 
-    public QuoteConvention GetQuoteConventionByName(string name)
+    private static QuoteConvention GetQuoteConventionByName(string name)
     {
         QuoteConvention quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
         Assert.IsNotNull(quoteConvention);
