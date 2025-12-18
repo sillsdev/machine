@@ -189,8 +189,8 @@ namespace SIL.Machine.PunctuationAnalysis
             _stringValue = stringValue;
             IEnumerable<(int StringIndex, int SurrogatePairIndex)> indexPairs = _stringValue
                 .Select((c, stringIndex) => (c, stringIndex))
-                .Where(tup => !char.IsLowSurrogate(tup.c))
-                .Select((tup, surrogatePairIndex) => (tup.stringIndex, surrogatePairIndex));
+                .Where(tuple => !char.IsLowSurrogate(tuple.c))
+                .Select((tuple, surrogatePairIndex) => (tuple.stringIndex, surrogatePairIndex));
             _surrogatePairIndexByStringIndex = new Dictionary<int, int>();
             _stringIndexBySurrogatePairIndex = new Dictionary<int, int>();
             foreach ((int stringIndex, int surrogatePairIndex) in indexPairs)

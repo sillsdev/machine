@@ -164,7 +164,7 @@ namespace SIL.Machine.PunctuationAnalysis
                 {
                     if (currentChapterVerses.Count > 0)
                     {
-                        chapters.Add(new Chapter(currentChapterVerses));
+                        chapters.Add(new Chapter(currentChapterVerses, currentChapter));
                     }
                     currentChapterVerses = new List<Verse>();
                 }
@@ -176,7 +176,7 @@ namespace SIL.Machine.PunctuationAnalysis
             }
             if (currentChapterVerses.Count > 0)
             {
-                chapters.Add(new Chapter(currentChapterVerses));
+                chapters.Add(new Chapter(currentChapterVerses, currentChapter));
             }
             return chapters;
         }
