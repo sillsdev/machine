@@ -16,12 +16,16 @@ namespace SIL.Machine.Corpora
 
         public bool Exists(string fileName)
         {
-            return _archive.GetEntry(fileName) != null;
+            return _archive.Entries.Any(e =>
+                e.FullName.Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase)
+            );
         }
 
         public Stream Open(string fileName)
         {
-            ZipArchiveEntry entry = _archive.GetEntry(fileName);
+            ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e =>
+                e.FullName.Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase)
+            );
             if (entry == null)
                 return null;
             return entry.Open();
@@ -29,7 +33,9 @@ namespace SIL.Machine.Corpora
 
         public string Find(string extension)
         {
-            ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e => e.FullName.EndsWith(extension));
+            ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e =>
+                e.FullName.EndsWith(extension, System.StringComparison.InvariantCultureIgnoreCase)
+            );
             if (entry == null)
                 return null;
             return entry.FullName;
