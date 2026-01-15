@@ -426,6 +426,163 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void MultipleDeletionRules()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRnd = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var backRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var t = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("alveolar")
+            .Symbol("del_rel-")
+            .Symbol("asp-")
+            .Symbol("vd-")
+            .Symbol("strident-")
+            .Value;
+
+        var rule1 = new RewriteRule
+        {
+            Name = "rule1",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+        };
+        Allophonic.PhonologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new RewriteSubrule
+            {
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("bubu"), "27", "19");
+    }
+
+    [Test]
+    public void MergeRules()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRnd = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var backRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var t = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("alveolar")
+            .Symbol("del_rel-")
+            .Symbol("asp-")
+            .Symbol("vd-")
+            .Symbol("strident-")
+            .Value;
+
+        var rule1 = new RewriteRule
+        {
+            Name = "rule1",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+        };
+        Allophonic.PhonologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("butbut"), "27");
+    }
+
+    [Test]
+    public void MultipleMergeRules()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRnd = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var backRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var t = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("alveolar")
+            .Symbol("del_rel-")
+            .Symbol("asp-")
+            .Symbol("vd-")
+            .Symbol("strident-")
+            .Value;
+
+        var rule1 = new RewriteRule
+        {
+            Name = "rule1",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(highVowel).Annotation(highVowel).Value
+        };
+        Allophonic.PhonologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(t).Annotation(t).Value,
+            }
+        );
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("bttbtt"), "27");
+    }
+
+    [Test]
     public void BoundaryRules()
     {
         var highVowel = FeatureStruct

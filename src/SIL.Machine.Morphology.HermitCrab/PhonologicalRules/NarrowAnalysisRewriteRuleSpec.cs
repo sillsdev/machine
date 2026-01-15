@@ -51,6 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 curNode = targetMatch.Input.Shape.AddAfter(curNode, fs, true);
             }
 
+            curNode = range.Start;
             for (int i = 0; i < _targetCount; i++)
             {
                 curNode.Annotation.Optional = true;
