@@ -467,10 +467,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
-            }
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value }
         );
 
         var morpher = new Morpher(TraceManager, Language);
@@ -572,10 +569,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(t).Annotation(t).Value,
-            }
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(t).Annotation(t).Value }
         );
 
         var morpher = new Morpher(TraceManager, Language);
