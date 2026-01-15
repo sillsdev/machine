@@ -565,7 +565,12 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Annotation(highVowel).Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>
+                .New()
+                .Annotation(backRndVowel)
+                .Annotation(highVowel)
+                .Annotation(highVowel)
+                .Value
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
