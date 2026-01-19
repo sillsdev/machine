@@ -65,6 +65,20 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         new EpenthesisSynthesisRewriteSubruleSpec(matcherSettings, isIterative, subrule, i)
                     );
                 }
+                else
+                {
+                    // NarrowSynthesisRewriteSubruleSpec works for expansion, too.
+                    SubruleSpecs.Add(
+                        new NarrowSynthesisRewriteSubruleSpec(
+                            matcherSettings,
+                            isIterative,
+                            lhs.Children.Count,
+                            subrule,
+                            i
+                        )
+                    );
+
+                }
                 i++;
             }
         }
