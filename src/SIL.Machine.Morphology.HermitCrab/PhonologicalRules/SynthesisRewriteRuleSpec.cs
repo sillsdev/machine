@@ -77,7 +77,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             i
                         )
                     );
-
                 }
                 i++;
             }

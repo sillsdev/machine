@@ -87,7 +87,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     ruleSpec = new NarrowAnalysisRewriteRuleSpec(settings, _rule.Lhs, sr);
                     mode = RewriteApplicationMode.Simultaneous;
                     reapplyType = ReapplyType.Deletion;
-
                 }
                 Debug.Assert(ruleSpec != null);
 
