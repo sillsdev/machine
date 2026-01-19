@@ -14,12 +14,23 @@ namespace SIL.Machine.Corpora
 
         public bool Exists(string fileName)
         {
-            return File.Exists(Path.Combine(_projectDir, fileName));
+            return Directory
+                .EnumerateFiles(_projectDir)
+                .Any(f => Path.GetFileName(f).Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase));
         }
 
         public Stream Open(string fileName)
         {
-            return File.OpenRead(Path.Combine(_projectDir, fileName));
+            return File.OpenRead(
+                Path.Combine(
+                    _projectDir,
+                    Directory
+                        .EnumerateFiles(_projectDir)
+                        .FirstOrDefault(f =>
+                            Path.GetFileName(f).Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase)
+                        )
+                )
+            );
         }
 
         public UsfmStylesheet CreateStylesheet(string fileName)
