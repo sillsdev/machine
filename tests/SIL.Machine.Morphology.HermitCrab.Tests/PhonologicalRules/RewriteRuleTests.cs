@@ -435,12 +435,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
-        var backRnd = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("back+")
-            .Symbol("round+")
-            .Value;
         var backRndVowel = FeatureStruct
             .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
@@ -448,16 +442,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("voc+")
             .Symbol("back+")
             .Symbol("round+")
-            .Value;
-        var t = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("cons+")
-            .Symbol("alveolar")
-            .Symbol("del_rel-")
-            .Symbol("asp-")
-            .Symbol("vd-")
-            .Symbol("strident-")
             .Value;
 
         var rule1 = new RewriteRule
@@ -483,12 +467,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
-            .Value;
-        var backRnd = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("back+")
-            .Symbol("round+")
             .Value;
         var backRndVowel = FeatureStruct
             .New(Language.PhonologicalFeatureSystem)
@@ -536,12 +514,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("cons-")
             .Symbol("voc+")
             .Symbol("high+")
-            .Value;
-        var backRnd = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("back+")
-            .Symbol("round+")
             .Value;
         var backRndVowel = FeatureStruct
             .New(Language.PhonologicalFeatureSystem)
@@ -591,12 +563,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("voc+")
             .Symbol("high+")
             .Value;
-        var backRnd = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("back+")
-            .Symbol("round+")
-            .Value;
         var backRndVowel = FeatureStruct
             .New(Language.PhonologicalFeatureSystem)
             .Symbol(HCFeatureSystem.Segment)
@@ -604,16 +570,6 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("voc+")
             .Symbol("back+")
             .Symbol("round+")
-            .Value;
-        var t = FeatureStruct
-            .New(Language.PhonologicalFeatureSystem)
-            .Symbol(HCFeatureSystem.Segment)
-            .Symbol("cons+")
-            .Symbol("alveolar")
-            .Symbol("del_rel-")
-            .Symbol("asp-")
-            .Symbol("vd-")
-            .Symbol("strident-")
             .Value;
 
         var rule1 = new RewriteRule
