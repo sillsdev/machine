@@ -81,6 +81,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
                         reapplyType = ReapplyType.SelfOpaquing;
                 }
+                else
+                {
+                    // NarrowAnalysisRewriteRuleSpec works for expansion, too.
+                    ruleSpec = new NarrowAnalysisRewriteRuleSpec(settings, _rule.Lhs, sr);
+                    mode = RewriteApplicationMode.Simultaneous;
+                    reapplyType = ReapplyType.Deletion;
+                }
                 Debug.Assert(ruleSpec != null);
 
                 PhonologicalPatternRule patternRule = null;
