@@ -665,6 +665,63 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_IncompleteVerseRange()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\s heading text
+\p
+\q1
+\v 1,
+\q1 verse 1 text
+",
+            includeAllText: true
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(4));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:s")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("heading text"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+
+            Assert.That(
+                rows[1].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:0/2:p")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[1].Text, Is.Empty, string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[2].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1/3:q1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[2].Text, Is.Empty, string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[3].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1/4:q1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[3].Text,
+                Is.EqualTo("verse 1 text"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =

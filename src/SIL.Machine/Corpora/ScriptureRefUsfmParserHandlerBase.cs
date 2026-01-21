@@ -299,7 +299,7 @@ namespace SIL.Machine.Corpora
 
         private void UpdateVerseRef(VerseRef verseRef, string marker)
         {
-            if (_curVerseRef.VerseNum == 0 && verseRef.VerseNum == 0 && marker == "v")
+            if (_curVerseRef.VerseNum == 0 && verseRef.VerseNum == 0 && !verseRef.HasMultiple && marker == "v")
             {
                 // As the verse 0 marker appears within the middle of verse 0,
                 // we should not break the position of current element stack by clearing it.
