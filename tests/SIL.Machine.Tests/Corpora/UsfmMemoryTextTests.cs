@@ -425,6 +425,58 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_NonLatinVerseNumber()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\c 1
+\p
+\v १ Verse 1
+\v 3,৪ Verses 3 and 4
+\p
+",
+            includeAllText: true
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(4));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:৪")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[0].Text, Is.Empty, string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[1].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:0/1:p")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[1].Text, Is.Empty, string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[2].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(rows[2].Text, Is.EqualTo("Verse 1"), string.Join(",", rows.ToList().Select(tr => tr.Text)));
+
+            Assert.That(
+                rows[3].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:3")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[3].Text,
+                Is.EqualTo("Verses 3 and 4"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text =

@@ -391,7 +391,7 @@ namespace SIL.Machine.Corpora
 
                     // Verse
                     vref = State.VerseRef;
-                    vref.Verse = token.Data;
+                    vref.TrySetVerseUnicode(token.Data);
                     if (vref.VerseNum == 0)
                         State.ChapterHasVerseZero = true;
                     State.VerseRef = vref;
