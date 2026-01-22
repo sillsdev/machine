@@ -175,7 +175,7 @@ namespace SIL.Machine.Corpora
                                     marker,
                                     null,
                                     null,
-                                    GetNextWord(usfm, ref index, preserveWhitespace)
+                                    SanitizeVerseData(GetNextWord(usfm, ref index, preserveWhitespace))
                                 )
                                 {
                                     LineNumber = lineNum,
@@ -561,6 +561,11 @@ namespace SIL.Machine.Corpora
             }
 
             return data;
+        }
+
+        private static string SanitizeVerseData(string verseData)
+        {
+            return verseData.Replace("‏", "");
         }
 
         /// <summary>

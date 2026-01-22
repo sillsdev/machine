@@ -907,6 +907,39 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
+    public void UpdateBlock_Verse_Range_RightToLeftMarker()
+    {
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1", "MAT 1:2", "MAT 1:3"), "Update 1-3") };
+        string usfm =
+            @"\id MAT - Test
+\c 1
+\v 1‏-3 verse 1 through 3
+";
+        TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        string updatedUsfm = UpdateUsfm(
+            rows,
+            usfm,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
+        );
+        string expectedUsfm =
+            @"\id MAT - Test
+\c 1
+\v 1-3 Update 1-3
+";
+        Assert.That(updatedUsfm.Replace("\r\n", "\n"), Is.EqualTo(expectedUsfm));
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
+
+        UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
+        AssertUpdateBlockEquals(
+            usfmUpdateBlock,
+            ["MAT 1:1", "MAT 1:2", "MAT 1:3"],
+            (UsfmUpdateBlockElementType.Text, "Update 1-3 ", false),
+            (UsfmUpdateBlockElementType.Text, "verse 1 through 3 ", true)
+        );
+    }
+
+    [Test]
     public void UpdateBlock_Footnote_PreserveEmbeds()
     {
         var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
