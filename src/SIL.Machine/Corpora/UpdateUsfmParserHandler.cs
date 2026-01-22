@@ -518,6 +518,11 @@ namespace SIL.Machine.Corpora
             while (_tokenIndex <= state.Index + state.SpecialTokenCount)
             {
                 UsfmToken token = state.Tokens[_tokenIndex];
+                if (token.Type == UsfmTokenType.Verse)
+                {
+                    string sanitizedVerseData = SanitizeVerseData(token.Data);
+                    token = new UsfmToken(token.Type, token.Marker, token.Text, token.EndMarker, sanitizedVerseData);
+                }
                 if (CurrentTextType == ScriptureTextType.Embed)
                 {
                     _embedTokens.Add(token);
@@ -750,6 +755,11 @@ namespace SIL.Machine.Corpora
                     }
                 }
             }
+        }
+
+        private static string SanitizeVerseData(string verseData)
+        {
+            return verseData.Replace("\u200F", "");
         }
 
         private class RowInfo

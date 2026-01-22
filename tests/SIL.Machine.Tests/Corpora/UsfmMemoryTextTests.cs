@@ -426,6 +426,42 @@ description
     }
 
     [Test]
+    public void GetRows_VerseRangeWithRightToLeftMarker()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT - Test
+\h
+\mt
+\c 1
+\v 1"
+                + "\u200f"
+                + @"-2 Verse one and two.
+"
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(2));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("Verse one and two."),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+            Assert.That(
+                rows[1].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:2")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+        });
+    }
+
+    [Test]
     public void GetRows_NonLatinVerseNumber()
     {
         TextRow[] rows = GetRows(
