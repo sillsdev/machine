@@ -927,7 +927,7 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \v 1-3 Update 1-3
 ";
-        Assert.That(updatedUsfm.Replace("\r\n", "\n"), Is.EqualTo(expectedUsfm));
+        Assert.That(updatedUsfm, Is.EqualTo(expectedUsfm).IgnoreLineEndings());
         Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(1));
 
         UsfmUpdateBlock usfmUpdateBlock = usfmUpdateBlockHandler.Blocks[0];
