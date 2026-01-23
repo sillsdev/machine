@@ -916,12 +916,7 @@ public class UpdateUsfmParserHandlerTests
 \v 1‏-3 verse 1 through 3
 ";
         TestUsfmUpdateBlockHandler usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
-        string updatedUsfm = UpdateUsfm(
-            rows,
-            usfm,
-            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
-            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]
-        );
+        string updatedUsfm = UpdateUsfm(rows, usfm, usfmUpdateBlockHandlers: [usfmUpdateBlockHandler]);
         string expectedUsfm =
             @"\id MAT - Test
 \c 1
