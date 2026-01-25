@@ -1408,6 +1408,91 @@ public class UpdateUsfmParserHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateBlock_FootnoteInPublishedChapterNumber()
+    {
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("ESG 1:0/2:s"), "Update 1")];
+        string usfm =
+            @"\id ESG - Test
+\c 1
+\cp A \f + \fr A.1-3: \ft Some note.\f*
+\s Heading 1
+";
+        var usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler],
+            textBehavior: UpdateUsfmTextBehavior.StripExisting,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        string result =
+            @"\id ESG
+\c 1
+\cp A \f + \fr A.1-3: \ft Some note.\f*
+\s Update 1
+";
+        AssertUsfmEquals(target, result);
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(2));
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[0],
+            ["ESG 1:0/1:f"],
+            (UsfmUpdateBlockElementType.Embed, @"\f + \fr A.1-3: \ft Some note.\f*", false)
+        );
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[1],
+            ["ESG 1:0/2:s"],
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Heading 1 ", true)
+        );
+    }
+
+    [Test]
+    public void UpdateBlock_FootnoteAtStartOfChapterWithPrecedingText()
+    {
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("ESG 1:0/2:s"), "Update 1")];
+        string usfm =
+            @"\id ESG - Test
+\c 1
+Text 1\f + \fr A.1-3: \ft Some note.\f*
+\s Heading 1
+";
+        var usfmUpdateBlockHandler = new TestUsfmUpdateBlockHandler();
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            usfmUpdateBlockHandlers: [usfmUpdateBlockHandler],
+            textBehavior: UpdateUsfmTextBehavior.PreferNew,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            embedBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Preserve
+        );
+
+        string result =
+            @"\id ESG - Test
+\c 1 Text 1\f + \fr A.1-3: \ft Some note.\f*
+\s Update 1
+";
+        AssertUsfmEquals(target, result);
+
+        Assert.That(usfmUpdateBlockHandler.Blocks.Count, Is.EqualTo(2));
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[0],
+            ["ESG 1:0/1:f"],
+            (UsfmUpdateBlockElementType.Embed, @"\f + \fr A.1-3: \ft Some note.\f*", false)
+        );
+        AssertUpdateBlockEquals(
+            usfmUpdateBlockHandler.Blocks[1],
+            ["ESG 1:0/2:s"],
+            (UsfmUpdateBlockElementType.Text, "Update 1 ", false),
+            (UsfmUpdateBlockElementType.Text, "Heading 1 ", true)
+        );
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();

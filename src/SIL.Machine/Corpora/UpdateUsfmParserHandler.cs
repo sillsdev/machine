@@ -413,10 +413,16 @@ namespace SIL.Machine.Corpora
 
         protected override void EndEmbedText(UsfmParserState state, ScriptureRef scriptureRef)
         {
+            // If this embed is outside an update block, create an update block just for this embed
+            bool embedOutsideOfBlock = _updateBlocks.Count == 0;
+            if (embedOutsideOfBlock)
+                StartUpdateBlock(new[] { scriptureRef });
             _updateBlocks
                 .Peek()
                 .AddEmbed(_embedTokens, markedForRemoval: _embedBehavior == UpdateUsfmMarkerBehavior.Strip);
             _embedTokens.Clear();
+            if (embedOutsideOfBlock)
+                EndUpdateBlock(state, new[] { scriptureRef });
         }
 
         public string GetUsfm(string stylesheetFileName = "usfm.sty")
