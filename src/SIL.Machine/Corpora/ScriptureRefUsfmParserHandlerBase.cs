@@ -66,6 +66,10 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
+            // Handle non-latin numbers
+            VerseRef verseRef = _curVerseRef.Clone();
+            verseRef.TrySetVerseUnicode(number);
+
             if (state.ChapterHasVerseZero && state.VerseRef.VerseNum == 0)
             {
                 // Fall through for the special case of verse 0 being specified in the USFM
@@ -81,11 +85,14 @@ namespace SIL.Machine.Corpora
 
                 return;
             }
-            else if (VerseRef.AreOverlappingVersesRanges(verse1: number, verse2: _curVerseRef.Verse))
+            else if (
+                VerseRef.AreOverlappingVersesRanges(verse1: verseRef.Verse, verse2: _curVerseRef.Verse)
+                && VerseRef.AreOverlappingVersesRanges(verse1: number, verse2: _curVerseRef.Verse)
+            )
             {
                 // merge overlapping verse ranges in to one range
-                VerseRef verseRef = _curVerseRef.Clone();
-                verseRef.Verse = CorporaUtils.MergeVerseRanges(number, _curVerseRef.Verse);
+                verseRef = _curVerseRef.Clone();
+                verseRef.TrySetVerseUnicode(CorporaUtils.MergeVerseRanges(number, _curVerseRef.Verse));
                 UpdateVerseRef(verseRef, marker);
                 return;
             }
@@ -292,7 +299,7 @@ namespace SIL.Machine.Corpora
 
         private void UpdateVerseRef(VerseRef verseRef, string marker)
         {
-            if (_curVerseRef.VerseNum == 0 && verseRef.VerseNum == 0 && marker == "v")
+            if (_curVerseRef.VerseNum == 0 && verseRef.VerseNum == 0 && !verseRef.HasMultiple && marker == "v")
             {
                 // As the verse 0 marker appears within the middle of verse 0,
                 // we should not break the position of current element stack by clearing it.
