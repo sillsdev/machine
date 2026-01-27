@@ -433,7 +433,9 @@ description
 \h
 \mt
 \c 1
-\v 1‏-2 Verse one and two.
+\v 1"
+                + "\u200f"
+                + @"-2 Verse one and two.
 "
         );
 
