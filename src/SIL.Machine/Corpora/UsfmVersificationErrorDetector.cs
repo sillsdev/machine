@@ -12,7 +12,9 @@ namespace SIL.Machine.Corpora
         ExtraVerse,
         InvalidVerseRange,
         MissingVerseSegment,
-        ExtraVerseSegment
+        ExtraVerseSegment,
+        InvalidChapterNumber,
+        InvalidVerseNumber
     }
 
     public class UsfmVersificationError
@@ -22,6 +24,7 @@ namespace SIL.Machine.Corpora
         private readonly int _expectedVerse;
         private readonly int _actualChapter;
         private readonly int _actualVerse;
+        private readonly string _actualValue;
         private VerseRef? _verseRef = null;
 
         public UsfmVersificationError(
@@ -41,6 +44,21 @@ namespace SIL.Machine.Corpora
             _actualVerse = actualVerse;
             _verseRef = verseRef;
             ProjectName = projectName;
+        }
+
+        public UsfmVersificationError(
+            int bookNum,
+            int expectedChapter,
+            string actualValue,
+            string projectName,
+            UsfmVersificationErrorType type
+        )
+        {
+            _bookNum = bookNum;
+            _expectedChapter = expectedChapter;
+            _actualValue = actualValue;
+            ProjectName = projectName;
+            Type = type;
         }
 
         public string ProjectName { get; private set; }
@@ -104,8 +122,14 @@ namespace SIL.Machine.Corpora
         {
             get
             {
-                if (Type == UsfmVersificationErrorType.ExtraVerse)
+                if (
+                    Type == UsfmVersificationErrorType.ExtraVerse
+                    || Type == UsfmVersificationErrorType.InvalidChapterNumber
+                    || Type == UsfmVersificationErrorType.InvalidVerseNumber
+                )
+                {
                     return "";
+                }
 
                 // We do not want to throw an exception here, and the VerseRef constructor can throw
                 // an exception with certain invalid verse data; use TryParse instead.
@@ -154,11 +178,20 @@ namespace SIL.Machine.Corpora
                 return defaultVerseRef.ToString();
             }
         }
+
         public string ActualVerseRef
         {
             get
             {
-                if (_verseRef != null)
+                if (Type == UsfmVersificationErrorType.InvalidChapterNumber)
+                {
+                    return $"{Canon.BookNumberToId(_bookNum)} {_actualValue}";
+                }
+                else if (Type == UsfmVersificationErrorType.InvalidVerseNumber)
+                {
+                    return $"{Canon.BookNumberToId(_bookNum)} {_expectedChapter}:{_actualValue}";
+                }
+                else if (_verseRef != null)
                 {
                     return _verseRef.ToString();
                 }
@@ -254,6 +287,22 @@ namespace SIL.Machine.Corpora
 
             _currentChapter = state.VerseRef.ChapterNum;
             _currentVerse = new VerseRef();
+
+            // See whether the chapter number is invalid
+            VerseRef verseRef = state.VerseRef.Clone();
+            verseRef.Chapter = number;
+            if (verseRef.ChapterNum == -1)
+            {
+                _errors.Add(
+                    new UsfmVersificationError(
+                        _currentBook,
+                        _currentChapter,
+                        number,
+                        _projectName,
+                        UsfmVersificationErrorType.InvalidChapterNumber
+                    )
+                );
+            }
         }
 
         public override void Verse(
@@ -264,6 +313,7 @@ namespace SIL.Machine.Corpora
             string pubNumber
         )
         {
+            bool verseInError = false;
             _currentVerse = state.VerseRef;
             if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
             {
@@ -277,7 +327,29 @@ namespace SIL.Machine.Corpora
                     _currentVerse
                 );
                 if (versificationError.CheckError())
+                {
                     _errors.Add(versificationError);
+                    verseInError = true;
+                }
+            }
+
+            if (!verseInError)
+            {
+                // See whether the verse number is invalid
+                VerseRef verseRef = _currentVerse.Clone();
+                verseRef.Verse = number;
+                if (verseRef.VerseNum == -1)
+                {
+                    _errors.Add(
+                        new UsfmVersificationError(
+                            _currentBook,
+                            _currentChapter,
+                            number,
+                            _projectName,
+                            UsfmVersificationErrorType.InvalidVerseNumber
+                        )
+                    );
+                }
             }
         }
     }
