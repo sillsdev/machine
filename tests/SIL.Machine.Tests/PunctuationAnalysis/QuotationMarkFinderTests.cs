@@ -14,20 +14,18 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("\u201cSample Text\u201d").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("\u201cSample Text\u201d").Build(),
-                            0,
-                            1
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("\u201cSample Text\u201d").Build(),
-                            12,
-                            13
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("\u201cSample Text\u201d").Build(),
+                        0,
+                        1
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("\u201cSample Text\u201d").Build(),
+                        12,
+                        13
+                    ),
+                ])
         );
 
         Assert.That(
@@ -35,16 +33,10 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("\"Sample Text'").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"Sample Text'").Build(), 0, 1),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("\"Sample Text'").Build(),
-                            12,
-                            13
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"Sample Text'").Build(), 0, 1),
+                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"Sample Text'").Build(), 12, 13),
+                ])
         );
 
         Assert.That(
@@ -52,38 +44,36 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
-                                .Build(),
-                            4,
-                            5
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
-                                .Build(),
-                            9,
-                            10
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
-                                .Build(),
-                            27,
-                            28
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
-                                .Build(),
-                            34,
-                            35
-                        )
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
+                            .Build(),
+                        4,
+                        5
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
+                            .Build(),
+                        27,
+                        28
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201cthe \u2019English quotation\u2018 marks\u201d")
+                            .Build(),
+                        34,
+                        35
+                    ),
+                ])
         );
 
         Assert.That(
@@ -91,38 +81,36 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
-                                .Build(),
-                            4,
-                            5
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
-                                .Build(),
-                            9,
-                            10
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
-                                .Build(),
-                            26,
-                            27
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
-                                .Build(),
-                            33,
-                            34
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
+                            .Build(),
+                        4,
+                        5
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
+                            .Build(),
+                        26,
+                        27
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u2039French quotation\u203a marks\u00bb")
+                            .Build(),
+                        33,
+                        34
+                    ),
+                ])
         );
 
         Assert.That(
@@ -130,20 +118,18 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("All \"the 'typewriter quotation marks").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("All \"the 'typewriter quotation marks").Build(),
-                            4,
-                            5
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("All \"the 'typewriter quotation marks").Build(),
-                            9,
-                            10
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("All \"the 'typewriter quotation marks").Build(),
+                        4,
+                        5
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("All \"the 'typewriter quotation marks").Build(),
+                        9,
+                        10
+                    ),
+                ])
         );
 
         Assert.That(
@@ -153,38 +139,36 @@ public class QuotationMarkFinderTests
                         .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            9,
-                            10
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            22,
-                            23
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            45,
-                            47
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            53,
-                            54
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        22,
+                        23
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        45,
+                        47
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        53,
+                        54
+                    ),
+                ])
         );
 
         Assert.That(
@@ -194,52 +178,50 @@ public class QuotationMarkFinderTests
                         .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            4,
-                            5
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            9,
-                            10
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            18,
-                            19
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            27,
-                            28
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            38,
-                            39
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
-                                .Build(),
-                            45,
-                            46
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        4,
+                        5
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        18,
+                        19
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        27,
+                        28
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        38,
+                        39
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u00abthe \u201cWestern \u2018european\u2019 quotation\u201d marks\u00bb")
+                            .Build(),
+                        45,
+                        46
+                    ),
+                ])
         );
 
         Assert.That(
@@ -249,38 +231,36 @@ public class QuotationMarkFinderTests
                         .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
-                                .Build(),
-                            4,
-                            5
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
-                                .Build(),
-                            9,
-                            10
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
-                                .Build(),
-                            36,
-                            37
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
-                                .Build(),
-                            43,
-                            44
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
+                            .Build(),
+                        4,
+                        5
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
+                            .Build(),
+                        36,
+                        37
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("All \u201ethe \u201aCentral European quotation\u2018 marks\u201c")
+                            .Build(),
+                        43,
+                        44
+                    ),
+                ])
         );
 
         Assert.That(
@@ -288,15 +268,13 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build(),
-                            9,
-                            10
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("उत्पत्ति \"पुस्तकले").Build(),
+                        9,
+                        10
+                    ),
+                ])
         );
     }
 
@@ -337,17 +315,15 @@ public class QuotationMarkFinderTests
                         .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            53,
-                            54
-                        )
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        53,
+                        54
+                    ),
+                ])
         );
 
         QuoteConvention westernEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
@@ -365,17 +341,15 @@ public class QuotationMarkFinderTests
                         .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            22,
-                            23
-                        )
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        22,
+                        23
+                    ),
+                ])
         );
 
         QuoteConvention typewriterWesternEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
@@ -393,24 +367,22 @@ public class QuotationMarkFinderTests
                         .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            45,
-                            47
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            53,
-                            54
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        45,
+                        47
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        53,
+                        54
+                    ),
+                ])
         );
 
         QuoteConvention centralEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
@@ -428,17 +400,15 @@ public class QuotationMarkFinderTests
                         .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
                         .Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder()
-                                .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
-                                .Build(),
-                            9,
-                            10
-                        )
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder()
+                            .SetText("This has \u201equotes from \u00bbdifferent conventions <<mixed 'together")
+                            .Build(),
+                        9,
+                        10
+                    ),
+                ])
         );
     }
 
@@ -453,20 +423,18 @@ public class QuotationMarkFinderTests
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build()
                 )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
-                            3,
-                            4
-                        ),
-                        new QuotationMarkStringMatch(
-                            new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
-                            5,
-                            6
-                        ),
-                    ]
-                )
+                .SequenceEqual([
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
+                        3,
+                        4
+                    ),
+                    new QuotationMarkStringMatch(
+                        new TextSegment.Builder().SetText("\U0001f600, \u201c\U0001f603\u201d").Build(),
+                        5,
+                        6
+                    ),
+                ])
         );
     }
 }

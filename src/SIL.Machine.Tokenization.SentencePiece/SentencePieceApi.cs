@@ -22,7 +22,7 @@ namespace SIL.Machine.Tokenization.SentencePiece
         Internal = 13,
         Unavailable = 14,
         DataLoss = 15,
-        Unauthenticated = 16
+        Unauthenticated = 16,
     }
 
     internal static class SentencePieceApi

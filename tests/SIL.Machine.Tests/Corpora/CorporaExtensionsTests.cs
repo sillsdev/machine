@@ -79,7 +79,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 2 segment 1 ."),
                     TextRow("text1", 2, "source 2 segment 2 ."),
-                    TextRow("text1", 3)
+                    TextRow("text1", 3),
                 }
             )
         );
@@ -90,7 +90,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 3 segment 1 ."),
                     TextRow("text1", 2, "source 3 segment 2 ."),
-                    TextRow("text1", 3, "source 3 segment 3 .")
+                    TextRow("text1", 3, "source 3 segment 3 ."),
                 }
             )
         );
@@ -112,7 +112,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 1 segment 1 ."),
                     TextRow("text1", 2, "source 1 segment 2 ."),
-                    TextRow("text1", 3, "source 1 segment 3 .")
+                    TextRow("text1", 3, "source 1 segment 3 ."),
                 }
             )
         );
@@ -123,7 +123,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 2 segment 1 ."),
                     TextRow("text1", 2, "source 2 segment 2 ."),
-                    TextRow("text1", 3, "source 2 segment 3 .")
+                    TextRow("text1", 3, "source 2 segment 3 ."),
                 }
             )
         );
@@ -134,7 +134,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 3 segment 1 ."),
                     TextRow("text1", 2, "source 3 segment 2 ."),
-                    TextRow("text1", 3, "source 3 segment 3 .")
+                    TextRow("text1", 3, "source 3 segment 3 ."),
                 }
             )
         );
@@ -159,7 +159,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 1 segment 1 ."),
                     TextRow("text1", 2, "source 1 segment 2 ."),
-                    TextRow("text1", 3, "source 1 segment 3 .")
+                    TextRow("text1", 3, "source 1 segment 3 ."),
                 }
             )
         );
@@ -170,7 +170,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 2 segment 1 ."),
                     TextRow("text1", 2, "source 2 segment 2 ."),
-                    TextRow("text1", 3, "source 2 segment 3 .")
+                    TextRow("text1", 3, "source 2 segment 3 ."),
                 }
             )
         );
@@ -181,7 +181,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 3 segment 1 ."),
                     TextRow("text1", 2, "source 3 segment 2 ."),
-                    TextRow("text1", 3, "source 3 segment 3 .")
+                    TextRow("text1", 3, "source 3 segment 3 ."),
                 }
             )
         );
@@ -206,7 +206,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 1 segment 1 ."),
                     TextRow("text1", 2, "source 1 segment 2 ."),
-                    TextRow("text1", 3, "source 1 segment 3 .")
+                    TextRow("text1", 3, "source 1 segment 3 ."),
                 }
             )
         );
@@ -217,7 +217,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 2 segment 1 ."),
                     TextRow("text1", 2, "source 2 segment 2 ."),
-                    TextRow("text1", 3, "source 2 segment 3 .")
+                    TextRow("text1", 3, "source 2 segment 3 ."),
                 }
             )
         );
@@ -228,7 +228,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "source 3 segment 1 ."),
                     TextRow("text1", 2, "source 3 segment 2 ."),
-                    TextRow("text1", 3, "source 3 segment 3 .")
+                    TextRow("text1", 3, "source 3 segment 3 ."),
                 }
             )
         );
@@ -242,7 +242,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "target 1 segment 1 ."),
                     TextRow("text1", 2, "target 1 segment 2 ."),
-                    TextRow("text1", 3, "target 1 segment 3 .")
+                    TextRow("text1", 3, "target 1 segment 3 ."),
                 }
             )
         );
@@ -253,7 +253,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "target 2 segment 1 ."),
                     TextRow("text1", 2, "target 2 segment 2 ."),
-                    TextRow("text1", 3, "target 2 segment 3 .")
+                    TextRow("text1", 3, "target 2 segment 3 ."),
                 }
             )
         );
@@ -264,7 +264,7 @@ public class CorporaExtensionsTests
                 {
                     TextRow("text1", 1, "target 3 segment 1 ."),
                     TextRow("text1", 2, "target 3 segment 2 ."),
-                    TextRow("text1", 3, "target 3 segment 3 .")
+                    TextRow("text1", 3, "target 3 segment 3 ."),
                 }
             )
         );
@@ -288,7 +288,7 @@ public class CorporaExtensionsTests
         return new TextRow(textId, rowRef)
         {
             Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
-            Flags = flags
+            Flags = flags,
         };
     }
 }

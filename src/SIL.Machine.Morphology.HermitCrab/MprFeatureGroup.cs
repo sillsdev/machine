@@ -17,7 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// only if all features match within the group
         /// </summary>
-        All
+        All,
     }
 
     /// <summary>
@@ -33,7 +33,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// appends features
         /// </summary>
-        Append
+        Append,
     }
 
     /// <summary>

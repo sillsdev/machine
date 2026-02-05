@@ -486,7 +486,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.Clone())
                     {
-                        CurrentTrace = CurrentTrace
+                        CurrentTrace = CurrentTrace,
                     };
                     word.Freeze();
                     return true;

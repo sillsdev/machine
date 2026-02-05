@@ -22,7 +22,7 @@ namespace SIL.Machine.Utils
             '\uFF01',
             '\uFF0E',
             '\uFF1F',
-            '\uFF61'
+            '\uFF61',
         };
 
         private static readonly HashSet<char> QuotationMarks = new HashSet<char>
@@ -40,7 +40,7 @@ namespace SIL.Machine.Utils
             '«',
             '»',
             '‹',
-            '›'
+            '›',
         };
 
         private static readonly HashSet<char> DelayedSentenceStart = new HashSet<char>(QuotationMarks)
@@ -48,7 +48,7 @@ namespace SIL.Machine.Utils
             '(',
             '[',
             '<',
-            '{'
+            '{',
         };
 
         private static readonly HashSet<char> DelayedSentenceEnd = new HashSet<char>(QuotationMarks)
@@ -56,7 +56,7 @@ namespace SIL.Machine.Utils
             ')',
             ']',
             '>',
-            '}'
+            '}',
         };
 
         public static bool IsSentenceTerminal(this char c)

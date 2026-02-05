@@ -44,7 +44,7 @@ public class ThotIbm4WordAlignmentModelTests
                     { "oftenyay", "6" },
                     // adjectives
                     { "ardhay", "7" },
-                    { "orkingway", "7" }
+                    { "orkingway", "7" },
                 },
                 TargetWordClasses = new Dictionary<string, string>
                 {
@@ -75,9 +75,9 @@ public class ThotIbm4WordAlignmentModelTests
                     { "work", "8" },
                     // disambiguators
                     { "N", "9" },
-                    { "V", "9" }
-                }
-            }
+                    { "V", "9" },
+                },
+            },
         };
         ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
         await trainer.TrainAsync();

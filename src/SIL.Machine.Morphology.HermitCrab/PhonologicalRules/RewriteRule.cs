@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
     public enum RewriteApplicationMode
     {
         Iterative,
-        Simultaneous
+        Simultaneous,
     }
 
     public class RewriteRule : HCRuleBase, IPhonologicalRule

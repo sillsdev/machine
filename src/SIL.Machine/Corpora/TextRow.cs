@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
         None = 0x0,
         SentenceStart = 0x1,
         InRange = 0x2,
-        RangeStart = 0x4
+        RangeStart = 0x4,
     }
 
     public class TextRow : IRow

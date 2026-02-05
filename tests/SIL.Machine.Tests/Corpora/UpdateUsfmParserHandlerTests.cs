@@ -11,7 +11,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -37,7 +37,7 @@ public class UpdateUsfmParserHandlerTests
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
-            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Update 3")
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Update 3"),
         };
         string usfm =
             @"\id MAT - Test
@@ -204,7 +204,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_ParagraphInVerse()
     {
-        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"), };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1") };
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -290,7 +290,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:1"), "First verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:1"), "First verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
@@ -320,7 +320,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:1a"), "First verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:1a"), "First verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -337,7 +337,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:7"), "Seventh verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:7"), "Seventh verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -349,7 +349,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Second verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Second verse of the first chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -366,7 +366,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:9"), "Ninth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:9"), "Ninth verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -381,7 +381,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(
                 ScrRef("MAT 2:11", "MAT 2:12"),
                 "Eleventh verse of the second chapter. Twelfth verse of the second chapter."
-            )
+            ),
         };
 
         string target = UpdateUsfm(rows);
@@ -398,7 +398,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -411,7 +411,7 @@ public class UpdateUsfmParserHandlerTests
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter."),
-            new UpdateUsfmRow(ScrRef("MAT 2:12"), "Twelfth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:12"), "Twelfth verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -430,7 +430,7 @@ public class UpdateUsfmParserHandlerTests
         {
             new UpdateUsfmRow(ScrRef("MAT 2:2"), "Verse 2."),
             new UpdateUsfmRow(ScrRef("MAT 2:2a"), "Verse 2a."),
-            new UpdateUsfmRow(ScrRef("MAT 2:2b"), "Verse 2b.")
+            new UpdateUsfmRow(ScrRef("MAT 2:2b"), "Verse 2b."),
         };
 
         string target = UpdateUsfm(rows);
@@ -443,7 +443,7 @@ public class UpdateUsfmParserHandlerTests
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 2:2"), "Second verse of the second chapter."),
-            new UpdateUsfmRow(ScrRef("MAT 2:3"), "Third verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:3"), "Third verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
@@ -458,7 +458,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:10"), "Tenth verse of the second chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 2:10"), "Tenth verse of the second chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -473,7 +473,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Third verse of the first chapter.")
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Third verse of the first chapter."),
         };
 
         string target = UpdateUsfm(rows);
@@ -507,7 +507,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter."),
             new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The first cell of the table."),
             new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc2"), "The second cell of the table."),
-            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table.")
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table."),
         };
 
         string target = UpdateUsfm(rows);
@@ -533,7 +533,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar.")
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar."),
         };
 
         string target = UpdateUsfm(rows);
@@ -546,7 +546,7 @@ public class UpdateUsfmParserHandlerTests
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 2:0/1:tr/1:tc1"), "The first cell of the table."),
-            new UpdateUsfmRow(ScrRef("MAT 2:0/2:tr/1:tc1"), "The third cell of the table.")
+            new UpdateUsfmRow(ScrRef("MAT 2:0/2:tr/1:tc1"), "The third cell of the table."),
         };
 
         string target = UpdateUsfm(rows);
@@ -565,7 +565,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar.")
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar."),
         };
 
         string target = UpdateUsfm(rows);
@@ -607,7 +607,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 3:1"), "Updating later in the book to start.")
+            new UpdateUsfmRow(ScrRef("MAT 3:1"), "Updating later in the book to start."),
         };
 
         string target = UpdateUsfm(rows);
@@ -651,7 +651,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("GEN 1:3"), "Update rows before the start"),
             new UpdateUsfmRow(ScrRef("GEN 1:4"), "Update rows before the start"),
             new UpdateUsfmRow(ScrRef("GEN 1:5"), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph."),
         };
 
         string target = UpdateUsfm(rows);
@@ -667,7 +667,7 @@ public class UpdateUsfmParserHandlerTests
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 1:0/2:p"), "Update Paragraph"),
-            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update Verse 1")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update Verse 1"),
         };
 
         string usfm =
@@ -714,7 +714,7 @@ public class UpdateUsfmParserHandlerTests
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*")
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*"),
         };
 
         string usfm =
@@ -755,7 +755,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void CrossReferenceDontUpdate()
     {
-        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1/1:x"), "Update the cross reference"), };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1/1:x"), "Update the cross reference") };
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -773,7 +773,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void PreserveFig()
     {
-        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update"), };
+        var rows = new List<UpdateUsfmRow> { new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update") };
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1191,7 +1191,7 @@ public class UpdateUsfmParserHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
             new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
             new UpdateUsfmRow(ScrRef("MAT 2:1"), "new verse 1"),
-            new UpdateUsfmRow(ScrRef("MAT 2:2"), "new verse 2")
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "new verse 2"),
         };
 
         string usfm =

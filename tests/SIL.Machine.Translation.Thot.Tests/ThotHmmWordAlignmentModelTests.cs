@@ -41,7 +41,7 @@ public class ThotHmmWordAlignmentModelTests
             (
                 "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?",
                 "could you give me the key to room number two four four , please ?"
-            )
+            ),
         };
         IReadOnlyList<WordAlignmentMatrix> alignments = model.AlignBatch(
             batch
@@ -57,7 +57,7 @@ public class ThotHmmWordAlignmentModelTests
                     "2-0 3-1 3-2 3-3 4-4 6-5 7-9 8-6 9-7 9-8 10-10",
                     "0-0 0-1 0-2 3-3 5-5 6-4 6-6 7-7",
                     "0-13 0-14 3-15 4-0 5-1 5-2 5-3 6-4 7-5 8-6 9-7 11-8 12-9 13-10 14-11 14-12",
-                    "2-0 2-1 3-2 3-3 4-4 5-5 6-6 8-7 9-8 9-9 10-10 11-11 13-12 14-13 15-14"
+                    "2-0 2-1 3-2 3-3 4-4 5-5 6-6 8-7 9-8 9-9 10-10 11-11 13-12 14-13 15-14",
                 }
             )
         );
@@ -265,8 +265,8 @@ public class ThotHmmWordAlignmentModelTests
             {
                 Ibm1IterationCount = 2,
                 HmmIterationCount = 2,
-                HmmP0 = 0.1
-            }
+                HmmP0 = 0.1,
+            },
         };
         ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
         await trainer.TrainAsync();

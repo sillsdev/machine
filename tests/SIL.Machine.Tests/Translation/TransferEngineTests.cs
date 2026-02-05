@@ -18,7 +18,7 @@ public class TransferEngineTests
                 new[]
                 {
                     new TestMorpheme("s1", "v", "talk", MorphemeType.Stem),
-                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix),
                 },
                 0,
                 "v"
@@ -29,7 +29,7 @@ public class TransferEngineTests
             new ObservableList<IMorpheme>
             {
                 new TestMorpheme("e1", "v", "talk", MorphemeType.Stem),
-                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
+                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix),
             }
         );
         targetGenerator.Morphemes.Returns(targetMorphemes);
@@ -53,7 +53,7 @@ public class TransferEngineTests
             new ObservableList<IMorpheme>
             {
                 new TestMorpheme("e1", "v", "talk", MorphemeType.Stem),
-                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
+                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix),
             }
         );
         targetGenerator.Morphemes.Returns(targetMorphemes);
@@ -77,7 +77,7 @@ public class TransferEngineTests
                 new[]
                 {
                     new TestMorpheme("s1", "v", "talk", MorphemeType.Stem),
-                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix),
                 },
                 0,
                 "v"
@@ -88,7 +88,7 @@ public class TransferEngineTests
             new ObservableList<IMorpheme>
             {
                 new TestMorpheme("e1", "v", "talk", MorphemeType.Stem),
-                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix)
+                new TestMorpheme("e2", "v", "pst", MorphemeType.Affix),
             }
         );
         targetGenerator.Morphemes.Returns(targetMorphemes);
@@ -109,7 +109,7 @@ public class TransferEngineTests
                 new[]
                 {
                     new TestMorpheme("s1", "v", "talk", MorphemeType.Stem),
-                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+                    new TestMorpheme("s2", "v", "pst", MorphemeType.Affix),
                 },
                 0,
                 "v"

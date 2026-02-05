@@ -101,7 +101,7 @@ namespace SIL.Machine.Corpora
             var rangeInfo = new NRangeInfo(N)
             {
                 Versifications = Corpora.Select(c => c.Versification).ToArray(),
-                RowRefComparer = RowRefComparer
+                RowRefComparer = RowRefComparer,
             };
             List<List<TextRow>> sameRefRows = new List<List<TextRow>>();
             for (int i = 0; i < N; i++)
@@ -332,7 +332,7 @@ namespace SIL.Machine.Corpora
             yield return new NParallelTextRow(textId, refs, contentType)
             {
                 NSegments = rows.Select(r => r?.Segment ?? Array.Empty<string>()).ToArray(),
-                NFlags = flags.ToReadOnlyList()
+                NFlags = flags.ToReadOnlyList(),
             };
         }
 
@@ -511,7 +511,7 @@ namespace SIL.Machine.Corpora
                 {
                     NSegments = Rows.Select(r => r.Segment.ToArray()).ToArray(),
                     NFlags = Rows.Select(r => r.IsSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None)
-                        .ToArray()
+                        .ToArray(),
                 };
                 TextId = "";
                 foreach (RangeRow r in Rows)

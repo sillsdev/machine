@@ -3,6 +3,6 @@
     public enum ConstraintType
     {
         Require,
-        Exclude
+        Exclude,
     }
 }

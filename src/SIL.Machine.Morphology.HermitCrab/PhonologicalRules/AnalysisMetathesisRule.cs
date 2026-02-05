@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 UseDefaults = true,
                 // during analysis shape nodes can have features that are underspecified,
                 // so this must be non-deterministic
-                Nondeterministic = true
+                Nondeterministic = true,
             };
 
             _patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);

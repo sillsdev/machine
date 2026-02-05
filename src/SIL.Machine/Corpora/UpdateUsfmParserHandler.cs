@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
     {
         PreferExisting,
         PreferNew,
-        StripExisting
+        StripExisting,
     }
 
     public enum UpdateUsfmMarkerBehavior

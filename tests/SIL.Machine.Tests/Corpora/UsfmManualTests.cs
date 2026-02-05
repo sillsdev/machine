@@ -12,18 +12,23 @@ public class UsfmManualTests
     [Ignore("This is for manual testing only.  Remove this tag to run the test.")]
     public void ParseParallelCorpusAsync()
     {
-        ParatextTextCorpus tCorpus =
-            new(projectDir: CorporaTestHelpers.UsfmTargetProjectPath, includeAllText: true, includeMarkers: true);
+        ParatextTextCorpus tCorpus = new(
+            projectDir: CorporaTestHelpers.UsfmTargetProjectPath,
+            includeAllText: true,
+            includeMarkers: true
+        );
 
-        ParatextTextCorpus sCorpus =
-            new(projectDir: CorporaTestHelpers.UsfmSourceProjectPath, includeAllText: true, includeMarkers: true);
+        ParatextTextCorpus sCorpus = new(
+            projectDir: CorporaTestHelpers.UsfmSourceProjectPath,
+            includeAllText: true,
+            includeMarkers: true
+        );
 
-        ParallelTextCorpus pCorpus =
-            new(sCorpus, tCorpus, alignmentCorpus: null, rowRefComparer: null)
-            {
-                AllSourceRows = true,
-                AllTargetRows = false
-            };
+        ParallelTextCorpus pCorpus = new(sCorpus, tCorpus, alignmentCorpus: null, rowRefComparer: null)
+        {
+            AllSourceRows = true,
+            AllTargetRows = false,
+        };
 
         List<ParallelTextRow> rows = pCorpus.GetRows().ToList();
         Assert.That(rows, Has.Count.GreaterThan(0));

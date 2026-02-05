@@ -20,7 +20,7 @@ namespace SIL.Machine.Corpora
             { "left", UsfmJustification.Left },
             { "center", UsfmJustification.Center },
             { "right", UsfmJustification.Right },
-            { "both", UsfmJustification.Both }
+            { "both", UsfmJustification.Both },
         };
 
         private static readonly Dictionary<string, UsfmStyleType> StyleMappings = new Dictionary<string, UsfmStyleType>(
@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
             { "character", UsfmStyleType.Character },
             { "paragraph", UsfmStyleType.Paragraph },
             { "note", UsfmStyleType.Note },
-            { "milestone", UsfmStyleType.Milestone }
+            { "milestone", UsfmStyleType.Milestone },
         };
 
         private static readonly Dictionary<string, UsfmTextType> TextTypeMappings = new Dictionary<
@@ -46,7 +46,7 @@ namespace SIL.Machine.Corpora
             { "backtranslation", UsfmTextType.BackTranslation },
             { "translationnote", UsfmTextType.TranslationNote },
             { "versenumber", UsfmTextType.VerseText },
-            { "chapternumber", UsfmTextType.Other }
+            { "chapternumber", UsfmTextType.Other },
         };
 
         private static readonly Dictionary<string, UsfmTextProperties> TextPropertyMappings = new Dictionary<
@@ -69,7 +69,7 @@ namespace SIL.Machine.Corpora
             { "nonpublishable", UsfmTextProperties.Nonpublishable },
             { "nonvernacular", UsfmTextProperties.Nonvernacular },
             { "book", UsfmTextProperties.Book },
-            { "note", UsfmTextProperties.Note }
+            { "note", UsfmTextProperties.Note },
         };
 
         private readonly Dictionary<string, UsfmTag> _tags;

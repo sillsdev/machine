@@ -129,7 +129,7 @@ public class PoorMansAffixIdentifierTests
             "remote",
             "asleep",
             "crazy",
-            "stupid"
+            "stupid",
         };
 
         var affixIdentifier = new PoorMansAffixIdentifier<string, char>(w => w);

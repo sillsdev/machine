@@ -31,7 +31,7 @@ internal class Program
                 "continues when an error occurs while loading the configuration",
                 value => quitOnError = value == null
             },
-            { "h|help", "show this help message and exit", value => showHelp = value != null }
+            { "h|help", "show this help message and exit", value => showHelp = value != null },
         };
 
         try
@@ -91,7 +91,7 @@ internal class Program
             new ParseCommand(context),
             new TracingCommand(context),
             new TestCommand(context),
-            new StatsCommand(context)
+            new StatsCommand(context),
         };
 
         string input;

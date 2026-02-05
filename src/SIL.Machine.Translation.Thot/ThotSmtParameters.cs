@@ -12,14 +12,14 @@ namespace SIL.Machine.Translation.Thot
     {
         NoHeuristic = 0,
         LocalT = 4,
-        LocalTD = 6
+        LocalTD = 6,
     }
 
     public enum LearningAlgorithm : uint
     {
         BasicIncrementalTraining = 0,
         MinibatchTraining = 1,
-        BatchRetraining = 2
+        BatchRetraining = 2,
     }
 
     public enum LearningRatePolicy : uint
@@ -27,7 +27,7 @@ namespace SIL.Machine.Translation.Thot
         Fixed = 0,
         Liang = 1,
         Own = 2,
-        WerBased = 3
+        WerBased = 3,
     }
 
     public class ThotSmtParameters : Freezable<ThotSmtParameters>, ICloneable<ThotSmtParameters>

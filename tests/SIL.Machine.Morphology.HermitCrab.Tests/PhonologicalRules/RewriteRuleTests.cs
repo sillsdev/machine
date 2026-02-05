@@ -25,21 +25,21 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value,
             }
         );
 
         var rule2 = new RewriteRule
         {
             Name = "rule2",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "p")).Value,
         };
         Allophonic.PhonologicalRules.Add(rule2);
         Morphophonemic.PhonologicalRules.Add(rule2);
@@ -53,7 +53,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(nonCons)
                     .Optional.Annotation(nonCons)
                     .Optional.Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value,
             }
         );
 
@@ -108,7 +108,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule3 = new RewriteRule
         {
             Name = "rule3",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
@@ -121,7 +121,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(cons)
                     .Annotation(lowVowel)
                     .Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
 
@@ -139,7 +139,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(lowVowel)
                     .Annotation(cons)
                     .Annotation(rndVowel)
-                    .Value
+                    .Value,
             }
         );
 
@@ -158,7 +158,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Optional.Annotation(Character(Table3, "+"))
                     .Annotation(cons)
                     .Optional.Annotation(vowel)
-                    .Optional.Value
+                    .Optional.Value,
             }
         );
 
@@ -193,7 +193,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
         Allophonic.PhonologicalRules.Add(rule3);
@@ -211,7 +211,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(vowel)
                     .Annotation(cons)
                     .Annotation(HCFeatureSystem.RightSideAnchor)
-                    .Value
+                    .Value,
             }
         );
 
@@ -223,7 +223,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(vlUnasp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
             }
         );
 
@@ -240,7 +240,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(HCFeatureSystem.LeftSideAnchor)
                     .Annotation(cons)
                     .Annotation(vowel)
-                    .Value
+                    .Value,
             }
         );
 
@@ -295,7 +295,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule3 = new RewriteRule
         {
             Name = "rule3",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
@@ -308,14 +308,14 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .LazyRange(1, 2)
                     .Annotation(cons)
                     .Annotation(rndVowel)
-                    .Value
+                    .Value,
             }
         );
 
         var rule4 = new RewriteRule
         {
             Name = "rule4",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
@@ -328,7 +328,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Group(g => g.Annotation(cons).Annotation(lowVowel))
                     .LazyRange(1, 2)
                     .Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
 
@@ -343,7 +343,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -355,7 +355,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(backRndVowel)
                     .Annotation(highVowel)
                     .LazyRange(0, 2)
-                    .Value
+                    .Value,
             }
         );
 
@@ -401,14 +401,14 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Annotation(backRnd).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value,
             }
         );
 
@@ -447,7 +447,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -490,14 +490,14 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(t).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value,
             }
         );
 
@@ -542,7 +542,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                 .Annotation(backRndVowel)
                 .Annotation(highVowel)
                 .Annotation(highVowel)
-                .Value
+                .Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -581,7 +581,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Annotation(highVowel).Value,
             }
         );
 
@@ -682,7 +682,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -693,7 +693,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(backRndVowel)
                     .Annotation(Character(Table3, "+"))
-                    .Value
+                    .Value,
             }
         );
 
@@ -709,7 +709,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(Character(Table3, "+"))
                     .Annotation(unbackUnrndVowel)
-                    .Value
+                    .Value,
             }
         );
 
@@ -721,7 +721,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(backRndVowel).Value,
             }
         );
 
@@ -733,7 +733,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrnd).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrndVowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(unbackUnrndVowel).Value,
             }
         );
 
@@ -745,14 +745,14 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value,
             }
         );
 
         var rule2 = new RewriteRule
         {
             Name = "rule2",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(backVowel).Value,
         };
         rule2.Subrules.Add(
             new RewriteSubrule
@@ -761,7 +761,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                 RightEnvironment = Pattern<Word, ShapeNode>
                     .New()
                     .Group(group => group.Annotation(Character(Table3, "+")).Annotation(Character(Table3, "b")))
-                    .Value
+                    .Value,
             }
         );
         Morphophonemic.PhonologicalRules.Add(rule2);
@@ -774,7 +774,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Subrules.Add(
             new RewriteSubrule
             {
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "b")).Value,
             }
         );
 
@@ -788,7 +788,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .New()
                     .Annotation(Character(Table3, "b"))
                     .Annotation(Character(Table3, "+"))
-                    .Value
+                    .Value,
             }
         );
 
@@ -813,7 +813,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(unvdUnasp)
                     .Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -827,7 +827,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(unvdUnasp).Annotation(unvdUnasp).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -840,7 +840,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
             }
         );
 
@@ -866,7 +866,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(vowel)
                     .Annotation(HCFeatureSystem.RightSideAnchor)
                     .Value,
-                RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+                RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
             }
         );
 
@@ -909,7 +909,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "p")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "p")).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -917,7 +917,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(vdLabFric).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -930,7 +930,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "v")).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -1008,7 +1008,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -1039,7 +1039,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .Value
                     )
                     .Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
 
@@ -1071,7 +1071,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .EqualToVariable("a")
                             .Value
                     )
-                    .Value
+                    .Value,
             }
         );
 
@@ -1106,10 +1106,10 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .Value
                     )
                     .Annotation(vowel)
-                    .Value
+                    .Value,
             }
         );
-        rule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value, });
+        rule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value });
 
         morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("pipʰ"), "41");
@@ -1147,7 +1147,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .EqualToVariable("c")
                             .Value
                     )
-                    .Value
+                    .Value,
             }
         );
 
@@ -1181,7 +1181,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .Value
                     )
                     .Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
 
@@ -1243,7 +1243,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
             }
         );
 
@@ -1255,7 +1255,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "i")).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
             }
         );
 
@@ -1269,7 +1269,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
             }
         );
 
@@ -1282,7 +1282,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
 
@@ -1295,7 +1295,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(cons).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value,
             }
         );
 
@@ -1330,7 +1330,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .EqualToVariable("b")
                             .Value
                     )
-                    .Value
+                    .Value,
             }
         );
 
@@ -1346,7 +1346,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(highFrontUnrndVowel)
                     .Annotation(highFrontUnrndVowel)
                     .Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
             }
         );
 
@@ -1360,7 +1360,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
             }
         );
 
@@ -1375,7 +1375,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(highBackRnd).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(highBackRndVowel).Value,
             }
         );
 
@@ -1386,7 +1386,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -1454,7 +1454,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule4 = new RewriteRule
         {
             Name = "rule4",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highFrontUnrndVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
@@ -1501,7 +1501,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
             }
         );
 
@@ -1513,28 +1513,28 @@ public class RewriteRuleTests : HermitCrabTestBase
                 .Annotation(Character(Table3, "u"))
                 .Annotation(Character(Table3, "b"))
                 .Annotation(Character(Table3, "u"))
-                .Value
+                .Value,
         };
         Morphophonemic.PhonologicalRules.Add(rule5);
         rule5.Subrules.Add(
             new RewriteSubrule
             {
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "+")).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
 
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "t")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table3, "t")).Value,
         };
         Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(nonCons).Value,
             }
         );
 
@@ -1598,7 +1598,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                             .EqualToVariable("d")
                             .Value
                     )
-                    .Value
+                    .Value,
             }
         );
 
@@ -1609,7 +1609,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(voiced).Value,
                 LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
 
@@ -1744,14 +1744,14 @@ public class RewriteRuleTests : HermitCrabTestBase
         var disrule1 = new RewriteRule
         {
             Name = "disrule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(stop).Value,
         };
         Allophonic.PhonologicalRules.Add(disrule1);
         disrule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
             }
         );
         disrule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value });
@@ -1770,7 +1770,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(backRndVowel)
                     .Group(g => g.Annotation(cons).Annotation(highFrontVowel))
                     .LazyZeroOrMore.Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
         disrule1.Subrules.Add(
@@ -1782,7 +1782,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(frontRndVowel)
                     .Group(g => g.Annotation(cons).Annotation(highFrontVowel))
                     .LazyZeroOrMore.Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
         disrule1.Subrules.Add(
@@ -1794,7 +1794,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(backUnrndVowel)
                     .Group(g => g.Annotation(cons).Annotation(highFrontVowel))
                     .LazyZeroOrMore.Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
         disrule1.Subrules.Add(
@@ -1806,7 +1806,7 @@ public class RewriteRuleTests : HermitCrabTestBase
                     .Annotation(frontUnrndVowel)
                     .Group(g => g.Annotation(cons).Annotation(highFrontVowel))
                     .LazyZeroOrMore.Annotation(cons)
-                    .Value
+                    .Value,
             }
         );
 
@@ -1819,14 +1819,14 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.LeftSideAnchor).Value,
             }
         );
         disrule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
 
@@ -1839,14 +1839,14 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(vd).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value,
             }
         );
         disrule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(HCFeatureSystem.RightSideAnchor).Value,
             }
         );
 
@@ -1859,7 +1859,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(asp).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(voicelessStop).Value,
             }
         );
         disrule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(unasp).Value });
@@ -1904,13 +1904,13 @@ public class RewriteRuleTests : HermitCrabTestBase
         {
             Name = "rule1",
             ApplicationMode = RewriteApplicationMode.Simultaneous,
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
         };
         rule1.Subrules.Add(
             new RewriteSubrule
             {
                 Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Value,
-                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(i).Annotation(cons).Value,
             }
         );
         Allophonic.PhonologicalRules.Add(rule1);

@@ -499,7 +499,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
 
         // only one half of the pair observed
         quotationMarkGrouper = new QuotationMarkGrouper(
-            [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1),],
+            [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)],
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
         Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"));
@@ -882,7 +882,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
 
         var positivePreliminaryApostropheAnalyzer = new PreliminaryApostropheAnalyzer();
         positivePreliminaryApostropheAnalyzer.ProcessQuotationMarks(
-            [new TextSegment.Builder().SetText("Very short text").Build(),],
+            [new TextSegment.Builder().SetText("Very short text").Build()],
             [
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder().SetText("'word initial apostrophe").Build(),
@@ -948,184 +948,128 @@ public class PreliminaryQuotationMarkAnalyzerTests
         );
 
         var preliminaryQuotationAnalyzer = new PreliminaryQuotationMarkAnalyzer(
-            new QuoteConventionSet(
-                [
-                    standardEnglishQuoteConvention,
-                    typewriterEnglishQuoteConvention,
-                    standardFrenchQuoteConvention,
-                    westernEuropeanQuoteConvention,
-                    standardSwedishQuoteConvention,
-                ]
-            )
+            new QuoteConventionSet([
+                standardEnglishQuoteConvention,
+                typewriterEnglishQuoteConvention,
+                standardFrenchQuoteConvention,
+                westernEuropeanQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
 
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build()
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201d quoted Swedish text \u201d final text")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201d quoted Swedish text \u201d final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardSwedishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText(
-                                            "initial text \u00ab quoted French/Western European text \u00bb final text"
-                                        )
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u00ab quoted French/Western European text \u00bb final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardFrenchQuoteConvention, westernEuropeanQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \" quoted typewriter English text \" final text")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \" quoted typewriter English text \" final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([typewriterEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build(),
-                                    new TextSegment.Builder()
-                                        .SetText("second level \u2018 English quotes \u2019")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                        new TextSegment.Builder().SetText("second level \u2018 English quotes \u2019").Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \" quoted typewriter English text \" final text")
-                                        .Build(),
-                                    new TextSegment.Builder().SetText("second level 'typewriter quotes'").Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \" quoted typewriter English text \" final text")
+                            .Build(),
+                        new TextSegment.Builder().SetText("second level 'typewriter quotes'").Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([typewriterEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build(),
-                                    new TextSegment.Builder()
-                                        .SetText("the quotes \u201d in this segment \u201c are backwards")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                        new TextSegment.Builder()
+                            .SetText("the quotes \u201d in this segment \u201c are backwards")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText(
-                                            "first-level quotes \u2018 must be observed \u2019 to retain a quote convention"
-                                        )
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("first-level quotes \u2018 must be observed \u2019 to retain a quote convention")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([]))
         );
     }
@@ -1153,25 +1097,19 @@ public class PreliminaryQuotationMarkAnalyzerTests
         );
 
         var preliminaryQuotationAnalyzer = new PreliminaryQuotationMarkAnalyzer(
-            new QuoteConventionSet([standardEnglishQuoteConvention, typewriterEnglishQuoteConvention,])
+            new QuoteConventionSet([standardEnglishQuoteConvention, typewriterEnglishQuoteConvention])
         );
 
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("ini'tial 'text \u201c quo'ted English text' \u201d fi'nal text")
-                                        .Build()
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("ini'tial 'text \u201c quo'ted English text' \u201d fi'nal text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
     }

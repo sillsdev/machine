@@ -79,7 +79,7 @@ namespace SIL.Machine.PunctuationAnalysis
     {
         Undetermined,
         English,
-        Spanish
+        Spanish,
     }
 
     public class QuoteContinuerState

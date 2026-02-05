@@ -36,7 +36,6 @@ namespace SIL.Machine.Matching
         /// </summary>
         /// <param name="minOccur">The minimum number of occurrences.</param>
         /// <param name="maxOccur">The maximum number of occurrences.</param>
-
         /// <param name="node">The pattern node.</param>
         public Quantifier(int minOccur, int maxOccur, PatternNode<TData, TOffset> node)
             : base(node == null ? Enumerable.Empty<PatternNode<TData, TOffset>>() : node.ToEnumerable())

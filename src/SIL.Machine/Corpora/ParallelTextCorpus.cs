@@ -70,7 +70,7 @@ namespace SIL.Machine.Corpora
                         SourceSegment = nRow.NSegments[0],
                         TargetSegment = nRow.NSegments[1],
                         AlignedWordPairs =
-                            compareAlignmentCorpus == 0 ? alignmentEnumerator.Current.AlignedWordPairs.ToArray() : null
+                            compareAlignmentCorpus == 0 ? alignmentEnumerator.Current.AlignedWordPairs.ToArray() : null,
                     };
                 }
             }

@@ -30,7 +30,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             MatchingMethod = MatchingMethod.Unification,
                             AnchoredToStart = true,
                             AnchoredToEnd = true,
-                            AllSubmatches = true
+                            AllSubmatches = true,
                         }
                     )
                 );

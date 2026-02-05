@@ -7,7 +7,7 @@
         Ibm2,
         Hmm,
         Ibm3,
-        Ibm4
+        Ibm4,
     }
 
     public class ThotWordAlignmentModelTypeHelpers

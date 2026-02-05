@@ -12,7 +12,7 @@ namespace SIL.Machine.FiniteState
         High = 0,
         Medium,
         Low,
-        VeryLow
+        VeryLow,
     }
 
     public class Arc<TData, TOffset>

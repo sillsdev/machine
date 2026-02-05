@@ -59,7 +59,7 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Check formatting
-        run: dotnet csharpier --check .
+        run: dotnet csharpier check .
       - name: Build
         run: dotnet build --no-restore -c Release
       - name: Test

@@ -37,6 +37,6 @@
         /// <summary>
         /// "diag-and" method in "Statistical Phrase-Based Translation" (Koehn et al., 2003).
         /// </summary>
-        GrowDiagFinalAnd
+        GrowDiagFinalAnd,
     }
 }

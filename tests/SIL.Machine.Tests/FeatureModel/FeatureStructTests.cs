@@ -117,7 +117,7 @@ public class FeatureStructTests
             new ComplexFeature("d"),
             new SymbolicFeature("e", new FeatureSymbol("f")),
             new ComplexFeature("g"),
-            new SymbolicFeature("h", new FeatureSymbol("j"))
+            new SymbolicFeature("h", new FeatureSymbol("j")),
         };
 
         FeatureStruct featStruct1 = FeatureStruct
@@ -151,7 +151,7 @@ public class FeatureStructTests
             new SymbolicFeature("e", new FeatureSymbol("f")),
             new ComplexFeature("g"),
             new SymbolicFeature("h", new FeatureSymbol("j")),
-            new ComplexFeature("i")
+            new ComplexFeature("i"),
         };
 
         featStruct1 = FeatureStruct
@@ -616,7 +616,7 @@ public class FeatureStructTests
         {
             new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
             new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
-            new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3"))
+            new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
         };
         featSys.Freeze();
 
@@ -638,7 +638,7 @@ public class FeatureStructTests
             new ComplexFeature("cx3"),
             new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
             new ComplexFeature("cx4"),
-            new SymbolicFeature("d", new FeatureSymbol("d1"), new FeatureSymbol("d2"), new FeatureSymbol("d3"))
+            new SymbolicFeature("d", new FeatureSymbol("d1"), new FeatureSymbol("d2"), new FeatureSymbol("d3")),
         };
         featSys.Freeze();
 
@@ -693,7 +693,7 @@ public class FeatureStructTests
                 new FeatureSymbol("a3"),
                 new FeatureSymbol("a4")
             ),
-            new ComplexFeature("cx2")
+            new ComplexFeature("cx2"),
         };
         featSys.Freeze();
 
@@ -808,7 +808,7 @@ public class FeatureStructTests
             new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
             new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2"), new FeatureSymbol("b3")),
             new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2"), new FeatureSymbol("c3")),
-            new ComplexFeature("cx2")
+            new ComplexFeature("cx2"),
         };
         featSys.Freeze();
 
@@ -868,7 +868,7 @@ public class FeatureStructTests
         featSys = new FeatureSystem
         {
             new SymbolicFeature("a", new FeatureSymbol("a+", "+"), new FeatureSymbol("a-", "-")),
-            new SymbolicFeature("b", new FeatureSymbol("b+", "+"), new FeatureSymbol("b-", "-"))
+            new SymbolicFeature("b", new FeatureSymbol("b+", "+"), new FeatureSymbol("b-", "-")),
         };
         featSys.Freeze();
 
@@ -1002,7 +1002,7 @@ public class FeatureStructTests
                 new FeatureSymbol("interj"),
                 new FeatureSymbol("num"),
                 new FeatureSymbol("ncp")
-            )
+            ),
         };
         featSys.Freeze();
         // 80 values

@@ -31,7 +31,7 @@ namespace SIL.Machine.Corpora
                             includeAllText
                         )
                         {
-                            Project = settings.Name
+                            Project = settings.Name,
                         }
                     );
                 }

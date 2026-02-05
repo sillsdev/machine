@@ -35,7 +35,7 @@ public class QuotationMarkResolverTests
                     .Build(),
                 0,
                 1
-            )
+            ),
         ];
 
         quotationMarkResolver.ResolveQuotationMarks(quotationMarkStringMatches).ToList();

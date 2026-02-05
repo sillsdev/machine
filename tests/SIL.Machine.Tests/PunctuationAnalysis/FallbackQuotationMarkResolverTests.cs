@@ -41,9 +41,9 @@ public class FallbackQuotationMarkResolverTests
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \" text").Build(), 5, 6),]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \" text").Build(), 5, 6),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -54,7 +54,7 @@ public class FallbackQuotationMarkResolverTests
                 new TextSegment.Builder().SetText("test \" text").Build(),
                 5,
                 6
-            )
+            ),
         ];
 
         AssertResolvedQuotationMarksEqual(actualResolvedQuotationMarks, expectedResolvedQuotationMarks);
@@ -71,12 +71,10 @@ public class FallbackQuotationMarkResolverTests
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 0, 1),
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 6, 7),
-                ]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 0, 1),
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 6, 7),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -112,12 +110,10 @@ public class FallbackQuotationMarkResolverTests
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 4, 5),
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 6, 7),
-                ]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 4, 5),
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 6, 7),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -136,7 +132,7 @@ public class FallbackQuotationMarkResolverTests
                 new TextSegment.Builder().SetText("test\" \" text").Build(),
                 6,
                 7
-            )
+            ),
         ];
 
         AssertResolvedQuotationMarksEqual(actualResolvedQuotationMarks, expectedResolvedQuotationMarks);

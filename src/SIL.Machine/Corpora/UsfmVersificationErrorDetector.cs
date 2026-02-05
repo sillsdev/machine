@@ -14,7 +14,7 @@ namespace SIL.Machine.Corpora
         MissingVerseSegment,
         ExtraVerseSegment,
         InvalidChapterNumber,
-        InvalidVerseNumber
+        InvalidVerseNumber,
     }
 
     public class UsfmVersificationError

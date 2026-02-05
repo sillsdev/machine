@@ -5,7 +5,7 @@ namespace SIL.Machine.Morphology
     public enum AffixType
     {
         Prefix,
-        Suffix
+        Suffix,
     }
 
     public class Affix<TItem>

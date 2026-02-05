@@ -31,9 +31,9 @@ public class ThotSmtModelTrainerTests
                         Row(7, "¿ Le importaría mostrarnos una habitación con televisión ?"),
                         Row(8, "¿ Tiene teléfono ?"),
                         Row(9, "Voy a marcharme el dos a las ocho de la noche ."),
-                        Row(10, "¿ Cuánto cuesta una habitación individual por semana ?")
+                        Row(10, "¿ Cuánto cuesta una habitación individual por semana ?"),
                     }
-                )
+                ),
             }
         );
 
@@ -57,9 +57,9 @@ public class ThotSmtModelTrainerTests
                         Row(7, "Would you mind showing us a room with a tv ?"),
                         Row(8, "Does it have a telephone ?"),
                         Row(9, "I am leaving on the second at eight in the evening ."),
-                        Row(10, "How much does a single room cost per week ?")
+                        Row(10, "How much does a single room cost per week ?"),
                     }
-                )
+                ),
             }
         );
 
@@ -79,9 +79,9 @@ public class ThotSmtModelTrainerTests
                         Alignment(7, new AlignedWordPair(5, 6)),
                         Alignment(8),
                         Alignment(9),
-                        Alignment(10, new AlignedWordPair(4, 5))
+                        Alignment(10, new AlignedWordPair(4, 5)),
                     }
-                )
+                ),
             }
         );
 
@@ -90,14 +90,14 @@ public class ThotSmtModelTrainerTests
         var parameters = new ThotSmtParameters
         {
             TranslationModelFileNamePrefix = Path.Combine(tempDir.Path, "tm", "src_trg"),
-            LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
+            LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm"),
         };
 
         using (
             var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters)
             {
                 LowercaseSource = true,
-                LowercaseTarget = true
+                LowercaseTarget = true,
             }
         )
         {
@@ -109,7 +109,7 @@ public class ThotSmtModelTrainerTests
         using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters)
         {
             LowercaseSource = true,
-            LowercaseTarget = true
+            LowercaseTarget = true,
         };
         TranslationResult result = await model.TranslateAsync("Una habitación individual por semana");
         Assert.That(result.Translation, Is.EqualTo("a single room cost per week"));
@@ -128,14 +128,14 @@ public class ThotSmtModelTrainerTests
         var parameters = new ThotSmtParameters
         {
             TranslationModelFileNamePrefix = Path.Combine(tempDir.Path, "tm", "src_trg"),
-            LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm")
+            LanguageModelFileNamePrefix = Path.Combine(tempDir.Path, "lm", "trg.lm"),
         };
 
         using (
             var trainer = new ThotSmtModelTrainer(ThotWordAlignmentModelType.Hmm, corpus, parameters)
             {
                 LowercaseSource = true,
-                LowercaseTarget = true
+                LowercaseTarget = true,
             }
         )
         {
@@ -147,7 +147,7 @@ public class ThotSmtModelTrainerTests
         using var model = new ThotSmtModel(ThotWordAlignmentModelType.Hmm, parameters)
         {
             LowercaseSource = true,
-            LowercaseTarget = true
+            LowercaseTarget = true,
         };
         TranslationResult result = await model.TranslateAsync("Una habitación individual por semana");
         Assert.That(result.Translation, Is.EqualTo("una habitación individual por semana"));

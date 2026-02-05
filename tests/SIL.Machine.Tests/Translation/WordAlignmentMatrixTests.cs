@@ -16,7 +16,7 @@ public class WordAlignmentMatrixTests
         {
             [0, 0] = true,
             [2, 1] = true,
-            [3, 4] = true
+            [3, 4] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -40,7 +40,7 @@ public class WordAlignmentMatrixTests
             [4, 5] = true,
             [4, 6] = true,
             [5, 3] = true,
-            [6, 8] = true
+            [6, 8] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -62,7 +62,7 @@ public class WordAlignmentMatrixTests
             [3, 4] = true,
             [4, 5] = true,
             [4, 6] = true,
-            [6, 8] = true
+            [6, 8] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -81,7 +81,7 @@ public class WordAlignmentMatrixTests
             [2, 1] = true,
             [3, 2] = true,
             [3, 3] = true,
-            [3, 4] = true
+            [3, 4] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -102,7 +102,7 @@ public class WordAlignmentMatrixTests
             [3, 3] = true,
             [3, 4] = true,
             [4, 5] = true,
-            [4, 6] = true
+            [4, 6] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -125,7 +125,7 @@ public class WordAlignmentMatrixTests
             [4, 5] = true,
             [4, 6] = true,
             [5, 3] = true,
-            [6, 8] = true
+            [6, 8] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -147,7 +147,7 @@ public class WordAlignmentMatrixTests
             [3, 4] = true,
             [4, 5] = true,
             [4, 6] = true,
-            [6, 8] = true
+            [6, 8] = true,
         };
         Assert.That(x.ValueEquals(expected), Is.True);
     }
@@ -159,7 +159,7 @@ public class WordAlignmentMatrixTests
         {
             [0, 0] = true,
             [1, 1] = true,
-            [2, 2] = true
+            [2, 2] = true,
         };
 
         matrix.Resize(4, 4);
@@ -167,7 +167,7 @@ public class WordAlignmentMatrixTests
         {
             [0, 0] = true,
             [1, 1] = true,
-            [2, 2] = true
+            [2, 2] = true,
         };
         Assert.That(matrix.ValueEquals(expected), Is.True);
     }
@@ -179,7 +179,7 @@ public class WordAlignmentMatrixTests
         {
             [0, 0] = true,
             [1, 1] = true,
-            [2, 2] = true
+            [2, 2] = true,
         };
 
         matrix.Resize(2, 2);
@@ -194,7 +194,7 @@ public class WordAlignmentMatrixTests
         {
             [0, 0] = true,
             [1, 1] = true,
-            [2, 2] = true
+            [2, 2] = true,
         };
 
         matrix.Resize(2, 4);
@@ -213,7 +213,7 @@ public class WordAlignmentMatrixTests
             [3, 3] = true,
             [3, 4] = true,
             [4, 5] = true,
-            [5, 3] = true
+            [5, 3] = true,
         };
 
         var y = new WordAlignmentMatrix(7, 9)
@@ -223,7 +223,7 @@ public class WordAlignmentMatrixTests
             [2, 1] = true,
             [3, 4] = true,
             [4, 6] = true,
-            [6, 8] = true
+            [6, 8] = true,
         };
 
         return (x, y);

@@ -30,7 +30,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                 ScrRef("MAT 1:1"),
                 updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
-            )
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -79,7 +79,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                 ScrRef("MAT 1:1"),
                 updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
-            )
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -117,7 +117,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                 ScrRef("MAT 1:1"),
                 updateRows,
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
-            )
+            ),
         ];
 
         target = UpdateUsfm(
@@ -149,7 +149,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
             new UpdateUsfmRow(ScrRef("MAT 1:4/1:f"), "New embed text"),
             new UpdateUsfmRow(ScrRef("MAT 1:5"), "New verse 5"),
             new UpdateUsfmRow(ScrRef("MAT 1:6"), "New verse 6"),
-            new UpdateUsfmRow(ScrRef("MAT 1:6/1:f"), "New verse 6 embed text")
+            new UpdateUsfmRow(ScrRef("MAT 1:6/1:f"), "New verse 6 embed text"),
         ];
         string usfm =
             @"\id MAT
@@ -219,7 +219,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                 ScrRef("MAT 1:1"),
                 "New verse 1",
                 new Dictionary<string, object> { { "alignment_info", alignInfo } }
-            )
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -267,7 +267,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
             new UpdateUsfmRow(
@@ -284,11 +284,11 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
             new UpdateUsfmRow(ScrRef("MAT 1:3"), "Y"),
-            new UpdateUsfmRow(ScrRef("MAT 1:3/1:s1"), "Updated header")
+            new UpdateUsfmRow(ScrRef("MAT 1:3/1:s1"), "Updated header"),
         ];
         string usfm =
             @"\id MAT
@@ -365,7 +365,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Preserve
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -413,7 +413,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ))
             .ToList();
@@ -461,7 +461,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -504,7 +504,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -562,7 +562,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -611,7 +611,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Preserve
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -657,7 +657,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
         ];
@@ -704,7 +704,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
             ),
             new UpdateUsfmRow(
@@ -721,9 +721,9 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
                             styleBehavior: UpdateUsfmMarkerBehavior.Strip
                         )
-                    }
+                    },
                 }
-            )
+            ),
         ];
         string usfm =
             @"\id MAT
@@ -772,7 +772,7 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
                             paragraphBehavior: UpdateUsfmMarkerBehavior.Strip,
                             styleBehavior: UpdateUsfmMarkerBehavior.Preserve
                         )
-                    }
+                    },
                 }
             ),
         ];

@@ -99,7 +99,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         best = new Word(relative.PrimaryAllomorph, input.RealizationalFeatureStruct.Clone())
                         {
-                            CurrentTrace = input.CurrentTrace
+                            CurrentTrace = input.CurrentTrace,
                         };
                         best.Freeze();
                     }

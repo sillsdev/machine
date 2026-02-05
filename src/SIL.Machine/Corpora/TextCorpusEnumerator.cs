@@ -95,7 +95,7 @@ namespace SIL.Machine.Corpora
                         new TextRow(rangeStartRow.TextId, rangeStartRow.Ref)
                         {
                             Segment = rangeStartRow.Segment.Concat(row.Segment).ToArray(),
-                            Flags = flags
+                            Flags = flags,
                         }
                     );
                     row = new TextRow(row.TextId, row.Ref) { Flags = TextRowFlags.InRange };

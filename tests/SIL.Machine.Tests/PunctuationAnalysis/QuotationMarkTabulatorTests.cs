@@ -66,26 +66,24 @@ public class QuotationMarkTabulatorTests
     public void CalculateSimilarity()
     {
         var singleLevelQuotationMarkTabulator = new QuotationMarkTabulator();
-        singleLevelQuotationMarkTabulator.Tabulate(
-            [
-                new QuotationMarkMetadata(
-                    "\u201c",
-                    1,
-                    QuotationMarkDirection.Opening,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    1
-                ),
-                new QuotationMarkMetadata(
-                    "\u201d",
-                    1,
-                    QuotationMarkDirection.Closing,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    1
-                ),
-            ]
-        );
+        singleLevelQuotationMarkTabulator.Tabulate([
+            new QuotationMarkMetadata(
+                "\u201c",
+                1,
+                QuotationMarkDirection.Opening,
+                new TextSegment.Builder().Build(),
+                0,
+                1
+            ),
+            new QuotationMarkMetadata(
+                "\u201d",
+                1,
+                QuotationMarkDirection.Closing,
+                new TextSegment.Builder().Build(),
+                0,
+                1
+            ),
+        ]);
 
         Assert.That(
             singleLevelQuotationMarkTabulator.CalculateSimilarity(
@@ -114,7 +112,7 @@ public class QuotationMarkTabulatorTests
                     "",
                     [
                         new SingleLevelQuoteConvention("\u201c", "\u201d"),
-                        new SingleLevelQuoteConvention("\u00ab", "\u00bb")
+                        new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
                     ]
                 )
             ),
@@ -129,42 +127,40 @@ public class QuotationMarkTabulatorTests
             Is.EqualTo(0.0)
         );
         var twoLevelQuotationMarkTabulator = new QuotationMarkTabulator();
-        twoLevelQuotationMarkTabulator.Tabulate(
-            [
-                new QuotationMarkMetadata(
-                    "\u201c",
-                    1,
-                    QuotationMarkDirection.Opening,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    1
-                ),
-                new QuotationMarkMetadata(
-                    "\u201d",
-                    1,
-                    QuotationMarkDirection.Closing,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    1
-                ),
-                new QuotationMarkMetadata(
-                    "\u2018",
-                    2,
-                    QuotationMarkDirection.Opening,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    2
-                ),
-                new QuotationMarkMetadata(
-                    "\u2019",
-                    2,
-                    QuotationMarkDirection.Closing,
-                    new TextSegment.Builder().Build(),
-                    0,
-                    2
-                ),
-            ]
-        );
+        twoLevelQuotationMarkTabulator.Tabulate([
+            new QuotationMarkMetadata(
+                "\u201c",
+                1,
+                QuotationMarkDirection.Opening,
+                new TextSegment.Builder().Build(),
+                0,
+                1
+            ),
+            new QuotationMarkMetadata(
+                "\u201d",
+                1,
+                QuotationMarkDirection.Closing,
+                new TextSegment.Builder().Build(),
+                0,
+                1
+            ),
+            new QuotationMarkMetadata(
+                "\u2018",
+                2,
+                QuotationMarkDirection.Opening,
+                new TextSegment.Builder().Build(),
+                0,
+                2
+            ),
+            new QuotationMarkMetadata(
+                "\u2019",
+                2,
+                QuotationMarkDirection.Closing,
+                new TextSegment.Builder().Build(),
+                0,
+                2
+            ),
+        ]);
         Assert.That(
             twoLevelQuotationMarkTabulator.CalculateSimilarity(
                 new QuoteConvention("", [new SingleLevelQuoteConvention("\u201c", "\u201d")])
@@ -177,7 +173,7 @@ public class QuotationMarkTabulatorTests
                     "",
                     [
                         new SingleLevelQuoteConvention("\u201c", "\u201d"),
-                        new SingleLevelQuoteConvention("\u2018", "\u2019")
+                        new SingleLevelQuoteConvention("\u2018", "\u2019"),
                     ]
                 )
             ),
@@ -189,7 +185,7 @@ public class QuotationMarkTabulatorTests
                     "",
                     [
                         new SingleLevelQuoteConvention("\u201c", "\u201d"),
-                        new SingleLevelQuoteConvention("\u00ab", "\u00bb")
+                        new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
                     ]
                 )
             ),
@@ -201,7 +197,7 @@ public class QuotationMarkTabulatorTests
                     "",
                     [
                         new SingleLevelQuoteConvention("\u2018", "\u2019"),
-                        new SingleLevelQuoteConvention("\u2018", "\u2019")
+                        new SingleLevelQuoteConvention("\u2018", "\u2019"),
                     ]
                 )
             ),

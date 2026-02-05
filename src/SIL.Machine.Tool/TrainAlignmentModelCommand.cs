@@ -69,7 +69,7 @@ public class TrainAlignmentModelCommand : CommandBase
                     new Phase("Training direct model", 0.48),
                     new Phase("Saving direct model", 0.02),
                     new Phase("Training inverse model", 0.48),
-                    new Phase("Saving inverse model", 0.02)
+                    new Phase("Saving inverse model", 0.02),
                 };
             }
             var reporter = new PhasedProgressReporter(progress, phases);

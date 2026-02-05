@@ -25,7 +25,7 @@
         BoundRoot,
         NonPartialRuleProhibitedAfterFinalTemplate,
         NonPartialRuleRequiredAfterNonFinalTemplate,
-        MaxApplicationCount
+        MaxApplicationCount,
     }
 
     public interface ITraceManager

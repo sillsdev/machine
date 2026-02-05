@@ -475,7 +475,7 @@ public class InteractiveTranslatorTests
                         {
                             [0, 0] = true,
                             [1, 1] = true,
-                            [2, 2] = true
+                            [2, 2] = true,
                         },
                         Range<int>.Create(0, 3),
                         new[] { TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt },
@@ -490,7 +490,7 @@ public class InteractiveTranslatorTests
                         {
                             [0, 0] = true,
                             [1, 1] = true,
-                            [2, 2] = true
+                            [2, 2] = true,
                         },
                         Range<int>.Create(0, 3),
                         new[] { TranslationSources.Smt, TranslationSources.Smt, TranslationSources.Smt },

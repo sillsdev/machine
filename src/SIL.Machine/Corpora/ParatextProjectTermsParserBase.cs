@@ -18,7 +18,7 @@ namespace SIL.Machine.Corpora
             "Major",
             "All",
             "SilNt",
-            "Pt6"
+            "Pt6",
         };
 
         private static readonly Dictionary<string, string> SupportedLanguageTermsLocalizationXmls = new Dictionary<
@@ -30,7 +30,7 @@ namespace SIL.Machine.Corpora
             { "es", "SIL.Machine.Corpora.BiblicalTermsEs.xml" },
             { "fr", "SIL.Machine.Corpora.BiblicalTermsFr.xml" },
             { "id", "SIL.Machine.Corpora.BiblicalTermsId.xml" },
-            { "pt", "SIL.Machine.Corpora.BiblicalTermsPt.xml" }
+            { "pt", "SIL.Machine.Corpora.BiblicalTermsPt.xml" },
         };
 
         private static readonly Regex ContentInBracketsRegex = new Regex(@"^\[(.+?)\]$", RegexOptions.Compiled);

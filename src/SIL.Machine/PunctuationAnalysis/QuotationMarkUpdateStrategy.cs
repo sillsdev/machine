@@ -4,6 +4,6 @@ namespace SIL.Machine.PunctuationAnalysis
     {
         ApplyFull,
         ApplyFallback,
-        Skip
+        Skip,
     }
 }

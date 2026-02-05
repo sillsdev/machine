@@ -9,7 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     public enum MorphologicalRuleOrder
     {
         Linear,
-        Unordered
+        Unordered,
     }
 
     /// <summary>

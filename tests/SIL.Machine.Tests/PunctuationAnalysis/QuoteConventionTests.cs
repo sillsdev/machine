@@ -110,7 +110,7 @@ public class QuoteConventionTests
 
         var twoLevelQuoteConvention = new QuoteConvention(
             "two_level_quote_convention",
-            [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019"),]
+            [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
         Assert.That(twoLevelQuoteConvention.NumLevels, Is.EqualTo(2));
 

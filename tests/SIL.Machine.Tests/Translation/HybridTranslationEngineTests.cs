@@ -44,7 +44,7 @@ public class HybridTranslationEngineTests
                     new[]
                     {
                         new TestMorpheme("s1", "v", "walk", MorphemeType.Stem),
-                        new TestMorpheme("s2", "v", "pst", MorphemeType.Affix)
+                        new TestMorpheme("s2", "v", "pst", MorphemeType.Affix),
                     },
                     0,
                     "v"
@@ -52,7 +52,7 @@ public class HybridTranslationEngineTests
             );
             sourceAnalyzer.AddAnalyses(
                 "mi",
-                new WordAnalysis(new[] { new TestMorpheme("s3", "adj", "my", MorphemeType.Stem), }, 0, "adj")
+                new WordAnalysis(new[] { new TestMorpheme("s3", "adj", "my", MorphemeType.Stem) }, 0, "adj")
             );
             var targetGenerator = Substitute.For<IMorphologicalGenerator>();
             var targetMorphemes = new ReadOnlyObservableList<IMorpheme>(
@@ -60,7 +60,7 @@ public class HybridTranslationEngineTests
                 {
                     new TestMorpheme("e1", "v", "walk", MorphemeType.Stem),
                     new TestMorpheme("e2", "v", "pst", MorphemeType.Affix),
-                    new TestMorpheme("e3", "adj", "my", MorphemeType.Stem)
+                    new TestMorpheme("e3", "adj", "my", MorphemeType.Stem),
                 }
             );
             targetGenerator.Morphemes.Returns(targetMorphemes);

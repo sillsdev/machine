@@ -9,6 +9,6 @@ namespace SIL.Machine.Translation
         Smt = 0x1,
         Transfer = 0x2,
         Prefix = 0x4,
-        Nmt = 0x8
+        Nmt = 0x8,
     }
 }

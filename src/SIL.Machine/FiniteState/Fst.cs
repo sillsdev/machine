@@ -609,7 +609,7 @@ namespace SIL.Machine.FiniteState
                 Tuple<FeatureStruct, IEnumerable<FeatureStruct>, IEnumerable<NfaStateInfo>>
             >
             {
-                Tuple.Create((FeatureStruct)null, Enumerable.Empty<FeatureStruct>(), Enumerable.Empty<NfaStateInfo>())
+                Tuple.Create((FeatureStruct)null, Enumerable.Empty<FeatureStruct>(), Enumerable.Empty<NfaStateInfo>()),
             };
             foreach (IGrouping<Input, NfaStateInfo> cond in conditions)
             {
@@ -832,7 +832,7 @@ namespace SIL.Machine.FiniteState
                 _nextTag = _nextTag,
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             foreach (KeyValuePair<string, int> kvp in _groups)
                 newFst._groups[kvp.Key] = kvp.Value;
@@ -1332,7 +1332,7 @@ namespace SIL.Machine.FiniteState
             {
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             fst.StartState = startState.IsAccepting
                 ? fst.CreateAcceptingState(startState.AcceptInfos)
@@ -1442,7 +1442,7 @@ namespace SIL.Machine.FiniteState
                 _registerCount = _registerCount,
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             foreach (KeyValuePair<string, int> kvp in _groups)
                 fst._groups[kvp.Key] = kvp.Value;
@@ -1486,7 +1486,7 @@ namespace SIL.Machine.FiniteState
                 _registerCount = _registerCount,
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             foreach (KeyValuePair<string, int> kvp in _groups)
                 fst._groups[kvp.Key] = kvp.Value;
@@ -1527,7 +1527,7 @@ namespace SIL.Machine.FiniteState
 
             var sets = new List<HashSet<State<TData, TOffset>>>
             {
-                new HashSet<State<TData, TOffset>> { StartState, otherFst.StartState }
+                new HashSet<State<TData, TOffset>> { StartState, otherFst.StartState },
             };
 
             var stack = new Stack<Tuple<State<TData, TOffset>, State<TData, TOffset>>>();
@@ -1772,7 +1772,7 @@ namespace SIL.Machine.FiniteState
             {
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             newFst.StartState =
                 StartState.IsAccepting && other.StartState.IsAccepting
@@ -1890,7 +1890,7 @@ namespace SIL.Machine.FiniteState
             {
                 Direction = _dir,
                 Filter = _filter,
-                UseUnification = _unification
+                UseUnification = _unification,
             };
             newFst.StartState =
                 StartState.IsAccepting && other.StartState.IsAccepting
@@ -2065,11 +2065,9 @@ namespace SIL.Machine.FiniteState
                     "  {0} [shape=\"{1}\", color=\"{2}\"",
                     state.Index,
                     state.Equals(StartState) ? "diamond" : "circle",
-                    state.Equals(StartState)
-                        ? "green"
-                        : state.IsAccepting
-                            ? "red"
-                            : "black"
+                    state.Equals(StartState) ? "green"
+                        : state.IsAccepting ? "red"
+                        : "black"
                 );
                 if (state.IsAccepting)
                     writer.Write(", peripheries=\"2\"");

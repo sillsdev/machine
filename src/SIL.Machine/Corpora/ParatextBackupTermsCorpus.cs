@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
                     keyTerms.SelectMany(keyTerm =>
                         keyTerm.Renderings.Select(gloss => new TextRow(textId, keyTerm.Id, TextRowContentType.Word)
                         {
-                            Segment = new string[] { gloss }
+                            Segment = new string[] { gloss },
                         })
                     )
                 );

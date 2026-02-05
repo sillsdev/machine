@@ -991,9 +991,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var threeConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [centralEuropeanQuoteConvention, britishEnglishQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                centralEuropeanQuoteConvention,
+                britishEnglishQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var threeConventionsQuotationMarkCategorizer = new QuotationMarkCategorizer(
             threeConventionsResolverSettings,
@@ -1346,9 +1348,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var threeConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [centralEuropeanQuoteConvention, britishEnglishQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                centralEuropeanQuoteConvention,
+                britishEnglishQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var threeConventionsQuotationMarkCategorizer = new QuotationMarkCategorizer(
             threeConventionsResolverSettings,
@@ -1605,9 +1609,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var threeConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [centralEuropeanQuoteConvention, britishEnglishQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                centralEuropeanQuoteConvention,
+                britishEnglishQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var threeConventionsQuotationMarkCategorizer = new QuotationMarkCategorizer(
             threeConventionsResolverSettings,
@@ -1910,9 +1916,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var threeConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [centralEuropeanQuoteConvention, britishEnglishQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                centralEuropeanQuoteConvention,
+                britishEnglishQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var threeConventionsQuotationMarkCategorizer = new QuotationMarkCategorizer(
             threeConventionsResolverSettings,
@@ -2192,9 +2200,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var threeConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [centralEuropeanQuoteConvention, britishEnglishQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                centralEuropeanQuoteConvention,
+                britishEnglishQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var threeConventionsQuotationMarkCategorizer = new QuotationMarkCategorizer(
             threeConventionsResolverSettings,
@@ -2707,9 +2717,9 @@ public class DepthBasedQuotationMarkResolverTests
         var standardEnglishQuotationMarkResolver = new DepthBasedQuotationMarkResolver(standardEnglishResolverSettings);
 
         standardEnglishQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201cThis is a quote").Build(), 0, 1)]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201cThis is a quote").Build(), 0, 1),
+            ])
             .ToList();
 
         Assert.That(
@@ -2722,15 +2732,13 @@ public class DepthBasedQuotationMarkResolverTests
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
 
         standardEnglishQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [
-                    new QuotationMarkStringMatch(
-                        new TextSegment.Builder().SetText("This is a quote\u2019").Build(),
-                        15,
-                        16
-                    )
-                ]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(
+                    new TextSegment.Builder().SetText("This is a quote\u2019").Build(),
+                    15,
+                    16
+                ),
+            ])
             .ToList();
 
         Assert.That(
@@ -2755,22 +2763,18 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("\u201cThis is a \u2018quote\u2019\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -2790,10 +2794,10 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("\u201cThis is a \u2018quote\u2019\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 0, 1),])
-                .SequenceEqual(
-                    [new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),]
-                )
+                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 0, 1)])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                ])
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
@@ -2804,7 +2808,7 @@ public class DepthBasedQuotationMarkResolverTests
         textSegment = new TextSegment.Builder().SetText("\u201cThis is a \u2018quote\u2019\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 17, 18),])
+                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 17, 18)])
                 .Count(),
             Is.EqualTo(0)
         );
@@ -2831,22 +2835,18 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment2 = new TextSegment.Builder().SetText("\u2018quote\u2019\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment1, 0, 1),
-                        new QuotationMarkStringMatch(textSegment2, 0, 1),
-                        new QuotationMarkStringMatch(textSegment2, 6, 7),
-                        new QuotationMarkStringMatch(textSegment2, 7, 8),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment2, 0, 1),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 6, 7),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 7, 8),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment1, 0, 1),
+                    new QuotationMarkStringMatch(textSegment2, 0, 1),
+                    new QuotationMarkStringMatch(textSegment2, 6, 7),
+                    new QuotationMarkStringMatch(textSegment2, 7, 8),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment2, 0, 1),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 6, 7),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 7, 8),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -2871,23 +2871,19 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 5, 6),
-                        new QuotationMarkStringMatch(textSegment, 12, 13),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                        new QuotationMarkStringMatch(textSegment, 19, 20),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 19, 20),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 5, 6),
+                    new QuotationMarkStringMatch(textSegment, 12, 13),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                    new QuotationMarkStringMatch(textSegment, 19, 20),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 19, 20),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
 
@@ -2908,23 +2904,19 @@ public class DepthBasedQuotationMarkResolverTests
             .Build();
         Assert.That(
             typewriterEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 5, 6),
-                        new QuotationMarkStringMatch(textSegment, 12, 13),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                        new QuotationMarkStringMatch(textSegment, 19, 20),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
-                        new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                        new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Closing, textSegment, 19, 20),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 5, 6),
+                    new QuotationMarkStringMatch(textSegment, 12, 13),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                    new QuotationMarkStringMatch(textSegment, 19, 20),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
+                    new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                    new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Closing, textSegment, 19, 20),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -2950,26 +2942,22 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment1, 0, 1),
-                        new QuotationMarkStringMatch(textSegment1, 11, 12),
-                        new QuotationMarkStringMatch(textSegment2, 0, 1),
-                        new QuotationMarkStringMatch(textSegment2, 1, 2),
-                        new QuotationMarkStringMatch(textSegment2, 18, 19),
-                        new QuotationMarkStringMatch(textSegment2, 25, 26),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment1, 11, 12),
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment2, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment2, 1, 2),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 18, 19),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment1, 0, 1),
+                    new QuotationMarkStringMatch(textSegment1, 11, 12),
+                    new QuotationMarkStringMatch(textSegment2, 0, 1),
+                    new QuotationMarkStringMatch(textSegment2, 1, 2),
+                    new QuotationMarkStringMatch(textSegment2, 18, 19),
+                    new QuotationMarkStringMatch(textSegment2, 25, 26),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment1, 11, 12),
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment2, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment2, 1, 2),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 18, 19),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -2995,26 +2983,22 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             westernEuropeanQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment1, 0, 1),
-                        new QuotationMarkStringMatch(textSegment1, 11, 12),
-                        new QuotationMarkStringMatch(textSegment2, 0, 1),
-                        new QuotationMarkStringMatch(textSegment2, 1, 2),
-                        new QuotationMarkStringMatch(textSegment2, 18, 19),
-                        new QuotationMarkStringMatch(textSegment2, 25, 26),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u00ab", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
-                        new QuotationMarkMetadata("\u201c", 2, QuotationMarkDirection.Opening, textSegment1, 11, 12),
-                        new QuotationMarkMetadata("\u00bb", 1, QuotationMarkDirection.Opening, textSegment2, 0, 1),
-                        new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Opening, textSegment2, 1, 2),
-                        new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Closing, textSegment2, 18, 19),
-                        new QuotationMarkMetadata("\u00bb", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment1, 0, 1),
+                    new QuotationMarkStringMatch(textSegment1, 11, 12),
+                    new QuotationMarkStringMatch(textSegment2, 0, 1),
+                    new QuotationMarkStringMatch(textSegment2, 1, 2),
+                    new QuotationMarkStringMatch(textSegment2, 18, 19),
+                    new QuotationMarkStringMatch(textSegment2, 25, 26),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u00ab", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
+                    new QuotationMarkMetadata("\u201c", 2, QuotationMarkDirection.Opening, textSegment1, 11, 12),
+                    new QuotationMarkMetadata("\u00bb", 1, QuotationMarkDirection.Opening, textSegment2, 0, 1),
+                    new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Opening, textSegment2, 1, 2),
+                    new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Closing, textSegment2, 18, 19),
+                    new QuotationMarkMetadata("\u00bb", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
+                ])
         );
         Assert.That(westernEuropeanQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3040,22 +3024,18 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment1, 0, 1),
-                        new QuotationMarkStringMatch(textSegment1, 12, 13),
-                        new QuotationMarkStringMatch(textSegment2, 17, 18),
-                        new QuotationMarkStringMatch(textSegment2, 25, 26),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment1, 12, 13),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 17, 18),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment1, 0, 1),
+                    new QuotationMarkStringMatch(textSegment1, 12, 13),
+                    new QuotationMarkStringMatch(textSegment2, 17, 18),
+                    new QuotationMarkStringMatch(textSegment2, 25, 26),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment1, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment1, 12, 13),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment2, 17, 18),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment2, 25, 26),
+                ])
         );
         Assert.That(standardEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3075,20 +3055,16 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("\u201cThis is a \u2018quote\u2019").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                ])
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
@@ -3099,10 +3075,10 @@ public class DepthBasedQuotationMarkResolverTests
         textSegment = new TextSegment.Builder().SetText("another quote\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 13, 14),])
-                .SequenceEqual(
-                    [new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 13, 14),]
-                )
+                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 13, 14)])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 13, 14),
+                ])
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
@@ -3128,30 +3104,27 @@ public class DepthBasedQuotationMarkResolverTests
             .Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 6, 7),
-                        new QuotationMarkStringMatch(textSegment, 10, 11),
-                        new QuotationMarkStringMatch(textSegment, 13, 14),
-                        new QuotationMarkStringMatch(textSegment, 20, 21),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 6, 7),
-                        new QuotationMarkMetadata("\u201c", 3, QuotationMarkDirection.Opening, textSegment, 10, 11),
-                        new QuotationMarkMetadata("\u2018", 4, QuotationMarkDirection.Opening, textSegment, 13, 14),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 6, 7),
+                    new QuotationMarkStringMatch(textSegment, 10, 11),
+                    new QuotationMarkStringMatch(textSegment, 13, 14),
+                    new QuotationMarkStringMatch(textSegment, 20, 21),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Opening, textSegment, 6, 7),
+                    new QuotationMarkMetadata("\u201c", 3, QuotationMarkDirection.Opening, textSegment, 10, 11),
+                    new QuotationMarkMetadata("\u2018", 4, QuotationMarkDirection.Opening, textSegment, 13, 14),
+                ])
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
                 .GetIssues()
-                .SequenceEqual(
-                    [QuotationMarkResolutionIssue.TooDeepNesting, QuotationMarkResolutionIssue.UnpairedQuotationMark,]
-                )
+                .SequenceEqual([
+                    QuotationMarkResolutionIssue.TooDeepNesting,
+                    QuotationMarkResolutionIssue.UnpairedQuotationMark,
+                ])
         );
     }
 
@@ -3170,22 +3143,18 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("\u201cThis is a \u201cquote\u201d\u201d").Build();
         Assert.That(
             standardEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u201c", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u201c", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("\u201d", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(
             standardEnglishQuotationMarkResolver
@@ -3211,7 +3180,7 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("This\"is an ambiguous quotation mark").Build();
         Assert.That(
             typewriterEnglishQuotationMarkResolver
-                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 4, 5),])
+                .ResolveQuotationMarks([new QuotationMarkStringMatch(textSegment, 4, 5)])
                 .Count(),
             Is.EqualTo(0)
         );
@@ -3258,22 +3227,18 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             typewriterEnglishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("'", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\"", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(typewriterEnglishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3295,22 +3260,18 @@ public class DepthBasedQuotationMarkResolverTests
         TextSegment textSegment = new TextSegment.Builder().SetText("<<This is a <quote>>>").Build();
         Assert.That(
             typewriterFrenchQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 2),
-                        new QuotationMarkStringMatch(textSegment, 12, 13),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                        new QuotationMarkStringMatch(textSegment, 19, 21),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("<<", 1, QuotationMarkDirection.Opening, textSegment, 0, 2),
-                        new QuotationMarkMetadata("<", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
-                        new QuotationMarkMetadata(">", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                        new QuotationMarkMetadata(">>", 1, QuotationMarkDirection.Closing, textSegment, 19, 21),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 2),
+                    new QuotationMarkStringMatch(textSegment, 12, 13),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                    new QuotationMarkStringMatch(textSegment, 19, 21),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("<<", 1, QuotationMarkDirection.Opening, textSegment, 0, 2),
+                    new QuotationMarkMetadata("<", 2, QuotationMarkDirection.Opening, textSegment, 12, 13),
+                    new QuotationMarkMetadata(">", 2, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                    new QuotationMarkMetadata(">>", 1, QuotationMarkDirection.Closing, textSegment, 19, 21),
+                ])
         );
         Assert.That(typewriterFrenchQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3335,22 +3296,18 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             centralEuropeanQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201e", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u201a", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201e", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u201a", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("\u2018", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(centralEuropeanQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3375,22 +3332,18 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             standardSwedishQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\u201d", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(standardSwedishQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }
@@ -3414,9 +3367,11 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.IsNotNull(standardSwedishQuoteConvention);
         var multipleConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
-            new QuoteConventionSet(
-                [typewriterFrenchQuoteConvention, centralEuropeanQuoteConvention, standardSwedishQuoteConvention]
-            )
+            new QuoteConventionSet([
+                typewriterFrenchQuoteConvention,
+                centralEuropeanQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
         var multipleConventionsQuotationMarkResolver = new DepthBasedQuotationMarkResolver(
             multipleConventionsResolverSettings
@@ -3430,22 +3385,18 @@ public class DepthBasedQuotationMarkResolverTests
         );
         Assert.That(
             multipleConventionsQuotationMarkResolver
-                .ResolveQuotationMarks(
-                    [
-                        new QuotationMarkStringMatch(textSegment, 0, 1),
-                        new QuotationMarkStringMatch(textSegment, 11, 12),
-                        new QuotationMarkStringMatch(textSegment, 17, 18),
-                        new QuotationMarkStringMatch(textSegment, 18, 19),
-                    ]
-                )
-                .SequenceEqual(
-                    [
-                        new QuotationMarkMetadata("\u201e", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
-                        new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
-                        new QuotationMarkMetadata(">", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
-                        new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
-                    ]
-                )
+                .ResolveQuotationMarks([
+                    new QuotationMarkStringMatch(textSegment, 0, 1),
+                    new QuotationMarkStringMatch(textSegment, 11, 12),
+                    new QuotationMarkStringMatch(textSegment, 17, 18),
+                    new QuotationMarkStringMatch(textSegment, 18, 19),
+                ])
+                .SequenceEqual([
+                    new QuotationMarkMetadata("\u201e", 1, QuotationMarkDirection.Opening, textSegment, 0, 1),
+                    new QuotationMarkMetadata("\u2019", 2, QuotationMarkDirection.Opening, textSegment, 11, 12),
+                    new QuotationMarkMetadata(">", 2, QuotationMarkDirection.Closing, textSegment, 17, 18),
+                    new QuotationMarkMetadata("\u201c", 1, QuotationMarkDirection.Closing, textSegment, 18, 19),
+                ])
         );
         Assert.That(multipleConventionsQuotationMarkResolver.GetIssues(), Has.Count.EqualTo(0));
     }

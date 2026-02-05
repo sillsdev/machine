@@ -51,7 +51,7 @@ public abstract class HermitCrabTestBase
                 new FeatureSymbol("labiodental"),
                 new FeatureSymbol("alveolar"),
                 new FeatureSymbol("velar")
-            )
+            ),
         };
         phonologicalFeatSys.Freeze();
 
@@ -72,7 +72,7 @@ public abstract class HermitCrabTestBase
             new SymbolicFeature("aspect", new FeatureSymbol("perf"), new FeatureSymbol("impf")),
             new SymbolicFeature("mood", new FeatureSymbol("active"), new FeatureSymbol("passive")),
             new SymbolicFeature("fum", new FeatureSymbol("fum+", "+"), new FeatureSymbol("fum-", "-")),
-            new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-"))
+            new SymbolicFeature("bar", new FeatureSymbol("bar+", "+"), new FeatureSymbol("bar-", "-")),
         };
         syntacticFeatSys.AddPartsOfSpeech(
             new FeatureSymbol("N", "Noun"),
@@ -518,12 +518,12 @@ public abstract class HermitCrabTestBase
         Morphophonemic = new Stratum(Table3)
         {
             Name = "Morphophonemic",
-            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
         };
         Allophonic = new Stratum(Table1)
         {
             Name = "Allophonic",
-            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
         };
         Surface = new Stratum(Table1) { Name = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
 
@@ -760,7 +760,7 @@ public abstract class HermitCrabTestBase
                 .Value
         )
         {
-            Name = "sn1"
+            Name = "sn1",
         };
         entry.Allomorphs[2].StemName = new StemName(
             FeatureStruct
@@ -777,7 +777,7 @@ public abstract class HermitCrabTestBase
                 .Value
         )
         {
-            Name = "sn2"
+            Name = "sn2",
         };
 
         AddEntry(
@@ -800,7 +800,7 @@ public abstract class HermitCrabTestBase
             Name = "Test",
             PhonologicalFeatureSystem = phonologicalFeatSys,
             SyntacticFeatureSystem = syntacticFeatSys,
-            Strata = { Morphophonemic, Allophonic, Surface }
+            Strata = { Morphophonemic, Allophonic, Surface },
         };
     }
 
@@ -831,7 +831,7 @@ public abstract class HermitCrabTestBase
             Id = gloss,
             SyntacticFeatureStruct = syntacticFS,
             Gloss = gloss,
-            IsPartial = syntacticFS.IsEmpty
+            IsPartial = syntacticFS.IsEmpty,
         };
         foreach (string form in forms)
             entry.Allomorphs.Add(new RootAllomorph(new Segments(stratum.CharacterDefinitionTable, form, true)));

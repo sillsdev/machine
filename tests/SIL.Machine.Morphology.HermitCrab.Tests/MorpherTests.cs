@@ -20,13 +20,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -49,13 +49,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -66,13 +66,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PLURAL",
             Name = "t_suffix",
             Gloss = "PLURAL",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         tSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(tSuffix);
@@ -82,7 +82,7 @@ public class MorpherTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
         };
         rule1.Subrules.Add(
             new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
@@ -108,13 +108,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -138,13 +138,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -197,13 +197,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -248,13 +248,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -283,13 +283,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "3SG",
             Name = "si_prefix",
             Gloss = "3SG",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         siPrefix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "si+"), new CopyFromInput("1") }
+                Rhs = { new InsertSegments(Table3, "si+"), new CopyFromInput("1") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(siPrefix);
@@ -299,13 +299,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PAST",
             Name = "ed_suffix",
             Gloss = "PAST",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
@@ -328,13 +328,13 @@ public class MorpherTests : HermitCrabTestBase
             Id = "PL",
             Name = "ed_suffix",
             Gloss = "PL",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);

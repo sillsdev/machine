@@ -9,6 +9,6 @@
         Inverse,
 
         // source <-> target
-        Symmetric
+        Symmetric,
     }
 }

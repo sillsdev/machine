@@ -18,7 +18,7 @@ namespace SIL.Machine.PunctuationAnalysis
             { "\u300a", '"' },
             { "\u300b", '"' },
             { "\u300c", '"' },
-            { "\u300d", '"' }
+            { "\u300d", '"' },
         };
         public string OpeningQuotationMark { get; }
         public string ClosingQuotationMark { get; }

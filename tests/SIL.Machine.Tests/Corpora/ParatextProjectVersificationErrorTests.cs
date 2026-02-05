@@ -34,7 +34,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14
         \v 15
         "
-                }
+                },
             }
         );
         Assert.That(
@@ -69,7 +69,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 13
         \v 14
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -89,7 +89,7 @@ public class ParatextProjectVersificationErrorDetectorTests
                     "653JNTest.SFM",
                     @"\id 3JN
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -126,7 +126,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 15
         \v 16
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -161,7 +161,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14
         \v 15
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -198,7 +198,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14b
         \v 15
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -237,7 +237,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14
         \v 15
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -259,7 +259,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \c 1
         \v 3-2
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -295,7 +295,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14
         \v 15
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -349,7 +349,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \v 14
         \v 15
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -384,7 +384,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \c 2
         \v 1
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -408,7 +408,7 @@ public class ParatextProjectVersificationErrorDetectorTests
                     @"\id 3JN
         \c 1.
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
@@ -433,7 +433,7 @@ public class ParatextProjectVersificationErrorDetectorTests
         \c 1
         \v v1
         "
-                }
+                },
             }
         );
         IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();

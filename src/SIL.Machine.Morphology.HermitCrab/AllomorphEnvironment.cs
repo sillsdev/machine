@@ -38,7 +38,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         Filter = ann =>
                             ann.Type()
                                 .IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
-                            && !ann.IsDeleted()
+                            && !ann.IsDeleted(),
                     }
                 );
             }
@@ -55,7 +55,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         Filter = ann =>
                             ann.Type()
                                 .IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
-                            && !ann.IsDeleted()
+                            && !ann.IsDeleted(),
                     }
                 );
             }

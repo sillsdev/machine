@@ -65,7 +65,7 @@ public class TextSegmentTests
 
         Assert.That(textSegment.ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Verse));
         Assert.That(
-            textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter, UsfmMarkerType.Verse,])
+            textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter, UsfmMarkerType.Verse])
         );
         Assert.IsNull(textSegment.PreviousSegment);
         Assert.IsNull(textSegment.NextSegment);

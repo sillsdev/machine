@@ -15,7 +15,7 @@ public class UpgmaClustererTests : ClustererTestsBase
             { 4, 4, 0, 6, 6, 8 },
             { 6, 6, 6, 0, 4, 8 },
             { 6, 6, 6, 4, 0, 8 },
-            { 8, 8, 8, 8, 8, 0 }
+            { 8, 8, 8, 8, 8, 0 },
         };
         var upgma = new UpgmaClusterer<char>((o1, o2) => matrix[o1 - 'A', o2 - 'A']);
         IBidirectionalGraph<Cluster<char>, ClusterEdge<char>> tree = upgma.GenerateClusters(
@@ -67,7 +67,7 @@ public class UpgmaClustererTests : ClustererTestsBase
             {
                 "DE",
                 new Cluster<char> { Description = "DE" }
-            }
+            },
         };
 
         var edges = new[]
@@ -81,7 +81,7 @@ public class UpgmaClustererTests : ClustererTestsBase
             new ClusterEdge<char>(vertices["AB"], vertices["A"], 1),
             new ClusterEdge<char>(vertices["AB"], vertices["B"], 1),
             new ClusterEdge<char>(vertices["DE"], vertices["D"], 2),
-            new ClusterEdge<char>(vertices["DE"], vertices["E"], 2)
+            new ClusterEdge<char>(vertices["DE"], vertices["E"], 2),
         };
         AssertTreeEqual(tree, edges.ToBidirectionalGraph<Cluster<char>, ClusterEdge<char>>());
     }
@@ -122,13 +122,13 @@ public class UpgmaClustererTests : ClustererTestsBase
             {
                 "B",
                 new Cluster<char>('B') { Description = "B" }
-            }
+            },
         };
 
         var edges = new[]
         {
             new ClusterEdge<char>(vertices["root"], vertices["A"], 0.5),
-            new ClusterEdge<char>(vertices["root"], vertices["B"], 0.5)
+            new ClusterEdge<char>(vertices["root"], vertices["B"], 0.5),
         };
 
         AssertTreeEqual(tree, edges.ToBidirectionalGraph<Cluster<char>, ClusterEdge<char>>());

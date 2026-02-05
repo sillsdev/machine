@@ -886,10 +886,10 @@ public class MatcherTests : PhoneticTestsBase
                 "NP",
                 np =>
                     np.Group(det =>
-                        det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
-                            .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                            .OneOrMore
-                    )
+                            det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                                .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                .OneOrMore
+                        )
                         .Optional.Group(adj =>
                             adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                                 .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
@@ -1131,10 +1131,10 @@ public class MatcherTests : PhoneticTestsBase
                 "NP",
                 np =>
                     np.Group(det =>
-                        det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
-                            .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
-                            .OneOrMore
-                    )
+                            det.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("det").Value)
+                                .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
+                                .OneOrMore
+                        )
                         .Optional.Group(adj =>
                             adj.Annotation(FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("adj").Value)
                                 .Annotation(FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Value)
@@ -1200,7 +1200,7 @@ public class MatcherTests : PhoneticTestsBase
             new MatcherSettings<int>
             {
                 Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) == Word,
-                Direction = Direction.RightToLeft
+                Direction = Direction.RightToLeft,
             }
         );
         match = matcher.Match(sentence);
@@ -1218,7 +1218,7 @@ public class MatcherTests : PhoneticTestsBase
             new MatcherSettings<int>
             {
                 Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) != Word,
-                MatchingMethod = MatchingMethod.Unification
+                MatchingMethod = MatchingMethod.Unification,
             }
         );
         Match<AnnotatedStringData, int>[] matches = matcher.Matches(sentence).ToArray();
@@ -1230,7 +1230,7 @@ public class MatcherTests : PhoneticTestsBase
             {
                 Filter = ann => ((FeatureSymbol)ann.FeatureStruct.GetValue(Type)) != Word,
                 UseDefaults = true,
-                MatchingMethod = MatchingMethod.Unification
+                MatchingMethod = MatchingMethod.Unification,
             }
         );
         matches = matcher.Matches(sentence).ToArray();
@@ -1320,7 +1320,7 @@ public class MatcherTests : PhoneticTestsBase
             {
                 AnchoredToStart = true,
                 AnchoredToEnd = true,
-                AllSubmatches = true
+                AllSubmatches = true,
             }
         );
         var word = new AnnotatedStringData("test");
@@ -1358,7 +1358,7 @@ public class MatcherTests : PhoneticTestsBase
             {
                 AnchoredToStart = true,
                 AnchoredToEnd = true,
-                AllSubmatches = true
+                AllSubmatches = true,
             }
         );
 
@@ -1392,7 +1392,7 @@ public class MatcherTests : PhoneticTestsBase
             {
                 AnchoredToStart = true,
                 AnchoredToEnd = true,
-                AllSubmatches = true
+                AllSubmatches = true,
             }
         );
 

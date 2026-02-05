@@ -42,7 +42,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             Type = new SymbolicFeature(Guid.NewGuid().ToString(), Anchor, Segment, Boundary, Morph)
             {
-                Description = "Type"
+                Description = "Type",
             };
 
             Dirty = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Dirty" };
@@ -51,7 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Modified = new SymbolicFeature(Guid.NewGuid().ToString(), Dirty, Clean)
             {
                 Description = "Modified",
-                DefaultValue = new SymbolicFeatureValue(Clean)
+                DefaultValue = new SymbolicFeatureValue(Clean),
             };
 
             Deleted = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "Deleted" };
@@ -60,7 +60,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Deletion = new SymbolicFeature(Guid.NewGuid().ToString(), Deleted, NotDeleted)
             {
                 Description = "Deletion",
-                DefaultValue = new SymbolicFeatureValue(NotDeleted)
+                DefaultValue = new SymbolicFeatureValue(NotDeleted),
             };
 
             LeftSide = new FeatureSymbol(Guid.NewGuid().ToString()) { Description = "LeftSide" };
@@ -68,7 +68,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             AnchorType = new SymbolicFeature(Guid.NewGuid().ToString(), LeftSide, RightSide)
             {
-                Description = "AnchorType"
+                Description = "AnchorType",
             };
 
             StrRep = new StringFeature(Guid.NewGuid().ToString()) { Description = "StrRep" };

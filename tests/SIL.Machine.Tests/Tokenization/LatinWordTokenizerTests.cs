@@ -158,7 +158,7 @@ public class LatinWordTokenizerTests
                     "in",
                     "a",
                     "sentence",
-                    "."
+                    ".",
                 }
             )
         );

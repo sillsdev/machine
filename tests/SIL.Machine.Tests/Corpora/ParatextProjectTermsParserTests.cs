@@ -33,7 +33,7 @@ public class ParatextProjectTermsParserTests
     <Denials />
   </TermRendering>
 </TermRenderingsList>"
-                }
+                },
             }
         );
         IEnumerable<KeyTerm> terms = env.GetGlosses();
@@ -101,7 +101,7 @@ public class ParatextProjectTermsParserTests
                 {
                     "HAB",
                     new() { 1 }
-                }
+                },
             }
         );
         IEnumerable<KeyTerm> terms = env.GetGlosses();
@@ -131,7 +131,7 @@ public class ParatextProjectTermsParserTests
     <Denials />
   </TermRendering>
 </TermRenderingsList>"
-                }
+                },
             },
             useTermGlosses: true
         );

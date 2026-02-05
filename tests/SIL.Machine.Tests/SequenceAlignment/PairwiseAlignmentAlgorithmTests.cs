@@ -50,7 +50,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
         {
-            Mode = AlignmentMode.Local
+            Mode = AlignmentMode.Local,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -63,7 +63,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
         {
-            Mode = AlignmentMode.Local
+            Mode = AlignmentMode.Local,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -76,7 +76,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
         {
-            Mode = AlignmentMode.Local
+            Mode = AlignmentMode.Local,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -87,7 +87,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
         {
-            Mode = AlignmentMode.Local
+            Mode = AlignmentMode.Local,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -105,7 +105,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
         {
-            Mode = AlignmentMode.HalfLocal
+            Mode = AlignmentMode.HalfLocal,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -116,7 +116,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
         {
-            Mode = AlignmentMode.HalfLocal
+            Mode = AlignmentMode.HalfLocal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -127,7 +127,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
         {
-            Mode = AlignmentMode.HalfLocal
+            Mode = AlignmentMode.HalfLocal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -138,7 +138,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
         {
-            Mode = AlignmentMode.HalfLocal
+            Mode = AlignmentMode.HalfLocal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -156,7 +156,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
         {
-            Mode = AlignmentMode.SemiGlobal
+            Mode = AlignmentMode.SemiGlobal,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -167,7 +167,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
         {
-            Mode = AlignmentMode.SemiGlobal
+            Mode = AlignmentMode.SemiGlobal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -178,7 +178,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
         {
-            Mode = AlignmentMode.SemiGlobal
+            Mode = AlignmentMode.SemiGlobal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -189,7 +189,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
         {
-            Mode = AlignmentMode.SemiGlobal
+            Mode = AlignmentMode.SemiGlobal,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -205,7 +205,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
         {
-            ExpansionCompressionEnabled = true
+            ExpansionCompressionEnabled = true,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -216,7 +216,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "bar", GetChars)
         {
-            ExpansionCompressionEnabled = true
+            ExpansionCompressionEnabled = true,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -227,7 +227,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "cart", "art", GetChars)
         {
-            ExpansionCompressionEnabled = true
+            ExpansionCompressionEnabled = true,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -238,7 +238,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "start", "tan", GetChars)
         {
-            ExpansionCompressionEnabled = true
+            ExpansionCompressionEnabled = true,
         };
         paa.Compute();
         alignments = paa.GetAlignments().ToArray();
@@ -256,7 +256,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new ZeroMaxScoreStringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "car", "bar", GetChars)
         {
-            ExpansionCompressionEnabled = true
+            ExpansionCompressionEnabled = true,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -298,7 +298,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
         {
-            Mode = AlignmentMode.HalfLocal
+            Mode = AlignmentMode.HalfLocal,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();
@@ -314,7 +314,7 @@ public class PairwiseAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var paa = new PairwiseAlignmentAlgorithm<string, char>(scorer, "", "", GetChars)
         {
-            Mode = AlignmentMode.SemiGlobal
+            Mode = AlignmentMode.SemiGlobal,
         };
         paa.Compute();
         Alignment<string, char>[] alignments = paa.GetAlignments().ToArray();

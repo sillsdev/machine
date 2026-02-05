@@ -372,7 +372,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 chapterStrategies:
                 [
                     QuotationMarkUpdateStrategy.ApplyFallback,
-                    QuotationMarkUpdateStrategy.ApplyFallback
+                    QuotationMarkUpdateStrategy.ApplyFallback,
                 ]
             )
         );
@@ -557,7 +557,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment"));
         Assert.That(textSegments[0].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Paragraph));
         Assert.That(
-            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph,])
+            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph])
         );
         Assert.IsNull(textSegments[0].PreviousSegment);
         Assert.IsNull(textSegments[0].NextSegment);
@@ -589,14 +589,14 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment1"));
         Assert.That(textSegments[0].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Paragraph));
         Assert.That(
-            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph,])
+            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph])
         );
         Assert.IsNull(textSegments[0].PreviousSegment);
         Assert.That(textSegments[0].NextSegment, Is.EqualTo(textSegments[1]));
         Assert.That(textSegments[1].Text, Is.EqualTo("test segment2"));
         Assert.That(textSegments[1].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Character));
         Assert.That(
-            textSegments[1].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Character,])
+            textSegments[1].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Character])
         );
         Assert.That(textSegments[1].PreviousSegment, Is.EqualTo(textSegments[0]));
         Assert.IsNull(textSegments[1].NextSegment);
@@ -630,7 +630,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         [
             new TextSegment.Builder().SetText("segment 1 text").Build(),
             new TextSegment.Builder().SetText("segment 2 text").Build(),
-            new TextSegment.Builder().SetText("segment 3 text").Build()
+            new TextSegment.Builder().SetText("segment 3 text").Build(),
         ];
 
         quoteConventionChanger.InternalSetPreviousAndNextForSegments(segments);
@@ -686,7 +686,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 textSegment: multiCharacterTextSegment,
                 startIndex: 27,
                 endIndex: 29
-            )
+            ),
         ];
 
         multiCharToSingleCharQuoteConventionChanger.UpdateQuotationMarks(multiCharacterQuotationMarks);
@@ -745,7 +745,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 textSegment: singleCharacterTextSegment,
                 startIndex: 26,
                 endIndex: 27
-            )
+            ),
         ];
 
         singleCharToMultiCharQuoteConventionChanger.UpdateQuotationMarks(singleCharacterQuotationMarks);

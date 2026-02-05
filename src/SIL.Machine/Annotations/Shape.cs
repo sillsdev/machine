@@ -277,7 +277,7 @@ namespace SIL.Machine.Annotations
                             : Range<ShapeNode>.Create(ann.Range.Start, node.Prev);
                     var newAnn = new Annotation<ShapeNode>(range, ann.FeatureStruct.Clone())
                     {
-                        Optional = ann.Optional
+                        Optional = ann.Optional,
                     };
                     if (!ann.IsLeaf)
                     {

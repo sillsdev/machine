@@ -25,7 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 Filter = ann =>
                     ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
                     && !ann.IsDeleted(),
-                UseDefaults = true
+                UseDefaults = true,
             };
 
             var ruleSpec = new SynthesisRewriteRuleSpec(

@@ -15,7 +15,7 @@ public class FuzzyEditDistanceWordAlignmentMethodTests
                 if (srcIndex == -1 || trgIndex == -1)
                     return 0.1;
                 return srcSegment[srcIndex] == trgSegment[trgIndex] ? 0.9 : 0.1;
-            }
+            },
         };
 
         WordAlignmentMatrix matrix = method.Align("A B".Split(), "B C".Split());

@@ -1,7 +1,7 @@
 #!/bin/bash
 dotnet tool restore
 dotnet restore
-dotnet csharpier --check .
+dotnet csharpier check .
 if [ $? -ne 0 ]; then
   exit 1
 fi

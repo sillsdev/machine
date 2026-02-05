@@ -112,7 +112,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Parse failed trace
         /// </summary>
-        Failed
+        Failed,
     }
 
     /// <summary>

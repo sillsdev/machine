@@ -11,7 +11,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar", "carp" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         Alignment<string, char> alignment = msa.GetAlignment();
@@ -20,7 +20,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar", "star" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         alignment = msa.GetAlignment();
@@ -29,7 +29,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar", "stare" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         alignment = msa.GetAlignment();
@@ -38,7 +38,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
 
         msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "scar", "car", "bar", "stare" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         alignment = msa.GetAlignment();
@@ -54,7 +54,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
             GetChars
         )
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         alignment = msa.GetAlignment();
@@ -70,7 +70,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
             GetChars
         )
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         alignment = msa.GetAlignment();
@@ -114,7 +114,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new StringScorer();
         var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "", "bar" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         Alignment<string, char> alignment = msa.GetAlignment();
@@ -128,7 +128,7 @@ public class MultipleAlignmentAlgorithmTests : AlignmentAlgorithmTestsBase
         var scorer = new ZeroMaxScoreStringScorer();
         var msa = new MultipleAlignmentAlgorithm<string, char>(scorer, new[] { "car", "bar", "carp" }, GetChars)
         {
-            UseInputOrder = true
+            UseInputOrder = true,
         };
         msa.Compute();
         Alignment<string, char> alignment = msa.GetAlignment();

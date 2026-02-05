@@ -80,7 +80,7 @@ public class WordGraphTests
                 Range<int>.Create(3, 5),
                 GetSources(2, false),
                 Enumerable.Repeat(1.0, 2)
-            )
+            ),
         };
 
         var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
@@ -180,7 +180,7 @@ public class WordGraphTests
                 Range<int>.Create(3, 5),
                 GetSources(2, false),
                 Enumerable.Repeat(1.0, 2)
-            )
+            ),
         };
 
         var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
@@ -274,7 +274,7 @@ public class WordGraphTests
                 Range<int>.Create(3, 5),
                 GetSources(2, false),
                 Enumerable.Repeat(1.0, 2)
-            )
+            ),
         };
 
         var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 1, 4, 5 }, -191.0998f);
@@ -395,7 +395,7 @@ public class WordGraphTests
                 Range<int>.Create(3, 5),
                 GetSources(2, false),
                 Enumerable.Repeat(1.0, 2)
-            )
+            ),
         };
 
         var wordGraph = new WordGraph(Array.Empty<string>(), arcs, new[] { 4, 5 }, -191.0998f);
