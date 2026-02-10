@@ -116,7 +116,7 @@ namespace SIL.Machine.Corpora
                 termsRenderings = termRenderingsDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering")
-                    .Where(ele => ele.Attribute("Guess") == null || ele.Attribute("Guess").Value == "false")
+                    .Where(ele => ((string)ele.Attribute("Guess") ?? "false") == "false")
                     .Select(ele => (ele.Attribute("Id").Value, ele))
                     .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategory))
                     .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))

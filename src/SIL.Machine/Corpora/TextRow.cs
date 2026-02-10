@@ -18,16 +18,14 @@ namespace SIL.Machine.Corpora
         {
             TextId = textId;
             Ref = rowRef;
-            _contentType = contentType;
+            ContentType = contentType;
         }
 
         public string TextId { get; }
 
         public object Ref { get; }
 
-        private readonly TextRowContentType _contentType;
-
-        public TextRowContentType ContentType => _contentType;
+        public TextRowContentType ContentType { get; }
 
         public bool IsEmpty => Segment.Count == 0;
 

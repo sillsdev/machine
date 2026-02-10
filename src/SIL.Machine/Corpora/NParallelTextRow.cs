@@ -25,7 +25,7 @@ namespace SIL.Machine.Corpora
             N = NRefs.Count;
             NSegments = Enumerable.Range(0, N).Select(_ => Array.Empty<string>()).ToImmutableArray();
             NFlags = Enumerable.Range(0, N).Select(_ => TextRowFlags.SentenceStart).ToImmutableArray();
-            _contentType = contentType;
+            ContentType = contentType;
         }
 
         public string TextId { get; }
@@ -40,7 +40,7 @@ namespace SIL.Machine.Corpora
 
         private readonly TextRowContentType _contentType;
 
-        public TextRowContentType ContentType => _contentType;
+        public TextRowContentType ContentType { get; }
 
         public bool IsSentenceStart(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.SentenceStart) : throw new ArgumentOutOfRangeException();

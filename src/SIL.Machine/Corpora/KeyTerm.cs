@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using SIL.Scripture;
 
 public class KeyTerm
@@ -14,16 +15,16 @@ public class KeyTerm
         string id,
         string category,
         string domain,
-        IReadOnlyList<string> renderings,
-        IReadOnlyList<VerseRef> references,
-        IReadOnlyList<string> renderingsPatterns
+        IEnumerable<string> renderings,
+        IEnumerable<VerseRef> references,
+        IEnumerable<string> renderingsPatterns
     )
     {
         Id = id;
         Category = category;
         Domain = domain;
-        Renderings = renderings;
-        References = references;
-        RenderingsPatterns = renderingsPatterns;
+        Renderings = renderings.ToArray();
+        References = references.ToArray();
+        RenderingsPatterns = renderingsPatterns.ToArray();
     }
 }

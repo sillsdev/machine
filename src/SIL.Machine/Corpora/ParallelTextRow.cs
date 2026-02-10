@@ -22,7 +22,7 @@ namespace SIL.Machine.Corpora
             TextId = textId;
             SourceRefs = sourceRefs;
             TargetRefs = targetRefs;
-            _contentType = contentType;
+            ContentType = contentType;
         }
 
         public string TextId { get; }
@@ -42,10 +42,7 @@ namespace SIL.Machine.Corpora
 
         public TextRowFlags SourceFlags { get; set; } = TextRowFlags.SentenceStart;
         public TextRowFlags TargetFlags { get; set; } = TextRowFlags.SentenceStart;
-
-        private readonly TextRowContentType _contentType;
-
-        public TextRowContentType ContentType => _contentType;
+        public TextRowContentType ContentType { get; }
 
         public bool IsSourceSentenceStart => SourceFlags.HasFlag(TextRowFlags.SentenceStart);
         public bool IsSourceInRange => SourceFlags.HasFlag(TextRowFlags.InRange);
@@ -61,7 +58,7 @@ namespace SIL.Machine.Corpora
 
         public ParallelTextRow Invert()
         {
-            return new ParallelTextRow(TextId, TargetRefs, SourceRefs, _contentType)
+            return new ParallelTextRow(TextId, TargetRefs, SourceRefs, ContentType)
             {
                 SourceSegment = TargetSegment,
                 TargetSegment = SourceSegment,
