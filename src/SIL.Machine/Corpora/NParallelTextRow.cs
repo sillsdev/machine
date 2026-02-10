@@ -37,9 +37,6 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyList<IReadOnlyList<string>> NSegments { get; set; }
         public IReadOnlyList<TextRowFlags> NFlags { get; set; }
-
-        private readonly TextRowContentType _contentType;
-
         public TextRowContentType ContentType { get; }
 
         public bool IsSentenceStart(int i) =>
@@ -57,7 +54,7 @@ namespace SIL.Machine.Corpora
 
         public NParallelTextRow Invert()
         {
-            return new NParallelTextRow(TextId, NRefs.Reverse(), _contentType)
+            return new NParallelTextRow(TextId, NRefs.Reverse(), ContentType)
             {
                 NFlags = NFlags.Reverse().ToImmutableArray(),
             };
