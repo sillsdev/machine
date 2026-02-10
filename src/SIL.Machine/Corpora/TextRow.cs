@@ -14,15 +14,20 @@ namespace SIL.Machine.Corpora
 
     public class TextRow : IRow
     {
-        public TextRow(string textId, object rowRef)
+        public TextRow(string textId, object rowRef, TextRowContentType contentType = TextRowContentType.Segment)
         {
             TextId = textId;
             Ref = rowRef;
+            _contentType = contentType;
         }
 
         public string TextId { get; }
 
         public object Ref { get; }
+
+        private readonly TextRowContentType _contentType;
+
+        public TextRowContentType ContentType => _contentType;
 
         public bool IsEmpty => Segment.Count == 0;
 

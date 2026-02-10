@@ -8,7 +8,11 @@ namespace SIL.Machine.Corpora
 {
     public class NParallelTextRow : IRow
     {
-        public NParallelTextRow(string textId, IEnumerable<IReadOnlyList<object>> nRefs)
+        public NParallelTextRow(
+            string textId,
+            IEnumerable<IReadOnlyList<object>> nRefs,
+            TextRowContentType contentType = TextRowContentType.Segment
+        )
         {
             if (string.IsNullOrEmpty(textId))
                 throw new ArgumentNullException(nameof(textId));
@@ -21,6 +25,7 @@ namespace SIL.Machine.Corpora
             N = NRefs.Count;
             NSegments = Enumerable.Range(0, N).Select(_ => Array.Empty<string>()).ToImmutableArray();
             NFlags = Enumerable.Range(0, N).Select(_ => TextRowFlags.SentenceStart).ToImmutableArray();
+            _contentType = contentType;
         }
 
         public string TextId { get; }
@@ -32,6 +37,10 @@ namespace SIL.Machine.Corpora
 
         public IReadOnlyList<IReadOnlyList<string>> NSegments { get; set; }
         public IReadOnlyList<TextRowFlags> NFlags { get; set; }
+
+        private readonly TextRowContentType _contentType;
+
+        public TextRowContentType ContentType => _contentType;
 
         public bool IsSentenceStart(int i) =>
             NFlags.Count > i ? NFlags[i].HasFlag(TextRowFlags.SentenceStart) : throw new ArgumentOutOfRangeException();
@@ -48,7 +57,10 @@ namespace SIL.Machine.Corpora
 
         public NParallelTextRow Invert()
         {
-            return new NParallelTextRow(TextId, NRefs.Reverse()) { NFlags = NFlags.Reverse().ToImmutableArray(), };
+            return new NParallelTextRow(TextId, NRefs.Reverse(), _contentType)
+            {
+                NFlags = NFlags.Reverse().ToImmutableArray(),
+            };
         }
     }
 }

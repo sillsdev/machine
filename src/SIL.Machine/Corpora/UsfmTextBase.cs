@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using SIL.Extensions;
 using SIL.Machine.Utils;
 using SIL.Scripture;
 
@@ -103,6 +104,19 @@ namespace SIL.Machine.Corpora
             }
 
             public IEnumerable<TextRow> Rows => _rows;
+
+            public override void StartBook(UsfmParserState state, string marker, string code)
+            {
+                base.StartBook(state, marker, code);
+                if (!Canon.AllBookIds.Contains(code, StringComparison.InvariantCulture))
+                {
+                    throw new ArgumentException($"The book {code} is not a valid book id.");
+                }
+                if (code != _text.Id)
+                {
+                    throw new ArgumentException($"The \\id marker {code} does not match the text id {_text.Id}.");
+                }
+            }
 
             public override void StartPara(
                 UsfmParserState state,

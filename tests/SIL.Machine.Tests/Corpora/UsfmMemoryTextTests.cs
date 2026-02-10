@@ -399,7 +399,7 @@ description
     public void GetRows_PrivateUseMarker()
     {
         TextRow[] rows = GetRows(
-            @"\id FRT - Test English Apocrypha
+            @"\id MAT - Test English Apocrypha
 \zmt Ignore this paragraph
 \mt1 Test English Apocrypha
 \pc Copyright Statement \zimagecopyrights
@@ -414,7 +414,7 @@ description
 
             Assert.That(
                 rows[1].Ref,
-                Is.EqualTo(ScriptureRef.Parse("FRT 1:0/2:pc")),
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:0/2:pc")),
                 string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
             );
             Assert.That(

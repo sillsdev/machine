@@ -15,9 +15,9 @@ namespace SIL.Machine.Corpora
         {
             using (var archive = ZipFile.OpenRead(fileName))
             {
-                IEnumerable<(string, IReadOnlyList<string>)> glosses = new ZipParatextProjectTermsParser(archive)
+                IEnumerable<KeyTerm> keyTerms = new ZipParatextProjectTermsParser(archive)
                     .Parse(termCategories, useTermGlosses, chapters)
-                    .OrderBy(g => g.TermId);
+                    .OrderBy(g => g.Id);
 
                 ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
 
@@ -26,8 +26,11 @@ namespace SIL.Machine.Corpora
 
                 IText text = new MemoryText(
                     textId,
-                    glosses.SelectMany(kvp =>
-                        kvp.Item2.Select(gloss => new TextRow(textId, kvp.Item1) { Segment = new string[] { gloss } })
+                    keyTerms.SelectMany(keyTerm =>
+                        keyTerm.Renderings.Select(gloss => new TextRow(textId, keyTerm.Id, TextRowContentType.Word)
+                        {
+                            Segment = new string[] { gloss }
+                        })
                     )
                 );
                 AddText(text);

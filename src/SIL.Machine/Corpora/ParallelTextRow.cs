@@ -6,7 +6,12 @@ namespace SIL.Machine.Corpora
 {
     public class ParallelTextRow : IRow
     {
-        public ParallelTextRow(string textId, IReadOnlyList<object> sourceRefs, IReadOnlyList<object> targetRefs)
+        public ParallelTextRow(
+            string textId,
+            IReadOnlyList<object> sourceRefs,
+            IReadOnlyList<object> targetRefs,
+            TextRowContentType contentType = TextRowContentType.Segment
+        )
         {
             if (string.IsNullOrEmpty(textId))
                 throw new ArgumentNullException(nameof(textId));
@@ -17,6 +22,7 @@ namespace SIL.Machine.Corpora
             TextId = textId;
             SourceRefs = sourceRefs;
             TargetRefs = targetRefs;
+            _contentType = contentType;
         }
 
         public string TextId { get; }
@@ -37,6 +43,10 @@ namespace SIL.Machine.Corpora
         public TextRowFlags SourceFlags { get; set; } = TextRowFlags.SentenceStart;
         public TextRowFlags TargetFlags { get; set; } = TextRowFlags.SentenceStart;
 
+        private readonly TextRowContentType _contentType;
+
+        public TextRowContentType ContentType => _contentType;
+
         public bool IsSourceSentenceStart => SourceFlags.HasFlag(TextRowFlags.SentenceStart);
         public bool IsSourceInRange => SourceFlags.HasFlag(TextRowFlags.InRange);
         public bool IsSourceRangeStart => SourceFlags.HasFlag(TextRowFlags.RangeStart);
@@ -51,7 +61,7 @@ namespace SIL.Machine.Corpora
 
         public ParallelTextRow Invert()
         {
-            return new ParallelTextRow(TextId, TargetRefs, SourceRefs)
+            return new ParallelTextRow(TextId, TargetRefs, SourceRefs, _contentType)
             {
                 SourceSegment = TargetSegment,
                 TargetSegment = SourceSegment,

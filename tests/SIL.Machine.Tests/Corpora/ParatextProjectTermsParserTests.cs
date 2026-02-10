@@ -36,9 +36,9 @@ public class ParatextProjectTermsParserTests
                 }
             }
         );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        IEnumerable<KeyTerm> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(1));
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Xerxes"));
+        Assert.That(string.Join(" ", terms.First().Renderings), Is.EqualTo("Xerxes"));
     }
 
     [Test]
@@ -51,9 +51,9 @@ public class ParatextProjectTermsParserTests
             ),
             useTermGlosses: true
         );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        IEnumerable<KeyTerm> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Abagtha"));
+        Assert.That(string.Join(" ", terms.First().Renderings), Is.EqualTo("Aaron"));
     }
 
     [Test]
@@ -66,7 +66,7 @@ public class ParatextProjectTermsParserTests
             ),
             useTermGlosses: false
         );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        IEnumerable<KeyTerm> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(0));
     }
 
@@ -81,9 +81,9 @@ public class ParatextProjectTermsParserTests
             ),
             useTermGlosses: true
         );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        IEnumerable<KeyTerm> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(5715));
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Aaron"));
+        Assert.That(string.Join(" ", terms.First().Renderings), Is.EqualTo("Aaron"));
     }
 
     [Test]
@@ -104,9 +104,9 @@ public class ParatextProjectTermsParserTests
                 }
             }
         );
-        IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses();
+        IEnumerable<KeyTerm> terms = env.GetGlosses();
         Assert.That(terms.Count, Is.EqualTo(3)); //Habakkuk, YHWH, Kashdi/Chaldean are the only PN terms in HAB 1
-        Assert.That(string.Join(" ", terms.First().Glosses), Is.EqualTo("Habaquq"));
+        Assert.That(string.Join(" ", terms.First().Renderings), Is.EqualTo("Habaquq"));
     }
 
     [Test]
@@ -135,10 +135,10 @@ public class ParatextProjectTermsParserTests
             },
             useTermGlosses: true
         );
-        IReadOnlyList<(string TermId, IReadOnlyList<string> Glosses)> terms = env.GetGlosses().ToList();
+        IReadOnlyList<KeyTerm> terms = env.GetGlosses().ToList();
         Assert.That(terms.Count, Is.EqualTo(5726));
-        Assert.That(string.Join(" ", terms[1].Glosses), Is.EqualTo("Abagtha"));
-        Assert.That(string.Join(" ", terms[2].Glosses), Is.EqualTo("Abi"));
+        Assert.That(string.Join(" ", terms[1].Renderings), Is.EqualTo("Aaron"));
+        Assert.That(string.Join(" ", terms[2].Renderings), Is.EqualTo("Abaddon Destroyer"));
     }
 
     [Test]
@@ -166,13 +166,16 @@ public class ParatextProjectTermsParserTests
 
     [Test]
     [TestCase("", new string[] { })]
-    [TestCase("*Abba*", new string[] { "Abba" })]
+    [TestCase("*Abba*", new string[] { "*Abba*" })]
     [TestCase("Abba|| ", new string[] { "Abba" })]
     [TestCase("Abba||Abbah", new string[] { "Abba", "Abbah" })]
     [TestCase("Abba (note)", new string[] { "Abba" })]
     public void TestGetRenderings(string renderingString, IReadOnlyList<string> expectedOutput)
     {
-        Assert.That(ParatextProjectTermsParserBase.GetRenderings(renderingString), Is.EqualTo(expectedOutput));
+        Assert.That(
+            ParatextProjectTermsParserBase.GetRenderingsWithPattern(renderingString),
+            Is.EqualTo(expectedOutput)
+        );
     }
 
     private class TestEnvironment(
@@ -187,9 +190,9 @@ public class ParatextProjectTermsParserTests
 
         public ParatextProjectTermsParserBase Parser { get; } = new MemoryParatextProjectTermsParser(files, settings);
 
-        public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> GetGlosses()
+        public IEnumerable<KeyTerm> GetGlosses()
         {
-            return Parser.Parse(new string[] { "PN" }, _useTermGlosses, _chapters);
+            return Parser.Parse(["PN"], _useTermGlosses, _chapters);
         }
     }
 }

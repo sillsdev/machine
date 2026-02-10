@@ -5,5 +5,7 @@
         object Ref { get; }
 
         bool IsEmpty { get; }
+
+        TextRowContentType ContentType { get; }
     }
 }

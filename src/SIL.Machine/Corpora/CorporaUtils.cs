@@ -75,12 +75,14 @@ namespace SIL.Machine.Corpora
             return sb.ToString();
         }
 
-        internal static IEnumerable<(string Id, string FileName)> GetFiles(IEnumerable<string> filePatterns)
+        internal static IEnumerable<(string Id, string FileName, int PatternIndex)> GetFiles(
+            IEnumerable<string> filePatterns
+        )
         {
             string[] filePatternArray = filePatterns.ToArray();
             if (filePatternArray.Length == 1 && File.Exists(filePatternArray[0]))
             {
-                yield return ("*all*", filePatternArray[0]);
+                yield return ("*all*", filePatternArray[0], 0);
             }
             else
             {
@@ -89,7 +91,7 @@ namespace SIL.Machine.Corpora
                     string filePattern = filePatternArray[i];
                     if (File.Exists(filePattern))
                     {
-                        yield return (i.ToString(CultureInfo.InvariantCulture), filePattern);
+                        yield return (i.ToString(CultureInfo.InvariantCulture), filePattern, i);
                         continue;
                     }
 
@@ -145,7 +147,7 @@ namespace SIL.Machine.Corpora
                             if (sb.Length > 0)
                                 id = sb.ToString();
                         }
-                        yield return (id, fileName);
+                        yield return (id, fileName, i);
                     }
                 }
             }

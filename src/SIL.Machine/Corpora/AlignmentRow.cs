@@ -20,6 +20,8 @@ namespace SIL.Machine.Corpora
 
         public bool IsEmpty => AlignedWordPairs.Count == 0;
 
+        public TextRowContentType ContentType => throw new NotImplementedException();
+
         public AlignmentRow Invert()
         {
             return new AlignmentRow(TextId, Ref)
