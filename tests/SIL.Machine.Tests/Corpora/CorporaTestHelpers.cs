@@ -50,11 +50,9 @@ internal static class CorporaTestHelpers
         return path;
     }
 
-    public static EqualConstraint IgnoreLineEndings(this EqualConstraint constraint)
+    public static EqualUsingConstraint<string> IgnoreLineEndings(this EqualStringConstraint constraint)
     {
-        return constraint.Using<string>(
-            (actual, expected) => actual.ReplaceLineEndings() == expected.ReplaceLineEndings()
-        );
+        return constraint.Using(new IgnoreLineEndingsStringComparer());
     }
 
     /// <summary>
@@ -167,5 +165,18 @@ internal static class CorporaTestHelpers
             input = input.Replace(item, "").Trim();
         }
         return input;
+    }
+
+    private sealed class IgnoreLineEndingsStringComparer : StringComparer
+    {
+        public override int Compare(string? x, string? y)
+        {
+            return string.Compare(x?.ReplaceLineEndings(), y?.ReplaceLineEndings(), StringComparison.InvariantCulture);
+        }
+
+        public override bool Equals(string? x, string? y) =>
+            string.Equals(x?.ReplaceLineEndings(), y?.ReplaceLineEndings(), StringComparison.InvariantCulture);
+
+        public override int GetHashCode(string obj) => obj.ReplaceLineEndings().GetHashCode();
     }
 }

@@ -1338,22 +1338,22 @@ public class ParallelTextCorpusTests
         var rows = parallelCorpus.ToList();
         Assert.That(rows.Count, Is.EqualTo(22), "Total rows processed should be 22.");
 
-        TestContext.WriteLine("=== Debugging Output ===");
-        TestContext.WriteLine($"Total Rows: {rows.Count}");
+        TestContext.Out.WriteLine("=== Debugging Output ===");
+        TestContext.Out.WriteLine($"Total Rows: {rows.Count}");
 
         foreach (var row in rows.Take(2))
         {
             string bookId = row.TextId;
-            TestContext.WriteLine($"Book: {bookId}");
-            TestContext.WriteLine(
+            TestContext.Out.WriteLine($"Book: {bookId}");
+            TestContext.Out.WriteLine(
                 $"SourceRefs: {string.Join(", ", row.SourceRefs?.Select(sr => sr.ToString()) ?? new[] { "null" })}"
             );
-            TestContext.WriteLine(
+            TestContext.Out.WriteLine(
                 $"TargetRefs: {string.Join(", ", row.TargetRefs?.Select(tr => tr.ToString()) ?? new[] { "null" })}"
             );
-            TestContext.WriteLine($"SourceSegment: {string.Join(" ", row.SourceSegment)}");
-            TestContext.WriteLine($"TargetSegment: {string.Join(" ", row.TargetSegment)}");
-            TestContext.WriteLine("--------------");
+            TestContext.Out.WriteLine($"SourceSegment: {string.Join(" ", row.SourceSegment)}");
+            TestContext.Out.WriteLine($"TargetSegment: {string.Join(" ", row.TargetSegment)}");
+            TestContext.Out.WriteLine("--------------");
         }
 
         for (int i = 0; i < rows.Count; i++)
@@ -1488,14 +1488,14 @@ public class ParallelTextCorpusTests
 
         if (issues.Any())
         {
-            TestContext.WriteLine("The following issues were encountered:");
+            TestContext.Out.WriteLine("The following issues were encountered:");
             foreach (var issue in issues)
             {
-                TestContext.WriteLine(issue);
+                TestContext.Out.WriteLine(issue);
             }
         }
 
-        TestContext.WriteLine(issues.Count);
+        TestContext.Out.WriteLine(issues.Count);
 
         Assert.That(
             issues.Count,
@@ -1577,10 +1577,10 @@ public class ParallelTextCorpusTests
 
         if (issues.Any())
         {
-            TestContext.WriteLine("The following issues were encountered:");
+            TestContext.Out.WriteLine("The following issues were encountered:");
             foreach (var issue in issues)
             {
-                TestContext.WriteLine(issue);
+                TestContext.Out.WriteLine(issue);
             }
         }
 
@@ -1616,7 +1616,7 @@ public class ParallelTextCorpusTests
             ScrVers versification = versifications[versificationType];
             corpus.Versification = versification;
 
-            TestContext.WriteLine($"Validating for versification: {versificationType}");
+            TestContext.Out.WriteLine($"Validating for versification: {versificationType}");
 
             foreach (var mapping in expectedMappings)
             {
@@ -1629,7 +1629,7 @@ public class ParallelTextCorpusTests
 
                 if (sourceText == null || mappedText == null)
                 {
-                    TestContext.WriteLine(
+                    TestContext.Out.WriteLine(
                         $"Missing text for book {sourceVerse.Book} in versification {versificationType}."
                     );
                     continue;
@@ -1644,7 +1644,7 @@ public class ParallelTextCorpusTests
 
                 if (sourceRow == null || targetRow == null)
                 {
-                    TestContext.WriteLine(
+                    TestContext.Out.WriteLine(
                         $"Missing verse: {sourceVerse} or {targetVerse} in versification {versificationType}."
                     );
                     continue;
@@ -1694,7 +1694,7 @@ public class ParallelTextCorpusTests
         foreach (ScrVersType versificationType in versifications.Keys)
         {
             ScrVers versification = versifications[versificationType];
-            TestContext.WriteLine($"Validating for versification: {versificationType}");
+            TestContext.Out.WriteLine($"Validating for versification: {versificationType}");
 
             Dictionary<string, string> expandedMappings = CorporaTestHelpers.ExpandVerseMappings(expectedMappings);
 
@@ -1738,12 +1738,12 @@ public class ParallelTextCorpusTests
                 mergedContent += $"Content for {sourceVerse} ";
             }
 
-            TestContext.WriteLine($"Merged content for Target {targetVerse}: {mergedContent}");
+            TestContext.Out.WriteLine($"Merged content for Target {targetVerse}: {mergedContent}");
 
             if (sourceVerses.Count > 1)
             {
                 doubleMappedVerses.Add(targetVerse, sourceVerses.ToArray());
-                TestContext.WriteLine(
+                TestContext.Out.WriteLine(
                     $"Double mapping detected for Target {targetVerse}: "
                         + $"Mapped from Source(s) {string.Join(", ", sourceVerses)}"
                 );

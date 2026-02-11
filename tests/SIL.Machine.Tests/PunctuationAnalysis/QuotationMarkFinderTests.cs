@@ -284,7 +284,7 @@ public class QuotationMarkFinderTests
         QuoteConvention standardEnglishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "standard_english"
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
 
         var englishQuotationMarkFinder = new QuotationMarkFinder(
             new QuoteConventionSet([standardEnglishQuoteConvention])
@@ -303,7 +303,7 @@ public class QuotationMarkFinderTests
         QuoteConvention typewriterEnglishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "typewriter_english"
         );
-        Assert.IsNotNull(typewriterEnglishQuoteConvention);
+        Assert.That(typewriterEnglishQuoteConvention, Is.Not.Null);
 
         var typewriterEnglishQuotationMarkFinder = new QuotationMarkFinder(
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
@@ -329,12 +329,12 @@ public class QuotationMarkFinderTests
         QuoteConvention westernEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "western_european"
         );
-        Assert.IsNotNull(westernEuropeanQuoteConvention);
+        Assert.That(westernEuropeanQuoteConvention, Is.Not.Null);
 
         var westernEuropeanQuotationMarkFinder = new QuotationMarkFinder(
             new QuoteConventionSet([westernEuropeanQuoteConvention])
         );
-        Assert.IsTrue(
+        Assert.That(
             westernEuropeanQuotationMarkFinder
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder()
@@ -349,13 +349,14 @@ public class QuotationMarkFinderTests
                         22,
                         23
                     ),
-                ])
+                ]),
+            Is.True
         );
 
         QuoteConvention typewriterWesternEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "typewriter_western_european"
         );
-        Assert.IsNotNull(typewriterWesternEuropeanQuoteConvention);
+        Assert.That(typewriterWesternEuropeanQuoteConvention, Is.Not.Null);
 
         var typewriterWesternEuropeanQuotationMarkFinder = new QuotationMarkFinder(
             new QuoteConventionSet([typewriterWesternEuropeanQuoteConvention])
@@ -388,12 +389,12 @@ public class QuotationMarkFinderTests
         QuoteConvention centralEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "central_european"
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
 
         var centralEuropeanQuotationMarkFinder = new QuotationMarkFinder(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkFinder
                 .FindAllPotentialQuotationMarksInTextSegment(
                     new TextSegment.Builder()
@@ -408,7 +409,8 @@ public class QuotationMarkFinderTests
                         9,
                         10
                     ),
-                ])
+                ]),
+            Is.True
         );
     }
 

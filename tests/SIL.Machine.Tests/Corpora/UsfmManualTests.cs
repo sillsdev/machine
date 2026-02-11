@@ -75,8 +75,8 @@ public class UsfmManualTests
 
         Assert.Multiple(() =>
         {
-            Assert.NotNull(sourceAnalysis.BestQuoteConvention);
-            Assert.NotNull(targetAnalysis.BestQuoteConvention);
+            Assert.That(sourceAnalysis.BestQuoteConvention, Is.Not.Null);
+            Assert.That(targetAnalysis.BestQuoteConvention, Is.Not.Null);
         });
     }
 

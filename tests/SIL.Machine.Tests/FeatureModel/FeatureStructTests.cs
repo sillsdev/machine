@@ -141,7 +141,7 @@ public class FeatureStructTests
             .Value;
 
         FeatureStruct result;
-        Assert.IsTrue(featStruct1.Unify(featStruct2, out result));
+        Assert.That(featStruct1.Unify(featStruct2, out result), Is.True);
 
         featureSystem = new FeatureSystem
         {

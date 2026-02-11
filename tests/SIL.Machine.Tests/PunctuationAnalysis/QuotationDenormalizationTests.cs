@@ -34,7 +34,7 @@ public class QuotationDenormalizationTests
         QuoteConvention standardEnglishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "standard_english"
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
 
         var quotationMarkDenormalizationFirstPass = new QuotationMarkDenormalizationFirstPass(
             standardEnglishQuoteConvention

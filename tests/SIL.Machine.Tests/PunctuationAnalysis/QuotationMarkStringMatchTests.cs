@@ -46,28 +46,28 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201d").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201d\u201c").Build(),
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201d\u201c").Build(),
             0,
             2
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidOpeningQuotationMark(standardEnglishQuoteConventionSet), Is.False);
     }
 
     [Test]
@@ -89,28 +89,28 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201c").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201d\u201c").Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201d\u201c").Build(),
             0,
             2
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet));
+        Assert.That(quotationMarkStringMatch.IsValidClosingQuotationMark(standardEnglishQuoteConventionSet), Is.False);
     }
 
     [Test]
@@ -121,9 +121,9 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"^s$", RegexOptions.Compiled)));
-        Assert.IsFalse(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"a", RegexOptions.Compiled)));
-        Assert.IsFalse(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"sa", RegexOptions.Compiled)));
+        Assert.That(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"^s$", RegexOptions.Compiled)), Is.True);
+        Assert.That(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"a", RegexOptions.Compiled)), Is.False);
+        Assert.That(quotationMarkStringMatch.QuotationMarkMatches(new Regex(@"sa", RegexOptions.Compiled)), Is.False);
     }
 
     [Test]
@@ -134,16 +134,16 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"^s$", RegexOptions.Compiled)));
-        Assert.IsTrue(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"a", RegexOptions.Compiled)));
-        Assert.IsFalse(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"sa", RegexOptions.Compiled)));
+        Assert.That(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"^s$", RegexOptions.Compiled)), Is.False);
+        Assert.That(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"a", RegexOptions.Compiled)), Is.True);
+        Assert.That(quotationMarkStringMatch.NextCharacterMatches(new Regex(@"sa", RegexOptions.Compiled)), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.NextCharacterMatches(new Regex(@".*", RegexOptions.Compiled)));
+        Assert.That(quotationMarkStringMatch.NextCharacterMatches(new Regex(@".*", RegexOptions.Compiled)), Is.False);
     }
 
     [Test]
@@ -154,16 +154,28 @@ public class QuotationMarkStringMatchTests
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"^s$", RegexOptions.Compiled)));
-        Assert.IsFalse(quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"a", RegexOptions.Compiled)));
-        Assert.IsFalse(quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"sa", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"^s$", RegexOptions.Compiled)),
+            Is.True
+        );
+        Assert.That(
+            quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"a", RegexOptions.Compiled)),
+            Is.False
+        );
+        Assert.That(
+            quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@"sa", RegexOptions.Compiled)),
+            Is.False
+        );
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@".*", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.PreviousCharacterMatches(new Regex(@".*", RegexOptions.Compiled)),
+            Is.False
+        );
     }
 
     [Test]
@@ -188,7 +200,7 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsNull(quotationMarkStringMatch.PreviousCharacter);
+        Assert.That(quotationMarkStringMatch.PreviousCharacter, Is.Null);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201c\u201d").Build(),
@@ -247,21 +259,30 @@ public class QuotationMarkStringMatchTests
             5,
             6
         );
-        Assert.IsTrue(quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@"^sampl$", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@"^sampl$", RegexOptions.Compiled)),
+            Is.True
+        );
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)),
+            Is.False
+        );
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201c\u201d").Build(),
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@"\u201c", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.LeadingSubstringMatches(new Regex(@"\u201c", RegexOptions.Compiled)),
+            Is.True
+        );
     }
 
     [Test]
@@ -272,21 +293,30 @@ public class QuotationMarkStringMatchTests
             5,
             6
         );
-        Assert.IsTrue(quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@"^ text$", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@"^ text$", RegexOptions.Compiled)),
+            Is.True
+        );
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@".+", RegexOptions.Compiled)),
+            Is.False
+        );
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201c\u201d").Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@"\u201d", RegexOptions.Compiled)));
+        Assert.That(
+            quotationMarkStringMatch.TrailingSubstringMatches(new Regex(@"\u201d", RegexOptions.Compiled)),
+            Is.True
+        );
     }
 
     [Test]
@@ -348,28 +378,28 @@ public class QuotationMarkStringMatchTests
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsAtStartOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtStartOfSegment, Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             1,
             2
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsAtStartOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtStartOfSegment, Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201csample text").Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsAtStartOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtStartOfSegment, Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             15,
             16
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsAtStartOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtStartOfSegment, Is.False);
     }
 
     [Test]
@@ -380,28 +410,28 @@ public class QuotationMarkStringMatchTests
             10,
             11
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsAtEndOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtEndOfSegment, Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsAtEndOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtEndOfSegment, Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201csample text\u201d").Build(),
             12,
             13
         );
-        Assert.IsTrue(quotationMarkStringMatch.IsAtEndOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtEndOfSegment, Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             15,
             16
         );
-        Assert.IsFalse(quotationMarkStringMatch.IsAtEndOfSegment);
+        Assert.That(quotationMarkStringMatch.IsAtEndOfSegment, Is.False);
     }
 
     [Test]
@@ -412,63 +442,63 @@ public class QuotationMarkStringMatchTests
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample\ttext").Build(),
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Paragraph).Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Embed).Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Verse).Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Chapter).Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Character).Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201csample text").AddPrecedingMarker(UsfmMarkerType.Verse).Build(),
             0,
             1
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasLeadingWhitespace(), Is.True);
     }
 
     [Test]
@@ -479,42 +509,42 @@ public class QuotationMarkStringMatchTests
             5,
             6
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample\ttext").Build(),
             5,
             6
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Paragraph).Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Embed).Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").AddPrecedingMarker(UsfmMarkerType.Verse).Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingWhitespace());
+        Assert.That(quotationMarkStringMatch.HasTrailingWhitespace(), Is.False);
     }
 
     [Test]
@@ -525,35 +555,35 @@ public class QuotationMarkStringMatchTests
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasLeadingPunctuation(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample) \u201d text").Build(),
             8,
             9
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasLeadingPunctuation(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample,\u201d text").Build(),
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasLeadingPunctuation(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample.\u201d text").Build(),
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasLeadingPunctuation(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("\u201csample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasLeadingPunctuation(), Is.False);
     }
 
     [Test]
@@ -564,28 +594,28 @@ public class QuotationMarkStringMatchTests
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasTrailingPunctuation(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample \u201c text").Build(),
             7,
             8
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasTrailingPunctuation(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text\u201d").Build(),
             11,
             12
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasTrailingPunctuation(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample', text\u201d").Build(),
             6,
             7
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingPunctuation());
+        Assert.That(quotationMarkStringMatch.HasTrailingPunctuation(), Is.True);
     }
 
     [Test]
@@ -596,21 +626,21 @@ public class QuotationMarkStringMatchTests
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLetterInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("ꮪample text").Build(),
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLetterInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLetterInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInLeadingSubstring(), Is.False);
     }
 
     [Test]
@@ -621,21 +651,21 @@ public class QuotationMarkStringMatchTests
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLetterInTrailingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInTrailingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample tex𑢼").Build(),
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLetterInTrailingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInTrailingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLetterInTrailingSubstring());
+        Assert.That(quotationMarkStringMatch.HasLetterInTrailingSubstring(), Is.False);
     }
 
     [Test]
@@ -646,28 +676,28 @@ public class QuotationMarkStringMatchTests
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasLeadingLatinLetter(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("5ample text").Build(),
             1,
             2
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasLeadingLatinLetter(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("Ｓample text").Build(),
             1,
             2
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasLeadingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasLeadingLatinLetter(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             0,
             1
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasLeadingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasLeadingLatinLetter(), Is.False);
     }
 
     [Test]
@@ -678,21 +708,21 @@ public class QuotationMarkStringMatchTests
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasTrailingLatinLetter(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample texＴ").Build(),
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasTrailingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasTrailingLatinLetter(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample text").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasTrailingLatinLetter());
+        Assert.That(quotationMarkStringMatch.HasTrailingLatinLetter(), Is.False);
     }
 
     [Test]
@@ -703,55 +733,55 @@ public class QuotationMarkStringMatchTests
             8,
             9
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample,\u201ctext").Build(),
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample: \u201ctext").Build(),
             8,
             9
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample:\u201ctext").Build(),
             7,
             8
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample,  \u201ctext").Build(),
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample,, \u201ctext").Build(),
             9,
             10
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample, a \u201ctext").Build(),
             10,
             11
         );
-        Assert.IsFalse(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.False);
 
         quotationMarkStringMatch = new QuotationMarkStringMatch(
             new TextSegment.Builder().SetText("sample, text").Build(),
             8,
             9
         );
-        Assert.IsTrue(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring());
+        Assert.That(quotationMarkStringMatch.HasQuoteIntroducerInLeadingSubstring(), Is.True);
     }
 }

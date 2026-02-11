@@ -321,7 +321,7 @@ public class QuoteConventionSetTests
             multipleQuoteConventionSet.GetQuoteConventionByName("standard_swedish"),
             Is.EqualTo(standardSwedishQuoteConvention)
         );
-        Assert.IsNull(multipleQuoteConventionSet.GetQuoteConventionByName("undefined convention"));
+        Assert.That(multipleQuoteConventionSet.GetQuoteConventionByName("undefined convention"), Is.Null);
     }
 
     [Test]
@@ -490,28 +490,28 @@ public class QuoteConventionSetTests
         );
 
         var standardEnglishQuoteConventionSet = new QuoteConventionSet([standardEnglishQuoteConvention]);
-        Assert.IsTrue(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("‘"));
-        Assert.IsTrue(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("“"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("”"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("’"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark(""));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("‘“"));
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("‘"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("“"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("”"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("’"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark(""), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidOpeningQuotationMark("‘“"), Is.False);
 
         var centralEuropeanQuoteConventionSet = new QuoteConventionSet([centralEuropeanQuoteConvention]);
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("‚"));
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("„"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("‘"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("“"));
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("‚"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("„"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("‘"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidOpeningQuotationMark("“"), Is.False);
 
         var standardSwedishQuoteConventionSet = new QuoteConventionSet([standardSwedishQuoteConvention]);
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsValidOpeningQuotationMark("’"));
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsValidOpeningQuotationMark("”"));
+        Assert.That(standardSwedishQuoteConventionSet.IsValidOpeningQuotationMark("’"), Is.True);
+        Assert.That(standardSwedishQuoteConventionSet.IsValidOpeningQuotationMark("”"), Is.True);
 
         var standardFrenchQuoteConventionSet = new QuoteConventionSet([standardFrenchQuoteConvention]);
-        Assert.IsTrue(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("«"));
-        Assert.IsTrue(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("‹"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("»"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("›"));
+        Assert.That(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("«"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("‹"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("»"), Is.False);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidOpeningQuotationMark("›"), Is.False);
 
         var multipleQuoteConventionSet = new QuoteConventionSet([
             standardEnglishQuoteConvention,
@@ -524,16 +524,16 @@ public class QuoteConventionSetTests
                 .GetPossibleOpeningQuotationMarks()
                 .SequenceEqual(["‘", "’", "‚", "‹", "“", "”", "„", "«"])
         );
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‘"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("’"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‚"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("“"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("”"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("„"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("«"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‹"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsValidOpeningQuotationMark("»"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsValidOpeningQuotationMark("›"));
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‘"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("’"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‚"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("“"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("”"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("„"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("«"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("‹"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("»"), Is.False);
+        Assert.That(multipleQuoteConventionSet.IsValidOpeningQuotationMark("›"), Is.False);
     }
 
     [Test]
@@ -580,28 +580,28 @@ public class QuoteConventionSetTests
         );
 
         var standardEnglishQuoteConventionSet = new QuoteConventionSet([standardEnglishQuoteConvention]);
-        Assert.IsTrue(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("”"));
-        Assert.IsTrue(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("’"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("‘"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("“"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark(""));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("”’"));
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("”"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("’"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("‘"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("“"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark(""), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsValidClosingQuotationMark("”’"), Is.False);
 
         var centralEuropeanQuoteConventionSet = new QuoteConventionSet([centralEuropeanQuoteConvention]);
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("‘"));
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("“"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("„"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("‚"));
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("‘"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("“"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("„"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.IsValidClosingQuotationMark("‚"), Is.False);
 
         var standardSwedishQuoteConventionSet = new QuoteConventionSet([standardSwedishQuoteConvention]);
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsValidClosingQuotationMark("’"));
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsValidClosingQuotationMark("”"));
+        Assert.That(standardSwedishQuoteConventionSet.IsValidClosingQuotationMark("’"), Is.True);
+        Assert.That(standardSwedishQuoteConventionSet.IsValidClosingQuotationMark("”"), Is.True);
 
         var standardFrenchQuoteConventionSet = new QuoteConventionSet([standardFrenchQuoteConvention]);
-        Assert.IsTrue(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("»"));
-        Assert.IsTrue(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("›"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("«"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("‹"));
+        Assert.That(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("»"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("›"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("«"), Is.False);
+        Assert.That(standardFrenchQuoteConventionSet.IsValidClosingQuotationMark("‹"), Is.False);
 
         var multipleQuoteConventionSet = new QuoteConventionSet([
             standardEnglishQuoteConvention,
@@ -612,14 +612,14 @@ public class QuoteConventionSetTests
         Assert.That(
             multipleQuoteConventionSet.GetPossibleClosingQuotationMarks().SequenceEqual(["‘", "’", "›", "“", "”", "»"])
         );
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("‘"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("’"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("“"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("”"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("»"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsValidClosingQuotationMark("›"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsValidClosingQuotationMark("«"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsValidClosingQuotationMark("‹"));
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("‘"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("’"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("“"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("”"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("»"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("›"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("«"), Is.False);
+        Assert.That(multipleQuoteConventionSet.IsValidClosingQuotationMark("‹"), Is.False);
     }
 
     [Test]
@@ -666,34 +666,34 @@ public class QuoteConventionSetTests
         );
 
         var standardEnglishQuoteConventionSet = new QuoteConventionSet([standardEnglishQuoteConvention]);
-        Assert.IsTrue(standardEnglishQuoteConventionSet.MarksAreAValidPair("“", "”"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("”", "“"));
-        Assert.IsTrue(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "’"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("’", "‘"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "”"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "”"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", ""));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.MarksAreAValidPair("", ""));
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("“", "”"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("”", "“"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "’"), Is.True);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("’", "‘"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "”"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", "”"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("‘", ""), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.MarksAreAValidPair("", ""), Is.False);
 
         var centralEuropeanQuoteConventionSet = new QuoteConventionSet([centralEuropeanQuoteConvention]);
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.MarksAreAValidPair("„", "“"));
-        Assert.IsTrue(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "‘"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.MarksAreAValidPair("“", "„"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.MarksAreAValidPair("’", "‚"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "“"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "’"));
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("„", "“"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "‘"), Is.True);
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("“", "„"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("’", "‚"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "“"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.MarksAreAValidPair("‚", "’"), Is.False);
 
         var standardSwedishQuoteConventionSet = new QuoteConventionSet([standardSwedishQuoteConvention]);
-        Assert.IsTrue(standardSwedishQuoteConventionSet.MarksAreAValidPair("”", "”"));
-        Assert.IsTrue(standardSwedishQuoteConventionSet.MarksAreAValidPair("’", "’"));
-        Assert.IsFalse(standardSwedishQuoteConventionSet.MarksAreAValidPair("”", "’"));
-        Assert.IsFalse(standardSwedishQuoteConventionSet.MarksAreAValidPair("’", "”"));
+        Assert.That(standardSwedishQuoteConventionSet.MarksAreAValidPair("”", "”"), Is.True);
+        Assert.That(standardSwedishQuoteConventionSet.MarksAreAValidPair("’", "’"), Is.True);
+        Assert.That(standardSwedishQuoteConventionSet.MarksAreAValidPair("”", "’"), Is.False);
+        Assert.That(standardSwedishQuoteConventionSet.MarksAreAValidPair("’", "”"), Is.False);
 
         var standardFrenchQuoteConventionSet = new QuoteConventionSet([standardFrenchQuoteConvention]);
-        Assert.IsTrue(standardFrenchQuoteConventionSet.MarksAreAValidPair("«", "»"));
-        Assert.IsTrue(standardFrenchQuoteConventionSet.MarksAreAValidPair("‹", "›"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.MarksAreAValidPair("«", "›"));
-        Assert.IsFalse(standardFrenchQuoteConventionSet.MarksAreAValidPair("‹", "»"));
+        Assert.That(standardFrenchQuoteConventionSet.MarksAreAValidPair("«", "»"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.MarksAreAValidPair("‹", "›"), Is.True);
+        Assert.That(standardFrenchQuoteConventionSet.MarksAreAValidPair("«", "›"), Is.False);
+        Assert.That(standardFrenchQuoteConventionSet.MarksAreAValidPair("‹", "»"), Is.False);
 
         var multipleQuoteConventionSet = new QuoteConventionSet([
             standardEnglishQuoteConvention,
@@ -701,18 +701,18 @@ public class QuoteConventionSetTests
             standardSwedishQuoteConvention,
             standardFrenchQuoteConvention,
         ]);
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("“", "”"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("‘", "’"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("„", "“"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("‚", "‘"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("”", "”"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("’", "’"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("«", "»"));
-        Assert.IsTrue(multipleQuoteConventionSet.MarksAreAValidPair("‹", "›"));
-        Assert.IsFalse(multipleQuoteConventionSet.MarksAreAValidPair("‹", "»"));
-        Assert.IsFalse(multipleQuoteConventionSet.MarksAreAValidPair("‹", "”"));
-        Assert.IsFalse(multipleQuoteConventionSet.MarksAreAValidPair("„", "”"));
-        Assert.IsFalse(multipleQuoteConventionSet.MarksAreAValidPair("’", "‘"));
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("“", "”"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("‘", "’"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("„", "“"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("‚", "‘"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("”", "”"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("’", "’"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("«", "»"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("‹", "›"), Is.True);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("‹", "»"), Is.False);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("‹", "”"), Is.False);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("„", "”"), Is.False);
+        Assert.That(multipleQuoteConventionSet.MarksAreAValidPair("’", "‘"), Is.False);
     }
 
     [Test]
@@ -769,34 +769,34 @@ public class QuoteConventionSetTests
         );
 
         var standardEnglishQuoteConventionSet = new QuoteConventionSet([standardEnglishQuoteConvention]);
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"));
-        Assert.IsFalse(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""));
+        Assert.That(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"), Is.False);
+        Assert.That(standardEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""), Is.False);
 
         var typewriterEnglishQuoteConventionSet = new QuoteConventionSet([typewriterEnglishQuoteConvention]);
-        Assert.IsTrue(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""));
-        Assert.IsTrue(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("'"));
-        Assert.IsFalse(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"));
-        Assert.IsFalse(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"));
-        Assert.IsFalse(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("«"));
+        Assert.That(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""), Is.True);
+        Assert.That(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("'"), Is.True);
+        Assert.That(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"), Is.False);
+        Assert.That(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"), Is.False);
+        Assert.That(typewriterEnglishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("«"), Is.False);
 
         var centralEuropeanQuoteConventionSet = new QuoteConventionSet([centralEuropeanQuoteConvention]);
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"));
-        Assert.IsFalse(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"));
+        Assert.That(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"), Is.False);
+        Assert.That(centralEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"), Is.False);
 
         var standardSwedishQuoteConventionSet = new QuoteConventionSet([standardSwedishQuoteConvention]);
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"));
-        Assert.IsTrue(standardSwedishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"));
+        Assert.That(standardSwedishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"), Is.True);
+        Assert.That(standardSwedishQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"), Is.True);
 
         var easternEuropeanQuoteConventionSet = new QuoteConventionSet([easternEuropeanQuoteConvention]);
-        Assert.IsFalse(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"));
-        Assert.IsFalse(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"));
-        Assert.IsFalse(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"));
-        Assert.IsFalse(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"));
+        Assert.That(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"), Is.False);
+        Assert.That(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"), Is.False);
+        Assert.That(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"), Is.False);
+        Assert.That(easternEuropeanQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"), Is.False);
 
         var multipleQuoteConventionSet = new QuoteConventionSet([
             standardEnglishQuoteConvention,
@@ -805,16 +805,16 @@ public class QuoteConventionSetTests
             standardSwedishQuoteConvention,
             easternEuropeanQuoteConvention,
         ]);
-        Assert.IsTrue(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""));
-        Assert.IsTrue(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("'"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"));
-        Assert.IsTrue(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"));
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("\""), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("'"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("”"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("’"), Is.True);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("„"), Is.False);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‚"), Is.False);
 
         // these are unambiguous because they are never the opening and closing in the same convention
-        Assert.IsFalse(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"));
-        Assert.IsFalse(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"));
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("“"), Is.False);
+        Assert.That(multipleQuoteConventionSet.IsQuotationMarkDirectionAmbiguous("‘"), Is.False);
     }
 
     [Test]
@@ -1149,125 +1149,165 @@ public class QuoteConventionSetTests
         );
 
         var standardEnglishQuoteConventionSet = new QuoteConventionSet([standardEnglishQuoteConvention]);
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 1, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 1, QuotationMarkDirection.Opening),
+            Is.True
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 3, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 3, QuotationMarkDirection.Opening),
+            Is.True
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 2, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 2, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 4, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 4, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 1, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 1, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 2, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 2, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 3, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 3, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 4, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201c", 4, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 1, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 1, QuotationMarkDirection.Closing),
+            Is.True
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 3, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 3, QuotationMarkDirection.Closing),
+            Is.True
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 2, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 2, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 4, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 4, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 1, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 1, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 2, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 2, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 3, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 3, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 4, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201d", 4, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 1, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 1, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 3, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 3, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 2, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 2, QuotationMarkDirection.Opening),
+            Is.True
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 4, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 4, QuotationMarkDirection.Opening),
+            Is.True
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 1, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 1, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 2, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 2, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 3, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 3, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 4, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2018", 4, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 1, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 1, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 3, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 3, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 2, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 2, QuotationMarkDirection.Closing),
+            Is.True
         );
-        Assert.IsTrue(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 4, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 4, QuotationMarkDirection.Closing),
+            Is.True
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 1, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 1, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 2, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 2, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 3, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 3, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 4, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u2019", 4, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 1, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 1, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 1, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 1, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 2, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 2, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 2, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 2, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 3, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 3, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 3, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 3, QuotationMarkDirection.Closing),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 4, QuotationMarkDirection.Opening)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 4, QuotationMarkDirection.Opening),
+            Is.False
         );
-        Assert.IsFalse(
-            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 4, QuotationMarkDirection.Closing)
+        Assert.That(
+            standardEnglishQuoteConventionSet.MetadataMatchesQuotationMark("\u201e", 4, QuotationMarkDirection.Closing),
+            Is.False
         );
     }
 

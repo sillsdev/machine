@@ -36,59 +36,59 @@ public class DepthBasedQuotationMarkResolverTests
     public void HasOpenQuotationMark()
     {
         var state = new QuotationMarkResolverState();
-        Assert.IsFalse(state.HasOpenQuotationMark);
+        Assert.That(state.HasOpenQuotationMark, Is.False);
 
         state.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsTrue(state.HasOpenQuotationMark);
+        Assert.That(state.HasOpenQuotationMark, Is.True);
 
         state.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsTrue(state.HasOpenQuotationMark);
+        Assert.That(state.HasOpenQuotationMark, Is.True);
 
         state.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
         );
-        Assert.IsTrue(state.HasOpenQuotationMark);
+        Assert.That(state.HasOpenQuotationMark, Is.True);
 
         state.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
         );
-        Assert.IsFalse(state.HasOpenQuotationMark);
+        Assert.That(state.HasOpenQuotationMark, Is.False);
     }
 
     [Test]
     public void AreMoreThanNQuotesOpen()
     {
         var state = new QuotationMarkResolverState();
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(1));
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(2));
+        Assert.That(state.AreMoreThanNQuotesOpen(1), Is.False);
+        Assert.That(state.AreMoreThanNQuotesOpen(2), Is.False);
 
         state.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(1));
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(2));
+        Assert.That(state.AreMoreThanNQuotesOpen(1), Is.False);
+        Assert.That(state.AreMoreThanNQuotesOpen(2), Is.False);
 
         state.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsTrue(state.AreMoreThanNQuotesOpen(1));
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(2));
+        Assert.That(state.AreMoreThanNQuotesOpen(1), Is.True);
+        Assert.That(state.AreMoreThanNQuotesOpen(2), Is.False);
 
         state.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
         );
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(1));
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(2));
+        Assert.That(state.AreMoreThanNQuotesOpen(1), Is.False);
+        Assert.That(state.AreMoreThanNQuotesOpen(2), Is.False);
 
         state.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
         );
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(1));
-        Assert.IsFalse(state.AreMoreThanNQuotesOpen(2));
+        Assert.That(state.AreMoreThanNQuotesOpen(1), Is.False);
+        Assert.That(state.AreMoreThanNQuotesOpen(2), Is.False);
     }
 
     [Test]
@@ -202,28 +202,28 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         var continuerState = new TestQuoteContinuerState();
-        Assert.IsFalse(continuerState.ContinuerHasBeenObserved());
+        Assert.That(continuerState.ContinuerHasBeenObserved(), Is.False);
 
         continuerState.AddQuoteContinuer(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1),
             resolverState,
             QuoteContinuerStyle.English
         );
-        Assert.IsTrue(continuerState.ContinuerHasBeenObserved());
+        Assert.That(continuerState.ContinuerHasBeenObserved(), Is.True);
 
         continuerState.AddQuoteContinuer(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1),
             resolverState,
             QuoteContinuerStyle.English
         );
-        Assert.IsTrue(continuerState.ContinuerHasBeenObserved());
+        Assert.That(continuerState.ContinuerHasBeenObserved(), Is.True);
 
         continuerState.AddQuoteContinuer(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1),
             resolverState,
             QuoteContinuerStyle.English
         );
-        Assert.IsFalse(continuerState.ContinuerHasBeenObserved());
+        Assert.That(continuerState.ContinuerHasBeenObserved(), Is.False);
     }
 
     [Test]
@@ -344,7 +344,7 @@ public class DepthBasedQuotationMarkResolverTests
     public void IsEnglishQuotationContinuer()
     {
         QuoteConvention standardEnglish = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(standardEnglish);
+        Assert.That(standardEnglish, Is.Not.Null);
 
         var settings = new QuoteConventionDetectionResolutionSettings(new QuoteConventionSet([standardEnglish]));
         var resolverState = new QuotationMarkResolverState();
@@ -357,7 +357,7 @@ public class DepthBasedQuotationMarkResolverTests
 
         // Should always be false if the continuer style is Spanish
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.English;
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -369,11 +369,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.Spanish;
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -385,20 +386,22 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.English;
 
         // Should be false if there's no preceding paragraph marker (and the settings say to rely on markers)
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201ctest").Build(), 0, 1),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -410,7 +413,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         var categorizerForDenorm = new QuotationMarkCategorizer(
@@ -418,18 +422,19 @@ public class DepthBasedQuotationMarkResolverTests
             resolverState,
             continuerState
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizerForDenorm.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201ctest").Build(), 0, 1),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         // Should be false if there are no open quotation marks
         var emptyState = new QuotationMarkResolverState();
         var emptyCategorizer = new QuotationMarkCategorizer(settings, emptyState, continuerState);
-        Assert.IsFalse(
+        Assert.That(
             emptyCategorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -441,11 +446,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // Should be false if the starting index of the quotation mark is greater than 0
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -457,11 +463,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // Should be false if the mark does not match the already opened mark
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -473,14 +480,15 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // If there are multiple open quotes, the next quote continuer must follow immediately after the current one
         resolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -492,9 +500,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -513,9 +522,10 @@ public class DepthBasedQuotationMarkResolverTests
                     1,
                     2
                 )
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -534,7 +544,8 @@ public class DepthBasedQuotationMarkResolverTests
                     1,
                     2
                 )
-            )
+            ),
+            Is.True
         );
 
         // When there are multiple open quotes, the continuer must match the deepest observed mark
@@ -551,7 +562,7 @@ public class DepthBasedQuotationMarkResolverTests
             QuoteContinuerStyle.English
         );
 
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -563,9 +574,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -577,13 +589,14 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         resolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -595,7 +608,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         continuerState.AddQuoteContinuer(
@@ -611,7 +625,7 @@ public class DepthBasedQuotationMarkResolverTests
             QuoteContinuerStyle.English
         );
 
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -623,9 +637,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsEnglishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -637,7 +652,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
     }
 
@@ -647,7 +663,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention westernEuropeanQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             "western_european"
         );
-        Assert.IsNotNull(westernEuropeanQuoteConvention);
+        Assert.That(westernEuropeanQuoteConvention, Is.Not.Null);
 
         var settings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([westernEuropeanQuoteConvention])
@@ -662,7 +678,7 @@ public class DepthBasedQuotationMarkResolverTests
 
         // Should always be false if the continuer style is Spanish
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.Spanish;
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -674,11 +690,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.English;
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -690,20 +707,22 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
         continuerState.InternalContinuerStyle = QuoteContinuerStyle.Spanish;
 
         // Should be false if there's no preceding paragraph marker (and the settings say to rely on markers)
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bbtest").Build(), 0, 1),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -715,7 +734,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         var categorizerForDenorm = new QuotationMarkCategorizer(
@@ -723,18 +743,19 @@ public class DepthBasedQuotationMarkResolverTests
             resolverState,
             continuerState
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizerForDenorm.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bbtest").Build(), 0, 1),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         // Should be false if there are no open quotation marks
         var emptyState = new QuotationMarkResolverState();
         var emptyCategorizer = new QuotationMarkCategorizer(settings, emptyState, continuerState);
-        Assert.IsFalse(
+        Assert.That(
             emptyCategorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -746,11 +767,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // Should be false if the starting index of the quotation mark is greater than 0
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -762,11 +784,12 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // Should be false if the mark does not match the already opened mark
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -778,14 +801,15 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
 
         // If there are multiple open quotes, the next quote continuer must follow immediately after the current one
         resolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -797,9 +821,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -818,9 +843,10 @@ public class DepthBasedQuotationMarkResolverTests
                     1,
                     2
                 )
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -839,7 +865,8 @@ public class DepthBasedQuotationMarkResolverTests
                     1,
                     2
                 )
-            )
+            ),
+            Is.True
         );
 
         // When there are multiple open quotes, the continuer must match the deepest observed mark
@@ -856,7 +883,7 @@ public class DepthBasedQuotationMarkResolverTests
             QuoteContinuerStyle.Spanish
         );
 
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -868,9 +895,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -882,13 +910,14 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         resolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -900,7 +929,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
 
         continuerState.AddQuoteContinuer(
@@ -916,7 +946,7 @@ public class DepthBasedQuotationMarkResolverTests
             QuoteContinuerStyle.Spanish
         );
 
-        Assert.IsFalse(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -928,9 +958,10 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             categorizer.IsSpanishQuoteContinuer(
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder()
@@ -942,7 +973,8 @@ public class DepthBasedQuotationMarkResolverTests
                 ),
                 null,
                 null
-            )
+            ),
+            Is.True
         );
     }
 
@@ -952,7 +984,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -967,7 +999,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention britishEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("british_english")
         );
-        Assert.IsNotNull(britishEnglishQuoteConvention);
+        Assert.That(britishEnglishQuoteConvention, Is.Not.Null);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
         );
@@ -980,7 +1012,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -1004,289 +1036,343 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         // It should only accept valid opening marks under the quote convention
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \"").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \"").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \"").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \"").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
         // Leading whitespace is not necessary for unambiguous opening quotes
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u201e").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u201a").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u201c").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u2018").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u201e").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("text\u201a").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
 
         // An ambiguous quotation mark (opening/closing) is recognized as opening if it has a quote introducer beforehand
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(",\u201d").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(":\u2019").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(",\u201c").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
 
         // An ambiguous quotation mark (opening/closing) is recognized as opening if preceded by another opening mark
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u201d").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u2019").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u201c").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
 
         // An ambiguous quotation mark (opening/closing) is not recognized as opening if it has trailing whitespace or punctuation
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d.").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(",\u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c\u2019?").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
     }
 
@@ -1296,7 +1382,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -1311,7 +1397,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention britishEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("british_english")
         );
-        Assert.IsNotNull(britishEnglishQuoteConvention);
+        Assert.That(britishEnglishQuoteConvention, Is.Not.Null);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
         );
@@ -1324,7 +1410,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -1337,7 +1423,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardFrenchQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_french")
         );
-        Assert.IsNotNull(standardFrenchQuoteConvention);
+        Assert.That(standardFrenchQuoteConvention, Is.Not.Null);
         var standardFrenchResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardFrenchQuoteConvention])
         );
@@ -1361,206 +1447,244 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         // It should only accept valid closing marks under the quote convention
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018 ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201e ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201a ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019 ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\" ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018 ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019 ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\" ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018 ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019 ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\" ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018 ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019 ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\" ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         // Trailing whitespace is not necessary for unambiguous closing quotes
-        Assert.IsTrue(
+        Assert.That(
             standardFrenchQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bbtext").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardFrenchQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u203atext").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
 
         // An ambiguous quotation mark (opening/closing) is recognized as closing if
         // followed by whitespace, punctuation or the end of the segment
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201dtext").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019text").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019?").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201ctext").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c?").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
 
         // An ambiguous quotation mark (opening/closing) is not recognized as opening if
         // it has leading whitespace
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\t\u201c?").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
     }
 
@@ -1570,7 +1694,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -1585,7 +1709,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention britishEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("british_english")
         );
-        Assert.IsNotNull(britishEnglishQuoteConvention);
+        Assert.That(britishEnglishQuoteConvention, Is.Not.Null);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
         );
@@ -1598,7 +1722,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -1622,252 +1746,299 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         // It should only accept valid opening marks under the quote convention
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \" ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018 ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \" ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \" ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201e ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201a ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018 ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u00ab ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \" ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
         // Should return true if there is a leading quote introducer
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(",\u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019 ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(":\u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(",\u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
 
         // Should return false unless the mark has leading and trailing whitespace
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
 
         // Should return false if there is already an open quotation mark on the stack
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedOpeningQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201c ").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
     }
 
@@ -1877,7 +2048,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -1892,7 +2063,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention britishEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("british_english")
         );
-        Assert.IsNotNull(britishEnglishQuoteConvention);
+        Assert.That(britishEnglishQuoteConvention, Is.Not.Null);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
         );
@@ -1905,7 +2076,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -1932,45 +2103,53 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201e").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201e").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201a").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         quotationMarkResolverState.AddClosingQuotationMark(
@@ -1979,35 +2158,41 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         quotationMarkResolverState.AddClosingQuotationMark(
@@ -2016,107 +2201,125 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         // Returns true if it's at the end of the segment
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
 
         // Returns true if it does not have trailing whitespace
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d-").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201dtext").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
 
         // Returns true if it has trailing and leading whitespace
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d ").Build(), 1, 2)
-            )
+            ),
+            Is.True
         );
 
         // Requires there to be an open quotation mark on the stack
         quotationMarkResolverState.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         // Requires the quotation mark on the stack to be a valid pair with the
@@ -2124,34 +2327,39 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsMalformedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
     }
 
@@ -2161,7 +2369,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -2176,7 +2384,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention britishEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("british_english")
         );
-        Assert.IsNotNull(britishEnglishQuoteConvention);
+        Assert.That(britishEnglishQuoteConvention, Is.Not.Null);
         var britishEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([britishEnglishQuoteConvention])
         );
@@ -2189,7 +2397,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -2213,226 +2421,267 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         // It should only accept valid closing marks under the quote convention
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201e").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201a").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u00bb").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         // There must not be an opening quotation mark on the stack
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             centralEuropeanQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardSwedishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             threeConventionsQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
 
         // There must not be leading whitespace
         quotationMarkResolverState.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u201d").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\t\u2019").Build(), 1, 2)
-            )
+            ),
+            Is.False
         );
 
         // The quotation mark must be either at the end of the segment
         // or have trailing whitespace
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d ").Build(), 0, 1)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             britishEnglishQuotationMarkCategorizer.IsUnpairedClosingQuotationMark(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201d?").Build(), 0, 1)
-            )
+            ),
+            Is.False
         );
     }
 
@@ -2442,7 +2691,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2457,7 +2706,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention typewriterEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
-        Assert.IsNotNull(typewriterEnglishQuoteConvention);
+        Assert.That(typewriterEnglishQuoteConvention, Is.Not.Null);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
@@ -2468,146 +2717,167 @@ public class DepthBasedQuotationMarkResolverTests
         );
 
         // The quotation mark must make for a plausible apostrophe
-        Assert.IsTrue(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a'b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2019b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2018b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u201cb").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\"b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a'b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2019b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2018b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u201cb").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\"b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
 
         // Returns true if the mark has Latin letters on both sides
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2019Ƅ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("ǡ\u2019b").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("ᴀ\u2019Ｂ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("𝼀\u2019Ꝙ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
 
-        Assert.IsFalse(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2019ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
-        Assert.IsTrue(
+        Assert.That(
             typewriterEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("a\u2019ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
 
         // Recognizes s possessives (e.G. Moses')
         quotationMarkResolverState.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2019").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u2019 ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("Moses\u2019 ").Build(), 5, 6),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u2019?").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u20195").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.False
         );
 
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u2019 ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
 
         quotationMarkResolverState.AddClosingQuotationMark(
@@ -2616,48 +2886,54 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u2018").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u2019 ").Build(), 1, 2),
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word\u2019").Build(), 4, 5)
-            )
+            ),
+            Is.True
         );
-        Assert.IsFalse(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("s\u2019 ").Build(), 1, 2),
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word\u201d").Build(), 4, 5)
-            )
+            ),
+            Is.False
         );
 
         // the straight quote should always be an apostrophe if it's not a valid quotation mark
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("5'ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" ' ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
 
         // the straight quote should be an apostrophe if there's nothing on the quotation mark stack
         quotationMarkResolverState.AddClosingQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("5'ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" ' ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
 
         // any matching mark should be an apostrophe if it doesn't pair with the
@@ -2666,41 +2942,47 @@ public class DepthBasedQuotationMarkResolverTests
         quotationMarkResolverState.AddOpeningQuotationMark(
             new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("5'ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" ' ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("5\u2018ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2018 ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("5\u2019ℵ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             standardEnglishQuotationMarkCategorizer.IsApostrophe(
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText(" \u2019 ").Build(), 1, 2),
                 null
-            )
+            ),
+            Is.True
         );
     }
 
@@ -2710,7 +2992,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2754,7 +3036,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2785,7 +3067,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2825,7 +3107,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2857,7 +3139,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2890,7 +3172,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention typewriterEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
-        Assert.IsNotNull(typewriterEnglishQuoteConvention);
+        Assert.That(typewriterEnglishQuoteConvention, Is.Not.Null);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
@@ -2927,7 +3209,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -2968,7 +3250,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention westernEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("western_european")
         );
-        Assert.IsNotNull(westernEuropeanQuoteConvention);
+        Assert.That(westernEuropeanQuoteConvention, Is.Not.Null);
         var westernEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([westernEuropeanQuoteConvention])
         );
@@ -3009,7 +3291,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -3046,7 +3328,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -3093,7 +3375,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -3134,7 +3416,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_english")
         );
-        Assert.IsNotNull(standardEnglishQuoteConvention);
+        Assert.That(standardEnglishQuoteConvention, Is.Not.Null);
         var standardEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
@@ -3169,7 +3451,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention typewriterEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
-        Assert.IsNotNull(typewriterEnglishQuoteConvention);
+        Assert.That(typewriterEnglishQuoteConvention, Is.Not.Null);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
@@ -3211,7 +3493,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention typewriterEnglishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("typewriter_english")
         );
-        Assert.IsNotNull(typewriterEnglishQuoteConvention);
+        Assert.That(typewriterEnglishQuoteConvention, Is.Not.Null);
         var typewriterEnglishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
@@ -3249,7 +3531,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention typewriterFrenchQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("typewriter_french")
         );
-        Assert.IsNotNull(typewriterFrenchQuoteConvention);
+        Assert.That(typewriterFrenchQuoteConvention, Is.Not.Null);
         var typewriterFrenchResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([typewriterFrenchQuoteConvention])
         );
@@ -3282,7 +3564,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
         var centralEuropeanResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([centralEuropeanQuoteConvention])
         );
@@ -3318,7 +3600,7 @@ public class DepthBasedQuotationMarkResolverTests
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var standardSwedishResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([standardSwedishQuoteConvention])
         );
@@ -3355,17 +3637,17 @@ public class DepthBasedQuotationMarkResolverTests
             "typewriter_french"
         );
 
-        Assert.IsNotNull(typewriterFrenchQuoteConvention);
+        Assert.That(typewriterFrenchQuoteConvention, Is.Not.Null);
 
         QuoteConvention centralEuropeanQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("central_european")
         );
-        Assert.IsNotNull(centralEuropeanQuoteConvention);
+        Assert.That(centralEuropeanQuoteConvention, Is.Not.Null);
 
         QuoteConvention standardSwedishQuoteConvention = (
             QuoteConventions.Standard.GetQuoteConventionByName("standard_swedish")
         );
-        Assert.IsNotNull(standardSwedishQuoteConvention);
+        Assert.That(standardSwedishQuoteConvention, Is.Not.Null);
         var multipleConventionsResolverSettings = new QuoteConventionDetectionResolutionSettings(
             new QuoteConventionSet([
                 typewriterFrenchQuoteConvention,

@@ -92,8 +92,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -121,8 +121,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -150,8 +150,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -179,8 +179,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -208,8 +208,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -237,8 +237,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -266,8 +266,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -295,8 +295,8 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -331,10 +331,10 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
-        Assert.IsNull(actualChapters[0].Verses[1].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[1].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[1].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[1].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -372,10 +372,10 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
-        Assert.IsNull(actualChapters[1].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[1].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
+        Assert.That(actualChapters[1].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[1].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
