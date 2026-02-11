@@ -117,13 +117,14 @@ namespace SIL.Machine.Corpora
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering")
                     .Where(ele => ((string)ele.Attribute("Guess") ?? "false") == "false")
-                    .Select(ele => (ele.Attribute("Id").Value, ele))
+                    .Select(ele => ((string)ele.Attribute("Id"), ele))
+                    .Where(kvp => kvp.Item1 != null)
                     .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategory))
                     .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
-                        string rendering = kvp.Item2.Element("Renderings").Value;
+                        string rendering = (string)kvp.Item2.Element("Renderings") ?? "";
                         IReadOnlyList<string> renderings = GetRenderingsWithPattern(rendering);
                         return (id, renderings);
                     })
@@ -138,7 +139,8 @@ namespace SIL.Machine.Corpora
                 termsGlosses = termsGlossesDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "Localization")
-                    .Select(ele => (ele.Attribute("Id").Value, ele))
+                    .Select(ele => ((string)ele.Attribute("Id"), ele))
+                    .Where(kvp => kvp.Item1 != null)
                     .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategory))
                     .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
@@ -309,7 +311,7 @@ namespace SIL.Machine.Corpora
             var termIdToReferences = new Dictionary<string, ImmutableHashSet<VerseRef>>();
             foreach (XElement term in biblicalTermsDocument.Descendants().Where(n => n.Name.LocalName == "Term"))
             {
-                string termId = term.Attribute("Id").Value;
+                string termId = (string)term.Attribute("Id");
                 if (termId == null)
                     continue;
 
