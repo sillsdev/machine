@@ -26,14 +26,14 @@ jobs:
             cmake-args: "-A x64"
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: lukka/get-cmake@v3.31.6
+      - uses: actions/checkout@v6
+      - uses: lukka/get-cmake@v4.2.3
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0.x
+            10.0.x
 
       - name: Restore dotnet tools
         run: dotnet tool restore
@@ -51,7 +51,7 @@ jobs:
           cmake --build ${{ github.workspace }}/src/sentencepiece4c/build --config Release --target sentencepiece4c
 
       - name: Upload sentencepiece4c artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.sentencepiece4c-artifact }}
           path: ${{ github.workspace }}/src/sentencepiece4c/bin/${{ matrix.sentencepiece4c-dll }}
@@ -65,7 +65,7 @@ jobs:
       - name: Test
         run: dotnet test --verbosity normal --collect:"Xplat Code Coverage"
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -75,20 +75,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0.x
+            10.0.x
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: sp4c-linux-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: sp4c-win-x64
           path: ${{ github.workspace }}/src/sentencepiece4c/bin
@@ -105,7 +105,7 @@ jobs:
           dotnet pack src\SIL.Machine.Translation.TensorFlow\SIL.Machine.Translation.TensorFlow.csproj -c Release -o artifacts
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nuget-package
           path: artifacts/*.nupkg
