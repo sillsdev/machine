@@ -397,6 +397,55 @@ public class ParatextProjectVersificationErrorDetectorTests
         Assert.That(errors[1].ActualVerseRef, Is.EqualTo("2JN 2:1"));
     }
 
+    [Test]
+    public void GetUsfmVersificationErrors_InvalidChapterNumber()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "653JNTest.SFM",
+                    @"\id 3JN
+        \c 1.
+        "
+                }
+            }
+        );
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.InvalidChapterNumber));
+        Assert.That(errors[1].Type, Is.EqualTo(UsfmVersificationErrorType.MissingChapter));
+        Assert.That(errors[0].ExpectedVerseRef, Is.Empty);
+        Assert.That(errors[1].ExpectedVerseRef, Is.EqualTo("3JN 1:15"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1."));
+        Assert.That(errors[1].ActualVerseRef, Is.EqualTo("3JN -1:0"));
+    }
+
+    [Test]
+    public void GetUsfmVersificationErrors_InvalidVerseNumber()
+    {
+        var env = new TestEnvironment(
+            files: new Dictionary<string, string>()
+            {
+                {
+                    "653JNTest.SFM",
+                    @"\id 3JN
+        \c 1
+        \v v1
+        "
+                }
+            }
+        );
+        IReadOnlyList<UsfmVersificationError> errors = env.GetUsfmVersificationErrors();
+        Assert.That(errors, Has.Count.EqualTo(2), JsonSerializer.Serialize(errors));
+        Assert.That(errors[0].Type, Is.EqualTo(UsfmVersificationErrorType.InvalidVerseNumber));
+        Assert.That(errors[1].Type, Is.EqualTo(UsfmVersificationErrorType.MissingVerse));
+        Assert.That(errors[0].ExpectedVerseRef, Is.Empty);
+        Assert.That(errors[1].ExpectedVerseRef, Is.EqualTo("3JN 1:15"));
+        Assert.That(errors[0].ActualVerseRef, Is.EqualTo("3JN 1:v1"));
+        Assert.That(errors[1].ActualVerseRef, Is.EqualTo("3JN 1:0"));
+    }
+
     private class TestEnvironment(ParatextProjectSettings? settings = null, Dictionary<string, string>? files = null)
     {
         public ParatextProjectVersificationErrorDetectorBase Detector { get; } =
