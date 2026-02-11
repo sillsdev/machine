@@ -7,15 +7,22 @@ namespace SIL.Machine.Corpora
 {
     public abstract class TextBase : IText
     {
-        protected TextBase(string id, string sortKey)
+        protected TextBase(
+            string id,
+            string sortKey,
+            TextRowContentType defaultContentType = TextRowContentType.Segment
+        )
         {
             Id = id;
             SortKey = sortKey;
+            DefaultContentType = defaultContentType;
         }
 
         public string Id { get; }
 
         public string SortKey { get; }
+
+        public TextRowContentType DefaultContentType { get; }
 
         public virtual int Count(bool includeEmpty = true)
         {
@@ -27,7 +34,7 @@ namespace SIL.Machine.Corpora
         protected TextRow CreateRow(string text, object segRef, TextRowFlags flags = TextRowFlags.SentenceStart)
         {
             text = text.Trim();
-            return new TextRow(Id, segRef)
+            return new TextRow(Id, segRef, DefaultContentType)
             {
                 Segment = text.Length == 0 ? Array.Empty<string>() : new[] { text },
                 Flags = flags

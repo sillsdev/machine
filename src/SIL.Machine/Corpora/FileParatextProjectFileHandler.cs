@@ -14,37 +14,37 @@ namespace SIL.Machine.Corpora
 
         public bool Exists(string fileName)
         {
-            return Directory
-                .EnumerateFiles(_projectDir)
-                .Any(f => Path.GetFileName(f).Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase));
+            return GetFileName(fileName) != null;
         }
 
         public Stream Open(string fileName)
         {
-            return File.OpenRead(
-                Path.Combine(
-                    _projectDir,
-                    Directory
-                        .EnumerateFiles(_projectDir)
-                        .FirstOrDefault(f =>
-                            Path.GetFileName(f).Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase)
-                        )
-                )
-            );
+            fileName = GetFileName(fileName) ?? fileName;
+            return File.OpenRead(Path.Combine(_projectDir, fileName));
         }
 
         public UsfmStylesheet CreateStylesheet(string fileName)
         {
-            string customStylesheetFileName = Path.Combine(_projectDir, "custom.sty");
+            string customStylesheetFileName = GetFileName("custom.sty");
             return new UsfmStylesheet(
                 fileName,
-                File.Exists(customStylesheetFileName) ? customStylesheetFileName : null
+                customStylesheetFileName != null ? Path.Combine(_projectDir, customStylesheetFileName) : null
             );
         }
 
         public string Find(string extension)
         {
             return Directory.EnumerateFiles(_projectDir, "*" + extension).FirstOrDefault();
+        }
+
+        private string GetFileName(string caseInsensitiveFileName)
+        {
+            return Directory
+                .EnumerateFiles(_projectDir)
+                .Select(p => Path.GetFileName(p))
+                .FirstOrDefault(f =>
+                    f.Equals(caseInsensitiveFileName, System.StringComparison.InvariantCultureIgnoreCase)
+                );
         }
     }
 }

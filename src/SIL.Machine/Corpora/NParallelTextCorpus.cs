@@ -294,6 +294,8 @@ namespace SIL.Machine.Corpora
                 throw new ArgumentNullException("A corpus row must be specified.");
 
             object[] defaultRefs = new object[] { rows.Where(r => r != null).Select(r => r.Ref).First() };
+            TextRowContentType contentType = TextRowContentType.Segment;
+
             string textId = null;
             object[][] refs = new object[N][];
             TextRowFlags[] flags = new TextRowFlags[N];
@@ -327,7 +329,7 @@ namespace SIL.Machine.Corpora
             }
             refs = refs.Select(r => r ?? defaultRefs).ToArray();
 
-            yield return new NParallelTextRow(textId, refs)
+            yield return new NParallelTextRow(textId, refs, contentType)
             {
                 NSegments = rows.Select(r => r?.Segment ?? Array.Empty<string>()).ToArray(),
                 NFlags = flags.ToReadOnlyList()
@@ -441,6 +443,7 @@ namespace SIL.Machine.Corpora
             public bool IsSentenceStart { get; set; } = false;
             public bool IsInRange => Refs.Count > 0;
             public bool IsEmpty => Segment.Count == 0;
+            public TextRowContentType ContentType { get; set; } = TextRowContentType.Segment;
         }
 
         private class NRangeInfo
@@ -451,6 +454,7 @@ namespace SIL.Machine.Corpora
             public IComparer<object> RowRefComparer { get; set; } = null;
             public List<RangeRow> Rows { get; }
             public bool IsInRange => Rows.Any(r => r.IsInRange);
+            public TextRowContentType ContentType { get; set; } = TextRowContentType.Segment;
 
             public NRangeInfo(int n)
             {
@@ -472,6 +476,7 @@ namespace SIL.Machine.Corpora
                 }
                 TextId = row.TextId;
                 Rows[index].Refs.Add(row.Ref);
+                Rows[index].ContentType = row.ContentType;
                 if (Rows[index].IsEmpty)
                     Rows[index].IsSentenceStart = row.IsSentenceStart;
                 Rows[index].Segment.AddRange(row.Segment);
@@ -486,8 +491,8 @@ namespace SIL.Machine.Corpora
                     .ToList();
                 foreach (int i in Enumerable.Range(0, Rows.Count))
                 {
-                    var row = Rows[i];
-
+                    RangeRow row = Rows[i];
+                    ContentType = row.ContentType;
                     if (Versifications.All(v => v != null) && row.Refs.Count() == 0)
                     {
                         refs[i] = referenceRefs
@@ -502,7 +507,7 @@ namespace SIL.Machine.Corpora
                         refs[i] = row.Refs.ToArray();
                     }
                 }
-                var nParRow = new NParallelTextRow(TextId, refs)
+                var nParRow = new NParallelTextRow(TextId, refs, ContentType)
                 {
                     NSegments = Rows.Select(r => r.Segment.ToArray()).ToArray(),
                     NFlags = Rows.Select(r => r.IsSentenceStart ? TextRowFlags.SentenceStart : TextRowFlags.None)

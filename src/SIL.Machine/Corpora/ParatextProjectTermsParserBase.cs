@@ -48,38 +48,25 @@ namespace SIL.Machine.Corpora
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
-        public IEnumerable<(string TermId, IReadOnlyList<string> Glosses)> Parse(
+        public IEnumerable<KeyTerm> Parse(
             IEnumerable<string> termCategories,
             bool useTermGlosses = true,
             IDictionary<string, HashSet<int>> chapters = null
         )
         {
             XDocument biblicalTermsDoc;
-            IDictionary<string, string> termIdToCategoryDictionary;
+            IDictionary<string, string> termIdToCategory;
+            IDictionary<string, string> termIdToDomain;
             IDictionary<string, ImmutableHashSet<VerseRef>> termIdToReferences;
-            if (_settings.BiblicalTermsListType == "Project")
+            if (
+                _settings.BiblicalTermsListType == "Project"
+                && _paratextProjectFileHandler.Exists(_settings.BiblicalTermsFileName)
+            )
             {
-                if (_paratextProjectFileHandler.Exists(_settings.BiblicalTermsFileName))
+                using (Stream keyTermsFile = _paratextProjectFileHandler.Open(_settings.BiblicalTermsFileName))
                 {
-                    using (Stream keyTermsFile = _paratextProjectFileHandler.Open(_settings.BiblicalTermsFileName))
-                    {
-                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                        termIdToReferences = GetReferences(biblicalTermsDoc);
-                    }
-                }
-                else
-                {
-                    using (
-                        Stream keyTermsFile = Assembly
-                            .GetExecutingAssembly()
-                            .GetManifestResourceStream("SIL.Machine.Corpora.BiblicalTerms.xml")
-                    )
-                    {
-                        biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                        termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                        termIdToReferences = GetReferences(biblicalTermsDoc);
-                    }
+                    biblicalTermsDoc = XDocument.Load(keyTermsFile);
+                    (termIdToCategory, termIdToDomain, termIdToReferences) = GetTermData(biblicalTermsDoc);
                 }
             }
             else if (PredefinedTermsListTypes.Contains(_settings.BiblicalTermsListType))
@@ -91,13 +78,13 @@ namespace SIL.Machine.Corpora
                 )
                 {
                     biblicalTermsDoc = XDocument.Load(keyTermsFile);
-                    termIdToCategoryDictionary = GetCategoryPerId(biblicalTermsDoc);
-                    termIdToReferences = GetReferences(biblicalTermsDoc);
+                    (termIdToCategory, termIdToDomain, termIdToReferences) = GetTermData(biblicalTermsDoc);
                 }
             }
             else
             {
-                termIdToCategoryDictionary = new Dictionary<string, string>();
+                termIdToCategory = new Dictionary<string, string>();
+                termIdToDomain = new Dictionary<string, string>();
                 termIdToReferences = new Dictionary<string, ImmutableHashSet<VerseRef>>();
             }
 
@@ -129,14 +116,16 @@ namespace SIL.Machine.Corpora
                 termsRenderings = termRenderingsDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "TermRendering")
-                    .Select(ele => (ele.Attribute("Id").Value, ele))
-                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Where(ele => ((string)ele.Attribute("Guess") ?? "false") == "false")
+                    .Select(ele => ((string)ele.Attribute("Id"), ele))
+                    .Where(kvp => kvp.Item1 != null)
+                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategory))
                     .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
                     {
                         string id = kvp.Item1.Replace("\n", "&#xA");
-                        string rendering = kvp.Item2.Element("Renderings").Value;
-                        IReadOnlyList<string> renderings = GetRenderings(rendering);
+                        string rendering = (string)kvp.Item2.Element("Renderings") ?? "";
+                        IReadOnlyList<string> renderings = GetRenderingsWithPattern(rendering);
                         return (id, renderings);
                     })
                     .GroupBy(kvp => kvp.Item1, kvp => kvp.Item2) //Handle duplicate term ids (which do exist) e.g. שִׁלֵּמִי
@@ -150,8 +139,9 @@ namespace SIL.Machine.Corpora
                 termsGlosses = termsGlossesDoc
                     .Descendants()
                     .Where(n => n.Name.LocalName == "Localization")
-                    .Select(ele => (ele.Attribute("Id").Value, ele))
-                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategoryDictionary))
+                    .Select(ele => ((string)ele.Attribute("Id"), ele))
+                    .Where(kvp => kvp.Item1 != null)
+                    .Where(kvp => IsInCategory(kvp.Item1, termCategories, termIdToCategory))
                     .Where(kvp => IsInChapters(kvp.Item1, chapters, termIdToReferences))
                     .Select(kvp =>
                     {
@@ -166,11 +156,53 @@ namespace SIL.Machine.Corpora
             }
             if (termsGlosses.Count > 0 || termsRenderings.Count > 0)
             {
-                return termsRenderings
-                    .Concat(termsGlosses.Where(kvp => !termsRenderings.ContainsKey(kvp.Key)))
-                    .Select(kvp => (kvp.Key, (IReadOnlyList<string>)kvp.Value.ToList()));
+                List<KeyTerm> terms = new List<KeyTerm>();
+                foreach (
+                    string id in termsRenderings.Keys.Distinct().Union(termsGlosses.Keys.Distinct()).OrderBy(k => k)
+                )
+                {
+                    if (!termsRenderings.TryGetValue(id, out IEnumerable<string> renderingsPatterns))
+                    {
+                        renderingsPatterns = new List<string>();
+                    }
+                    if (!termIdToCategory.TryGetValue(id, out string category))
+                    {
+                        category = "?";
+                    }
+                    if (!termIdToDomain.TryGetValue(id, out string domain))
+                    {
+                        domain = "?";
+                    }
+                    if (!termsGlosses.TryGetValue(id, out IEnumerable<string> glosses))
+                    {
+                        glosses = new List<string>();
+                    }
+                    if (!termIdToReferences.TryGetValue(id, out ImmutableHashSet<VerseRef> references))
+                    {
+                        references = ImmutableHashSet.Create<VerseRef>();
+                    }
+                    IEnumerable<string> renderings = renderingsPatterns.Select(r => r.Replace("*", ""));
+                    if (!renderings.Any())
+                    {
+                        if (!glosses.Any())
+                        {
+                            continue;
+                        }
+                        renderings = glosses;
+                    }
+                    KeyTerm term = new KeyTerm(
+                        id,
+                        category,
+                        domain,
+                        renderings.ToArray(),
+                        references.ToArray(),
+                        renderingsPatterns.ToArray()
+                    );
+                    terms.Add(term);
+                }
+                return terms;
             }
-            return new List<(string, IReadOnlyList<string>)>();
+            return new List<KeyTerm>();
         }
 
         private static bool IsInCategory(
@@ -227,14 +259,9 @@ namespace SIL.Machine.Corpora
             return Regex.Split(gloss, @"[;,/]").Select(g => g.Trim()).Where(s => s != "").Distinct().ToList();
         }
 
-        public static IReadOnlyList<string> GetRenderings(string rendering)
+        public static IReadOnlyList<string> GetRenderingsWithPattern(string rendering)
         {
-            return Regex
-                .Split(rendering.Trim(), @"\|\|")
-                .Select(r => CleanTerm(r).Trim())
-                .Select(r => r.Replace("*", ""))
-                .Where(r => r != "")
-                .ToList();
+            return Regex.Split(rendering.Trim(), @"\|\|").Select(r => CleanTerm(r).Trim()).Where(r => r != "").ToList();
         }
 
         /// <summary>
@@ -273,30 +300,56 @@ namespace SIL.Machine.Corpora
             return termString;
         }
 
-        private static IDictionary<string, string> GetCategoryPerId(XDocument biblicalTermsDocument)
+        private static (
+            IDictionary<string, string> TermCategories,
+            IDictionary<string, string> TermDomains,
+            IDictionary<string, ImmutableHashSet<VerseRef>> TermReferences
+        ) GetTermData(XDocument biblicalTermsDocument)
         {
-            return biblicalTermsDocument
-                .Descendants()
-                .Where(n => n.Name.LocalName == "Term")
-                .DistinctBy(e => e.Attribute("Id").Value)
-                .ToDictionary(e => e.Attribute("Id").Value, e => e.Element("Category")?.Value ?? "");
-        }
+            var termIdToCategory = new Dictionary<string, string>();
+            var termIdToDomain = new Dictionary<string, string>();
+            var termIdToReferences = new Dictionary<string, ImmutableHashSet<VerseRef>>();
+            foreach (XElement term in biblicalTermsDocument.Descendants().Where(n => n.Name.LocalName == "Term"))
+            {
+                string termId = (string)term.Attribute("Id");
+                if (termId == null)
+                    continue;
 
-        private static IDictionary<string, ImmutableHashSet<VerseRef>> GetReferences(XDocument biblicalTermsDocument)
-        {
-            return biblicalTermsDocument
-                .Descendants()
-                .Where(n => n.Name.LocalName == "Term")
-                .DistinctBy(e => e.Attribute("Id").Value)
-                .ToDictionary(
-                    e => e.Attribute("Id").Value,
-                    e =>
-                        e.Element("References")
-                            ?.Descendants()
-                            .Where(reference => int.TryParse(reference.Value.Substring(0, 9), out int _))
-                            .Select(reference => new VerseRef(int.Parse(reference.Value.Substring(0, 9))))
-                            .ToImmutableHashSet()
-                );
+                if (!termIdToCategory.ContainsKey(termId))
+                {
+                    XElement category = term.Element("Category");
+                    termIdToCategory[termId] = category != null && category.Value != "" ? category.Value : "";
+                }
+                if (!termIdToDomain.ContainsKey(termId))
+                {
+                    XElement domain = term.Element("Domain");
+                    termIdToDomain[termId] = domain != null && domain.Value != "" ? domain.Value : "";
+                }
+                if (!termIdToReferences.ContainsKey(termId))
+                {
+                    XElement referencesElement = term.Element("References");
+                    List<VerseRef> references = new List<VerseRef>();
+                    if (referencesElement != null)
+                    {
+                        foreach (XElement verseElement in referencesElement.Elements("Verse"))
+                        {
+                            if (
+                                verseElement == null
+                                || !int.TryParse(verseElement.Value.Substring(0, 9), out int bbbcccvvv)
+                            )
+                            {
+                                continue;
+                            }
+
+                            var verseRef = new VerseRef(bbbcccvvv);
+                            verseRef.ChangeVersification(ScrVers.Original);
+                            references.Add(verseRef);
+                        }
+                        termIdToReferences[termId] = ImmutableHashSet.Create(references.ToArray());
+                    }
+                }
+            }
+            return (termIdToCategory, termIdToDomain, termIdToReferences);
         }
     }
 }

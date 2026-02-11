@@ -61,7 +61,8 @@ namespace SIL.Machine.Corpora
                     yield return new ParallelTextRow(
                         nRow.TextId,
                         nRow.NRefs[0].Count > 0 || !isScripture ? nRow.NRefs[0] : new object[] { nRow.Ref },
-                        nRow.NRefs[1].Count > 0 || !isScripture ? nRow.NRefs[1] : new object[] { nRow.Ref }
+                        nRow.NRefs[1].Count > 0 || !isScripture ? nRow.NRefs[1] : new object[] { nRow.Ref },
+                        nRow.ContentType
                     )
                     {
                         SourceFlags = nRow.NFlags[0],

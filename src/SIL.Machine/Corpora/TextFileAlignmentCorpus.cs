@@ -12,7 +12,7 @@ namespace SIL.Machine.Corpora
 
         private static IEnumerable<IAlignmentCollection> GetAlignmentCollections(IEnumerable<string> filePatterns)
         {
-            foreach ((string id, string fileName) in CorporaUtils.GetFiles(filePatterns))
+            foreach ((string id, string fileName, int _) in CorporaUtils.GetFiles(filePatterns))
                 yield return new TextFileAlignmentCollection(id, fileName);
         }
     }
