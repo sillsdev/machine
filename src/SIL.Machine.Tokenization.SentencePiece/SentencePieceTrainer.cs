@@ -8,7 +8,7 @@ namespace SIL.Machine.Tokenization.SentencePiece
         Unigram,
         Bpe,
         Word,
-        Char
+        Char,
     }
 
     public class SentencePieceTrainer

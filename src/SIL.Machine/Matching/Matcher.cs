@@ -65,7 +65,7 @@ namespace SIL.Machine.Matching
             {
                 Direction = _settings.Direction,
                 Filter = _settings.Filter,
-                UseUnification = _settings.MatchingMethod == MatchingMethod.Unification
+                UseUnification = _settings.MatchingMethod == MatchingMethod.Unification,
             };
             _fsa.StartState = _fsa.CreateState();
             int nextPriority = 0;

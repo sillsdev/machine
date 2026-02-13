@@ -13,13 +13,13 @@ public class TextSegmentTests
         TextSegment textSegment = builder.Build();
 
         Assert.That(textSegment.Text, Is.EqualTo(""));
-        Assert.IsNull(textSegment.PreviousSegment);
-        Assert.IsNull(textSegment.NextSegment);
-        Assert.IsTrue(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.NoMarker);
+        Assert.That(textSegment.PreviousSegment, Is.Null);
+        Assert.That(textSegment.NextSegment, Is.Null);
+        Assert.That(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.NoMarker, Is.True);
         Assert.That(textSegment.MarkersInPrecedingContext, Has.Count.EqualTo(0));
         Assert.That(textSegment.IndexInVerse, Is.EqualTo(0));
         Assert.That(textSegment.NumSegmentsInVerse, Is.EqualTo(0));
-        Assert.IsNull(textSegment.UsfmToken);
+        Assert.That(textSegment.UsfmToken, Is.Null);
     }
 
     [Test]
@@ -41,8 +41,8 @@ public class TextSegmentTests
         TextSegment textSegment = builder.Build();
 
         Assert.That(textSegment.PreviousSegment, Is.EqualTo(previousSegment));
-        Assert.IsNull(textSegment.NextSegment);
-        Assert.IsTrue(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.NoMarker);
+        Assert.That(textSegment.NextSegment, Is.Null);
+        Assert.That(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.NoMarker, Is.True);
         Assert.That(textSegment.MarkersInPrecedingContext, Has.Count.EqualTo(0));
         Assert.That(textSegment.IndexInVerse, Is.EqualTo(0));
         Assert.That(textSegment.NumSegmentsInVerse, Is.EqualTo(0));
@@ -55,20 +55,20 @@ public class TextSegmentTests
         builder.AddPrecedingMarker(UsfmMarkerType.Chapter);
         TextSegment textSegment = builder.Build();
 
-        Assert.IsTrue(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.Chapter);
+        Assert.That(textSegment.ImmediatePrecedingMarker is UsfmMarkerType.Chapter, Is.True);
         Assert.That(textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter]));
-        Assert.IsNull(textSegment.PreviousSegment);
-        Assert.IsNull(textSegment.NextSegment);
+        Assert.That(textSegment.PreviousSegment, Is.Null);
+        Assert.That(textSegment.NextSegment, Is.Null);
 
         builder.AddPrecedingMarker(UsfmMarkerType.Verse);
         textSegment = builder.Build();
 
         Assert.That(textSegment.ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Verse));
         Assert.That(
-            textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter, UsfmMarkerType.Verse,])
+            textSegment.MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Chapter, UsfmMarkerType.Verse])
         );
-        Assert.IsNull(textSegment.PreviousSegment);
-        Assert.IsNull(textSegment.NextSegment);
+        Assert.That(textSegment.PreviousSegment, Is.Null);
+        Assert.That(textSegment.NextSegment, Is.Null);
     }
 
     [Test]
@@ -78,12 +78,12 @@ public class TextSegmentTests
         builder.SetUsfmToken(new UsfmToken("USFM token text"));
         TextSegment textSegment = builder.Build();
 
-        Assert.IsNotNull(textSegment.UsfmToken);
+        Assert.That(textSegment.UsfmToken, Is.Not.Null);
         Assert.That(textSegment.UsfmToken.Type, Is.EqualTo(UsfmTokenType.Text));
         Assert.That(textSegment.UsfmToken.Text, Is.EqualTo("USFM token text"));
         Assert.That(textSegment.Text, Is.EqualTo(""));
-        Assert.IsNull(textSegment.PreviousSegment);
-        Assert.IsNull(textSegment.NextSegment);
+        Assert.That(textSegment.PreviousSegment, Is.Null);
+        Assert.That(textSegment.NextSegment, Is.Null);
     }
 
     [Test]
@@ -140,8 +140,8 @@ public class TextSegmentTests
         );
 
         Assert.That(segmentWithUsfmToken, Is.EqualTo(segmentWithSameUsfmToken));
-        Assert.IsTrue(segmentWithUsfmToken != segmentWithDifferentUsfmToken);
-        Assert.IsTrue(basicSegment != segmentWithUsfmToken);
+        Assert.That(segmentWithUsfmToken != segmentWithDifferentUsfmToken, Is.True);
+        Assert.That(basicSegment != segmentWithUsfmToken, Is.True);
 
         // attributes that are not used in equality checks
         TextSegment segmentWithNumVerses = new TextSegment.Builder().SetText("text1").Build();
@@ -223,17 +223,17 @@ public class TextSegmentTests
     public void IsMarkerInPrecedingContext()
     {
         TextSegment noPrecedingMarkerSegment = new TextSegment.Builder().SetText("example text").Build();
-        Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
-        Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
-        Assert.IsFalse(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
+        Assert.That(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter), Is.False);
+        Assert.That(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse), Is.False);
+        Assert.That(noPrecedingMarkerSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character), Is.False);
 
         TextSegment onePrecedingMarkerTextSegment = (
             new TextSegment.Builder().SetText("example text").AddPrecedingMarker(UsfmMarkerType.Character).Build()
         );
 
-        Assert.IsTrue(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
-        Assert.IsFalse(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
-        Assert.IsFalse(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
+        Assert.That(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character), Is.True);
+        Assert.That(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse), Is.False);
+        Assert.That(onePrecedingMarkerTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter), Is.False);
 
         TextSegment twoPrecedingMarkersTextSegment = (
             new TextSegment.Builder()
@@ -242,9 +242,9 @@ public class TextSegmentTests
                 .AddPrecedingMarker(UsfmMarkerType.Verse)
                 .Build()
         );
-        Assert.IsTrue(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
-        Assert.IsTrue(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
-        Assert.IsFalse(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
+        Assert.That(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter), Is.True);
+        Assert.That(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse), Is.True);
+        Assert.That(twoPrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character), Is.False);
 
         TextSegment threePrecedingMarkersTextSegment = (
             new TextSegment.Builder()
@@ -254,9 +254,9 @@ public class TextSegmentTests
                 .AddPrecedingMarker(UsfmMarkerType.Character)
                 .Build()
         );
-        Assert.IsTrue(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter));
-        Assert.IsTrue(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse));
-        Assert.IsTrue(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character));
+        Assert.That(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Chapter), Is.True);
+        Assert.That(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse), Is.True);
+        Assert.That(threePrecedingMarkersTextSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Character), Is.True);
     }
 
     [Test]
@@ -264,10 +264,10 @@ public class TextSegmentTests
     {
         TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         textSegment.IndexInVerse = 0;
-        Assert.IsTrue(textSegment.IsFirstSegmentInVerse());
+        Assert.That(textSegment.IsFirstSegmentInVerse(), Is.True);
 
         textSegment.IndexInVerse = 1;
-        Assert.IsFalse(textSegment.IsFirstSegmentInVerse());
+        Assert.That(textSegment.IsFirstSegmentInVerse(), Is.False);
     }
 
     [Test]
@@ -276,14 +276,14 @@ public class TextSegmentTests
         TextSegment textSegment = new TextSegment.Builder().SetText("example text").Build();
         textSegment.IndexInVerse = 0;
         textSegment.NumSegmentsInVerse = 1;
-        Assert.IsTrue(textSegment.IsLastSegmentInVerse());
+        Assert.That(textSegment.IsLastSegmentInVerse(), Is.True);
 
         textSegment.IndexInVerse = 0;
         textSegment.NumSegmentsInVerse = 2;
-        Assert.IsFalse(textSegment.IsLastSegmentInVerse());
+        Assert.That(textSegment.IsLastSegmentInVerse(), Is.False);
 
         textSegment.IndexInVerse = 1;
-        Assert.IsTrue(textSegment.IsLastSegmentInVerse());
+        Assert.That(textSegment.IsLastSegmentInVerse(), Is.True);
     }
 
     [Test]

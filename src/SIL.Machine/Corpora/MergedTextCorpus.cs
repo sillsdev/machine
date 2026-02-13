@@ -69,7 +69,7 @@ namespace SIL.Machine.Corpora
                 yield return new TextRow(nRow.TextId, nRow.Ref)
                 {
                     Segment = nRow.NSegments[indexOfSelectedRow],
-                    Flags = nRow.NFlags[indexOfSelectedRow]
+                    Flags = nRow.NFlags[indexOfSelectedRow],
                 };
             }
         }

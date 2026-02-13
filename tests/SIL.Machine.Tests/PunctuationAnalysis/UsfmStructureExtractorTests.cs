@@ -51,19 +51,15 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test2")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test2")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+            ]),
         ];
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters(
             new Dictionary<int, List<int>> { { 40, [2] } }
@@ -83,25 +79,21 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -115,26 +107,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Paragraph)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Paragraph)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -148,26 +136,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Character)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Character)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -181,26 +165,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Character)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Character)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -214,26 +194,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Embed)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Embed)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -247,26 +223,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Embed)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Embed)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -280,26 +252,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Embed)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Embed)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -313,26 +281,22 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Embed)
-                                .Build()
-                        ]
-                    )
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Embed)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -347,36 +311,30 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    ),
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test2")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    ),
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test2")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
-        Assert.IsNull(actualChapters[0].Verses[1].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[1].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[1].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[1].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -392,40 +350,32 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    ),
-                ]
-            ),
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test2")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build()
-                        ]
-                    ),
-                ]
-            ),
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+            ]),
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test2")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
         AssertChapterEqual(expectedChapters, actualChapters);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[0].Verses[0].TextSegments[0].NextSegment);
-        Assert.IsNull(actualChapters[1].Verses[0].TextSegments[0].PreviousSegment);
-        Assert.IsNull(actualChapters[1].Verses[0].TextSegments[0].NextSegment);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[0].Verses[0].TextSegments[0].NextSegment, Is.Null);
+        Assert.That(actualChapters[1].Verses[0].TextSegments[0].PreviousSegment, Is.Null);
+        Assert.That(actualChapters[1].Verses[0].TextSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -440,25 +390,21 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build(),
-                            new TextSegment.Builder()
-                                .SetText("test2")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Character)
-                                .Build(),
-                        ]
-                    ),
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                    new TextSegment.Builder()
+                        .SetText("test2")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Character)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();
@@ -487,25 +433,21 @@ public class UsfmStructureExtractorTests
 
         List<Chapter> expectedChapters =
         [
-            new Chapter(
-                [
-                    new Verse(
-                        [
-                            new TextSegment.Builder()
-                                .SetText("test")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .Build(),
-                            new TextSegment.Builder()
-                                .SetText("test2")
-                                .AddPrecedingMarker(UsfmMarkerType.Chapter)
-                                .AddPrecedingMarker(UsfmMarkerType.Verse)
-                                .AddPrecedingMarker(UsfmMarkerType.Character)
-                                .Build(),
-                        ]
-                    ),
-                ]
-            )
+            new Chapter([
+                new Verse([
+                    new TextSegment.Builder()
+                        .SetText("test")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .Build(),
+                    new TextSegment.Builder()
+                        .SetText("test2")
+                        .AddPrecedingMarker(UsfmMarkerType.Chapter)
+                        .AddPrecedingMarker(UsfmMarkerType.Verse)
+                        .AddPrecedingMarker(UsfmMarkerType.Character)
+                        .Build(),
+                ]),
+            ]),
         ];
 
         List<Chapter> actualChapters = usfmStructureExtractor.GetChapters();

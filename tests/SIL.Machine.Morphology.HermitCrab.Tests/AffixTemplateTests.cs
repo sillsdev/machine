@@ -52,7 +52,7 @@ public class AffixTemplateTests : HermitCrabTestBase
                 .Feature(Head)
                 .EqualTo(head => head.Feature("tense").EqualTo("past"))
                 .Value,
-            Gloss = "PAST"
+            Gloss = "PAST",
         };
 
         edSuffix.Allomorphs.Add(
@@ -61,23 +61,23 @@ public class AffixTemplateTests : HermitCrabTestBase
                 Lhs =
                 {
                     Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
+                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value,
                 },
-                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") }
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
 
@@ -89,7 +89,7 @@ public class AffixTemplateTests : HermitCrabTestBase
                 .Feature(Head)
                 .EqualTo(head => head.Feature("pers").EqualTo("3").Feature("tense").EqualTo("pres"))
                 .Value,
-            Gloss = "3SG"
+            Gloss = "3SG",
         };
 
         sSuffix.Allomorphs.Add(
@@ -98,16 +98,16 @@ public class AffixTemplateTests : HermitCrabTestBase
                 Lhs =
                 {
                     Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(labiodental).Value
+                    Pattern<Word, ShapeNode>.New("2").Annotation(labiodental).Value,
                 },
-                Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertSegments(Table3, "z") }
+                Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertSegments(Table3, "z") },
             }
         );
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "ɯz") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "ɯz") },
             }
         );
         sSuffix.Allomorphs.Add(
@@ -116,16 +116,16 @@ public class AffixTemplateTests : HermitCrabTestBase
                 Lhs =
                 {
                     Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(voicelessCons).Value
+                    Pattern<Word, ShapeNode>.New("2").Annotation(voicelessCons).Value,
                 },
-                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "s") }
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "s") },
             }
         );
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") },
             }
         );
 
@@ -137,21 +137,21 @@ public class AffixTemplateTests : HermitCrabTestBase
                 .Feature(Head)
                 .EqualTo(head => head.Feature("evidential").EqualTo("witnessed"))
                 .Value,
-            Gloss = "WIT"
+            Gloss = "WIT",
         };
 
         evidential.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
 
         var verbTemplate = new AffixTemplate
         {
             Name = "verb",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         verbTemplate.Slots.Add(new AffixTemplateSlot(sSuffix, edSuffix) { Optional = true });
         verbTemplate.Slots.Add(new AffixTemplateSlot(evidential) { Optional = true });
@@ -239,37 +239,37 @@ public class AffixTemplateTests : HermitCrabTestBase
             .Symbol("vd-")
             .Value;
 
-        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST", };
+        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs =
                 {
                     Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value
+                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value,
                 },
-                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") }
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
 
         var verbTemplate = new AffixTemplate
         {
             Name = "verb",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
         };
         verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
         Morphophonemic.AffixTemplates.Add(verbTemplate);
@@ -279,13 +279,13 @@ public class AffixTemplateTests : HermitCrabTestBase
             Name = "nominalizer",
             Gloss = "NOM",
             RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(nominalizer);
@@ -298,14 +298,14 @@ public class AffixTemplateTests : HermitCrabTestBase
                 .New(Language.SyntacticFeatureSystem)
                 .Symbol("N")
                 .Value,
-            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         crule.Subrules.Add(
             new CompoundingSubrule
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(crule);
@@ -320,14 +320,14 @@ public class AffixTemplateTests : HermitCrabTestBase
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
             }
         );
 
         var nounTemplate = new AffixTemplate
         {
             Name = "noun",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         nounTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) { Optional = true });
         Morphophonemic.AffixTemplates.Add(nounTemplate);
@@ -357,14 +357,14 @@ public class AffixTemplateTests : HermitCrabTestBase
             Name = "nominalizer",
             Gloss = "NOM",
             RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
-            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
 
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(nominalizer);
@@ -380,14 +380,14 @@ public class AffixTemplateTests : HermitCrabTestBase
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
             }
         );
 
         var nounTemplate = new AffixTemplate
         {
             Name = "noun",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
         };
         nounTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) { Optional = true });
         Morphophonemic.AffixTemplates.Add(nounTemplate);
@@ -416,14 +416,14 @@ public class AffixTemplateTests : HermitCrabTestBase
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
 
         var transitiveVerbTemplate = new AffixTemplate
         {
             Name = "Transitive Verb",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("TV").Value,
         };
         transitiveVerbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
         Morphophonemic.AffixTemplates.Add(transitiveVerbTemplate);
@@ -431,7 +431,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         var intransitiveVerbTemplate = new AffixTemplate
         {
             Name = "Intransitive Verb",
-            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value,
         };
         intransitiveVerbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
         Morphophonemic.AffixTemplates.Add(intransitiveVerbTemplate);
@@ -441,14 +441,14 @@ public class AffixTemplateTests : HermitCrabTestBase
             Name = "intransitive verbalizer",
             Gloss = "IVERB",
             RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
-            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("IV").Value,
         };
 
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(nominalizer);

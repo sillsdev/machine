@@ -217,7 +217,7 @@ namespace SIL.Machine.Corpora
         Row,
         Cell,
         Note,
-        Sidebar
+        Sidebar,
     };
 
     /// <summary>

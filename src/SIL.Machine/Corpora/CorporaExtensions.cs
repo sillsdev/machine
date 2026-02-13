@@ -241,7 +241,7 @@ namespace SIL.Machine.Corpora
             return new ParallelTextCorpus(sourceCorpus, targetCorpus, alignmentCorpus, rowRefComparer)
             {
                 AllSourceRows = allSourceRows,
-                AllTargetRows = allTargetRows
+                AllTargetRows = allTargetRows,
             };
         }
 

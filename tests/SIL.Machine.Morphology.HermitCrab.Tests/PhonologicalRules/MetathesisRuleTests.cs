@@ -20,7 +20,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
                 .Group("2", group => group.Annotation(Character(Table3, "u")))
                 .Value,
             LeftSwitchName = "2",
-            RightSwitchName = "1"
+            RightSwitchName = "1",
         };
         Morphophonemic.PhonologicalRules.Add(rule1);
 
@@ -44,7 +44,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
                 .Group("rightEnv", group => group.Annotation(HCFeatureSystem.RightSideAnchor))
                 .Value,
             LeftSwitchName = "2",
-            RightSwitchName = "1"
+            RightSwitchName = "1",
         };
         Morphophonemic.PhonologicalRules.Add(rule1);
 
@@ -54,7 +54,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+u") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+u") },
             }
         );
 
@@ -76,7 +76,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
                 .Group("2", group => group.Annotation(Character(Table3, "u")))
                 .Value,
             LeftSwitchName = "2",
-            RightSwitchName = "1"
+            RightSwitchName = "1",
         };
         Morphophonemic.PhonologicalRules.Add(prule);
 
@@ -86,7 +86,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "i") }
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "i") },
             }
         );
 

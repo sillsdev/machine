@@ -12,33 +12,33 @@ public class PreliminaryQuotationMarkAnalyzerTests
         var apostropheProportionStatistics = new ApostropheProportionStatistics();
         apostropheProportionStatistics.CountCharacters(new TextSegment.Builder().SetText("'").Build());
         apostropheProportionStatistics.AddApostrophe();
-        Assert.IsTrue(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5), Is.True);
 
         apostropheProportionStatistics.Reset();
-        Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5), Is.False);
     }
 
     [Test]
     public void IsApostropheProportionGreaterThan()
     {
         var apostropheProportionStatistics = new ApostropheProportionStatistics();
-        Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.0));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.0), Is.False);
 
         // invalid case where no characters have been counted
         apostropheProportionStatistics.AddApostrophe();
-        Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.0));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.0), Is.False);
 
         apostropheProportionStatistics.CountCharacters(new TextSegment.Builder().SetText("a").Build());
-        Assert.IsTrue(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.99));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.99), Is.True);
 
         apostropheProportionStatistics.AddApostrophe();
         apostropheProportionStatistics.CountCharacters(new TextSegment.Builder().SetText("bcd").Build());
-        Assert.IsTrue(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.4));
-        Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.4), Is.True);
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.5), Is.False);
 
         apostropheProportionStatistics.CountCharacters(new TextSegment.Builder().SetText("ef").Build());
-        Assert.IsTrue(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.3));
-        Assert.IsFalse(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.4));
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.3), Is.True);
+        Assert.That(apostropheProportionStatistics.IsApostropheProportionGreaterThan(0.4), Is.False);
     }
 
     #endregion
@@ -48,13 +48,13 @@ public class PreliminaryQuotationMarkAnalyzerTests
     public void IsMarkRarelyInitial()
     {
         var quotationMarkWordPositions = new QuotationMarkWordPositions();
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
@@ -66,31 +66,31 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201c");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201c");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201c");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyInitial("\u201d"), Is.False);
     }
 
     [Test]
     public void IsMarkRarelyFinal()
     {
         var quotationMarkWordPositions = new QuotationMarkWordPositions();
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
@@ -102,41 +102,41 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201c");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201c");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201c");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkRarelyFinal("\u201d"), Is.False);
     }
 
     [Test]
     public void AreInitialAndFinalRatesSimilar()
     {
         var quotationMarkWordPositions = new QuotationMarkWordPositions();
-        Assert.IsFalse(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordFinalApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
         quotationMarkWordPositions.CountWordInitialApostrophe("\u201d");
-        Assert.IsFalse(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.False);
 
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
@@ -144,26 +144,26 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
-        Assert.IsTrue(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"));
+        Assert.That(quotationMarkWordPositions.AreInitialAndFinalRatesSimilar("\u201d"), Is.True);
     }
 
     [Test]
     public void IsMarkCommonlyMidWord()
     {
         var quotationMarkWordPositions = new QuotationMarkWordPositions();
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"), Is.False);
 
         quotationMarkWordPositions.CountMidWordApostrophe("'");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"), Is.True);
 
         quotationMarkWordPositions.CountWordInitialApostrophe("'");
         quotationMarkWordPositions.CountWordFinalApostrophe("'");
         quotationMarkWordPositions.CountWordInitialApostrophe("'");
         quotationMarkWordPositions.CountWordFinalApostrophe("'");
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"), Is.False);
 
         quotationMarkWordPositions.CountMidWordApostrophe("'");
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("'"), Is.True);
     }
 
     [Test]
@@ -175,11 +175,11 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
         quotationMarkWordPositions.CountMidWordApostrophe("\u201d");
 
-        Assert.IsTrue(quotationMarkWordPositions.IsMarkCommonlyMidWord("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("\u201d"), Is.True);
 
         quotationMarkWordPositions.Reset();
 
-        Assert.IsFalse(quotationMarkWordPositions.IsMarkCommonlyMidWord("\u201d"));
+        Assert.That(quotationMarkWordPositions.IsMarkCommonlyMidWord("\u201d"), Is.False);
     }
     #endregion
     #region QuotationMarkSequence
@@ -188,7 +188,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
     public void IsMarkMuchMoreCommonEarlier()
     {
         var quotationMarkSequences = new QuotationMarkSequences();
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""), Is.False);
 
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountEarlierQuotationMark("\"");
@@ -196,27 +196,27 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountEarlierQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""));
-
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""));
-
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""), Is.True);
 
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""), Is.False);
+
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""), Is.True);
+
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonEarlier("\""), Is.False);
     }
 
     [Test]
     public void IsMarkMuchMoreCommonLater()
     {
         var quotationMarkSequences = new QuotationMarkSequences();
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""), Is.False);
 
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
@@ -224,31 +224,31 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""));
-
-        quotationMarkSequences.CountEarlierQuotationMark("\"");
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""));
-
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""), Is.True);
 
         quotationMarkSequences.CountEarlierQuotationMark("\"");
-        Assert.IsFalse(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""));
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""), Is.False);
+
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        quotationMarkSequences.CountLaterQuotationMark("\"");
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""), Is.True);
+
+        quotationMarkSequences.CountEarlierQuotationMark("\"");
+        Assert.That(quotationMarkSequences.IsMarkMuchMoreCommonLater("\""), Is.False);
     }
 
     [Test]
     public void IsMarkCommonEarlyAndLate()
     {
         var quotationMarkSequences = new QuotationMarkSequences();
-        Assert.IsFalse(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
+        Assert.That(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""), Is.False);
 
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
+        Assert.That(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""), Is.True);
 
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
@@ -260,14 +260,14 @@ public class PreliminaryQuotationMarkAnalyzerTests
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountEarlierQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
+        Assert.That(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""), Is.True);
 
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsTrue(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
+        Assert.That(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""), Is.True);
 
         quotationMarkSequences.CountLaterQuotationMark("\"");
         quotationMarkSequences.CountLaterQuotationMark("\"");
-        Assert.IsFalse(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""));
+        Assert.That(quotationMarkSequences.AreEarlyAndLateMarkRatesSimilar("\""), Is.False);
     }
 
     #endregion
@@ -471,9 +471,9 @@ public class PreliminaryQuotationMarkAnalyzerTests
             [],
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"));
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"));
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark(""));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"), Is.False);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"), Is.False);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark(""), Is.False);
 
         // basic paired quotation marks
         quotationMarkGrouper = new QuotationMarkGrouper(
@@ -483,8 +483,8 @@ public class PreliminaryQuotationMarkAnalyzerTests
             ],
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
-        Assert.IsTrue(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"));
-        Assert.IsTrue(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"), Is.True);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"), Is.True);
 
         // second-level paired quotation marks
         quotationMarkGrouper = new QuotationMarkGrouper(
@@ -494,16 +494,16 @@ public class PreliminaryQuotationMarkAnalyzerTests
             ],
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
-        Assert.IsTrue(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u2018"));
-        Assert.IsTrue(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u2019"));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u2018"), Is.True);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u2019"), Is.True);
 
         // only one half of the pair observed
         quotationMarkGrouper = new QuotationMarkGrouper(
-            [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1),],
+            [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\u201c").Build(), 0, 1)],
             new QuoteConventionSet([standardEnglishQuoteConvention])
         );
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"));
-        Assert.IsTrue(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"), Is.False);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"), Is.True);
 
         // quotation marks that don't match the convention set
         quotationMarkGrouper = new QuotationMarkGrouper(
@@ -513,8 +513,8 @@ public class PreliminaryQuotationMarkAnalyzerTests
             ],
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"));
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201c"), Is.False);
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\u201d"), Is.False);
 
         // ambiguous quotation marks
         quotationMarkGrouper = new QuotationMarkGrouper(
@@ -524,7 +524,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
             ],
             new QuoteConventionSet([typewriterEnglishQuoteConvention])
         );
-        Assert.IsFalse(quotationMarkGrouper.HasDistinctPairedQuotationMark("\""));
+        Assert.That(quotationMarkGrouper.HasDistinctPairedQuotationMark("\""), Is.False);
     }
 
     #endregion
@@ -564,11 +564,11 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 ),
             ]
         );
-        Assert.IsTrue(preliminaryApostropheAnalyzer.IsApostropheOnly("'"));
-        Assert.IsTrue(preliminaryApostropheAnalyzer.IsApostropheOnly("\u2019"));
-        Assert.IsFalse(preliminaryApostropheAnalyzer.IsApostropheOnly("\u2018"));
-        Assert.IsFalse(preliminaryApostropheAnalyzer.IsApostropheOnly("\u201c"));
-        Assert.IsFalse(preliminaryApostropheAnalyzer.IsApostropheOnly("\u201d"));
+        Assert.That(preliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.True);
+        Assert.That(preliminaryApostropheAnalyzer.IsApostropheOnly("\u2019"), Is.True);
+        Assert.That(preliminaryApostropheAnalyzer.IsApostropheOnly("\u2018"), Is.False);
+        Assert.That(preliminaryApostropheAnalyzer.IsApostropheOnly("\u201c"), Is.False);
+        Assert.That(preliminaryApostropheAnalyzer.IsApostropheOnly("\u201d"), Is.False);
     }
 
     [Test]
@@ -595,7 +595,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word' final apostrophe").Build(), 4, 5),
             ]
         );
-        Assert.IsFalse(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.False);
 
         var positivePreliminaryApostropheAnalyzer = new PreliminaryApostropheAnalyzer();
         positivePreliminaryApostropheAnalyzer.ProcessQuotationMarks(
@@ -641,7 +641,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("mid'word apostrophe").Build(), 3, 4),
             ]
         );
-        Assert.IsTrue(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.True);
     }
 
     [Test]
@@ -702,7 +702,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("mid'word apostrophe").Build(), 3, 4),
             ]
         );
-        Assert.IsFalse(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.False);
 
         var negativePreliminaryApostropheAnalyzer2 = new PreliminaryApostropheAnalyzer();
         negativePreliminaryApostropheAnalyzer2.ProcessQuotationMarks(
@@ -747,7 +747,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("mid'word apostrophe").Build(), 3, 4),
             ]
         );
-        Assert.IsFalse(negativePreliminaryApostropheAnalyzer2.IsApostropheOnly("'"));
+        Assert.That(negativePreliminaryApostropheAnalyzer2.IsApostropheOnly("'"), Is.False);
 
         var positivePreliminaryApostropheAnalyzer = new PreliminaryApostropheAnalyzer();
         positivePreliminaryApostropheAnalyzer.ProcessQuotationMarks(
@@ -800,7 +800,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("mid'word apostrophe").Build(), 3, 4),
             ]
         );
-        Assert.IsTrue(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.True);
     }
 
     [Test]
@@ -827,7 +827,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word' final apostrophe").Build(), 4, 5),
             ]
         );
-        Assert.IsFalse(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.False);
 
         var positivePreliminaryApostropheAnalyzer = new PreliminaryApostropheAnalyzer();
         positivePreliminaryApostropheAnalyzer.ProcessQuotationMarks(
@@ -851,7 +851,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("mid'word apostrophe").Build(), 3, 4),
             ]
         );
-        Assert.IsTrue(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.True);
     }
 
     [Test]
@@ -878,11 +878,11 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word' final apostrophe").Build(), 4, 5),
             ]
         );
-        Assert.IsFalse(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(negativePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.False);
 
         var positivePreliminaryApostropheAnalyzer = new PreliminaryApostropheAnalyzer();
         positivePreliminaryApostropheAnalyzer.ProcessQuotationMarks(
-            [new TextSegment.Builder().SetText("Very short text").Build(),],
+            [new TextSegment.Builder().SetText("Very short text").Build()],
             [
                 new QuotationMarkStringMatch(
                     new TextSegment.Builder().SetText("'word initial apostrophe").Build(),
@@ -892,7 +892,7 @@ public class PreliminaryQuotationMarkAnalyzerTests
                 new QuotationMarkStringMatch(new TextSegment.Builder().SetText("word' final apostrophe").Build(), 4, 5),
             ]
         );
-        Assert.IsTrue(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"));
+        Assert.That(positivePreliminaryApostropheAnalyzer.IsApostropheOnly("'"), Is.True);
     }
 
     #endregion
@@ -948,184 +948,128 @@ public class PreliminaryQuotationMarkAnalyzerTests
         );
 
         var preliminaryQuotationAnalyzer = new PreliminaryQuotationMarkAnalyzer(
-            new QuoteConventionSet(
-                [
-                    standardEnglishQuoteConvention,
-                    typewriterEnglishQuoteConvention,
-                    standardFrenchQuoteConvention,
-                    westernEuropeanQuoteConvention,
-                    standardSwedishQuoteConvention,
-                ]
-            )
+            new QuoteConventionSet([
+                standardEnglishQuoteConvention,
+                typewriterEnglishQuoteConvention,
+                standardFrenchQuoteConvention,
+                westernEuropeanQuoteConvention,
+                standardSwedishQuoteConvention,
+            ])
         );
 
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build()
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201d quoted Swedish text \u201d final text")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201d quoted Swedish text \u201d final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardSwedishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText(
-                                            "initial text \u00ab quoted French/Western European text \u00bb final text"
-                                        )
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u00ab quoted French/Western European text \u00bb final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardFrenchQuoteConvention, westernEuropeanQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \" quoted typewriter English text \" final text")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \" quoted typewriter English text \" final text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([typewriterEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build(),
-                                    new TextSegment.Builder()
-                                        .SetText("second level \u2018 English quotes \u2019")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                        new TextSegment.Builder().SetText("second level \u2018 English quotes \u2019").Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \" quoted typewriter English text \" final text")
-                                        .Build(),
-                                    new TextSegment.Builder().SetText("second level 'typewriter quotes'").Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \" quoted typewriter English text \" final text")
+                            .Build(),
+                        new TextSegment.Builder().SetText("second level 'typewriter quotes'").Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([typewriterEnglishQuoteConvention]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("initial text \u201c quoted English text \u201d final text")
-                                        .Build(),
-                                    new TextSegment.Builder()
-                                        .SetText("the quotes \u201d in this segment \u201c are backwards")
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("initial text \u201c quoted English text \u201d final text")
+                            .Build(),
+                        new TextSegment.Builder()
+                            .SetText("the quotes \u201d in this segment \u201c are backwards")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([]))
         );
 
         preliminaryQuotationAnalyzer.Reset();
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText(
-                                            "first-level quotes \u2018 must be observed \u2019 to retain a quote convention"
-                                        )
-                                        .Build(),
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("first-level quotes \u2018 must be observed \u2019 to retain a quote convention")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([]))
         );
     }
@@ -1153,25 +1097,19 @@ public class PreliminaryQuotationMarkAnalyzerTests
         );
 
         var preliminaryQuotationAnalyzer = new PreliminaryQuotationMarkAnalyzer(
-            new QuoteConventionSet([standardEnglishQuoteConvention, typewriterEnglishQuoteConvention,])
+            new QuoteConventionSet([standardEnglishQuoteConvention, typewriterEnglishQuoteConvention])
         );
 
         Assert.That(
-            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions(
-                [
-                    new Chapter(
-                        [
-                            new Verse(
-                                [
-                                    new TextSegment.Builder()
-                                        .SetText("ini'tial 'text \u201c quo'ted English text' \u201d fi'nal text")
-                                        .Build()
-                                ]
-                            )
-                        ]
-                    )
-                ]
-            ),
+            preliminaryQuotationAnalyzer.NarrowDownPossibleQuoteConventions([
+                new Chapter([
+                    new Verse([
+                        new TextSegment.Builder()
+                            .SetText("ini'tial 'text \u201c quo'ted English text' \u201d fi'nal text")
+                            .Build(),
+                    ]),
+                ]),
+            ]),
             Is.EqualTo(new QuoteConventionSet([standardEnglishQuoteConvention]))
         );
     }

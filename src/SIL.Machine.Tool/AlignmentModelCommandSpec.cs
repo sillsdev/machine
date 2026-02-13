@@ -203,7 +203,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
 
         return new ThotWordAlignmentModelTrainer(modelType, trainCorpus, $"{modelPath}_{modelStr}", thotParameters)
         {
-            MaxCorpusCount = maxSize
+            MaxCorpusCount = maxSize,
         };
     }
 
@@ -234,7 +234,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
             ToolHelpers.Ibm2,
             ToolHelpers.FastAlign,
             ToolHelpers.Ibm3,
-            ToolHelpers.Ibm4
+            ToolHelpers.Ibm4,
         };
         validTypes.UnionWith(pluginTypes);
         return string.IsNullOrEmpty(value) || validTypes.Contains(value);

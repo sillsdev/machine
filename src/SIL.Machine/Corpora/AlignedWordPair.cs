@@ -73,12 +73,12 @@ namespace SIL.Machine.Corpora
                         ? new AlignedWordPair(j, i)
                         {
                             TranslationScore = translationScore,
-                            AlignmentScore = alignmentScore
+                            AlignmentScore = alignmentScore,
                         }
                         : new AlignedWordPair(i, j)
                         {
                             TranslationScore = translationScore,
-                            AlignmentScore = alignmentScore
+                            AlignmentScore = alignmentScore,
                         }
                 );
             }
@@ -104,7 +104,7 @@ namespace SIL.Machine.Corpora
             {
                 IsSure = IsSure,
                 TranslationScore = TranslationScore,
-                AlignmentScore = AlignmentScore
+                AlignmentScore = AlignmentScore,
             };
         }
 

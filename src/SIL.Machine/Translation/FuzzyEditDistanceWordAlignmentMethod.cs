@@ -44,7 +44,7 @@ namespace SIL.Machine.Translation
             {
                 Mode = AlignmentMode.Global,
                 ExpansionCompressionEnabled = true,
-                TranspositionEnabled = true
+                TranspositionEnabled = true,
             };
             paa.Compute();
             Alignment<IReadOnlyList<string>, int> alignment = paa.GetAlignments().First();

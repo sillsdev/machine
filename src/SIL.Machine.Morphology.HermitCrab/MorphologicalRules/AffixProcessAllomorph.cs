@@ -22,7 +22,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// <summary>
         /// Suffix
         /// </summary>
-        Suffix
+        Suffix,
     }
 
     public class AffixProcessAllomorph : Allomorph

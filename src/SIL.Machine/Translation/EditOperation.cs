@@ -7,6 +7,6 @@
         Insert,
         Delete,
         PrefixDelete,
-        Substitute
+        Substitute,
     }
 }

@@ -67,7 +67,7 @@ namespace SIL.Machine.Corpora
                         ? null
                         : new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert())),
                 SourceFlags = TargetFlags,
-                TargetFlags = SourceFlags
+                TargetFlags = SourceFlags,
             };
         }
     }

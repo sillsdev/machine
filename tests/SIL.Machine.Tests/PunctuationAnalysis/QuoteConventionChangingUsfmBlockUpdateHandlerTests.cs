@@ -372,7 +372,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 chapterStrategies:
                 [
                     QuotationMarkUpdateStrategy.ApplyFallback,
-                    QuotationMarkUpdateStrategy.ApplyFallback
+                    QuotationMarkUpdateStrategy.ApplyFallback,
                 ]
             )
         );
@@ -531,8 +531,8 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment"));
         Assert.That(textSegments[0].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.NoMarker));
         Assert.That(textSegments[0].MarkersInPrecedingContext, Has.Count.EqualTo(0));
-        Assert.IsNull(textSegments[0].PreviousSegment);
-        Assert.IsNull(textSegments[0].NextSegment);
+        Assert.That(textSegments[0].PreviousSegment, Is.Null);
+        Assert.That(textSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -557,10 +557,10 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment"));
         Assert.That(textSegments[0].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Paragraph));
         Assert.That(
-            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph,])
+            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph])
         );
-        Assert.IsNull(textSegments[0].PreviousSegment);
-        Assert.IsNull(textSegments[0].NextSegment);
+        Assert.That(textSegments[0].PreviousSegment, Is.Null);
+        Assert.That(textSegments[0].NextSegment, Is.Null);
     }
 
     [Test]
@@ -589,17 +589,17 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         Assert.That(textSegments[0].Text, Is.EqualTo("test segment1"));
         Assert.That(textSegments[0].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Paragraph));
         Assert.That(
-            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph,])
+            textSegments[0].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Paragraph])
         );
-        Assert.IsNull(textSegments[0].PreviousSegment);
+        Assert.That(textSegments[0].PreviousSegment, Is.Null);
         Assert.That(textSegments[0].NextSegment, Is.EqualTo(textSegments[1]));
         Assert.That(textSegments[1].Text, Is.EqualTo("test segment2"));
         Assert.That(textSegments[1].ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.Character));
         Assert.That(
-            textSegments[1].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Character,])
+            textSegments[1].MarkersInPrecedingContext.SequenceEqual([UsfmMarkerType.Verse, UsfmMarkerType.Character])
         );
         Assert.That(textSegments[1].PreviousSegment, Is.EqualTo(textSegments[0]));
-        Assert.IsNull(textSegments[1].NextSegment);
+        Assert.That(textSegments[1].NextSegment, Is.Null);
     }
 
     [Test]
@@ -612,7 +612,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         var usfmToken = new UsfmToken("test segment");
         TextSegment segment = quoteConventionChanger.InternalCreateTextSegment(usfmToken);
 
-        Assert.IsNotNull(segment);
+        Assert.That(segment, Is.Not.Null);
         Assert.That(segment.Text, Is.EqualTo("test segment"));
         Assert.That(segment.ImmediatePrecedingMarker, Is.EqualTo(UsfmMarkerType.NoMarker));
         Assert.That(segment.MarkersInPrecedingContext, Has.Count.EqualTo(0));
@@ -630,17 +630,17 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         [
             new TextSegment.Builder().SetText("segment 1 text").Build(),
             new TextSegment.Builder().SetText("segment 2 text").Build(),
-            new TextSegment.Builder().SetText("segment 3 text").Build()
+            new TextSegment.Builder().SetText("segment 3 text").Build(),
         ];
 
         quoteConventionChanger.InternalSetPreviousAndNextForSegments(segments);
 
-        Assert.IsNull(segments[0].PreviousSegment);
+        Assert.That(segments[0].PreviousSegment, Is.Null);
         Assert.That(segments[0].NextSegment, Is.EqualTo(segments[1]));
         Assert.That(segments[1].PreviousSegment, Is.EqualTo(segments[0]));
         Assert.That(segments[1].NextSegment, Is.EqualTo(segments[2]));
         Assert.That(segments[2].PreviousSegment, Is.EqualTo(segments[1]));
-        Assert.IsNull(segments[2].NextSegment);
+        Assert.That(segments[2].NextSegment, Is.Null);
     }
 
     [Test]
@@ -686,7 +686,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 textSegment: multiCharacterTextSegment,
                 startIndex: 27,
                 endIndex: 29
-            )
+            ),
         ];
 
         multiCharToSingleCharQuoteConventionChanger.UpdateQuotationMarks(multiCharacterQuotationMarks);
@@ -745,7 +745,7 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
                 textSegment: singleCharacterTextSegment,
                 startIndex: 26,
                 endIndex: 27
-            )
+            ),
         ];
 
         singleCharToMultiCharQuoteConventionChanger.UpdateQuotationMarks(singleCharacterQuotationMarks);
@@ -862,12 +862,12 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             sourceQuoteConventionName
         );
-        Assert.IsNotNull(sourceQuoteConvention);
+        Assert.That(sourceQuoteConvention, Is.Not.Null);
 
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             targetQuoteConventionName
         );
-        Assert.IsNotNull(targetQuoteConvention);
+        Assert.That(targetQuoteConvention, Is.Not.Null);
 
         return new MockQuoteConventionChangingUsfmUpdateBlockHandler(
             sourceQuoteConvention,

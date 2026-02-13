@@ -19,7 +19,7 @@ namespace SIL.Machine.Corpora
         Milestone,
         MilestoneEnd,
         Attribute,
-        Unknown
+        Unknown,
     }
 
     public class UsfmToken : IEquatable<UsfmToken>

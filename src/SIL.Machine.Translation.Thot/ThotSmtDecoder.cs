@@ -294,7 +294,7 @@ namespace SIL.Machine.Translation.Thot
         {
             var builder = new TranslationResultBuilder(sourceTokens)
             {
-                TargetDetokenizer = _smtModel.TargetDetokenizer
+                TargetDetokenizer = _smtModel.TargetDetokenizer,
             };
             var confidenceEstimator = new Ibm1WordConfidenceEstimator(
                 _smtModel.SymmetrizedWordAlignmentModel.GetTranslationScore,

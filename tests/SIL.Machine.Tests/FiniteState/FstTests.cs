@@ -25,7 +25,7 @@ public class FstTests : PhoneticTestsBase
             new StringFeature("C"),
             new StringFeature("D"),
             new StringFeature("E"),
-            new StringFeature("F")
+            new StringFeature("F"),
         };
 
         var fst = new Fst<AnnotatedStringData, int>(_operations);
@@ -76,7 +76,7 @@ public class FstTests : PhoneticTestsBase
             new StringFeature("C"),
             new StringFeature("D"),
             new StringFeature("E"),
-            new StringFeature("F")
+            new StringFeature("F"),
         };
 
         var nfst = new Fst<AnnotatedStringData, int>(_operations);
@@ -220,10 +220,10 @@ public class FstTests : PhoneticTestsBase
         );
         s3.Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
         s3.Arcs.Add(
-            null,
-            FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value,
-            fst.CreateState()
-        )
+                null,
+                FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("+").Value,
+                fst.CreateState()
+            )
             .Arcs.Add(null, FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value, s2);
         s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cons+").Value, fst.CreateAcceptingState());
 

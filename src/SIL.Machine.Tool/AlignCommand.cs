@@ -106,7 +106,7 @@ public class AlignCommand : CommandBase
                     new ExecutionDataflowBlockOptions
                     {
                         MaxDegreeOfParallelism = processorCount - 1,
-                        BoundedCapacity = 100000
+                        BoundedCapacity = 100000,
                     }
                 );
 

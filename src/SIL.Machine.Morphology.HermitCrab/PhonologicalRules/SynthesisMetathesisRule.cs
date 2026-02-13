@@ -26,7 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 Filter = ann =>
                     ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary, HCFeatureSystem.Anchor)
                     && !ann.IsDeleted(),
-                UseDefaults = true
+                UseDefaults = true,
             };
 
             _patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);

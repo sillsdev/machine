@@ -760,15 +760,14 @@ description
 
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
-        UsfmMemoryText text =
-            new(
-                new UsfmStylesheet("usfm.sty"),
-                Encoding.UTF8,
-                "MAT",
-                usfm.Trim().ReplaceLineEndings("\r\n") + "\r\n",
-                includeMarkers: includeMarkers,
-                includeAllText: includeAllText
-            );
+        UsfmMemoryText text = new(
+            new UsfmStylesheet("usfm.sty"),
+            Encoding.UTF8,
+            "MAT",
+            usfm.Trim().ReplaceLineEndings("\r\n") + "\r\n",
+            includeMarkers: includeMarkers,
+            includeAllText: includeAllText
+        );
         return text.GetRows().ToArray();
     }
 }

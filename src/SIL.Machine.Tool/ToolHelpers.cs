@@ -177,7 +177,7 @@ internal static class ToolHelpers
 
         return new ThotSmtModelTrainer(wordAlignmentModelType, corpus, modelConfigFileName)
         {
-            MaxCorpusCount = maxSize
+            MaxCorpusCount = maxSize,
         };
     }
 
@@ -191,7 +191,7 @@ internal static class ToolHelpers
             Grow,
             GrowDiag,
             GrowDiagFinal,
-            GrowDiagFinalAnd
+            GrowDiagFinalAnd,
         };
         if (noneAllowed)
             validHeuristics.Add(None);

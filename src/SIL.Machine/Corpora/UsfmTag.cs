@@ -13,7 +13,7 @@ namespace SIL.Machine.Corpora
         NoteText = 0x8,
         Other = 0x10,
         BackTranslation = 0x20,
-        TranslationNote = 0x40
+        TranslationNote = 0x40,
     }
 
     public enum UsfmJustification
@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
         Left,
         Center,
         Right,
-        Both
+        Both,
     }
 
     public enum UsfmStyleType
@@ -32,7 +32,7 @@ namespace SIL.Machine.Corpora
         Paragraph,
         End,
         Milestone,
-        MilestoneEnd
+        MilestoneEnd,
     }
 
     [Flags]
@@ -56,7 +56,7 @@ namespace SIL.Machine.Corpora
         Nonpublishable = 0x4000,
         Nonvernacular = 0x8000,
         Book = 0x10000,
-        Note = 0x20000
+        Note = 0x20000,
     }
 
     public sealed class UsfmStyleAttribute

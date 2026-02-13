@@ -7,7 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     public enum SyntacticFeatureType
     {
         Head,
-        Foot
+        Foot,
     }
 
     public class SyntacticFeatureSystem : FeatureSystem

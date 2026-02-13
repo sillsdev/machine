@@ -9,7 +9,7 @@ namespace SIL.Machine.SequenceAlignment
         Global = 0,
         SemiGlobal,
         HalfLocal,
-        Local
+        Local,
     }
 
     public delegate IEnumerable<TItem> ItemsSelector<in TSeq, out TItem>(
@@ -172,7 +172,6 @@ namespace SIL.Machine.SequenceAlignment
             switch (Mode)
             {
                 case AlignmentMode.Global:
-
                     {
                         foreach (
                             Alignment<TSeq, TItem> alignment in GetAlignments(
@@ -188,7 +187,6 @@ namespace SIL.Machine.SequenceAlignment
                     break;
 
                 case AlignmentMode.SemiGlobal:
-
                     {
                         if (_sim.GetLength(0) == 1 && _sim.GetLength(1) == 1)
                         {
@@ -230,7 +228,6 @@ namespace SIL.Machine.SequenceAlignment
 
                 case AlignmentMode.Local:
                 case AlignmentMode.HalfLocal:
-
                     {
                         if (_sim.GetLength(0) == 1 && _sim.GetLength(1) == 1)
                         {

@@ -219,7 +219,7 @@ namespace SIL.Machine.Translation.TensorFlow
                         long end = start + outputLength;
                         var builder = new TranslationResultBuilder(sourceTokenStrs[i])
                         {
-                            TargetDetokenizer = TargetDetokenizer
+                            TargetDetokenizer = TargetDetokenizer,
                         };
                         for (long k = start; k < end; k++)
                             builder.AppendToken(outputTokenStrs[k], TranslationSources.Nmt, 1);

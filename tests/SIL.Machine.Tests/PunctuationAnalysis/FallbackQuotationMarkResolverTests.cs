@@ -9,7 +9,7 @@ public class FallbackQuotationMarkResolverTests
     public void Reset()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention)
@@ -26,7 +26,7 @@ public class FallbackQuotationMarkResolverTests
         basicQuotationMarkResolver.Issues.Add(QuotationMarkResolutionIssue.UnexpectedQuotationMark);
 
         basicQuotationMarkResolver.Reset();
-        Assert.IsNull(basicQuotationMarkResolver.LastQuotationMark);
+        Assert.That(basicQuotationMarkResolver.LastQuotationMark, Is.Null);
         Assert.That(basicQuotationMarkResolver.Issues.Count, Is.EqualTo(0));
     }
 
@@ -34,16 +34,16 @@ public class FallbackQuotationMarkResolverTests
     public void SimpleQuotationMarkResolutionWithNoPreviousMark()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \" text").Build(), 5, 6),]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \" text").Build(), 5, 6),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -54,7 +54,7 @@ public class FallbackQuotationMarkResolverTests
                 new TextSegment.Builder().SetText("test \" text").Build(),
                 5,
                 6
-            )
+            ),
         ];
 
         AssertResolvedQuotationMarksEqual(actualResolvedQuotationMarks, expectedResolvedQuotationMarks);
@@ -64,19 +64,17 @@ public class FallbackQuotationMarkResolverTests
     public void SimpleQuotationMarkResolutionWithPreviousOpeningMark()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 0, 1),
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 6, 7),
-                ]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 0, 1),
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test \" text").Build(), 6, 7),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -105,19 +103,17 @@ public class FallbackQuotationMarkResolverTests
     public void SimpleQuotationMarkResolutionWithPreviousClosingMark()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
         );
 
         var actualResolvedQuotationMarks = basicQuotationMarkResolver
-            .ResolveQuotationMarks(
-                [
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 4, 5),
-                    new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 6, 7),
-                ]
-            )
+            .ResolveQuotationMarks([
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 4, 5),
+                new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\" \" text").Build(), 6, 7),
+            ])
             .ToList();
         List<QuotationMarkMetadata> expectedResolvedQuotationMarks =
         [
@@ -136,7 +132,7 @@ public class FallbackQuotationMarkResolverTests
                 new TextSegment.Builder().SetText("test\" \" text").Build(),
                 6,
                 7
-            )
+            ),
         ];
 
         AssertResolvedQuotationMarksEqual(actualResolvedQuotationMarks, expectedResolvedQuotationMarks);
@@ -146,7 +142,7 @@ public class FallbackQuotationMarkResolverTests
     public void IsOpeningQuote()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
@@ -154,42 +150,42 @@ public class FallbackQuotationMarkResolverTests
 
         // valid opening quote at start of segment
         var quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\"").Build(), 0, 1);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // opening quote with leading whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \"text\"").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // opening quote with quote introducer
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test:\"text\"").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // QuotationMarkStringMatch indices don't indicate a quotation mark
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \"text\"").Build(), 0, 1);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
 
         // the quotation mark is not valid under the current quote convention
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("<test \"text\"").Build(), 0, 1);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
 
         // no leading whitespace before quotation mark
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test\"text\"").Build(), 4, 5);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
 
         // closing quote at the end of the segment
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\"").Build(), 10, 11);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
 
         // closing quote with trailing whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\" ").Build(), 10, 11);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
     }
 
     [Test]
     public void IsOpeningQuoteWithUnambiguousQuoteConvention()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuoteConventionDetectionResolutionSettings(new QuoteConventionSet([englishQuoteConvention]))
@@ -197,26 +193,26 @@ public class FallbackQuotationMarkResolverTests
 
         // unambiguous opening quote at start of segment
         var quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("“test text”").Build(), 0, 1);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // unambiguous opening quote with leading whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test “text”").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // unambiguous opening quote without the "correct" context
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test“text”").Build(), 4, 5);
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
 
         // unambiguous closing quote
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("“test” text").Build(), 5, 6);
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
     }
 
     [Test]
     public void IsOpeningQuoteStateful()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
@@ -228,7 +224,7 @@ public class FallbackQuotationMarkResolverTests
             1,
             2
         );
-        Assert.IsFalse(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.False);
 
         // immediately preceding quote
         basicQuotationMarkResolver.LastQuotationMark = new QuotationMarkMetadata(
@@ -239,14 +235,14 @@ public class FallbackQuotationMarkResolverTests
             0,
             1
         );
-        Assert.IsTrue(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsOpeningQuotationMark(quoteMatch), Is.True);
     }
 
     [Test]
     public void DoesMostRecentOpeningMarkImmediatelyPrecede()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention)
@@ -258,7 +254,7 @@ public class FallbackQuotationMarkResolverTests
             1,
             2
         );
-        Assert.IsFalse(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch));
+        Assert.That(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch), Is.False);
 
         // correct preceding quote
         basicQuotationMarkResolver.LastQuotationMark = new QuotationMarkMetadata(
@@ -269,7 +265,7 @@ public class FallbackQuotationMarkResolverTests
             0,
             1
         );
-        Assert.IsTrue(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch));
+        Assert.That(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch), Is.True);
 
         // wrong direction for preceding quote
         basicQuotationMarkResolver.LastQuotationMark = new QuotationMarkMetadata(
@@ -280,7 +276,7 @@ public class FallbackQuotationMarkResolverTests
             0,
             1
         );
-        Assert.IsFalse(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch));
+        Assert.That(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch), Is.False);
 
         // different text segment for preceding quote
         basicQuotationMarkResolver.LastQuotationMark = new QuotationMarkMetadata(
@@ -291,7 +287,7 @@ public class FallbackQuotationMarkResolverTests
             0,
             1
         );
-        Assert.IsFalse(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch));
+        Assert.That(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch), Is.False);
 
         // previous quote is not *immediately* before the current quote
         nestedQuoteMatch = new QuotationMarkStringMatch(
@@ -307,14 +303,14 @@ public class FallbackQuotationMarkResolverTests
             0,
             1
         );
-        Assert.IsFalse(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch));
+        Assert.That(basicQuotationMarkResolver.DoesMostRecentOpeningMarkImmediatelyPrecede(nestedQuoteMatch), Is.False);
     }
 
     [Test]
     public void IsClosingQuote()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
@@ -326,42 +322,42 @@ public class FallbackQuotationMarkResolverTests
             10,
             11
         );
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // closing quote with trailing whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test\" text").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // closing quote with trailing punctuation
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\".").Build(), 10, 11);
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // QuotationMarkStringMatch indices don't indicate a quotation mark
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\"").Build(), 9, 10);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
 
         // the quotation mark is not valid under the current quote convention
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \"text>").Build(), 10, 11);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
 
         // no trailing whitespace after quotation mark
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test\"text").Build(), 5, 6);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
 
         // opening quote at the start of the segment
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("\"test text\"").Build(), 0, 1);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
 
         // opening quote with leading whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test \"text\"").Build(), 5, 6);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
     }
 
     [Test]
     public void IsClosingQuoteWithUnambiguousQuoteConvention()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuoteConventionDetectionResolutionSettings(new QuoteConventionSet([englishQuoteConvention]))
@@ -369,26 +365,26 @@ public class FallbackQuotationMarkResolverTests
 
         // unambiguous closing quote at end of segment
         var quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("“test text”").Build(), 10, 11);
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // unambiguous closing quote with trailing whitespace
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("“test” text").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // unambiguous closing quote without the "correct" context
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("“test”text").Build(), 5, 6);
-        Assert.IsTrue(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.True);
 
         // unambiguous opening quote
         quoteMatch = new QuotationMarkStringMatch(new TextSegment.Builder().SetText("test “text”").Build(), 5, 6);
-        Assert.IsFalse(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch));
+        Assert.That(basicQuotationMarkResolver.IsClosingQuotationMark(quoteMatch), Is.False);
     }
 
     [Test]
     public void ResolveOpeningQuote()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())
@@ -413,7 +409,7 @@ public class FallbackQuotationMarkResolverTests
     public void ResolveClosingQuote()
     {
         QuoteConvention englishQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName("standard_english");
-        Assert.IsNotNull(englishQuoteConvention);
+        Assert.That(englishQuoteConvention, Is.Not.Null);
 
         var basicQuotationMarkResolver = new FallbackQuotationMarkResolver(
             new QuotationMarkUpdateResolutionSettings(englishQuoteConvention.Normalize())

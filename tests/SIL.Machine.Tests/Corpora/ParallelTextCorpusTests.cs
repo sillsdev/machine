@@ -26,7 +26,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -37,7 +37,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "target segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -48,7 +48,7 @@ public class ParallelTextCorpusTests
                 {
                     AlignmentRow("text1", 1, new AlignedWordPair(0, 0)),
                     AlignmentRow("text1", 2, new AlignedWordPair(1, 1)),
-                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2))
+                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2)),
                 }
             )
         );
@@ -82,7 +82,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -98,7 +98,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 1, new AlignedWordPair(0, 0)),
-                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2))
+                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2)),
                 }
             )
         );
@@ -134,7 +134,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -144,7 +144,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 1, new AlignedWordPair(0, 0)),
-                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2))
+                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2)),
                 }
             )
         );
@@ -174,7 +174,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -190,7 +190,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 1, new AlignedWordPair(0, 0)),
-                    AlignmentRow("text1", 2, new AlignedWordPair(1, 1))
+                    AlignmentRow("text1", 2, new AlignedWordPair(1, 1)),
                 }
             )
         );
@@ -226,7 +226,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -236,7 +236,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 1, new AlignedWordPair(0, 0)),
-                    AlignmentRow("text1", 2, new AlignedWordPair(1, 1))
+                    AlignmentRow("text1", 2, new AlignedWordPair(1, 1)),
                 }
             )
         );
@@ -266,7 +266,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -282,7 +282,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 2, new AlignedWordPair(1, 1)),
-                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2))
+                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2)),
                 }
             )
         );
@@ -318,7 +318,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -328,7 +328,7 @@ public class ParallelTextCorpusTests
                 new[]
                 {
                     AlignmentRow("text1", 2, new AlignedWordPair(1, 1)),
-                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2))
+                    AlignmentRow("text1", 3, new AlignedWordPair(2, 2)),
                 }
             )
         );
@@ -364,7 +364,7 @@ public class ParallelTextCorpusTests
                         TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 3, flags: TextRowFlags.InRange),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -376,7 +376,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
                     TextRow("text1", 3, "target segment 3 ."),
-                    TextRow("text1", 4, "target segment 4 .")
+                    TextRow("text1", 4, "target segment 4 ."),
                 }
             )
         );
@@ -407,7 +407,7 @@ public class ParallelTextCorpusTests
                         "source segment 2 . source segment 3 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -423,7 +423,7 @@ public class ParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -460,7 +460,7 @@ public class ParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -475,7 +475,7 @@ public class ParallelTextCorpusTests
                         "target segment 3 . target segment 4 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                    TextRow("text1", 4, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -515,7 +515,7 @@ public class ParallelTextCorpusTests
                         "source segment 3 . source segment 4 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                    TextRow("text1", 4, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -527,7 +527,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 .", TextRowFlags.None),
                     TextRow("text1", 2, "target segment 2 ."),
                     TextRow("text1", 3, "target segment 3 ."),
-                    TextRow("text1", 4, "target segment 4 .")
+                    TextRow("text1", 4, "target segment 4 ."),
                 }
             )
         );
@@ -565,7 +565,7 @@ public class ParallelTextCorpusTests
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
                     TextRow("text1", 3, "source segment 3 ."),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -582,7 +582,7 @@ public class ParallelTextCorpusTests
                         "target segment 3 . target segment 4 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                    TextRow("text1", 4, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -621,7 +621,7 @@ public class ParallelTextCorpusTests
                         "source segment 3 . source segment 4 .",
                         TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                    TextRow("text1", 4, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -633,7 +633,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, flags: TextRowFlags.InRange | TextRowFlags.RangeStart),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
                     TextRow("text1", 3, flags: TextRowFlags.InRange | TextRowFlags.RangeStart),
-                    TextRow("text1", 4, flags: TextRowFlags.InRange)
+                    TextRow("text1", 4, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -641,7 +641,7 @@ public class ParallelTextCorpusTests
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus)
         {
             AllSourceRows = true,
-            AllTargetRows = false
+            AllTargetRows = false,
         };
         ParallelTextRow[] rows = parallelCorpus.ToArray();
         Assert.That(rows.Length, Is.EqualTo(2));
@@ -666,13 +666,13 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
                     TextRow("text1", 3, "source segment 3 ."),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             ),
             new MemoryText("text2", new[] { TextRow("text2", 5, "source segment 5 .") }),
             new MemoryText(
                 "text3",
-                new[] { TextRow("text3", 6, "source segment 6 ."), TextRow("text3", 7, "source segment 7 ."), }
+                new[] { TextRow("text3", 6, "source segment 6 ."), TextRow("text3", 7, "source segment 7 .") }
             )
         );
         var targetCorpus = new DictionaryTextCorpus(
@@ -682,12 +682,12 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 3, "target segment 3 ."),
-                    TextRow("text1", 4, "target segment 4 .")
+                    TextRow("text1", 4, "target segment 4 ."),
                 }
             ),
             new MemoryText(
                 "text3",
-                new[] { TextRow("text3", 6, "target segment 6 ."), TextRow("text3", 7, "target segment 7 ."), }
+                new[] { TextRow("text3", 6, "target segment 6 ."), TextRow("text3", 7, "target segment 7 .") }
             )
         );
 
@@ -748,7 +748,7 @@ public class ParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 3, flags: TextRowFlags.InRange),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -760,7 +760,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
                     TextRow("text1", 3, "target segment 3 ."),
-                    TextRow("text1", 4, "target segment 4 .")
+                    TextRow("text1", 4, "target segment 4 ."),
                 }
             )
         );
@@ -793,7 +793,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -805,7 +805,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2-1 ."),
                     TextRow("text1", 2, "target segment 2-2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -841,7 +841,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -853,7 +853,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2-1 ."),
                     TextRow("text1", 2, "target segment 2-2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -882,7 +882,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -893,7 +893,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -917,7 +917,7 @@ public class ParallelTextCorpusTests
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[] { TextRow("text1", 1, "source segment 1 ."), TextRow("text1", 2, "source segment 2 ."), }
+                new[] { TextRow("text1", 1, "source segment 1 ."), TextRow("text1", 2, "source segment 2 .") }
             )
         );
         var targetCorpus = new DictionaryTextCorpus(
@@ -928,7 +928,7 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2-1 ."),
                     TextRow("text1", 2, "target segment 2-2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -957,14 +957,14 @@ public class ParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
         var targetCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[] { TextRow("text1", 1, "target segment 1 ."), TextRow("text1", 2, "target segment 2 ."), }
+                new[] { TextRow("text1", 1, "target segment 1 ."), TextRow("text1", 2, "target segment 2 .") }
             )
         );
 
@@ -999,12 +999,16 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:1", ScrVers.Original), "source chapter one, verse one ."),
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:2", ScrVers.Original), "source chapter one, verse two ."),
-                    TextRow("MAT", ScriptureRef.Parse("MAT 1:3", ScrVers.Original), "source chapter one, verse three .")
+                    TextRow(
+                        "MAT",
+                        ScriptureRef.Parse("MAT 1:3", ScrVers.Original),
+                        "source chapter one, verse three ."
+                    ),
                 }
             )
         )
         {
-            Versification = ScrVers.Original
+            Versification = ScrVers.Original,
         };
         var targetCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -1019,12 +1023,12 @@ public class ParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:3", versification), flags: TextRowFlags.InRange),
-                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", versification), "target chapter one, verse four .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", versification), "target chapter one, verse four ."),
                 }
             )
         )
         {
-            Versification = versification
+            Versification = versification,
         };
 
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
@@ -1067,12 +1071,12 @@ public class ParallelTextCorpusTests
                         ScriptureRef.Parse("MAT 1:3", ScrVers.Original),
                         "source chapter one, verse three ."
                     ),
-                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", ScrVers.Original), "source chapter one, verse four .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:4", ScrVers.Original), "source chapter one, verse four ."),
                 }
             )
         )
         {
-            Versification = ScrVers.Original
+            Versification = ScrVers.Original,
         };
         var targetCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -1083,12 +1087,12 @@ public class ParallelTextCorpusTests
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:2", versification), "target chapter one, verse two ."),
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:3", versification), "target chapter one, verse three ."),
                     TextRow("MAT", ScriptureRef.Parse("MAT 1:4", versification), "target chapter one, verse four ."),
-                    TextRow("MAT", ScriptureRef.Parse("MAT 1:5", versification), "target chapter one, verse five .")
+                    TextRow("MAT", ScriptureRef.Parse("MAT 1:5", versification), "target chapter one, verse five ."),
                 }
             )
         )
         {
-            Versification = versification
+            Versification = versification,
         };
 
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
@@ -1146,7 +1150,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2, "target segment 2 ."),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -1172,7 +1176,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -1183,7 +1187,7 @@ public class ParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "target segment 1 ."),
                     TextRow("text1", 2),
-                    TextRow("text1", 3, "target segment 3 .")
+                    TextRow("text1", 3, "target segment 3 ."),
                 }
             )
         );
@@ -1204,7 +1208,7 @@ public class ParallelTextCorpusTests
         return new TextRow(textId, rowRef)
         {
             Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
-            Flags = flags
+            Flags = flags,
         };
     }
 
@@ -1223,7 +1227,7 @@ public class ParallelTextCorpusTests
             "LJE",
             "S3Y",
             "SUS",
-            "BEL"
+            "BEL",
         };
 
         MemoryText CreateMemoryText(string bookId, string segmentType)
@@ -1286,7 +1290,7 @@ public class ParallelTextCorpusTests
             "LJE",
             "S3Y",
             "SUS",
-            "BEL"
+            "BEL",
         };
 
         DictionaryTextCorpus sourceCorpus = new DictionaryTextCorpus(
@@ -1302,7 +1306,7 @@ public class ParallelTextCorpusTests
                 .ToArray()
         )
         {
-            Versification = ScrVers.Original
+            Versification = ScrVers.Original,
         };
 
         DictionaryTextCorpus targetCorpus = new DictionaryTextCorpus(
@@ -1314,7 +1318,7 @@ public class ParallelTextCorpusTests
                 .ToArray()
         )
         {
-            Versification = ScrVers.Original
+            Versification = ScrVers.Original,
         };
 
         DictionaryAlignmentCorpus alignments = new DictionaryAlignmentCorpus(
@@ -1328,28 +1332,28 @@ public class ParallelTextCorpusTests
 
         ParallelTextCorpus parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus, alignments)
         {
-            AllSourceRows = true
+            AllSourceRows = true,
         };
 
         var rows = parallelCorpus.ToList();
         Assert.That(rows.Count, Is.EqualTo(22), "Total rows processed should be 22.");
 
-        TestContext.WriteLine("=== Debugging Output ===");
-        TestContext.WriteLine($"Total Rows: {rows.Count}");
+        TestContext.Out.WriteLine("=== Debugging Output ===");
+        TestContext.Out.WriteLine($"Total Rows: {rows.Count}");
 
         foreach (var row in rows.Take(2))
         {
             string bookId = row.TextId;
-            TestContext.WriteLine($"Book: {bookId}");
-            TestContext.WriteLine(
+            TestContext.Out.WriteLine($"Book: {bookId}");
+            TestContext.Out.WriteLine(
                 $"SourceRefs: {string.Join(", ", row.SourceRefs?.Select(sr => sr.ToString()) ?? new[] { "null" })}"
             );
-            TestContext.WriteLine(
+            TestContext.Out.WriteLine(
                 $"TargetRefs: {string.Join(", ", row.TargetRefs?.Select(tr => tr.ToString()) ?? new[] { "null" })}"
             );
-            TestContext.WriteLine($"SourceSegment: {string.Join(" ", row.SourceSegment)}");
-            TestContext.WriteLine($"TargetSegment: {string.Join(" ", row.TargetSegment)}");
-            TestContext.WriteLine("--------------");
+            TestContext.Out.WriteLine($"SourceSegment: {string.Join(" ", row.SourceSegment)}");
+            TestContext.Out.WriteLine($"TargetSegment: {string.Join(" ", row.TargetSegment)}");
+            TestContext.Out.WriteLine("--------------");
         }
 
         for (int i = 0; i < rows.Count; i++)
@@ -1484,14 +1488,14 @@ public class ParallelTextCorpusTests
 
         if (issues.Any())
         {
-            TestContext.WriteLine("The following issues were encountered:");
+            TestContext.Out.WriteLine("The following issues were encountered:");
             foreach (var issue in issues)
             {
-                TestContext.WriteLine(issue);
+                TestContext.Out.WriteLine(issue);
             }
         }
 
-        TestContext.WriteLine(issues.Count);
+        TestContext.Out.WriteLine(issues.Count);
 
         Assert.That(
             issues.Count,
@@ -1573,10 +1577,10 @@ public class ParallelTextCorpusTests
 
         if (issues.Any())
         {
-            TestContext.WriteLine("The following issues were encountered:");
+            TestContext.Out.WriteLine("The following issues were encountered:");
             foreach (var issue in issues)
             {
-                TestContext.WriteLine(issue);
+                TestContext.Out.WriteLine(issue);
             }
         }
 
@@ -1593,7 +1597,7 @@ public class ParallelTextCorpusTests
         Dictionary<string, string> expectedMappings = new Dictionary<string, string>
         {
             { "SUS 1:1", "DAG 13:1" },
-            { "SUS 1:2", "DAG 13:2" }
+            { "SUS 1:2", "DAG 13:2" },
         };
 
         string source1Text = "Et erat vir habitans in Babylone, et nomen ejus Joakim:";
@@ -1602,7 +1606,7 @@ public class ParallelTextCorpusTests
         Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
         {
             { ScrVersType.Original, ScrVers.Original },
-            { ScrVersType.English, ScrVers.English }
+            { ScrVersType.English, ScrVers.English },
         };
 
         ParatextTextCorpus corpus = CorporaTestHelpers.GetDeuterocanonicalSourceCorpus();
@@ -1612,7 +1616,7 @@ public class ParallelTextCorpusTests
             ScrVers versification = versifications[versificationType];
             corpus.Versification = versification;
 
-            TestContext.WriteLine($"Validating for versification: {versificationType}");
+            TestContext.Out.WriteLine($"Validating for versification: {versificationType}");
 
             foreach (var mapping in expectedMappings)
             {
@@ -1625,7 +1629,7 @@ public class ParallelTextCorpusTests
 
                 if (sourceText == null || mappedText == null)
                 {
-                    TestContext.WriteLine(
+                    TestContext.Out.WriteLine(
                         $"Missing text for book {sourceVerse.Book} in versification {versificationType}."
                     );
                     continue;
@@ -1640,7 +1644,7 @@ public class ParallelTextCorpusTests
 
                 if (sourceRow == null || targetRow == null)
                 {
-                    TestContext.WriteLine(
+                    TestContext.Out.WriteLine(
                         $"Missing verse: {sourceVerse} or {targetVerse} in versification {versificationType}."
                     );
                     continue;
@@ -1676,13 +1680,13 @@ public class ParallelTextCorpusTests
             { "DAG 1:1-3", "DAG 1:1-3" },
             { "DAG 1:4-6", "DAG 1:1-3" },
             { "DAG 1:7", "SUS 1:7" },
-            { "DAG 1:8", "SUS 1:8" }
+            { "DAG 1:8", "SUS 1:8" },
         };
 
         Dictionary<ScrVersType, ScrVers> versifications = new Dictionary<ScrVersType, ScrVers>
         {
             { ScrVersType.Original, ScrVers.Original },
-            { ScrVersType.English, ScrVers.English }
+            { ScrVersType.English, ScrVers.English },
         };
 
         Dictionary<string, HashSet<string>> targetToSourceMap = new Dictionary<string, HashSet<string>>();
@@ -1690,7 +1694,7 @@ public class ParallelTextCorpusTests
         foreach (ScrVersType versificationType in versifications.Keys)
         {
             ScrVers versification = versifications[versificationType];
-            TestContext.WriteLine($"Validating for versification: {versificationType}");
+            TestContext.Out.WriteLine($"Validating for versification: {versificationType}");
 
             Dictionary<string, string> expandedMappings = CorporaTestHelpers.ExpandVerseMappings(expectedMappings);
 
@@ -1734,12 +1738,12 @@ public class ParallelTextCorpusTests
                 mergedContent += $"Content for {sourceVerse} ";
             }
 
-            TestContext.WriteLine($"Merged content for Target {targetVerse}: {mergedContent}");
+            TestContext.Out.WriteLine($"Merged content for Target {targetVerse}: {mergedContent}");
 
             if (sourceVerses.Count > 1)
             {
                 doubleMappedVerses.Add(targetVerse, sourceVerses.ToArray());
-                TestContext.WriteLine(
+                TestContext.Out.WriteLine(
                     $"Double mapping detected for Target {targetVerse}: "
                         + $"Mapped from Source(s) {string.Join(", ", sourceVerses)}"
                 );
@@ -1786,7 +1790,7 @@ public class ParallelTextCorpusTests
             ScrVersType.English => ScrVers.English,
             ScrVersType.RussianProtestant => ScrVers.RussianProtestant,
             ScrVersType.RussianOrthodox => ScrVers.RussianOrthodox,
-            _ => throw new ArgumentException("Invalid versification type", nameof(versificationType))
+            _ => throw new ArgumentException("Invalid versification type", nameof(versificationType)),
         };
     }
 

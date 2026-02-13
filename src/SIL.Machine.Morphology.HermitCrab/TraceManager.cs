@@ -35,7 +35,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input,
-                    Output = output.Clone()
+                    Output = output.Clone(),
                 }
             );
         }
@@ -46,7 +46,7 @@
                 new Trace(TraceType.PhonologicalRuleAnalysis, rule)
                 {
                     SubruleIndex = subruleIndex,
-                    Input = input.Clone()
+                    Input = input.Clone(),
                 }
             );
         }
@@ -71,7 +71,7 @@
             {
                 SubruleIndex = subruleIndex,
                 Input = input,
-                Output = output
+                Output = output,
             };
             ((Trace)output.CurrentTrace).Children.Add(trace);
             output.CurrentTrace = trace;
@@ -97,7 +97,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input,
-                    FailureReason = reason
+                    FailureReason = reason,
                 }
             );
         }
@@ -115,7 +115,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input,
-                    FailureReason = reason
+                    FailureReason = reason,
                 }
             );
         }
@@ -148,7 +148,7 @@
                 new Trace(TraceType.StratumSynthesisOutput, stratum)
                 {
                     Output = word,
-                    FailureReason = FailureReason.PartialParse
+                    FailureReason = FailureReason.PartialParse,
                 }
             );
         }
@@ -159,7 +159,7 @@
                 new Trace(TraceType.StratumSynthesisOutput, stratum)
                 {
                     Output = word,
-                    FailureReason = FailureReason.PartialParse
+                    FailureReason = FailureReason.PartialParse,
                 }
             );
         }
@@ -178,7 +178,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input,
-                    Output = output.Clone()
+                    Output = output.Clone(),
                 }
             );
         }
@@ -196,7 +196,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input.Clone(),
-                    FailureReason = reason
+                    FailureReason = reason,
                 }
             );
         }
@@ -221,7 +221,7 @@
             {
                 SubruleIndex = subruleIndex,
                 Input = input,
-                Output = output
+                Output = output,
             };
             ((Trace)output.CurrentTrace).Children.Add(trace);
             output.CurrentTrace = trace;
@@ -240,7 +240,7 @@
                 {
                     SubruleIndex = subruleIndex,
                     Input = input,
-                    FailureReason = reason
+                    FailureReason = reason,
                 }
             );
         }

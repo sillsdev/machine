@@ -44,7 +44,7 @@ public class AlignedWordPairTests
         IEnumerable<AlignedWordPair> alignedWordPairs = new List<AlignedWordPair>()
         {
             new AlignedWordPair(0, 1) { TranslationScore = 0.1, AlignmentScore = 0.1 },
-            new AlignedWordPair(1, 0) { TranslationScore = 0.1, AlignmentScore = 0.1 }
+            new AlignedWordPair(1, 0) { TranslationScore = 0.1, AlignmentScore = 0.1 },
         };
         string alignmentString = string.Join(' ', alignedWordPairs.Select(wp => wp.ToString()));
         IEnumerable<AlignedWordPair> parsedAlignedWordPairs = AlignedWordPair.Parse(alignmentString);

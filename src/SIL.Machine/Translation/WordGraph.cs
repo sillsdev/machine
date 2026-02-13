@@ -147,11 +147,9 @@ namespace SIL.Machine.Translation
                     "  {0} [shape=\"{1}\", color=\"{2}\"",
                     i,
                     i == 0 ? "diamond" : "circle",
-                    i == 0
-                        ? "green"
-                        : FinalStates.Contains(i)
-                            ? "red"
-                            : "black"
+                    i == 0 ? "green"
+                        : FinalStates.Contains(i) ? "red"
+                        : "black"
                 );
                 if (FinalStates.Contains(i))
                     writer.Write(", peripheries=\"2\"");

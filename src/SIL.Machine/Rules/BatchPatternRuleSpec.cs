@@ -62,7 +62,7 @@ namespace SIL.Machine.Rules
                     _ruleIds[id] = ruleSpec;
                     var subpattern = new Pattern<TData, TOffset>(id, ruleSpec.Pattern.Children.CloneItems())
                     {
-                        Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match)
+                        Acceptable = match => ruleSpec.IsApplicable(match.Input) && ruleSpec.Pattern.Acceptable(match),
                     };
                     startNode.AddAfter(subpattern);
                     startNode = subpattern;

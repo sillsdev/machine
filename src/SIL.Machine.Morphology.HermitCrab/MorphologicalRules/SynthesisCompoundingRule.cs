@@ -37,7 +37,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     Filter = ann =>
                         ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
                     AnchoredToStart = true,
-                    AnchoredToEnd = true
+                    AnchoredToEnd = true,
                 }
             );
         }

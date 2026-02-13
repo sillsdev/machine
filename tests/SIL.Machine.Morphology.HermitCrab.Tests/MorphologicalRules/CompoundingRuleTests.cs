@@ -18,7 +18,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
 
@@ -35,7 +35,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") }
+                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") },
             }
         );
 
@@ -55,14 +55,14 @@ public class CompoundingRuleTests : HermitCrabTestBase
                 .New(Language.SyntacticFeatureSystem)
                 .Feature(Head)
                 .EqualTo(head => head.Feature("tense").EqualTo("past"))
-                .Value
+                .Value,
         };
         Allophonic.MorphologicalRules.Insert(0, prefix);
         prefix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
                 Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
-                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") }
+                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
             }
         );
 
@@ -80,7 +80,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
 
@@ -98,7 +98,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") }
+                Rhs = { new CopyFromInput("nonHead"), new InsertSegments(Table3, "+"), new CopyFromInput("head") },
             }
         );
 
@@ -115,7 +115,10 @@ public class CompoundingRuleTests : HermitCrabTestBase
         var rule1 = new CompoundingRule
         {
             Name = "rule1",
-            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value
+            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Symbol("V")
+                .Value,
         };
         Allophonic.MorphologicalRules.Add(rule1);
         rule1.Subrules.Add(
@@ -123,7 +126,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
 
@@ -180,7 +183,7 @@ public class CompoundingRuleTests : HermitCrabTestBase
             {
                 HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
                 NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
-                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") }
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
 

@@ -110,7 +110,7 @@ public class QuoteConventionTests
 
         var twoLevelQuoteConvention = new QuoteConvention(
             "two_level_quote_convention",
-            [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019"),]
+            [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
         Assert.That(twoLevelQuoteConvention.NumLevels, Is.EqualTo(2));
 
@@ -184,37 +184,37 @@ public class QuoteConventionTests
     public void IncludesOpeningQuotationMark()
     {
         var emptyQuoteConvention = new QuoteConvention("empty quote convention", []);
-        Assert.IsFalse(emptyQuoteConvention.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(emptyQuoteConvention.IncludesOpeningQuotationMark("\u201c"), Is.False);
 
         var positiveQuoteConvention1 = new QuoteConvention(
             "positive quote convention 1",
             [new SingleLevelQuoteConvention("\u201c", "\u201d")]
         );
-        Assert.IsTrue(positiveQuoteConvention1.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(positiveQuoteConvention1.IncludesOpeningQuotationMark("\u201c"), Is.True);
 
         var negativeQuoteConvention1 = new QuoteConvention(
             "negative quote convention 1",
             [new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
-        Assert.IsFalse(negativeQuoteConvention1.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(negativeQuoteConvention1.IncludesOpeningQuotationMark("\u201c"), Is.False);
 
         var negativeQuoteConvention2 = new QuoteConvention(
             "negative quote convention 2",
             [new SingleLevelQuoteConvention("\u201d", "\u201c")]
         );
-        Assert.IsFalse(negativeQuoteConvention2.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(negativeQuoteConvention2.IncludesOpeningQuotationMark("\u201c"), Is.False);
 
         var positiveQuoteConvention2 = new QuoteConvention(
             "positive quote convention 2",
             [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
-        Assert.IsTrue(positiveQuoteConvention2.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(positiveQuoteConvention2.IncludesOpeningQuotationMark("\u201c"), Is.True);
 
         var positiveQuoteConvention3 = new QuoteConvention(
             "positive quote convention 3",
             [new SingleLevelQuoteConvention("\u2018", "\u2019"), new SingleLevelQuoteConvention("\u201c", "\u201d")]
         );
-        Assert.IsTrue(positiveQuoteConvention3.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(positiveQuoteConvention3.IncludesOpeningQuotationMark("\u201c"), Is.True);
 
         var negativeQuoteConvention3 = new QuoteConvention(
             "negative quote convention 3",
@@ -224,44 +224,44 @@ public class QuoteConventionTests
                 new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
             ]
         );
-        Assert.IsFalse(negativeQuoteConvention3.IncludesOpeningQuotationMark("\u201c"));
+        Assert.That(negativeQuoteConvention3.IncludesOpeningQuotationMark("\u201c"), Is.False);
     }
 
     [Test]
     public void IncludesClosingQuotationMark()
     {
         var emptyQuoteConvention = new QuoteConvention("empty quote convention", []);
-        Assert.IsFalse(emptyQuoteConvention.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(emptyQuoteConvention.IncludesClosingQuotationMark("\u201d"), Is.False);
 
         var positiveQuoteConvention1 = new QuoteConvention(
             "positive quote convention 1",
             [new SingleLevelQuoteConvention("\u201c", "\u201d")]
         );
-        Assert.IsTrue(positiveQuoteConvention1.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(positiveQuoteConvention1.IncludesClosingQuotationMark("\u201d"), Is.True);
 
         var negativeQuoteConvention1 = new QuoteConvention(
             "negative quote convention 1",
             [new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
-        Assert.IsFalse(negativeQuoteConvention1.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(negativeQuoteConvention1.IncludesClosingQuotationMark("\u201d"), Is.False);
 
         var negativeQuoteConvention2 = new QuoteConvention(
             "negative quote convention 2",
             [new SingleLevelQuoteConvention("\u201d", "\u201c")]
         );
-        Assert.IsFalse(negativeQuoteConvention2.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(negativeQuoteConvention2.IncludesClosingQuotationMark("\u201d"), Is.False);
 
         var positiveQuoteConvention2 = new QuoteConvention(
             "positive quote convention 2",
             [new SingleLevelQuoteConvention("\u201c", "\u201d"), new SingleLevelQuoteConvention("\u2018", "\u2019")]
         );
-        Assert.IsTrue(positiveQuoteConvention2.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(positiveQuoteConvention2.IncludesClosingQuotationMark("\u201d"), Is.True);
 
         var positiveQuoteConvention3 = new QuoteConvention(
             "positive quote convention 3",
             [new SingleLevelQuoteConvention("\u2018", "\u2019"), new SingleLevelQuoteConvention("\u201c", "\u201d")]
         );
-        Assert.IsTrue(positiveQuoteConvention3.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(positiveQuoteConvention3.IncludesClosingQuotationMark("\u201d"), Is.True);
 
         var negativeQuoteConvention3 = new QuoteConvention(
             "negative quote convention 3",
@@ -271,7 +271,7 @@ public class QuoteConventionTests
                 new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
             ]
         );
-        Assert.IsFalse(negativeQuoteConvention3.IncludesClosingQuotationMark("\u201d"));
+        Assert.That(negativeQuoteConvention3.IncludesClosingQuotationMark("\u201d"), Is.False);
     }
 
     [Test]
@@ -309,29 +309,33 @@ public class QuoteConventionTests
                 new SingleLevelQuoteConvention("\u00ab", "\u00bb"),
             ]
         );
-        Assert.IsTrue(
-            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u201d", "\u2019"])
+        Assert.That(
+            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u201d", "\u2019"]),
+            Is.True
         );
-        Assert.IsTrue(
-            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u00ab"], ["\u201d", "\u00bb"])
+        Assert.That(
+            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u00ab"], ["\u201d", "\u00bb"]),
+            Is.True
         );
-        Assert.IsTrue(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c"], ["\u201d", "\u2019"]));
-        Assert.IsTrue(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c"], ["\u201d"]));
-        Assert.IsTrue(
-            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u00ab"], ["\u201d", "\u2019"])
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c"], ["\u201d", "\u2019"]), Is.True);
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c"], ["\u201d"]), Is.True);
+        Assert.That(
+            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u00ab"], ["\u201d", "\u2019"]),
+            Is.True
         );
 
-        Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201d", "\u2019"], ["\u201c"]));
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201d", "\u2019"], ["\u201c"]), Is.False);
 
-        Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u201e"], ["\u201d"]));
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u201e"], ["\u201d"]), Is.False);
 
-        Assert.IsFalse(
-            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u201d", "\u201f"])
+        Assert.That(
+            quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u201d", "\u201f"]),
+            Is.False
         );
 
         // must have observed the first_level quotes
-        Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u2018"], ["\u201d"]));
-        Assert.IsFalse(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u00ab"]));
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u2018"], ["\u201d"]), Is.False);
+        Assert.That(quoteConvention.IsCompatibleWithObservedQuotationMarks(["\u201c", "\u2018"], ["\u00ab"]), Is.False);
     }
 
     [Test]
@@ -396,9 +400,10 @@ public class QuoteConventionTests
         QuoteConvention normalizedHybridBritishTypewriterEnglishQuoteConvention = (
             hybridBritishTypewriterEnglishQuoteConvention.Normalize()
         );
-        Assert.IsTrue(
+        Assert.That(
             normalizedHybridBritishTypewriterEnglishQuoteConvention.Name
-                == "hybrid_british_typewriter_english_quote_convention_normalized"
+                == "hybrid_british_typewriter_english_quote_convention_normalized",
+            Is.True
         );
         Assert.That(normalizedHybridBritishTypewriterEnglishQuoteConvention.NumLevels, Is.EqualTo(3));
         Assert.That(

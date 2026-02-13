@@ -60,7 +60,7 @@ public class RuleTests : PhoneticTestsBase
 
         var rule = new PatternRule<AnnotatedStringData, int>(ruleSpec);
         AnnotatedStringData inputWord = CreateStringData("fazk");
-        Assert.IsTrue(rule.Apply(inputWord).Any());
+        Assert.That(rule.Apply(inputWord).Any(), Is.True);
     }
 
     [Test]
@@ -141,6 +141,6 @@ public class RuleTests : PhoneticTestsBase
         var rule = new PatternRule<AnnotatedStringData, int>(batchSpec);
         AnnotatedStringData inputWord = CreateStringData("fazk");
         inputWord.Annotations.Add(inputWord.Range, FeatureStruct.New(WordFeatSys).Symbol(Word).Symbol("noun").Value);
-        Assert.IsTrue(rule.Apply(inputWord).Any());
+        Assert.That(rule.Apply(inputWord).Any(), Is.True);
     }
 }

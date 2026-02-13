@@ -70,7 +70,7 @@ public class ScriptureRangeParserTests
                 {
                     "MAT",
                     new List<int>() { 1, 2, 3 }
-                }
+                },
             },
             false
         );
@@ -81,7 +81,7 @@ public class ScriptureRangeParserTests
                 {
                     "MAT",
                     new List<int>() { 1, 2, 3 }
-                }
+                },
             },
             false
         );
@@ -91,7 +91,7 @@ public class ScriptureRangeParserTests
             {
                 { "MAT", new List<int>() },
                 { "MRK", new List<int>() },
-                { "LUK", new List<int>() }
+                { "LUK", new List<int>() },
             },
             false
         );
@@ -101,7 +101,7 @@ public class ScriptureRangeParserTests
             {
                 { "MAT", new List<int>() },
                 { "MRK", new List<int>() },
-                { "LUK", new List<int>() }
+                { "LUK", new List<int>() },
             },
             false
         );
@@ -115,7 +115,7 @@ public class ScriptureRangeParserTests
                     new List<int>() { 1, 3, 4, 5, 8 }
                 },
                 { "2JN", new List<int>() },
-                { "3JN", new List<int>() }
+                { "3JN", new List<int>() },
             },
             false
         );
@@ -136,7 +136,7 @@ public class ScriptureRangeParserTests
                     "ACT",
                     new List<int>() { 1, 2, 3 }
                 },
-                { "ROM", new List<int>() }
+                { "ROM", new List<int>() },
             },
             false
         );

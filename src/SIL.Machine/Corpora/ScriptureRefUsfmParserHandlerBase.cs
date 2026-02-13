@@ -9,7 +9,7 @@ namespace SIL.Machine.Corpora
         None,
         NonVerse,
         Verse,
-        Embed
+        Embed,
     }
 
     public abstract class ScriptureRefUsfmParserHandlerBase : UsfmParserHandlerBase

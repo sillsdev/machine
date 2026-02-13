@@ -18,6 +18,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/google/sentencepiece.git
     GIT_TAG v0.1.96
 )
+# Workaround: allow configuring external projects (sentencepiece) that use old cmake_minimum_required
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Allow configuring projects requiring older CMake" FORCE)
 FetchContent_MakeAvailable(sentencepiece)
 
 # Add source to this project's executable.

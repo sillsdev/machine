@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
     {
         NotSet,
         BookChapterVerse,
-        BookVerseChapter
+        BookVerseChapter,
     }
 
     public class UsfmTokenizer
@@ -78,7 +78,7 @@ namespace SIL.Machine.Corpora
                             new UsfmToken(UsfmTokenType.Text, null, text, null)
                             {
                                 LineNumber = lineNum,
-                                ColumnNumber = colNum
+                                ColumnNumber = colNum,
                             }
                         );
                     }
@@ -179,7 +179,7 @@ namespace SIL.Machine.Corpora
                                 )
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -189,7 +189,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Character, marker, null, endMarker)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -208,7 +208,7 @@ namespace SIL.Machine.Corpora
                                 )
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -224,7 +224,7 @@ namespace SIL.Machine.Corpora
                                 )
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -234,7 +234,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -251,7 +251,7 @@ namespace SIL.Machine.Corpora
                             )
                             {
                                 LineNumber = lineNum,
-                                ColumnNumber = colNum
+                                ColumnNumber = colNum,
                             }
                         );
                         break;
@@ -260,7 +260,7 @@ namespace SIL.Machine.Corpora
                             new UsfmToken(UsfmTokenType.End, marker, null, null)
                             {
                                 LineNumber = lineNum,
-                                ColumnNumber = colNum
+                                ColumnNumber = colNum,
                             }
                         );
                         break;
@@ -272,7 +272,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.End, marker, null, null)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -286,7 +286,7 @@ namespace SIL.Machine.Corpora
                                     new UsfmToken(UsfmTokenType.Paragraph, marker, null, endMarker)
                                     {
                                         LineNumber = lineNum,
-                                        ColumnNumber = colNum
+                                        ColumnNumber = colNum,
                                     }
                                 );
                                 break;
@@ -296,7 +296,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Unknown, marker, null, marker + "*")
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -319,7 +319,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Text, null, @"\" + marker + milestoneText, null)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                             index = endOfText;
@@ -330,7 +330,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Milestone, marker, null, endMarker)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -340,7 +340,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.MilestoneEnd, marker, null, null)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                         }
@@ -400,7 +400,7 @@ namespace SIL.Machine.Corpora
                                 new UsfmToken(UsfmTokenType.Text, null, " ", null)
                                 {
                                     LineNumber = lineNum,
-                                    ColumnNumber = colNum
+                                    ColumnNumber = colNum,
                                 }
                             );
                             i++;
@@ -655,7 +655,7 @@ namespace SIL.Machine.Corpora
                     )
                     {
                         LineNumber = lineNumber,
-                        ColumnNumber = columnNumber + attributeIndex
+                        ColumnNumber = columnNumber + attributeIndex,
                     };
                     attributeToken.CopyAttributes(matchingToken);
                 }

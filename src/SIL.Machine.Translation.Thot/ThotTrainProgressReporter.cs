@@ -17,7 +17,7 @@ namespace SIL.Machine.Translation.Thot
             new Phase("Generating phrase table"),
             new Phase("Tuning language model"),
             new Phase("Tuning translation model", 0.4, reportSteps: false),
-            new Phase("Finalizing", 0.05, reportSteps: false)
+            new Phase("Finalizing", 0.05, reportSteps: false),
         };
 
         private readonly CancellationToken _cancellationToken;

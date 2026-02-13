@@ -6,6 +6,6 @@ namespace SIL.Machine.PunctuationAnalysis
         TooDeepNesting,
         IncompatibleQuotationMark,
         AmbiguousQuotationMark,
-        UnexpectedQuotationMark
+        UnexpectedQuotationMark,
     }
 }

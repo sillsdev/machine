@@ -75,7 +75,7 @@ public class ThotSmtModelTests
             "por favor , despiértenos mañana a las siete y cuarto .",
             "voy a marcharme hoy por la tarde .",
             "por favor , ¿ les importaría bajar nuestro equipaje a la habitación número cero trece ?",
-            "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?"
+            "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?",
         };
 
         using ThotSmtModel smtModel = CreateHmmModel();
@@ -89,7 +89,7 @@ public class ThotSmtModelTests
                     "please wake us up tomorrow at a quarter past seven .",
                     "i am leaving today in the afternoon .",
                     "please would you mind sending down our luggage to room number oh thirteenth ?",
-                    "could you give me the key to room number two four four , please ?"
+                    "could you give me the key to room number two four four , please ?",
                 }
             )
         );
@@ -104,7 +104,7 @@ public class ThotSmtModelTests
             "por favor , despiértenos mañana a las siete y cuarto .",
             "voy a marcharme hoy por la tarde .",
             "por favor , ¿ les importaría bajar nuestro equipaje a la habitación número cero trece ?",
-            "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?"
+            "¿ me podrían dar la llave de la habitación dos cuatro cuatro , por favor ?",
         };
 
         using ThotSmtModel smtModel = CreateHmmModel();
@@ -118,7 +118,7 @@ public class ThotSmtModelTests
                     "please wake us up tomorrow at a quarter past seven .",
                     "i am leaving today in the afternoon .",
                     "please would you mind sending down our luggage to room number oh thirteenth ?",
-                    "could you give me the key to room number two four four , please ?"
+                    "could you give me the key to room number two four four , please ?",
                 }
             )
         );
@@ -187,16 +187,15 @@ public class ThotSmtModelTests
     [Test]
     public void Constructor_ModelDoesNotExist()
     {
-        Assert.Throws<FileNotFoundException>(
-            () =>
-                new ThotSmtModel(
-                    ThotWordAlignmentModelType.Hmm,
-                    new ThotSmtParameters
-                    {
-                        TranslationModelFileNamePrefix = "does-not-exist",
-                        LanguageModelFileNamePrefix = "does-not-exist"
-                    }
-                )
+        Assert.Throws<FileNotFoundException>(() =>
+            new ThotSmtModel(
+                ThotWordAlignmentModelType.Hmm,
+                new ThotSmtParameters
+                {
+                    TranslationModelFileNamePrefix = "does-not-exist",
+                    LanguageModelFileNamePrefix = "does-not-exist",
+                }
+            )
         );
     }
 
@@ -210,16 +209,15 @@ public class ThotSmtModelTests
         string lmDir = Path.Combine(tempDir.Path, "lm");
         Directory.CreateDirectory(lmDir);
         File.WriteAllText(Path.Combine(lmDir, "trg.lm"), "corrupted");
-        Assert.Throws<InvalidOperationException>(
-            () =>
-                new ThotSmtModel(
-                    ThotWordAlignmentModelType.Hmm,
-                    new ThotSmtParameters
-                    {
-                        TranslationModelFileNamePrefix = Path.Combine(tmDir, "src_trg"),
-                        LanguageModelFileNamePrefix = Path.Combine(lmDir, "trg.lm")
-                    }
-                )
+        Assert.Throws<InvalidOperationException>(() =>
+            new ThotSmtModel(
+                ThotWordAlignmentModelType.Hmm,
+                new ThotSmtParameters
+                {
+                    TranslationModelFileNamePrefix = Path.Combine(tmDir, "src_trg"),
+                    LanguageModelFileNamePrefix = Path.Combine(lmDir, "trg.lm"),
+                }
+            )
         );
     }
 

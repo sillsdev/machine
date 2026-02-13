@@ -4,7 +4,7 @@
     {
         None,
         Converged,
-        MaxFunctionEvaluations
+        MaxFunctionEvaluations,
     }
 
     public class MinimizationResult

@@ -263,7 +263,7 @@ namespace SIL.Machine.Translation.Thot
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
                 }
             );
 
@@ -293,7 +293,7 @@ namespace SIL.Machine.Translation.Thot
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
                 }
             );
 
@@ -324,7 +324,7 @@ namespace SIL.Machine.Translation.Thot
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
                 }
             );
 
@@ -355,7 +355,7 @@ namespace SIL.Machine.Translation.Thot
                 new ExecutionDataflowBlockOptions
                 {
                     MaxDegreeOfParallelism = MaxDecoderPoolSize,
-                    CancellationToken = cancellationToken
+                    CancellationToken = cancellationToken,
                 }
             );
 

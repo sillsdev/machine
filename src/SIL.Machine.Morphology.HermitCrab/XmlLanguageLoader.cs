@@ -210,7 +210,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 DtdProcessing = DtdProcessing.Parse,
                 ValidationType = Type.GetType("Mono.Runtime") == null ? ValidationType.DTD : ValidationType.None,
-                XmlResolver = new ResourceXmlResolver()
+                XmlResolver = new ResourceXmlResolver(),
             };
 
             using (XmlReader reader = XmlReader.Create(_configPath, settings))
@@ -362,7 +362,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Name = (string)stratumElem.Element("Name"),
                 MorphologicalRuleOrder = GetMorphologicalRuleOrder(
                     (string)stratumElem.Attribute("morphologicalRuleOrder")
-                )
+                ),
             };
 
             var pruleIdsStr = (string)stratumElem.Attribute("phonologicalRules");
@@ -701,7 +701,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 case "FeatureNaturalClass":
                     nc = new NaturalClass(LoadFeatureStruct(natClassElem, _language.PhonologicalFeatureSystem))
                     {
-                        Name = (string)natClassElem.Element("Name")
+                        Name = (string)natClassElem.Element("Name"),
                     };
                     break;
 
@@ -710,7 +710,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         natClassElem.Elements("Segment").Select(se => _charDefs[(string)se.Attribute("segment")])
                     )
                     {
-                        Name = (string)natClassElem.Element("Name")
+                        Name = (string)natClassElem.Element("Name"),
                     };
                     break;
             }
@@ -754,7 +754,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 Name = (string)pruleElem.Element("Name"),
                 ApplicationMode = GetApplicationMode(multAppOrderStr),
-                Direction = GetDirection(multAppOrderStr)
+                Direction = GetDirection(multAppOrderStr),
             };
             Dictionary<string, Tuple<string, SymbolicFeature>> variables = LoadVariables(
                 pruleElem.Element("VariableFeatures")
@@ -830,13 +830,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Name = (string)metathesisElem.Element("Name"),
                 Direction = GetDirection((string)metathesisElem.Attribute("multipleApplicationOrder")),
                 LeftSwitchName = "r",
-                RightSwitchName = "l"
+                RightSwitchName = "l",
             };
 
             var groupNames = new Dictionary<string, string>
             {
                 { (string)metathesisElem.Attribute("leftSwitch"), "r" },
-                { (string)metathesisElem.Attribute("rightSwitch"), "l" }
+                { (string)metathesisElem.Attribute("rightSwitch"), "l" },
             };
             metathesisRule.Pattern = LoadPhoneticTemplate(
                 metathesisElem.Elements("StructuralDescription").Elements("PhoneticTemplate").Single(),
@@ -862,7 +862,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Id = (string)mruleElem.Element("MorphemeId"),
                 Gloss = (string)mruleElem.Element("Gloss"),
                 Blockable = (bool?)mruleElem.Attribute("blockable") ?? true,
-                IsPartial = (bool?)mruleElem.Attribute("partial") ?? false
+                IsPartial = (bool?)mruleElem.Attribute("partial") ?? false,
             };
             var multApp = (string)mruleElem.Attribute("multipleApplication");
             if (!string.IsNullOrEmpty(multApp))
@@ -956,7 +956,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Name = (string)realRuleElem.Element("Name"),
                 Id = (string)realRuleElem.Element("MorphemeId"),
                 Gloss = (string)realRuleElem.Element("Gloss"),
-                Blockable = (bool?)realRuleElem.Attribute("blockable") ?? true
+                Blockable = (bool?)realRuleElem.Attribute("blockable") ?? true,
             };
 
             var fs = new FeatureStruct();
@@ -1149,7 +1149,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             var compRule = new CompoundingRule
             {
                 Name = (string)compRuleElem.Element("Name"),
-                Blockable = (bool?)compRuleElem.Attribute("blockable") ?? true
+                Blockable = (bool?)compRuleElem.Attribute("blockable") ?? true,
             };
             var multApp = (string)compRuleElem.Attribute("multipleApplication");
             if (!string.IsNullOrEmpty(multApp))
@@ -1301,7 +1301,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             var template = new AffixTemplate
             {
                 Name = (string)tempElem.Element("Name"),
-                IsFinal = (bool)tempElem.Attribute("final")
+                IsFinal = (bool)tempElem.Attribute("final"),
             };
 
             var requiredPos = (string)tempElem.Attribute("requiredPartsOfSpeech");
@@ -1422,7 +1422,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             segments.Shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct))
                         )
                         {
-                            Tag = segments
+                            Tag = segments,
                         };
                         break;
                 }

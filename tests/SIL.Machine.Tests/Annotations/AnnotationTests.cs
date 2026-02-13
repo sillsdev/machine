@@ -152,40 +152,40 @@ public class AnnotationTests
         annList.Add(new Annotation<int>(Range<int>.Create(20, 70), FeatureStruct.New().Value), false);
 
         Annotation<int> result;
-        Assert.IsFalse(annList.Find(0, out result));
+        Assert.That(annList.Find(0, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.Begin));
 
-        Assert.IsTrue(annList.Find(1, out result));
+        Assert.That(annList.Find(1, out result), Is.True);
         Assert.That(result, Is.SameAs(annList.First));
 
-        Assert.IsFalse(annList.Find(100, out result));
+        Assert.That(annList.Find(100, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.Last));
 
-        Assert.IsFalse(annList.Find(101, out result));
+        Assert.That(annList.Find(101, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.Last));
 
-        Assert.IsFalse(annList.Find(30, out result));
+        Assert.That(annList.Find(30, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.ElementAt(3)));
 
-        Assert.IsTrue(annList.Find(9, out result));
+        Assert.That(annList.Find(9, out result), Is.True);
         Assert.That(result, Is.SameAs(annList.First.Next));
 
-        Assert.IsFalse(annList.Find(101, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(101, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.End));
 
-        Assert.IsTrue(annList.Find(100, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(100, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.SameAs(annList.Last));
 
-        Assert.IsFalse(annList.Find(1, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(1, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.First));
 
-        Assert.IsFalse(annList.Find(0, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(0, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.First));
 
-        Assert.IsFalse(annList.Find(15, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(15, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.SameAs(annList.ElementAt(2)));
 
-        Assert.IsTrue(annList.Find(10, Direction.RightToLeft, out result));
+        Assert.That(annList.Find(10, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.SameAs(annList.First.Next));
     }
 
@@ -200,9 +200,9 @@ public class AnnotationTests
         annList.Add(99, 100, FeatureStruct.New().Value);
         annList.Add(new Annotation<int>(Range<int>.Create(20, 70), FeatureStruct.New().Value), false);
 
-        Assert.IsFalse(annList.GetNodes(0, 1).Any());
+        Assert.That(annList.GetNodes(0, 1).Any(), Is.False);
 
-        Assert.IsFalse(annList.GetNodes(100, 101).Any());
+        Assert.That(annList.GetNodes(100, 101).Any(), Is.False);
 
         Annotation<int>[] anns = annList.GetNodes(8, 52).ToArray();
         Assert.That(anns.Length, Is.EqualTo(3));
@@ -230,40 +230,40 @@ public class AnnotationTests
         annList.Add(51, 100, FeatureStruct.New().Value);
 
         Annotation<int> result;
-        Assert.IsFalse(annList.FindDepthFirst(0, out result));
+        Assert.That(annList.FindDepthFirst(0, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.Begin));
 
-        Assert.IsFalse(annList.FindDepthFirst(100, out result));
+        Assert.That(annList.FindDepthFirst(100, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.Last));
 
-        Assert.IsTrue(annList.FindDepthFirst(1, out result));
+        Assert.That(annList.FindDepthFirst(1, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.First));
 
-        Assert.IsFalse(annList.FindDepthFirst(8, out result));
+        Assert.That(annList.FindDepthFirst(8, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.First.Children.First));
 
-        Assert.IsTrue(annList.FindDepthFirst(99, out result));
+        Assert.That(annList.FindDepthFirst(99, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.Last.Children.Last));
 
-        Assert.IsTrue(annList.FindDepthFirst(49, out result));
+        Assert.That(annList.FindDepthFirst(49, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.First.Next));
 
-        Assert.IsFalse(annList.FindDepthFirst(101, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(101, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.End));
 
-        Assert.IsFalse(annList.FindDepthFirst(1, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(1, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.First));
 
-        Assert.IsTrue(annList.FindDepthFirst(100, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(100, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.Last));
 
-        Assert.IsFalse(annList.FindDepthFirst(71, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(71, Direction.RightToLeft, out result), Is.False);
         Assert.That(result, Is.EqualTo(annList.Last.Children.Last));
 
-        Assert.IsTrue(annList.FindDepthFirst(2, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(2, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.First.Children.First));
 
-        Assert.IsTrue(annList.FindDepthFirst(50, Direction.RightToLeft, out result));
+        Assert.That(annList.FindDepthFirst(50, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.Last.Prev));
     }
 }

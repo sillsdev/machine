@@ -37,7 +37,7 @@ namespace SIL.Machine.Corpora
             return new TextRow(Id, segRef, DefaultContentType)
             {
                 Segment = text.Length == 0 ? Array.Empty<string>() : new[] { text },
-                Flags = flags
+                Flags = flags,
             };
         }
 

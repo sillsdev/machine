@@ -24,7 +24,7 @@ namespace SIL.Machine.Corpora
         {
             return new AlignmentRow(TextId, Ref)
             {
-                AlignedWordPairs = new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert()))
+                AlignedWordPairs = new HashSet<AlignedWordPair>(AlignedWordPairs.Select(wp => wp.Invert())),
             };
         }
     }

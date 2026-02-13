@@ -9,7 +9,7 @@ namespace SIL.Machine.Tokenization
         NoOperation,
         MergeLeft,
         MergeRight,
-        MergeBoth
+        MergeBoth,
     }
 
     public abstract class StringDetokenizer : IDetokenizer<string, string>

@@ -23,7 +23,7 @@ public class ParatextProjectQuoteConventionDetectorTests
                     $@"\id MAT
 {GetTestChapter(1, StandardEnglishQuoteConvention)}
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention();
@@ -49,7 +49,7 @@ public class ParatextProjectQuoteConventionDetectorTests
                     $@"\id MRK
 {GetTestChapter(1, StandardFrenchQuoteConvention)}
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK");
@@ -79,7 +79,7 @@ public class ParatextProjectQuoteConventionDetectorTests
 {GetTestChapter(4, StandardEnglishQuoteConvention)}
 {GetTestChapter(5, StandardFrenchQuoteConvention)}
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MRK2,4-5");
@@ -101,7 +101,7 @@ public class ParatextProjectQuoteConventionDetectorTests
 {GetTestChapter(2, StandardEnglishQuoteConvention)}
 {GetTestChapter(3)}
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT1,3");
@@ -119,7 +119,7 @@ public class ParatextProjectQuoteConventionDetectorTests
                     $@"\id LUK
 {GetTestChapter(1, StandardEnglishQuoteConvention)}
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention("MAT");
@@ -144,7 +144,7 @@ public class ParatextProjectQuoteConventionDetectorTests
 \c 1
 \v 1 This ""sentence uses a different"" convention
 "
-                }
+                },
             }
         );
         QuoteConventionAnalysis analysis = env.GetQuoteConvention();

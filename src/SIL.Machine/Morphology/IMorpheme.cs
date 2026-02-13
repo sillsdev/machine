@@ -3,7 +3,7 @@
     public enum MorphemeType
     {
         Stem,
-        Affix
+        Affix,
     }
 
     /// <summary>

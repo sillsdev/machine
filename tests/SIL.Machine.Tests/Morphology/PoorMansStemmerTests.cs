@@ -99,7 +99,7 @@ public class PoorMansStemmerTests
             "allow",
             "joke",
             "murder",
-            "suck"
+            "suck",
         };
 
         var stemmer = new PoorMansStemmer<string, char>(s => s) { NormalizeScores = true, Threshold = 0.05 };
@@ -138,7 +138,7 @@ public class PoorMansStemmerTests
         {
             NormalizeScores = true,
             Threshold = 0.03,
-            MaxAffixLength = 5
+            MaxAffixLength = 5,
         };
         stemmer.Train(words);
 

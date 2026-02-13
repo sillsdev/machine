@@ -30,7 +30,7 @@ public abstract class CommandBase : CommandLineApplication
     protected void AddCommand(CommandBase command)
     {
         command.Parent = this;
-        Commands.Add(command);
+        AddSubcommand(command);
     }
 
     protected TSpec AddSpec<TSpec>(TSpec spec)

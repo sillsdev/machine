@@ -33,7 +33,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>
         /// Adjacent to the right
         /// </summary>
-        AdjacentToRight
+        AdjacentToRight,
     }
 
     /// <summary>

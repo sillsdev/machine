@@ -459,7 +459,7 @@ namespace SIL.Machine.Translation.Thot
             {
                 HmmP0 = 0.1,
                 HmmLexicalSmoothingFactor = 0.1,
-                HmmAlignmentSmoothingFactor = 0.3
+                HmmAlignmentSmoothingFactor = 0.3,
             };
             if (_wordAlignmentModelType == ThotWordAlignmentModelType.FastAlign)
             {

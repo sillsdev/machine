@@ -14,7 +14,6 @@ using System.IO;
 #if !SINGLE_THREADED
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using System.Text;
 #endif
 
 namespace SIL.Machine.Morphology.HermitCrab

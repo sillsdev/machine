@@ -21,7 +21,7 @@ namespace SIL.Machine.Translation.Thot
             FastAlign = 5,
             IncrIbm1 = 6,
             IncrIbm2 = 7,
-            IncrHmm = 8
+            IncrHmm = 8,
         }
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]

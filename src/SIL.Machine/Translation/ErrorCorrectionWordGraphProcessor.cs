@@ -224,7 +224,7 @@ namespace SIL.Machine.Translation
             {
                 var builder = new TranslationResultBuilder(_wordGraph.SourceTokens)
                 {
-                    TargetDetokenizer = _targetDetokenizer
+                    TargetDetokenizer = _targetDetokenizer,
                 };
                 BuildCorrectionFromHypothesis(builder, _prevPrefix, _prevIsLastWordComplete, hypothesis);
                 yield return builder.ToResult();

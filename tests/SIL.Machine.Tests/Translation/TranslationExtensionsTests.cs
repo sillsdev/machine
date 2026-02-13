@@ -15,7 +15,7 @@ public class TranslationExtensionsTests
         {
             SourceSegment = "maria no daba una bofetada a la bruja verde .".Split(),
             TargetSegment = "mary didn't slap the green witch .".Split(),
-            AlignedWordPairs = knownAlignment.ToAlignedWordPairs()
+            AlignedWordPairs = knownAlignment.ToAlignedWordPairs(),
         };
 
         var estimatedAlignment = new WordAlignmentMatrix(

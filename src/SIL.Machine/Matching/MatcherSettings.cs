@@ -8,7 +8,7 @@ namespace SIL.Machine.Matching
     public enum MatchingMethod
     {
         Subsumption,
-        Unification
+        Unification,
     }
 
     public sealed class MatcherSettings<TOffset>

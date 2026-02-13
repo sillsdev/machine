@@ -35,12 +35,12 @@ public class QuotationMarkResolverTests
                     .Build(),
                 0,
                 1
-            )
+            ),
         ];
 
         quotationMarkResolver.ResolveQuotationMarks(quotationMarkStringMatches).ToList();
         Assert.That(quotationMarkResolver.QuotationMarkResolverState.Quotations.Count(), Is.GreaterThan(0));
-        Assert.IsTrue(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth > 0);
+        Assert.That(quotationMarkResolver.QuotationMarkResolverState.CurrentDepth > 0, Is.True);
 
         quotationMarkResolver.Reset();
 

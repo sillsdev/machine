@@ -31,7 +31,7 @@ public static class TestHelpers
                     Row(5, "ityay isyay orkingway ."),
                     Row(6, "orkway-N ancay ebay ardhay !"),
                     Row(7, "ayay esttay-N ancay ebay ardhay ."),
-                    Row(8, "isthay isyay ayay ordway !")
+                    Row(8, "isthay isyay ayay ordway !"),
                 }
             )
         );
@@ -48,7 +48,7 @@ public static class TestHelpers
                     Row(5, "it is working ."),
                     Row(6, "work N can be hard !"),
                     Row(7, "a test N can be hard ."),
-                    Row(8, "this is a word !")
+                    Row(8, "this is a word !"),
                 }
             )
         );

@@ -16,7 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         {
             Normal,
             Deletion,
-            SelfOpaquing
+            SelfOpaquing,
         }
 
         private readonly Morpher _morpher;
@@ -35,7 +35,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 MatchingMethod = MatchingMethod.Unification,
                 UseDefaults = true,
                 // during analysis shape nodes can have features that are underspecified, so this must be non-deterministic
-                Nondeterministic = true
+                Nondeterministic = true,
             };
 
             _rules = new List<Tuple<ReapplyType, PhonologicalPatternRule>>();
@@ -142,7 +142,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 switch (sr.Item1)
                 {
                     case ReapplyType.Normal:
-
                         {
                             if (sr.Item2.Apply(input).Any())
                                 srApplied = true;
@@ -150,7 +149,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         break;
 
                     case ReapplyType.Deletion:
-
                         {
                             int j = 0;
                             Word data = sr.Item2.Apply(input).SingleOrDefault();
@@ -166,7 +164,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         break;
 
                     case ReapplyType.SelfOpaquing:
-
                         {
                             Word data = sr.Item2.Apply(input).SingleOrDefault();
                             while (data != null)

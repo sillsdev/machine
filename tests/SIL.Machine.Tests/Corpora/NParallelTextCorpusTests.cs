@@ -24,7 +24,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -35,7 +35,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -46,7 +46,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -72,7 +72,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -82,7 +82,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -107,7 +107,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -117,7 +117,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -142,7 +142,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -152,7 +152,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -177,7 +177,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -188,7 +188,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -199,7 +199,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None)
+                    TextRow("text1", 3, "source segment 3 .", TextRowFlags.None),
                 }
             )
         );
@@ -221,12 +221,12 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
         var corpus2 = new DictionaryTextCorpus(
-            new MemoryText("text1", new[] { TextRow("text1", 1, "source segment 1 ."), })
+            new MemoryText("text1", new[] { TextRow("text1", 1, "source segment 1 .") })
         );
         var corpus3 = new DictionaryTextCorpus(
             new MemoryText("text1", new[] { TextRow("text1", 1, "source segment 1 .") })
@@ -248,7 +248,7 @@ public class NParallelTextCorpusTests
                 new[]
                 {
                     TextRow("text1", 1, "source segment 1 .", TextRowFlags.None),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -276,7 +276,7 @@ public class NParallelTextCorpusTests
                         TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 3, flags: TextRowFlags.InRange),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -288,7 +288,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
                     TextRow("text1", 3, "source segment 3 ."),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -300,7 +300,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
                     TextRow("text1", 3, "source segment 3 ."),
-                    TextRow("text1", 4, "source segment 4 .")
+                    TextRow("text1", 4, "source segment 4 ."),
                 }
             )
         );
@@ -326,7 +326,7 @@ public class NParallelTextCorpusTests
                         "source segment 2 . source segment 3 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -342,7 +342,7 @@ public class NParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -353,7 +353,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -377,7 +377,7 @@ public class NParallelTextCorpusTests
                         "source segment 2 . source segment 3 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -393,7 +393,7 @@ public class NParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -404,7 +404,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -429,7 +429,7 @@ public class NParallelTextCorpusTests
                         "source segment 2 . source segment 3 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -445,7 +445,7 @@ public class NParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -456,7 +456,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -481,7 +481,7 @@ public class NParallelTextCorpusTests
                         "source segment 2 . source segment 3 .",
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
-                    TextRow("text1", 3, flags: TextRowFlags.InRange)
+                    TextRow("text1", 3, flags: TextRowFlags.InRange),
                 }
             )
         );
@@ -497,7 +497,7 @@ public class NParallelTextCorpusTests
                         TextRowFlags.SentenceStart | TextRowFlags.InRange | TextRowFlags.RangeStart
                     ),
                     TextRow("text1", 2, flags: TextRowFlags.InRange),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -508,7 +508,7 @@ public class NParallelTextCorpusTests
                 {
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -529,7 +529,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -541,7 +541,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -553,7 +553,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 .")
+                    TextRow("text1", 3, "source segment 3 ."),
                 }
             )
         );
@@ -576,7 +576,7 @@ public class NParallelTextCorpusTests
                     TextRow("text1", 1, "source segment 1 ."),
                     TextRow("text1", 2, "source segment 2-1 ."),
                     TextRow("text1", 2, "source segment 2-2 ."),
-                    TextRow("text1", 3, "source segment 3 . ")
+                    TextRow("text1", 3, "source segment 3 . "),
                 }
             )
         );
@@ -599,7 +599,7 @@ public class NParallelTextCorpusTests
         return new TextRow(textId, rowRef)
         {
             Segment = text.Length == 0 ? Array.Empty<string>() : text.Split(),
-            Flags = flags
+            Flags = flags,
         };
     }
 }

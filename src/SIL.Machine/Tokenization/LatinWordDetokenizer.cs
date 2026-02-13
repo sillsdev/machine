@@ -11,7 +11,7 @@ namespace SIL.Machine.Tokenization
             DoubleQuotation,
             SingleQuotation,
             DoubleAngle,
-            SingleAngle
+            SingleAngle,
         }
 
         private static readonly Dictionary<char, QuoteType> QuotationMarks = new Dictionary<char, QuoteType>
@@ -29,7 +29,7 @@ namespace SIL.Machine.Tokenization
             { '«', QuoteType.DoubleAngle },
             { '»', QuoteType.DoubleAngle },
             { '‹', QuoteType.SingleAngle },
-            { '›', QuoteType.SingleAngle }
+            { '›', QuoteType.SingleAngle },
         };
 
         protected override object CreateContext()

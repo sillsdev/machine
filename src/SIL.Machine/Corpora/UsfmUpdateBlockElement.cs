@@ -8,7 +8,7 @@ namespace SIL.Machine.Corpora
         Paragraph,
         Embed,
         Style,
-        Other
+        Other,
     }
 
     public class UsfmUpdateBlockElement

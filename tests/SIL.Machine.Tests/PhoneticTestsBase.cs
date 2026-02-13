@@ -32,7 +32,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("son?", "?")
             )
             {
-                DefaultSymbolID = "son?"
+                DefaultSymbolID = "son?",
             },
             new SymbolicFeature(
                 "syl",
@@ -41,7 +41,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("syl?", "?")
             )
             {
-                DefaultSymbolID = "syl?"
+                DefaultSymbolID = "syl?",
             },
             new SymbolicFeature(
                 "cons",
@@ -50,7 +50,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("cons?", "?")
             )
             {
-                DefaultSymbolID = "cons?"
+                DefaultSymbolID = "cons?",
             },
             new SymbolicFeature(
                 "high",
@@ -59,7 +59,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("high?", "?")
             )
             {
-                DefaultSymbolID = "high?"
+                DefaultSymbolID = "high?",
             },
             new SymbolicFeature(
                 "back",
@@ -68,7 +68,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("back?", "?")
             )
             {
-                DefaultSymbolID = "back?"
+                DefaultSymbolID = "back?",
             },
             new SymbolicFeature(
                 "front",
@@ -77,7 +77,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("front?", "?")
             )
             {
-                DefaultSymbolID = "front?"
+                DefaultSymbolID = "front?",
             },
             new SymbolicFeature(
                 "low",
@@ -86,7 +86,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("low?", "?")
             )
             {
-                DefaultSymbolID = "low?"
+                DefaultSymbolID = "low?",
             },
             new SymbolicFeature(
                 "rnd",
@@ -95,7 +95,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("rnd?", "?")
             )
             {
-                DefaultSymbolID = "rnd?"
+                DefaultSymbolID = "rnd?",
             },
             new SymbolicFeature(
                 "ant",
@@ -104,7 +104,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("ant?", "?")
             )
             {
-                DefaultSymbolID = "ant?"
+                DefaultSymbolID = "ant?",
             },
             new SymbolicFeature(
                 "cor",
@@ -113,7 +113,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("cor?", "?")
             )
             {
-                DefaultSymbolID = "cor?"
+                DefaultSymbolID = "cor?",
             },
             new SymbolicFeature(
                 "voice",
@@ -122,7 +122,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("voice?", "?")
             )
             {
-                DefaultSymbolID = "voice?"
+                DefaultSymbolID = "voice?",
             },
             new SymbolicFeature(
                 "cont",
@@ -131,7 +131,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("cont?", "?")
             )
             {
-                DefaultSymbolID = "cont?"
+                DefaultSymbolID = "cont?",
             },
             new SymbolicFeature(
                 "nas",
@@ -140,7 +140,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("nas?", "?")
             )
             {
-                DefaultSymbolID = "nas?"
+                DefaultSymbolID = "nas?",
             },
             new SymbolicFeature(
                 "str",
@@ -149,9 +149,9 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("str?", "?")
             )
             {
-                DefaultSymbolID = "str?"
+                DefaultSymbolID = "str?",
             },
-            new StringFeature("strRep")
+            new StringFeature("strRep"),
         };
 
         WordFeatSys = new FeatureSystem
@@ -163,7 +163,7 @@ public abstract class PhoneticTestsBase
                 new FeatureSymbol("adj"),
                 new FeatureSymbol("adv"),
                 new FeatureSymbol("det")
-            )
+            ),
         };
 
         Word = new FeatureSymbol("Word");
@@ -645,7 +645,7 @@ public abstract class PhoneticTestsBase
             { ',', FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(",").Value },
             { ' ', FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(" ").Value },
             { '.', FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo(".").Value },
-            { '0', FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("0").Value }
+            { '0', FeatureStruct.New(PhoneticFeatSys).Symbol(Bdry).Feature("strRep").EqualTo("0").Value },
         };
     }
 

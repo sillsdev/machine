@@ -15,85 +15,98 @@ public class QuotationMarkUpdateFirstPassTests
         );
 
         // Cases where we expect fallback mode to work
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_english"),
                 GetQuoteConventionByName("standard_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_french"),
                 GetQuoteConventionByName("british_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_western_european"),
                 GetQuoteConventionByName("standard_russian")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_western_european_variant"),
                 GetQuoteConventionByName("standard_arabic")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("central_european"),
                 GetQuoteConventionByName("british_typewriter_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_swedish"),
                 GetQuoteConventionByName("typewriter_french")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_finnish"),
                 GetQuoteConventionByName("british_inspired_western_european")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("eastern_european"),
                 GetQuoteConventionByName("central_european")
-            )
+            ),
+            Is.True
         );
 
         // Cases where we expect fallback mode to fail
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_english"),
                 GetQuoteConventionByName("western_european")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_french"),
                 GetQuoteConventionByName("western_european")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_french"),
                 GetQuoteConventionByName("french_variant")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("central_european"),
                 GetQuoteConventionByName("typewriter_western_european")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("eastern_european"),
                 GetQuoteConventionByName("standard_russian")
-            )
+            ),
+            Is.False
         );
     }
 
@@ -106,97 +119,112 @@ public class QuotationMarkUpdateFirstPassTests
         );
 
         // Cases where we expect fallback mode to work
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_english").Normalize(),
                 GetQuoteConventionByName("standard_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_french").Normalize(),
                 GetQuoteConventionByName("british_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_western_european").Normalize(),
                 GetQuoteConventionByName("standard_russian")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_western_european_variant").Normalize(),
                 GetQuoteConventionByName("standard_arabic")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("central_european").Normalize(),
                 GetQuoteConventionByName("british_typewriter_english")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_swedish").Normalize(),
                 GetQuoteConventionByName("typewriter_french")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_finnish").Normalize(),
                 GetQuoteConventionByName("british_inspired_western_european")
-            )
+            ),
+            Is.True
         );
-        Assert.IsTrue(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("eastern_european").Normalize(),
                 GetQuoteConventionByName("central_european")
-            )
+            ),
+            Is.True
         );
 
         // Cases where we expect fallback mode to fail
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("western_european").Normalize(),
                 GetQuoteConventionByName("standard_english")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("french_variant").Normalize(),
                 GetQuoteConventionByName("hybrid_typewriter_english")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("british_inspired_western_european").Normalize(),
                 GetQuoteConventionByName("standard_russian")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("typewriter_english").Normalize(),
                 GetQuoteConventionByName("western_european")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("central_european_guillemets").Normalize(),
                 GetQuoteConventionByName("french_variant")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_arabic").Normalize(),
                 GetQuoteConventionByName("hybrid_typewriter_english")
-            )
+            ),
+            Is.False
         );
-        Assert.IsFalse(
+        Assert.That(
             firstPassAnalyzer.CheckWhetherFallbackModeWillWork(
                 GetQuoteConventionByName("standard_russian").Normalize(),
                 GetQuoteConventionByName("standard_french")
-            )
+            ),
+            Is.False
         );
     }
 
@@ -209,7 +237,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
                     + "He said to the woman, “Has God really said, "
-                    + "‘You shall not eat of any tree of the garden’?”"
+                    + "‘You shall not eat of any tree of the garden’?”",
             ],
             "standard_english",
             "standard_english"
@@ -223,7 +251,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
                     + "He said to the woman, “Has God really said, "
-                    + "‘You shall not eat of any tree of the garden’?"
+                    + "‘You shall not eat of any tree of the garden’?",
             ],
             "standard_english",
             "standard_english"
@@ -237,7 +265,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
                     + "He said to the woman, Has God really said, "
-                    + "You shall not eat of any tree of the garden?”"
+                    + "You shall not eat of any tree of the garden?”",
             ],
             "standard_english",
             "standard_english"
@@ -251,7 +279,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "“Now the serpent was more “subtle than any animal "
                     + "of the “field which “Yahweh God had made. "
                     + "He said to the woman, “Has God really said, "
-                    + "“You shall not eat of any tree of the garden?"
+                    + "“You shall not eat of any tree of the garden?",
             ],
             "standard_english",
             "standard_english"
@@ -265,7 +293,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
                     + "He said to the woman\"Has God really said, "
-                    + "You shall not eat of any tree of the garden?"
+                    + "You shall not eat of any tree of the garden?",
             ],
             "typewriter_english",
             "standard_english"
@@ -279,7 +307,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "Now the serpent was more subtle than any animal "
                     + "of the field which Yahweh God had made. "
                     + "He said to the woman\"Has God really said, "
-                    + "You shall not eat of any tree of the garden?"
+                    + "You shall not eat of any tree of the garden?",
             ],
             "typewriter_english",
             "standard_english"
@@ -293,7 +321,7 @@ public class QuotationMarkUpdateFirstPassTests
                 "\"Now the serpent was more \"subtle than any animal "
                     + "of the \"field which \"Yahweh God had made. "
                     + "He said to the woman, \"Has God really said, "
-                    + "\"You shall not eat of any tree of the garden?"
+                    + "\"You shall not eat of any tree of the garden?",
             ],
             "typewriter_english",
             "standard_english"
@@ -317,15 +345,15 @@ public class QuotationMarkUpdateFirstPassTests
 
         // Test with one issue
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.UnpairedQuotationMark]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.AmbiguousQuotationMark]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
@@ -335,24 +363,24 @@ public class QuotationMarkUpdateFirstPassTests
 
         // Test with multiple issues
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.TooDeepNesting, QuotationMarkResolutionIssue.AmbiguousQuotationMark,]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.TooDeepNesting,
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [
-                    QuotationMarkResolutionIssue.UnpairedQuotationMark,
-                    QuotationMarkResolutionIssue.AmbiguousQuotationMark,
-                ]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.TooDeepNesting, QuotationMarkResolutionIssue.UnpairedQuotationMark,]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.TooDeepNesting,
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
     }
@@ -372,15 +400,15 @@ public class QuotationMarkUpdateFirstPassTests
 
         // Test with one issue
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.UnpairedQuotationMark]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFallback)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.AmbiguousQuotationMark]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
@@ -390,24 +418,24 @@ public class QuotationMarkUpdateFirstPassTests
 
         // Test with multiple issues
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [
-                    QuotationMarkResolutionIssue.AmbiguousQuotationMark,
-                    QuotationMarkResolutionIssue.UnpairedQuotationMark,
-                ]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.AmbiguousQuotationMark, QuotationMarkResolutionIssue.TooDeepNesting,]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.AmbiguousQuotationMark,
+                QuotationMarkResolutionIssue.TooDeepNesting,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.Skip)
         );
         Assert.That(
-            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues(
-                [QuotationMarkResolutionIssue.TooDeepNesting, QuotationMarkResolutionIssue.UnpairedQuotationMark,]
-            ),
+            firstPassAnalyzer.ChooseBestStrategyBasedOnObservedIssues([
+                QuotationMarkResolutionIssue.TooDeepNesting,
+                QuotationMarkResolutionIssue.UnpairedQuotationMark,
+            ]),
             Is.EqualTo(QuotationMarkUpdateStrategy.ApplyFallback)
         );
 
@@ -527,7 +555,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFull,
-            QuotationMarkUpdateStrategy.ApplyFull
+            QuotationMarkUpdateStrategy.ApplyFull,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -551,7 +579,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFull,
-            QuotationMarkUpdateStrategy.ApplyFallback
+            QuotationMarkUpdateStrategy.ApplyFallback,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -575,7 +603,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFallback,
-            QuotationMarkUpdateStrategy.ApplyFull
+            QuotationMarkUpdateStrategy.ApplyFull,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -599,7 +627,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFull,
-            QuotationMarkUpdateStrategy.Skip
+            QuotationMarkUpdateStrategy.Skip,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -623,7 +651,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.Skip,
-            QuotationMarkUpdateStrategy.ApplyFull
+            QuotationMarkUpdateStrategy.ApplyFull,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -647,7 +675,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFallback,
-            QuotationMarkUpdateStrategy.ApplyFallback
+            QuotationMarkUpdateStrategy.ApplyFallback,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -671,7 +699,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.Skip,
-            QuotationMarkUpdateStrategy.Skip
+            QuotationMarkUpdateStrategy.Skip,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -695,7 +723,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.ApplyFallback,
-            QuotationMarkUpdateStrategy.Skip
+            QuotationMarkUpdateStrategy.Skip,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -719,7 +747,7 @@ public class QuotationMarkUpdateFirstPassTests
         List<QuotationMarkUpdateStrategy> expectedActions =
         [
             QuotationMarkUpdateStrategy.Skip,
-            QuotationMarkUpdateStrategy.ApplyFallback
+            QuotationMarkUpdateStrategy.ApplyFallback,
         ];
         List<QuotationMarkUpdateStrategy> observedActions = RunFirstPass(
             normalizedUsfm,
@@ -739,12 +767,12 @@ public class QuotationMarkUpdateFirstPassTests
         QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             sourceQuoteConventionName
         );
-        Assert.IsNotNull(sourceQuoteConvention);
+        Assert.That(sourceQuoteConvention, Is.Not.Null);
 
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             targetQuoteConventionName
         );
-        Assert.IsNotNull(targetQuoteConvention);
+        Assert.That(targetQuoteConvention, Is.Not.Null);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
         UsfmParser.Parse(normalizedUsfm, firstPassAnalyzer);
@@ -761,12 +789,12 @@ public class QuotationMarkUpdateFirstPassTests
         QuoteConvention sourceQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             sourceQuoteConventionName
         );
-        Assert.IsNotNull(sourceQuoteConvention);
+        Assert.That(sourceQuoteConvention, Is.Not.Null);
 
         QuoteConvention targetQuoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(
             targetQuoteConventionName
         );
-        Assert.IsNotNull(targetQuoteConvention);
+        Assert.That(targetQuoteConvention, Is.Not.Null);
 
         var firstPassAnalyzer = new QuotationMarkUpdateFirstPass(sourceQuoteConvention, targetQuoteConvention);
 
@@ -780,7 +808,7 @@ public class QuotationMarkUpdateFirstPassTests
     private static QuoteConvention GetQuoteConventionByName(string name)
     {
         QuoteConvention quoteConvention = QuoteConventions.Standard.GetQuoteConventionByName(name);
-        Assert.IsNotNull(quoteConvention);
+        Assert.That(quoteConvention, Is.Not.Null);
         return quoteConvention;
     }
 }
