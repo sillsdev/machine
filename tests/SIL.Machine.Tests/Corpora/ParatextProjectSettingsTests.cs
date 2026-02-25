@@ -174,6 +174,7 @@ public class ParatextProjectSettingsTests
     private static ParatextProjectSettings CreateSettings(string fileNameForm)
     {
         return new ParatextProjectSettings(
+            "Id",
             "Name",
             "Name",
             Encoding.UTF8,
@@ -185,7 +186,8 @@ public class ParatextProjectSettingsTests
             "Major",
             "",
             "BiblicalTerms.xml",
-            "en"
+            "en",
+            "Standard"
         );
     }
 }
