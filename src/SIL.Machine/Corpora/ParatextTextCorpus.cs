@@ -4,9 +4,21 @@ namespace SIL.Machine.Corpora
 {
     public class ParatextTextCorpus : ScriptureTextCorpus
     {
-        public ParatextTextCorpus(string projectDir, bool includeMarkers = false, bool includeAllText = false)
+        public ParatextTextCorpus(
+            string projectDir,
+            bool includeMarkers = false,
+            bool includeAllText = false,
+            string parentProjectDir = null
+        )
         {
-            var parser = new FileParatextProjectSettingsParser(projectDir);
+            ParatextProjectSettings parentSettings = null;
+            if (parentProjectDir != null)
+            {
+                var parentParser = new FileParatextProjectSettingsParser(parentProjectDir);
+                parentSettings = parentParser.Parse();
+            }
+
+            var parser = new FileParatextProjectSettingsParser(projectDir, parentSettings);
             ParatextProjectSettings settings = parser.Parse();
 
             Versification = settings.Versification;

@@ -30,6 +30,7 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
     }
 
     public class DefaultParatextProjectSettings(
+        string id = "Id",
         string name = "Test",
         string fullName = "TestProject",
         Encoding? encoding = null,
@@ -41,9 +42,13 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
         string biblicalTermsListType = "Project",
         string biblicalTermsProjectName = "Test",
         string biblicalTermsFileName = "ProjectBiblicalTerms.xml",
-        string languageCode = "en"
+        string languageCode = "en",
+        string translationType = "Standard",
+        string? parentGuid = null,
+        string? parentName = null
     )
         : ParatextProjectSettings(
+            id,
             name,
             fullName,
             encoding ?? Encoding.UTF8,
@@ -55,6 +60,9 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
             biblicalTermsListType,
             biblicalTermsProjectName,
             biblicalTermsFileName,
-            languageCode
+            languageCode,
+            translationType,
+            parentGuid,
+            parentName
         ) { }
 }

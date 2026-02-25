@@ -10,16 +10,26 @@ namespace SIL.Machine.Corpora
             string fileName,
             IEnumerable<string> termCategories,
             bool useTermGlosses = true,
-            IDictionary<string, HashSet<int>> chapters = null
+            IDictionary<string, HashSet<int>> chapters = null,
+            string parentFileName = null
         )
         {
+            ParatextProjectSettings parentSettings = null;
+            if (parentFileName != null)
+            {
+                using (var archive = ZipFile.OpenRead(parentFileName))
+                {
+                    parentSettings = ZipParatextProjectSettingsParser.Parse(archive);
+                }
+            }
+
             using (var archive = ZipFile.OpenRead(fileName))
             {
-                IEnumerable<KeyTerm> keyTerms = new ZipParatextProjectTermsParser(archive)
+                IEnumerable<KeyTerm> keyTerms = new ZipParatextProjectTermsParser(archive, parentSettings)
                     .Parse(termCategories, useTermGlosses, chapters)
                     .OrderBy(g => g.Id);
 
-                ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive);
+                ParatextProjectSettings settings = ZipParatextProjectSettingsParser.Parse(archive, parentSettings);
 
                 string textId =
                     $"{settings.BiblicalTermsListType}:{settings.BiblicalTermsProjectName}:{settings.BiblicalTermsFileName}";

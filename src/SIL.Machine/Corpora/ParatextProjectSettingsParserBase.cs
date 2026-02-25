@@ -9,10 +9,15 @@ namespace SIL.Machine.Corpora
     public abstract class ParatextProjectSettingsParserBase
     {
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
+        private readonly ParatextProjectSettings _parentParatextProjectSettings;
 
-        public ParatextProjectSettingsParserBase(IParatextProjectFileHandler paratextProjectFileHandler)
+        public ParatextProjectSettingsParserBase(
+            IParatextProjectFileHandler paratextProjectFileHandler,
+            ParatextProjectSettings parentParatextProjectSettings = null
+        )
         {
             _paratextProjectFileHandler = paratextProjectFileHandler;
+            _parentParatextProjectSettings = parentParatextProjectSettings;
         }
 
         public ParatextProjectSettings Parse()
@@ -29,6 +34,7 @@ namespace SIL.Machine.Corpora
                 settingsDoc = XDocument.Load(stream);
             }
 
+            string guid = settingsDoc.Root.Element("Guid").Value;
             string name = settingsDoc.Root.Element("Name").Value;
             string fullName = settingsDoc.Root.Element("FullName").Value;
 
@@ -45,7 +51,6 @@ namespace SIL.Machine.Corpora
             var versification = new ScrVers((ScrVersType)scrVersType);
             if (_paratextProjectFileHandler.Exists("custom.vrs"))
             {
-                var guid = (string)settingsDoc.Root.Element("Guid");
                 string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
                 if (Versification.Table.Implementation.Exists(versName))
                 {
@@ -107,14 +112,27 @@ namespace SIL.Machine.Corpora
             string languageIsoCodeSetting = settingsDoc.Root.Element("LanguageIsoCode")?.Value;
             if (languageIsoCodeSetting != null)
             {
-                string[] languageIsoCodeSettingParts = settingsDoc.Root.Element("LanguageIsoCode").Value.Split(':');
+                string[] languageIsoCodeSettingParts = languageIsoCodeSetting.Split(':');
                 if (languageIsoCodeSettingParts.Length > 0)
                 {
                     languageCode = languageIsoCodeSettingParts[0];
                 }
             }
 
-            return new ParatextProjectSettings(
+            string translationInfoSetting = settingsDoc.Root.Element("TranslationInfo")?.Value;
+            string translationType = "Standard";
+            string parentName = null;
+            string parentGuid = null;
+            if (translationInfoSetting != null)
+            {
+                string[] translationInfoSettingParts = translationInfoSetting.Split(':');
+                translationType = translationInfoSettingParts[0];
+                parentName = translationInfoSettingParts[1] != "" ? translationInfoSettingParts[1] : null;
+                parentGuid = translationInfoSettingParts[2] != "" ? translationInfoSettingParts[2] : null;
+            }
+
+            var settings = new ParatextProjectSettings(
+                guid,
                 name,
                 fullName,
                 encoding,
@@ -126,8 +144,18 @@ namespace SIL.Machine.Corpora
                 parts[0],
                 parts[1],
                 parts[2],
-                languageCode
+                languageCode,
+                translationType,
+                parentGuid,
+                parentName
             );
+
+            if (_parentParatextProjectSettings != null && settings.HasParent)
+            {
+                settings.Parent = _parentParatextProjectSettings;
+            }
+
+            return settings;
         }
     }
 }
