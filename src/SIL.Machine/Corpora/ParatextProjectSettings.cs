@@ -44,7 +44,7 @@ namespace SIL.Machine.Corpora
             TranslationType = translationType;
             ParentGuid = parentGuid;
             ParentName = parentName;
-            Parent = parentSettings;
+            _parent = parentSettings;
         }
 
         public string Guid { get; }
