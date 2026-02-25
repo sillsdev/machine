@@ -5,7 +5,13 @@ namespace SIL.Machine.PunctuationAnalysis
 {
     public class ZipParatextProjectQuoteConventionDetector : ParatextProjectQuoteConventionDetector
     {
-        public ZipParatextProjectQuoteConventionDetector(ZipArchive archive)
-            : base(new ZipParatextProjectFileHandler(archive), ZipParatextProjectSettingsParser.Parse(archive)) { }
+        public ZipParatextProjectQuoteConventionDetector(
+            ZipArchive archive,
+            ParatextProjectSettings parentSettings = null
+        )
+            : base(
+                new ZipParatextProjectFileHandler(archive),
+                ZipParatextProjectSettingsParser.Parse(archive, parentSettings)
+            ) { }
     }
 }

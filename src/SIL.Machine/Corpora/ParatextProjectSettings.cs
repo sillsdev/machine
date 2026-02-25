@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using SIL.Scripture;
@@ -8,6 +9,7 @@ namespace SIL.Machine.Corpora
     public class ParatextProjectSettings
     {
         public ParatextProjectSettings(
+            string guid,
             string name,
             string fullName,
             Encoding encoding,
@@ -19,9 +21,14 @@ namespace SIL.Machine.Corpora
             string biblicalTermsListType,
             string biblicalTermsProjectName,
             string biblicalTermsFileName,
-            string languageCode
+            string languageCode,
+            string translationType,
+            string parentGuid = null,
+            string parentName = null,
+            ParatextProjectSettings parentSettings = null
         )
         {
+            Guid = guid;
             Name = name;
             FullName = fullName;
             Encoding = encoding;
@@ -34,12 +41,17 @@ namespace SIL.Machine.Corpora
             BiblicalTermsProjectName = biblicalTermsProjectName;
             BiblicalTermsFileName = biblicalTermsFileName;
             LanguageCode = languageCode;
+            TranslationType = translationType;
+            ParentGuid = parentGuid;
+            ParentName = parentName;
+            _parent = parentSettings;
         }
 
+        public string Guid { get; }
         public string Name { get; }
         public string FullName { get; }
         public Encoding Encoding { get; }
-        public ScrVers Versification { get; }
+        public ScrVers Versification { get; private set; }
         public UsfmStylesheet Stylesheet { get; }
         public string FileNamePrefix { get; }
         public string FileNameForm { get; }
@@ -47,8 +59,22 @@ namespace SIL.Machine.Corpora
         public string BiblicalTermsListType { get; }
         public string BiblicalTermsProjectName { get; }
         public string BiblicalTermsFileName { get; }
-
         public string LanguageCode { get; }
+        public string TranslationType { get; }
+        public string ParentGuid { get; }
+        public string ParentName { get; }
+        public ParatextProjectSettings Parent
+        {
+            get { return _parent; }
+            set
+            {
+                if (!IsDaughterProjectOf(value))
+                    throw new ArgumentException($"Project {value.Name} is not the parent project of project {Name}.");
+                _parent = value;
+                Versification = value.Versification;
+            }
+        }
+        private ParatextProjectSettings _parent;
 
         public bool IsBookFileName(string fileName, out string bookId)
         {
@@ -112,6 +138,15 @@ namespace SIL.Machine.Corpora
             {
                 yield return bookId;
             }
+        }
+
+        public bool HasParent => !string.IsNullOrEmpty(ParentGuid);
+
+        public bool IsDaughterProjectOf(ParatextProjectSettings parentSettings)
+        {
+            if (!HasParent)
+                return false;
+            return ParentGuid.Equals(parentSettings.Guid);
         }
 
         private static string GetBookFileNameDigits(string bookId)
