@@ -2,15 +2,15 @@ name: Create Porting Issue
 
 on:
   pull_request:
-    types: [closed]
-  workflow_dispatch:
+    types: [closed, opened]
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   create-port-issue:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event.pull_request.merged == true || github.event.action == 'opened'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
               ? "machine.py"
               : "machine";
 
-            if (context.eventName === "workflow_dispatch") {
+            if (context.event.action === "opened") {
               await github.rest.issues.create({
                 owner,
                 repo: otherRepo,
@@ -40,7 +40,30 @@ jobs:
               const prTitle = context.payload.pull_request.title;
               const prUrl = context.payload.pull_request.html_url;
 
-              if (context.payload.pull_request.body?.includes("AUTO-GENERATED-ISSUE")) {
+            const query = `
+                query($owner: String!, $repo: String!, $number: Int!) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $number) {
+                      closingIssuesReferences(first: 10) {
+                        nodes {
+                          number
+                          body
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+
+              const result = await github.graphql(query, {
+                owner,
+                repo: currentRepo,
+                number: prNumber
+              });
+
+              const closingIssues = result.repository.pullRequest.closingIssuesReferences.nodes;
+
+              if (closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
                 return;
               }
 
@@ -51,13 +74,11 @@ jobs:
               <!-- AUTO-GENERATED-ISSUE -->
               `;
 
-              const labelName = "porting";
-
               await github.rest.issues.create({
                 owner,
                 repo: otherRepo,
                 title: issueTitle,
                 body: issueBody,
-                labels: [labelName]
+                labels: ["porting"]
               });
             }
