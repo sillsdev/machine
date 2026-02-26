@@ -26,12 +26,12 @@ jobs:
               ? "machine.py"
               : "machine";
 
-            if (context.event.action === "opened") {
+            if (context.payload.action === "opened") {
               await github.rest.issues.create({
                 owner,
                 repo: otherRepo,
                 title: "Test auto-porting issue",
-                body: "This is a test",
+                body: "This is a test. Porting from ${currentRepo} to ${otherRepo}",
                 labels: ["porting"]
               });
             }
