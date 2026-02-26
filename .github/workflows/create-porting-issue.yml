@@ -2,7 +2,7 @@ name: Create Porting Issue
 
 on:
   pull_request:
-    types: [closed, opened]
+    types: [closed]
 
 permissions:
   contents: read
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   create-port-issue:
-    if: github.event.pull_request.merged == true || github.event.action == 'opened'
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -26,19 +26,9 @@ jobs:
               ? "machine.py"
               : "machine";
 
-            if (context.payload.action === "opened") {
-              await github.rest.issues.create({
-                owner,
-                repo: otherRepo,
-                title: "Test auto-porting issue",
-                body: `This is a test. Porting from ${currentRepo} to ${otherRepo}`,
-                labels: ["porting"]
-              });
-            }
-            else {
-              const prNumber = context.payload.pull_request.number;
-              const prTitle = context.payload.pull_request.title;
-              const prUrl = context.payload.pull_request.html_url;
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prUrl = context.payload.pull_request.html_url;
 
             const query = `
                 query($owner: String!, $repo: String!, $number: Int!) {
@@ -55,30 +45,29 @@ jobs:
                 }
               `;
 
-              const result = await github.graphql(query, {
-                owner,
-                repo: currentRepo,
-                number: prNumber
-              });
+            const result = await github.graphql(query, {
+              owner,
+              repo: currentRepo,
+              number: prNumber
+            });
 
-              const closingIssues = result.repository.pullRequest.closingIssuesReferences.nodes;
+            const closingIssues = result.repository.pullRequest.closingIssuesReferences.nodes;
 
-              if (closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
-                return;
-              }
-
-              const issueTitle = `Port '${prTitle}'`;
-              const issueBody = `
-              Port any relevant changes in ${prUrl} from ${currentRepo} to ${otherRepo}.
-
-              <!-- AUTO-GENERATED-ISSUE -->
-              `;
-
-              await github.rest.issues.create({
-                owner,
-                repo: otherRepo,
-                title: issueTitle,
-                body: issueBody,
-                labels: ["porting"]
-              });
+            if (closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
+              return;
             }
+
+            const issueTitle = `Port '${prTitle}'`;
+            const issueBody = `
+            Port any relevant changes in ${prUrl} from ${currentRepo} to ${otherRepo}.
+
+            <!-- AUTO-GENERATED-ISSUE -->
+            `;
+
+            await github.rest.issues.create({
+              owner,
+              repo: otherRepo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ["porting"]
+            });
