@@ -1,0 +1,63 @@
+name: Create Porting Issue
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create-port-issue:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create issue in opposite repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PORTING_API_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const currentRepo = context.repo.repo;
+
+            const otherRepo = currentRepo === "machine"
+              ? "machine.py"
+              : "machine";
+
+            if (context.eventName === "workflow_dispatch") {
+              await github.rest.issues.create({
+                owner,
+                repo: otherRepo,
+                title: "Test auto-porting issue",
+                body: "This is a test",
+                labels: ["porting"]
+              });
+            }
+            else {
+              const prNumber = context.payload.pull_request.number;
+              const prTitle = context.payload.pull_request.title;
+              const prUrl = context.payload.pull_request.html_url;
+
+              if (context.payload.pull_request.body?.includes("AUTO-GENERATED-ISSUE")) {
+                return;
+              }
+
+              const issueTitle = `Port '${prTitle}'`;
+              const issueBody = `
+              Port any relevant changes in ${prUrl} from ${currentRepo} to ${otherRepo}.
+
+              <!-- AUTO-GENERATED-ISSUE -->
+              `;
+
+              const labelName = "porting";
+
+              await github.rest.issues.create({
+                owner,
+                repo: otherRepo,
+                title: issueTitle,
+                body: issueBody,
+                labels: [labelName]
+              });
+            }
