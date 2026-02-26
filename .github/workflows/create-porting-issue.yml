@@ -31,7 +31,7 @@ jobs:
                 owner,
                 repo: otherRepo,
                 title: "Test auto-porting issue",
-                body: "This is a test. Porting from ${currentRepo} to ${otherRepo}",
+                body: `This is a test. Porting from ${currentRepo} to ${otherRepo}`,
                 labels: ["porting"]
               });
             }
