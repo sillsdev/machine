@@ -1,0 +1,73 @@
+name: Create Porting Issue
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  create-port-issue:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create issue in opposite repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PORTING_API_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const currentRepo = context.repo.repo;
+
+            const otherRepo = currentRepo === "machine"
+              ? "machine.py"
+              : "machine";
+
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prUrl = context.payload.pull_request.html_url;
+
+            const query = `
+                query($owner: String!, $repo: String!, $number: Int!) {
+                  repository(owner: $owner, name: $repo) {
+                    pullRequest(number: $number) {
+                      closingIssuesReferences(first: 10) {
+                        nodes {
+                          number
+                          body
+                        }
+                      }
+                    }
+                  }
+                }
+              `;
+
+            const result = await github.graphql(query, {
+              owner,
+              repo: currentRepo,
+              number: prNumber
+            });
+
+            const closingIssues = result.repository.pullRequest.closingIssuesReferences.nodes;
+
+            if (closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
+              return;
+            }
+
+            const issueTitle = `Port '${prTitle}'`;
+            const issueBody = `
+            Port any relevant changes in ${prUrl} from ${currentRepo} to ${otherRepo}.
+
+            <!-- AUTO-GENERATED-ISSUE -->
+            `;
+
+            await github.rest.issues.create({
+              owner,
+              repo: otherRepo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ["porting"]
+            });
