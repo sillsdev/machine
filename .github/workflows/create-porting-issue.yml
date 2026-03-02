@@ -53,7 +53,7 @@ jobs:
 
             const closingIssues = result.repository.pullRequest.closingIssuesReferences.nodes;
 
-            if (closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
+            if (closingIssues.length > 0 && closingIssues.every(issue => issue.body?.includes("AUTO-GENERATED-ISSUE"))) {
               return;
             }
 
