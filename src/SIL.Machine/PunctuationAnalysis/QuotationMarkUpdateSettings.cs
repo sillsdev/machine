@@ -18,7 +18,7 @@ namespace SIL.Machine.PunctuationAnalysis
 
         public QuotationMarkUpdateStrategy GetActionForChapter(int chapterNumber)
         {
-            if (chapterNumber <= _chapterActions.Count)
+            if (chapterNumber > -1 && chapterNumber <= _chapterActions.Count)
             {
                 return _chapterActions[chapterNumber - 1];
             }
