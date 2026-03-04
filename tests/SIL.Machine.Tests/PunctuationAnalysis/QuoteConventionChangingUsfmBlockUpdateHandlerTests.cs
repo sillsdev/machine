@@ -830,6 +830,31 @@ public class QuoteConventionChangingUsfmUpdateBlockHandlerTests
         );
     }
 
+    [Test]
+    public void InvalidChapterNumber()
+    {
+        string inputUsfm =
+            @"\c 1
+    \p
+    \v 1 Chapter 1, ""Verse 1""
+    \c 2.
+    \p
+    \v v1 Chapter 2, ""Invalid Verse 1""
+    ";
+
+        string expectedUsfm = (
+            "\\c 1\n"
+            + "\\p\n"
+            + "\\v 1 Chapter 1, “Verse 1”\n"
+            + "\\c 2.\n"
+            + "\\p\n"
+            + "\\v v1 Chapter 2, “Invalid Verse 1”"
+        );
+
+        string observedUsfm = ChangeQuotationMarks(inputUsfm, "typewriter_english", "standard_english");
+        AssertUsfmEqual(observedUsfm, expectedUsfm);
+    }
+
     private static string ChangeQuotationMarks(
         string normalizedUsfm,
         string sourceQuoteConventionName,
