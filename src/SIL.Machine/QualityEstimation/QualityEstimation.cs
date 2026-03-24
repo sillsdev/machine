@@ -84,7 +84,7 @@ namespace SIL.Machine.QualityEstimation
         public void EstimateQuality(Dictionary<string, double> confidences)
         {
             ProjectChrF3(confidences);
-            ComputeUsableProportionsForTxtFiles();
+            ComputeSequenceUsability();
         }
 
         /// <summary>
@@ -94,7 +94,23 @@ namespace SIL.Machine.QualityEstimation
         public void EstimateQuality(Dictionary<VerseRef, double> confidences)
         {
             ProjectChrF3(confidences);
-            ComputeUsableProportionsForVerses();
+            ComputeVerseUsability();
+        }
+
+        /// <summary>
+        /// Calculates the geometric mean for a collection of values.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns>The geometric mean.</returns>
+        private static double GeometricMean(IList<double> values)
+        {
+            // Geometric mean requires positive values
+            if (values == null || !values.Any() || values.Any(x => x <= 0))
+                return 0;
+
+            // Compute the sum of the natural logarithms of all values,
+            // and divide by the count of numbers and take the exponential
+            return Math.Exp(values.Sum(Math.Log) / values.Count);
         }
 
         private double CalculateUsableProbability(double chrF3)
@@ -129,7 +145,7 @@ namespace SIL.Machine.QualityEstimation
             }
         }
 
-        public void ComputeChapterUsability()
+        private void ComputeChapterUsability()
         {
             foreach (KeyValuePair<string, Dictionary<int, Score>> chapterScoresByBook in _chapterScores.Scores)
             {
@@ -182,7 +198,7 @@ namespace SIL.Machine.QualityEstimation
             }
         }
 
-        private void ComputeUsableProportionsForVerses()
+        private void ComputeVerseUsability()
         {
             foreach (VerseScore verseScore in _verseScores.Where(v => v.VerseRef.VerseNum > 0))
             {
@@ -210,7 +226,7 @@ namespace SIL.Machine.QualityEstimation
             ComputeBookUsability();
         }
 
-        private void ComputeUsableProportionsForTxtFiles()
+        private void ComputeSequenceUsability()
         {
             foreach (SequenceScore sequenceScore in _sequenceScores)
             {
@@ -233,6 +249,7 @@ namespace SIL.Machine.QualityEstimation
 
         private void ProjectChrF3(Dictionary<string, double> confidences)
         {
+            var confidencesByTxtFile = new Dictionary<string, List<double>>();
             foreach (KeyValuePair<string, double> confidence in confidences)
             {
                 string[] keyParts = confidence.Key.Split(':');
@@ -247,21 +264,82 @@ namespace SIL.Machine.QualityEstimation
                         targetDraftFileStem
                     );
                     _sequenceScores.Add(score);
-                    _txtFileScores.AddScore(targetDraftFileStem, score);
+
+                    // Record the confidence by text file
+                    if (!confidencesByTxtFile.TryGetValue(targetDraftFileStem, out List<double> txtFileConfidences))
+                    {
+                        txtFileConfidences = new List<double>();
+                        confidencesByTxtFile[targetDraftFileStem] = txtFileConfidences;
+                    }
+
+                    txtFileConfidences.Add(confidence.Value);
                 }
+            }
+
+            foreach (KeyValuePair<string, List<double>> txtFileConfidences in confidencesByTxtFile)
+            {
+                _txtFileScores.AddScore(
+                    txtFileConfidences.Key,
+                    new Score(_slope, confidence: GeometricMean(txtFileConfidences.Value), _intercept)
+                );
             }
         }
 
         private void ProjectChrF3(Dictionary<VerseRef, double> confidences)
         {
+            var confidencesByBook = new Dictionary<string, List<double>>();
+            var confidencesByBookAndChapter = new Dictionary<(string, int), List<double>>();
             foreach (KeyValuePair<VerseRef, double> confidence in confidences)
             {
                 var score = new VerseScore(_slope, confidence.Value, _intercept, confidence.Key);
                 _verseScores.Add(score);
                 string book = confidence.Key.Book;
                 int chapter = confidence.Key.ChapterNum;
-                _chapterScores.AddScore(book, chapter, score);
-                _bookScores.AddScore(book, score);
+
+                // Record the confidence by and chapter
+                if (
+                    !confidencesByBookAndChapter.TryGetValue(
+                        (book, chapter),
+                        out List<double> bookAndChapterConfidences
+                    )
+                )
+                {
+                    bookAndChapterConfidences = new List<double>();
+                    confidencesByBookAndChapter[(book, chapter)] = bookAndChapterConfidences;
+                }
+
+                bookAndChapterConfidences.Add(confidence.Value);
+
+                // Record the confidence by book
+                if (!confidencesByBook.TryGetValue(book, out List<double> bookConfidences))
+                {
+                    bookConfidences = new List<double>();
+                    confidencesByBook[book] = bookConfidences;
+                }
+
+                bookConfidences.Add(confidence.Value);
+            }
+
+            foreach (KeyValuePair<string, List<double>> bookConfidences in confidencesByBook)
+            {
+                _bookScores.AddScore(
+                    bookConfidences.Key,
+                    new Score(_slope, confidence: GeometricMean(bookConfidences.Value), _intercept)
+                );
+            }
+
+            foreach (
+                KeyValuePair<
+                    (string Book, int Chapter),
+                    List<double>
+                > bookAndChapterConfidences in confidencesByBookAndChapter
+            )
+            {
+                _chapterScores.AddScore(
+                    bookAndChapterConfidences.Key.Book,
+                    bookAndChapterConfidences.Key.Chapter,
+                    new Score(_slope, confidence: GeometricMean(bookAndChapterConfidences.Value), _intercept)
+                );
             }
         }
     }
