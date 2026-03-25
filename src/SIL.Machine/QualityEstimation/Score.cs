@@ -1,6 +1,6 @@
-﻿namespace SIL.Machine.QualityEstimation.Scores
+﻿namespace SIL.Machine.QualityEstimation
 {
-    public class Score
+    internal class Score
     {
         public Score(double slope, double confidence, double intercept)
         {
