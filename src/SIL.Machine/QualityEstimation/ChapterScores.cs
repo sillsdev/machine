@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace SIL.Machine.QualityEstimation.Scores
+namespace SIL.Machine.QualityEstimation
 {
-    public class ChapterScores
+    internal class ChapterScores
     {
         private readonly Dictionary<string, Dictionary<int, List<double>>> _verseUsabilities =
             new Dictionary<string, Dictionary<int, List<double>>>();

@@ -1,21 +1,22 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Corpora;
 using SIL.Scripture;
 
 namespace SIL.Machine.QualityEstimation;
 
 [TestFixture]
-public class QualityEstimationTests
+public class ChrF3QualityEstimationTests
 {
     [Test]
-    public void QualityEstimation_TxtFiles()
+    public void ChrF3QualityEstimation_TxtFiles()
     {
-        var qualityEstimation = new QualityEstimation(slope: 0.6, intercept: 1.0);
-        var confidences = new Dictionary<string, double>
-        {
-            ["MAT.txt:1"] = 85.0,
-            ["MAT.txt:2"] = 80.0,
-            ["MRK.txt:1"] = 60.0,
-        };
+        var qualityEstimation = new ChrF3QualityEstimation(slope: 0.6, intercept: 1.0);
+        List<(MultiKeyRef Key, double Confidence)> confidences =
+        [
+            (new MultiKeyRef("MAT.txt", 1), 85.0),
+            (new MultiKeyRef("MAT.txt", 2), 80.0),
+            (new MultiKeyRef("MRK.txt", 1), 60.0),
+        ];
         qualityEstimation.EstimateQuality(confidences);
         using (Assert.EnterMultipleScope())
         {
@@ -30,15 +31,15 @@ public class QualityEstimationTests
     }
 
     [Test]
-    public void QualityEstimation_Verses()
+    public void ChrF3QualityEstimation_Verses()
     {
-        var qualityEstimation = new QualityEstimation(slope: 0.6, intercept: 1.0);
-        var confidences = new Dictionary<VerseRef, double>
-        {
-            [new VerseRef(1, 1, 1)] = 85.0,
-            [new VerseRef(1, 1, 2)] = 80.0,
-            [new VerseRef(1, 2, 1)] = 60.0,
-        };
+        var qualityEstimation = new ChrF3QualityEstimation(slope: 0.6, intercept: 1.0);
+        List<(ScriptureRef key, double confidence)> confidences =
+        [
+            (new ScriptureRef(new VerseRef(1, 1, 1)), 85.0),
+            (new ScriptureRef(new VerseRef(1, 1, 2)), 80.0),
+            (new ScriptureRef(new VerseRef(1, 2, 1)), 60.0),
+        ];
         qualityEstimation.EstimateQuality(confidences);
         using (Assert.EnterMultipleScope())
         {
