@@ -17,16 +17,17 @@ public class ChrF3QualityEstimationTests
             (new MultiKeyRef("MAT.txt", 2), 80.0),
             (new MultiKeyRef("MRK.txt", 1), 60.0),
         ];
-        qualityEstimation.EstimateQuality(confidences);
+        (List<SequenceUsability> usabilitySequences, List<TxtFileUsability> usabilityTxtFiles) =
+            qualityEstimation.EstimateQuality(confidences);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(qualityEstimation.UsabilitySequences, Has.Count.EqualTo(3));
-            Assert.That(qualityEstimation.UsabilitySequences[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(qualityEstimation.UsabilitySequences[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
-            Assert.That(qualityEstimation.UsabilitySequences[2].Label, Is.EqualTo(UsabilityLabel.Red));
-            Assert.That(qualityEstimation.UsabilityTxtFiles, Has.Count.EqualTo(2));
-            Assert.That(qualityEstimation.UsabilityTxtFiles[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(qualityEstimation.UsabilityTxtFiles[1].Label, Is.EqualTo(UsabilityLabel.Red));
+            Assert.That(usabilitySequences, Has.Count.EqualTo(3));
+            Assert.That(usabilitySequences[0].Label, Is.EqualTo(UsabilityLabel.Green));
+            Assert.That(usabilitySequences[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
+            Assert.That(usabilitySequences[2].Label, Is.EqualTo(UsabilityLabel.Red));
+            Assert.That(usabilityTxtFiles, Has.Count.EqualTo(2));
+            Assert.That(usabilityTxtFiles[0].Label, Is.EqualTo(UsabilityLabel.Green));
+            Assert.That(usabilityTxtFiles[1].Label, Is.EqualTo(UsabilityLabel.Red));
         }
     }
 
@@ -40,18 +41,22 @@ public class ChrF3QualityEstimationTests
             (new ScriptureRef(new VerseRef(1, 1, 2)), 80.0),
             (new ScriptureRef(new VerseRef(1, 2, 1)), 60.0),
         ];
-        qualityEstimation.EstimateQuality(confidences);
+        (
+            List<VerseUsability> usabilityVerses,
+            List<ChapterUsability> usabilityChapters,
+            List<BookUsability> usabilityBooks
+        ) = qualityEstimation.EstimateQuality(confidences);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(qualityEstimation.UsabilityVerses, Has.Count.EqualTo(3));
-            Assert.That(qualityEstimation.UsabilityVerses[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(qualityEstimation.UsabilityVerses[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
-            Assert.That(qualityEstimation.UsabilityVerses[2].Label, Is.EqualTo(UsabilityLabel.Red));
-            Assert.That(qualityEstimation.UsabilityChapters, Has.Count.EqualTo(2));
-            Assert.That(qualityEstimation.UsabilityChapters[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(qualityEstimation.UsabilityChapters[1].Label, Is.EqualTo(UsabilityLabel.Red));
-            Assert.That(qualityEstimation.UsabilityBooks, Has.Count.EqualTo(1));
-            Assert.That(qualityEstimation.UsabilityBooks[0].Label, Is.EqualTo(UsabilityLabel.Yellow));
+            Assert.That(usabilityVerses, Has.Count.EqualTo(3));
+            Assert.That(usabilityVerses[0].Label, Is.EqualTo(UsabilityLabel.Green));
+            Assert.That(usabilityVerses[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
+            Assert.That(usabilityVerses[2].Label, Is.EqualTo(UsabilityLabel.Red));
+            Assert.That(usabilityChapters, Has.Count.EqualTo(2));
+            Assert.That(usabilityChapters[0].Label, Is.EqualTo(UsabilityLabel.Green));
+            Assert.That(usabilityChapters[1].Label, Is.EqualTo(UsabilityLabel.Red));
+            Assert.That(usabilityBooks, Has.Count.EqualTo(1));
+            Assert.That(usabilityBooks[0].Label, Is.EqualTo(UsabilityLabel.Yellow));
         }
     }
 }
