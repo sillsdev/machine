@@ -51,48 +51,31 @@ namespace SIL.Machine.QualityEstimation
         public UsabilityParameters Unusable { get; set; } = UsabilityParameters.Unusable;
 
         /// <summary>
-        /// The usability scores for every book.
-        /// </summary>
-        public List<BookUsability> UsabilityBooks { get; } = new List<BookUsability>();
-
-        /// <summary>
-        /// The usability scores for every chapter.
-        /// </summary>
-        public List<ChapterUsability> UsabilityChapters { get; } = new List<ChapterUsability>();
-
-        /// <summary>
-        /// The usability scores for every line in a text file.
-        /// </summary>
-        public List<SequenceUsability> UsabilitySequences { get; } = new List<SequenceUsability>();
-
-        /// <summary>
-        /// The usability scores for every text file.
-        /// </summary>
-        public List<TxtFileUsability> UsabilityTxtFiles { get; } = new List<TxtFileUsability>();
-
-        /// <summary>
-        /// The usability scores for every verse.
-        /// </summary>
-        public List<VerseUsability> UsabilityVerses { get; } = new List<VerseUsability>();
-
-        /// <summary>
         /// Estimate the quality of the pre-translations from text files.
         /// </summary>
         /// <param name="confidences">The confidence values.</param>
-        public void EstimateQuality(IEnumerable<(MultiKeyRef key, double confidence)> confidences)
+        /// <returns>The usability scores for every line in the text files, and for the text files.</returns>
+        public (List<SequenceUsability> usabilitySequences, List<TxtFileUsability> usabilityTxtFiles) EstimateQuality(
+            IEnumerable<(MultiKeyRef key, double confidence)> confidences
+        )
         {
             ProjectChrF3(confidences);
-            ComputeSequenceUsability();
+            return ComputeSequenceUsability();
         }
 
         /// <summary>
         /// Estimate the quality of the pre-translations from USFM files.
         /// </summary>
         /// <param name="confidences">The confidence values.</param>
-        public void EstimateQuality(IEnumerable<(ScriptureRef key, double confidence)> confidences)
+        /// <returns>The usability scores for every verse, chapter, and book.</returns>
+        public (
+            List<VerseUsability> usabilityVerses,
+            List<ChapterUsability> usabilityChapters,
+            List<BookUsability> usabilityBooks
+        ) EstimateQuality(IEnumerable<(ScriptureRef key, double confidence)> confidences)
         {
             ProjectChrF3(confidences);
-            ComputeVerseUsability();
+            return ComputeVerseUsability();
         }
 
         /// <summary>
@@ -119,8 +102,9 @@ namespace SIL.Machine.QualityEstimation
             return usableWeight / (usableWeight + unusableWeight);
         }
 
-        private void ComputeBookUsability()
+        private List<BookUsability> ComputeBookUsability()
         {
+            var usabilityBooks = new List<BookUsability>();
             foreach (string book in _bookScores.Scores.Keys)
             {
                 Score score = _bookScores.GetScore(book);
@@ -129,7 +113,7 @@ namespace SIL.Machine.QualityEstimation
 
                 List<double> bookUsabilities = _bookScores.GetVerseUsabilities(book);
                 double averageProbability = bookUsabilities.Average();
-                UsabilityBooks.Add(
+                usabilityBooks.Add(
                     new BookUsability(
                         book,
                         label: BookThresholds.ReturnLabel(averageProbability),
@@ -138,10 +122,13 @@ namespace SIL.Machine.QualityEstimation
                     )
                 );
             }
+
+            return usabilityBooks;
         }
 
-        private void ComputeChapterUsability()
+        private List<ChapterUsability> ComputeChapterUsability()
         {
+            var usabilityChapters = new List<ChapterUsability>();
             foreach (KeyValuePair<string, Dictionary<int, Score>> chapterScoresByBook in _chapterScores.Scores)
             {
                 string book = chapterScoresByBook.Key;
@@ -153,7 +140,7 @@ namespace SIL.Machine.QualityEstimation
 
                     List<double> chapterUsabilities = _chapterScores.GetVerseUsabilities(book, chapter);
                     double averageProbability = chapterUsabilities.Average();
-                    UsabilityChapters.Add(
+                    usabilityChapters.Add(
                         new ChapterUsability(
                             book,
                             chapter,
@@ -164,10 +151,34 @@ namespace SIL.Machine.QualityEstimation
                     );
                 }
             }
+
+            return usabilityChapters;
         }
 
-        private void ComputeTxtFileUsability()
+        private (List<SequenceUsability>, List<TxtFileUsability>) ComputeSequenceUsability()
         {
+            var usabilitySequences = new List<SequenceUsability>();
+            foreach (SequenceScore sequenceScore in _sequenceScores)
+            {
+                double probability = CalculateUsableProbability(sequenceScore.ProjectedChrF3);
+                _txtFileScores.AppendSequenceUsability(sequenceScore.TargetDraftFileStem, probability);
+                usabilitySequences.Add(
+                    new SequenceUsability(
+                        targetDraftFile: sequenceScore.TargetDraftFileStem,
+                        sequenceNumber: sequenceScore.SequenceNumber,
+                        label: VerseThresholds.ReturnLabel(probability),
+                        usability: probability,
+                        projectedChrF3: sequenceScore.ProjectedChrF3
+                    )
+                );
+            }
+
+            return (usabilitySequences, ComputeTxtFileUsability());
+        }
+
+        private List<TxtFileUsability> ComputeTxtFileUsability()
+        {
+            var usabilityTxtFiles = new List<TxtFileUsability>();
             foreach (string targetDraftFileStem in _txtFileScores.Scores.Keys)
             {
                 Score score = _txtFileScores.GetScore(targetDraftFileStem);
@@ -176,7 +187,7 @@ namespace SIL.Machine.QualityEstimation
 
                 List<double> txtFileUsabilities = _txtFileScores.GetSequenceUsabilities(targetDraftFileStem);
                 double averageProbability = txtFileUsabilities.Average();
-                UsabilityTxtFiles.Add(
+                usabilityTxtFiles.Add(
                     new TxtFileUsability(
                         targetDraftFileStem,
                         label: BookThresholds.ReturnLabel(averageProbability),
@@ -185,10 +196,13 @@ namespace SIL.Machine.QualityEstimation
                     )
                 );
             }
+
+            return usabilityTxtFiles;
         }
 
-        private void ComputeVerseUsability()
+        private (List<VerseUsability>, List<ChapterUsability>, List<BookUsability>) ComputeVerseUsability()
         {
+            var usabilityVerses = new List<VerseUsability>();
             foreach (VerseScore verseScore in _verseScores.Where(v => v.ScriptureRef.VerseNum > 0))
             {
                 double probability = CalculateUsableProbability(verseScore.ProjectedChrF3);
@@ -198,7 +212,7 @@ namespace SIL.Machine.QualityEstimation
                     probability
                 );
                 _bookScores.AppendVerseUsability(verseScore.ScriptureRef.Book, probability);
-                UsabilityVerses.Add(
+                usabilityVerses.Add(
                     new VerseUsability(
                         book: verseScore.ScriptureRef.Book,
                         chapter: verseScore.ScriptureRef.ChapterNum,
@@ -210,28 +224,7 @@ namespace SIL.Machine.QualityEstimation
                 );
             }
 
-            ComputeChapterUsability();
-            ComputeBookUsability();
-        }
-
-        private void ComputeSequenceUsability()
-        {
-            foreach (SequenceScore sequenceScore in _sequenceScores)
-            {
-                double probability = CalculateUsableProbability(sequenceScore.ProjectedChrF3);
-                _txtFileScores.AppendSequenceUsability(sequenceScore.TargetDraftFileStem, probability);
-                UsabilitySequences.Add(
-                    new SequenceUsability(
-                        targetDraftFile: sequenceScore.TargetDraftFileStem,
-                        sequenceNumber: sequenceScore.SequenceNumber,
-                        label: VerseThresholds.ReturnLabel(probability),
-                        usability: probability,
-                        projectedChrF3: sequenceScore.ProjectedChrF3
-                    )
-                );
-            }
-
-            ComputeTxtFileUsability();
+            return (usabilityVerses, ComputeChapterUsability(), ComputeBookUsability());
         }
 
         private void ProjectChrF3(IEnumerable<(MultiKeyRef, double)> confidences)
