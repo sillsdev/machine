@@ -140,9 +140,12 @@ namespace SIL.Machine.Corpora
                         )
                         .ToList();
                 }
-                catch (ArgumentException)
+                catch (ArgumentException e)
                 {
-                    throw new CorpusAlignmentException(currentRows.Select(e => e.Ref.ToString()).ToArray());
+                    throw new CorpusAlignmentException(
+                        currentRows.Where(r => r != null).Select(r => r.Ref.ToString()).ToArray(),
+                        e
+                    );
                 }
                 List<int> nonMinRefIndexes = Enumerable.Range(0, N).Except(minRefIndexes).ToList();
                 if (minRefIndexes.Count < numberOfRemainingRows || minRefIndexes.Count(i => !completed[i]) == 1)
@@ -395,9 +398,9 @@ namespace SIL.Machine.Corpora
                 if (sameRefRows.Count > 0 && RowRefComparer.Compare(sameRefRows[0].Ref, otherRow.Ref) != 0)
                     sameRefRows.Clear();
             }
-            catch (ArgumentException)
+            catch (ArgumentException e)
             {
-                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString());
+                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString(), e);
             }
             return sameRefRows.Count > 0;
         }

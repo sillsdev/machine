@@ -52,9 +52,9 @@ namespace SIL.Machine.Corpora
                                     ? RowRefComparer.Compare(nRow.Ref, alignmentEnumerator.Current.Ref)
                                     : 1;
                             }
-                            catch (ArgumentException)
+                            catch (ArgumentException e)
                             {
-                                throw new CorpusAlignmentException(nRow.NRefs.Select(r => r.ToString()).ToArray());
+                                throw new CorpusAlignmentException(nRow.NRefs.Select(r => r.ToString()).ToArray(), e);
                             }
                         } while (compareAlignmentCorpus < 0);
                     }
