@@ -2,9 +2,9 @@
 
 namespace SIL.Machine.QualityEstimation
 {
-    internal class VerseScore : Score
+    internal class ScriptureSegmentScore : Score
     {
-        public VerseScore(double slope, double confidence, double intercept, ScriptureRef scriptureRef)
+        public ScriptureSegmentScore(double slope, double confidence, double intercept, ScriptureRef scriptureRef)
             : base(slope, confidence, intercept)
         {
             ScriptureRef = scriptureRef;

@@ -2,9 +2,9 @@
 
 namespace SIL.Machine.QualityEstimation
 {
-    internal class ChapterScores
+    internal class ScriptureChapterScores
     {
-        private readonly Dictionary<string, Dictionary<int, List<double>>> _verseUsabilities =
+        private readonly Dictionary<string, Dictionary<int, List<double>>> _segmentUsabilities =
             new Dictionary<string, Dictionary<int, List<double>>>();
 
         public readonly Dictionary<string, Dictionary<int, Score>> Scores =
@@ -27,12 +27,12 @@ namespace SIL.Machine.QualityEstimation
                 ? score
                 : null;
 
-        public void AppendVerseUsability(string book, int chapter, double usability)
+        public void AppendSegmentUsability(string book, int chapter, double usability)
         {
-            if (!_verseUsabilities.TryGetValue(book, out Dictionary<int, List<double>> chapters))
+            if (!_segmentUsabilities.TryGetValue(book, out Dictionary<int, List<double>> chapters))
             {
                 chapters = new Dictionary<int, List<double>>();
-                _verseUsabilities[book] = chapters;
+                _segmentUsabilities[book] = chapters;
             }
 
             if (!chapters.TryGetValue(chapter, out List<double> list))
@@ -44,8 +44,8 @@ namespace SIL.Machine.QualityEstimation
             list.Add(usability);
         }
 
-        public List<double> GetVerseUsabilities(string book, int chapter) =>
-            _verseUsabilities.TryGetValue(book, out Dictionary<int, List<double>> chapters)
+        public List<double> GetSegmentUsabilities(string book, int chapter) =>
+            _segmentUsabilities.TryGetValue(book, out Dictionary<int, List<double>> chapters)
             && chapters.TryGetValue(chapter, out List<double> list)
                 ? new List<double>(list)
                 : new List<double>();

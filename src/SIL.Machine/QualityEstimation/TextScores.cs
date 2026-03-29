@@ -2,9 +2,9 @@
 
 namespace SIL.Machine.QualityEstimation
 {
-    internal class TxtFileScores
+    internal class TextScores
     {
-        private readonly Dictionary<string, List<double>> _sequenceUsabilities = new Dictionary<string, List<double>>();
+        private readonly Dictionary<string, List<double>> _segmentUsabilities = new Dictionary<string, List<double>>();
 
         public readonly Dictionary<string, Score> Scores = new Dictionary<string, Score>();
 
@@ -13,19 +13,19 @@ namespace SIL.Machine.QualityEstimation
         public Score GetScore(string targetDraftFileStem) =>
             Scores.TryGetValue(targetDraftFileStem, out Score score) ? score : null;
 
-        public void AppendSequenceUsability(string targetDraftFileStem, double usability)
+        public void AppendSegmentUsability(string textId, double usability)
         {
-            if (!_sequenceUsabilities.TryGetValue(targetDraftFileStem, out List<double> list))
+            if (!_segmentUsabilities.TryGetValue(textId, out List<double> list))
             {
                 list = new List<double>();
-                _sequenceUsabilities[targetDraftFileStem] = list;
+                _segmentUsabilities[textId] = list;
             }
 
             list.Add(usability);
         }
 
-        public List<double> GetSequenceUsabilities(string targetDraftFileStem) =>
-            _sequenceUsabilities.TryGetValue(targetDraftFileStem, out List<double> list)
+        public List<double> GetSegmentUsabilities(string textId) =>
+            _segmentUsabilities.TryGetValue(textId, out List<double> list)
                 ? new List<double>(list)
                 : new List<double>();
     }
