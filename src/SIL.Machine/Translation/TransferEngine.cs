@@ -186,6 +186,7 @@ namespace SIL.Machine.Translation
                         segment,
                         targetTokens,
                         confidences,
+                        -1.0,
                         sources,
                         alignment,
                         new[] { new Phrase(Range<int>.Create(0, normalizedSourceTokens.Count), targetWords.Count) }

@@ -488,6 +488,7 @@ namespace SIL.Machine.Translation
                 interactiveResult.SourceTokens,
                 mergedTargetSegment,
                 mergedConfidences,
+                -1.0,
                 mergedSources,
                 alignment,
                 interactiveResult.Phrases

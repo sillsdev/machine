@@ -120,6 +120,7 @@ namespace SIL.Machine.Translation
                 result.SourceTokens,
                 targetTokens,
                 result.Confidences,
+                result.SequenceConfidence,
                 result.Sources,
                 result.Alignment,
                 result.Phrases
