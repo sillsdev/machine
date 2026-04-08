@@ -123,12 +123,12 @@ namespace SIL.Machine.Corpora
             string translationType = "Standard";
             string parentName = null;
             string parentGuid = null;
-            if (translationInfoSetting != null)
+            string[] translationInfoSettingParts = translationInfoSetting?.Split(':');
+            if (translationInfoSettingParts?.Length == 3)
             {
-                string[] translationInfoSettingParts = translationInfoSetting.Split(':');
                 translationType = translationInfoSettingParts[0];
-                parentName = translationInfoSettingParts[1] != "" ? translationInfoSettingParts[1] : null;
-                parentGuid = translationInfoSettingParts[2] != "" ? translationInfoSettingParts[2] : null;
+                parentName = translationInfoSettingParts[1] != string.Empty ? translationInfoSettingParts[1] : null;
+                parentGuid = translationInfoSettingParts[2] != string.Empty ? translationInfoSettingParts[2] : null;
             }
 
             var settings = new ParatextProjectSettings(

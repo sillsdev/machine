@@ -9,6 +9,8 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
 
     public UsfmStylesheet CreateStylesheet(string fileName)
     {
+        if (fileName is "usfm.sty" or "usfm_sb.sty")
+            return new UsfmStylesheet(fileName);
         throw new NotImplementedException();
     }
 
