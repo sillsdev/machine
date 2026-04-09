@@ -11,6 +11,7 @@ namespace SIL.Machine.Translation
             IEnumerable<string> sourceTokens,
             IEnumerable<string> targetTokens,
             IEnumerable<double> confidences,
+            double sequenceConfidence,
             IEnumerable<TranslationSources> sources,
             WordAlignmentMatrix alignment,
             IEnumerable<Phrase> phrases
@@ -27,6 +28,7 @@ namespace SIL.Machine.Translation
                     nameof(confidences)
                 );
             }
+            SequenceConfidence = sequenceConfidence;
             Sources = sources.ToArray();
             if (Sources.Count != TargetTokens.Count)
             {
@@ -58,6 +60,7 @@ namespace SIL.Machine.Translation
         public IReadOnlyList<string> SourceTokens { get; }
         public IReadOnlyList<string> TargetTokens { get; }
         public IReadOnlyList<double> Confidences { get; }
+        public double SequenceConfidence { get; }
         public IReadOnlyList<TranslationSources> Sources { get; }
         public WordAlignmentMatrix Alignment { get; }
         public IReadOnlyList<Phrase> Phrases { get; }
