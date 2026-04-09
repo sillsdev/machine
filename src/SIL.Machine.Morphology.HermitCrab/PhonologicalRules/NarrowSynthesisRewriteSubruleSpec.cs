@@ -42,9 +42,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
 
             ShapeNode[] nodes = targetMatch.Input.Shape.GetNodes(range).ToArray();
-            for (int i = 0; i < _targetCount; i++)
+            int deleted = 0;
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                if (nodes[i].IsDeleted())
+                    continue;
                 nodes[i].SetDeleted(true);
-
+                deleted++;
+                if (deleted == _targetCount)
+                    break;
+            }
             MarkSuccessfulApply(targetMatch.Input);
         }
     }
