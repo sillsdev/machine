@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Corpora;
-using SIL.Machine.Utils;
+using SIL.Machine.Statistics;
 
 namespace SIL.Machine.QualityEstimation
 {
@@ -252,7 +252,7 @@ namespace SIL.Machine.QualityEstimation
             {
                 textScores.AddScore(
                     textIdConfidences.Key,
-                    new Score(_slope, confidence: ConfidenceHelper.GeometricMean(textIdConfidences.Value), _intercept)
+                    new Score(_slope, confidence: StatisticalMethods.GeometricMean(textIdConfidences.Value), _intercept)
                 );
             }
 
@@ -312,7 +312,7 @@ namespace SIL.Machine.QualityEstimation
                     bookAndChapterConfidences.Key.Chapter,
                     new Score(
                         _slope,
-                        confidence: ConfidenceHelper.GeometricMean(bookAndChapterConfidences.Value),
+                        confidence: StatisticalMethods.GeometricMean(bookAndChapterConfidences.Value),
                         _intercept
                     )
                 );
@@ -323,7 +323,7 @@ namespace SIL.Machine.QualityEstimation
             {
                 bookScores.AddScore(
                     bookConfidences.Key,
-                    new Score(_slope, confidence: ConfidenceHelper.GeometricMean(bookConfidences.Value), _intercept)
+                    new Score(_slope, confidence: StatisticalMethods.GeometricMean(bookConfidences.Value), _intercept)
                 );
             }
 

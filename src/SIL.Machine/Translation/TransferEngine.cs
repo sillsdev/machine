@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 using SIL.Machine.Corpora;
 using SIL.Machine.Morphology;
+using SIL.Machine.Statistics;
 using SIL.Machine.Tokenization;
-using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -187,7 +187,7 @@ namespace SIL.Machine.Translation
                         segment,
                         targetTokens,
                         confidences,
-                        ConfidenceHelper.GeometricMean(confidences),
+                        StatisticalMethods.GeometricMean(confidences),
                         sources,
                         alignment,
                         new[] { new Phrase(Range<int>.Create(0, normalizedSourceTokens.Count), targetWords.Count) }

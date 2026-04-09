@@ -43,5 +43,21 @@ namespace SIL.Machine.Statistics
         {
             return dist1.Zip(dist2, (p1, p2) => p1 == 0 || p2 == 0 ? 0 : Math.Log(p1 / p2, 2) * p1).Sum();
         }
+
+        /// <summary>
+        /// Calculates the geometric mean for a collection of values.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns>The geometric mean.</returns>
+        public static double GeometricMean(IList<double> values)
+        {
+            // Geometric mean requires positive values
+            if (values == null || !values.Any() || values.Any(x => x <= 0))
+                return 0;
+
+            // Compute the sum of the natural logarithms of all values,
+            // and divide by the count of numbers and take the exponential
+            return Math.Exp(values.Sum(Math.Log) / values.Count);
+        }
     }
 }
