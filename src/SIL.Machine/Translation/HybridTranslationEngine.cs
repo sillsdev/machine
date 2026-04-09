@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Tokenization;
+using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Translation
@@ -488,7 +489,7 @@ namespace SIL.Machine.Translation
                 interactiveResult.SourceTokens,
                 mergedTargetSegment,
                 mergedConfidences,
-                -1.0,
+                ConfidenceHelper.GeometricMean(mergedConfidences),
                 mergedSources,
                 alignment,
                 interactiveResult.Phrases

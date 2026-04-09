@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Corpora;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.QualityEstimation
 {
@@ -81,22 +82,6 @@ namespace SIL.Machine.QualityEstimation
                 ScriptureBookScores bookScores
             ) = ProjectChrF3(confidences);
             return ComputeSegmentUsability(segmentScores, chapterScores, bookScores);
-        }
-
-        /// <summary>
-        /// Calculates the geometric mean for a collection of values.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <returns>The geometric mean.</returns>
-        private static double GeometricMean(IList<double> values)
-        {
-            // Geometric mean requires positive values
-            if (values == null || !values.Any() || values.Any(x => x <= 0))
-                return 0;
-
-            // Compute the sum of the natural logarithms of all values,
-            // and divide by the count of numbers and take the exponential
-            return Math.Exp(values.Sum(Math.Log) / values.Count);
         }
 
         private double CalculateUsableProbability(double chrF3)
@@ -267,7 +252,7 @@ namespace SIL.Machine.QualityEstimation
             {
                 textScores.AddScore(
                     textIdConfidences.Key,
-                    new Score(_slope, confidence: GeometricMean(textIdConfidences.Value), _intercept)
+                    new Score(_slope, confidence: ConfidenceHelper.GeometricMean(textIdConfidences.Value), _intercept)
                 );
             }
 
@@ -325,7 +310,11 @@ namespace SIL.Machine.QualityEstimation
                 chapterScores.AddScore(
                     bookAndChapterConfidences.Key.Book,
                     bookAndChapterConfidences.Key.Chapter,
-                    new Score(_slope, confidence: GeometricMean(bookAndChapterConfidences.Value), _intercept)
+                    new Score(
+                        _slope,
+                        confidence: ConfidenceHelper.GeometricMean(bookAndChapterConfidences.Value),
+                        _intercept
+                    )
                 );
             }
 
@@ -334,7 +323,7 @@ namespace SIL.Machine.QualityEstimation
             {
                 bookScores.AddScore(
                     bookConfidences.Key,
-                    new Score(_slope, confidence: GeometricMean(bookConfidences.Value), _intercept)
+                    new Score(_slope, confidence: ConfidenceHelper.GeometricMean(bookConfidences.Value), _intercept)
                 );
             }
 
