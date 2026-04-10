@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SIL.Machine.Statistics;
 using SIL.Machine.Tokenization;
 using SIL.ObjectModel;
 
@@ -488,6 +489,7 @@ namespace SIL.Machine.Translation
                 interactiveResult.SourceTokens,
                 mergedTargetSegment,
                 mergedConfidences,
+                StatisticalMethods.GeometricMean(mergedConfidences),
                 mergedSources,
                 alignment,
                 interactiveResult.Phrases

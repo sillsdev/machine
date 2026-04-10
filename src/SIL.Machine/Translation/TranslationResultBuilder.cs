@@ -11,6 +11,7 @@ namespace SIL.Machine.Translation
         private readonly List<double> _confidences;
         private readonly List<TranslationSources> _sources;
         private readonly List<PhraseInfo> _phrases;
+        private readonly double _sequenceConfidences;
 
         public TranslationResultBuilder(IReadOnlyList<string> sourceTokens)
         {
@@ -19,6 +20,7 @@ namespace SIL.Machine.Translation
             _confidences = new List<double>();
             _sources = new List<TranslationSources>();
             _phrases = new List<PhraseInfo>();
+            _sequenceConfidences = -1.0;
         }
 
         public IReadOnlyList<string> SourceTokens { get; }
@@ -29,6 +31,7 @@ namespace SIL.Machine.Translation
         public IReadOnlyList<double> Confidences => _confidences;
         public IReadOnlyList<TranslationSources> Sources => _sources;
         public IReadOnlyList<PhraseInfo> Phrases => _phrases;
+        public double SequenceConfidences => _sequenceConfidences;
 
         public void AppendToken(string token, TranslationSources source, double confidence)
         {
@@ -246,6 +249,7 @@ namespace SIL.Machine.Translation
                 SourceTokens,
                 _targetTokens,
                 _confidences,
+                _sequenceConfidences,
                 sources,
                 alignment,
                 phrases
