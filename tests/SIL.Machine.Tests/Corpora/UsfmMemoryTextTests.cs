@@ -758,6 +758,99 @@ description
         });
     }
 
+    [Test]
+    public void GetRows_BookCodeDifferentToFilename() =>
+        Assert.Throws<InvalidOperationException>(() =>
+            GetRows(
+                @"\id LUK - Test
+\c 1
+\v 1 Verse 1 Text
+",
+                includeAllText: true
+            )
+        );
+
+    [Test]
+    public void GetRows_BookCodeInvalid() =>
+        Assert.Throws<InvalidOperationException>(() =>
+            GetRows(
+                @"\id ZZZ - Test
+\c 1
+\v 1 Verse 1 Text
+",
+                includeAllText: true
+            )
+        );
+
+    [Test]
+    public void GetRows_BookCodeTruncated() =>
+        Assert.Throws<InvalidOperationException>(() =>
+            GetRows(
+                @"\id MA
+\c 1
+\v 1 Verse 1 Text
+",
+                includeAllText: true
+            )
+        );
+
+    [Test]
+    public void GetRows_BookCodeMultiple()
+    {
+        TextRow[] rows = GetRows(
+            @"\id MAT
+\id LUK
+\c 1
+\v 1 Verse 1 Text
+",
+            includeAllText: true
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("Verse 1 Text"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+        });
+    }
+
+    [Test]
+    public void GetRows_BookCodeNoSpace()
+    {
+        TextRow[] rows = GetRows(
+            @"\id Matthew
+\c 1
+\v 1 Verse 1 Text
+",
+            includeAllText: true
+        );
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Length.EqualTo(1));
+
+            Assert.That(
+                rows[0].Ref,
+                Is.EqualTo(ScriptureRef.Parse("MAT 1:1")),
+                string.Join(",", rows.ToList().Select(tr => tr.Ref.ToString()))
+            );
+            Assert.That(
+                rows[0].Text,
+                Is.EqualTo("Verse 1 Text"),
+                string.Join(",", rows.ToList().Select(tr => tr.Text))
+            );
+        });
+    }
+
     private static TextRow[] GetRows(string usfm, bool includeMarkers = false, bool includeAllText = false)
     {
         UsfmMemoryText text = new(

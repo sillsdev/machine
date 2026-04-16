@@ -301,6 +301,8 @@ namespace SIL.Machine.Corpora
 
                     // Code is always upper case
                     string code = token.Data.ToUpperInvariant();
+                    if (code.Length > 3)
+                        code = code.Substring(0, 3);
 
                     vref = State.VerseRef;
                     // Update verse ref. Leave book alone if not empty to prevent parsing errors
