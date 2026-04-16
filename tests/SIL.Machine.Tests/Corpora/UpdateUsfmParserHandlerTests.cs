@@ -1380,7 +1380,7 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_PreferExisting_AddRemark()
+    public void GetUsfm_PreferExisting_AddRemarkToStart()
     {
         var rows = new List<UpdateUsfmRow>
         {
@@ -1400,7 +1400,7 @@ public class UpdateUsfmParserHandlerTests
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: ["New remark"]
+            remarks: [(0, "New remark")]
         );
         string result =
             @"\id MAT - Test
@@ -1419,7 +1419,7 @@ public class UpdateUsfmParserHandlerTests
             rows,
             target,
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: ["New remark 2"]
+            remarks: [(0, "New remark 2")]
         );
         result =
             @"\id MAT - Test
@@ -1431,6 +1431,75 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_PreferExisting_AddRemarkToChapter()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 2:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Update 2"),
+        };
+        string usfm =
+            @"\id MAT - Test
+\ide UTF-8
+\c 1
+\v 1 Chapter 1, Verse 1
+\c 2
+\rem Existing remark
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 3
+";
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(2, "New remark"), (3, "Last remark"), (4, "Remark for missing chapter")]
+        );
+        string result =
+            @"\id MAT - Test
+\ide UTF-8
+\c 1
+\v 1 Chapter 1, Verse 1
+\c 2
+\rem New remark
+\rem Existing remark
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+\c 3
+\rem Last remark
+";
+
+        AssertUsfmEquals(target, result);
+
+        target = UpdateUsfm(
+            rows,
+            target,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(1, "New remark 2"), (2, "New remark 3")]
+        );
+        result =
+            @"\id MAT - Test
+\ide UTF-8
+\c 1
+\rem New remark 2
+\v 1 Chapter 1, Verse 1
+\c 2
+\rem New remark 3
+\rem New remark
+\rem Existing remark
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+\c 3
+\rem Last remark
 ";
 
         AssertUsfmEquals(target, result);
@@ -1536,7 +1605,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
         IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
-        IEnumerable<string>? remarks = null,
+        IEnumerable<(int, string)>? remarks = null,
         bool compareSegments = false
     )
     {
