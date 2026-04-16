@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
-            IEnumerable<string> remarks = null,
+            IEnumerable<(int, string)> remarks = null,
             Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
             bool compareSegments = false
         )
