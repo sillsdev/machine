@@ -60,7 +60,7 @@ namespace SIL.Machine.Corpora
         private readonly HashSet<string> _preserveParagraphStyles;
         private readonly Stack<UsfmUpdateBlock> _updateBlocks;
         private readonly Stack<IUsfmUpdateBlockHandler> _updateBlockHandlers;
-        private readonly List<string> _remarks;
+        private readonly List<(int, string)> _remarks;
         private readonly Stack<bool> _replace;
         private int _tokenIndex;
         private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
@@ -76,7 +76,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
-            IEnumerable<string> remarks = null,
+            IEnumerable<(int, string)> remarks = null,
             Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
             bool compareSegments = false
         )
@@ -107,7 +107,7 @@ namespace SIL.Machine.Corpora
                 preserveParagraphStyles == null
                     ? new HashSet<string> { "r", "rem" }
                     : new HashSet<string>(preserveParagraphStyles);
-            _remarks = remarks?.ToList() ?? new List<string>();
+            _remarks = remarks?.ToList() ?? new List<(int, string)>();
             _errorHandler = errorHandler;
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
@@ -433,26 +433,66 @@ namespace SIL.Machine.Corpora
         public string GetUsfm(UsfmStylesheet stylesheet)
         {
             var tokenizer = new UsfmTokenizer(stylesheet);
-            List<UsfmToken> tokens = new List<UsfmToken>(_tokens);
-            if (_remarks.Count() > 0)
+            var tokens = new List<UsfmToken>(_tokens);
+            if (_remarks.Count > 0)
             {
-                var remarkTokens = new List<UsfmToken>();
-                foreach (string remark in _remarks)
+                var remarkTokensByChapter = new Dictionary<int, List<UsfmToken>>();
+                foreach ((int chapterNum, string remark) in _remarks)
                 {
-                    remarkTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
-                    remarkTokens.Add(new UsfmToken(remark));
+                    // Add the remark tokens for each chapter that is to have remarks
+                    if (!remarkTokensByChapter.TryGetValue(chapterNum, out List<UsfmToken> chapterTokens))
+                    {
+                        chapterTokens = new List<UsfmToken>();
+                        remarkTokensByChapter.Add(chapterNum, chapterTokens);
+                    }
+
+                    chapterTokens.Add(new UsfmToken(UsfmTokenType.Paragraph, "rem", null, null));
+                    chapterTokens.Add(new UsfmToken(remark));
                 }
                 if (tokens.Count > 0)
                 {
-                    int index = 0;
-                    HashSet<string> markersToSkip = new HashSet<string>() { "id", "ide", "rem" };
-                    while (markersToSkip.Contains(tokens[index].Marker))
+                    foreach (KeyValuePair<int, List<UsfmToken>> remarkTokens in remarkTokensByChapter)
                     {
-                        index++;
-                        if (tokens.Count > index && tokens[index].Type == UsfmTokenType.Text)
+                        int index;
+                        HashSet<string> markersToSkip;
+                        if (remarkTokens.Key == 0)
+                        {
+                            // Add the remarks at the top level of the USFM,
+                            // after the book id, encode, and any initial comments
+                            index = 0;
+                            markersToSkip = new HashSet<string> { "id", "ide", "rem" };
+                        }
+                        else
+                        {
+                            // Add the remarks just after the specified chapter
+                            index = tokens.FindIndex(t =>
+                                t.Type == UsfmTokenType.Chapter
+                                && int.TryParse(t.Data, out int chapterNumber)
+                                && chapterNumber == remarkTokens.Key
+                            );
+                            if (index == -1)
+                                continue;
                             index++;
+                            markersToSkip = new HashSet<string>();
+                        }
+
+                        if (index >= tokens.Count)
+                        {
+                            // The remark insertion point is at the very end
+                            tokens.AddRange(remarkTokens.Value);
+                        }
+                        else
+                        {
+                            while (markersToSkip.Contains(tokens[index].Marker))
+                            {
+                                index++;
+                                if (tokens.Count > index && tokens[index].Type == UsfmTokenType.Text)
+                                    index++;
+                            }
+
+                            tokens.InsertRange(index, remarkTokens.Value);
+                        }
                     }
-                    tokens.InsertRange(index, remarkTokens);
                 }
             }
 
