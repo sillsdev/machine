@@ -108,6 +108,11 @@ namespace SIL.Machine.Corpora
             public override void StartBook(UsfmParserState state, string marker, string code)
             {
                 base.StartBook(state, marker, code);
+                if (!string.IsNullOrEmpty(state.VerseRef.Book) && state.VerseRef.Book != code)
+                {
+                    // Ignore \id markers that don't match the book code in the verse ref, if it was set
+                    return;
+                }
                 if (!Canon.AllBookIds.Contains(code, StringComparison.InvariantCulture))
                 {
                     throw new ArgumentException($"The book {code} is not a valid book id.");

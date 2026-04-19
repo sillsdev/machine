@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using SIL.Scripture;
 
@@ -46,12 +47,15 @@ namespace SIL.Machine.Corpora
                 while ((line = reader.ReadLine()) != null)
                 {
                     line = line.Trim();
-                    if (line.StartsWith("\\id "))
+                    if (line.StartsWith("\\id ", StringComparison.InvariantCulture))
                     {
                         string id = line.Substring(4);
-                        int index = id.IndexOf(" ");
+                        int index = id.IndexOf(" ", StringComparison.OrdinalIgnoreCase);
+                        // If the id is longer than 3 characters, truncate it to 3 characters.
+                        if ((index == -1 || index > 3) && id.Length >= 3)
+                            index = 3;
                         if (index != -1)
-                            id = id.Substring(0, index);
+                            id = id.Substring(0, index).ToUpperInvariant();
                         return id.Trim();
                     }
                 }
