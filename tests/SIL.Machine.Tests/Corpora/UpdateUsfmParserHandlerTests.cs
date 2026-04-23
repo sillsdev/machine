@@ -1590,6 +1590,71 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         );
     }
 
+    [Test]
+    public void FilterChapters()
+    {
+        string usfm =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\v 1 Some text
+\c 3
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [2, 4]);
+
+        string result =
+            @"\id MAT - Test
+\c 2
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void FilterChapters_WithChapterOneAndHeader()
+    {
+        string usfm =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\v 1 Some text
+\c 3
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [1, 3]);
+
+        string result =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 3
+\v 1 Some text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
@@ -1598,6 +1663,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
     private static string UpdateUsfm(
         IReadOnlyList<UpdateUsfmRow>? rows = null,
         string? source = null,
+        IReadOnlyList<int>? chapters = null,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
         UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
@@ -1615,6 +1681,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
             return updater.UpdateUsfm(
                 "MAT",
                 rows,
+                chapters,
                 idText,
                 textBehavior,
                 paragraphBehavior,
@@ -1643,7 +1710,10 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 (_) => false,
                 compareSegments
             );
-            UsfmParser.Parse(source, updater);
+            var tokenizer = new UsfmTokenizer();
+            IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source, filterTokensByChapter: chapters);
+            var parser = new UsfmParser(tokens, updater);
+            parser.ProcessTokens();
             return updater.GetUsfm();
         }
     }

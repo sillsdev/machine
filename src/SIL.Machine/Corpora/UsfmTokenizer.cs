@@ -37,7 +37,11 @@ namespace SIL.Machine.Corpora
         public UsfmStylesheet Stylesheet { get; }
         public RtlReferenceOrder RtlReferenceOrder { get; }
 
-        public IReadOnlyList<UsfmToken> Tokenize(string usfm, bool preserveWhitespace = false)
+        public IReadOnlyList<UsfmToken> Tokenize(
+            string usfm,
+            bool preserveWhitespace = false,
+            IReadOnlyList<int> filterTokensByChapter = null
+        )
         {
             List<UsfmToken> tokens = new List<UsfmToken>();
 
@@ -409,7 +413,7 @@ namespace SIL.Machine.Corpora
                 }
             }
 
-            return tokens;
+            return FilterTokensByChapter(tokens, filterTokensByChapter);
         }
 
         public string Detokenize(IEnumerable<UsfmToken> tokens, bool tokensHaveWhitespace = false)
@@ -532,6 +536,52 @@ namespace SIL.Machine.Corpora
             }
 
             return usfm.ToString();
+        }
+
+        /// <summary>
+        /// Filters tokens by the specified chapters.
+        /// </summary>
+        /// <param name="tokens">The tokens.</param>
+        /// <param name="chapters">The chapters. If null, all tokens are returned.</param>
+        /// <returns>The filtered tokens.</returns>
+        private static IReadOnlyList<UsfmToken> FilterTokensByChapter(
+            IReadOnlyList<UsfmToken> tokens,
+            IReadOnlyList<int> chapters = null
+        )
+        {
+            if (chapters is null)
+                return tokens;
+
+            var tokensWithinChapters = new List<UsfmToken>();
+            bool inChapter = false;
+            bool inIdMarker = false;
+
+            for (int index = 0; index < tokens.Count; index++)
+            {
+                UsfmToken token = tokens[index];
+                if (index == 0 && token.Marker == "id")
+                {
+                    inIdMarker = true;
+                    if (chapters.Contains(1))
+                        inChapter = true;
+                }
+                else if (inIdMarker && token.Marker != null && token.Marker != "id")
+                {
+                    inIdMarker = false;
+                }
+                else if (token.Type == UsfmTokenType.Chapter)
+                {
+                    inChapter =
+                        !string.IsNullOrEmpty(token.Data)
+                        && int.TryParse(token.Data, out int chapter)
+                        && chapters.Contains(chapter);
+                }
+
+                if (inIdMarker || inChapter)
+                    tokensWithinChapters.Add(token);
+            }
+
+            return tokensWithinChapters;
         }
 
         /// <summary>

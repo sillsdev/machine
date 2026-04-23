@@ -22,6 +22,7 @@ namespace SIL.Machine.Corpora
         public string UpdateUsfm(
             string bookId,
             IReadOnlyList<UpdateUsfmRow> rows,
+            IReadOnlyList<int> chapters = null,
             string fullName = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
@@ -59,7 +60,10 @@ namespace SIL.Machine.Corpora
             );
             try
             {
-                UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
+                var tokenizer = new UsfmTokenizer(_settings.Stylesheet);
+                IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm, filterTokensByChapter: chapters);
+                var parser = new UsfmParser(tokens, handler, _settings.Stylesheet, _settings.Versification);
+                parser.ProcessTokens();
                 return handler.GetUsfm(_settings.Stylesheet);
             }
             catch (Exception ex)
