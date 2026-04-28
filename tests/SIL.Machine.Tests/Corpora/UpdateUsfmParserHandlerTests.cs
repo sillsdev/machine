@@ -1380,13 +1380,103 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_PreferExisting_AddRemark()
+    public void GetUsfm_PassRemark()
     {
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
+
+        string usfm =
+            @"\id MAT - Test
+\ide UTF-8
+\rem Existing remark
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\rem Existing remark
+\v 1 More text
+\c 3
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(0, "New remark 0"), (1, "New remark 1"), (2, "New remark 2"), (3, "New remark 3")]
+        );
+
+        string result =
+            @"\id MAT - Test
+\ide UTF-8
+\rem Existing remark
+\rem New remark 0
+\c 1
+\rem New remark 1
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+\c 2
+\rem Existing remark
+\rem New remark 2
+\v 1 More text
+\c 3
+\rem New remark 3
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_PassRemark0_NoExistingRemark()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
+        };
+
+        string usfm =
+            @"\id MAT - Test
+\ide UTF-8
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(0, "New remark 0")]
+        );
+
+        string result =
+            @"\id MAT - Test
+\ide UTF-8
+\rem New remark 0
+\c 1
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_MultipleRemarksSameChapter()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
+        };
+
         string usfm =
             @"\id MAT - Test
 \ide UTF-8
@@ -1396,38 +1486,23 @@ public class UpdateUsfmParserHandlerTests
 \v 2
 \v 3 Other text
 ";
+
         string target = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: ["New remark"]
+            remarks: [(0, "New remark 0.1"), (0, "New remark 0.2"), (1, "New remark 1.1"), (1, "New remark 1.2")]
         );
+
         string result =
             @"\id MAT - Test
 \ide UTF-8
 \rem Existing remark
-\rem New remark
+\rem New remark 0.1
+\rem New remark 0.2
 \c 1
-\v 1 Some text
-\v 2 Update 2
-\v 3 Other text
-";
-
-        AssertUsfmEquals(target, result);
-
-        target = UpdateUsfm(
-            rows,
-            target,
-            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: ["New remark 2"]
-        );
-        result =
-            @"\id MAT - Test
-\ide UTF-8
-\rem Existing remark
-\rem New remark
-\rem New remark 2
-\c 1
+\rem New remark 1.1
+\rem New remark 1.2
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
@@ -1521,6 +1596,97 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         );
     }
 
+    [Test]
+    public void FilterChapters()
+    {
+        string usfm =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\v 1 Some text
+\c 3
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [2, 4]);
+
+        string result =
+            @"\id MAT - Test
+\c 2
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void FilterChapters_WithChapterOneAndHeader()
+    {
+        string usfm =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\v 1 Some text
+\c 3
+\v 1 Some text
+\c 4
+\v 1 Some text
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [1, 3]);
+
+        string result =
+            @"\id MAT - Test
+\h Matthew
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 3
+\v 1 Some text
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void FilterChapters_WithBadChapterReference()
+    {
+        string usfm =
+            @"\id MAT - Test
+\c 1.
+\v 1 Some text
+\c 2.
+\v 1 Some text
+\c 3
+\v 1 Some text with good chapter reference
+\c 4
+\v 1 Some text with good chapter reference
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [2, 4]);
+
+        string result =
+            @"\id MAT - Test
+\c 4
+\v 1 Some text with good chapter reference
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
@@ -1529,6 +1695,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
     private static string UpdateUsfm(
         IReadOnlyList<UpdateUsfmRow>? rows = null,
         string? source = null,
+        IReadOnlyList<int>? chapters = null,
         string? idText = null,
         UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferNew,
         UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
@@ -1536,7 +1703,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
         IEnumerable<string>? preserveParagraphStyles = null,
         IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
-        IEnumerable<string>? remarks = null,
+        IEnumerable<(int, string)>? remarks = null,
         bool compareSegments = false
     )
     {
@@ -1546,6 +1713,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
             return updater.UpdateUsfm(
                 "MAT",
                 rows,
+                chapters,
                 idText,
                 textBehavior,
                 paragraphBehavior,
@@ -1574,7 +1742,11 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 (_) => false,
                 compareSegments
             );
-            UsfmParser.Parse(source, updater);
+            var tokenizer = new UsfmTokenizer();
+            IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source);
+            tokens = ParatextProjectTextUpdaterBase.FilterTokensByChapter(tokens, chapters);
+            var parser = new UsfmParser(tokens, updater);
+            parser.ProcessTokens();
             return updater.GetUsfm();
         }
     }

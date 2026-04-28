@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace SIL.Machine.Corpora
@@ -22,6 +23,7 @@ namespace SIL.Machine.Corpora
         public string UpdateUsfm(
             string bookId,
             IReadOnlyList<UpdateUsfmRow> rows,
+            IReadOnlyList<int> chapters = null,
             string fullName = null,
             UpdateUsfmTextBehavior textBehavior = UpdateUsfmTextBehavior.PreferExisting,
             UpdateUsfmMarkerBehavior paragraphBehavior = UpdateUsfmMarkerBehavior.Preserve,
@@ -29,7 +31,7 @@ namespace SIL.Machine.Corpora
             UpdateUsfmMarkerBehavior styleBehavior = UpdateUsfmMarkerBehavior.Strip,
             IEnumerable<string> preserveParagraphStyles = null,
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
-            IEnumerable<string> remarks = null,
+            IEnumerable<(int, string)> remarks = null,
             Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
             bool compareSegments = false
         )
@@ -59,7 +61,11 @@ namespace SIL.Machine.Corpora
             );
             try
             {
-                UsfmParser.Parse(usfm, handler, _settings.Stylesheet, _settings.Versification);
+                var tokenizer = new UsfmTokenizer(_settings.Stylesheet);
+                IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
+                tokens = FilterTokensByChapter(tokens, chapters);
+                var parser = new UsfmParser(tokens, handler, _settings.Stylesheet, _settings.Versification);
+                parser.ProcessTokens();
                 return handler.GetUsfm(_settings.Stylesheet);
             }
             catch (Exception ex)
@@ -71,6 +77,53 @@ namespace SIL.Machine.Corpora
                 sb.Append($". Error: '{ex.Message}'");
                 throw new InvalidOperationException(sb.ToString(), ex);
             }
+        }
+
+        /// <summary>
+        /// Filters tokens by the specified chapters.
+        /// </summary>
+        /// <param name="tokens">The tokens.</param>
+        /// <param name="chapters">The chapters. If null, all tokens are returned.</param>
+        /// <returns>The filtered tokens.</returns>
+        /// <remarks>This is marked internal so test classes can use it.</remarks>
+        internal static IReadOnlyList<UsfmToken> FilterTokensByChapter(
+            IReadOnlyList<UsfmToken> tokens,
+            IReadOnlyList<int> chapters = null
+        )
+        {
+            if (chapters is null)
+                return tokens;
+
+            var tokensWithinChapters = new List<UsfmToken>();
+            bool inChapter = false;
+            bool inIdMarker = false;
+
+            for (int index = 0; index < tokens.Count; index++)
+            {
+                UsfmToken token = tokens[index];
+                if (index == 0 && token.Marker == "id")
+                {
+                    inIdMarker = true;
+                    if (chapters.Contains(1))
+                        inChapter = true;
+                }
+                else if (inIdMarker && token.Marker != null && token.Marker != "id")
+                {
+                    inIdMarker = false;
+                }
+                else if (token.Type == UsfmTokenType.Chapter)
+                {
+                    inChapter =
+                        !string.IsNullOrEmpty(token.Data)
+                        && int.TryParse(token.Data, out int chapter)
+                        && chapters.Contains(chapter);
+                }
+
+                if (inIdMarker || inChapter)
+                    tokensWithinChapters.Add(token);
+            }
+
+            return tokensWithinChapters;
         }
 
         private bool Exists(string fileName) => _paratextProjectFileHandler.Exists(fileName);
