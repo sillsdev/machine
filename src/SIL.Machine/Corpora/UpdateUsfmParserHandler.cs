@@ -473,7 +473,7 @@ namespace SIL.Machine.Corpora
                             if (index == -1)
                                 continue;
                             index++;
-                            markersToSkip = new HashSet<string>();
+                            markersToSkip = new HashSet<string> { "rem" };
                         }
 
                         if (index >= tokens.Count)
