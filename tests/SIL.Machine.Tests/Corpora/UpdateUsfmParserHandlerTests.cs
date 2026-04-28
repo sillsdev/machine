@@ -1380,13 +1380,14 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_PreferExisting_AddRemarkToStart()
+    public void GetUsfm_PassRemark()
     {
         var rows = new List<UpdateUsfmRow>
         {
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
+
         string usfm =
             @"\id MAT - Test
 \ide UTF-8
@@ -1395,38 +1396,69 @@ public class UpdateUsfmParserHandlerTests
 \v 1 Some text
 \v 2
 \v 3 Other text
+\c 2
+\rem Existing remark
+\v 1 More text
+\c 3
 ";
+
         string target = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: [(0, "New remark")]
+            remarks: [(0, "New remark 0"), (1, "New remark 1"), (2, "New remark 2"), (3, "New remark 3")]
         );
+
         string result =
             @"\id MAT - Test
 \ide UTF-8
 \rem Existing remark
-\rem New remark
+\rem New remark 0
 \c 1
+\rem New remark 1
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
+\c 2
+\rem Existing remark
+\rem New remark 2
+\v 1 More text
+\c 3
+\rem New remark 3
 ";
 
         AssertUsfmEquals(target, result);
+    }
 
-        target = UpdateUsfm(
-            rows,
-            target,
-            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: [(0, "New remark 2")]
-        );
-        result =
+    [Test]
+    public void GetUsfm_PassRemark0_NoExistingRemark()
+    {
+        var rows = new List<UpdateUsfmRow>
+        {
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
+        };
+
+        string usfm =
             @"\id MAT - Test
 \ide UTF-8
-\rem Existing remark
-\rem New remark
-\rem New remark 2
+\c 1
+\v 1 Some text
+\v 2
+\v 3 Other text
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(0, "New remark 0")]
+        );
+
+        string result =
+            @"\id MAT - Test
+\ide UTF-8
+\rem New remark 0
 \c 1
 \v 1 Some text
 \v 2 Update 2
@@ -1437,69 +1469,43 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_PreferExisting_AddRemarkToChapter()
+    public void GetUsfm_MultipleRemarksSameChapter()
     {
         var rows = new List<UpdateUsfmRow>
         {
-            new UpdateUsfmRow(ScrRef("MAT 2:1"), "Update 1"),
-            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         };
+
         string usfm =
             @"\id MAT - Test
 \ide UTF-8
-\c 1
-\v 1 Chapter 1, Verse 1
-\c 2
 \rem Existing remark
+\c 1
 \v 1 Some text
 \v 2
 \v 3 Other text
-\c 3
 ";
+
         string target = UpdateUsfm(
             rows,
             usfm,
             textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: [(2, "New remark"), (3, "Last remark"), (4, "Remark for missing chapter")]
+            remarks: [(0, "New remark 0.1"), (0, "New remark 0.2"), (1, "New remark 1.1"), (1, "New remark 1.2")]
         );
+
         string result =
             @"\id MAT - Test
 \ide UTF-8
-\c 1
-\v 1 Chapter 1, Verse 1
-\c 2
-\rem New remark
 \rem Existing remark
+\rem New remark 0.1
+\rem New remark 0.2
+\c 1
+\rem New remark 1.1
+\rem New remark 1.2
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
-\c 3
-\rem Last remark
-";
-
-        AssertUsfmEquals(target, result);
-
-        target = UpdateUsfm(
-            rows,
-            target,
-            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
-            remarks: [(1, "New remark 2"), (2, "New remark 3")]
-        );
-        result =
-            @"\id MAT - Test
-\ide UTF-8
-\c 1
-\rem New remark 2
-\v 1 Chapter 1, Verse 1
-\c 2
-\rem New remark 3
-\rem New remark
-\rem Existing remark
-\v 1 Some text
-\v 2 Update 2
-\v 3 Other text
-\c 3
-\rem Last remark
 ";
 
         AssertUsfmEquals(target, result);
@@ -1655,6 +1661,32 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void FilterChapters_WithBadChapterReference()
+    {
+        string usfm =
+            @"\id MAT - Test
+\c 1.
+\v 1 Some text
+\c 2.
+\v 1 Some text
+\c 3
+\v 1 Some text with good chapter reference
+\c 4
+\v 1 Some text with good chapter reference
+";
+
+        string target = UpdateUsfm(source: usfm, chapters: [2, 4]);
+
+        string result =
+            @"\id MAT - Test
+\c 4
+\v 1 Some text with good chapter reference
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
@@ -1711,7 +1743,8 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 compareSegments
             );
             var tokenizer = new UsfmTokenizer();
-            IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source, filterTokensByChapter: chapters);
+            IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source);
+            tokens = ParatextProjectTextUpdaterBase.FilterTokensByChapter(tokens, chapters);
             var parser = new UsfmParser(tokens, updater);
             parser.ProcessTokens();
             return updater.GetUsfm();
