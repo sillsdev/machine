@@ -8,9 +8,10 @@ namespace SIL.Machine.QualityEstimation
             MultiKeyRef segmentRef,
             UsabilityLabel label,
             double projectedChrF3,
-            double usability
+            double usability,
+            double confidence
         )
-            : base(segmentRef.TextId, label, projectedChrF3, usability)
+            : base(segmentRef.TextId, label, projectedChrF3, usability, confidence)
         {
             SegmentRef = segmentRef;
         }

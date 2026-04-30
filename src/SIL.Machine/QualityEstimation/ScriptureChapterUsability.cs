@@ -7,9 +7,10 @@
             int chapter,
             UsabilityLabel label,
             double projectedChrF3,
-            double usability
+            double usability,
+            double confidence
         )
-            : base(book, label, projectedChrF3, usability)
+            : base(book, label, projectedChrF3, usability, confidence)
         {
             Chapter = chapter;
         }
