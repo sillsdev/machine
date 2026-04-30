@@ -23,6 +23,7 @@ namespace SIL.Machine.Corpora
             string biblicalTermsFileName,
             string languageCode,
             string translationType,
+            string visibility,
             string parentGuid = null,
             string parentName = null,
             ParatextProjectSettings parentSettings = null
@@ -45,6 +46,7 @@ namespace SIL.Machine.Corpora
             ParentGuid = parentGuid;
             ParentName = parentName;
             _parent = parentSettings;
+            Visibility = visibility;
         }
 
         public string Guid { get; }
@@ -63,6 +65,7 @@ namespace SIL.Machine.Corpora
         public string TranslationType { get; }
         public string ParentGuid { get; }
         public string ParentName { get; }
+        public string Visibility { get; }
         public ParatextProjectSettings Parent
         {
             get { return _parent; }
