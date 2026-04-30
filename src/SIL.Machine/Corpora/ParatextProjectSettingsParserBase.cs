@@ -131,23 +131,26 @@ namespace SIL.Machine.Corpora
                 parentGuid = translationInfoSettingParts[2] != string.Empty ? translationInfoSettingParts[2] : null;
             }
 
+            string visibility = settingsDoc.Root.Element("Visibility")?.Value;
+
             var settings = new ParatextProjectSettings(
-                guid,
-                name,
-                fullName,
-                encoding,
-                versification,
-                stylesheet,
-                prefix,
-                form,
-                suffix,
-                parts[0],
-                parts[1],
-                parts[2],
-                languageCode,
-                translationType,
-                parentGuid,
-                parentName
+                guid: guid,
+                name: name,
+                fullName: fullName,
+                encoding: encoding,
+                versification: versification,
+                stylesheet: stylesheet,
+                fileNamePrefix: prefix,
+                fileNameForm: form,
+                fileNameSuffix: suffix,
+                biblicalTermsListType: parts[0],
+                biblicalTermsProjectName: parts[1],
+                biblicalTermsFileName: parts[2],
+                languageCode: languageCode,
+                translationType: translationType,
+                visibility: visibility,
+                parentGuid: parentGuid,
+                parentName: parentName
             );
 
             if (_parentParatextProjectSettings != null && settings.HasParent)
