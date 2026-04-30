@@ -2,12 +2,15 @@
 {
     public abstract class UsabilityBase
     {
-        protected UsabilityBase(UsabilityLabel label, double projectedChrF3, double usability)
+        protected UsabilityBase(UsabilityLabel label, double projectedChrF3, double usability, double confidence)
         {
+            Confidence = confidence;
             Label = label;
             ProjectedChrF3 = projectedChrF3;
             Usability = usability;
         }
+
+        public double Confidence { get; }
 
         public UsabilityLabel Label { get; }
 

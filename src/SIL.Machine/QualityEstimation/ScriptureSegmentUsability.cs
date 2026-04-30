@@ -8,9 +8,10 @@ namespace SIL.Machine.QualityEstimation
             ScriptureRef scriptureRef,
             UsabilityLabel label,
             double projectedChrF3,
-            double usability
+            double usability,
+            double confidence
         )
-            : base(scriptureRef.Book, scriptureRef.ChapterNum, label, projectedChrF3, usability)
+            : base(scriptureRef.Book, scriptureRef.ChapterNum, label, projectedChrF3, usability, confidence)
         {
             ScriptureRef = scriptureRef;
         }
