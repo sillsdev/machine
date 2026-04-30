@@ -108,7 +108,8 @@ namespace SIL.Machine.QualityEstimation
                         book,
                         label: BookThresholds.ReturnLabel(averageProbability),
                         usability: averageProbability,
-                        projectedChrF3: score.ProjectedChrF3
+                        projectedChrF3: score.ProjectedChrF3,
+                        confidence: score.Confidence
                     )
                 );
             }
@@ -136,7 +137,8 @@ namespace SIL.Machine.QualityEstimation
                             chapter,
                             label: ChapterThresholds.ReturnLabel(averageProbability),
                             usability: averageProbability,
-                            projectedChrF3: score.ProjectedChrF3
+                            projectedChrF3: score.ProjectedChrF3,
+                            confidence: score.Confidence
                         )
                     );
                 }
@@ -170,7 +172,8 @@ namespace SIL.Machine.QualityEstimation
                         scriptureRef: segmentScore.ScriptureRef,
                         label: SegmentThresholds.ReturnLabel(probability),
                         usability: probability,
-                        projectedChrF3: segmentScore.ProjectedChrF3
+                        projectedChrF3: segmentScore.ProjectedChrF3,
+                        confidence: segmentScore.Confidence
                     )
                 );
             }
@@ -193,7 +196,8 @@ namespace SIL.Machine.QualityEstimation
                         segmentRef: segmentScore.SegmentRef,
                         label: SegmentThresholds.ReturnLabel(probability),
                         usability: probability,
-                        projectedChrF3: segmentScore.ProjectedChrF3
+                        projectedChrF3: segmentScore.ProjectedChrF3,
+                        confidence: segmentScore.Confidence
                     )
                 );
             }
@@ -217,7 +221,8 @@ namespace SIL.Machine.QualityEstimation
                         textId,
                         label: BookThresholds.ReturnLabel(averageProbability),
                         usability: averageProbability,
-                        projectedChrF3: score.ProjectedChrF3
+                        projectedChrF3: score.ProjectedChrF3,
+                        confidence: score.Confidence
                     )
                 );
             }
