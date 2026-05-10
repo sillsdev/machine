@@ -7,22 +7,15 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
 {
     public IDictionary<string, string> Files { get; } = files ?? new Dictionary<string, string>();
 
-    public UsfmStylesheet CreateStylesheet(string fileName)
-    {
-        if (fileName is "usfm.sty" or "usfm_sb.sty")
-            return new UsfmStylesheet(fileName);
-        throw new NotImplementedException();
-    }
+    public UsfmStylesheet CreateStylesheet(string fileName) =>
+        fileName is "usfm.sty" or "usfm_sb.sty" ? new UsfmStylesheet(fileName) : throw new NotImplementedException();
 
     public bool Exists(string fileName)
     {
         return Files.ContainsKey(fileName);
     }
 
-    public string Find(string extension)
-    {
-        throw new NotImplementedException();
-    }
+    public string? Find(string extension) => Files.Keys.FirstOrDefault(item => item.EndsWith(extension));
 
     public Stream? Open(string fileName)
     {
@@ -66,5 +59,5 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
             translationType,
             parentGuid,
             parentName
-        ) { }
+        );
 }

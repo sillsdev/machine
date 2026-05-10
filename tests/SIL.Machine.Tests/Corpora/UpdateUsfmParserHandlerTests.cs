@@ -1382,11 +1382,11 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PassRemark()
     {
-        var rows = new List<UpdateUsfmRow>
-        {
+        List<UpdateUsfmRow> rows =
+        [
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
-        };
+        ];
 
         string usfm =
             @"\id MAT - Test
@@ -1433,11 +1433,11 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_PassRemark0_NoExistingRemark()
     {
-        var rows = new List<UpdateUsfmRow>
-        {
+        List<UpdateUsfmRow> rows =
+        [
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
-        };
+        ];
 
         string usfm =
             @"\id MAT - Test
@@ -1471,11 +1471,11 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_MultipleRemarksSameChapter()
     {
-        var rows = new List<UpdateUsfmRow>
-        {
+        List<UpdateUsfmRow> rows =
+        [
             new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
             new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
-        };
+        ];
 
         string usfm =
             @"\id MAT - Test
@@ -1707,11 +1707,12 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         bool compareSegments = false
     )
     {
+        const string BookId = "MAT";
         if (source is null)
         {
             var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTestProjectPath);
             return updater.UpdateUsfm(
-                "MAT",
+                BookId,
                 rows,
                 chapters,
                 idText,
@@ -1729,8 +1730,16 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         else
         {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-            var updater = new UpdateUsfmParserHandler(
+            var settings = new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+                fileNameForm: BookId,
+                fileNameSuffix: string.Empty
+            );
+            var files = new Dictionary<string, string> { [BookId] = source };
+            var updater = new MemoryParatextProjectTextUpdater(files, settings);
+            return updater.UpdateUsfm(
+                BookId,
                 rows,
+                chapters,
                 idText,
                 textBehavior,
                 paragraphBehavior,
@@ -1742,12 +1751,6 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 (_) => false,
                 compareSegments
             );
-            var tokenizer = new UsfmTokenizer();
-            IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(source);
-            tokens = ParatextProjectTextUpdaterBase.FilterTokensByChapter(tokens, chapters);
-            var parser = new UsfmParser(tokens, updater);
-            parser.ProcessTokens();
-            return updater.GetUsfm();
         }
     }
 

@@ -64,8 +64,7 @@ namespace SIL.Machine.Corpora
                 var tokenizer = new UsfmTokenizer(_settings.Stylesheet);
                 IReadOnlyList<UsfmToken> tokens = tokenizer.Tokenize(usfm);
                 tokens = FilterTokensByChapter(tokens, chapters);
-                var parser = new UsfmParser(tokens, handler, _settings.Stylesheet, _settings.Versification);
-                parser.ProcessTokens();
+                UsfmParser.Parse(tokens, handler, _settings.Stylesheet, _settings.Versification);
                 return handler.GetUsfm(_settings.Stylesheet);
             }
             catch (Exception ex)
