@@ -1730,10 +1730,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         else
         {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-            var settings = new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
-                fileNameForm: BookId,
-                fileNameSuffix: string.Empty
-            );
+            var settings = new DefaultParatextProjectSettings(fileNameForm: BookId, fileNameSuffix: string.Empty);
             var files = new Dictionary<string, string> { [BookId] = source };
             var updater = new MemoryParatextProjectTextUpdater(files, settings);
             return updater.UpdateUsfm(

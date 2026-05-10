@@ -8,5 +8,5 @@ public class MemoryParatextProjectQuoteConventionDetector(
 )
     : ParatextProjectQuoteConventionDetector(
         new MemoryParatextProjectFileHandler(files),
-        settings ?? new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings()
-    ) { }
+        settings ?? new DefaultParatextProjectSettings()
+    );

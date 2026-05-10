@@ -6,5 +6,5 @@ public class MemoryParatextProjectVersificationErrorDetector(
 )
     : ParatextProjectVersificationErrorDetectorBase(
         new MemoryParatextProjectFileHandler(files),
-        settings ?? new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings()
-    ) { }
+        settings ?? new DefaultParatextProjectSettings()
+    );
