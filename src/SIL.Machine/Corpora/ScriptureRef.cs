@@ -88,7 +88,12 @@ namespace SIL.Machine.Corpora
         public ScriptureRef ChangeVersification(ScrVers versification)
         {
             VerseRef vr = VerseRef.Clone();
-            vr.ChangeVersification(versification);
+            if (VerseRef.Versification != versification)
+            {
+                //Simplify the verse since ChangeVersification does not support verse segments
+                vr = vr.RemoveSegments();
+                vr.ChangeVersification(versification);
+            }
             return new ScriptureRef(vr, Path);
         }
 

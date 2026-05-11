@@ -832,7 +832,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_SameRefMiddleOneToMany()
+    public void GetRows_SameRefMiddleOneToMany()
     {
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -872,7 +872,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_SameRefMiddleManyToOne()
+    public void GetRows_SameRefMiddleManyToOne()
     {
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -912,7 +912,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_SameRefLastOneToMany()
+    public void GetRows_SameRefLastOneToMany()
     {
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -947,7 +947,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_SameRefLastManyToOne()
+    public void GetRows_SameRefLastManyToOne()
     {
         var sourceCorpus = new DictionaryTextCorpus(
             new MemoryText(
@@ -982,7 +982,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_SameVerseRefOneToMany()
+    public void GetRows_SameVerseRefOneToMany()
     {
         Versification.Table.Implementation.RemoveAllUnknownVersifications();
         string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
@@ -1049,7 +1049,7 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
-    public void GetGetRows_VerseRefOutOfOrder()
+    public void GetRows_VerseRefOutOfOrder()
     {
         Versification.Table.Implementation.RemoveAllUnknownVersifications();
         string src = "&MAT 1:4-5 = MAT 1:4\nMAT 1:2 = MAT 1:3\nMAT 1:3 = MAT 1:2\n";
@@ -1120,6 +1120,125 @@ public class ParallelTextCorpusTests
         Assert.That(
             rows[3].TargetSegment,
             Is.EqualTo("target chapter one, verse four . target chapter one, verse five .".Split())
+        );
+    }
+
+    [Test]
+    public void GetRows_DifferentVersificationsWithVerseSegments()
+    {
+        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "NUM",
+                new[]
+                {
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:1a", ScrVers.Original),
+                        "source chapter seventeen, verse one a ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:1b", ScrVers.Original),
+                        "source chapter seventeen, verse one b ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:2", ScrVers.Original),
+                        "source chapter seventeen, verse two ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:3", ScrVers.Original),
+                        "source chapter seventeen, verse three ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:4", ScrVers.Original),
+                        "source chapter seventeen, verse four ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.Original,
+        };
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "NUM",
+                new[]
+                {
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 16:36", ScrVers.English),
+                        "target chapter sixteen, verse thirty six ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 16:37", ScrVers.English),
+                        "target chapter sixteen, verse thirty seven ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 16:38", ScrVers.English),
+                        "target chapter sixteen, verse thirty eight ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 16:39a", ScrVers.English),
+                        "target chapter sixteen, verse thirty nine a ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 16:39b", ScrVers.English),
+                        "target chapter sixteen, verse thirty nine b ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.English,
+        };
+
+        // NUM 17:1-13 = NUM 17:16-28
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(5));
+
+        Assert.That(rows[0].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:1a", ScrVers.Original)]));
+        Assert.That(rows[0].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:36", ScrVers.English)]));
+        Assert.That(rows[0].SourceSegment, Is.EqualTo("source chapter seventeen, verse one a .".Split()));
+        Assert.That(rows[0].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty six .".Split()));
+
+        Assert.That(rows[1].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:1b", ScrVers.Original)]));
+        Assert.That(rows[1].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:36", ScrVers.English)]));
+        Assert.That(rows[1].SourceSegment, Is.EqualTo("source chapter seventeen, verse one b .".Split()));
+        Assert.That(rows[1].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty six .".Split()));
+
+        Assert.That(rows[2].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:2", ScrVers.Original)]));
+        Assert.That(rows[2].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:37", ScrVers.English)]));
+        Assert.That(rows[2].SourceSegment, Is.EqualTo("source chapter seventeen, verse two .".Split()));
+        Assert.That(rows[2].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty seven .".Split()));
+
+        Assert.That(rows[3].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:3", ScrVers.Original)]));
+        Assert.That(rows[3].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:38", ScrVers.English)]));
+        Assert.That(rows[3].SourceSegment, Is.EqualTo("source chapter seventeen, verse three .".Split()));
+        Assert.That(rows[3].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty eight .".Split()));
+
+        Assert.That(rows[4].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:4", ScrVers.Original)]));
+        Assert.That(
+            rows[4].TargetRefs,
+            Is.EqualTo([
+                ScriptureRef.Parse("NUM 16:39a", ScrVers.English),
+                ScriptureRef.Parse("NUM 16:39b", ScrVers.English),
+            ])
+        );
+        Assert.That(rows[4].SourceSegment, Is.EqualTo("source chapter seventeen, verse four .".Split()));
+        Assert.That(
+            rows[4].TargetSegment,
+            Is.EqualTo(
+                "target chapter sixteen, verse thirty nine a . target chapter sixteen, verse thirty nine b .".Split()
+            )
         );
     }
 
