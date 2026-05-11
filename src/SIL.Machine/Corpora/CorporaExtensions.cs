@@ -289,10 +289,7 @@ namespace SIL.Machine.Corpora
                     continue;
 
                 VerseRef vref = scriptureRef.VerseRef;
-                if (
-                    curRef.HasValue
-                    && vref.CompareTo(curRef.Value, null, compareAllVerses: true, compareSegments: false) != 0
-                )
+                if (curRef.HasValue && VerseRefComparer.IgnoreSegments.Compare(vref, (VerseRef)curRef) != 0)
                 {
                     yield return (curTrgLineRange ? "<range>" : curTrgLine.ToString(), curRef.Value, curTrgRef.Value);
                     curTrgLineRange = curTrgLineRange || curTrgLine.Length > 0;
