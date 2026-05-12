@@ -212,9 +212,7 @@ public class ParatextProjectVersificationErrorDetectorTests
     public void GetUsfmVersificationErrors_MissingVerseSegment()
     {
         var env = new TestEnvironment(
-            settings: new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
-                versification: GetCustomVersification(@"*3JN 1:13,a,b")
-            ),
+            settings: new DefaultParatextProjectSettings(versification: GetCustomVersification(@"*3JN 1:13,a,b")),
             files: new Dictionary<string, string>()
             {
                 {
@@ -270,9 +268,7 @@ public class ParatextProjectVersificationErrorDetectorTests
     public void GetUsfmVersificationErrors_ExtraVerse_ExcludedInCustomVrs()
     {
         var env = new TestEnvironment(
-            settings: new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
-                versification: GetCustomVersification(@"-3JN 1:13")
-            ),
+            settings: new DefaultParatextProjectSettings(versification: GetCustomVersification(@"-3JN 1:13")),
             files: new Dictionary<string, string>()
             {
                 {

@@ -27,6 +27,17 @@ namespace SIL.Machine.Corpora
         }
 
         public static void Parse(
+            IReadOnlyList<UsfmToken> tokens,
+            IUsfmParserHandler handler,
+            string stylesheetFileName = "usfm.sty",
+            ScrVers versification = null,
+            bool preserveWhitespace = false
+        )
+        {
+            Parse(tokens, handler, new UsfmStylesheet(stylesheetFileName), versification, preserveWhitespace);
+        }
+
+        public static void Parse(
             string usfm,
             IUsfmParserHandler handler,
             UsfmStylesheet stylesheet,
@@ -36,6 +47,25 @@ namespace SIL.Machine.Corpora
         {
             var parser = new UsfmParser(
                 usfm,
+                handler,
+                stylesheet ?? new UsfmStylesheet("usfm.sty"),
+                versification,
+                preserveWhitespace
+            );
+
+            parser.ProcessTokens();
+        }
+
+        public static void Parse(
+            IReadOnlyList<UsfmToken> tokens,
+            IUsfmParserHandler handler,
+            UsfmStylesheet stylesheet,
+            ScrVers versification = null,
+            bool preserveWhitespace = false
+        )
+        {
+            var parser = new UsfmParser(
+                tokens,
                 handler,
                 stylesheet ?? new UsfmStylesheet("usfm.sty"),
                 versification,

@@ -45,7 +45,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings()
     {
         var env = new TestEnvironment(
-            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+            new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
@@ -60,7 +60,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_NoTermRenderings_DoNotUseTermGlosses()
     {
         var env = new TestEnvironment(
-            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+            new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),
@@ -74,7 +74,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations()
     {
         var env = new TestEnvironment(
-            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+            new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "fr"
@@ -90,7 +90,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_FilterByChapters()
     {
         var env = new TestEnvironment(
-            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+            new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml",
                 languageCode: "fr"
@@ -113,7 +113,7 @@ public class ParatextProjectTermsParserTests
     public void TestGetKeyTermsFromTermsLocalizations_TermRenderingsExists_PreferLocalization()
     {
         var env = new TestEnvironment(
-            new MemoryParatextProjectFileHandler.DefaultParatextProjectSettings(
+            new DefaultParatextProjectSettings(
                 biblicalTermsListType: "Major",
                 biblicalTermsFileName: "BiblicalTerms.xml"
             ),

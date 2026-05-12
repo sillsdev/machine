@@ -1,5 +1,4 @@
 using System.Text;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
@@ -7,22 +6,15 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
 {
     public IDictionary<string, string> Files { get; } = files ?? new Dictionary<string, string>();
 
-    public UsfmStylesheet CreateStylesheet(string fileName)
-    {
-        if (fileName is "usfm.sty" or "usfm_sb.sty")
-            return new UsfmStylesheet(fileName);
-        throw new NotImplementedException();
-    }
+    public UsfmStylesheet CreateStylesheet(string fileName) =>
+        fileName is "usfm.sty" or "usfm_sb.sty" ? new UsfmStylesheet(fileName) : throw new NotImplementedException();
 
     public bool Exists(string fileName)
     {
         return Files.ContainsKey(fileName);
     }
 
-    public string Find(string extension)
-    {
-        throw new NotImplementedException();
-    }
+    public string? Find(string extension) => Files.Keys.FirstOrDefault(item => item.EndsWith(extension));
 
     public Stream? Open(string fileName)
     {
@@ -30,41 +22,4 @@ public class MemoryParatextProjectFileHandler(IDictionary<string, string>? files
             return null;
         return new MemoryStream(Encoding.UTF8.GetBytes(contents));
     }
-
-    public class DefaultParatextProjectSettings(
-        string id = "Id",
-        string name = "Test",
-        string fullName = "TestProject",
-        Encoding? encoding = null,
-        ScrVers? versification = null,
-        UsfmStylesheet? stylesheet = null,
-        string fileNamePrefix = "",
-        string fileNameForm = "41MAT",
-        string fileNameSuffix = "Test.SFM",
-        string biblicalTermsListType = "Project",
-        string biblicalTermsProjectName = "Test",
-        string biblicalTermsFileName = "ProjectBiblicalTerms.xml",
-        string languageCode = "en",
-        string translationType = "Standard",
-        string? parentGuid = null,
-        string? parentName = null
-    )
-        : ParatextProjectSettings(
-            id,
-            name,
-            fullName,
-            encoding ?? Encoding.UTF8,
-            versification ?? ScrVers.English,
-            stylesheet ?? new UsfmStylesheet("usfm.sty"),
-            fileNamePrefix,
-            fileNameForm,
-            fileNameSuffix,
-            biblicalTermsListType,
-            biblicalTermsProjectName,
-            biblicalTermsFileName,
-            languageCode,
-            translationType,
-            parentGuid,
-            parentName
-        ) { }
 }
