@@ -24,6 +24,9 @@ public class VerseRefExtensionsTests
         // English vs. Original
         // NUM 16:36-50 = NUM 17:1-15
         // NUM 17:1-13 = NUM 17:16-28
+        // ESG 1:1 = ESG 1:1a
+        // ESG 1:2 = ESG 1:1b
+
         VerseRef verseRef = new VerseRef("NUM 17:1", ScrVers.English);
         VerseRef result = verseRef.ChangeVersificationWithSegments(ScrVers.Original);
         Assert.That(result.Versification, Is.EqualTo(ScrVers.Original));
@@ -48,5 +51,15 @@ public class VerseRefExtensionsTests
         result = verseRef.ChangeVersificationWithSegments(ScrVers.English);
         Assert.That(result.Versification, Is.EqualTo(ScrVers.English));
         Assert.That(result.ToString(), Is.EqualTo("NUM 17:1a"));
+
+        verseRef = new VerseRef("ESG 1:1b", ScrVers.Original);
+        result = verseRef.ChangeVersificationWithSegments(ScrVers.English);
+        Assert.That(result.Versification, Is.EqualTo(ScrVers.English));
+        Assert.That(result.ToString(), Is.EqualTo("ESG 1:2"));
+
+        verseRef = new VerseRef("ESG 1:2", ScrVers.English);
+        result = verseRef.ChangeVersificationWithSegments(ScrVers.Original);
+        Assert.That(result.Versification, Is.EqualTo(ScrVers.Original));
+        Assert.That(result.ToString(), Is.EqualTo("ESG 1:1b"));
     }
 }
