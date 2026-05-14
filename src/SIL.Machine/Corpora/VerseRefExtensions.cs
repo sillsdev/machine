@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Scripture;
 
@@ -9,7 +10,7 @@ namespace SIL.Machine.Corpora
         {
             if (string.IsNullOrEmpty(verseRef.Segment()))
             {
-                return verseRef;
+                return verseRef.Clone();
             }
             try
             {
@@ -22,8 +23,35 @@ namespace SIL.Machine.Corpora
             {
                 VerseRef newVerseRef = verseRef.Clone();
                 newVerseRef.Simplify();
-                return verseRef;
+                return newVerseRef;
             }
+        }
+
+        public static VerseRef ChangeVersificationWithSegments(this VerseRef verseRef, ScrVers versification)
+        {
+            VerseRef vr = verseRef.Clone();
+            vr.ChangeVersification(versification);
+            if (string.IsNullOrEmpty(vr.Segment()))
+                return vr;
+            VerseRef verseRefWithoutSegments = verseRef.RemoveSegments();
+            verseRefWithoutSegments.ChangeVersification(versification);
+            if (!verseRefWithoutSegments.Equals(vr.RemoveSegments()))
+            {
+                IEnumerable<string> verses = verseRef
+                    .AllVerses()
+                    .Zip(
+                        verseRefWithoutSegments.AllVerses(),
+                        (verseWithSegments, verseWithCorrectNumber) => (verseWithSegments, verseWithCorrectNumber)
+                    )
+                    .Select(
+                        (verseTuple) => verseTuple.verseWithCorrectNumber.Verse + verseTuple.verseWithSegments.Segment()
+                    );
+                return new VerseRef(
+                    $"{verseRefWithoutSegments.Book} {verseRefWithoutSegments.ChapterNum}:{string.Join(",", verses)}",
+                    versification
+                );
+            }
+            return vr;
         }
     }
 }

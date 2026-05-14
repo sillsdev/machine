@@ -736,7 +736,7 @@ namespace SIL.Machine.Corpora
             // We are using a dictionary, which uses an equality comparer. As a result, we need to change the
             // source verse ref to use the row versification. If we used a SortedList, it wouldn't be necessary, but it
             // would be less efficient.
-            vref.ChangeVersification(_updateRowsVersification);
+            vref = vref.ChangeVersificationWithSegments(_updateRowsVersification);
 
             _verseRows.Clear();
             _verseRowIndex = 0;

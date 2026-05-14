@@ -1200,10 +1200,12 @@ public class ParallelTextCorpusTests
             Versification = ScrVers.English,
         };
 
+        // English vs. Original
+        // NUM 16:36-50 = NUM 17:1-15
         // NUM 17:1-13 = NUM 17:16-28
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus);
         ParallelTextRow[] rows = parallelCorpus.ToArray();
-        Assert.That(rows.Length, Is.EqualTo(5));
+        Assert.That(rows.Length, Is.EqualTo(6));
 
         Assert.That(rows[0].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:1a", ScrVers.Original)]));
         Assert.That(rows[0].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:36", ScrVers.English)]));
@@ -1226,20 +1228,14 @@ public class ParallelTextCorpusTests
         Assert.That(rows[3].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty eight .".Split()));
 
         Assert.That(rows[4].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:4", ScrVers.Original)]));
-        Assert.That(
-            rows[4].TargetRefs,
-            Is.EqualTo([
-                ScriptureRef.Parse("NUM 16:39a", ScrVers.English),
-                ScriptureRef.Parse("NUM 16:39b", ScrVers.English),
-            ])
-        );
+        Assert.That(rows[4].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:39a", ScrVers.English)]));
         Assert.That(rows[4].SourceSegment, Is.EqualTo("source chapter seventeen, verse four .".Split()));
-        Assert.That(
-            rows[4].TargetSegment,
-            Is.EqualTo(
-                "target chapter sixteen, verse thirty nine a . target chapter sixteen, verse thirty nine b .".Split()
-            )
-        );
+        Assert.That(rows[4].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty nine a .".Split()));
+
+        Assert.That(rows[5].SourceRefs, Is.EqualTo([ScriptureRef.Parse("NUM 17:4", ScrVers.Original)]));
+        Assert.That(rows[5].TargetRefs, Is.EqualTo([ScriptureRef.Parse("NUM 16:39b", ScrVers.English)]));
+        Assert.That(rows[5].SourceSegment, Is.EqualTo("source chapter seventeen, verse four .".Split()));
+        Assert.That(rows[5].TargetSegment, Is.EqualTo("target chapter sixteen, verse thirty nine b .".Split()));
     }
 
     [Test]
