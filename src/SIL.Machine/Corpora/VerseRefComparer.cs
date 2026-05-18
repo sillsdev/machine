@@ -20,7 +20,8 @@ namespace SIL.Machine.Corpora
 
         public int Compare(VerseRef x, VerseRef y)
         {
-            y = y.ChangeVersificationWithSegments(x.Versification);
+            if (x.Versification != y.Versification)
+                y = y.ChangeVersificationWithSegments(x.Versification);
 
             if (!x.HasMultiple && !y.HasMultiple)
             {

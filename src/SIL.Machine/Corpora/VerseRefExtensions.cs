@@ -10,7 +10,7 @@ namespace SIL.Machine.Corpora
         {
             if (string.IsNullOrEmpty(verseRef.Segment()))
             {
-                return verseRef.Clone();
+                return verseRef;
             }
             try
             {
@@ -21,7 +21,7 @@ namespace SIL.Machine.Corpora
             }
             catch (VerseRefException)
             {
-                VerseRef newVerseRef = verseRef.Clone();
+                VerseRef newVerseRef = verseRef;
                 newVerseRef.Simplify();
                 return newVerseRef;
             }
@@ -29,7 +29,7 @@ namespace SIL.Machine.Corpora
 
         public static VerseRef ChangeVersificationWithSegments(this VerseRef verseRef, ScrVers versification)
         {
-            VerseRef vr = verseRef.Clone();
+            VerseRef vr = verseRef;
             vr.ChangeVersification(versification);
             if (string.IsNullOrEmpty(vr.Segment()))
                 return vr;
