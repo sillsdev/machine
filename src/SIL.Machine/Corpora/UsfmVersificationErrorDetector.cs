@@ -289,7 +289,7 @@ namespace SIL.Machine.Corpora
             _currentVerse = new VerseRef();
 
             // See whether the chapter number is invalid
-            VerseRef verseRef = state.VerseRef.Clone();
+            VerseRef verseRef = state.VerseRef;
             verseRef.Chapter = number;
             if (verseRef.ChapterNum == -1)
             {
@@ -336,7 +336,7 @@ namespace SIL.Machine.Corpora
             if (!verseInError)
             {
                 // See whether the verse number is invalid
-                VerseRef verseRef = _currentVerse.Clone();
+                VerseRef verseRef = _currentVerse;
                 verseRef.Verse = number;
                 if (verseRef.VerseNum == -1)
                 {

@@ -67,7 +67,7 @@ namespace SIL.Machine.Corpora
         )
         {
             // Handle non-latin numbers
-            VerseRef verseRef = _curVerseRef.Clone();
+            VerseRef verseRef = _curVerseRef;
             verseRef.TrySetVerseUnicode(number);
 
             if (state.ChapterHasVerseZero && state.VerseRef.VerseNum == 0)
@@ -91,7 +91,7 @@ namespace SIL.Machine.Corpora
             )
             {
                 // merge overlapping verse ranges in to one range
-                verseRef = _curVerseRef.Clone();
+                verseRef = _curVerseRef;
                 verseRef.TrySetVerseUnicode(CorporaUtils.MergeVerseRanges(number, _curVerseRef.Verse));
                 UpdateVerseRef(verseRef, marker);
                 return;
