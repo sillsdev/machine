@@ -52,6 +52,17 @@ namespace SIL.Machine.Corpora
             return (splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
         }
 
+        public static ArgumentException AlignmentException<T>(
+            this ICorpus<T> _,
+            string[] refs,
+            Exception innerException = null
+        )
+            where T : IRow =>
+            new ArgumentException(
+                $"Invalid format in {string.Join(", ", refs)}. Mismatched key formats. There may be an extraneous tab, missing ref, or inconsistent use of user-defined refs.",
+                innerException
+            );
+
         #endregion
 
         #region ITextCorpus operations
