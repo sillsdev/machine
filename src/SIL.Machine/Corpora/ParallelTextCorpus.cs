@@ -54,7 +54,7 @@ namespace SIL.Machine.Corpora
                             }
                             catch (ArgumentException e)
                             {
-                                throw new CorpusAlignmentException(nRow.NRefs.Select(r => r.ToString()).ToArray(), e);
+                                throw this.AlignmentException(nRow.NRefs.Select(r => r.ToString()).ToArray(), e);
                             }
                         } while (compareAlignmentCorpus < 0);
                     }
