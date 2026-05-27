@@ -142,7 +142,7 @@ namespace SIL.Machine.Corpora
                 }
                 catch (ArgumentException e)
                 {
-                    throw new CorpusAlignmentException(
+                    throw this.AlignmentException(
                         currentRows.Where(r => r != null).Select(r => r.Ref.ToString()).ToArray(),
                         e
                     );
@@ -264,9 +264,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    throw new CorpusAlignmentException(
-                        minRefIndexes.Select(i => currentRows[i].Ref.ToString()).ToArray()
-                    );
+                    throw this.AlignmentException(minRefIndexes.Select(i => currentRows[i].Ref.ToString()).ToArray());
                 }
             }
 
@@ -400,7 +398,7 @@ namespace SIL.Machine.Corpora
             }
             catch (ArgumentException e)
             {
-                throw new CorpusAlignmentException(sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString(), e);
+                throw this.AlignmentException(new[] { sameRefRows[0].Ref.ToString(), otherRow.Ref.ToString() }, e);
             }
             return sameRefRows.Count > 0;
         }

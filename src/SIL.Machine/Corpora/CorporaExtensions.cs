@@ -52,6 +52,17 @@ namespace SIL.Machine.Corpora
             return (splitCorpus, corpusSize - splitIndices.Count, splitIndices.Count);
         }
 
+        public static InvalidOperationException AlignmentException<T>(
+            this ICorpus<T> _,
+            string[] refs,
+            Exception innerException = null
+        )
+            where T : IRow =>
+            new InvalidOperationException(
+                $"Unable to align rows with refs: {string.Join(", ", refs)}.",
+                innerException
+            );
+
         #endregion
 
         #region ITextCorpus operations
