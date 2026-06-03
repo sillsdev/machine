@@ -1239,6 +1239,252 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
+    public void GetRows_DifferentVersificationsWithExtraVerse()
+    {
+        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "NUM",
+                new[]
+                {
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:16", ScrVers.Original),
+                        "source chapter seventeen, verse sixteen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:17", ScrVers.Original),
+                        "source chapter seventeen, verse seventeen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:18", ScrVers.Original),
+                        "source chapter seventeen, verse eighteen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:19", ScrVers.Original),
+                        "source chapter seventeen, verse nineteen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:20", ScrVers.Original),
+                        "source chapter seventeen, verse twenty ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:21", ScrVers.Original),
+                        "source chapter seventeen, verse twenty one ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:22", ScrVers.Original),
+                        "source chapter seventeen, verse twenty two ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:23", ScrVers.Original),
+                        "source chapter seventeen, verse twenty three ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:24", ScrVers.Original),
+                        "source chapter seventeen, verse twenty four ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:25", ScrVers.Original),
+                        "source chapter seventeen, verse twenty five ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:26", ScrVers.Original),
+                        "source chapter seventeen, verse twenty six ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:27", ScrVers.Original),
+                        "source chapter seventeen, verse twenty seven ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:28", ScrVers.Original),
+                        "source chapter seventeen, verse twenty eight ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 18:1", ScrVers.Original),
+                        "source chapter eighteen, verse one ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.Original,
+        };
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "NUM",
+                new[]
+                {
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:12", ScrVers.English),
+                        "target chapter seventeen, verse twelve ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:13", ScrVers.English),
+                        "target chapter seventeen, verse thirteen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 17:16", ScrVers.English),
+                        "target chapter seventeen, verse sixteen ."
+                    ),
+                    TextRow(
+                        "NUM",
+                        ScriptureRef.Parse("NUM 18:1", ScrVers.English),
+                        "target chapter eighteen, verse one ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.English,
+        };
+
+        // English vs. Original
+        // NUM 16:36-50 = NUM 17:1-15
+        // NUM 17:1-13 = NUM 17:16-28
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(14));
+    }
+
+    [Test]
+    public void GetRows_DifferentVersificationsWithDoubleMapping()
+    {
+        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "ESG",
+                new[]
+                {
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:17", ScrVers.Original),
+                        "source chapter four, verse seventeen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:18", ScrVers.Original),
+                        "source chapter four, verse eighteen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:19", ScrVers.Original),
+                        "source chapter four, verse nineteen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:20", ScrVers.Original),
+                        "source chapter four, verse twenty ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:21", ScrVers.Original),
+                        "source chapter four, verse twenty one ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:22", ScrVers.Original),
+                        "source chapter four, verse twenty two ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:23", ScrVers.Original),
+                        "source chapter four, verse twenty three ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:24", ScrVers.Original),
+                        "source chapter four, verse twenty four ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.Original,
+        };
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "ESG",
+                new[]
+                {
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:17", ScrVers.English),
+                        "target chapter four, verse seventeen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:18", ScrVers.English),
+                        "target chapter four, verse eighteen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:19", ScrVers.English),
+                        "target chapter four, verse nineteen ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:20", ScrVers.English),
+                        "target chapter four, verse twenty ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:21", ScrVers.English),
+                        "target chapter four, verse twenty one ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:22", ScrVers.English),
+                        "target chapter four, verse twenty two ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:23", ScrVers.English),
+                        "target chapter four, verse twenty three ."
+                    ),
+                    TextRow(
+                        "ESG",
+                        ScriptureRef.Parse("ESG 4:24", ScrVers.English),
+                        "target chapter four, verse twenty four ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.English,
+        };
+
+        // English vs. Original
+        // ESG 4:18 = ESG 4:17a
+        // ESG 4:19 = ESG 4:17b
+        // ESG 4:20 = ESG 4:17c
+        // ESG 4:21 = ESG 4:17c
+        // ESG 4:22 = ESG 4:17d
+        // ESG 4:23 = ESG 4:17d
+        // ESG 4:24 = ESG 4:17e
+        var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        // 17 aligns to every row (8) and then every other row also aligns to the row with the same reference (7)
+        Assert.That(rows.Length, Is.EqualTo(8 + 7));
+    }
+
+    [Test]
     public void Count_NoRows()
     {
         var sourceCorpus = new DictionaryTextCorpus();

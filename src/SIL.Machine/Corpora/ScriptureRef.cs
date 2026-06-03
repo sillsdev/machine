@@ -99,6 +99,21 @@ namespace SIL.Machine.Corpora
         {
             IComparer<VerseRef> comparer = compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments;
             int res = comparer.Compare(VerseRef, other.VerseRef);
+            if (VerseRef.Versification != other.VerseRef.Versification
+                && VerseRef.Versification != null
+                && other.VerseRef.Versification != null)
+            {
+                int reverseRes = comparer.Compare(other.VerseRef, VerseRef);
+                if ((res ^ reverseRes) > 0 || (res != 0 && res == reverseRes))
+                {
+                    // In some situations involving double mappings, this > other does not imply other <= this.
+                    // In these situations, convert both to Original versification and then compare them.
+                    res = comparer.Compare(
+                        VerseRef.ChangeVersificationWithSegments(ScrVers.Original),
+                        other.VerseRef.ChangeVersificationWithSegments(ScrVers.Original)
+                    );
+                }
+            }
             if (res != 0)
                 return res;
 
