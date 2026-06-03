@@ -99,9 +99,11 @@ namespace SIL.Machine.Corpora
         {
             IComparer<VerseRef> comparer = compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments;
             int res = comparer.Compare(VerseRef, other.VerseRef);
-            if (VerseRef.Versification != other.VerseRef.Versification
+            if (
+                VerseRef.Versification != other.VerseRef.Versification
                 && VerseRef.Versification != null
-                && other.VerseRef.Versification != null)
+                && other.VerseRef.Versification != null
+            )
             {
                 int reverseRes = comparer.Compare(other.VerseRef, VerseRef);
                 // Detect comparison inconsistency: fires when both comparisons have the same sign
