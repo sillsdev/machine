@@ -1474,9 +1474,9 @@ public class ParallelTextCorpusTests
         // ESG 4:18 = ESG 4:17a
         // ESG 4:19 = ESG 4:17b
         // ESG 4:20 = ESG 4:17c
-        // ESG 4:21 = ESG 4:17c
+        // ESG 4:21 = ESG 4:17c  (double mapping: both 4:20 and 4:21 map to 4:17c)
         // ESG 4:22 = ESG 4:17d
-        // ESG 4:23 = ESG 4:17d
+        // ESG 4:23 = ESG 4:17d  (double mapping: both 4:22 and 4:23 map to 4:17d)
         // ESG 4:24 = ESG 4:17e
         var parallelCorpus = new ParallelTextCorpus(sourceCorpus, targetCorpus) { AllSourceRows = true };
         ParallelTextRow[] rows = parallelCorpus.ToArray();
