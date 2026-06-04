@@ -99,26 +99,15 @@ namespace SIL.Machine.Corpora
         {
             IComparer<VerseRef> comparer = compareSegments ? VerseRefComparer.Default : VerseRefComparer.IgnoreSegments;
             int res = comparer.Compare(VerseRef, other.VerseRef);
-            if (
-                VerseRef.Versification != other.VerseRef.Versification
-                && VerseRef.Versification != null
-                && other.VerseRef.Versification != null
-            )
+            int reverseRes = comparer.Compare(other.VerseRef, VerseRef);
+            if ((res ^ reverseRes) > 0 || (res != 0 && res == reverseRes))
             {
-                int reverseRes = comparer.Compare(other.VerseRef, VerseRef);
-                // Detect comparison inconsistency: fires when both comparisons have the same sign
-                // (e.g., res > 0 and reverseRes > 0), or when one is zero and the other is non-zero.
-                // This can occur with double versification mappings where converting x→y and y→x give
-                // different intermediate verses.
-                if ((res ^ reverseRes) > 0 || (res != 0 && res == reverseRes))
-                {
-                    // In some situations involving double mappings, this > other does not imply other <= this.
-                    // In these situations, convert both to Original versification and then compare them.
-                    res = comparer.Compare(
-                        VerseRef.ChangeVersificationWithSegments(ScrVers.Original),
-                        other.VerseRef.ChangeVersificationWithSegments(ScrVers.Original)
-                    );
-                }
+                // In some situations involving double mappings, this > other does not imply other <= this.
+                // In these situations, convert both to Original versification and then compare them.
+                res = comparer.Compare(
+                    VerseRef.ChangeVersificationWithSegments(ScrVers.Original),
+                    other.VerseRef.ChangeVersificationWithSegments(ScrVers.Original)
+                );
             }
             if (res != 0)
                 return res;
