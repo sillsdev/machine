@@ -1239,6 +1239,112 @@ public class ParallelTextCorpusTests
     }
 
     [Test]
+    public void GetRows_DifferentVersificationsWithCrossBookMappings()
+    {
+        var sourceCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "DAN",
+                new[]
+                {
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:23", ScrVers.Original),
+                        "DAN source chapter three, verse twenty three ."
+                    ),
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:24", ScrVers.Original),
+                        "DAN source chapter three, verse twenty four ."
+                    ),
+                }
+            ),
+            new MemoryText(
+                "S3Y",
+                new[]
+                {
+                    TextRow(
+                        "S3Y",
+                        ScriptureRef.Parse("S3Y 1:1", ScrVers.Original),
+                        "S3Y source chapter one, verse one ."
+                    ),
+                    TextRow(
+                        "S3Y",
+                        ScriptureRef.Parse("S3Y 1:68", ScrVers.Original),
+                        "S3Y source chapter one, verse sixty eight ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.Original,
+        };
+
+        var targetCorpus = new DictionaryTextCorpus(
+            new MemoryText(
+                "DAN",
+                new[]
+                {
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:23", ScrVers.RussianOrthodox),
+                        "DAN target chapter three, verse twenty three ."
+                    ),
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:24", ScrVers.RussianOrthodox),
+                        "DAN target chapter three, verse twenty four ."
+                    ),
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:90", ScrVers.RussianOrthodox),
+                        "DAN target chapter three, verse ninety ."
+                    ),
+                    TextRow(
+                        "DAN",
+                        ScriptureRef.Parse("DAN 3:91", ScrVers.RussianOrthodox),
+                        "DAN target chapter three, verse ninety one ."
+                    ),
+                }
+            )
+        )
+        {
+            Versification = ScrVers.RussianOrthodox,
+        };
+
+        // Russian Orthodox vs. Original
+        // DAN 3:24-90 = DAG 3:24-90
+        // DAN 3:91-100 = DAN 3:24-33
+        // Original
+        // S3Y 1:1-29 = DAG 3:24-52
+        // ...
+        // S3Y 1:38-68 = DAG 3:60-90
+
+        var parallelCorpus = sourceCorpus.AlignRows(targetCorpus, allSourceRows: true);
+        ParallelTextRow[] rows = parallelCorpus.ToArray();
+        Assert.That(rows.Length, Is.EqualTo(4));
+
+        Assert.That(rows[0].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:23", ScrVers.Original) }));
+        Assert.That(rows[0].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:23", ScrVers.RussianOrthodox) }));
+        Assert.That(rows[0].SourceSegment, Is.EqualTo("DAN source chapter three, verse twenty three .".Split()));
+        Assert.That(rows[0].TargetSegment, Is.EqualTo("DAN target chapter three, verse twenty three .".Split()));
+
+        Assert.That(rows[1].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:24", ScrVers.Original) }));
+        Assert.That(rows[1].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:91", ScrVers.RussianOrthodox) }));
+        Assert.That(rows[1].SourceSegment, Is.EqualTo("DAN source chapter three, verse twenty four .".Split()));
+        Assert.That(rows[1].TargetSegment, Is.EqualTo("DAN target chapter three, verse ninety one .".Split()));
+
+        Assert.That(rows[2].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("S3Y 1:1", ScrVers.Original) }));
+        Assert.That(rows[2].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:24", ScrVers.RussianOrthodox) }));
+        Assert.That(rows[2].SourceSegment, Is.EqualTo("S3Y source chapter one, verse one .".Split()));
+        Assert.That(rows[2].TargetSegment, Is.EqualTo("DAN target chapter three, verse twenty four .".Split()));
+
+        Assert.That(rows[3].SourceRefs, Is.EqualTo(new[] { ScriptureRef.Parse("S3Y 1:68", ScrVers.Original) }));
+        Assert.That(rows[3].TargetRefs, Is.EqualTo(new[] { ScriptureRef.Parse("DAN 3:90", ScrVers.RussianOrthodox) }));
+        Assert.That(rows[3].SourceSegment, Is.EqualTo("S3Y source chapter one, verse sixty eight .".Split()));
+        Assert.That(rows[3].TargetSegment, Is.EqualTo("DAN target chapter three, verse ninety .".Split()));
+    }
+
+    [Test]
     public void GetRows_DifferentVersificationsWithExtraVerse()
     {
         Versification.Table.Implementation.RemoveAllUnknownVersifications();
