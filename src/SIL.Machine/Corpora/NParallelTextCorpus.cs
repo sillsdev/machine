@@ -93,15 +93,6 @@ namespace SIL.Machine.Corpora
                     minRefIndexes.Add(i);
                 }
             }
-            // In some situations involving invalid ScriptureRefs, the comparer may not be reliable (x > y does not imply y <= x).
-            // If only index 0 is the minimum but comparing the minimum against refs[1] is non-negative (inconsistent),
-            // and any refs are invalid, then use the invalid refs as the minimum instead.
-            if (minRefIndexes.Count == 1 && minRefIndexes[0] == 0 && refs.Count > 1)
-            {
-                bool[] invalidVrefs = refs.Select(r => r is ScriptureRef sr && !sr.VerseRef.Valid).ToArray();
-                if (RowRefComparer.Compare(minRef, refs[1]) >= 0 && invalidVrefs.Any(v => v))
-                    minRefIndexes = Enumerable.Range(0, refs.Count).Where(i => invalidVrefs[i]).ToList();
-            }
             return minRefIndexes;
         }
 
