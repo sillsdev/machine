@@ -11,6 +11,7 @@ namespace SIL.Machine.Corpora
         private readonly IEnumerator<TextRow> _enumerator;
         private readonly bool _isScripture = false;
         private readonly Queue<TextRow> _verseRows;
+        private readonly ScrVers _versification;
         private readonly ScrVers _refVersification;
         private TextRow _current;
         private bool _isEnumerating = false;
@@ -19,6 +20,7 @@ namespace SIL.Machine.Corpora
         public TextCorpusEnumerator(IEnumerator<TextRow> enumerator, ScrVers refVersification, ScrVers versification)
         {
             _enumerator = enumerator;
+            _versification = versification;
             _refVersification = refVersification;
             _isScripture = refVersification != null && versification != null && refVersification != versification;
             _verseRows = new Queue<TextRow>();
@@ -67,18 +69,20 @@ namespace SIL.Machine.Corpora
 
         private void CollectVerses()
         {
+            bool hasCrossBookMappings = _versification.HasCrossBookMappings(_refVersification);
+
             var rowList = new List<(ScriptureRef Ref, TextRow Row)>();
-            bool outOfOrder = false;
+            bool versesOutOfOrder = false;
             ScriptureRef prevRefRef = ScriptureRef.Empty;
             int rangeStartOffset = -1;
             do
             {
                 TextRow row = _enumerator.Current;
                 var refRef = (ScriptureRef)row.Ref;
-                if (!prevRefRef.IsEmpty && refRef.BookNum != prevRefRef.BookNum)
+                refRef = refRef.ChangeVersification(_refVersification);
+                if (!hasCrossBookMappings && !prevRefRef.IsEmpty && refRef.BookNum != prevRefRef.BookNum)
                     break;
 
-                refRef = refRef.ChangeVersification(_refVersification);
                 // convert one-to-many versification mapping to a verse range
                 if (refRef.Equals(prevRefRef))
                 {
@@ -106,13 +110,13 @@ namespace SIL.Machine.Corpora
                     rangeStartOffset = -1;
                 }
                 rowList.Add((refRef, row));
-                if (!outOfOrder && refRef.CompareTo(prevRefRef) < 0)
-                    outOfOrder = true;
+                if (!versesOutOfOrder && refRef.CompareTo(prevRefRef) < 0)
+                    versesOutOfOrder = true;
                 prevRefRef = refRef;
                 _enumeratorHasMoreData = _enumerator.MoveNext();
             } while (_enumeratorHasMoreData);
 
-            if (outOfOrder)
+            if (versesOutOfOrder)
                 rowList.Sort((x, y) => x.Ref.CompareTo(y.Ref));
 
             foreach ((ScriptureRef _, TextRow row) in rowList)
