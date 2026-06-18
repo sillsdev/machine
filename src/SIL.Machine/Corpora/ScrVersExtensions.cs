@@ -30,12 +30,18 @@ namespace SIL.Machine.Corpora
             return references;
         }
 
-        public static IEnumerable<VerseRef> AllIncludedVerses(this ScrVers scrVers)
+        public static IEnumerable<VerseRef> AllIncludedVerses(this ScrVers scrVers, HashSet<int> onlyBooks = null)
         {
             for (int book = 1; book <= scrVers.GetLastBook(); book++)
             {
-                if (!Canon.IsCanonical(book) || (book > 86 && book < 93))
+                if (
+                    !Canon.IsCanonical(book)
+                    || (book > 86 && book < 93)
+                    || (onlyBooks != null && !onlyBooks.Contains(book))
+                )
+                {
                     continue;
+                }
                 for (int chapter = 1; chapter <= scrVers.GetLastChapter(book); chapter++)
                 {
                     VerseRef? firstVerse = scrVers.FirstIncludedVerse(book, chapter);

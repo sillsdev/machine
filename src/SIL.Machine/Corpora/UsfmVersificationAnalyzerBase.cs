@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextProjectVersificationErrorDetectorBase
+    public abstract class UsfmVersificationAnalyzerBase
     {
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectVersificationErrorDetectorBase(
+        protected UsfmVersificationAnalyzerBase(
             IParatextProjectFileHandler paratextProjectFileHandler,
             ParatextProjectSettings settings
         )
@@ -20,12 +21,23 @@ namespace SIL.Machine.Corpora
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
-        public IReadOnlyList<UsfmVersificationError> GetUsfmVersificationErrors(
-            UsfmVersificationErrorDetector handler = null,
-            HashSet<int> books = null
+        public UsfmVersificationAnalysis AnalyzeUsfmVersification(
+            HashSet<string> books,
+            UsfmVersificationAnalyzer handler = null
         )
         {
-            handler = handler ?? new UsfmVersificationErrorDetector(_settings);
+            return AnalyzeUsfmVersification(
+                books != null ? new HashSet<int>(books.Select(b => Canon.BookIdToNumber(b))) : null,
+                handler
+            );
+        }
+
+        public UsfmVersificationAnalysis AnalyzeUsfmVersification(
+            HashSet<int> books,
+            UsfmVersificationAnalyzer handler = null
+        )
+        {
+            handler = handler ?? new UsfmVersificationAnalyzer(_settings, books);
             foreach (string bookId in _settings.GetAllScriptureBookIds())
             {
                 string fileName = _settings.GetBookFileName(bookId);
@@ -56,7 +68,7 @@ namespace SIL.Machine.Corpora
                     throw new InvalidOperationException(sb.ToString(), ex);
                 }
             }
-            return handler.Errors;
+            return handler.GetAnalysis();
         }
     }
 }
