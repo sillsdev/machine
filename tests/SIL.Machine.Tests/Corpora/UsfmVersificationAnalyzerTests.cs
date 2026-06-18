@@ -75,6 +75,7 @@ public class UsfmVersificationAnalyzerTests
         Assert.That(analysis.TotalNumEncounteredVerses, Is.EqualTo(14));
         Assert.That(analysis.Diagnostics[0].Type, Is.EqualTo(UsfmVersificationDiagnosticType.Missing));
         Assert.That(analysis.Diagnostics[0].NumAffectedVerses, Is.EqualTo(1));
+        Assert.That(analysis.Diagnostics[0].Filename, Is.EqualTo("653JNTest.SFM"));
         Assert.That(analysis.Diagnostics[0].LineNumbers.SequenceEqual([16]));
         Assert.That(analysis.Diagnostics[0].References, Has.Count.EqualTo(1));
         Assert.That(analysis.Diagnostics[0].References[0].ToString(), Is.EqualTo("3JN 1:15"));
