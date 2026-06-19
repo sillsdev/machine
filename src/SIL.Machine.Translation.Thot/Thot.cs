@@ -22,6 +22,7 @@ namespace SIL.Machine.Translation.Thot
             IncrIbm1 = 6,
             IncrIbm2 = 7,
             IncrHmm = 8,
+            Eflomal = 9,
         }
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -684,6 +685,8 @@ namespace SIL.Machine.Translation.Thot
                     return AlignmentModelType.Ibm3;
                 case ThotWordAlignmentModelType.Ibm4:
                     return AlignmentModelType.Ibm4;
+                case ThotWordAlignmentModelType.Eflomal:
+                    return AlignmentModelType.Eflomal;
             }
             throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
         }

@@ -8,6 +8,7 @@
         Hmm,
         Ibm3,
         Ibm4,
+        Eflomal,
     }
 
     public class ThotWordAlignmentModelTypeHelpers
@@ -30,6 +31,8 @@
                     return ThotWordAlignmentModelType.Ibm3;
                 case "ibm4":
                     return ThotWordAlignmentModelType.Ibm4;
+                case "eflomal":
+                    return ThotWordAlignmentModelType.Eflomal;
             }
         }
     }

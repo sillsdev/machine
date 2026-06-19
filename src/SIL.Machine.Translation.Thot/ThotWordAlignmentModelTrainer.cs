@@ -55,6 +55,12 @@ namespace SIL.Machine.Translation.Thot
                     Thot.swAlignModel_setFastAlignP0(fastAlign, parameters.FastAlignP0.Value);
                 _models.Add((fastAlign, parameters.GetFastAlignIterationCount(modelType)));
             }
+            else if (modelType == ThotWordAlignmentModelType.Eflomal)
+            {
+                // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
+                IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
+                _models.Add((eflomal, parameters.GetEflomalIterationCount(modelType)));
+            }
             else
             {
                 IntPtr ibm1 = Thot.CreateAlignmentModel(ThotWordAlignmentModelType.Ibm1);
