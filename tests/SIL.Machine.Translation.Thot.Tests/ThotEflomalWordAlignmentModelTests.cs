@@ -1,12 +1,13 @@
 using NUnit.Framework;
 using SIL.Machine.Corpora;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot;
 
 [TestFixture]
 public class ThotEflomalWordAlignmentModelTests
 {
-    private static ThotEflomalWordAlignmentModel TrainModel(string prefFileName = null)
+    private static ThotEflomalWordAlignmentModel TrainModel(string? prefFileName = null)
     {
         var model = new ThotEflomalWordAlignmentModel
         {
