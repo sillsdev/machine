@@ -176,6 +176,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
         SetThotParameter(parameters, thotParameters, "ibm3-iters", p => p.Ibm3IterationCount);
         SetThotParameter(parameters, thotParameters, "ibm4-iters", p => p.Ibm4IterationCount);
         SetThotParameter(parameters, thotParameters, "eflomal-iters", p => p.EflomalIterationCount);
+        SetThotParameter(parameters, thotParameters, "eflomal-samplers", p => p.EflomalNumSamplers);
         SetThotParameter(parameters, thotParameters, "var-bayes", p => p.VariationalBayes);
         SetThotParameter(parameters, thotParameters, "fa-p0", p => p.FastAlignP0);
         SetThotParameter(parameters, thotParameters, "hmm-p0", p => p.HmmP0);

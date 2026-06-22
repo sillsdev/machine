@@ -59,6 +59,7 @@ namespace SIL.Machine.Translation.Thot
             {
                 // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
                 IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
+                Thot.swAlignModel_setEflomalNumSamplers(eflomal, parameters.GetEflomalNumSamplers(modelType));
                 _models.Add((eflomal, parameters.GetEflomalIterationCount(modelType)));
             }
             else

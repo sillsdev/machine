@@ -179,6 +179,12 @@ namespace SIL.Machine.Translation.Thot
         public static extern bool swAlignModel_getVariationalBayes(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalNumSamplers(IntPtr swAlignModelHandle, int numSamplers);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalNumSamplers(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern void swAlignModel_setFastAlignP0(IntPtr swAlignModelHandle, double p0);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
