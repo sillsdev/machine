@@ -21,8 +21,13 @@ public class ScrVersExtensionsTests
         Assert.That(russianOrthodoxVerses, Has.Count.EqualTo(37280));
         Assert.That(russianOrthodoxVerses[russianOrthodoxVerses.Count - 1].BBBCCCVVV, Is.EqualTo(83001015));
 
-        List<VerseRef> originalVersesGenesis = ScrVers.Original.AllIncludedVerses([1]).ToList();
+        List<VerseRef> originalVersesGenesis = ScrVers.Original.AllIncludedVerses(new() { [1] = null }).ToList();
         Assert.That(originalVersesGenesis, Has.Count.EqualTo(1533));
+
+        List<VerseRef> originalVersesGenesisChapterOne = ScrVers
+            .Original.AllIncludedVerses(new() { [1] = [1] })
+            .ToList();
+        Assert.That(originalVersesGenesisChapterOne, Has.Count.EqualTo(31));
     }
 
     [Test]
