@@ -55,6 +55,30 @@ namespace SIL.Machine.Translation.Thot
                     Thot.swAlignModel_setFastAlignP0(fastAlign, parameters.FastAlignP0.Value);
                 _models.Add((fastAlign, parameters.GetFastAlignIterationCount(modelType)));
             }
+            else if (modelType == ThotWordAlignmentModelType.Eflomal)
+            {
+                // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
+                IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
+                if (eflomal == IntPtr.Zero)
+                {
+                    throw new NotSupportedException(
+                        "Eflomal alignment model is not supported by the installed Thot native library. "
+                            + "A Thot build that includes EflomalAlignmentModel (model type 9) is required."
+                    );
+                }
+                int numSamplers = parameters.GetEflomalNumSamplers(modelType);
+                if (numSamplers != 1)
+                {
+                    // swAlignModel_setEflomalNumSamplers requires thot with multi-sampler support.
+                    // Skip when numSamplers == 1 (the C++ default) so the call is a no-op on older builds.
+                    try
+                    {
+                        Thot.swAlignModel_setEflomalNumSamplers(eflomal, numSamplers);
+                    }
+                    catch (EntryPointNotFoundException) { }
+                }
+                _models.Add((eflomal, parameters.GetEflomalIterationCount(modelType)));
+            }
             else
             {
                 IntPtr ibm1 = Thot.CreateAlignmentModel(ThotWordAlignmentModelType.Ibm1);

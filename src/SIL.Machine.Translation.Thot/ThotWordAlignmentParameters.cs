@@ -10,6 +10,8 @@ namespace SIL.Machine.Translation.Thot
         public int? Ibm3IterationCount { get; set; }
         public int? Ibm4IterationCount { get; set; }
         public int? FastAlignIterationCount { get; set; }
+        public int? EflomalIterationCount { get; set; }
+        public int? EflomalNumSamplers { get; set; }
         public bool? VariationalBayes { get; set; }
         public double? FastAlignP0 { get; set; }
         public double? HmmP0 { get; set; }
@@ -59,6 +61,27 @@ namespace SIL.Machine.Translation.Thot
             if (modelType == ThotWordAlignmentModelType.FastAlign)
                 return FastAlignIterationCount ?? 4;
             return 0;
+        }
+
+        // Eflomal runs its IBM1->HMM->fertility cascade internally, so the trainer drives a single
+        // model for the total number of sweeps. The default of 12 matches the native model's
+        // default 4/4/4 stage schedule.
+        public int GetEflomalIterationCount(ThotWordAlignmentModelType modelType)
+        {
+            if (modelType == ThotWordAlignmentModelType.Eflomal)
+                return EflomalIterationCount ?? 12;
+            return 0;
+        }
+
+        /// <summary>
+        /// Number of independent Gibbs chains trained in parallel. Marginals are summed across
+        /// chains at decode time (eflomal's n_samplers scheme). Default 1.
+        /// </summary>
+        public int GetEflomalNumSamplers(ThotWordAlignmentModelType modelType)
+        {
+            if (modelType == ThotWordAlignmentModelType.Eflomal)
+                return EflomalNumSamplers ?? 1;
+            return 1;
         }
 
         public bool GetVariationalBayes(ThotWordAlignmentModelType modelType)

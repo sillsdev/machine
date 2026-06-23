@@ -22,6 +22,7 @@ namespace SIL.Machine.Translation.Thot
             IncrIbm1 = 6,
             IncrIbm2 = 7,
             IncrHmm = 8,
+            Eflomal = 9,
         }
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
@@ -176,6 +177,12 @@ namespace SIL.Machine.Translation.Thot
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool swAlignModel_getVariationalBayes(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalNumSamplers(IntPtr swAlignModelHandle, int numSamplers);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalNumSamplers(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern void swAlignModel_setFastAlignP0(IntPtr swAlignModelHandle, double p0);
@@ -684,6 +691,8 @@ namespace SIL.Machine.Translation.Thot
                     return AlignmentModelType.Ibm3;
                 case ThotWordAlignmentModelType.Ibm4:
                     return AlignmentModelType.Ibm4;
+                case ThotWordAlignmentModelType.Eflomal:
+                    return AlignmentModelType.Eflomal;
             }
             throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
         }
