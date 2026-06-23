@@ -88,7 +88,7 @@ public class UsfmManualTests
         using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
         var versificationAnalyzer = new ZipUsfmVersificationAnalyzer(zipArchive);
         UsfmVersificationAnalysis analysis = versificationAnalyzer.AnalyzeUsfmVersification(
-            Canon.AllBookIds.ToHashSet()
+            Canon.AllBookIds.ToDictionary(id => id, id => (HashSet<int>?)null)
         );
 
         Assert.That(

@@ -79,6 +79,10 @@ public class UsfmVersificationAnalyzerTests
         Assert.That(analysis.Diagnostics[0].LineNumbers.SequenceEqual([16]));
         Assert.That(analysis.Diagnostics[0].References, Has.Count.EqualTo(1));
         Assert.That(analysis.Diagnostics[0].References[0].ToString(), Is.EqualTo("3JN 1:15"));
+
+        analysis = env.AnalyzeUsfmVersification(new Dictionary<string, HashSet<int>?>() { ["3JN"] = [] });
+        Assert.That(analysis.Diagnostics, Has.Count.EqualTo(0), JsonSerializer.Serialize(analysis.Diagnostics));
+        Assert.That(analysis.TotalNumEncounteredVerses, Is.EqualTo(0));
     }
 
     [Test]
@@ -421,6 +425,16 @@ public class UsfmVersificationAnalyzerTests
         Assert.That(analysis.Diagnostics[1].LineNumbers.SequenceEqual([16]));
         Assert.That(analysis.Diagnostics[1].References, Has.Count.EqualTo(1));
         Assert.That(analysis.Diagnostics[1].References[0].ToString(), Is.EqualTo("2JN 2:1"));
+
+        analysis = env.AnalyzeUsfmVersification(new Dictionary<string, HashSet<int>?>() { ["2JN"] = [1] });
+        Assert.That(analysis.Diagnostics, Has.Count.EqualTo(1), JsonSerializer.Serialize(analysis.Diagnostics));
+        Assert.That(analysis.TotalNumEncounteredVerses, Is.EqualTo(12));
+
+        Assert.That(analysis.Diagnostics[0].Type, Is.EqualTo(UsfmVersificationDiagnosticType.Missing));
+        Assert.That(analysis.Diagnostics[0].NumAffectedVerses, Is.EqualTo(1));
+        Assert.That(analysis.Diagnostics[0].LineNumbers.SequenceEqual([14]));
+        Assert.That(analysis.Diagnostics[0].References, Has.Count.EqualTo(1));
+        Assert.That(analysis.Diagnostics[0].References[0].ToString(), Is.EqualTo("2JN 1:13"));
     }
 
     [Test]
@@ -537,7 +551,14 @@ public class UsfmVersificationAnalyzerTests
 
         public UsfmVersificationAnalysis AnalyzeUsfmVersification(HashSet<string>? onlyBooks = null)
         {
-            return Analyzer.AnalyzeUsfmVersification(onlyBooks);
+            return Analyzer.AnalyzeUsfmVersification(onlyBooks?.ToDictionary(b => b, b => (HashSet<int>?)null));
+        }
+
+        public UsfmVersificationAnalysis AnalyzeUsfmVersification(
+            Dictionary<string, HashSet<int>?>? onlyChapters = null
+        )
+        {
+            return Analyzer.AnalyzeUsfmVersification(onlyChapters);
         }
     }
 

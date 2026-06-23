@@ -15,13 +15,13 @@ namespace SIL.Machine.Corpora
 
     public class UsfmVersificationDiagnostic
     {
-        public UsfmVersificationDiagnosticType Type { get; set; }
+        public UsfmVersificationDiagnosticType Type { get; internal set; }
         public int NumAffectedVerses => References.Sum(vr => vr.AllVerses().Count());
-        public List<VerseRef> References { get; set; } //Expected verses for Missing, actual verses for Extra and Invalid
-        public string Filename { get; set; }
-        public List<int> LineNumbers { get; set; }
+        public List<VerseRef> References { get; internal set; } //Expected verses for Missing, actual verses for Extra and Invalid
+        public string Filename { get; internal set; }
+        public List<int> LineNumbers { get; internal set; }
 
-        public void Extend(VerseRef verseReference)
+        internal void Extend(VerseRef verseReference)
         {
             if (References.Count > 0) // Combine contiguous references
             {
@@ -51,7 +51,7 @@ namespace SIL.Machine.Corpora
             }
         }
 
-        public void Extend(VerseRef verseReference, int lineNumber)
+        internal void Extend(VerseRef verseReference, int lineNumber)
         {
             Extend(verseReference);
             LineNumbers.Add(lineNumber);
@@ -66,11 +66,12 @@ namespace SIL.Machine.Corpora
         public ParatextProjectSettings ProjectSettings { get; internal set; }
     }
 
-    public class UsfmVersificationAnalyzer : UsfmParserHandlerBase
+    public class UsfmVersificationAnalyzerHandler : UsfmParserHandlerBase
     {
         private readonly ParatextProjectSettings _settings;
         private readonly IEnumerator<VerseRef> _expectedVerses;
         private readonly List<UsfmVersificationDiagnostic> _diagnostics;
+        private readonly Dictionary<int, HashSet<int>> _onlyChapters;
         private string _filename;
         private bool _lastVerseInError;
         private bool _lastVerseWasExtra;
@@ -89,10 +90,14 @@ namespace SIL.Machine.Corpora
 
         private UsfmVersificationDiagnostic CurrentError => _diagnostics[_diagnostics.Count - 1];
 
-        public UsfmVersificationAnalyzer(ParatextProjectSettings settings, HashSet<int> onlyBooks)
+        public UsfmVersificationAnalyzerHandler(
+            ParatextProjectSettings settings,
+            Dictionary<int, HashSet<int>> onlyChapters
+        )
         {
             _settings = settings;
-            _expectedVerses = _settings.Versification.AllIncludedVerses(onlyBooks).GetEnumerator();
+            _onlyChapters = onlyChapters;
+            _expectedVerses = _settings.Versification.AllIncludedVerses(onlyChapters).GetEnumerator();
             _hasMore = _expectedVerses.MoveNext();
             _prevEncounteredVerseRef = new VerseRef(1, 1, 0);
             _diagnostics = new List<UsfmVersificationDiagnostic>();
@@ -163,6 +168,16 @@ namespace SIL.Machine.Corpora
         )
         {
             VerseRef currentVerses = state.VerseRef;
+            if (
+                _onlyChapters != null
+                && (
+                    !_onlyChapters.TryGetValue(currentVerses.BookNum, out HashSet<int> chapters)
+                    || (chapters != null && !chapters.Contains(currentVerses.ChapterNum))
+                )
+            )
+            {
+                return;
+            }
 
             VerseRef verseRef = currentVerses;
             if (!Canon.IsCanonical(verseRef.Book))
@@ -211,11 +226,15 @@ namespace SIL.Machine.Corpora
             {
                 if (_prevEncounteredVerseRef.CompareTo(currentVerse, null, true, compareSegments: false) < 0) //Properly handle verse segments
                 {
+                    _totalVersesAnalyzed++;
                     if (!_lastVerseWasExtra && _hasMore)
                     {
                         GetNextExpectedVerse();
                     }
-                    _totalVersesAnalyzed++;
+                }
+                if (_nextExpectedVerse.IsDefault)
+                {
+                    continue;
                 }
                 int compare = _nextExpectedVerse.CompareTo(currentVerse, null, true, compareSegments: false);
                 if (compare < 0 && _hasMore)
@@ -246,6 +265,10 @@ namespace SIL.Machine.Corpora
                     }
 
                     HandleExtraVerse(state.LineNumber, currentVerse);
+                }
+                else
+                {
+                    _lastVerseInError = false;
                 }
                 if (compare <= 0)
                     _lastVerseWasExtra = false;

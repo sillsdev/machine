@@ -22,22 +22,22 @@ namespace SIL.Machine.Corpora
         }
 
         public UsfmVersificationAnalysis AnalyzeUsfmVersification(
-            HashSet<string> books,
-            UsfmVersificationAnalyzer handler = null
+            Dictionary<string, HashSet<int>> bookIdsAndChapters,
+            UsfmVersificationAnalyzerHandler handler = null
         )
         {
             return AnalyzeUsfmVersification(
-                books != null ? new HashSet<int>(books.Select(b => Canon.BookIdToNumber(b))) : null,
+                bookIdsAndChapters?.ToDictionary(b => Canon.BookIdToNumber(b.Key), b => b.Value),
                 handler
             );
         }
 
         public UsfmVersificationAnalysis AnalyzeUsfmVersification(
-            HashSet<int> books,
-            UsfmVersificationAnalyzer handler = null
+            Dictionary<int, HashSet<int>> bookNumsAndChapters,
+            UsfmVersificationAnalyzerHandler handler = null
         )
         {
-            handler = handler ?? new UsfmVersificationAnalyzer(_settings, books);
+            handler = handler ?? new UsfmVersificationAnalyzerHandler(_settings, bookNumsAndChapters);
             foreach (string bookId in _settings.GetAllScriptureBookIds())
             {
                 string fileName = _settings.GetBookFileName(bookId);
@@ -45,8 +45,13 @@ namespace SIL.Machine.Corpora
                 if (!_paratextProjectFileHandler.Exists(fileName))
                     continue;
 
-                if (books != null && !books.Contains(Canon.BookIdToNumber(bookId)))
+                if (
+                    bookNumsAndChapters != null
+                    && !bookNumsAndChapters.TryGetValue(Canon.BookIdToNumber(bookId), out _)
+                )
+                {
                     continue;
+                }
 
                 string usfm;
                 using (var reader = new StreamReader(_paratextProjectFileHandler.Open(fileName)))
