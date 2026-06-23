@@ -20,6 +20,7 @@ internal static class ToolHelpers
     public const string Hmm = "hmm";
     public const string Ibm3 = "ibm3";
     public const string Ibm4 = "ibm4";
+    public const string Eflomal = "eflomal";
 
     public const string Och = "och";
     public const string Union = "union";
