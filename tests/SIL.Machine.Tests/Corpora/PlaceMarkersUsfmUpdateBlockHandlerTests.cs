@@ -862,6 +862,55 @@ public class PlaceMarkersUsfmUpdateBlockHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void UpdateUsfm_AdjustmentOfPlacedParagraphMarker()
+    {
+        string source = "This is the first paragraph. This text is in English and this test is for paragraph markers.";
+        string updateRows =
+            "Este es el primer párrafo. Este texto está en inglés, y esta prueba es para marcadores de párrafo.";
+        PlaceMarkersAlignmentInfo alignInfo = new PlaceMarkersAlignmentInfo(
+            sourceTokens: Tokenizer.Tokenize(source).ToList(),
+            translationTokens: Tokenizer.Tokenize(updateRows).ToList(),
+            alignment: ToWordAlignmentMatrix(
+                "0-0 1-1 2-2 3-3 4-4 5-5 6-6 7-7 8-8 9-9 10-10 11-11 11-12 12-13 13-14 14-15 15-16 16-19 17-17 18-20"
+            ),
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            styleBehavior: UpdateUsfmMarkerBehavior.Strip
+        );
+        IReadOnlyList<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(
+                ScrRef("MAT 1:1"),
+                updateRows,
+                new Dictionary<string, object> { { "alignment_info", alignInfo } }
+            ),
+        ];
+        string usfm =
+            @"\id MAT
+\c 1
+\v 1 This is the first paragraph.
+\p This text is in English
+\p and this test is for paragraph markers.
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            paragraphBehavior: UpdateUsfmMarkerBehavior.Preserve,
+            usfmUpdateBlockHandlers: [new PlaceMarkersUsfmUpdateBlockHandler()]
+        );
+
+        string result =
+            @"\id MAT
+\c 1
+\v 1 Este es el primer párrafo.
+\p Este texto está en inglés,
+\p y esta prueba es para marcadores de párrafo.
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
     private static ScriptureRef[] ScrRef(params string[] refs)
     {
         return refs.Select(r => ScriptureRef.Parse(r)).ToArray();
