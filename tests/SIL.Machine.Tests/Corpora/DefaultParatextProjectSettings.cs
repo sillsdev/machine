@@ -18,6 +18,8 @@ public class DefaultParatextProjectSettings(
     string biblicalTermsFileName = "ProjectBiblicalTerms.xml",
     string languageCode = "en",
     string translationType = "Standard",
+    string normalizationForm = "Undefined",
+    string language = "",
     string? parentGuid = null,
     string? parentName = null
 )
@@ -36,6 +38,8 @@ public class DefaultParatextProjectSettings(
         biblicalTermsFileName,
         languageCode,
         translationType,
+        normalizationForm,
+        language,
         parentGuid,
         parentName
     );
