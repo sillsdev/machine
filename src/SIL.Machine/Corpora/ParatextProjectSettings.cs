@@ -23,6 +23,8 @@ namespace SIL.Machine.Corpora
             string biblicalTermsFileName,
             string languageCode,
             string translationType,
+            string normalizationForm,
+            string language,
             string visibility,
             string parentGuid = null,
             string parentName = null,
@@ -43,6 +45,8 @@ namespace SIL.Machine.Corpora
             BiblicalTermsFileName = biblicalTermsFileName;
             LanguageCode = languageCode;
             TranslationType = translationType;
+            NormalizationForm = normalizationForm;
+            Language = language;
             ParentGuid = parentGuid;
             ParentName = parentName;
             _parent = parentSettings;
@@ -63,6 +67,8 @@ namespace SIL.Machine.Corpora
         public string BiblicalTermsFileName { get; }
         public string LanguageCode { get; }
         public string TranslationType { get; }
+        public string NormalizationForm { get; }
+        public string Language { get; }
         public string ParentGuid { get; }
         public string ParentName { get; }
         public string Visibility { get; }
