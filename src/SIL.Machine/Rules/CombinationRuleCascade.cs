@@ -25,11 +25,17 @@ namespace SIL.Machine.Rules
         public override IEnumerable<TData> Apply(TData input)
         {
             var output = new HashSet<TData>(Comparer);
-            ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output);
+            // In multiApp mode a word's expansion depends only on the word (not the path taken
+            // to reach it), so we can memoize which words have already been expanded and skip
+            // re-descending them. This collapses the redundant combinatorial re-exploration to a
+            // DAG without changing the output set. Not valid when rule history matters
+            // (!MultipleApplication), so the memo is only used in multiApp mode.
+            HashSet<TData> expanded = MultipleApplication ? new HashSet<TData>(Comparer) : null;
+            ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output, expanded);
             return output;
         }
 
-        private void ApplyRules(TData input, HashSet<int> rulesApplied, HashSet<TData> output)
+        private void ApplyRules(TData input, HashSet<int> rulesApplied, HashSet<TData> output, HashSet<TData> expanded)
         {
             for (int i = 0; i < Rules.Count; i++)
             {
@@ -37,13 +43,14 @@ namespace SIL.Machine.Rules
                 {
                     foreach (TData result in ApplyRule(Rules[i], i, input))
                     {
-                        // avoid infinite loop
-                        if (!Comparer.Equals(input, result))
+                        // avoid infinite loop; in multiApp mode also skip words already expanded
+                        if (!Comparer.Equals(input, result) && (expanded == null || expanded.Add(result)))
                         {
                             ApplyRules(
                                 result,
                                 rulesApplied == null ? null : new HashSet<int>(rulesApplied) { i },
-                                output
+                                output,
+                                expanded
                             );
                         }
 

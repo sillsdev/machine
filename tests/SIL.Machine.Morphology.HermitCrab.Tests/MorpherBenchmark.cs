@@ -94,6 +94,14 @@ public class MorpherBenchmark
         swSingle.Stop();
 
         // --- FieldWorks-after model: single-threaded per word, parallel ACROSS words (capped) ---
+        // Measure GC under the PARALLEL load — this is where alloc/GC contention actually bites
+        // (concurrent allocation from N threads), unlike the single-threaded run below.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        long parBytesBefore = GC.GetTotalAllocatedBytes(precise: true);
+        int parGen0Before = GC.CollectionCount(0);
+        int parGen2Before = GC.CollectionCount(2);
         var swParAcross = Stopwatch.StartNew();
         Parallel.ForEach(
             distinct,
@@ -101,6 +109,9 @@ public class MorpherBenchmark
             t => singleThreaded.AnalyzeWord(t)
         );
         swParAcross.Stop();
+        long parBytes = GC.GetTotalAllocatedBytes(precise: true) - parBytesBefore;
+        int parGen0 = GC.CollectionCount(0) - parGen0Before;
+        int parGen2 = GC.CollectionCount(2) - parGen2Before;
 
         // Correctness on a subset (parsing every word 3x over the full set is wasteful).
         foreach (string t in distinct.GetRange(0, Math.Min(200, distinct.Count)))
@@ -134,9 +145,11 @@ public class MorpherBenchmark
 
         long parsed = MorpherStatistics.WordsParsed;
         TestContext.Out.WriteLine("");
+        TestContext.Out.WriteLine($"GC mode: {(System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation")}, {Environment.ProcessorCount} cores");
         TestContext.Out.WriteLine($"parallel-inside,  serial corpus (prod today)   : {swDefault.ElapsedMilliseconds,6} ms");
         TestContext.Out.WriteLine($"series words,     serial corpus (single-thread): {swSingle.ElapsedMilliseconds,6} ms");
         TestContext.Out.WriteLine($"single-thread, parallel ACROSS words           : {swParAcross.ElapsedMilliseconds,6} ms  (cap {acrossDop})");
+        TestContext.Out.WriteLine($"  ^ parallel pass GC: {parBytes / 1024 / 1024} MB, gen0={parGen0} gen2={parGen2}");
         TestContext.Out.WriteLine("");
         TestContext.Out.WriteLine("--- Instrumentation (single-threaded, allocation/phase profile) ---");
         TestContext.Out.WriteLine($"words parsed         : {parsed}");
