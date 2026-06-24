@@ -15,6 +15,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly IRule<Word, ShapeNode> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
+        private readonly bool _parallelMrules;
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
@@ -46,19 +47,22 @@ namespace SIL.Machine.Morphology.HermitCrab
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-#if SINGLE_THREADED
-                    _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#else
-                    _mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#endif
+                    // Single-threaded when the caller caps within-word parallelism (e.g. it
+                    // parallelizes across words itself); parallel cascade otherwise.
+                    _mrulesRule =
+                        morpher.MaxDegreeOfParallelism == 1
+                            ? (IRule<Word, ShapeNode>)
+                                new CombinationRuleCascade<Word, ShapeNode>(
+                                    mrules,
+                                    true,
+                                    FreezableEqualityComparer<Word>.Default
+                                )
+                            : new ParallelCombinationRuleCascade<Word, ShapeNode>(
+                                mrules,
+                                true,
+                                FreezableEqualityComparer<Word>.Default
+                            );
+                    _parallelMrules = morpher.MaxDegreeOfParallelism != 1;
                     break;
             }
         }
@@ -101,6 +105,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public IEnumerable<Word> Apply(Word input)
         {
+            if (_parallelMrules)
+                MorpherStatistics.EnterParallelSection();
+
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 

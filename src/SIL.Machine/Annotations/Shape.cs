@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SIL.Extensions;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.ObjectModel;
@@ -108,6 +107,11 @@ namespace SIL.Machine.Annotations
         {
             ShapeNode startNode = null;
             ShapeNode endNode = null;
+            // Build the src->dest node mapping inline while cloning, instead of a second pass
+            // with GetNodes().Zip().ToDictionary(). CopyTo runs on every Word.Clone (thousands
+            // per parse on a real grammar), so eliminating the extra enumerations + LINQ
+            // allocations per clone is a measurable GC win.
+            var mapping = new Dictionary<ShapeNode, ShapeNode>();
             foreach (ShapeNode node in GetNodes(srcRange))
             {
                 ShapeNode newNode = node.Clone();
@@ -115,12 +119,10 @@ namespace SIL.Machine.Annotations
                     startNode = newNode;
                 endNode = newNode;
                 dest.Add(newNode);
+                mapping[node] = newNode;
             }
 
             Range<ShapeNode> destRange = Range<ShapeNode>.Create(startNode, endNode);
-            Dictionary<ShapeNode, ShapeNode> mapping = GetNodes(srcRange)
-                .Zip(dest.GetNodes(destRange))
-                .ToDictionary(tuple => tuple.Item1, tuple => tuple.Item2);
             foreach (Annotation<ShapeNode> ann in _annotations.GetNodes(srcRange))
                 CopyAnnotations(dest._annotations, ann, mapping);
 

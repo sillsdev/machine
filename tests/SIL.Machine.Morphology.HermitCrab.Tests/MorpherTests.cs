@@ -454,4 +454,62 @@ public class MorpherTests : HermitCrabTestBase
         Shape shape = new Segments(Table2, pattern, true).Shape;
         return shape.GetNodes(shape.Range).ToList();
     }
+
+    [Test]
+    public void AnalyzeWord_SingleThreaded_MatchesParallel()
+    {
+        // Build a small Unordered grammar (the order FieldWorks uses, which exercises the
+        // parallel analysis cascade and parallel affix-template unapplication).
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var parallel = new Morpher(TraceManager, Language); // default: Environment.ProcessorCount
+        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        Assert.That(singleThreaded.MaxDegreeOfParallelism, Is.EqualTo(1));
+
+        try
+        {
+            MorpherStatistics.Enabled = true;
+
+            // The single-threaded morpher must take NO parallel path. (Both cascades return the
+            // same set, so output equivalence alone can't prove the sequential path actually ran.)
+            MorpherStatistics.Reset();
+            IEnumerable<WordAnalysis> singleResult = singleThreaded.AnalyzeWord("sagd").ToList();
+            Assert.That(
+                MorpherStatistics.ParallelSectionsEntered,
+                Is.EqualTo(0),
+                "single-threaded morpher must not enter any parallel section"
+            );
+
+            // The default morpher exercises the parallel paths (sanity check on the counter).
+            MorpherStatistics.Reset();
+            IEnumerable<WordAnalysis> parallelResult = parallel.AnalyzeWord("sagd").ToList();
+            Assert.That(MorpherStatistics.ParallelSectionsEntered, Is.GreaterThan(0));
+
+            Assert.That(
+                singleResult,
+                Is.EquivalentTo(parallelResult),
+                "single-threaded analysis must match the parallel analysis"
+            );
+        }
+        finally
+        {
+            MorpherStatistics.Enabled = false;
+        }
+    }
 }

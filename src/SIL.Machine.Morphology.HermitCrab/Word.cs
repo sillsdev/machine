@@ -547,6 +547,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public Word Clone()
         {
+            MorpherStatistics.CountWordClone();
             return new Word(this);
         }
 
