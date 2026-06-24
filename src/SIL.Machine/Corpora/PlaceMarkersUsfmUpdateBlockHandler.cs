@@ -33,6 +33,8 @@ namespace SIL.Machine.Corpora
 
     public class PlaceMarkersUsfmUpdateBlockHandler : IUsfmUpdateBlockHandler
     {
+        private readonly SegmentBoundaryAdjuster _segmentBoundaryAdjuster = new SegmentBoundaryAdjuster();
+
         public UsfmUpdateBlock ProcessBlock(UsfmUpdateBlock block)
         {
             string reference = block.Refs.FirstOrDefault().ToString();
@@ -199,6 +201,14 @@ namespace SIL.Machine.Corpora
                     sourceTokens,
                     targetTokens
                 );
+                // If inserting a paragraph marker, make small adjustments to place it in a more natural location
+                if (element.Type == UsfmUpdateBlockElementType.Paragraph)
+                {
+                    adjacentTargetToken = _segmentBoundaryAdjuster.AdjustTokenizedSegmentPairBoundaries(
+                        adjacentTargetToken,
+                        targetTokens
+                    );
+                }
                 int targetStringIndex;
                 if (
                     adjacentSourceToken > 0
