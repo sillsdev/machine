@@ -176,7 +176,16 @@ public class AlignmentModelCommandSpec : ICommandSpec
         SetThotParameter(parameters, thotParameters, "ibm3-iters", p => p.Ibm3IterationCount);
         SetThotParameter(parameters, thotParameters, "ibm4-iters", p => p.Ibm4IterationCount);
         SetThotParameter(parameters, thotParameters, "eflomal-iters", p => p.EflomalIterationCount);
+        SetThotParameter(parameters, thotParameters, "eflomal-ibm1-iters", p => p.EflomalIbm1IterationCount);
+        SetThotParameter(parameters, thotParameters, "eflomal-hmm-iters", p => p.EflomalHmmIterationCount);
+        SetThotParameter(parameters, thotParameters, "eflomal-fert-iters", p => p.EflomalFertilityIterationCount);
         SetThotParameter(parameters, thotParameters, "eflomal-samplers", p => p.EflomalNumSamplers);
+        SetThotParameter(parameters, thotParameters, "eflomal-lex-alpha", p => p.EflomalLexAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-null-alpha", p => p.EflomalNullAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-jump-alpha", p => p.EflomalJumpAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-fert-alpha", p => p.EflomalFertilityAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-null-prob", p => p.EflomalNullProb);
+        SetThotParameter(parameters, thotParameters, "eflomal-jump-window", p => p.EflomalJumpWindow);
         SetThotParameter(parameters, thotParameters, "var-bayes", p => p.VariationalBayes);
         SetThotParameter(parameters, thotParameters, "fa-p0", p => p.FastAlignP0);
         SetThotParameter(parameters, thotParameters, "hmm-p0", p => p.HmmP0);

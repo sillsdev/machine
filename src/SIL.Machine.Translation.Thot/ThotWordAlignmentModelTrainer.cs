@@ -77,6 +77,31 @@ namespace SIL.Machine.Translation.Thot
                     }
                     catch (EntryPointNotFoundException) { }
                 }
+                if (
+                    parameters.EflomalIbm1IterationCount.HasValue
+                    || parameters.EflomalHmmIterationCount.HasValue
+                    || parameters.EflomalFertilityIterationCount.HasValue
+                )
+                {
+                    Thot.swAlignModel_setEflomalIterations(
+                        eflomal,
+                        parameters.GetEflomalIbm1IterationCount(),
+                        parameters.GetEflomalHmmIterationCount(),
+                        parameters.GetEflomalFertilityIterationCount()
+                    );
+                }
+                if (parameters.EflomalLexAlpha.HasValue)
+                    Thot.swAlignModel_setEflomalAlphaLex(eflomal, parameters.EflomalLexAlpha.Value);
+                if (parameters.EflomalNullAlpha.HasValue)
+                    Thot.swAlignModel_setEflomalAlphaNull(eflomal, parameters.EflomalNullAlpha.Value);
+                if (parameters.EflomalJumpAlpha.HasValue)
+                    Thot.swAlignModel_setEflomalAlphaJump(eflomal, parameters.EflomalJumpAlpha.Value);
+                if (parameters.EflomalFertilityAlpha.HasValue)
+                    Thot.swAlignModel_setEflomalAlphaFertility(eflomal, parameters.EflomalFertilityAlpha.Value);
+                if (parameters.EflomalNullProb.HasValue)
+                    Thot.swAlignModel_setEflomalNullProb(eflomal, parameters.EflomalNullProb.Value);
+                if (parameters.EflomalJumpWindow.HasValue)
+                    Thot.swAlignModel_setEflomalJumpWindow(eflomal, parameters.EflomalJumpWindow.Value);
                 _models.Add((eflomal, parameters.GetEflomalIterationCount(modelType)));
             }
             else

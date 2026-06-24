@@ -185,6 +185,62 @@ namespace SIL.Machine.Translation.Thot
         public static extern int swAlignModel_getEflomalNumSamplers(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalIterations(
+            IntPtr swAlignModelHandle,
+            int ibm1Iters,
+            int hmmIters,
+            int fertilityIters
+        );
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalIbm1Iters(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalHmmIters(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalFertilityIters(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalAlphaLex(IntPtr swAlignModelHandle, double alphaLex);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getEflomalAlphaLex(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalAlphaNull(IntPtr swAlignModelHandle, double alphaNull);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getEflomalAlphaNull(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalAlphaJump(IntPtr swAlignModelHandle, double alphaJump);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getEflomalAlphaJump(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalAlphaFertility(
+            IntPtr swAlignModelHandle,
+            double alphaFertility
+        );
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getEflomalAlphaFertility(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalNullProb(IntPtr swAlignModelHandle, double nullProb);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getEflomalNullProb(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEflomalJumpWindow(IntPtr swAlignModelHandle, int jumpWindow);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int swAlignModel_getEflomalJumpWindow(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern void swAlignModel_setFastAlignP0(IntPtr swAlignModelHandle, double p0);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
