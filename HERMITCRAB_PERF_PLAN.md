@@ -16,6 +16,37 @@ Branch: `hc-optimizations`
   under nesting. Do only if real-grammar measurement shows within-word parallelism
   hurting corpus throughput.
 
+## Optimization results worked through on the Sena rig — 2026-06-24
+
+Measured on the real Sena grammar (23 short words, Release). The headline finding is that
+**GC mode dominates** under the parallel FieldWorks load:
+
+| | Workstation GC | Server GC |
+|---|---|---|
+| parallel-inside, serial (prod today) | 9,090 ms | 5,043 ms |
+| single-threaded, serial | 5,355 ms | 4,288 ms |
+| **single-threaded, parallel across (cap 16)** | **3,928 ms** | **1,758 ms** |
+| parallel-pass Gen0 collections | 683 | 51 |
+| parallel scaling (serial→parallel, 16 cores) | 1.36× | 2.44× |
+
+Per-optimization outcome:
+- **Single-threaded option** — the enabler: makes across-word parallelism viable; within-word
+  parallelism is *net overhead* (parallel-inside is ~1.7× slower than single-threaded serial).
+- **Server GC** — biggest lever: 2.2× on the parallel pass, scaling 1.36×→2.44×, Gen0 683→51.
+  App-wide config (FieldWorks' call), no library change.
+- **`Shape.CopyTo` inline mapping** — −2.3% allocation/word. Safe, committed.
+- **Cascade memoization (multiApp)** — ~0% on Sena (these clones originate in the
+  phonological/synthesis layers, not morphological re-expansion); kept as cheap insurance
+  against pathological re-expansion. Committed.
+- **Frozen-FeatureStruct sharing on clone** — TRIED, REVERTED. HC mutates cloned node FSes in
+  place (36 HC tests threw "feature structure is immutable"). Not viable without a
+  copy-on-write FeatureStruct.
+
+**Conclusion:** per-word allocation (~371 MB/word, ~8,793 clones/word) is largely *intrinsic*
+(FS clones are mutated in place, so can't be shared), and the highest-value response is **Server
+GC**, not code-level allocation trimming. Code cuts are marginal (~2%) against a 371 MB/word
+firehose that Server GC absorbs far more effectively.
+
 ## Real-grammar profiling (Sena) + allocation work — 2026-06-24
 
 Generated the **real Sena grammar** via FieldWorks' own `GenerateHCConfig.exe`
