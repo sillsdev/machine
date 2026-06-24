@@ -102,8 +102,16 @@ namespace SIL.Machine.Translation.Thot
         {
             if (modelType != ThotWordAlignmentModelType.Eflomal)
                 return 0;
-            if (EflomalIbm1IterationCount.HasValue || EflomalHmmIterationCount.HasValue || EflomalFertilityIterationCount.HasValue)
-                return GetEflomalIbm1IterationCount() + GetEflomalHmmIterationCount() + GetEflomalFertilityIterationCount();
+            if (
+                EflomalIbm1IterationCount.HasValue
+                || EflomalHmmIterationCount.HasValue
+                || EflomalFertilityIterationCount.HasValue
+            )
+            {
+                return GetEflomalIbm1IterationCount()
+                    + GetEflomalHmmIterationCount()
+                    + GetEflomalFertilityIterationCount();
+            }
             return EflomalIterationCount ?? 12;
         }
 
