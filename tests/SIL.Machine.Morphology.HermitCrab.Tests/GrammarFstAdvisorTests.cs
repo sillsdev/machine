@@ -30,12 +30,63 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
         );
         Morphophonemic.MorphologicalRules.Add(sSuffix);
 
+        // A suffix over a SPLIT stem (copy part 1, copy part 2, then insert): the copies are
+        // contiguous, so this is an ordinary suffix — finite-state, must NOT be flagged.
+        var splitSuffix = new AffixProcessRule { Name = "split_suffix", Gloss = "PST" };
+        splitSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(any).Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value,
+                },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(splitSuffix);
+
         GrammarFstReport report = GrammarFstAdvisor.Analyze(Language);
 
         Assert.That(report.EscapeCount, Is.EqualTo(0), report.Format());
         Assert.That(report.Tier, Does.StartWith("Tier 1"));
 
         Morphophonemic.MorphologicalRules.Remove(sSuffix);
+        Morphophonemic.MorphologicalRules.Remove(splitSuffix);
+    }
+
+    [Test]
+    public void Analyze_TrueInfix_FlaggedEscape()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // Infixation: insert material BETWEEN two copies of the stem (copy…insert…copy).
+        var infix = new AffixProcessRule { Name = "infix", Gloss = "PERF" };
+        infix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(any).Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value,
+                },
+                Rhs =
+                {
+                    new CopyFromInput("1"),
+                    new InsertSegments(Table3, "a"),
+                    new CopyFromInput("2"),
+                },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(infix);
+
+        GrammarFstReport report = GrammarFstAdvisor.Analyze(Language);
+
+        GrammarAdvisory escape = report.Escapes.Single(a => a.Rule == "infix");
+        Assert.That(escape.Issue, Does.Contain("Infixation"));
+        Assert.That(report.Tier, Does.StartWith("Tier 2"));
+
+        Morphophonemic.MorphologicalRules.Remove(infix);
     }
 
     [Test]

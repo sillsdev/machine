@@ -32,6 +32,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         public GrammarAdvisory(
             string rule,
+            string stratum,
             string kind,
             GrammarAdvisorySeverity severity,
             string issue,
@@ -39,6 +40,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         )
         {
             Rule = rule;
+            Stratum = stratum;
             Kind = kind;
             Severity = severity;
             Issue = issue;
@@ -47,6 +49,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>Name of the offending rule.</summary>
         public string Rule { get; }
+
+        /// <summary>Name of the stratum the rule lives in (rules can appear in more than one).</summary>
+        public string Stratum { get; }
 
         /// <summary>Rule kind (affix / phonological / compounding).</summary>
         public string Kind { get; }
@@ -136,7 +141,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             )
             {
                 sb.AppendLine();
-                sb.AppendLine($"[{a.Severity}] {a.Rule} ({a.Kind})");
+                sb.AppendLine($"[{a.Severity}] {a.Rule} ({a.Kind}, stratum '{a.Stratum}')");
                 sb.AppendLine($"  issue : {a.Issue}");
                 if (a.Advice.Length > 0)
                     sb.AppendLine($"  advice: {a.Advice}");
@@ -178,13 +183,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         case AffixProcessRule affix:
                             affixExamined++;
-                            AnalyzeAffix(affix, advisories, manyAllomorphsThreshold);
+                            AnalyzeAffix(affix, stratum.Name, advisories, manyAllomorphsThreshold);
                             break;
                         case CompoundingRule compound:
                             compoundExamined++;
                             advisories.Add(
                                 new GrammarAdvisory(
                                     compound.Name,
+                                    stratum.Name,
                                     "compounding",
                                     GrammarAdvisorySeverity.Info,
                                     "Compounding rule; bounded by MaxStemCount, so it stays finite-state.",
@@ -198,7 +204,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (IPhonologicalRule prule in stratum.PhonologicalRules)
                 {
                     phonExamined++;
-                    AnalyzePhonological(prule, advisories);
+                    AnalyzePhonological(prule, stratum.Name, advisories);
                 }
             }
             return new GrammarFstReport(advisories, affixExamined, phonExamined, compoundExamined);
@@ -206,14 +212,13 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private static void AnalyzeAffix(
             AffixProcessRule rule,
+            string stratum,
             List<GrammarAdvisory> advisories,
             int manyAllomorphsThreshold
         )
         {
             foreach (AffixProcessAllomorph allomorph in rule.Allomorphs)
             {
-                List<CopyFromInput> copies = allomorph.Rhs.OfType<CopyFromInput>().ToList();
-
                 // Reduplication: the same input part is copied two or more times. Copying an
                 // unbounded span is not regular, so the rule is not finite-state.
                 IGrouping<string, CopyFromInput> duplicated = allomorph
@@ -225,6 +230,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     advisories.Add(
                         new GrammarAdvisory(
                             rule.Name,
+                            stratum,
                             "affix",
                             GrammarAdvisorySeverity.Escape,
                             $"Reduplication: part '{duplicated.Key}' is copied {duplicated.Count()}×. "
@@ -237,19 +243,23 @@ namespace SIL.Machine.Morphology.HermitCrab
                         )
                     );
                 }
-                else if (copies.Count >= 2)
+                else if (HasInfixedCopy(allomorph.Rhs))
                 {
-                    // Two copies of different parts means the stem is split, e.g. infixation.
+                    // Infixation: a non-copy action (inserted material) sits BETWEEN two copies of
+                    // the stem (copy…insert…copy), so the stem is split at an internal position.
+                    // Contiguous copies with inserts only at the ends (copy/copy/insert,
+                    // insert/copy/copy, insert/copy/copy/insert) are ordinary prefix / suffix /
+                    // circumfix over a split stem — finite-state, NOT flagged.
                     advisories.Add(
                         new GrammarAdvisory(
                             rule.Name,
+                            stratum,
                             "affix",
                             GrammarAdvisorySeverity.Escape,
-                            $"Stem split / infixation: {copies.Count} CopyFromInput of different parts splits "
-                                + "the stem at a content-determined position.",
-                            "If the split position is fixed (a known prefix/infix slot), encode it as a bounded "
-                                + "split so it stays finite-state. A variable, content-determined split blocks FST "
-                                + "compilation."
+                            "Infixation: material is inserted between two copies of the stem, splitting it at "
+                                + "an internal position.",
+                            "If the infix position is fixed (a known slot), encode it as a bounded split so it "
+                                + "stays finite-state. A variable, content-determined split blocks FST compilation."
                         )
                     );
                 }
@@ -259,6 +269,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     advisories.Add(
                         new GrammarAdvisory(
                             rule.Name,
+                            stratum,
                             "affix",
                             GrammarAdvisorySeverity.Info,
                             "Process modification (ModifyFromInput) rewrites stem segments; finite-state only if "
@@ -275,6 +286,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 advisories.Add(
                     new GrammarAdvisory(
                         rule.Name,
+                        stratum,
                         "affix",
                         GrammarAdvisorySeverity.Cost,
                         $"{rule.Allomorphs.Count} allomorphs; each one multiplies the un-application branching "
@@ -285,17 +297,50 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private static void AnalyzePhonological(IPhonologicalRule prule, List<GrammarAdvisory> advisories)
+        /// <summary>
+        /// True when a non-copy action (inserted material) appears strictly between the first and
+        /// last <see cref="CopyFromInput"/> in <paramref name="rhs"/> — i.e. copy…insert…copy, the
+        /// signature of infixation. Contiguous copies (inserts only at the ends) return false.
+        /// </summary>
+        private static bool HasInfixedCopy(IList<MorphologicalOutputAction> rhs)
+        {
+            int first = -1;
+            int last = -1;
+            for (int i = 0; i < rhs.Count; i++)
+            {
+                if (rhs[i] is CopyFromInput)
+                {
+                    if (first < 0)
+                        first = i;
+                    last = i;
+                }
+            }
+            if (first < 0 || last == first)
+                return false;
+            for (int i = first + 1; i < last; i++)
+            {
+                if (!(rhs[i] is CopyFromInput))
+                    return true;
+            }
+            return false;
+        }
+
+        private static void AnalyzePhonological(
+            IPhonologicalRule prule,
+            string stratum,
+            List<GrammarAdvisory> advisories
+        )
         {
             switch (prule)
             {
                 case RewriteRule rewrite:
-                    AnalyzeRewrite(rewrite, advisories);
+                    AnalyzeRewrite(rewrite, stratum, advisories);
                     break;
                 case MetathesisRule metathesis:
                     advisories.Add(
                         new GrammarAdvisory(
                             metathesis.Name,
+                            stratum,
                             "phonological",
                             GrammarAdvisorySeverity.Info,
                             "Metathesis (segment reordering); finite-state over a bounded span.",
@@ -306,7 +351,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private static void AnalyzeRewrite(RewriteRule rule, List<GrammarAdvisory> advisories)
+        private static void AnalyzeRewrite(RewriteRule rule, string stratum, List<GrammarAdvisory> advisories)
         {
             bool unboundedEnvironment = rule.Subrules.Any(sr =>
                 HasUnboundedQuantifier(sr.LeftEnvironment) || HasUnboundedQuantifier(sr.RightEnvironment)
@@ -317,6 +362,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 advisories.Add(
                     new GrammarAdvisory(
                         rule.Name,
+                        stratum,
                         "phonological",
                         GrammarAdvisorySeverity.Escape,
                         "Unbounded rule environment: the left/right context matches an arbitrary-length span. "
@@ -331,6 +377,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 advisories.Add(
                     new GrammarAdvisory(
                         rule.Name,
+                        stratum,
                         "phonological",
                         GrammarAdvisorySeverity.Info,
                         "Rewrite rule with a bounded environment: finite-state. It adds states to the composed "
@@ -349,6 +396,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 advisories.Add(
                     new GrammarAdvisory(
                         rule.Name,
+                        stratum,
                         "phonological",
                         GrammarAdvisorySeverity.Cost,
                         "Deletion rule (LHS longer than RHS): during analysis the parser guesses where the "
