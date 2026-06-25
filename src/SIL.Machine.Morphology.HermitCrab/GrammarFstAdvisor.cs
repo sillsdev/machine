@@ -1,0 +1,381 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
+using SIL.Machine.Matching;
+using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
+using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
+
+namespace SIL.Machine.Morphology.HermitCrab
+{
+    /// <summary>
+    /// How costly a flagged rule is for parsing.
+    /// </summary>
+    public enum GrammarAdvisorySeverity
+    {
+        /// <summary>Finite-state-able; informational only.</summary>
+        Info,
+
+        /// <summary>Stays finite-state but inflates the combinatorial search fan-out.</summary>
+        Cost,
+
+        /// <summary>Breaks finite-state compilation — forces the slow combinatorial search.</summary>
+        Escape,
+    }
+
+    /// <summary>
+    /// One advisory about a single grammar rule: what makes it expensive, and how to keep
+    /// (or get) it back on the fast finite-state path.
+    /// </summary>
+    public sealed class GrammarAdvisory
+    {
+        public GrammarAdvisory(
+            string rule,
+            string kind,
+            GrammarAdvisorySeverity severity,
+            string issue,
+            string advice
+        )
+        {
+            Rule = rule;
+            Kind = kind;
+            Severity = severity;
+            Issue = issue;
+            Advice = advice;
+        }
+
+        /// <summary>Name of the offending rule.</summary>
+        public string Rule { get; }
+
+        /// <summary>Rule kind (affix / phonological / compounding).</summary>
+        public string Kind { get; }
+
+        public GrammarAdvisorySeverity Severity { get; }
+
+        /// <summary>One sentence: what is expensive and why.</summary>
+        public string Issue { get; }
+
+        /// <summary>"Constrain it like this" and/or "try this instead".</summary>
+        public string Advice { get; }
+    }
+
+    /// <summary>
+    /// The result of <see cref="GrammarFstAdvisor.Analyze(Language)"/>: the per-rule advisories
+    /// plus an overall tier verdict.
+    /// </summary>
+    public sealed class GrammarFstReport
+    {
+        public GrammarFstReport(
+            IReadOnlyList<GrammarAdvisory> advisories,
+            int affixRulesExamined,
+            int phonologicalRulesExamined,
+            int compoundingRulesExamined
+        )
+        {
+            Advisories = advisories;
+            AffixRulesExamined = affixRulesExamined;
+            PhonologicalRulesExamined = phonologicalRulesExamined;
+            CompoundingRulesExamined = compoundingRulesExamined;
+            EscapeCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Escape);
+            CostCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Cost);
+            InfoCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Info);
+        }
+
+        public IReadOnlyList<GrammarAdvisory> Advisories { get; }
+
+        /// <summary>Affix-process rules inspected (those without an advisory are clean/FST-able).</summary>
+        public int AffixRulesExamined { get; }
+
+        /// <summary>Phonological rules (rewrite + metathesis) inspected.</summary>
+        public int PhonologicalRulesExamined { get; }
+
+        /// <summary>Compounding rules inspected.</summary>
+        public int CompoundingRulesExamined { get; }
+
+        /// <summary>Number of rules that break finite-state compilation.</summary>
+        public int EscapeCount { get; }
+
+        /// <summary>Number of rules that inflate the search but stay finite-state.</summary>
+        public int CostCount { get; }
+
+        public int InfoCount { get; }
+
+        /// <summary>
+        /// Static tier candidate. The static report cannot compute the corpus-weighted fallback
+        /// rate, so for a few escapes it reports the <em>candidate</em>; the FST pipeline's corpus
+        /// pass confirms whether Tier 2 is worth it vs. Tier 3.
+        /// </summary>
+        public string Tier =>
+            EscapeCount == 0
+                ? "Tier 1 candidate — fully FST-able"
+                : EscapeCount <= 3
+                    ? "Tier 2 candidate — hybrid (escapes fall back to search); confirm with corpus fallback rate"
+                    : "Tier 3 — pervasive escapes, search engine only";
+
+        /// <summary>The rules that break FST compilation (the warnings that flip the tier).</summary>
+        public IEnumerable<GrammarAdvisory> Escapes =>
+            Advisories.Where(a => a.Severity == GrammarAdvisorySeverity.Escape);
+
+        /// <summary>A readable dump of the report.</summary>
+        public string Format()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(Tier);
+            sb.AppendLine(
+                $"  examined {AffixRulesExamined} affix, {PhonologicalRulesExamined} phonological, "
+                    + $"{CompoundingRulesExamined} compounding rule(s)"
+            );
+            sb.AppendLine(
+                $"  {EscapeCount} escape(s), {CostCount} cost(s), {InfoCount} info — {Advisories.Count} rule advisories"
+            );
+            foreach (
+                GrammarAdvisory a in Advisories
+                    .OrderByDescending(a => a.Severity)
+                    .ThenBy(a => a.Rule, System.StringComparer.Ordinal)
+            )
+            {
+                sb.AppendLine();
+                sb.AppendLine($"[{a.Severity}] {a.Rule} ({a.Kind})");
+                sb.AppendLine($"  issue : {a.Issue}");
+                if (a.Advice.Length > 0)
+                    sb.AppendLine($"  advice: {a.Advice}");
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Static grammar linter for the FST acceleration work (see <c>fst.md</c> / <c>HERMITCRAB_FST_PLAN.md</c>).
+    /// It walks a compiled <see cref="Language"/> and flags, per rule, what makes parsing expensive
+    /// or blocks finite-state compilation, with an actionable write-up (why it's costly, how to
+    /// constrain it, what to try instead) and an overall tier verdict.
+    ///
+    /// This is pure static analysis of the object model — no parsing, no corpus needed — so it can
+    /// run at grammar-authoring time or in CI: a new <see cref="GrammarAdvisorySeverity.Escape"/>
+    /// that flips the tier is the "one new rule blew up the grammar" warning.
+    /// </summary>
+    public static class GrammarFstAdvisor
+    {
+        /// <summary>
+        /// Analyze every rule in <paramref name="language"/>.
+        /// </summary>
+        /// <param name="language">A compiled grammar.</param>
+        /// <param name="manyAllomorphsThreshold">
+        /// Above this allomorph count a rule earns a <see cref="GrammarAdvisorySeverity.Cost"/> note.
+        /// </param>
+        public static GrammarFstReport Analyze(Language language, int manyAllomorphsThreshold = 8)
+        {
+            var advisories = new List<GrammarAdvisory>();
+            int affixExamined = 0;
+            int phonExamined = 0;
+            int compoundExamined = 0;
+            foreach (Stratum stratum in language.Strata)
+            {
+                foreach (IMorphologicalRule mrule in stratum.MorphologicalRules)
+                {
+                    switch (mrule)
+                    {
+                        case AffixProcessRule affix:
+                            affixExamined++;
+                            AnalyzeAffix(affix, advisories, manyAllomorphsThreshold);
+                            break;
+                        case CompoundingRule compound:
+                            compoundExamined++;
+                            advisories.Add(
+                                new GrammarAdvisory(
+                                    compound.Name,
+                                    "compounding",
+                                    GrammarAdvisorySeverity.Info,
+                                    "Compounding rule; bounded by MaxStemCount, so it stays finite-state.",
+                                    "Keep MaxStemCount as low as the language needs; unbounded compounding is not finite-state."
+                                )
+                            );
+                            break;
+                    }
+                }
+
+                foreach (IPhonologicalRule prule in stratum.PhonologicalRules)
+                {
+                    phonExamined++;
+                    AnalyzePhonological(prule, advisories);
+                }
+            }
+            return new GrammarFstReport(advisories, affixExamined, phonExamined, compoundExamined);
+        }
+
+        private static void AnalyzeAffix(
+            AffixProcessRule rule,
+            List<GrammarAdvisory> advisories,
+            int manyAllomorphsThreshold
+        )
+        {
+            foreach (AffixProcessAllomorph allomorph in rule.Allomorphs)
+            {
+                List<CopyFromInput> copies = allomorph.Rhs.OfType<CopyFromInput>().ToList();
+
+                // Reduplication: the same input part is copied two or more times. Copying an
+                // unbounded span is not regular, so the rule is not finite-state.
+                IGrouping<string, CopyFromInput> duplicated = allomorph
+                    .Rhs.OfType<CopyFromInput>()
+                    .GroupBy(c => c.PartName)
+                    .FirstOrDefault(g => g.Count() >= 2);
+                if (duplicated != null)
+                {
+                    advisories.Add(
+                        new GrammarAdvisory(
+                            rule.Name,
+                            "affix",
+                            GrammarAdvisorySeverity.Escape,
+                            $"Reduplication: part '{duplicated.Key}' is copied {duplicated.Count()}×. "
+                                + "Copying an unbounded span is not finite-state, so the parser must fall back to "
+                                + "the slow combinatorial search for any word this rule could apply to.",
+                            "If the reduplicant is a fixed size (e.g. one CV syllable), bound the copied part's "
+                                + "length so it becomes finite-state. If only a handful of forms reduplicate, list "
+                                + "them as lexical entries instead. Otherwise this rule keeps the whole grammar in "
+                                + "the hybrid/search tier."
+                        )
+                    );
+                }
+                else if (copies.Count >= 2)
+                {
+                    // Two copies of different parts means the stem is split, e.g. infixation.
+                    advisories.Add(
+                        new GrammarAdvisory(
+                            rule.Name,
+                            "affix",
+                            GrammarAdvisorySeverity.Escape,
+                            $"Stem split / infixation: {copies.Count} CopyFromInput of different parts splits "
+                                + "the stem at a content-determined position.",
+                            "If the split position is fixed (a known prefix/infix slot), encode it as a bounded "
+                                + "split so it stays finite-state. A variable, content-determined split blocks FST "
+                                + "compilation."
+                        )
+                    );
+                }
+
+                if (allomorph.Rhs.OfType<ModifyFromInput>().Any())
+                {
+                    advisories.Add(
+                        new GrammarAdvisory(
+                            rule.Name,
+                            "affix",
+                            GrammarAdvisorySeverity.Info,
+                            "Process modification (ModifyFromInput) rewrites stem segments; finite-state only if "
+                                + "the change is local and bounded.",
+                            "A feature change in a fixed context is fine; a non-local or agreement-driven change "
+                                + "blocks FST — consider a bounded reformulation."
+                        )
+                    );
+                }
+            }
+
+            if (rule.Allomorphs.Count > manyAllomorphsThreshold)
+            {
+                advisories.Add(
+                    new GrammarAdvisory(
+                        rule.Name,
+                        "affix",
+                        GrammarAdvisorySeverity.Cost,
+                        $"{rule.Allomorphs.Count} allomorphs; each one multiplies the un-application branching "
+                            + "during analysis.",
+                        "Consolidate allomorphs via environment conditioning where the language allows it."
+                    )
+                );
+            }
+        }
+
+        private static void AnalyzePhonological(IPhonologicalRule prule, List<GrammarAdvisory> advisories)
+        {
+            switch (prule)
+            {
+                case RewriteRule rewrite:
+                    AnalyzeRewrite(rewrite, advisories);
+                    break;
+                case MetathesisRule metathesis:
+                    advisories.Add(
+                        new GrammarAdvisory(
+                            metathesis.Name,
+                            "phonological",
+                            GrammarAdvisorySeverity.Info,
+                            "Metathesis (segment reordering); finite-state over a bounded span.",
+                            "Keep the reordered span bounded; unbounded metathesis blocks FST."
+                        )
+                    );
+                    break;
+            }
+        }
+
+        private static void AnalyzeRewrite(RewriteRule rule, List<GrammarAdvisory> advisories)
+        {
+            bool unboundedEnvironment = rule.Subrules.Any(sr =>
+                HasUnboundedQuantifier(sr.LeftEnvironment) || HasUnboundedQuantifier(sr.RightEnvironment)
+            );
+
+            if (unboundedEnvironment)
+            {
+                advisories.Add(
+                    new GrammarAdvisory(
+                        rule.Name,
+                        "phonological",
+                        GrammarAdvisorySeverity.Escape,
+                        "Unbounded rule environment: the left/right context matches an arbitrary-length span. "
+                            + "Bounded-context rewrite rules compile to fast transducers; unbounded ones do not.",
+                        "Replace the '+'/'*' context with the fixed window the rule actually needs (usually 1–2 "
+                            + "segments)."
+                    )
+                );
+            }
+            else
+            {
+                advisories.Add(
+                    new GrammarAdvisory(
+                        rule.Name,
+                        "phonological",
+                        GrammarAdvisorySeverity.Info,
+                        "Rewrite rule with a bounded environment: finite-state. It adds states to the composed "
+                            + "transducer.",
+                        "Keep the environment as tight as the language requires."
+                    )
+                );
+            }
+
+            // Deletion: the LHS is longer than every subrule's RHS. During analysis the parser must
+            // guess where the deleted segments were and re-insert them (× DeletionReapplications),
+            // which multiplies the search.
+            int lhsSegments = CountConstraints(rule.Lhs);
+            if (lhsSegments > 0 && rule.Subrules.All(sr => CountConstraints(sr.Rhs) < lhsSegments))
+            {
+                advisories.Add(
+                    new GrammarAdvisory(
+                        rule.Name,
+                        "phonological",
+                        GrammarAdvisorySeverity.Cost,
+                        "Deletion rule (LHS longer than RHS): during analysis the parser guesses where the "
+                            + "deleted segments were and re-inserts them (× DeletionReapplications), multiplying "
+                            + "the search.",
+                        "Keep DeletionReapplications as low as the language needs; a bounded deletion context is "
+                            + "still finite-state."
+                    )
+                );
+            }
+        }
+
+        private static bool HasUnboundedQuantifier(Pattern<Word, ShapeNode> pattern)
+        {
+            if (pattern == null)
+                return false;
+            return pattern
+                .GetNodesDepthFirst()
+                .OfType<Quantifier<Word, ShapeNode>>()
+                .Any(q => q.MaxOccur == Quantifier<Word, ShapeNode>.Infinite);
+        }
+
+        private static int CountConstraints(Pattern<Word, ShapeNode> pattern)
+        {
+            if (pattern == null)
+                return 0;
+            return pattern.GetNodesDepthFirst().OfType<Constraint<Word, ShapeNode>>().Count();
+        }
+    }
+}
