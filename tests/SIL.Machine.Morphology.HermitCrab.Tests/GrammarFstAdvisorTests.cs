@@ -57,6 +57,34 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Analyze_BoundedReduplicant_IsRegular()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // A fixed-size reduplicant: the copied part "1" matches a SINGLE segment (no OneOrMore),
+        // so the copy is finite → regular (reclaimable by bounded fold), unlike whole-stem copy.
+        var redup = new AffixProcessRule { Name = "credup", Gloss = "PL" };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+
+        GrammarFstReport report = GrammarFstAdvisor.Analyze(Language);
+
+        GrammarAdvisory escape = report.Escapes.Single(a => a.Rule == "credup");
+        // Still slow today (Escape preserved), but regular = FST-reclaimable.
+        Assert.That(escape.Severity, Is.EqualTo(GrammarAdvisorySeverity.Escape));
+        Assert.That(escape.Regular, Is.True, report.Format());
+        Assert.That(report.RegularEscapeCount, Is.EqualTo(1));
+
+        Morphophonemic.MorphologicalRules.Remove(redup);
+    }
+
+    [Test]
     public void Analyze_TrueInfix_FlaggedEscape()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
@@ -85,9 +113,50 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
 
         GrammarAdvisory escape = report.Escapes.Single(a => a.Rule == "infix");
         Assert.That(escape.Issue, Does.Contain("Infixation"));
+        // Severity is preserved — infixation is slow in today's engine — but it is regular (the
+        // split is pattern-defined), so it carries the reclaim path.
+        Assert.That(escape.Severity, Is.EqualTo(GrammarAdvisorySeverity.Escape));
+        Assert.That(escape.Regular, Is.True);
         Assert.That(report.Tier, Does.StartWith("Tier 2"));
 
         Morphophonemic.MorphologicalRules.Remove(infix);
+    }
+
+    [Test]
+    public void Analyze_HarmonyRewrite_StaysEscapeButIsRegular()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        // A vowel-harmony-style rewrite: bounded LHS/RHS, but an UNBOUNDED left environment
+        // ("...anything... ___"). By Kaplan & Kay this is a regular relation, but in today's
+        // engine it un-applies at many positions and is slow.
+        var harmony = new RewriteRule
+        {
+            Name = "harmony",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(any).Value,
+        };
+        harmony.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(any).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(any).OneOrMore.Value,
+            }
+        );
+        Allophonic.PhonologicalRules.Add(harmony);
+
+        GrammarFstReport report = GrammarFstAdvisor.Analyze(Language);
+
+        GrammarAdvisory escape = report.Escapes.Single(a => a.Rule == "harmony");
+        // The non-expert sanity check: the headline still WARNS (escape present, not Tier 1) ...
+        Assert.That(escape.Severity, Is.EqualTo(GrammarAdvisorySeverity.Escape));
+        Assert.That(report.Tier, Does.Not.StartWith("Tier 1"));
+        Assert.That(report.EscapeCount, Is.GreaterThanOrEqualTo(1));
+        // ... and the reclaim path is reported separately: regular (FST-reclaimable), not "fine".
+        Assert.That(escape.Regular, Is.True);
+        Assert.That(report.RegularEscapeCount, Is.GreaterThanOrEqualTo(1));
+        Assert.That(escape.Advice, Does.Contain("today's engine"));
+
+        Allophonic.PhonologicalRules.Remove(harmony);
     }
 
     [Test]
@@ -121,6 +190,9 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
         // No phonological rule applies after it, so the escape is probe-able (clean).
         Assert.That(escape.Probeable, Is.True);
         Assert.That(after.ProbeableEscapeCount, Is.EqualTo(1));
+        // Copying the whole stem (part "1" is OneOrMore) is the one genuinely non-regular case.
+        Assert.That(escape.Regular, Is.False);
+        Assert.That(after.NonRegularEscapeCount, Is.EqualTo(1));
         // The tier verdict changed: this is the warning a grammar engineer sees.
         Assert.That(after.Tier, Is.Not.EqualTo(before.Tier));
         Assert.That(after.Tier, Does.StartWith("Tier 2"));

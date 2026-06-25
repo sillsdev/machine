@@ -69,3 +69,76 @@ Census already showed Sena is concatenative + no rewrite rules + no productive r
 expect **Tier 1, zero escapes**, possibly a few `Cost`/`Info` notes (allomorph counts,
 compounding). That both validates the classifier (no false escapes) and confirms Sena is the
 fast-path case.
+
+## 7. Engine extension — the *regularity* axis (added, kept orthogonal to the warning)
+
+The advisor answers one question — **"is this slow in today's engine?"** — and the user keeps
+asking exactly that ("which rule blew up the grammar", "which cases are still slow"). The
+extension adds a *second, independent* question — **"does an FST exist for this in principle?"**
+(regular vs non-regular) — **without letting the answer soften the slow-today warning.**
+
+Why the two must not be merged: the engine that turns "regular" into "fast" is the FST compiler,
+and **it does not exist yet** (gated on the unbuilt spike, `HERMITCRAB_FST_PLAN.md` §7). So
+"regular" today means *fast eventually, slow now*. If a vowel-harmony rule reported as
+`Cost / Tier-1-reachable`, a non-expert reads "fine" — when in the only engine that ships it is
+the worst case (harmony on a common segment ⇒ ~every word on the slow path). The severity must
+keep telling the truth about **today**.
+
+So **severity is unchanged** — it means *escapes the finite-state fast path in today's engine*
+(forces the combinatorial search). Harmony, infixation, and reduplication (bounded or not) all
+stay `Escape`: all are slow now. We only *add* a `Regular` axis that says whether an FST could
+reclaim it later, and we report it as a **separate reclaim-path line that never upgrades the
+tier**.
+
+The theory behind the new axis is **Kaplan & Kay (1994)**: a context-sensitive rewrite rule
+`φ → ψ / λ _ ρ` with regular `φ, ψ, λ, ρ`, applied obligatorily/directionally (not recursively
+into its own unbounded output), **denotes a regular relation — however long `λ`/`ρ` are.** HC's
+`RewriteRule` is this form, and its `Rhs` is a *bounded segment specification*, not a copy (copy
+lives only in morphological `CopyFromInput`). So:
+
+- **Unbounded-environment rewrite (harmony/spread): `Regular = true`** — *iff* the rule's own
+  `Lhs`/`Rhs` are bounded (only the environment is unbounded). Reclaim later by **state-encoding**
+  the spreading feature (or two-level pre-image arcs). If the `Lhs`/`Rhs` themselves are unbounded
+  we cannot confirm regularity → `Regular = false` (conservative). Stays `Escape` (slow today).
+- **Reduplication splits by boundedness of the copied part.** Look up the copied part's defining
+  `Lhs` pattern by name: a **length-bounded** reduplicant (fixed CV/CVC) is a finite copy →
+  `Regular = true` (reclaim by bounded fold). Copying an **unbounded** part (whole stem,
+  `Annotation(any).OneOrMore`) is the one genuinely non-regular operation (`{ww}` is not regular)
+  → `Regular = false`. **If the part can't be resolved, default `Regular = false` (warn).** Stays
+  `Escape` either way.
+- **Infixation** at a pattern-defined slot: `Regular = true` (the split is a regular pattern;
+  reclaim by bounded fold / the per-word probe). Stays `Escape`.
+
+### The reclaim map (how a `Regular` case *would* be made fast — once the compiler exists)
+
+| Construct | `Regular` | Slow today? | Reclaim path (needs the FST compiler) |
+|---|---|---|---|
+| Unbounded-environment rewrite (harmony/spread) | ✅ (bounded Lhs/Rhs) | **yes** | state-encode the spreading feature / two-level pre-image arcs |
+| Bounded reduplication (fixed CV reduplicant) | ✅ | **yes** | bounded fold — emit the finite copy as arcs |
+| Infixation (pattern-defined slot) | ✅ | **yes** | bounded fold / per-word strip-and-reparse probe |
+| Deletion | ✅ | **yes** | inverse probe — re-insert candidate deleted segments, re-parse |
+| Unbounded-copy reduplication | ❌ | **yes** | per-word probe only (when surface-invariant); else search |
+
+`Regular` and `Probeable` (§5a) are both *paths forward*, never excuses: `Regular` = "an FST
+could reclaim it (compiler pending)", `Probeable` = "a runtime strip-and-reparse is sound". The
+severity and tier keep warning about today.
+
+### Implementation of the extension
+
+- Add `GrammarAdvisory.Regular` (`bool?`): true = an FST exists in principle (reclaim by
+  compiling), false = genuinely non-regular / unconfirmable, null = N/A. **Severity is not
+  changed by it.**
+- Reduplication: resolve the copied part's `Lhs` pattern by name; bounded → `Regular=true`,
+  unbounded or unresolved → `Regular=false`. Severity stays `Escape`.
+- Infixation: `Regular=true`; severity stays `Escape`; keep the per-word-probe advice.
+- Unbounded-environment rewrite: `Regular = !(unbounded Lhs or Rhs)`; severity stays `Escape`;
+  advice = Kaplan–Kay + state-encoding, explicitly "regular in principle but slow in today's
+  engine".
+- Report: count `RegularEscapeCount` vs `NonRegularEscapeCount`; emit a **reclaim-path line**
+  ("N of M escapes are FST-reclaimable once the compiler exists; all M are slow in today's
+  engine"). **The tier verdict is unchanged** — no "Tier 1-reachable" upgrade.
+- Tests: a non-expert sanity check — a grammar whose only complex rule is harmony must still
+  report a slow-path warning (escape present), with `Regular=true` only as the reclaim note.
+  Unbounded-copy reduplication ⇒ `Regular=false`; bounded reduplicant ⇒ `Regular=true`;
+  infixation ⇒ `Escape` + `Regular=true` (the committed infix test keeps its severity). Sena
+  unchanged (Tier 1).

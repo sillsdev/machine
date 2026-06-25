@@ -37,7 +37,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             GrammarAdvisorySeverity severity,
             string issue,
             string advice,
-            bool? probeable = null
+            bool? probeable = null,
+            bool? regular = null
         )
         {
             Rule = rule;
@@ -47,6 +48,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Issue = issue;
             Advice = advice;
             Probeable = probeable;
+            Regular = regular;
         }
 
         /// <summary>Name of the offending rule.</summary>
@@ -76,6 +78,21 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// analysis and the search backstop is required. Null = not an insertion escape / N/A.
         /// </summary>
         public bool? Probeable { get; }
+
+        /// <summary>
+        /// For an <see cref="GrammarAdvisorySeverity.Escape"/>: whether the construct denotes a
+        /// <em>regular relation</em> (an FST exists for it in principle). True = regular — it could
+        /// be reclaimed onto the fast path once the FST compiler exists (state-encode a spreading
+        /// feature, bounded-fold a finite copy, …); by Kaplan &amp; Kay (1994) every standard
+        /// rewrite rule is regular regardless of how long its environment is. False = genuinely
+        /// non-regular (unbounded copy) or unconfirmable. Null = N/A.
+        ///
+        /// IMPORTANT: this is a <em>reclaim path</em>, NOT a cost downgrade. A <c>Regular</c>
+        /// escape is still <c>Escape</c> severity because it is slow in <em>today's</em> engine —
+        /// the FST compiler that would make it fast is not built yet. Severity tells the truth
+        /// about today; <c>Regular</c> tells you whether the slowness is fixable by compilation.
+        /// </summary>
+        public bool? Regular { get; }
     }
 
     /// <summary>
@@ -103,6 +120,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
             OpaqueEscapeCount = advisories.Count(a =>
                 a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == false
+            );
+            RegularEscapeCount = advisories.Count(a =>
+                a.Severity == GrammarAdvisorySeverity.Escape && a.Regular == true
+            );
+            NonRegularEscapeCount = advisories.Count(a =>
+                a.Severity == GrammarAdvisorySeverity.Escape && a.Regular != true
             );
         }
 
@@ -132,6 +155,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int OpaqueEscapeCount { get; }
 
         /// <summary>
+        /// Escapes that are regular (an FST could reclaim them once the compiler exists). They are
+        /// still slow in today's engine — this is a reclaim path, not a cost downgrade.
+        /// </summary>
+        public int RegularEscapeCount { get; }
+
+        /// <summary>Escapes that are genuinely non-regular or unconfirmable (no FST in principle).</summary>
+        public int NonRegularEscapeCount { get; }
+
+        /// <summary>
         /// Static tier candidate. The static report cannot compute the corpus-weighted fallback
         /// rate, so for a few escapes it reports the <em>candidate</em>; the FST pipeline's corpus
         /// pass confirms whether Tier 2 is worth it vs. Tier 3.
@@ -139,11 +171,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         public string Tier =>
             EscapeCount == 0
                 ? "Tier 1 candidate — fully FST-able"
-                : OpaqueEscapeCount == 0
-                    ? "Tier 2⁺ candidate — every escape is probe-able (surface-invariant); a per-word "
-                        + "un-application probe recovers the fast path (effectively Tier 1, no search backstop)"
+                : ProbeableEscapeCount == EscapeCount
+                    ? "Tier 2⁺ candidate — every escape is probe-able (surface-invariant): a per-word "
+                        + "un-application probe WOULD recover the fast path once the probe runtime exists; "
+                        + "all escapes are slow in today's engine"
                     : EscapeCount <= 3
-                        ? "Tier 2 candidate — hybrid (opaque escapes fall back to search); confirm with corpus fallback rate"
+                        ? "Tier 2 candidate — hybrid (opaque/non-probe-able escapes fall back to search); confirm with corpus fallback rate"
                         : "Tier 3 — pervasive escapes, search engine only";
 
         /// <summary>The rules that break FST compilation (the warnings that flip the tier).</summary>
@@ -163,6 +196,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 $"  {EscapeCount} escape(s) ({ProbeableEscapeCount} probe-able, {OpaqueEscapeCount} opaque), "
                     + $"{CostCount} cost(s), {InfoCount} info — {Advisories.Count} rule advisories"
             );
+            if (EscapeCount > 0)
+            {
+                sb.AppendLine(
+                    $"  reclaim path: {RegularEscapeCount} of {EscapeCount} escape(s) are FST-reclaimable "
+                        + "(regular) once the FST compiler exists; ALL "
+                        + $"{EscapeCount} are slow in today's engine. {NonRegularEscapeCount} are genuinely "
+                        + "non-regular (per-word probe or search only)."
+                );
+            }
             foreach (
                 GrammarAdvisory a in Advisories
                     .OrderByDescending(a => a.Severity)
@@ -173,8 +215,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                     a.Probeable == true ? " [probe-able]"
                     : a.Probeable == false ? " [opaque]"
                     : "";
+                string regular =
+                    a.Regular == true ? " [regular: FST-reclaimable, slow today]"
+                    : a.Regular == false ? " [non-regular]"
+                    : "";
                 sb.AppendLine();
-                sb.AppendLine($"[{a.Severity}]{probe} {a.Rule} ({a.Kind}, stratum '{a.Stratum}')");
+                sb.AppendLine($"[{a.Severity}]{probe}{regular} {a.Rule} ({a.Kind}, stratum '{a.Stratum}')");
                 sb.AppendLine($"  issue : {a.Issue}");
                 if (a.Advice.Length > 0)
                     sb.AppendLine($"  advice: {a.Advice}");
@@ -283,21 +329,35 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .FirstOrDefault(g => g.Count() >= 2);
                 if (duplicated != null)
                 {
+                    // Boundedness of the copied part decides regularity: a fixed-size reduplicant
+                    // (CV/CVC) is a finite copy → regular (reclaimable by bounded fold); copying an
+                    // unbounded part (the whole stem) is the one genuinely non-regular operation
+                    // ({ww} is not regular). Unresolved part → treat as non-regular (warn).
+                    bool bounded = IsPartBounded(allomorph, duplicated.Key);
+                    string regularNote = bounded
+                        ? " REGULAR (bounded reduplicant = finite copy): an FST could reclaim it by "
+                            + "bounded-folding the copy — once the FST compiler exists. It is still slow in "
+                            + "today's engine."
+                        : " GENUINELY NON-REGULAR (unbounded copy — {ww} is not a regular relation): no FST "
+                            + "exists for it; only the per-word strip-and-reparse probe (when surface-invariant) "
+                            + "or the search engine. Slow today.";
                     advisories.Add(
                         new GrammarAdvisory(
                             rule.Name,
                             stratum,
                             "affix",
                             GrammarAdvisorySeverity.Escape,
-                            $"Reduplication: part '{duplicated.Key}' is copied {duplicated.Count()}×. "
-                                + "Copying an unbounded span is not finite-state, so the parser must fall back to "
-                                + "the slow combinatorial search for any word this rule could apply to.",
+                            $"Reduplication: part '{duplicated.Key}' is copied {duplicated.Count()}×, so the "
+                                + "parser falls back to the slow combinatorial search for any word this rule "
+                                + "could apply to.",
                             "If the reduplicant is a fixed size (e.g. one CV syllable), bound the copied part's "
                                 + "length so it becomes finite-state. If only a handful of forms reduplicate, list "
                                 + "them as lexical entries instead. Otherwise this rule keeps the whole grammar in "
                                 + "the hybrid/search tier."
-                                + probeNote,
-                            surfaceInvariant
+                                + probeNote
+                                + regularNote,
+                            surfaceInvariant,
+                            bounded
                         )
                     );
                 }
@@ -318,8 +378,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 + "an internal position.",
                             "If the infix position is fixed (a known slot), encode it as a bounded split so it "
                                 + "stays finite-state. A variable, content-determined split blocks FST compilation."
-                                + probeNote,
-                            surfaceInvariant
+                                + probeNote
+                                + " REGULAR (the split is described by a regular pattern): an FST could reclaim it "
+                                + "by bounded-folding the split, or the per-word probe handles it — once those exist. "
+                                + "It is still slow in today's engine.",
+                            surfaceInvariant,
+                            regular: true
                         )
                     );
                 }
@@ -419,16 +483,34 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             if (unboundedEnvironment)
             {
+                // Kaplan & Kay (1994): a context-sensitive rewrite rule with regular φ/ψ/λ/ρ,
+                // applied directionally, denotes a REGULAR relation no matter how long the
+                // environment is — so an unbounded environment does not make the rule non-regular.
+                // It is regular iff the rule's own Lhs/Rhs are bounded (only the environment is
+                // unbounded); if the Lhs/Rhs are themselves unbounded we cannot confirm it.
+                bool rewriteBounded =
+                    !HasUnboundedQuantifier(rule.Lhs) && rule.Subrules.All(sr => !HasUnboundedQuantifier(sr.Rhs));
                 advisories.Add(
                     new GrammarAdvisory(
                         rule.Name,
                         stratum,
                         "phonological",
                         GrammarAdvisorySeverity.Escape,
-                        "Unbounded rule environment: the left/right context matches an arbitrary-length span. "
-                            + "Bounded-context rewrite rules compile to fast transducers; unbounded ones do not.",
+                        "Unbounded rule environment: the left/right context matches an arbitrary-length span, so "
+                            + "today's engine un-applies it at many positions — slow, and the composed automaton "
+                            + "gains states.",
                         "Replace the '+'/'*' context with the fixed window the rule actually needs (usually 1–2 "
                             + "segments)."
+                            + (
+                                rewriteBounded
+                                    ? " REGULAR (Kaplan & Kay 1994: a directional rewrite rule is a regular "
+                                        + "relation however long its environment): the long-distance dependency "
+                                        + "(e.g. vowel harmony / spreading) can be state-encoded into the FST — once "
+                                        + "the compiler exists. It is still slow in today's engine."
+                                    : " The rule's own LHS/RHS is unbounded, so regularity cannot be confirmed — "
+                                        + "treat as non-regular."
+                            ),
+                        regular: rewriteBounded
                     )
                 );
             }
@@ -467,6 +549,19 @@ namespace SIL.Machine.Morphology.HermitCrab
                     )
                 );
             }
+        }
+
+        /// <summary>
+        /// Whether the copied part named <paramref name="partName"/> is length-bounded — i.e. its
+        /// defining <see cref="AffixProcessAllomorph.Lhs"/> pattern has no unbounded quantifier.
+        /// Bounded ⇒ a finite copy ⇒ regular. Unresolved part ⇒ false (conservative: warn).
+        /// </summary>
+        private static bool IsPartBounded(AffixProcessAllomorph allomorph, string partName)
+        {
+            Pattern<Word, ShapeNode> part = allomorph.Lhs.FirstOrDefault(p => p.Name == partName);
+            if (part == null)
+                return false;
+            return !HasUnboundedQuantifier(part);
         }
 
         private static bool HasUnboundedQuantifier(Pattern<Word, ShapeNode> pattern)
