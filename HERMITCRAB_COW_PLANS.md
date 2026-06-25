@@ -84,6 +84,25 @@ nodes.
 - **Verdict:** viable but **dominated by Plan A** for this workload — same gain on the common
   path, far less risk/blast-radius. Choose C only if cheap *mutation* later proves to matter.
 
+## Outcome (implemented 2026-06-24)
+
+- **Plan A — DONE.** COW `FeatureStruct.Clone()` for frozen structs (single-file, inflate
+  on first write). Full suite green (801 core + 63 HC, incl. new COW safety-net tests).
+  Real Sena grammar: **−11% managed allocation/word** (376→334 KB/word), and the parallel
+  16-way pass dropped **~29%** (3,928→2,779 ms, workstation GC) because less allocation =
+  less GC contention. Raw allocation cut is modest because FS deep-copies are only ~11% of
+  the bytes; the rest is ShapeNode/Annotation objects + FST-traversal register arrays.
+
+- **Plan B — SUBSUMED / BLOCKED.** Its safely-achievable part (defer a node's FeatureStruct
+  clone until mutation) is **already delivered by Plan A**: `ShapeNode.Clone()` calls
+  `FeatureStruct.Clone()`, which now returns a shell. Its remaining part — *sharing node
+  objects* across clones — is **blocked**: `ShapeNode` is an intrusive linked-list node
+  (carries `List`/`Next`/`Prev`), so one node can't belong to two shapes, and the rewrite
+  layer mutates node FeatureStructs in place (sharing a node would corrupt the source).
+  True structural node sharing therefore requires the **red-green tree rewrite** (separate
+  immutable node data from mutable list structure) — a large, separate effort, not a small
+  follow-on. No risky partial B was forced.
+
 ## Recommendation
 
 1. **Plan A (COW FeatureStruct)** — do this first. Highest gain-to-risk: single file, no API
