@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
 {
-    public abstract class ParatextProjectVersificationErrorDetectorBase
+    public abstract class UsfmVersificationAnalyzerBase
     {
         private readonly ParatextProjectSettings _settings;
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
 
-        protected ParatextProjectVersificationErrorDetectorBase(
+        protected UsfmVersificationAnalyzerBase(
             IParatextProjectFileHandler paratextProjectFileHandler,
             ParatextProjectSettings settings
         )
@@ -20,12 +21,23 @@ namespace SIL.Machine.Corpora
             _paratextProjectFileHandler = paratextProjectFileHandler;
         }
 
-        public IReadOnlyList<UsfmVersificationError> GetUsfmVersificationErrors(
-            UsfmVersificationErrorDetector handler = null,
-            HashSet<int> books = null
+        public UsfmVersificationAnalysis AnalyzeUsfmVersification(
+            Dictionary<string, HashSet<int>> bookIdsAndChapters,
+            UsfmVersificationAnalyzerHandler handler = null
         )
         {
-            handler = handler ?? new UsfmVersificationErrorDetector(_settings);
+            return AnalyzeUsfmVersification(
+                bookIdsAndChapters?.ToDictionary(b => Canon.BookIdToNumber(b.Key), b => b.Value),
+                handler
+            );
+        }
+
+        public UsfmVersificationAnalysis AnalyzeUsfmVersification(
+            Dictionary<int, HashSet<int>> bookNumsAndChapters,
+            UsfmVersificationAnalyzerHandler handler = null
+        )
+        {
+            handler = handler ?? new UsfmVersificationAnalyzerHandler(_settings, bookNumsAndChapters);
             foreach (string bookId in _settings.GetAllScriptureBookIds())
             {
                 string fileName = _settings.GetBookFileName(bookId);
@@ -33,8 +45,13 @@ namespace SIL.Machine.Corpora
                 if (!_paratextProjectFileHandler.Exists(fileName))
                     continue;
 
-                if (books != null && !books.Contains(Canon.BookIdToNumber(bookId)))
+                if (
+                    bookNumsAndChapters != null
+                    && !bookNumsAndChapters.TryGetValue(Canon.BookIdToNumber(bookId), out _)
+                )
+                {
                     continue;
+                }
 
                 string usfm;
                 using (var reader = new StreamReader(_paratextProjectFileHandler.Open(fileName)))
@@ -56,7 +73,7 @@ namespace SIL.Machine.Corpora
                     throw new InvalidOperationException(sb.ToString(), ex);
                 }
             }
-            return handler.Errors;
+            return handler.GetAnalysis();
         }
     }
 }
