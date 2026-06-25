@@ -52,22 +52,26 @@ namespace SIL.Machine.Corpora
             if (_paratextProjectFileHandler.Exists("custom.vrs"))
             {
                 string versName = ((ScrVersType)scrVersType).ToString() + "-" + guid;
-                if (Versification.Table.Implementation.Exists(versName))
+                using (CorporaUtils.VersificationLock.Lock())
                 {
-                    versification = new ScrVers(versName);
-                }
-                else
-                {
-                    using (var reader = new StreamReader(_paratextProjectFileHandler.Open("custom.vrs")))
+                    if (Versification.Table.Implementation.Exists(versName))
                     {
-                        versification = Versification.Table.Implementation.Load(
-                            reader,
-                            "custom.vrs",
-                            versification,
-                            versName
-                        );
+                        versification = new ScrVers(versName);
                     }
-                    Versification.Table.Implementation.RemoveAllUnknownVersifications();
+                    else
+                    {
+                        using (var reader = new StreamReader(_paratextProjectFileHandler.Open("custom.vrs")))
+                        {
+                            versification = Versification.Table.Implementation.Load(
+                                reader,
+                                "custom.vrs",
+                                versification,
+                                versName
+                            );
+                        }
+
+                        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+                    }
                 }
             }
 

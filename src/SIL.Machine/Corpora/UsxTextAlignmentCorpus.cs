@@ -51,7 +51,11 @@ namespace SIL.Machine.Corpora
             if (versification == null && File.Exists(versificationFileName))
             {
                 string vrsName = Path.GetFileName(projectPath);
-                versification = Versification.Table.Implementation.Load(versificationFileName, vrsName);
+                using (CorporaUtils.VersificationLock.Lock())
+                {
+                    versification = Versification.Table.Implementation.Load(versificationFileName, vrsName);
+                    Versification.Table.Implementation.RemoveAllUnknownVersifications();
+                }
             }
             return versification ?? ScrVers.English;
         }
