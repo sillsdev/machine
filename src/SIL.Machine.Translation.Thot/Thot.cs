@@ -191,10 +191,7 @@ namespace SIL.Machine.Translation.Thot
         public static extern int swAlignModel_getEflomalNumSamplers(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void swAlignModel_setEflomalDeterministic(
-            IntPtr swAlignModelHandle,
-            bool deterministic
-        );
+        public static extern void swAlignModel_setEflomalDeterministic(IntPtr swAlignModelHandle, bool deterministic);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool swAlignModel_getEflomalDeterministic(IntPtr swAlignModelHandle);
@@ -220,10 +217,7 @@ namespace SIL.Machine.Translation.Thot
         public static extern int swAlignModel_getEflomalScheduledIterations(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void swAlignModel_setEflomalAutoIterations(
-            IntPtr swAlignModelHandle,
-            bool autoIterations
-        );
+        public static extern void swAlignModel_setEflomalAutoIterations(IntPtr swAlignModelHandle, bool autoIterations);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool swAlignModel_getEflomalAutoIterations(IntPtr swAlignModelHandle);
