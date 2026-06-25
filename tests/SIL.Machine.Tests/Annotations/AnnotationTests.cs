@@ -266,4 +266,46 @@ public class AnnotationTests
         Assert.That(annList.FindDepthFirst(50, Direction.RightToLeft, out result), Is.True);
         Assert.That(result, Is.EqualTo(annList.Last.Prev));
     }
+
+    // Copy-on-write safety net for the Shape/ShapeNode refactor (Plan B): cloning a frozen
+    // Shape and mutating a cloned node's FeatureStruct must not change the source shape.
+    private static Shape BuildShape(FeatureSystem featSys)
+    {
+        var shape = new Shape(end => new ShapeNode(FeatureStruct.New().Value));
+        shape.Add(FeatureStruct.New(featSys).Symbol("a1").Value);
+        shape.Add(FeatureStruct.New(featSys).Symbol("a2").Value);
+        shape.Add(FeatureStruct.New(featSys).Symbol("a3").Value);
+        shape.Freeze();
+        return shape;
+    }
+
+    [Test]
+    public void CloneShape_MutateClonedNodeFeatureStruct_LeavesSourceShapeUnchanged()
+    {
+        var featSys = new FeatureSystem
+        {
+            new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+            new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2")),
+        };
+        featSys.Freeze();
+
+        Shape source = BuildShape(featSys);
+        Shape expected = BuildShape(featSys);
+        Shape clone = source.Clone();
+
+        // CopyTo fidelity: same node count and value-equal to the source.
+        Assert.That(clone.Count, Is.EqualTo(source.Count));
+        Assert.That(clone.ValueEquals(source), Is.True);
+
+        // Mutate the first cloned node's feature struct (the in-place pattern HermitCrab uses).
+        clone.First.Annotation.FeatureStruct.AddValue(
+            featSys.GetFeature("b"),
+            new SymbolicFeatureValue(featSys.GetSymbol("b1"))
+        );
+
+        // The source shape must be byte-for-byte unchanged.
+        Assert.That(source.ValueEquals(expected), Is.True, "frozen source shape changed by a clone-node mutation");
+        Assert.That(source.First.Annotation.FeatureStruct.ContainsFeature(featSys.GetFeature("b")), Is.False);
+        Assert.That(clone.First.Annotation.FeatureStruct.ContainsFeature(featSys.GetFeature("b")), Is.True);
+    }
 }

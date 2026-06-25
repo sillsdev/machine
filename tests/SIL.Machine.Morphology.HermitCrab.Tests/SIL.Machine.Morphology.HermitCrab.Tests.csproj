@@ -36,6 +36,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
 		<ProjectReference Include="..\..\src\SIL.Machine\SIL.Machine.csproj" />
+		<ProjectReference Include="..\..\src\SIL.Machine.Morphology.HermitCrab.Server\SIL.Machine.Morphology.HermitCrab.Server.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
