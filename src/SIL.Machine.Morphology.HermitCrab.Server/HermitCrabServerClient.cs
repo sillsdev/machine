@@ -83,7 +83,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 string? line = _process.StandardOutput.ReadLine();
                 if (line == null)
                     throw new InvalidOperationException("HermitCrab worker terminated unexpectedly.");
-                response = JsonSerializer.Deserialize<HermitCrabAnalyzeResponse>(line);
+                response =
+                    JsonSerializer.Deserialize<HermitCrabAnalyzeResponse>(line)
+                    ?? throw new InvalidOperationException("HermitCrab worker returned a malformed response: " + line);
             }
 
             var results = new IReadOnlyList<WordAnalysis>[response.Results.Count];

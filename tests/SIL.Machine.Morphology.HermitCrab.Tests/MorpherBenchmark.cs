@@ -73,9 +73,12 @@ public class MorpherBenchmark
 
         // Across-word concurrency cap; matches FieldWorks' default (Min(cores-1,4)) and bounds
         // peak memory (pathological words have large analysis sets — 20-way blows up RAM).
-        int acrossDop = int.TryParse(Environment.GetEnvironmentVariable("HC_ACROSS_DOP"), out int ad)
-            ? ad
-            : Math.Min(Environment.ProcessorCount - 1, 4);
+        int acrossDop = Math.Max(
+            1,
+            int.TryParse(Environment.GetEnvironmentVariable("HC_ACROSS_DOP"), out int ad)
+                ? ad
+                : Math.Min(Environment.ProcessorCount - 1, 4)
+        );
 
         // --- "parallel inside" = today's production default: within-word parallel, serial corpus ---
         var swDefault = Stopwatch.StartNew();

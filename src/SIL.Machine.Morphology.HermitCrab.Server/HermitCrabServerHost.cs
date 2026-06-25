@@ -42,7 +42,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (line.Length == 0)
                     continue;
 
-                HermitCrabAnalyzeRequest request = JsonSerializer.Deserialize<HermitCrabAnalyzeRequest>(line);
+                HermitCrabAnalyzeRequest? request = JsonSerializer.Deserialize<HermitCrabAnalyzeRequest>(line);
+                if (request == null)
+                {
+                    output.WriteLine(JsonSerializer.Serialize(new HermitCrabAnalyzeResponse()));
+                    output.Flush();
+                    continue;
+                }
                 var results = new HermitCrabWordResult[request.Words.Count];
                 Parallel.For(
                     0,
