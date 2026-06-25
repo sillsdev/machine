@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using SIL.Machine.Corpora;
-
 namespace SIL.Machine.Translation.Thot
 {
-    public class ThotEflomalWordAlignmentModel : ThotWordAlignmentModel
+    public class ThotEflomalWordAlignmentModel : ThotHmmWordAlignmentModelBase
     {
         public ThotEflomalWordAlignmentModel() { }
 
@@ -12,27 +9,17 @@ namespace SIL.Machine.Translation.Thot
 
         public override ThotWordAlignmentModelType Type => ThotWordAlignmentModelType.Eflomal;
 
-        public override void ComputeAlignedWordPairScores(
-            IReadOnlyList<string> sourceSegment,
-            IReadOnlyList<string> targetSegment,
-            IReadOnlyCollection<AlignedWordPair> wordPairs
-        )
+        public override double GetAlignmentProbability(int sourceLen, int prevSourceIndex, int sourceIndex)
         {
-            foreach (AlignedWordPair wordPair in wordPairs)
-            {
-                if (wordPair.TargetIndex == -1)
-                {
-                    wordPair.TranslationScore = 0;
-                    wordPair.AlignmentScore = 0;
-                }
-                else
-                {
-                    string sourceWord = wordPair.SourceIndex == -1 ? null : sourceSegment[wordPair.SourceIndex];
-                    string targetWord = targetSegment[wordPair.TargetIndex];
-                    wordPair.TranslationScore = GetTranslationProbability(sourceWord, targetWord);
-                    wordPair.AlignmentScore = 1.0;
-                }
-            }
+            CheckDisposed();
+
+            // add 1 to convert the specified indices to Thot position indices, which are 1-based
+            return Thot.swAlignModel_getEflomalAlignmentProbability(
+                Handle,
+                (uint)(prevSourceIndex + 1),
+                (uint)sourceLen,
+                (uint)(sourceIndex + 1)
+            );
         }
     }
 }

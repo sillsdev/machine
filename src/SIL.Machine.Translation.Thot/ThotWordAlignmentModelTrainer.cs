@@ -19,6 +19,7 @@ namespace SIL.Machine.Translation.Thot
         private readonly string _targetFileName;
         private readonly int _maxSegmentLength = int.MaxValue;
         private readonly List<(IntPtr Handle, int IterationCount)> _models;
+        private readonly bool _isEflomal;
 
         public ThotWordAlignmentModelTrainer(
             ThotWordAlignmentModelType modelType,
@@ -58,6 +59,7 @@ namespace SIL.Machine.Translation.Thot
             else if (modelType == ThotWordAlignmentModelType.Eflomal)
             {
                 // Eflomal is a single model that runs its own Bayesian IBM1->HMM->fertility cascade.
+                _isEflomal = true;
                 IntPtr eflomal = Thot.CreateAlignmentModel(modelType);
                 if (eflomal == IntPtr.Zero)
                 {
@@ -66,23 +68,17 @@ namespace SIL.Machine.Translation.Thot
                             + "A Thot build that includes EflomalAlignmentModel (model type 9) is required."
                     );
                 }
-                int numSamplers = parameters.GetEflomalNumSamplers(modelType);
-                if (numSamplers != 1)
+                if (parameters.EflomalSeed.HasValue)
+                    Thot.swAlignModel_setEflomalSeed(eflomal, parameters.EflomalSeed.Value);
+                if (parameters.EflomalNumSamplers.HasValue)
+                    Thot.swAlignModel_setEflomalNumSamplers(eflomal, parameters.EflomalNumSamplers.Value);
+                if (parameters.EflomalDeterministic.HasValue)
+                    Thot.swAlignModel_setEflomalDeterministic(eflomal, parameters.EflomalDeterministic.Value);
+                if (parameters.EflomalLexNorm.HasValue)
+                    Thot.swAlignModel_setEflomalLexNorm(eflomal, parameters.EflomalLexNorm.Value);
+                if (parameters.IsEflomalScheduleSpecified)
                 {
-                    // swAlignModel_setEflomalNumSamplers requires thot with multi-sampler support.
-                    // Skip when numSamplers == 1 (the C++ default) so the call is a no-op on older builds.
-                    try
-                    {
-                        Thot.swAlignModel_setEflomalNumSamplers(eflomal, numSamplers);
-                    }
-                    catch (EntryPointNotFoundException) { }
-                }
-                if (
-                    parameters.EflomalIbm1IterationCount.HasValue
-                    || parameters.EflomalHmmIterationCount.HasValue
-                    || parameters.EflomalFertilityIterationCount.HasValue
-                )
-                {
+                    // An explicit schedule turns off the model's automatic (corpus-scaled) schedule.
                     Thot.swAlignModel_setEflomalIterations(
                         eflomal,
                         parameters.GetEflomalIbm1IterationCount(),
@@ -92,17 +88,17 @@ namespace SIL.Machine.Translation.Thot
                 }
                 if (parameters.EflomalLexAlpha.HasValue)
                     Thot.swAlignModel_setEflomalAlphaLex(eflomal, parameters.EflomalLexAlpha.Value);
-                if (parameters.EflomalNullAlpha.HasValue)
-                    Thot.swAlignModel_setEflomalAlphaNull(eflomal, parameters.EflomalNullAlpha.Value);
                 if (parameters.EflomalJumpAlpha.HasValue)
                     Thot.swAlignModel_setEflomalAlphaJump(eflomal, parameters.EflomalJumpAlpha.Value);
                 if (parameters.EflomalFertilityAlpha.HasValue)
                     Thot.swAlignModel_setEflomalAlphaFertility(eflomal, parameters.EflomalFertilityAlpha.Value);
-                if (parameters.EflomalNullProb.HasValue)
-                    Thot.swAlignModel_setEflomalNullProb(eflomal, parameters.EflomalNullProb.Value);
+                if (parameters.EflomalP0.HasValue)
+                    Thot.swAlignModel_setEflomalP0(eflomal, parameters.EflomalP0.Value);
                 if (parameters.EflomalJumpWindow.HasValue)
                     Thot.swAlignModel_setEflomalJumpWindow(eflomal, parameters.EflomalJumpWindow.Value);
-                _models.Add((eflomal, parameters.GetEflomalIterationCount(modelType)));
+                // The iteration count is resolved from the model after startTraining, since the
+                // automatic schedule depends on the corpus size (see TrainAsync).
+                _models.Add((eflomal, 0));
             }
             else
             {
@@ -199,10 +195,21 @@ namespace SIL.Machine.Translation.Thot
 
         public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
         {
-            int numSteps = _models.Select(m => m.IterationCount).Where(ic => ic > 0).Sum(ic => ic + 1) + 1;
+            // One step to load the corpus, then for each trained model one step to start training plus
+            // one per training iteration. When the Eflomal model uses its automatic schedule, the
+            // iteration count is derived from the corpus during startTraining, so the total step count
+            // is not known up front; progress is reported as indeterminate until it is resolved below.
+            int? numSteps = _isEflomal
+                ? (int?)null
+                : _models.Select(m => m.IterationCount).Where(ic => ic > 0).Sum(ic => ic + 1) + 1;
             int curStep = 0;
 
-            progress?.Report(new ProgressStatus(curStep, numSteps));
+            void Report() =>
+                progress?.Report(
+                    numSteps.HasValue ? new ProgressStatus(curStep, numSteps.Value) : new ProgressStatus(curStep)
+                );
+
+            Report();
 
             if (!string.IsNullOrEmpty(_sourceFileName) && !string.IsNullOrEmpty(_targetFileName))
             {
@@ -225,25 +232,35 @@ namespace SIL.Machine.Translation.Thot
                 }
             }
             curStep++;
-            progress?.Report(new ProgressStatus(curStep, numSteps));
+            Report();
             cancellationToken.ThrowIfCancellationRequested();
 
             int trainedSegmentCount = 0;
-            foreach ((IntPtr handle, int iterationCount) in _models)
+            foreach ((IntPtr handle, int storedIterationCount) in _models)
             {
-                if (iterationCount == 0)
+                if (storedIterationCount == 0 && !_isEflomal)
                     continue;
 
                 trainedSegmentCount = (int)Thot.swAlignModel_startTraining(handle);
+
+                int iterationCount = storedIterationCount;
+                if (_isEflomal)
+                {
+                    // The (possibly automatic) schedule is resolved during startTraining; ask the model
+                    // how many sweeps to run and finalize the total step count now that it is known.
+                    iterationCount = Thot.swAlignModel_getEflomalScheduledIterations(handle);
+                    numSteps = curStep + iterationCount + 1;
+                }
+
                 curStep++;
-                progress?.Report(new ProgressStatus(curStep, numSteps));
+                Report();
                 cancellationToken.ThrowIfCancellationRequested();
 
                 for (int i = 0; i < iterationCount; i++)
                 {
                     Thot.swAlignModel_train(handle, 1);
                     curStep++;
-                    progress?.Report(new ProgressStatus(curStep, numSteps));
+                    Report();
                     cancellationToken.ThrowIfCancellationRequested();
                 }
                 Thot.swAlignModel_endTraining(handle);

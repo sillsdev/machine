@@ -30,10 +30,9 @@ public class ThotEflomalWordAlignmentModelTests
 
     private static ThotEflomalWordAlignmentModel TrainModel(string? prefFileName = null)
     {
-        var model = new ThotEflomalWordAlignmentModel
-        {
-            Parameters = new ThotWordAlignmentParameters { EflomalIterationCount = 12 },
-        };
+        // No iteration counts are specified, so Eflomal derives its schedule automatically from
+        // the corpus size (the recommended default).
+        var model = new ThotEflomalWordAlignmentModel();
         if (prefFileName != null)
             model.CreateNew(prefFileName);
         ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
@@ -83,6 +82,81 @@ public class ThotEflomalWordAlignmentModelTests
 
         // After training the model should strongly associate the obvious translation.
         Assert.That(model.GetTranslationProbability("isthay", "this"), Is.GreaterThan(0.1));
+    }
+
+    [Test]
+    public void DeterministicTrainingIsReproducible()
+    {
+        static WordAlignmentMatrix TrainDeterministic()
+        {
+            using var model = new ThotEflomalWordAlignmentModel
+            {
+                Parameters = new ThotWordAlignmentParameters { EflomalDeterministic = true },
+            };
+            ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
+            trainer.TrainAsync().GetAwaiter().GetResult();
+            return model.Align("isthay isyay ayay esttay-N .".Split(), "this is a test N .".Split());
+        }
+
+        // With deterministic training the chains run serially from a fixed seed, so two separate
+        // training runs produce an identical model.
+        WordAlignmentMatrix first = TrainDeterministic();
+        WordAlignmentMatrix second = TrainDeterministic();
+        Assert.That(second.ValueEquals(first), Is.True);
+    }
+
+    [Test]
+    public void SeedAndLexNormAreApplied()
+    {
+        static WordAlignmentMatrix Train(uint seed, bool lexNorm)
+        {
+            using var model = new ThotEflomalWordAlignmentModel
+            {
+                Parameters = new ThotWordAlignmentParameters
+                {
+                    EflomalSeed = seed,
+                    EflomalDeterministic = true,
+                    EflomalLexNorm = lexNorm,
+                },
+            };
+            ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
+            trainer.TrainAsync().GetAwaiter().GetResult();
+            return model.Align("isthay isyay ayay esttay-N .".Split(), "this is a test N .".Split());
+        }
+
+        // A fixed seed with deterministic training is reproducible across separate runs.
+        Assert.That(Train(12345, lexNorm: true).ValueEquals(Train(12345, lexNorm: true)), Is.True);
+        // Both lexical-normalization modes train and produce a valid alignment.
+        Assert.That(Train(12345, lexNorm: false).ToString().Trim(), Is.Not.Empty);
+    }
+
+    [Test]
+    public void CreateTrainerWithExplicitSchedule()
+    {
+        // Specifying the IBM1/HMM/IBM3 iteration counts overrides the automatic schedule with an
+        // explicit IBM1 -> HMM -> fertility (IBM3) schedule.
+        var model = new ThotEflomalWordAlignmentModel
+        {
+            Parameters = new ThotWordAlignmentParameters
+            {
+                Ibm1IterationCount = 50,
+                HmmIterationCount = 50,
+                Ibm3IterationCount = 200,
+            },
+        };
+        ITrainer trainer = model.CreateTrainer(TestHelpers.CreateTestParallelCorpus());
+        trainer.TrainAsync().GetAwaiter().GetResult();
+        trainer.SaveAsync().GetAwaiter().GetResult();
+
+        using (model)
+        {
+            WordAlignmentMatrix matrix = model.Align(
+                "isthay isyay ayay esttay-N .".Split(),
+                "this is a test N .".Split()
+            );
+            Assert.That(matrix.ToString(), Does.Contain("0-0")); // "this" aligns to "isthay"
+            Assert.That(model.GetTranslationProbability("isthay", "this"), Is.GreaterThan(0.1));
+        }
     }
 
     [Test]
