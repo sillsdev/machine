@@ -36,7 +36,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             string kind,
             GrammarAdvisorySeverity severity,
             string issue,
-            string advice
+            string advice,
+            bool? probeable = null
         )
         {
             Rule = rule;
@@ -45,6 +46,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Severity = severity;
             Issue = issue;
             Advice = advice;
+            Probeable = probeable;
         }
 
         /// <summary>Name of the offending rule.</summary>
@@ -63,6 +65,17 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>"Constrain it like this" and/or "try this instead".</summary>
         public string Advice { get; }
+
+        /// <summary>
+        /// For an <see cref="GrammarAdvisorySeverity.Escape"/>: whether a per-word un-application
+        /// probe (strip the affix / de-reduplicate, then re-parse the residue with the FST) is
+        /// <em>sound</em> for this rule. True = "clean": no phonological rule at or after its
+        /// stratum can rewrite the affixed span, so the affix surfaces literally and stripping it
+        /// recovers the stem exactly — the slow path collapses to a cheap local guess+verify.
+        /// False = "opaque": a later rule may alter the span, so literal stripping can miss an
+        /// analysis and the search backstop is required. Null = not an insertion escape / N/A.
+        /// </summary>
+        public bool? Probeable { get; }
     }
 
     /// <summary>
@@ -85,6 +98,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             EscapeCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Escape);
             CostCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Cost);
             InfoCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Info);
+            ProbeableEscapeCount = advisories.Count(a =>
+                a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == true
+            );
+            OpaqueEscapeCount = advisories.Count(a =>
+                a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == false
+            );
         }
 
         public IReadOnlyList<GrammarAdvisory> Advisories { get; }
@@ -106,6 +125,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public int InfoCount { get; }
 
+        /// <summary>Escapes for which the per-word un-application probe is sound (clean).</summary>
+        public int ProbeableEscapeCount { get; }
+
+        /// <summary>Escapes that may interact with a later rule, so the search backstop is needed.</summary>
+        public int OpaqueEscapeCount { get; }
+
         /// <summary>
         /// Static tier candidate. The static report cannot compute the corpus-weighted fallback
         /// rate, so for a few escapes it reports the <em>candidate</em>; the FST pipeline's corpus
@@ -114,9 +139,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         public string Tier =>
             EscapeCount == 0
                 ? "Tier 1 candidate — fully FST-able"
-                : EscapeCount <= 3
-                    ? "Tier 2 candidate — hybrid (escapes fall back to search); confirm with corpus fallback rate"
-                    : "Tier 3 — pervasive escapes, search engine only";
+                : OpaqueEscapeCount == 0
+                    ? "Tier 2⁺ candidate — every escape is probe-able (surface-invariant); a per-word "
+                        + "un-application probe recovers the fast path (effectively Tier 1, no search backstop)"
+                    : EscapeCount <= 3
+                        ? "Tier 2 candidate — hybrid (opaque escapes fall back to search); confirm with corpus fallback rate"
+                        : "Tier 3 — pervasive escapes, search engine only";
 
         /// <summary>The rules that break FST compilation (the warnings that flip the tier).</summary>
         public IEnumerable<GrammarAdvisory> Escapes =>
@@ -132,7 +160,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     + $"{CompoundingRulesExamined} compounding rule(s)"
             );
             sb.AppendLine(
-                $"  {EscapeCount} escape(s), {CostCount} cost(s), {InfoCount} info — {Advisories.Count} rule advisories"
+                $"  {EscapeCount} escape(s) ({ProbeableEscapeCount} probe-able, {OpaqueEscapeCount} opaque), "
+                    + $"{CostCount} cost(s), {InfoCount} info — {Advisories.Count} rule advisories"
             );
             foreach (
                 GrammarAdvisory a in Advisories
@@ -140,8 +169,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .ThenBy(a => a.Rule, System.StringComparer.Ordinal)
             )
             {
+                string probe =
+                    a.Probeable == true ? " [probe-able]"
+                    : a.Probeable == false ? " [opaque]"
+                    : "";
                 sb.AppendLine();
-                sb.AppendLine($"[{a.Severity}] {a.Rule} ({a.Kind}, stratum '{a.Stratum}')");
+                sb.AppendLine($"[{a.Severity}]{probe} {a.Rule} ({a.Kind}, stratum '{a.Stratum}')");
                 sb.AppendLine($"  issue : {a.Issue}");
                 if (a.Advice.Length > 0)
                     sb.AppendLine($"  advice: {a.Advice}");
@@ -175,15 +208,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             int affixExamined = 0;
             int phonExamined = 0;
             int compoundExamined = 0;
-            foreach (Stratum stratum in language.Strata)
+
+            // For the clean/opaque (probe-ability) test: an insertion escape in stratum i is sound
+            // to un-apply by stripping iff no phonological rule at stratum i or later could rewrite
+            // the affixed span. Precompute the count of phonological rules at or after each stratum.
+            IList<Stratum> strata = language.Strata;
+            var phonAtOrAfter = new int[strata.Count + 1];
+            for (int i = strata.Count - 1; i >= 0; i--)
+                phonAtOrAfter[i] = phonAtOrAfter[i + 1] + strata[i].PhonologicalRules.Count;
+
+            for (int s = 0; s < strata.Count; s++)
             {
+                Stratum stratum = strata[s];
+                bool surfaceInvariant = phonAtOrAfter[s] == 0;
                 foreach (IMorphologicalRule mrule in stratum.MorphologicalRules)
                 {
                     switch (mrule)
                     {
                         case AffixProcessRule affix:
                             affixExamined++;
-                            AnalyzeAffix(affix, stratum.Name, advisories, manyAllomorphsThreshold);
+                            AnalyzeAffix(affix, stratum.Name, surfaceInvariant, advisories, manyAllomorphsThreshold);
                             break;
                         case CompoundingRule compound:
                             compoundExamined++;
@@ -213,10 +257,22 @@ namespace SIL.Machine.Morphology.HermitCrab
         private static void AnalyzeAffix(
             AffixProcessRule rule,
             string stratum,
+            bool surfaceInvariant,
             List<GrammarAdvisory> advisories,
             int manyAllomorphsThreshold
         )
         {
+            // An insertion escape is "probe-able" (a per-word strip-and-reparse un-application is
+            // sound) only when nothing downstream can rewrite the affixed span — i.e. no
+            // phonological rule applies at or after this rule's stratum.
+            string probeNote = surfaceInvariant
+                ? " This escape is PROBE-ABLE: no phonological rule applies after it, so the affix "
+                    + "surfaces literally — a per-word probe that strips the candidate affix and re-parses "
+                    + "the residue with the FST recovers the analysis without the search engine."
+                : " This escape is OPAQUE: a phonological rule applies after it and may rewrite the "
+                    + "affixed span, so a literal strip-and-reparse probe can miss an analysis; the search "
+                    + "backstop is required.";
+
             foreach (AffixProcessAllomorph allomorph in rule.Allomorphs)
             {
                 // Reduplication: the same input part is copied two or more times. Copying an
@@ -240,6 +296,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 + "length so it becomes finite-state. If only a handful of forms reduplicate, list "
                                 + "them as lexical entries instead. Otherwise this rule keeps the whole grammar in "
                                 + "the hybrid/search tier."
+                                + probeNote,
+                            surfaceInvariant
                         )
                     );
                 }
@@ -260,6 +318,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 + "an internal position.",
                             "If the infix position is fixed (a known slot), encode it as a bounded split so it "
                                 + "stays finite-state. A variable, content-determined split blocks FST compilation."
+                                + probeNote,
+                            surfaceInvariant
                         )
                     );
                 }

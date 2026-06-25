@@ -3,6 +3,7 @@ using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
+using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -117,10 +118,44 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
         Assert.That(escape.Severity, Is.EqualTo(GrammarAdvisorySeverity.Escape));
         Assert.That(escape.Issue, Does.Contain("Reduplication"));
         Assert.That(escape.Advice, Is.Not.Empty);
+        // No phonological rule applies after it, so the escape is probe-able (clean).
+        Assert.That(escape.Probeable, Is.True);
+        Assert.That(after.ProbeableEscapeCount, Is.EqualTo(1));
         // The tier verdict changed: this is the warning a grammar engineer sees.
         Assert.That(after.Tier, Is.Not.EqualTo(before.Tier));
         Assert.That(after.Tier, Does.StartWith("Tier 2"));
 
         Morphophonemic.MorphologicalRules.Remove(redup);
+    }
+
+    [Test]
+    public void Analyze_ReduplicationWithLaterPhonology_IsOpaque()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var redup = new AffixProcessRule { Name = "redup", Gloss = "INTENS" };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+
+        // A phonological rule in a LATER stratum can rewrite the reduplicated span, so the
+        // strip-and-reparse probe is no longer sound — the escape is opaque (needs the backstop).
+        var rule = new RewriteRule { Name = "t_rule", Lhs = Pattern<Word, ShapeNode>.New().Annotation(any).Value };
+        Surface.PhonologicalRules.Add(rule);
+
+        GrammarFstReport report = GrammarFstAdvisor.Analyze(Language);
+
+        GrammarAdvisory escape = report.Escapes.Single(a => a.Rule == "redup");
+        Assert.That(escape.Probeable, Is.False, report.Format());
+        Assert.That(report.OpaqueEscapeCount, Is.EqualTo(1));
+        Assert.That(report.Tier, Does.StartWith("Tier 2 candidate — hybrid"));
+
+        Morphophonemic.MorphologicalRules.Remove(redup);
+        Surface.PhonologicalRules.Remove(rule);
     }
 }
