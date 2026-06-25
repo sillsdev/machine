@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Xml.Linq;
+using Nito.AsyncEx;
 using SIL.Scripture;
 
 namespace SIL.Machine.Corpora
@@ -10,6 +11,7 @@ namespace SIL.Machine.Corpora
     {
         private readonly IParatextProjectFileHandler _paratextProjectFileHandler;
         private readonly ParatextProjectSettings _parentParatextProjectSettings;
+        private static readonly AsyncLock Lock = new AsyncLock();
 
         public ParatextProjectSettingsParserBase(
             IParatextProjectFileHandler paratextProjectFileHandler,
@@ -58,16 +60,20 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    using (var reader = new StreamReader(_paratextProjectFileHandler.Open("custom.vrs")))
+                    using (Lock.Lock())
                     {
-                        versification = Versification.Table.Implementation.Load(
-                            reader,
-                            "custom.vrs",
-                            versification,
-                            versName
-                        );
+                        using (var reader = new StreamReader(_paratextProjectFileHandler.Open("custom.vrs")))
+                        {
+                            versification = Versification.Table.Implementation.Load(
+                                reader,
+                                "custom.vrs",
+                                versification,
+                                versName
+                            );
+                        }
+
+                        Versification.Table.Implementation.RemoveAllUnknownVersifications();
                     }
-                    Versification.Table.Implementation.RemoveAllUnknownVersifications();
                 }
             }
 

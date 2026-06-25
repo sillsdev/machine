@@ -36,6 +36,7 @@ namespace SIL.Machine.Corpora
                             var abbr = (string)
                                 doc.Root.Elements("identification").Elements("abbreviation").FirstOrDefault();
                             Versification = Scripture.Versification.Table.Implementation.Load(tempFile.Path, abbr);
+                            Scripture.Versification.Table.Implementation.RemoveAllUnknownVersifications();
                         }
                     }
 

@@ -52,6 +52,7 @@ namespace SIL.Machine.Corpora
             {
                 string vrsName = Path.GetFileName(projectPath);
                 versification = Versification.Table.Implementation.Load(versificationFileName, vrsName);
+                Versification.Table.Implementation.RemoveAllUnknownVersifications();
             }
             return versification ?? ScrVers.English;
         }
