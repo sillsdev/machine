@@ -93,8 +93,12 @@ public class HermitCrabServerTests
         int total = 0;
         foreach (IReadOnlyList<WordAnalysis> r in results)
             total += r.Count;
-        TestContext.Out.WriteLine($"host GC: {(System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation")}, worker GC: {client.WorkerGarbageCollectorMode}");
-        TestContext.Out.WriteLine($"out-of-process batch: {words.Count} words, {total} analyses, {sw.ElapsedMilliseconds} ms");
+        TestContext.Out.WriteLine(
+            $"host GC: {(System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation")}, worker GC: {client.WorkerGarbageCollectorMode}"
+        );
+        TestContext.Out.WriteLine(
+            $"out-of-process batch: {words.Count} words, {total} analyses, {sw.ElapsedMilliseconds} ms"
+        );
     }
 
     private static string Signature(IEnumerable<WordAnalysis> analyses)
