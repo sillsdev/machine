@@ -11,10 +11,7 @@ public class SegmentBoundaryAdjusterTests
         var adjuster = new SegmentBoundaryAdjuster();
 
         // Second segment starts with space
-        var (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary(
-            "In the beginning God created",
-            " the heavens"
-        );
+        var (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary("In the beginning God created", " the heavens");
         Assert.That(segment, Is.EqualTo("In the beginning God created "));
         Assert.That(nextSegment, Is.EqualTo("the heavens"));
 
@@ -34,10 +31,7 @@ public class SegmentBoundaryAdjusterTests
         Assert.That(nextSegment, Is.EqualTo("Blessed are the"));
 
         // Second segment starts with period
-        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary(
-            "what belongs to God",
-            ". They will only"
-        );
+        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary("what belongs to God", ". They will only");
         Assert.That(segment, Is.EqualTo("what belongs to God. "));
         Assert.That(nextSegment, Is.EqualTo("They will only"));
 
@@ -79,10 +73,7 @@ public class SegmentBoundaryAdjusterTests
         Assert.That(nextSegment, Is.EqualTo("he said"));
 
         // Second segment starts with closing single quote
-        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary(
-            "Your sins are forgiven,",
-            "\u2019 or to say"
-        );
+        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary("Your sins are forgiven,", "\u2019 or to say");
         Assert.That(segment, Is.EqualTo("Your sins are forgiven,\u2019 "));
         Assert.That(nextSegment, Is.EqualTo("or to say"));
 
@@ -135,10 +126,7 @@ public class SegmentBoundaryAdjusterTests
         Assert.That(nextSegment, Is.EqualTo("\u201cWhy do you"));
 
         // First segment ends with opening single quote
-        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary(
-            "or to say, \u2018",
-            "Get up and walk\u2019?"
-        );
+        (segment, nextSegment) = adjuster.AdjustSegmentPairBoundary("or to say, \u2018", "Get up and walk\u2019?");
         Assert.That(segment, Is.EqualTo("or to say, "));
         Assert.That(nextSegment, Is.EqualTo("\u2018Get up and walk\u2019?"));
 
@@ -193,10 +181,7 @@ public class SegmentBoundaryAdjusterTests
             "In the beginning God created the heavens and the earth. and the earth",
             "was without form"
         );
-        Assert.That(
-            segment,
-            Is.EqualTo("In the beginning God created the heavens and the earth. and the earth")
-        );
+        Assert.That(segment, Is.EqualTo("In the beginning God created the heavens and the earth. and the earth"));
         Assert.That(nextSegment, Is.EqualTo("was without form"));
     }
 
@@ -348,12 +333,7 @@ public class SegmentBoundaryAdjusterTests
         Assert.That(
             adjustedVerses,
             Is.EqualTo(
-                new List<string>
-                {
-                    "Jesus said, ",
-                    "\u201cCome unto me all who are weary; ",
-                    "I will give you rest",
-                }
+                new List<string> { "Jesus said, ", "\u201cCome unto me all who are weary; ", "I will give you rest" }
             )
         );
     }
@@ -555,35 +535,18 @@ public class SegmentBoundaryAdjusterTests
 
         Assert.That(
             TokenRejoiner.JoinTokens(
-                new[]
-                {
-                    "Knowing",
-                    "their",
-                    "thoughts",
-                    ",",
-                    "Jesus",
-                    "said",
-                    ",",
-                    "\u201c",
-                    "Why",
-                    "do",
-                    "you",
-                }
+                new[] { "Knowing", "their", "thoughts", ",", "Jesus", "said", ",", "\u201c", "Why", "do", "you" }
             ),
             Is.EqualTo("Knowing their thoughts, Jesus said, \u201cWhy do you ")
         );
 
         Assert.That(
-            TokenRejoiner.JoinTokens(
-                new[] { "Freely", "you", "have", "received", ";", "freely", "give", "." }
-            ),
+            TokenRejoiner.JoinTokens(new[] { "Freely", "you", "have", "received", ";", "freely", "give", "." }),
             Is.EqualTo("Freely you have received; freely give. ")
         );
 
         Assert.That(
-            TokenRejoiner.JoinTokens(
-                new[] { "Il", "dit", "\u00ab", "Venez", "\u00bb", ".", "Maintenant" }
-            ),
+            TokenRejoiner.JoinTokens(new[] { "Il", "dit", "\u00ab", "Venez", "\u00bb", ".", "Maintenant" }),
             Is.EqualTo("Il dit \u00abVenez\u00bb. Maintenant ")
         );
 
@@ -594,18 +557,7 @@ public class SegmentBoundaryAdjusterTests
 
         Assert.That(
             TokenRejoiner.JoinTokens(
-                new[]
-                {
-                    "J\u00e9sus",
-                    "s'\u00e9cria",
-                    "\u2039",
-                    "P\u00e8re",
-                    "!",
-                    "\u203a",
-                    ",",
-                    "puis",
-                    "parti t",
-                }
+                new[] { "J\u00e9sus", "s'\u00e9cria", "\u2039", "P\u00e8re", "!", "\u203a", ",", "puis", "parti t" }
             ),
             Is.EqualTo("J\u00e9sus s'\u00e9cria \u2039P\u00e8re!\u203a, puis parti t ")
         );
@@ -623,14 +575,8 @@ public class SegmentBoundaryAdjusterTests
         Assert.That(rejoiner.AddTokenToJoinedText("Jesus"), Is.EqualTo("Knowing their thoughts, Jesus"));
         Assert.That(rejoiner.AddTokenToJoinedText("said"), Is.EqualTo("Knowing their thoughts, Jesus said"));
         Assert.That(rejoiner.AddTokenToJoinedText(","), Is.EqualTo("Knowing their thoughts, Jesus said,"));
-        Assert.That(
-            rejoiner.AddTokenToJoinedText("\u201c"),
-            Is.EqualTo("Knowing their thoughts, Jesus said, \u201c")
-        );
-        Assert.That(
-            rejoiner.AddTokenToJoinedText("Why"),
-            Is.EqualTo("Knowing their thoughts, Jesus said, \u201cWhy")
-        );
+        Assert.That(rejoiner.AddTokenToJoinedText("\u201c"), Is.EqualTo("Knowing their thoughts, Jesus said, \u201c"));
+        Assert.That(rejoiner.AddTokenToJoinedText("Why"), Is.EqualTo("Knowing their thoughts, Jesus said, \u201cWhy"));
         Assert.That(
             rejoiner.AddTokenToJoinedText("do"),
             Is.EqualTo("Knowing their thoughts, Jesus said, \u201cWhy do")

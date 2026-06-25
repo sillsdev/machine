@@ -154,9 +154,7 @@ namespace SIL.Machine.Corpora
                 string capitalizedWord = match.Groups[2].Value;
                 segment = segment.Substring(0, match.Groups[1].Index + match.Groups[1].Length);
                 nextSegment =
-                    capitalizedWord
-                    + (capitalizedWord[capitalizedWord.Length - 1] == ' ' ? "" : " ")
-                    + nextSegment;
+                    capitalizedWord + (capitalizedWord[capitalizedWord.Length - 1] == ' ' ? "" : " ") + nextSegment;
             }
             return (segment, nextSegment);
         }
@@ -196,8 +194,7 @@ namespace SIL.Machine.Corpora
                 if (accumulatedLength >= targetSegmentLength)
                 {
                     int errorWithCurrentBoundary = accumulatedLength - targetSegmentLength;
-                    int errorWithPreviousBoundary =
-                        targetSegmentLength - (accumulatedLength - tokens[index].Length);
+                    int errorWithPreviousBoundary = targetSegmentLength - (accumulatedLength - tokens[index].Length);
                     if (errorWithCurrentBoundary < errorWithPreviousBoundary)
                         return index + 1;
                     else
