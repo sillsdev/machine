@@ -3,10 +3,11 @@
 Goal: replace HC's combinatorial un-application *search* (measured ~10,000 `Word` clones/word,
 397 MB/word, the cause of the ~3× parallel ceiling) with a precompiled **transducer walk** for
 the finite-state fraction of a grammar — while **degrading gracefully** to the existing engine
-for the parts that aren't finite-state. The grammar census (see `sound-memorization-hc.md` §8)
-showed the real Sena grammar is **~100% FST-able** (0 rewrite rules, 0 variables, 0 productive
-reduplication, all-concatenative affixation), so for Sena-like grammars an automaton walk could
-be 10–100× and near-zero-allocation (which also lifts the thread ceiling).
+for the parts that aren't finite-state. A grammar census of the real Sena grammar found it
+**~100% FST-able** (0 rewrite rules, 0 variables, 0 productive reduplication, all-concatenative
+affixation) — and the `GrammarFstAdvisor` in this PR confirms it (Tier 1, 0 escapes) — so for
+Sena-like grammars an automaton walk could be 10–100× and near-zero-allocation (which also lifts
+the thread ceiling).
 
 ## 1. Tech stack — build on SIL.Machine's own `Fst` (not OpenFst/Foma/HFST)
 
