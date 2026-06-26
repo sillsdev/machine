@@ -96,9 +96,15 @@ namespace SIL.Machine.Translation.Thot
                     Thot.swAlignModel_setEflomalP0(eflomal, parameters.EflomalP0.Value);
                 if (parameters.EflomalJumpWindow.HasValue)
                     Thot.swAlignModel_setEflomalJumpWindow(eflomal, parameters.EflomalJumpWindow.Value);
-                // The iteration count is resolved from the model after startTraining, since the
-                // automatic schedule depends on the corpus size (see TrainAsync).
-                _models.Add((eflomal, 0));
+                // With an explicit schedule the total sweep count is known up front; with the
+                // automatic (corpus-scaled) schedule it is 0 here and resolved from the model after
+                // startTraining (see TrainAsync).
+                int eflomalIterationCount = parameters.IsEflomalScheduleSpecified
+                    ? parameters.GetEflomalIbm1IterationCount()
+                        + parameters.GetEflomalHmmIterationCount()
+                        + parameters.GetEflomalFertilityIterationCount()
+                    : 0;
+                _models.Add((eflomal, eflomalIterationCount));
             }
             else
             {
@@ -197,11 +203,13 @@ namespace SIL.Machine.Translation.Thot
         {
             // One step to load the corpus, then for each trained model one step to start training plus
             // one per training iteration. When the Eflomal model uses its automatic schedule, the
-            // iteration count is derived from the corpus during startTraining, so the total step count
-            // is not known up front; progress is reported as indeterminate until it is resolved below.
-            int? numSteps = _isEflomal
-                ? (int?)null
-                : _models.Select(m => m.IterationCount).Where(ic => ic > 0).Sum(ic => ic + 1) + 1;
+            // iteration count is derived from the corpus during startTraining (stored as 0 until then),
+            // so the total step count is not known up front; progress is reported as indeterminate until
+            // it is resolved below.
+            bool iterationCountKnown = !_isEflomal || _models[0].IterationCount > 0;
+            int? numSteps = iterationCountKnown
+                ? _models.Select(m => m.IterationCount).Where(ic => ic > 0).Sum(ic => ic + 1) + 1
+                : (int?)null;
             int curStep = 0;
 
             void Report() =>
@@ -244,10 +252,10 @@ namespace SIL.Machine.Translation.Thot
                 trainedSegmentCount = (int)Thot.swAlignModel_startTraining(handle);
 
                 int iterationCount = storedIterationCount;
-                if (_isEflomal)
+                if (_isEflomal && storedIterationCount == 0)
                 {
-                    // The (possibly automatic) schedule is resolved during startTraining; ask the model
-                    // how many sweeps to run and finalize the total step count now that it is known.
+                    // Automatic schedule: the corpus-scaled sweep count is resolved during startTraining;
+                    // ask the model how many sweeps to run and finalize the total step count now.
                     iterationCount = Thot.swAlignModel_getEflomalScheduledIterations(handle);
                     numSteps = curStep + iterationCount + 1;
                 }
