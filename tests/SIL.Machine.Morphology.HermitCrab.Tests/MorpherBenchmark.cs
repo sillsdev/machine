@@ -31,8 +31,8 @@ public class MorpherBenchmark
         // Point HC_GRAMMAR at a FLEx-exported HC config and HC_WORDS at a word-per-line file
         // (e.g. the Sena project) for real numbers; otherwise falls back to the in-repo toy data.
         string repoRoot = FindRepoRoot();
-        string grammarPath = Environment.GetEnvironmentVariable("HC_GRAMMAR")
-            ?? Path.Combine(repoRoot, "samples", "data", "en-hc.xml");
+        string grammarPath =
+            Environment.GetEnvironmentVariable("HC_GRAMMAR") ?? Path.Combine(repoRoot, "samples", "data", "en-hc.xml");
         string? wordsFile = Environment.GetEnvironmentVariable("HC_WORDS");
         int maxWords = int.TryParse(Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw) ? mw : int.MaxValue;
 
@@ -59,10 +59,10 @@ public class MorpherBenchmark
         var distinct = new List<string>(new HashSet<string>(tokens));
         if (distinct.Count > maxWords)
             distinct = distinct.GetRange(0, maxWords);
-        TestContext.Out.WriteLine($"Grammar: {Path.GetFileName(grammarPath)} ({new FileInfo(grammarPath).Length / 1024} KB)");
         TestContext.Out.WriteLine(
-            $"Corpus: {tokens.Count} tokens, parsing {distinct.Count} distinct forms."
+            $"Grammar: {Path.GetFileName(grammarPath)} ({new FileInfo(grammarPath).Length / 1024} KB)"
         );
+        TestContext.Out.WriteLine($"Corpus: {tokens.Count} tokens, parsing {distinct.Count} distinct forms.");
 
         // Warm up the JIT + grammar caches so the timed/instrumented runs are representative.
         foreach (string t in distinct.GetRange(0, Math.Min(50, distinct.Count)))
@@ -145,21 +145,41 @@ public class MorpherBenchmark
 
         long parsed = MorpherStatistics.WordsParsed;
         TestContext.Out.WriteLine("");
-        TestContext.Out.WriteLine($"GC mode: {(System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation")}, {Environment.ProcessorCount} cores");
-        TestContext.Out.WriteLine($"parallel-inside,  serial corpus (prod today)   : {swDefault.ElapsedMilliseconds,6} ms");
-        TestContext.Out.WriteLine($"series words,     serial corpus (single-thread): {swSingle.ElapsedMilliseconds,6} ms");
-        TestContext.Out.WriteLine($"single-thread, parallel ACROSS words           : {swParAcross.ElapsedMilliseconds,6} ms  (cap {acrossDop})");
+        TestContext.Out.WriteLine(
+            $"GC mode: {(System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation")}, {Environment.ProcessorCount} cores"
+        );
+        TestContext.Out.WriteLine(
+            $"parallel-inside,  serial corpus (prod today)   : {swDefault.ElapsedMilliseconds, 6} ms"
+        );
+        TestContext.Out.WriteLine(
+            $"series words,     serial corpus (single-thread): {swSingle.ElapsedMilliseconds, 6} ms"
+        );
+        TestContext.Out.WriteLine(
+            $"single-thread, parallel ACROSS words           : {swParAcross.ElapsedMilliseconds, 6} ms  (cap {acrossDop})"
+        );
         TestContext.Out.WriteLine($"  ^ parallel pass GC: {parBytes / 1024 / 1024} MB, gen0={parGen0} gen2={parGen2}");
         TestContext.Out.WriteLine("");
         TestContext.Out.WriteLine("--- Instrumentation (single-threaded, allocation/phase profile) ---");
         TestContext.Out.WriteLine($"words parsed         : {parsed}");
-        TestContext.Out.WriteLine($"Word.Clone calls     : {MorpherStatistics.WordClones}  ({(double)MorpherStatistics.WordClones / Math.Max(1, parsed):F1} per word)");
-        TestContext.Out.WriteLine($"analyses produced    : {MorpherStatistics.AnalysesProduced}  ({(double)MorpherStatistics.AnalysesProduced / Math.Max(1, parsed):F1} per word)");
-        TestContext.Out.WriteLine($"managed allocated    : {bytesAllocated / 1024 / 1024} MB  ({(double)bytesAllocated / Math.Max(1, parsed) / 1024:F1} KB per word)");
+        TestContext.Out.WriteLine(
+            $"Word.Clone calls     : {MorpherStatistics.WordClones}  ({(double)MorpherStatistics.WordClones / Math.Max(1, parsed):F1} per word)"
+        );
+        TestContext.Out.WriteLine(
+            $"analyses produced    : {MorpherStatistics.AnalysesProduced}  ({(double)MorpherStatistics.AnalysesProduced / Math.Max(1, parsed):F1} per word)"
+        );
+        TestContext.Out.WriteLine(
+            $"managed allocated    : {bytesAllocated / 1024 / 1024} MB  ({(double)bytesAllocated / Math.Max(1, parsed) / 1024:F1} KB per word)"
+        );
         TestContext.Out.WriteLine($"GC collections       : gen0={gen0} gen1={gen1} gen2={gen2}");
-        TestContext.Out.WriteLine($"analysis phase time  : {MorpherStatistics.AnalysisTime.TotalMilliseconds,8:F1} ms");
-        TestContext.Out.WriteLine($"synthesis phase time : {MorpherStatistics.SynthesisTime.TotalMilliseconds,8:F1} ms");
-        TestContext.Out.WriteLine("(Toy grammar => treat ms as noise; clone count + phase split guide where to trim allocations.)");
+        TestContext.Out.WriteLine(
+            $"analysis phase time  : {MorpherStatistics.AnalysisTime.TotalMilliseconds, 8:F1} ms"
+        );
+        TestContext.Out.WriteLine(
+            $"synthesis phase time : {MorpherStatistics.SynthesisTime.TotalMilliseconds, 8:F1} ms"
+        );
+        TestContext.Out.WriteLine(
+            "(Toy grammar => treat ms as noise; clone count + phase split guide where to trim allocations.)"
+        );
     }
 
     /// <summary>A stable, order-independent signature of a form's analyses.</summary>

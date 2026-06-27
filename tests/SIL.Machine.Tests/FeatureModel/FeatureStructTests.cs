@@ -1170,10 +1170,12 @@ public class FeatureStructTests
 
         // a fresh clone is NOT frozen: it has no valid frozen hash but it can be mutated
         Assert.Throws<InvalidOperationException>(() => clone.GetFrozenHashCode());
-        Assert.DoesNotThrow(() => clone.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1"))));
+        Assert.DoesNotThrow(() =>
+            clone.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")))
+        );
         // and the frozen source still rejects mutation
-        Assert.Throws<InvalidOperationException>(
-            () => source.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")))
+        Assert.Throws<InvalidOperationException>(() =>
+            source.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")))
         );
     }
 

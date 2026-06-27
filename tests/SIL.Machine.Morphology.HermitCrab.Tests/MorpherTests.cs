@@ -553,7 +553,13 @@ public class MorpherTests : HermitCrabTestBase
                 }
             );
             foreach (string w in words)
-                Assert.That(results[w], Is.EqualTo(baseline[w]), $"nondeterministic analysis for '{w}' on iteration {iter}");
+            {
+                Assert.That(
+                    results[w],
+                    Is.EqualTo(baseline[w]),
+                    $"nondeterministic analysis for '{w}' on iteration {iter}"
+                );
+            }
         }
     }
 
