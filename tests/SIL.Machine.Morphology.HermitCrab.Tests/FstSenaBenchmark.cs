@@ -49,6 +49,149 @@ public class FstSenaBenchmark
     }
 
     /// <summary>
+    /// Composite (FST + reduplication + infix + phonology-composition generators) vs the bare FST,
+    /// both verified, against the search oracle: how many words each fully covers (set parity), whether
+    /// the composite is a sound subset of search (no false positives), and the extra coverage the
+    /// generators buy on a real grammar.
+    /// </summary>
+    [Test]
+    public void Benchmark_CompositeVsSearch()
+    {
+        (Language language, List<string> words) = Load();
+        var search = new Morpher(new TraceManager(), language) { MaxUnapplications = 0 };
+        var bare = new VerifiedFstAnalyzer(
+            new FstTemplateAnalyzer(language, search),
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
+        CompositeProposer composite = CompositeProposer.ForLanguage(
+            language,
+            new FstTemplateAnalyzer(language, new Morpher(new TraceManager(), language))
+        );
+        var composed = new VerifiedFstAnalyzer(
+            composite,
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
+
+        int bareFull = 0,
+            compFull = 0,
+            unsound = 0,
+            wordsWithAnalysis = 0;
+        foreach (string w in words)
+        {
+            var oracle = new HashSet<string>(search.AnalyzeWord(w).Select(Sig));
+            var bareSet = new HashSet<string>(bare.AnalyzeWord(w).Select(Sig));
+            var compSet = new HashSet<string>(composed.AnalyzeWord(w).Select(Sig));
+            if (oracle.Count > 0)
+                wordsWithAnalysis++;
+            if (bareSet.SetEquals(oracle))
+                bareFull++;
+            if (compSet.SetEquals(oracle))
+                compFull++;
+            if (!compSet.IsSubsetOf(oracle))
+                unsound++; // composite produced an analysis the engine did not — a soundness failure
+        }
+        TestContext.Out.WriteLine($"words: {words.Count} ({wordsWithAnalysis} with an analysis)");
+        TestContext.Out.WriteLine($"fully covered — bare FST: {bareFull}, composite: {compFull}");
+        TestContext.Out.WriteLine($"composite unsound words (⊄ search): {unsound}");
+        Assert.That(unsound, Is.Zero, "soundness: composite must never produce a non-engine analysis");
+        Assert.That(compFull, Is.GreaterThanOrEqualTo(bareFull), "composite must cover at least as much as the bare FST");
+    }
+
+    private static string Sig(WordAnalysis a) =>
+        string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
+
+    /// <summary>Measure the forward-synthesis precompile: build cost, table size, how many words it lifts
+    /// to full coverage over the bare composite, and that it stays a sound subset of the engine.</summary>
+    [Test]
+    public void Benchmark_ForwardSynthVsSearch()
+    {
+        (Language language, List<string> words) = Load();
+        var search = new Morpher(new TraceManager(), language) { MaxUnapplications = 0 };
+        var pool = new MorpherPool(() => new Morpher(new TraceManager(), language));
+
+        var bareComposite = CompositeProposer.ForLanguage(
+            language,
+            new FstTemplateAnalyzer(language, new Morpher(new TraceManager(), language))
+        );
+        var bare = new VerifiedFstAnalyzer(bareComposite, pool);
+
+        var sw = Stopwatch.StartNew();
+        int maxAffixes = int.TryParse(Environment.GetEnvironmentVariable("HC_MAX_AFFIXES"), out int ma) ? ma : 2;
+        var synth = new ForwardSynthesisProposer(language, new Morpher(new TraceManager(), language), maxAffixes);
+        sw.Stop();
+        var fullComposite = new CompositeProposer(
+            new FstTemplateAnalyzer(language, new Morpher(new TraceManager(), language)),
+            synth,
+            new ReduplicationProposer(language, new FstTemplateAnalyzer(language)),
+            new InfixProposer(language, new FstTemplateAnalyzer(language))
+        );
+        var full = new VerifiedFstAnalyzer(fullComposite, pool);
+        TestContext.Out.WriteLine($"forward-synth build: {sw.ElapsedMilliseconds} ms, {synth.EntryCount} entries, capped={synth.WasCapped}");
+
+        int bareFull = 0,
+            fullFull = 0,
+            unsound = 0,
+            analyzable = 0;
+        foreach (string w in words)
+        {
+            var oracle = search.AnalyzeWord(w).Select(Sig).ToHashSet();
+            var b = bare.AnalyzeWord(w).Select(Sig).ToHashSet();
+            var f = full.AnalyzeWord(w).Select(Sig).ToHashSet();
+            if (oracle.Count > 0)
+                analyzable++;
+            if (b.SetEquals(oracle))
+                bareFull++;
+            if (f.SetEquals(oracle))
+                fullFull++;
+            else if (oracle.Count > 0)
+                TestContext.Out.WriteLine($"  still missed {w}: engine={oracle.Count} fst={f.Count} | {string.Join(" ; ", oracle.Except(f))}");
+            if (!f.IsSubsetOf(oracle))
+                unsound++;
+        }
+        TestContext.Out.WriteLine($"words: {words.Count} ({analyzable} analyzable)");
+        TestContext.Out.WriteLine($"fully covered — bare composite: {bareFull}, +forward-synth: {fullFull}");
+        TestContext.Out.WriteLine($"forward-synth unsound words (⊄ search): {unsound}");
+        Assert.That(unsound, Is.Zero, "soundness: forward-synth must never produce a non-engine analysis");
+        Assert.That(fullFull, Is.GreaterThanOrEqualTo(bareFull));
+    }
+
+    /// <summary>Diagnostic: list the words the composite under-generates on, with what the engine found
+    /// that the FST missed, and dump the census escapes — to see WHICH constructs block coverage.</summary>
+    [Test]
+    public void Diagnose_Divergences()
+    {
+        (Language language, List<string> words) = Load();
+        var search = new Morpher(new TraceManager(), language) { MaxUnapplications = 0 };
+        CompositeProposer composite = CompositeProposer.ForLanguage(
+            language,
+            new FstTemplateAnalyzer(language, new Morpher(new TraceManager(), language))
+        );
+        var composed = new VerifiedFstAnalyzer(
+            composite,
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
+
+        GrammarFstReport census = GrammarFstAdvisor.Analyze(language);
+        TestContext.Out.WriteLine($"=== census escapes ({census.EscapeCount}) ===");
+        foreach (GrammarAdvisory e in census.Escapes.Take(40))
+            TestContext.Out.WriteLine($"  ESCAPE [{e.Kind}] rule={e.Rule} stratum={e.Stratum} regular={e.Regular}: {e.Issue}");
+
+        TestContext.Out.WriteLine("=== divergent words (engine finds, FST misses) ===");
+        foreach (string w in words)
+        {
+            var oracle = search.AnalyzeWord(w).Select(Sig).ToHashSet();
+            var comp = composed.AnalyzeWord(w).Select(Sig).ToHashSet();
+            if (!comp.SetEquals(oracle))
+            {
+                var missed = oracle.Except(comp).ToList();
+                TestContext.Out.WriteLine(
+                    $"  {w}: engine={oracle.Count} fst={comp.Count} | missed: {string.Join("  ;  ", missed)}"
+                );
+            }
+        }
+    }
+
+    /// <summary>
     /// Soundness on NEGATIVE examples: plausible-looking non-words (real words over-prefixed,
     /// over-suffixed, prefix-swapped, fake-reduplicated, fake-compounded) must analyze to NOTHING. We
     /// keep only true negatives (search = ∅), preferring those the raw FST proposes for (so the verify

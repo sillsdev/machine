@@ -50,15 +50,36 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// cross-boundary). For a grammar without a given construct the corresponding generator is inert
         /// (it holds no rules and yields nothing — the phonology proposer short-circuits when the grammar
         /// has no phonological rules), so this adds near-zero overhead and does not change behavior; that
-        /// is why the factories wire it unconditionally rather than as an opt-in.</summary>
-        public static CompositeProposer ForLanguage(Language language, FstTemplateAnalyzer fst)
+        /// is why the factories wire it unconditionally rather than as an opt-in.
+        ///
+        /// <paramref name="forwardSynthesis"/> (opt-in, default off) adds the
+        /// <see cref="ForwardSynthesisProposer"/> — a build-time root × affix-combo synthesis precompile
+        /// that covers boundary-conditioned morphophonemics (e.g. Indonesian meN- nasal substitution) the
+        /// inverse-based phonology proposer cannot. It is opt-in because its build cost grows with
+        /// lexicon × affix permutations: appropriate for bounded-affixation grammars / fixed corpora, not
+        /// for heavily-inflecting templatic systems. <paramref name="maxAffixes"/> bounds the combo
+        /// depth.</summary>
+        public static CompositeProposer ForLanguage(
+            Language language,
+            FstTemplateAnalyzer fst,
+            bool forwardSynthesis = false,
+            int maxAffixes = 2
+        )
         {
-            return new CompositeProposer(
-                fst,
+            var generators = new List<IConstructProposer>
+            {
                 new ReduplicationProposer(language, fst),
                 new InfixProposer(language, fst),
-                new ComposedPhonologyProposer(language, fst)
-            );
+                new ComposedPhonologyProposer(language, fst),
+            };
+            if (forwardSynthesis)
+            {
+                generators.Insert(
+                    0,
+                    new ForwardSynthesisProposer(language, new Morpher(new TraceManager(), language), maxAffixes)
+                );
+            }
+            return new CompositeProposer(fst, generators.ToArray());
         }
 
         /// <summary>True iff every construct the FST proposer skipped is claimed by a sibling generator.

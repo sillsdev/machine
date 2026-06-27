@@ -222,3 +222,42 @@ unseen words rests on the proposer being complete on the certification corpus. W
 this now extends to reduplication/infix completeness as well — same empirical-certification property as
 before, just over a larger construct set. Choose a certification corpus that exercises the grammar's
 reduplication/infix patterns.
+
+---
+
+## Real-grammar validation: Indonesian (`meN-` nasal substitution + reduplication)
+
+Tested end-to-end on a real FieldWorks Indonesian grammar (`GenerateHCConfig.exe` → HC XML → loader),
+70 wordforms. The bare composite covered 42/70; the engine found 28 more, all carrying the **`meN-`
+active-voice prefix** (`tulis → menulis`, `sewa → menyewa`, `langit → melangit`).
+
+**Finding that reshaped Points 1/4.** The `meN-` rules are conditioned on the *morpheme boundary*
+(`meⁿ+root`) and involve deletion. `ComposedPhonologyProposer` (Point 4) un-applies phonology on the
+*boundary-less* surface, so the rules fire everywhere and produce garbage (`menulis → ⁿmeⁿnⁿpuⁿlis`) —
+exactly the over-generation HC prunes with interleaved morphology + re-synthesis, i.e. the slow search.
+**Phonology inversion cannot be cleanly composed for boundary-conditioned morphophonemics.** It remains
+valid and sound for *segment-conditioned* phonology (the `g→k / _t` test); it just isn't the tool for
+`meN-`.
+
+**The viable mechanism: forward synthesis.** Synthesis applies rules *with the boundary present*, so it
+is boundary-correct (`GenerateWords(tulis, [meN]) → "menulis"`). `ForwardSynthesisProposer` precompiles,
+at build time, each root × every ordered affix combo (permutations — order matters: `[meN,Cont]` →
+`menulis-nulis`, `[Cont,meN]` → a non-word) up to `maxAffixes`, synthesizes the surface, and tabulates
+`surface → analysis`. Analysis is a dictionary lookup; verify still confirms. It covers reduplication
+and infixation for free (synthesis handles them).
+
+**Result (Indonesian, depth 2):** full coverage **42 → 69 of 70**, **0 unsound** (always a subset of the
+engine), build ~5 s / 2283 entries. The one holdout (`mengamat-amati` = AV+observe+Cont+LOC) is a
+3-affix combo with a realizational suffix that needs feature-driven synthesis; depth 3 (45 s) does not
+reach it, so depth 2 is the sweet spot.
+
+**Scope / honesty.**
+- It is **opt-in** (`CompositeProposer.ForLanguage(language, fst, forwardSynthesis: true)`): build cost
+  grows with lexicon × affix permutations — right for bounded-affixation grammars / fixed corpora, not
+  for heavily-inflecting templatic systems (those keep riding the engine).
+- It does **not** flip Indonesian to *certified* (default-path acceleration): the holdout breaks parity,
+  and the grammar is not FST-closed (unbounded-environment reduplication rule). The win is on the
+  explicit verified-FST path — correct everywhere, accelerated for the 69 covered words.
+- The fully general fix for boundary-conditioned phonology remains **forward FST∘FST composition**
+  (compile morphotactics ⊗ phonology, the lexc+rewrite approach `Fst.Compose` supports) — a larger spine
+  change, deferred.

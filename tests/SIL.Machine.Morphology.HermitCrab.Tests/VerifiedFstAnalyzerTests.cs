@@ -538,6 +538,36 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void ForwardSynthesis_CoversAffixedForms_AndIsSound()
+    {
+        // Forward-synthesis precompile: enumerate root × affix combos, synthesize each surface (phonology
+        // applied WITH the morpheme boundary present — boundary-correct, unlike the inverse), and
+        // tabulate surface→analysis. Here the s-suffix form "sags" is tabulated and confirmed by verify.
+        AffixProcessRule suffix = AddSuffix();
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            var synth = new ForwardSynthesisProposer(Language, new Morpher(TraceManager, Language));
+            var pool = new MorpherPool(() => new Morpher(new TraceManager(), Language));
+            var composite = new CompositeProposer(new FstTemplateAnalyzer(Language), synth);
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(composite, pool);
+
+            foreach (string w in new[] { "sag", "sags", "dat" })
+            {
+                var oracle = new HashSet<string>(search.AnalyzeWord(w).Select(Sig));
+                var got = new HashSet<string>(verified.AnalyzeWord(w).Select(Sig));
+                Assert.That(got.IsSubsetOf(oracle), Is.True, $"soundness: forward-synth proposed a non-engine analysis for {w}");
+                Assert.That(got.SetEquals(oracle), Is.True, $"forward-synth + composite should fully cover {w}");
+            }
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must yield nothing");
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(suffix);
+        }
+    }
+
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 
