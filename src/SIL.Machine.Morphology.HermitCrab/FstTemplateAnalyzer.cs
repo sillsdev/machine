@@ -45,7 +45,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly List<MorphemicMorphologicalRule> _derivSuffixRules = new List<MorphemicMorphologicalRule>();
         private readonly List<MorphemicMorphologicalRule> _derivPrefixRules = new List<MorphemicMorphologicalRule>();
         private int _stateCount;
-        private bool _hasUnbuiltConstructs;
+        private readonly HashSet<MorphOp> _uncoveredOps = new HashSet<MorphOp>();
 
         /// <summary>
         /// Max stacked derivational affixes modelled per side before inflection (tunable per grammar).
@@ -67,7 +67,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// certified (it falls to the engine/cache). The empirical set-parity gate enforces this; this
         /// flag is the cheap build-time signal of the same fact.
         /// </summary>
-        public bool CoversAllConstructs => !_hasUnbuiltConstructs;
+        public bool CoversAllConstructs => _uncoveredOps.Count == 0;
+
+        /// <summary>The set of <see cref="MorphOp"/>s the build skipped because it cannot model them in
+        /// the FST (infix/circumfix/reduplication/process). A sibling generator that covers one of these
+        /// (see <see cref="CompositeProposer"/>) removes it from the composite's uncovered set.</summary>
+        public IReadOnlyCollection<MorphOp> UncoveredOps => _uncoveredOps;
 
         /// <summary>Build without obligatoriness: every root may stand bare (fine for toy grammars).</summary>
         public FstTemplateAnalyzer(Language language, int maxStates = 1_000_000, int derivDepth = 2)
@@ -123,13 +128,22 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         continue;
                     }
-                    switch (RuleOp(rule))
+                    MorphOp ruleOp = RuleOp(rule);
+                    switch (ruleOp)
                     {
                         case MorphOp.Suffix:
                             _derivSuffixRules.Add(rule);
                             break;
                         case MorphOp.Prefix:
                             _derivPrefixRules.Add(rule);
+                            break;
+                        case MorphOp.None:
+                            break;
+                        default:
+                            // A standalone rule the proposer cannot build (reduplication/infix/process).
+                            // Record the op as uncovered so the grammar does not certify unless a sibling
+                            // generator (see CompositeProposer) covers it.
+                            _uncoveredOps.Add(ruleOp);
                             break;
                     }
                 }
@@ -383,10 +397,17 @@ namespace SIL.Machine.Morphology.HermitCrab
                         break;
                     default:
                         // A slot the proposer cannot build (infix/circumfix/reduplication/process).
-                        // Skip it and flag the grammar as not fully covered — those words fall to the
-                        // engine/cache; the parity gate refuses to certify. (Was a hard throw that
-                        // aborted the whole build.)
-                        _hasUnbuiltConstructs = true;
+                        // Skip it and record the construct op(s) as uncovered — those words fall to the
+                        // engine/cache unless a sibling generator covers the op; the parity gate refuses
+                        // to certify otherwise. (Was a hard throw that aborted the whole build.)
+                        foreach (MorphemicMorphologicalRule rule in slot.Rules)
+                        {
+                            MorphOp ruleOp = RuleOp(rule);
+                            if (ruleOp != MorphOp.Prefix && ruleOp != MorphOp.Suffix && ruleOp != MorphOp.None)
+                            {
+                                _uncoveredOps.Add(ruleOp);
+                            }
+                        }
                         break;
                 }
             }
@@ -628,9 +649,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (aop != op && aop != MorphOp.None)
                         {
                             // A rule the proposer can't build in this slot (infix/circumfix/redup/
-                            // process). Skip it and flag the grammar not-fully-covered; the engine/
-                            // cache backstop and parity gate handle those words. (Was a hard throw.)
-                            _hasUnbuiltConstructs = true;
+                            // process). Skip it and record the op as uncovered; the engine/cache backstop
+                            // and parity gate handle those words unless a sibling generator covers the op.
+                            // (Was a hard throw.)
+                            _uncoveredOps.Add(aop);
                             continue;
                         }
                         // aop == op (normal affix) or aop == None (a true zero-segment affix: no

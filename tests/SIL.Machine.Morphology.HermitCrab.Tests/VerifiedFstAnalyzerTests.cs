@@ -166,6 +166,53 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void Composite_CoversFullReduplication_WhereFstAloneMisses()
+    {
+        // Point 3: full reduplication (copy the whole stem) is non-regular — the FST cannot represent
+        // it, but the ReduplicationProposer strips one copy, recurses the residual through the FST, and
+        // wraps it with the reduplication morpheme; verify confirms it as a genuine HC analysis.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule
+        {
+            Name = "redup",
+            Gloss = "RED",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") }, // copy the stem twice
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            Assert.That(search.AnalyzeWord("sagsag").Any(), Is.True, "precondition: 'sagsag' = RED('sag')");
+
+            var fst = new FstTemplateAnalyzer(Language, new Morpher(TraceManager, Language));
+            Assert.That(fst.AnalyzeWord("sagsag"), Is.Empty, "baseline: the FST alone cannot represent reduplication");
+            Assert.That(fst.CoversAllConstructs, Is.False, "reduplication marks the FST not-fully-covered");
+
+            var composite = new CompositeProposer(fst, new ReduplicationProposer(Language, fst));
+            Assert.That(composite.CoversAllConstructs, Is.True, "the reduplication generator covers the skipped op");
+
+            var pool = new MorpherPool(() => new Morpher(new TraceManager(), Language));
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(composite, pool);
+            AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "sagsag" });
+            Assert.That(cmp.IsComplete, Is.True, "reduplication not covered: " + cmp.Format());
+
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must still yield nothing");
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(redup);
+        }
+    }
+
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 
