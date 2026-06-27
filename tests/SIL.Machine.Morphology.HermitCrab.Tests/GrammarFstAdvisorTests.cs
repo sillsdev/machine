@@ -201,6 +201,41 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Analyze_RealizationalReduplication_IsExamined()
+    {
+        // RealizationalAffixProcessRule also implements IMorphologicalRule and has Allomorphs, so a
+        // reduplication encoded on one must be examined and flagged — it was previously skipped.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        Assert.That(GrammarFstAdvisor.Analyze(Language).EscapeCount, Is.EqualTo(0), "baseline has no escapes");
+
+        var redup = new RealizationalAffixProcessRule
+        {
+            Name = "real_redup",
+            Gloss = "INTENS",
+            RealizationalFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Feature(Head)
+                .EqualTo(head => head.Feature("tense").EqualTo("past"))
+                .Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+
+        GrammarFstReport after = GrammarFstAdvisor.Analyze(Language);
+        Assert.That(after.EscapeCount, Is.EqualTo(1), after.Format());
+        Assert.That(after.Escapes.Single().Rule, Is.EqualTo("real_redup"));
+        Assert.That(after.Escapes.Single().Issue, Does.Contain("Reduplication"));
+
+        Morphophonemic.MorphologicalRules.Remove(redup);
+    }
+
+    [Test]
     public void Analyze_ReduplicationWithLaterPhonology_IsOpaque()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

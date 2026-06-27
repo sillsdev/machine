@@ -47,6 +47,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly List<MorphemicMorphologicalRule> _derivPrefixRules =
             new List<MorphemicMorphologicalRule>();
         private int _stateCount;
+        private bool _hasUnbuiltConstructs;
 
         /// <summary>
         /// Max stacked derivational affixes modelled per side before inflection (tunable per grammar).
@@ -60,6 +61,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>Number of FST states built (the precomputed size — to watch for state blow-up).</summary>
         public int StateCount => _stateCount;
+
+        /// <summary>
+        /// False if the build skipped a construct it cannot model (an infix/circumfix/reduplication/
+        /// process slot or rule). The proposer degrades gracefully — it skips such constructs and
+        /// builds the rest — so a grammar using them under-generates on the fast path and must NOT be
+        /// certified (it falls to the engine/cache). The empirical set-parity gate enforces this; this
+        /// flag is the cheap build-time signal of the same fact.
+        /// </summary>
+        public bool CoversAllConstructs => !_hasUnbuiltConstructs;
 
         /// <summary>Build without obligatoriness: every root may stand bare (fine for toy grammars).</summary>
         public FstTemplateAnalyzer(Language language, int maxStates = 1_000_000, int derivDepth = 2)
@@ -333,7 +343,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>Split a template's slots into prefix and suffix; prefixes are reversed to surface order.</summary>
-        private static void ClassifyTemplate(
+        private void ClassifyTemplate(
             AffixTemplate template,
             List<AffixTemplateSlot> prefixSlots,
             List<AffixTemplateSlot> suffixSlots
@@ -350,21 +360,36 @@ namespace SIL.Machine.Morphology.HermitCrab
                         suffixSlots.Add(slot);
                         break;
                     default:
-                        throw new NotSupportedException(
-                            $"FstTemplateAnalyzer handles prefix/suffix template slots only; slot '{slot.Name}' is neither."
-                        );
+                        // A slot the proposer cannot build (infix/circumfix/reduplication/process).
+                        // Skip it and flag the grammar as not fully covered — those words fall to the
+                        // engine/cache; the parity gate refuses to certify. (Was a hard throw that
+                        // aborted the whole build.)
+                        _hasUnbuiltConstructs = true;
+                        break;
                 }
             }
             prefixSlots.Reverse(); // slot 0 applies first (innermost) → rightmost prefix on the surface
         }
 
+        /// <summary>The slot's surface role: the first rule that is a prefix or suffix. A slot whose
+        /// only rules are zero-segment affixes is a (position-less) suffix so it still builds; a slot
+        /// with no prefix/suffix/zero rule (e.g. infix/reduplication only) is None → skipped.</summary>
         private static MorphOp SlotOp(AffixTemplateSlot slot)
         {
+            bool hasZero = false;
             foreach (MorphemicMorphologicalRule rule in slot.Rules)
             {
-                return RuleOp(rule);
+                MorphOp op = RuleOp(rule);
+                if (op == MorphOp.Prefix || op == MorphOp.Suffix)
+                {
+                    return op;
+                }
+                if (op == MorphOp.None)
+                {
+                    hasZero = true; // a zero/empty-segment affix — no surface position
+                }
             }
-            return MorphOp.None;
+            return hasZero ? MorphOp.Suffix : MorphOp.None;
         }
 
         /// <summary>The surface role (prefix/suffix/…) of a morphological rule, from its first allomorph.</summary>
@@ -564,12 +589,18 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                     foreach (AffixProcessAllomorph allomorph in Allomorphs(rule))
                     {
-                        if (MorphTokenCodec.ClassifyOp(allomorph, false) != op)
+                        MorphOp aop = MorphTokenCodec.ClassifyOp(allomorph, false);
+                        if (aop != op && aop != MorphOp.None)
                         {
-                            throw new NotSupportedException(
-                                $"FstTemplateAnalyzer: a rule in a {op} slot is not a {op}."
-                            );
+                            // A rule the proposer can't build in this slot (infix/circumfix/redup/
+                            // process). Skip it and flag the grammar not-fully-covered; the engine/
+                            // cache backstop and parity gate handle those words. (Was a hard throw.)
+                            _hasUnbuiltConstructs = true;
+                            continue;
                         }
+                        // aop == op (normal affix) or aop == None (a true zero-segment affix: no
+                        // InsertSegments) — both emit the morpheme token at this slot's position; a
+                        // zero affix simply adds no segment arcs.
                         uint affixToken = MorphToken.Encode(op, _codec.GetOrAddIndex(allomorph.Morpheme));
                         // Enter the affix through a token-bearing state, so the morpheme is emitted
                         // even for a zero/empty-segment affix (its token would otherwise be lost).

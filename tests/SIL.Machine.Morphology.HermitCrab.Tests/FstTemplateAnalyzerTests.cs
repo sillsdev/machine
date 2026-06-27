@@ -82,6 +82,69 @@ public class FstTemplateAnalyzerTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Build_ReduplicationSlot_DegradesGracefully_DoesNotThrow()
+    {
+        // A reduplication slot is non-regular and unbuildable. The proposer must SKIP it (degrade),
+        // not throw and abort the whole build — and flag the grammar as not fully covered.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule { Name = "redup", Gloss = "RED" };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") }, // copy the stem twice = reduplication
+            }
+        );
+        var t = new AffixTemplate
+        {
+            Name = "redup_tmpl",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        t.Slots.Add(new AffixTemplateSlot(redup) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(t);
+
+        FstTemplateAnalyzer? fst = null;
+        Assert.DoesNotThrow(() => fst = new FstTemplateAnalyzer(Language), "an unbuildable slot must degrade, not throw");
+        Assert.That(fst!.CoversAllConstructs, Is.False, "reduplication slot → grammar not fully covered (won't certify)");
+        Assert.That(fst!.AnalyzeWord("sag"), Is.Not.Empty, "the rest of the grammar still analyzes");
+
+        Morphophonemic.AffixTemplates.Remove(t);
+    }
+
+    [Test]
+    public void Analyze_ZeroSegmentSuffix_IsEmitted_NotDropped()
+    {
+        // A true zero-segment affix (CopyFromInput only, no InsertSegments) must still emit its
+        // morpheme token (it adds no segments). Previously it threw / was silently dropped.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var zero = new AffixProcessRule { Name = "zero_sfx", Gloss = "Z" };
+        zero.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1") }, // copy stem, insert nothing = zero affix
+            }
+        );
+        var t = new AffixTemplate
+        {
+            Name = "zero_tmpl",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        t.Slots.Add(new AffixTemplateSlot(zero) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(t);
+
+        var search = new Morpher(TraceManager, Language);
+        var fst = new FstTemplateAnalyzer(Language);
+        Assert.That(fst.CoversAllConstructs, Is.True, "a zero-segment affix is buildable, not a skipped construct");
+        // Whatever the engine yields for "sag" (bare root and/or root+Z), the FST must match it —
+        // i.e. it must not drop the zero-suffixed analysis.
+        AnalysisComparison comparison = FstVerification.Compare(search, fst, new[] { "sag" });
+        Assert.That(comparison.IsComplete, Is.True, comparison.Format());
+
+        Morphophonemic.AffixTemplates.Remove(t);
+    }
+
+    [Test]
     public void Analyze_PrefixAndSuffixTemplate_MatchesSearch()
     {
         // A verb template with a prefix slot (di-) and a suffix slot (-d), restricted to V roots.

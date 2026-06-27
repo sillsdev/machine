@@ -47,7 +47,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             var proposer = new FstTemplateAnalyzer(language, new Morpher(traceManager, language));
             var verified = new VerifiedFstAnalyzer(proposer, pool);
             var engine = new Morpher(traceManager, language);
-            bool certified = FstVerification.Compare(engine, verified, certificationCorpus).IsComplete;
+            bool parity = FstVerification.Compare(engine, verified, certificationCorpus).IsComplete;
+            bool certified = proposer.CoversAllConstructs && parity;
             return new CompleteHybridMorpher(verified, pool, certified);
         }
 

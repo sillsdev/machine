@@ -112,21 +112,31 @@ namespace SIL.Machine.Morphology.HermitCrab
             AffixRulesExamined = affixRulesExamined;
             PhonologicalRulesExamined = phonologicalRulesExamined;
             CompoundingRulesExamined = compoundingRulesExamined;
-            EscapeCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Escape);
-            CostCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Cost);
-            InfoCount = advisories.Count(a => a.Severity == GrammarAdvisorySeverity.Info);
-            ProbeableEscapeCount = advisories.Count(a =>
-                a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == true
+
+            // Count per RULE, not per advisory: advisories are emitted per allomorph, so several can
+            // refer to one rule. Group by (Rule, Stratum, Kind) and take each rule's worst severity, so
+            // the counts reflect distinct rules and the partitions stay consistent
+            // (Probeable+Opaque = Escape, Regular+NonRegular = Escape).
+            List<IGrouping<(string Rule, string Stratum, string Kind), GrammarAdvisory>> byRule = advisories
+                .GroupBy(a => (a.Rule, a.Stratum, a.Kind))
+                .ToList();
+            EscapeCount = byRule.Count(g => g.Max(a => a.Severity) == GrammarAdvisorySeverity.Escape);
+            CostCount = byRule.Count(g => g.Max(a => a.Severity) == GrammarAdvisorySeverity.Cost);
+            InfoCount = byRule.Count(g => g.Max(a => a.Severity) == GrammarAdvisorySeverity.Info);
+
+            // Among escaping rules, a rule is opaque/non-regular if ANY of its escape advisories is
+            // (the conservative aggregate); the complements partition the escape count exactly.
+            List<IGrouping<(string Rule, string Stratum, string Kind), GrammarAdvisory>> escapeRules = byRule
+                .Where(g => g.Max(a => a.Severity) == GrammarAdvisorySeverity.Escape)
+                .ToList();
+            OpaqueEscapeCount = escapeRules.Count(g =>
+                g.Any(a => a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == false)
             );
-            OpaqueEscapeCount = advisories.Count(a =>
-                a.Severity == GrammarAdvisorySeverity.Escape && a.Probeable == false
+            ProbeableEscapeCount = EscapeCount - OpaqueEscapeCount;
+            NonRegularEscapeCount = escapeRules.Count(g =>
+                g.Any(a => a.Severity == GrammarAdvisorySeverity.Escape && a.Regular != true)
             );
-            RegularEscapeCount = advisories.Count(a =>
-                a.Severity == GrammarAdvisorySeverity.Escape && a.Regular == true
-            );
-            NonRegularEscapeCount = advisories.Count(a =>
-                a.Severity == GrammarAdvisorySeverity.Escape && a.Regular != true
-            );
+            RegularEscapeCount = EscapeCount - NonRegularEscapeCount;
         }
 
         public IReadOnlyList<GrammarAdvisory> Advisories { get; }
@@ -273,7 +283,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         case AffixProcessRule affix:
                             affixExamined++;
-                            AnalyzeAffix(affix, stratum.Name, surfaceInvariant, advisories, manyAllomorphsThreshold);
+                            AnalyzeAffix(affix.Name, affix.Allomorphs, stratum.Name, surfaceInvariant, advisories, manyAllomorphsThreshold);
+                            break;
+                        case RealizationalAffixProcessRule realizational:
+                            // Realizational affixes also have Allomorphs and can encode
+                            // reduplication/infixation — examine them too (previously skipped).
+                            affixExamined++;
+                            AnalyzeAffix(
+                                realizational.Name,
+                                realizational.Allomorphs,
+                                stratum.Name,
+                                surfaceInvariant,
+                                advisories,
+                                manyAllomorphsThreshold
+                            );
                             break;
                         case CompoundingRule compound:
                             compoundExamined++;
@@ -301,7 +324,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private static void AnalyzeAffix(
-            AffixProcessRule rule,
+            string ruleName,
+            IList<AffixProcessAllomorph> allomorphs,
             string stratum,
             bool surfaceInvariant,
             List<GrammarAdvisory> advisories,
@@ -319,7 +343,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     + "affixed span, so a literal strip-and-reparse probe can miss an analysis; the search "
                     + "backstop is required.";
 
-            foreach (AffixProcessAllomorph allomorph in rule.Allomorphs)
+            foreach (AffixProcessAllomorph allomorph in allomorphs)
             {
                 // Reduplication: the same input part is copied two or more times. Copying an
                 // unbounded span is not regular, so the rule is not finite-state.
@@ -343,7 +367,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             + "or the search engine. Slow today.";
                     advisories.Add(
                         new GrammarAdvisory(
-                            rule.Name,
+                            ruleName,
                             stratum,
                             "affix",
                             GrammarAdvisorySeverity.Escape,
@@ -370,7 +394,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // circumfix over a split stem — finite-state, NOT flagged.
                     advisories.Add(
                         new GrammarAdvisory(
-                            rule.Name,
+                            ruleName,
                             stratum,
                             "affix",
                             GrammarAdvisorySeverity.Escape,
@@ -392,7 +416,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     advisories.Add(
                         new GrammarAdvisory(
-                            rule.Name,
+                            ruleName,
                             stratum,
                             "affix",
                             GrammarAdvisorySeverity.Info,
@@ -405,15 +429,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
 
-            if (rule.Allomorphs.Count > manyAllomorphsThreshold)
+            if (allomorphs.Count > manyAllomorphsThreshold)
             {
                 advisories.Add(
                     new GrammarAdvisory(
-                        rule.Name,
+                        ruleName,
                         stratum,
                         "affix",
                         GrammarAdvisorySeverity.Cost,
-                        $"{rule.Allomorphs.Count} allomorphs; each one multiplies the un-application branching "
+                        $"{allomorphs.Count} allomorphs; each one multiplies the un-application branching "
                             + "during analysis.",
                         "Consolidate allomorphs via environment conditioning where the language allows it."
                     )
