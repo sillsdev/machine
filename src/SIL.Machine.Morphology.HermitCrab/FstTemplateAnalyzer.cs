@@ -42,6 +42,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Func<Annotation<ShapeNode>, bool> _filter;
         private readonly int _maxStates;
         private readonly Func<RootAllomorph, IReadOnlyCollection<string>> _bareRootSurfaces;
+        private readonly Func<string, IReadOnlyCollection<string>> _affixSurfaces;
         private readonly List<MorphemicMorphologicalRule> _derivSuffixRules = new List<MorphemicMorphologicalRule>();
         private readonly List<MorphemicMorphologicalRule> _derivPrefixRules = new List<MorphemicMorphologicalRule>();
         private int _stateCount;
@@ -76,7 +77,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>Build without obligatoriness: every root may stand bare (fine for toy grammars).</summary>
         public FstTemplateAnalyzer(Language language, int maxStates = 1_000_000, int derivDepth = 2)
-            : this(language, root => new[] { UnderlyingForm(root) }, maxStates, derivDepth) { }
+            : this(language, root => new[] { UnderlyingForm(root) }, s => new[] { s }, maxStates, derivDepth) { }
 
         /// <summary>
         /// Build with obligatory-inflection enforcement AND surface-allomorph precompile (§C): a root's
@@ -86,16 +87,24 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// phonologically-altered bare root is matched (not just the underlying form).
         /// </summary>
         public FstTemplateAnalyzer(Language language, Morpher morpher, int maxStates = 1_000_000, int derivDepth = 2)
-            : this(language, root => BareRootSurfaces(morpher, root), maxStates, derivDepth) { }
+            : this(
+                language,
+                root => BareRootSurfaces(morpher, root),
+                new SurfacePhonology(language, morpher).Variants,
+                maxStates,
+                derivDepth
+            ) { }
 
         private FstTemplateAnalyzer(
             Language language,
             Func<RootAllomorph, IReadOnlyCollection<string>> bareRootSurfaces,
+            Func<string, IReadOnlyCollection<string>> affixSurfaces,
             int maxStates,
             int derivDepth
         )
         {
             _bareRootSurfaces = bareRootSurfaces;
+            _affixSurfaces = affixSurfaces;
             _maxStates = maxStates;
             _derivDepth = derivDepth;
             _table = language.SurfaceStratum.CharacterDefinitionTable;
@@ -489,21 +498,64 @@ namespace SIL.Machine.Morphology.HermitCrab
                         State<Shape, ShapeNode> tokenState = NewState();
                         _tokenOnEntry[tokenState] = token;
                         current.Arcs.Add(tokenState); // epsilon: enter this derivational affix
-                        State<Shape, ShapeNode> s = tokenState;
-                        InsertSegments insert = allomorph.Rhs.OfType<InsertSegments>().FirstOrDefault();
-                        if (insert != null)
-                        {
-                            foreach (FeatureStruct fs in GetSegments(insert.Segments.Shape))
-                            {
-                                s = AddArc(s, fs);
-                            }
-                        }
-                        s.Arcs.Add(after); // epsilon: reconverge
+                        BuildAffixArcs(tokenState, after, allomorph.Rhs.OfType<InsertSegments>().FirstOrDefault());
                     }
                 }
                 current = after;
             }
             return current;
+        }
+
+        /// <summary>
+        /// Build an affix's segment arcs from <paramref name="tokenState"/> to <paramref name="after"/>:
+        /// the underlying form AND each phonologically-altered surface realization (surface-allomorph
+        /// precompile, Point 1, C-internal tier), so an affix whose surface differs from its underlying
+        /// segments (e.g. a suffix that devoices word-finally) is matched. A zero-segment affix (null
+        /// <paramref name="insert"/>) just reconverges. Sound: the underlying path is always built, the
+        /// emitted token is the underlying morpheme, and verify confirms with real phonology; a variant
+        /// not actually attested is pruned by verify, a missed cross-boundary variant rides the engine.
+        /// </summary>
+        private void BuildAffixArcs(
+            State<Shape, ShapeNode> tokenState,
+            State<Shape, ShapeNode> after,
+            InsertSegments insert
+        )
+        {
+            if (insert == null)
+            {
+                tokenState.Arcs.Add(after); // zero/empty-segment affix: token only
+                return;
+            }
+            State<Shape, ShapeNode> s = tokenState;
+            foreach (FeatureStruct fs in GetSegments(insert.Segments.Shape))
+            {
+                s = AddArc(s, fs);
+            }
+            s.Arcs.Add(after);
+
+            string underlying = insert.Segments.Representation;
+            foreach (string variant in _affixSurfaces(underlying))
+            {
+                if (variant == underlying)
+                {
+                    continue; // underlying path already built
+                }
+                Shape vshape;
+                try
+                {
+                    vshape = _table.Segment(variant);
+                }
+                catch (InvalidShapeException)
+                {
+                    continue;
+                }
+                State<Shape, ShapeNode> sv = tokenState;
+                foreach (FeatureStruct fs in GetSegments(vshape))
+                {
+                    sv = AddArc(sv, fs);
+                }
+                sv.Arcs.Add(after);
+            }
         }
 
         /// <summary>Allomorphs of a slot rule — both AffixProcessRule and its realizational sibling.</summary>
@@ -664,16 +716,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         State<Shape, ShapeNode> tokenState = NewState();
                         _tokenOnEntry[tokenState] = affixToken;
                         current.Arcs.Add(tokenState); // epsilon: enter this affix
-                        State<Shape, ShapeNode> s = tokenState;
-                        InsertSegments insert = allomorph.Rhs.OfType<InsertSegments>().FirstOrDefault();
-                        if (insert != null)
-                        {
-                            foreach (FeatureStruct fs in GetSegments(insert.Segments.Shape))
-                            {
-                                s = AddArc(s, fs);
-                            }
-                        }
-                        s.Arcs.Add(after); // epsilon: reconverge after the slot
+                        BuildAffixArcs(tokenState, after, allomorph.Rhs.OfType<InsertSegments>().FirstOrDefault());
                     }
                 }
                 current = after;

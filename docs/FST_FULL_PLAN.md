@@ -121,6 +121,26 @@ FST≠engine → no certify → engine (never wrong).
 **Test.** A rewrite rule altering an affix's surface; show the underlying-only proposer misses it, the
 surface-precompile proposer covers it, verify stays sound.
 
+### Result (shipped — 1a affix surface-precompile, C-internal tier)
+
+`SurfacePhonology.Variants(underlying)` compiles each stratum's synthesis phonological rules (reusing
+HC's `IPhonologicalRule.CompileSynthesisRule`, exactly what `SynthesisStratumRule` runs) and applies
+them to a segment string in isolation, returning the distinct surface forms (always including the
+underlying). `FstTemplateAnalyzer.BuildAffixArcs` builds the affix's segment arcs from the underlying
+form AND each altered surface variant (shared by both affix-arc sites: derivational layers and template
+slots); the default ctor passes an identity variant function so the 0-phonology path is byte-identical.
+
+Verified by `Proposer_CoversPhonologicallyAlteredAffix` (a suffix inserts "t"; an unconditional t→d
+rule makes it surface only as "d", so sag+SUF = "sagt" → "sagd"; the underlying-only proposer builds a
+"t" arc and misses "sagd", the surface-precompile proposer builds the "d" arc and verify confirms it)
+and `SurfacePhonology_AppliesRulesForwardToASegmentString`. Full suite green (101).
+
+**Still 1b (C-boundary):** the isolation tier catches edge- and morpheme-internal alternations but not
+cross-boundary, stem-conditioned ones (the neighbor context is absent). Those surfaces are simply not
+precompiled → the word rides the engine via the parity gate (correct, slower). Over-approximating the
+neighbor (apply rules with each natural-class boundary segment on each side, bounded + capped) is the
+next increment.
+
 ---
 
 ## Point 4 — C-exact (full phonology composition): design only, deferred
@@ -152,11 +172,25 @@ parity gate keeps correct on the engine today.
 
 ## Order of work & status
 
-1. ☐ `CompositeProposer` plumbing (union + dedup + coverage-signal) — established by the first generator.
-2. ☐ Point 3 Reduplication **or** Point 2 Infixation first (most self-contained; establishes plumbing).
-3. ☐ The other of {infix, reduplication}.
-4. ☐ Point 1 affix surface-precompile + C-boundary.
+1. ☑ `CompositeProposer` plumbing (union + dedup + coverage-signal) — established with reduplication.
+2. ☑ Point 3 Reduplication (full-copy generator; strip + recurse + verify).
+3. ☑ Point 2 Infixation (remove + recurse + verify; single-contiguous-infix first cut).
+4. ◑ Point 1 affix surface-precompile (1a C-internal shipped; 1b C-boundary still to do) +
+   bare-root C-internal shipped earlier.
 5. ☑ Point 4 design recorded (deferred, with rationale).
 
 Commit + test after each point; do not batch. Each generator's test must show (a) the FST alone misses
 the construct, (b) the composite covers it, (c) verify still rejects a non-word.
+
+## Summary of what shipped
+
+| Construct | Tier shipped | Mechanism | Residual / deferred |
+|---|---|---|---|
+| Bare-root phonology | C-internal | `BareRootSurfaces` (GenerateWords) + verify-allows-phonology | C-boundary |
+| Affix phonology | C-internal (1a) | `SurfacePhonology` + `BuildAffixArcs` | C-boundary (1b) |
+| Infixation | single contiguous infix | `InfixProposer` (remove + recurse) | templatic multi-slot; altered-surface infix |
+| Reduplication | full copy, one application | `ReduplicationProposer` (strip + recurse) | partial/CV copy; 2+ applications |
+| Cross-boundary opaque phonology | — | — | Point 4 (C-exact composition), design only |
+
+Every "residual / deferred" item is covered correctly today by the engine via the parity gate — the
+only thing deferred is *acceleration*, never correctness.

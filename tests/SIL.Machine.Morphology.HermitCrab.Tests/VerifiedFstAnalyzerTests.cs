@@ -214,6 +214,87 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
     }
 
     [Test]
+    public void SurfacePhonology_AppliesRulesForwardToASegmentString()
+    {
+        // The forward helper applies synthesis phonology to a segment string in isolation: an
+        // unconditional t->d rule means "t" surfaces as "d" (and the underlying form is always kept).
+        var tToD = new RewriteRule
+        {
+            Name = "t_to_d",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+        };
+        tToD.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
+        );
+        Surface.PhonologicalRules.Add(tToD);
+        try
+        {
+            var sp = new SurfacePhonology(Language, new Morpher(TraceManager, Language));
+            Assert.That(sp.Variants("t"), Does.Contain("d"), "'t' must surface as 'd'");
+            Assert.That(sp.Variants("t"), Does.Contain("t"), "the underlying form is always included");
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(tToD);
+        }
+    }
+
+    [Test]
+    public void Proposer_CoversPhonologicallyAlteredAffix()
+    {
+        // Point 1 (affix surface-precompile): a suffix inserts "t", but an unconditional t->d rule means
+        // it can only surface as "d" — so "sag"+SUF = "sagt" -> "sagd". The underlying-only proposer
+        // builds a "t" affix arc and misses "sagd"; the surface-precompile proposer builds the "d" arc.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var tSuffix = new AffixProcessRule
+        {
+            Name = "t_suffix",
+            Gloss = "TSF",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        tSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table1, "t") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(tSuffix);
+        var tToD = new RewriteRule
+        {
+            Name = "t_to_d",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+        };
+        tToD.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
+        );
+        Surface.PhonologicalRules.Add(tToD);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            Assert.That(search.AnalyzeWord("sagd").Any(), Is.True, "precondition: 'sagd' = sag+TSF (t->d)");
+
+            Assert.That(
+                new FstTemplateAnalyzer(Language).AnalyzeWord("sagd"),
+                Is.Empty,
+                "baseline: the underlying-only proposer builds a 't' affix arc and misses the 'd' surface"
+            );
+
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(TraceManager, Language);
+            AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "sagd" });
+            Assert.That(cmp.IsComplete, Is.True, "altered affix not covered: " + cmp.Format());
+
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must still yield nothing");
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(tToD);
+            Morphophonemic.MorphologicalRules.Remove(tSuffix);
+        }
+    }
+
+    [Test]
     public void Composite_CoversInfixation_WhereFstAloneMisses()
     {
         // Point 2: infixation (affix inserted inside the stem). The FST recognizes but does not build
