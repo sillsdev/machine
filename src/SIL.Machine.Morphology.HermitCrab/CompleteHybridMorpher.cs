@@ -45,7 +45,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             var pool = new MorpherPool(() => new Morpher(new TraceManager(), language));
             var fst = new FstTemplateAnalyzer(language, new Morpher(traceManager, language));
-            CompositeProposer proposer = CompositeProposer.ForLanguage(language, new Morpher(traceManager, language), fst);
+            CompositeProposer proposer = CompositeProposer.ForLanguage(language, fst);
             var verified = new VerifiedFstAnalyzer(proposer, pool);
             var engine = new Morpher(traceManager, language);
             bool parity = FstVerification.Compare(engine, verified, certificationCorpus).IsComplete;

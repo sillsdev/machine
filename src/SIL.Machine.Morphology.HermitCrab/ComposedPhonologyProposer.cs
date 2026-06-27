@@ -20,6 +20,11 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// (analysis is non-deterministic), which the unification walk matches against every compatible arc;
     /// verify prunes the spurious ones, so it stays a sound superset. Complete for bounded (non-cyclic)
     /// phonology; an unbounded self-feeding cycle is not a regular relation and simply will not certify.
+    ///
+    /// <b>Thread-safe.</b> The inverse cascade is compiled once against a private <see cref="Morpher"/>
+    /// with its own <see cref="TraceManager"/> (not the factory's), and each <see cref="AnalyzeWord"/>
+    /// applies it to a fresh local <see cref="Word"/> — no per-call mutation of shared state — so the
+    /// composite stays safe on the parallel path <see cref="CompleteHybridMorpher"/> advertises.
     /// </summary>
     public class ComposedPhonologyProposer : IConstructProposer
     {
@@ -30,11 +35,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly LinearRuleCascade<Word, ShapeNode> _inverse;
         private readonly bool _hasPhonology;
 
-        public ComposedPhonologyProposer(Language language, Morpher morpher, FstTemplateAnalyzer fst)
+        public ComposedPhonologyProposer(Language language, FstTemplateAnalyzer fst)
         {
             _fst = fst;
             _surfaceStratum = language.SurfaceStratum;
             _table = language.SurfaceStratum.CharacterDefinitionTable;
+            // Compile against a private Morpher with its own TraceManager — the analysis rules read
+            // _morpher.TraceManager (and the morpher's selectors), so this proposer must not share the
+            // factory's morpher (mirrors MorpherPool giving each rented morpher its own TraceManager).
+            var morpher = new Morpher(new TraceManager(), language);
             // Inverse order mirrors AnalysisLanguageRule/AnalysisStratumRule: strata surface→inner, and
             // within each stratum the synthesis rules are un-applied in reverse application order.
             var rules = new List<IRule<Word, ShapeNode>>();

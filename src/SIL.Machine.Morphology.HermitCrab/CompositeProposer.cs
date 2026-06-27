@@ -51,13 +51,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// (it holds no rules and yields nothing — the phonology proposer short-circuits when the grammar
         /// has no phonological rules), so this adds near-zero overhead and does not change behavior; that
         /// is why the factories wire it unconditionally rather than as an opt-in.</summary>
-        public static CompositeProposer ForLanguage(Language language, Morpher morpher, FstTemplateAnalyzer fst)
+        public static CompositeProposer ForLanguage(Language language, FstTemplateAnalyzer fst)
         {
             return new CompositeProposer(
                 fst,
                 new ReduplicationProposer(language, fst),
                 new InfixProposer(language, fst),
-                new ComposedPhonologyProposer(language, morpher, fst)
+                new ComposedPhonologyProposer(language, fst)
             );
         }
 

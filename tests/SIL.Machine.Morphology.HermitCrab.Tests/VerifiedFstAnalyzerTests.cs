@@ -212,7 +212,7 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
             var fst = new FstTemplateAnalyzer(Language, new Morpher(TraceManager, Language));
             Assert.That(fst.AnalyzeWord("sakt"), Is.Empty, "baseline: per-morpheme precompile misses cross-boundary 'sakt'");
 
-            var composed = new ComposedPhonologyProposer(Language, new Morpher(TraceManager, Language), fst);
+            var composed = new ComposedPhonologyProposer(Language, fst);
             var pool = new MorpherPool(() => new Morpher(new TraceManager(), Language));
             IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(new CompositeProposer(fst, composed), pool);
             AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "sakt" });
@@ -479,6 +479,61 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
         finally
         {
+            Morphophonemic.MorphologicalRules.Remove(redup);
+        }
+    }
+
+    [Test]
+    public void Composite_WithPhonologyAndReduplication_ParallelMatchesSequential()
+    {
+        // Thread-safety on the concurrent path: the composite now runs HC's phonology inverse
+        // (ComposedPhonologyProposer) and the reduplication generator at analyze time. Drive both
+        // through the production factory in parallel and assert no divergence / no exceptions.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule
+        {
+            Name = "redup",
+            Gloss = "RED",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+        var tToD = new RewriteRule
+        {
+            Name = "t_to_d",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+        };
+        tToD.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
+        );
+        Surface.PhonologicalRules.Add(tToD);
+        try
+        {
+            var complete = CompleteHybridMorpher.FromLanguage(TraceManager, Language, new[] { "sag", "dad" });
+            var corpus = new List<string>();
+            for (int i = 0; i < 50; i++)
+            {
+                corpus.AddRange(new[] { "sag", "sagsag", "dad", "daddad", "sad", "zzz" });
+            }
+            Dictionary<string, string> sequential = corpus.Distinct().ToDictionary(w => w, w => SigSet(complete, w));
+            var parallel = new ConcurrentDictionary<string, string>();
+            Parallel.ForEach(corpus, w => parallel[w] = SigSet(complete, w));
+            Assert.That(
+                corpus.Distinct().All(w => parallel[w] == sequential[w]),
+                Is.True,
+                "concurrent analyses diverged from sequential (composite phonology/redup not thread-safe)"
+            );
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(tToD);
             Morphophonemic.MorphologicalRules.Remove(redup);
         }
     }
