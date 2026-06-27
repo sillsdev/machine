@@ -31,6 +31,8 @@ namespace SIL.Machine.Rules
             // DAG without changing the output set. Not valid when rule history matters
             // (!MultipleApplication), so the memo is only used in multiApp mode.
             HashSet<TData> expanded = MultipleApplication ? new HashSet<TData>(Comparer) : null;
+            // Seed with the initial input so a cycle that returns to it (A->B->A) doesn't re-expand it.
+            expanded?.Add(input);
             ApplyRules(input, !MultipleApplication ? new HashSet<int>() : null, output, expanded);
             return output;
         }

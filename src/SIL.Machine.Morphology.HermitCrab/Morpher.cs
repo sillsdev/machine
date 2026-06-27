@@ -155,7 +155,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
-            IList<Word> origAnalyses = guessRoot ? analyses.ToList() : null;
+            // analyses is already materialized and Synthesize doesn't mutate it, so no copy needed.
+            IList<Word> origAnalyses = guessRoot ? analyses : null;
             long synthesisStart = MorpherStatistics.Enabled ? Stopwatch.GetTimestamp() : 0;
             IList<Word> syntheses = Synthesize(word, analyses).ToList();
             if (MorpherStatistics.Enabled)
