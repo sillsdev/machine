@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SIL.Machine.Morphology.HermitCrab</RootNamespace>
+    <AssemblyName>SIL.Machine.Morphology.HermitCrab.Server</AssemblyName>
+    <Description>Runs the HermitCrab parser in a separate, Server-GC worker process, with a reusable client that drives it. Lets a host application get Server-GC throughput for parsing without changing its own GC mode.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+  </ItemGroup>
+
+</Project>
