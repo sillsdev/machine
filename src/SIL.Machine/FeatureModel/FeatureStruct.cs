@@ -51,15 +51,8 @@ namespace SIL.Machine.FeatureModel
             return new FeatureStructBuilder(featSys, fs.Clone(), true);
         }
 
-        private IDBearerDictionary<Feature, FeatureValue> _definite;
+        private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
         private int? _hashCode;
-
-        // Copy-on-write: a clone of a FROZEN feature struct borrows the source's (immutable)
-        // backing dictionary instead of deep-copying it. _shared is true until the first
-        // mutation inflates a private copy; _sharedSource is the frozen FS we borrowed from
-        // (needed to seed the re-entrancy map on inflate so the deep copy matches a normal clone).
-        private bool _shared;
-        private FeatureStruct _sharedSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureStruct"/> class.
@@ -83,14 +76,6 @@ namespace SIL.Machine.FeatureModel
             copies[other] = this;
             foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
                 _definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
-        }
-
-        // Copy-on-write clone of a frozen source: share its immutable backing; inflate on write.
-        private FeatureStruct(FeatureStruct frozenSource, bool sharedClone)
-        {
-            _definite = frozenSource._definite;
-            _shared = sharedClone;
-            _sharedSource = frozenSource;
         }
 
         /// <summary>
@@ -187,7 +172,7 @@ namespace SIL.Machine.FeatureModel
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            EnsureWritable();
+            CheckFrozen();
             _definite[feature] = value;
         }
 
@@ -198,7 +183,7 @@ namespace SIL.Machine.FeatureModel
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            EnsureWritable();
+            CheckFrozen();
             Feature lastFeature;
             FeatureStruct lastFS;
             if (FollowPath(path, out lastFeature, out lastFS))
@@ -212,7 +197,7 @@ namespace SIL.Machine.FeatureModel
             if (feature == null)
                 throw new ArgumentNullException("feature");
 
-            EnsureWritable();
+            CheckFrozen();
             _definite.Remove(feature);
         }
 
@@ -221,7 +206,7 @@ namespace SIL.Machine.FeatureModel
             if (path == null)
                 throw new ArgumentNullException("path");
 
-            EnsureWritable();
+            CheckFrozen();
             Feature lastFeature;
             FeatureStruct lastFS;
             if (FollowPath(path, out lastFeature, out lastFS))
@@ -232,7 +217,7 @@ namespace SIL.Machine.FeatureModel
 
         public void ReplaceVariables(VariableBindings varBindings)
         {
-            EnsureWritable();
+            CheckFrozen();
             ReplaceVariables(varBindings, new HashSet<FeatureStruct>());
         }
 
@@ -269,7 +254,7 @@ namespace SIL.Machine.FeatureModel
 
         public void RemoveVariables()
         {
-            EnsureWritable();
+            CheckFrozen();
             RemoveVariables(new HashSet<FeatureStruct>());
         }
 
@@ -308,7 +293,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            EnsureWritable();
+            CheckFrozen();
             PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
         }
 
@@ -392,7 +377,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            EnsureWritable();
+            CheckFrozen();
             UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -438,7 +423,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            EnsureWritable();
+            CheckFrozen();
             AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -492,7 +477,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            EnsureWritable();
+            CheckFrozen();
             SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -528,7 +513,7 @@ namespace SIL.Machine.FeatureModel
 
         public void Clear()
         {
-            EnsureWritable();
+            CheckFrozen();
             _definite.Clear();
         }
 
@@ -1114,10 +1099,6 @@ namespace SIL.Machine.FeatureModel
 
         public new FeatureStruct Clone()
         {
-            // A clone of a frozen FS borrows its immutable backing (copy-on-write); a clone of an
-            // unfrozen FS must be an independent deep copy, since the caller may mutate both.
-            if (IsFrozen)
-                return new FeatureStruct(this, sharedClone: true);
             return new FeatureStruct(this);
         }
 
@@ -1207,22 +1188,10 @@ namespace SIL.Machine.FeatureModel
 
         public bool IsFrozen { get; private set; }
 
-        // Guards every mutation. Frozen structs stay immutable (throw). A copy-on-write shell
-        // that is still borrowing a frozen backing inflates a private deep copy first, so neither
-        // this struct's mutation nor any recursion into its children can touch shared frozen data.
-        private void EnsureWritable()
+        private void CheckFrozen()
         {
             if (IsFrozen)
                 throw new InvalidOperationException("The feature structure is immutable.");
-            if (!_shared)
-                return;
-            var copies = new Dictionary<FeatureValue, FeatureValue> { [_sharedSource] = this };
-            var owned = new IDBearerDictionary<Feature, FeatureValue>();
-            foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
-                owned[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
-            _definite = owned;
-            _shared = false;
-            _sharedSource = null;
         }
 
         public void Freeze()
