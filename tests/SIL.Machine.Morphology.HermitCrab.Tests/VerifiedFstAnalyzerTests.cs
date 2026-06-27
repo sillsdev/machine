@@ -346,6 +346,47 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void CompleteHybrid_WiresGenerators_ReduplicatingGrammarCertifiesAndMatchesEngine()
+    {
+        // Integration: the production factory must build the CompositeProposer (FST + generators), so a
+        // reduplicating grammar certifies (the generator covers the construct the FST skips) and the
+        // fast path matches the engine — not just the hand-built composite in the unit tests.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule
+        {
+            Name = "redup",
+            Gloss = "RED",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(redup);
+        try
+        {
+            string[] corpus = { "sag", "sagsag", "dat" }; // bare, reduplicated, homograph
+            var search = new Morpher(TraceManager, Language);
+            var complete = CompleteHybridMorpher.FromLanguage(TraceManager, Language, corpus);
+            Assert.That(complete.Certified, Is.True, "the reduplicating grammar must certify once generators are wired");
+            foreach (string word in corpus.Append("zzz"))
+            {
+                var fast = new HashSet<string>(complete.AnalyzeWord(word).Select(Sig));
+                var oracle = new HashSet<string>(search.AnalyzeWord(word).Select(Sig));
+                Assert.That(fast.SetEquals(oracle), Is.True, $"fast path disagrees with the engine for {word}");
+            }
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(redup);
+        }
+    }
+
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 

@@ -194,3 +194,19 @@ the construct, (b) the composite covers it, (c) verify still rejects a non-word.
 
 Every "residual / deferred" item is covered correctly today by the engine via the parity gate — the
 only thing deferred is *acceleration*, never correctness.
+
+## Production wiring
+
+Both factories — `CompleteHybridMorpher.FromLanguage` and `CachingMorphologicalAnalyzer.FromLanguage` —
+build `CompositeProposer.ForLanguage(language, fst)` (the FST plus the reduplication and infix
+generators) and certify on the *composite's* `CoversAllConstructs`. For a grammar with no
+reduplication/infixation the generators hold no rules and yield nothing, so this is near-zero overhead
+and byte-identical behavior; for a reduplicating/infixing grammar it is what lets the grammar certify
+(the generator covers the construct the FST skips) instead of falling entirely to the engine. Covered by
+`CompleteHybrid_WiresGenerators_ReduplicatingGrammarCertifiesAndMatchesEngine`.
+
+**Certification caveat (extended).** A certified grammar skips the engine entirely, so correctness on
+unseen words rests on the proposer being complete on the certification corpus. With the generators wired
+this now extends to reduplication/infix completeness as well — same empirical-certification property as
+before, just over a larger construct set. Choose a certification corpus that exercises the grammar's
+reduplication/infix patterns.
