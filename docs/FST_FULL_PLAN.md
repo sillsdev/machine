@@ -1,0 +1,162 @@
+# FST_FULL_PLAN — closing the coverage gap (phonology, infixation, reduplication)
+
+Implementation plan for expanding the propose-and-verify FST accelerator to cover **all attested
+phonology**, **all infixation**, and **bounded reduplication**. Companion to
+`FST_FULL_COVERAGE_PLAN.md` (the construct audit) and `HERMITCRAB_FST_PLAN.md` (the spine design).
+
+## The principle that makes this safe
+
+The propose-and-verify split puts **all correctness in verify + certification, none in the proposer**.
+The proposer's only job is to emit a *sound superset* of candidates fast; `VerifiedFstAnalyzer` re-runs
+HC (real analysis + synthesis, real phonology) on each candidate and discards any HC does not confirm;
+the empirical parity gate (`FstVerification.Compare`) certifies a grammar only when FST≡engine on the
+corpus.
+
+Consequence: **expansion can never produce a wrong answer.** A new candidate generator that
+under-generates simply accelerates fewer words (parity gate → engine fallback); one that over-generates
+has its junk pruned by verify. Correctness is invariant; only the *acceleration ratio* moves. So we can
+add coverage aggressively.
+
+This reframes "can an FST represent X?" into **"can we cheaply enumerate a superset of candidates for X
+that verify then prunes?"** — which decouples coverage from FST-representability and lets non-regular
+constructs (full reduplication) be handled *beside* the FST by bounded generators feeding the same gate.
+
+## Architecture: a composite of candidate generators
+
+```
+                    ┌─────────────────────────────────────────┐
+   surface word ───▶│ CompositeProposer (union + dedup)         │
+                    │   ├─ FstTemplateAnalyzer  (regular bulk)  │
+                    │   ├─ ReduplicationProposer (strip + recurse)
+                    │   └─ InfixProposer        (remove + recurse)
+                    └───────────────┬───────────────────────────┘
+                                    │  candidate (root+rules) sets
+                                    ▼
+                    ┌─────────────────────────────────────────┐
+                    │ VerifiedFstAnalyzer  (FstReplay verify)   │  ── discards anything HC won't confirm
+                    └───────────────┬───────────────────────────┘
+                                    ▼  genuine HC analyses
+```
+
+`VerifiedFstAnalyzer` already wraps an `IMorphologicalAnalyzer` proposer, so the only new plumbing is a
+`CompositeProposer : IMorphologicalAnalyzer` that unions + dedups candidates from several generators.
+
+**Three invariants every generator must respect** (learned before building, not after):
+
+1. **Recurse the residual through the FST proposer — never propose a flat root.** A reduplicated or
+   infixed surface can have an *inflected/affixed* base: `"wakaswakas"` is REDUP of inflected `"wakas"`,
+   not bare `"waka"`. So a generator strips/removes its own material, then calls the FST proposer on the
+   remainder, and wraps each returned analysis with its morpheme. Terminates: the residual is strictly
+   shorter, reduplication bounded to 1–2 copies, infixation to 1 site per pass.
+2. **Dedup before verify.** Two generators (or a generator and the FST) can propose the same morpheme
+   set → verify would confirm it twice → duplicate analyses. `CompositeProposer` dedups by candidate
+   signature before the gate.
+3. **The coverage signal must reflect the composite.** `FstTemplateAnalyzer.CoversAllConstructs` trips
+   `false` on a redup/infix slot. Once a sibling generator covers that construct, certification must see
+   the *composite's* coverage, not just the FST's — else the grammar won't certify and the now-covered
+   words stay on the engine. The parity gate keeps results correct regardless; this only governs whether
+   acceleration kicks in.
+
+---
+
+## Point 2 — Infixation (regular; in-scope)
+
+Infixation splits the root and inserts the affix inside it (Tagalog `-um-`: sulat → s‹um›ulat). It is a
+regular operation; the proposer already *recognizes* infix slots (`MorphTokenCodec.ClassifyOp → Infix`)
+but skips them (`_hasUnbuiltConstructs = true`).
+
+**Generator (`InfixProposer`).** For each infix rule and each candidate insertion site in the surface:
+remove the infix's surface segments at that site, recurse the remainder through the FST proposer, wrap
+each analysis with the infix morpheme. Sound-superset shortcut: try every segment boundary the rule's
+partition pattern allows (or over-approximate to all boundaries) — verify prunes the wrong splits.
+`O(surface-length × infixes)` candidates — bounded. Composed with surface-precompile it also handles
+infixes that trigger phonology.
+
+**Soundness.** Verify re-synthesizes `base + infix` and surface-matches; a wrong split won't confirm.
+**Test.** A grammar with one infix rule; show the FST alone misses the infixed surface, `InfixProposer`
+covers it, verify rejects a non-word.
+
+---
+
+## Point 3 — Reduplication (non-regular; handled beside the FST)
+
+Full reduplication (copy the whole base, `ww`) is the one provably non-regular construct — an FST cannot
+represent it. It doesn't need to: a bounded **string-repetition scanner** contributes candidates to the
+same verify gate.
+
+**Generator (`ReduplicationProposer`).** Scan the surface for an adjacent repeated substring matching a
+reduplication template (full-copy `XX`; partial CV-copy as a later refinement). For each detected
+repetition: strip one copy, recurse the remainder through the FST proposer, wrap each analysis with the
+reduplication morpheme. **Bound to 1–2 applications** (the "once or twice") — finite, tiny candidate set.
+`O(n²)` scan per word, trivial.
+
+**Soundness.** A coincidental repeat (`"murmur"` that is not actually reduplicated) is proposed but
+pruned because HC synthesis of `base + REDUP` won't reproduce it. **"Well enough for 99.9%":** the 1–2
+bound covers essentially all attested reduplication; triple/unboundedly-interacting reduplication
+doesn't certify and rides the engine (still correct).
+**Test.** A grammar with a full-reduplication rule; show the FST alone misses `"wakawaka"`, the composite
+covers it (including an inflected reduplicant via the recursion), verify rejects a non-reduplicated word.
+
+---
+
+## Point 1 — All phonology: affix surface-precompile + C-boundary (in-scope, incremental)
+
+The shipped C-internal tier handles **bare-root** alternation via `GenerateWords`. Two extensions:
+
+**1a. Affix surface-precompile.** Build affix arcs from each affix allomorph's *surface* segments, not
+only the underlying `InsertSegments`. Forward-application helper: compile the stratum's
+`PhonologicalRules` via `prule.CompileSynthesisRule(morpher)` into a `LinearRuleCascade` (exactly what
+`SynthesisStratumRule._prulesRule` does), wrap the affix segments in a `Word`, `Apply`, read the surface
+shape(s). An affix's surface depends on stem context, so this is fiddlier than the bare-root case —
+**validate on one minimal affix-triggered alternation first**, then generalize.
+
+**1b. C-boundary context.** Over-approximate the neighbor: apply rules with each natural-class boundary
+segment on each side, so boundary-conditioned variants (assimilation across a seam) are included. Bound
+the variant count per morpheme (cap + drop-to-underlying fallback) so a long-distance harmony grammar
+degrades rather than explodes.
+
+**Soundness.** Underlying arcs are kept (union), so the 0-phonology path is unchanged; the token is
+always the underlying morpheme; verify confirms with real phonology; a missed variant shows up as
+FST≠engine → no certify → engine (never wrong).
+**Test.** A rewrite rule altering an affix's surface; show the underlying-only proposer misses it, the
+surface-precompile proposer covers it, verify stays sound.
+
+---
+
+## Point 4 — C-exact (full phonology composition): design only, deferred
+
+**Goal.** Compose the morphotactic FST with the full phonology transducer (Kaplan & Kay: bounded rewrite
+rules are regular relations, closed under composition), giving complete coverage of all *attested*
+(non-cyclic) phonology — including the cross-boundary opaque interactions the per-morpheme C-boundary
+tier can miss.
+
+**Concrete design.** (1) Re-architect token emission from the `_tokenOnEntry` side-table into FST
+**output labels**, so the proposer is a genuine transducer surface→token-string. (2) Build the phonology
+transducer by composing each stratum's compiled phonological rules (the in-repo `Fst.Compose` exists,
+line ~1887). (3) Compose `phonology⁻¹ ∘ morphotactics` so the machine maps surface directly to the
+underlying token string.
+
+**Why deferred (engineering-correct, not a dodge).**
+- It is a **redesign of the working spine** (token-emission → transducer outputs), high-risk relative to
+  its marginal value.
+- The only thing it buys over Point 1's C-boundary tier is **cross-boundary opaque interaction**, which
+  is *rare in attested grammars and already produces correct answers via engine fallback* (the parity
+  gate refuses to certify, so those words ride the slow path — slower, never wrong).
+- **Point 1 (C-boundary) subsumes essentially all of Point 4's attested-language value.** Points 1 and 4
+  are the same axis (phonology coverage) at two tiers; doing 1 well delivers the practical payoff.
+
+So Point 4 ships as this design + rationale; the residual it would accelerate is exactly the set the
+parity gate keeps correct on the engine today.
+
+---
+
+## Order of work & status
+
+1. ☐ `CompositeProposer` plumbing (union + dedup + coverage-signal) — established by the first generator.
+2. ☐ Point 3 Reduplication **or** Point 2 Infixation first (most self-contained; establishes plumbing).
+3. ☐ The other of {infix, reduplication}.
+4. ☐ Point 1 affix surface-precompile + C-boundary.
+5. ☑ Point 4 design recorded (deferred, with rationale).
+
+Commit + test after each point; do not batch. Each generator's test must show (a) the FST alone misses
+the construct, (b) the composite covers it, (c) verify still rejects a non-word.
