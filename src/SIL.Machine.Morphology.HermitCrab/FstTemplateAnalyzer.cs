@@ -26,8 +26,11 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// Tokens are accumulated along the DFS path (a state carries the morpheme token emitted on
     /// entry). Prefix slots surface in reverse template order (slot 0 applies first → innermost),
     /// suffix slots in template order. A <paramref name="maxStates"/> budget (the §10 knob) aborts
-    /// before a blowup. Phonology and reduplication/infix slots are out of scope — it throws on a
-    /// non-prefix/suffix slot rather than silently mis-parsing.
+    /// before a blowup. Bounded phonology is precompiled into the arcs (surface-allomorph precompile,
+    /// C-internal tier — see <see cref="SurfacePhonology"/>); a construct the FST cannot model
+    /// (reduplication/infix/circumfix/process) is skipped and its <see cref="MorphOp"/> recorded in
+    /// <see cref="UncoveredOps"/> so the grammar does not certify unless a sibling generator (see
+    /// <see cref="CompositeProposer"/>) covers it — it degrades gracefully, never mis-parses.
     /// </summary>
     public class FstTemplateAnalyzer : IMorphologicalAnalyzer
     {
@@ -738,7 +741,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>Build a root chain from a surface STRING (a phonologically-altered realization),
         /// segmenting it via the table; the chain ends in the underlying root morpheme's token. Returns
         /// null if the surface has a segment outside the table.</summary>
-        private State<Shape, ShapeNode> BuildRootChainFromSurface(State<Shape, ShapeNode> from, string surface, Morpheme morpheme)
+        private State<Shape, ShapeNode> BuildRootChainFromSurface(
+            State<Shape, ShapeNode> from,
+            string surface,
+            Morpheme morpheme
+        )
         {
             Shape shape;
             try
