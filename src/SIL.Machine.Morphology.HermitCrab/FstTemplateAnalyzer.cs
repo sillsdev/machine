@@ -282,7 +282,19 @@ namespace SIL.Machine.Morphology.HermitCrab
                 // A word with a phoneme outside this table cannot be a surface form here.
                 return Enumerable.Empty<WordAnalysis>();
             }
+            return AnalyzeShape(shape);
+        }
 
+        /// <summary>
+        /// Walk the morphotactic FST over the segments of an already-built <paramref name="shape"/>.
+        /// Used both by <see cref="AnalyzeWord(string)"/> (segmenting the surface) and by
+        /// <see cref="ComposedPhonologyProposer"/>, which feeds an <i>underlying</i> shape obtained by
+        /// un-applying phonology — letting the underlying arcs match cross-boundary surfaces the
+        /// per-morpheme precompile misses. Segments are matched by unification, so an underspecified
+        /// node (from analysis) matches every arc it unifies with; verify prunes the spurious ones.
+        /// </summary>
+        internal IEnumerable<WordAnalysis> AnalyzeShape(Shape shape)
+        {
             var segments = new List<FeatureStruct>();
             for (
                 ShapeNode node = shape.GetFirst(n => _filter(n.Annotation));

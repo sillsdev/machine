@@ -46,15 +46,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>The standard production proposer: the FST plus the reduplication and infix
-        /// generators. For a grammar with no reduplication/infixation the generators are inert (they
-        /// hold no rules and yield nothing), so this adds near-zero overhead and does not change
-        /// behavior — which is why the factories wire it unconditionally rather than as an opt-in.</summary>
-        public static CompositeProposer ForLanguage(Language language, FstTemplateAnalyzer fst)
+        /// generators and the phonology-composition proposer (Point 4, all bounded phonology including
+        /// cross-boundary). For a grammar without a given construct the corresponding generator is inert
+        /// (it holds no rules and yields nothing — the phonology proposer short-circuits when the grammar
+        /// has no phonological rules), so this adds near-zero overhead and does not change behavior; that
+        /// is why the factories wire it unconditionally rather than as an opt-in.</summary>
+        public static CompositeProposer ForLanguage(Language language, Morpher morpher, FstTemplateAnalyzer fst)
         {
             return new CompositeProposer(
                 fst,
                 new ReduplicationProposer(language, fst),
-                new InfixProposer(language, fst)
+                new InfixProposer(language, fst),
+                new ComposedPhonologyProposer(language, morpher, fst)
             );
         }
 

@@ -135,38 +135,46 @@ rule makes it surface only as "d", so sag+SUF = "sagt" → "sagd"; the underlyin
 "t" arc and misses "sagd", the surface-precompile proposer builds the "d" arc and verify confirms it)
 and `SurfacePhonology_AppliesRulesForwardToASegmentString`. Full suite green (101).
 
-**Still 1b (C-boundary):** the isolation tier catches edge- and morpheme-internal alternations but not
-cross-boundary, stem-conditioned ones (the neighbor context is absent). Those surfaces are simply not
-precompiled → the word rides the engine via the parity gate (correct, slower). Over-approximating the
-neighbor (apply rules with each natural-class boundary segment on each side, bounded + capped) is the
-next increment.
+### Result (shipped — 1b C-boundary)
+
+`SurfacePhonology.Variants` now also probes each surface-alphabet segment as a left/right neighbor: it
+forward-applies phonology to `neighbor·morpheme` / `morpheme·neighbor` and, when the rule is
+length-preserving (output node count = morpheme + 1), reads back the morpheme's own surface nodes.
+Bounded by alphabet size × 2; a length-changing context is skipped (no reliable portion) so it stays a
+sound superset. This catches an affix whose *own* surface is conditioned by a neighbor across the seam
+(e.g. a suffix that voices after the root-final segment). Verified by
+`SurfacePhonology_BoundaryTier_RecoversAffixSurfaceFromNeighborContext` (a "t" suffix that voices to "d"
+only after "g": isolation keeps "t", the boundary tier recovers "d"). Full suite green (104).
+
+What the precompile still cannot see — a *neighbor's* surface changing (e.g. a root devoicing before an
+affix) or any longer-distance interaction — is covered completely by Point 4 below.
 
 ---
 
-## Point 4 — C-exact (full phonology composition): design only, deferred
+## Point 4 — C-exact: full phonology via composition with HC's phonology inverse (shipped)
 
-**Goal.** Compose the morphotactic FST with the full phonology transducer (Kaplan & Kay: bounded rewrite
-rules are regular relations, closed under composition), giving complete coverage of all *attested*
-(non-cyclic) phonology — including the cross-boundary opaque interactions the per-morpheme C-boundary
-tier can miss.
+**Goal.** Cover *all* bounded phonology — including the cross-boundary, opaque, stem-conditioned
+interactions the per-morpheme precompile (Point 1) cannot see.
 
-**Concrete design.** (1) Re-architect token emission from the `_tokenOnEntry` side-table into FST
-**output labels**, so the proposer is a genuine transducer surface→token-string. (2) Build the phonology
-transducer by composing each stratum's compiled phonological rules (the in-repo `Fst.Compose` exists,
-line ~1887). (3) Compose `phonology⁻¹ ∘ morphotactics` so the machine maps surface directly to the
-underlying token string.
+**What shipped.** `ComposedPhonologyProposer` composes **HC's phonology inverse with the morphotactic
+FST**: it un-applies the grammar's phonological rules to the surface — reusing each stratum's
+`IPhonologicalRule.CompileAnalysisRule`, exactly the rules `AnalysisStratumRule` runs (strata
+surface→inner, rules reversed within a stratum) — to recover the underlying form, then walks the
+underlying-arc FST on it (`FstTemplateAnalyzer.AnalyzeShape`). That is literally phonology⁻¹ ∘
+morphotactics. Because the inverse is applied to the *assembled* surface, it sees cross-boundary context
+the per-morpheme tiers cannot. The un-applied shape carries under-specified nodes (analysis is
+non-deterministic) which the unification walk matches against every compatible arc; verify prunes the
+spurious ones, so it is a sound superset. Complete for bounded (non-cyclic) phonology; an unbounded
+self-feeding cycle is not a regular relation and simply will not certify.
 
-**Why deferred (engineering-correct, not a dodge).**
-- It is a **redesign of the working spine** (token-emission → transducer outputs), high-risk relative to
-  its marginal value.
-- The only thing it buys over Point 1's C-boundary tier is **cross-boundary opaque interaction**, which
-  is *rare in attested grammars and already produces correct answers via engine fallback* (the parity
-  gate refuses to certify, so those words ride the slow path — slower, never wrong).
-- **Point 1 (C-boundary) subsumes essentially all of Point 4's attested-language value.** Points 1 and 4
-  are the same axis (phonology coverage) at two tiers; doing 1 well delivers the practical payoff.
-
-So Point 4 ships as this design + rationale; the residual it would accelerate is exactly the set the
-parity gate keeps correct on the engine today.
+**Why this form, not FST∘FST composition.** The morphotactic proposer accumulates tokens in a side-table
+(`_tokenOnEntry`), not transducer outputs, so a literal `Fst.Compose` would require re-architecting the
+spine. Composing HC's *existing* phonology inverse instead reuses the engine's real, tested phonology
+(no reimplementation) and reaches the same coverage. Wired into `CompositeProposer.ForLanguage` (inert
+when the grammar has no phonological rules — it short-circuits). Verified by
+`ComposedPhonology_CoversCrossBoundaryAlternation_WherePrecompileMisses` (a root-final "g"
+devoices to "k" before a suffixal "t" — "sag"+SUF = "sagt" → "sakt"; the per-morpheme precompile misses
+"sakt", composition recovers it, verify confirms, a non-word still yields nothing).
 
 ---
 
@@ -175,25 +183,29 @@ parity gate keeps correct on the engine today.
 1. ☑ `CompositeProposer` plumbing (union + dedup + coverage-signal) — established with reduplication.
 2. ☑ Point 3 Reduplication (full-copy generator; strip + recurse + verify).
 3. ☑ Point 2 Infixation (remove + recurse + verify; single-contiguous-infix first cut).
-4. ◑ Point 1 affix surface-precompile (1a C-internal shipped; 1b C-boundary still to do) +
-   bare-root C-internal shipped earlier.
-5. ☑ Point 4 design recorded (deferred, with rationale).
+4. ☑ Point 1 phonology precompile — bare-root C-internal, affix C-internal (1a) and C-boundary (1b).
+5. ☑ Point 4 C-exact — `ComposedPhonologyProposer` (phonology⁻¹ ∘ morphotactics); covers all bounded
+   phonology including cross-boundary.
 
-Commit + test after each point; do not batch. Each generator's test must show (a) the FST alone misses
-the construct, (b) the composite covers it, (c) verify still rejects a non-word.
+All four wired into `CompositeProposer.ForLanguage`, which both production factories
+(`CompleteHybridMorpher`, `CachingMorphologicalAnalyzer`) build and certify on. Commit + test after each
+point; each construct test shows (a) the FST alone misses it, (b) the composite covers it, (c) verify
+still rejects a non-word.
 
 ## Summary of what shipped
 
-| Construct | Tier shipped | Mechanism | Residual / deferred |
+| Construct | Coverage | Mechanism | Residual |
 |---|---|---|---|
-| Bare-root phonology | C-internal | `BareRootSurfaces` (GenerateWords) + verify-allows-phonology | C-boundary |
-| Affix phonology | C-internal (1a) | `SurfacePhonology` + `BuildAffixArcs` | C-boundary (1b) |
-| Infixation | single contiguous infix | `InfixProposer` (remove + recurse) | templatic multi-slot; altered-surface infix |
+| Bare-root phonology | C-internal | `BareRootSurfaces` (GenerateWords) + verify-allows-phonology | — |
+| Affix phonology | C-internal + C-boundary | `SurfacePhonology` (1a isolation + 1b neighbor) + `BuildAffixArcs` | — |
+| **All phonology** (incl. cross-boundary, opaque) | **complete (bounded)** | `ComposedPhonologyProposer` — phonology⁻¹ ∘ morphotactics | unbounded self-feeding cycle (not regular) |
+| Infixation | single contiguous infix | `InfixProposer` (remove + recurse) | templatic multi-slot; phonologically-altered infix surface |
 | Reduplication | full copy, one application | `ReduplicationProposer` (strip + recurse) | partial/CV copy; 2+ applications |
-| Cross-boundary opaque phonology | — | — | Point 4 (C-exact composition), design only |
 
-Every "residual / deferred" item is covered correctly today by the engine via the parity gate — the
-only thing deferred is *acceleration*, never correctness.
+The phonology precompile tiers (1a/1b) are the cheap fast-path; `ComposedPhonologyProposer` is the
+complete backstop, so phonology is fully covered. The remaining infix/reduplication residuals are
+covered correctly today by the engine via the parity gate — the only thing not yet accelerated for those
+narrow cases is *speed*, never correctness.
 
 ## Production wiring
 

@@ -167,6 +167,67 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ComposedPhonology_CoversCrossBoundaryAlternation_WherePrecompileMisses()
+    {
+        // Point 4 (C-exact, composition with phonology inverse): a CROSS-BOUNDARY rule the per-morpheme
+        // precompile cannot see. A suffix inserts "t"; the root-final "g" devoices to "k" before that
+        // suffixal "t" — so sag+SUF = "sagt" -> "sakt". The precompile sees the bare root ("sag", no
+        // following t -> no devoicing) and the affix ("t") only in isolation, so it builds a "sagt" path
+        // and MISSES "sakt". Composition un-applies the rule on the assembled surface and recovers it.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var tSuffix = new AffixProcessRule
+        {
+            Name = "t_suffix",
+            Gloss = "TSF",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        tSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table1, "t") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(tSuffix);
+        var gDevoice = new RewriteRule
+        {
+            Name = "g_devoice",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "g")).Value,
+        };
+        gDevoice.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "k")).Value,
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+            }
+        );
+        Surface.PhonologicalRules.Add(gDevoice);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            Assert.That(search.AnalyzeWord("sakt").Any(), Is.True, "precondition: 'sakt' = sag+TSF (g->k / _t)");
+
+            // Even the surface-precompile proposer misses the cross-boundary form.
+            var fst = new FstTemplateAnalyzer(Language, new Morpher(TraceManager, Language));
+            Assert.That(fst.AnalyzeWord("sakt"), Is.Empty, "baseline: per-morpheme precompile misses cross-boundary 'sakt'");
+
+            var composed = new ComposedPhonologyProposer(Language, new Morpher(TraceManager, Language), fst);
+            var pool = new MorpherPool(() => new Morpher(new TraceManager(), Language));
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(new CompositeProposer(fst, composed), pool);
+            AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "sakt" });
+            Assert.That(cmp.IsComplete, Is.True, "cross-boundary alternation not covered: " + cmp.Format());
+
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must still yield nothing");
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(gDevoice);
+            Morphophonemic.MorphologicalRules.Remove(tSuffix);
+        }
+    }
+
+    [Test]
     public void Composite_CoversFullReduplication_WhereFstAloneMisses()
     {
         // Point 3: full reduplication (copy the whole stem) is non-regular — the FST cannot represent
@@ -236,6 +297,41 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         finally
         {
             Surface.PhonologicalRules.Remove(tToD);
+        }
+    }
+
+    [Test]
+    public void SurfacePhonology_BoundaryTier_RecoversAffixSurfaceFromNeighborContext()
+    {
+        // Point 1b (C-boundary): a suffixal "t" voices to "d" only AFTER "g". In isolation "t" stays
+        // "t" (1a misses the alternation); with the left neighbor "g" the boundary tier recovers "d".
+        var tVoice = new RewriteRule
+        {
+            Name = "t_voice",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+        };
+        tVoice.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value,
+                LeftEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "g")).Value,
+            }
+        );
+        Surface.PhonologicalRules.Add(tVoice);
+        try
+        {
+            var sp = new SurfacePhonology(Language, new Morpher(TraceManager, Language));
+            IReadOnlyCollection<string> variants = sp.Variants("t");
+            Assert.That(variants, Does.Contain("t"), "underlying form is always included");
+            Assert.That(
+                variants,
+                Does.Contain("d"),
+                "boundary tier must recover the post-'g' surface 'd' (isolation alone would miss it)"
+            );
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(tVoice);
         }
     }
 
