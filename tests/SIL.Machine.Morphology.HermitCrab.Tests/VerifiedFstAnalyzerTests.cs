@@ -4,6 +4,7 @@ using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
+using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -116,6 +117,53 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
             Is.True,
             "concurrent analyses diverged from sequential"
         );
+    }
+
+    [Test]
+    public void Verified_CoversPhonologicallyAlteredBareRoot()
+    {
+        // Surface-allomorph precompile (§C): an unconditional t→d rule means the underlying bare root
+        // "dat" (entry 8) can ONLY surface as "dad". The old proposer (underlying arcs) misses it — its
+        // "t" arc can't match surface "d", and BareRootValid rejected it (it doesn't surface as itself).
+        // The surface-precompile builds an arc from the actual generated surface ("dad"), so the altered
+        // bare root is now matched. Confirmed via probe: gen dat(8)→dad, and "dad" analyzes while "dat"
+        // no longer does.
+        var tToD = new RewriteRule
+        {
+            Name = "t_to_d",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+        };
+        tToD.Subrules.Add(
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
+        );
+        Surface.PhonologicalRules.Add(tToD);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            Assert.That(
+                search.AnalyzeWord("dad").Any(),
+                Is.True,
+                "precondition: 'dad' analyzes (bare root 'dat' surfaces as 'dad')"
+            );
+
+            // Baseline: the underlying-only proposer (no-morpher ctor builds arcs from underlying shapes)
+            // misses the altered surface — both "dad" readings are underlying "dat", so it has no "dad" arc.
+            Assert.That(
+                new FstTemplateAnalyzer(Language).AnalyzeWord("dad"),
+                Is.Empty,
+                "baseline: the underlying-only proposer must miss the phonologically-altered surface"
+            );
+
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(TraceManager, Language);
+            AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "dad" });
+            Assert.That(cmp.IsComplete, Is.True, "altered bare root not covered: " + cmp.Format());
+
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must still yield nothing");
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(tToD);
+        }
     }
 
     private static string Sig(WordAnalysis a) =>

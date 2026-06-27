@@ -47,11 +47,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             Morpher morpher = pool.Rent();
             try
             {
-                // Pin HC to this candidate's path: only this root, only its rules (templates and strata
-                // stay open — they are containers the path threads through; gating the leaf rules + root
-                // is what collapses the fan-out).
+                // Pin HC to this candidate's path: only this root, only its morphological rules.
+                // Templates and strata stay open (they are containers the path threads through), and
+                // phonological rules ALWAYS stay open — they are obligatory, deterministic rewrites, not
+                // a fan-out choice, and un-applying them is exactly how a phonologically-altered surface
+                // (e.g. an FST candidate proposed from a surface allomorph) reduces back to its root.
+                // Gating only the leaf morphological rules + the root is what collapses the fan-out.
                 morpher.LexEntrySelector = e => e == root;
-                morpher.RuleSelector = r => r is AffixTemplate || r is Stratum || rules.Contains(r);
+                morpher.RuleSelector = r =>
+                    r is AffixTemplate || r is Stratum || r is IPhonologicalRule || rules.Contains(r);
 
                 var ids = new Dictionary<IMorpheme, int>();
                 string target = Signature(candidate, ids);

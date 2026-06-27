@@ -210,3 +210,78 @@ Kaplan & Kay 1994 (regular relations; closure under composition → phonology, s
 compounding); Dolatian & Heinz 2020 (2-way FSTs compute reduplication; 1-way cannot); Chandlee 2017
 (subregular morphology; partial reduplication is local/regular); Beesley & Karttunen 2003 (compile-
 replace for bounded reduplication).
+
+---
+
+## Appendix C — Solution 1 implementation plan (surface-allomorph precompile)
+
+**Goal.** Let the proposer match phonologically-altered surfaces by building its arcs from each
+morpheme's **surface** realizations (phonology applied forward), not only its underlying shape. Stay a
+sound **superset** (never miss a real candidate) and lean on verify to prune. This lifts the proposer
+from "0-phonology grammars only" toward real grammars.
+
+**Why it's sound + bounded.** The proposer only nominates `(root + rules)` sets; verify re-runs HC with
+real phonology and checks the surface, so extra/wrong surface variants are pruned. The only obligation
+is *completeness of the variant set*: every surface a morpheme can take must be an arc. The harmony /
+subregular literature (Heinz/TSL; Yawelmani ≈ 21-state FST) shows attested phonology gives each
+morpheme a **small** variant set (single digits to low tens), so the FST grows by a small constant
+factor, not combinatorially. Pathological blow-up is theoretical, not attested; such grammars fall back
+to the engine via the certification interlock.
+
+**Algorithm.**
+1. For each morpheme shape (root allomorph segments; affix `InsertSegments` segments), compute its
+   **surface variant set** = { underlying } ∪ { phonology(shape) under each bounded context }.
+2. Build the proposer's segment arcs from the **union** of variants (same `(op, morpheme)` token on
+   every variant — the token is the underlying morpheme; the arcs are surface). Interweaving is free:
+   the walk picks each morpheme's variant independently.
+3. Verify prunes invalid variant combinations.
+
+**Three tiers of "context", implemented incrementally:**
+- **C-internal (first cut):** apply the grammar's phonological rules to the morpheme shape *in
+  isolation* (with word-edge anchors). Covers morpheme-internal + edge alternations (e.g. root-internal
+  aspiration). Sound for those; misses cross-boundary effects.
+- **C-boundary (next):** over-approximate the neighbor context — apply rules with each natural-class
+  boundary segment on each side — so boundary-conditioned variants (assimilation across a morpheme
+  seam) are included. Still bounded (variants × small context set).
+- **C-exact (endgame = Solution 3):** compose the full phonology transducer. Solution 1 is its
+  per-morpheme approximation; this is a smooth upgrade, not a throwaway.
+
+**How to apply phonology forward to a shape (reuse HC, do not reimplement):** compile each stratum's
+`PhonologicalRules` via `prule.CompileSynthesisRule(morpher)` into a `LinearRuleCascade` (exactly what
+`SynthesisStratumRule._prulesRule` does), build a `Word` from the morpheme shape, `Apply` the cascade,
+read the surface shape(s). (Or, for bare-standing roots, `Morpher.GenerateWords(root, ∅, ∅)` returns
+the surface directly — the safe minimal version.)
+
+**Soundness guards (must hold):**
+- Keep the underlying arcs too (union), so the 0-phonology path is unchanged.
+- Only ROOT-INTERNAL/edge variants are claimed by the first cut; anything cross-boundary that the cut
+  misses must keep the grammar from certifying (the parity gate already enforces this — a missed
+  variant shows up as FST≠engine, so the grammar won't certify and those words ride the engine).
+- The token emitted is always the underlying morpheme; verify (which runs real phonology) confirms.
+
+**Explosion control:** dedup variants per morpheme by surface string; cap variants-per-morpheme with a
+budget; if exceeded, drop the surface-precompute for that morpheme (fall back to underlying + engine) —
+never explode, only degrade coverage.
+
+**Test strategy:** construct a minimal phonology grammar (a feature-changing rewrite rule, e.g. a root
+that aspirates), show the *current* proposer misses the altered surface (under-generates), the
+surface-precompile proposer covers it, and verify keeps it sound (0 false positives on non-words).
+
+### Result (shipped — C-internal tier, bare roots)
+
+Implemented the safe minimal version: `BareRootSurfaces` reuses the obligatoriness `GenerateWords`
+call to get a root's bare surface realizations, and `BuildRootChainFromSurface` adds a proposer arc for
+every realization ≠ the underlying form (same underlying-morpheme token). Zero extra build cost.
+
+**Latent verify bug this exposed (fixed).** `AnalysisRewriteRule.Apply` / `AnalysisMetathesisRule.Apply`
+gate on `Morpher.RuleSelector`. `FstReplay`'s restricted re-analysis pinned the selector to *just the
+candidate's morphological rules* — which silently disabled **all phonology** during verify. So before
+this fix the propose-and-verify spine could never confirm *any* phonologically-altered candidate
+(verify couldn't un-apply phonology to reduce the surface back to the root). Phonological rules are
+obligatory deterministic rewrites, not a fan-out choice, so `FstReplay` now always lets
+`IPhonologicalRule` through the selector; the morphological fan-out is still collapsed by gating the
+leaf morphological rules + root, and soundness is still enforced by the candidate-signature match.
+
+Verified end-to-end by `Verified_CoversPhonologicallyAlteredBareRoot` (an unconditional t→d rule makes
+bare root "dat" surface only as "dad"; the proposer now matches "dad" and verify confirms it as a
+genuine HC analysis, while a non-word still yields nothing). Full HermitCrab suite green (97 passed).

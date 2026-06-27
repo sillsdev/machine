@@ -41,7 +41,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly CharacterDefinitionTable _table;
         private readonly Func<Annotation<ShapeNode>, bool> _filter;
         private readonly int _maxStates;
-        private readonly Func<RootAllomorph, bool> _bareRootValid;
+        private readonly Func<RootAllomorph, IReadOnlyCollection<string>> _bareRootSurfaces;
         private readonly List<MorphemicMorphologicalRule> _derivSuffixRules = new List<MorphemicMorphologicalRule>();
         private readonly List<MorphemicMorphologicalRule> _derivPrefixRules = new List<MorphemicMorphologicalRule>();
         private int _stateCount;
@@ -71,25 +71,26 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         /// <summary>Build without obligatoriness: every root may stand bare (fine for toy grammars).</summary>
         public FstTemplateAnalyzer(Language language, int maxStates = 1_000_000, int derivDepth = 2)
-            : this(language, _ => true, maxStates, derivDepth) { }
+            : this(language, root => new[] { UnderlyingForm(root) }, maxStates, derivDepth) { }
 
         /// <summary>
-        /// Build with obligatory-inflection enforcement: a root may stand bare only if synthesizing
-        /// it bare actually yields its surface (HC's own finality/validity check). This removes the
-        /// "bare-root" over-generation in always-inflected grammars (e.g. Bantu), where a root that
-        /// must take a class/agreement affix should not surface alone.
+        /// Build with obligatory-inflection enforcement AND surface-allomorph precompile (§C): a root's
+        /// bare surface realizations are obtained by synthesizing it bare (HC's own finality check). If
+        /// synthesis returns nothing, the bare reading is suppressed (obligatory inflection); if it
+        /// returns a phonologically-ALTERED surface, the proposer builds an arc for that surface so a
+        /// phonologically-altered bare root is matched (not just the underlying form).
         /// </summary>
         public FstTemplateAnalyzer(Language language, Morpher morpher, int maxStates = 1_000_000, int derivDepth = 2)
-            : this(language, root => BareRootValid(morpher, root), maxStates, derivDepth) { }
+            : this(language, root => BareRootSurfaces(morpher, root), maxStates, derivDepth) { }
 
         private FstTemplateAnalyzer(
             Language language,
-            Func<RootAllomorph, bool> bareRootValid,
+            Func<RootAllomorph, IReadOnlyCollection<string>> bareRootSurfaces,
             int maxStates,
             int derivDepth
         )
         {
-            _bareRootValid = bareRootValid;
+            _bareRootSurfaces = bareRootSurfaces;
             _maxStates = maxStates;
             _derivDepth = derivDepth;
             _table = language.SurfaceStratum.CharacterDefinitionTable;
@@ -134,13 +135,31 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
 
-            // Bare-root paths — only for roots the grammar allows to stand uninflected.
+            // Bare-root paths — only for roots the grammar allows to stand uninflected. Surface-allomorph
+            // precompile (§C): build a chain for the underlying form AND for each phonologically-altered
+            // bare surface realization, so an altered bare root is matched. The emitted token is always
+            // the underlying root morpheme; verify re-runs HC (with real phonology) to confirm.
             foreach (RootRef root in roots)
             {
-                if (_bareRootValid(root.Allomorph))
+                IReadOnlyCollection<string> surfaces = _bareRootSurfaces(root.Allomorph);
+                if (surfaces.Count == 0)
                 {
-                    State<Shape, ShapeNode> end = BuildRootChain(_start, root.Allomorph);
-                    end.IsAccepting = true;
+                    continue; // bare root not valid (obligatory inflection)
+                }
+                State<Shape, ShapeNode> end = BuildRootChain(_start, root.Allomorph);
+                end.IsAccepting = true;
+                string underlying = UnderlyingForm(root.Allomorph);
+                foreach (string s in surfaces)
+                {
+                    if (s == underlying)
+                    {
+                        continue; // already built from the underlying shape
+                    }
+                    State<Shape, ShapeNode> surfaceEnd = BuildRootChainFromSurface(_start, s, root.Allomorph.Morpheme);
+                    if (surfaceEnd != null)
+                    {
+                        surfaceEnd.IsAccepting = true;
+                    }
                 }
             }
 
@@ -472,16 +491,29 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// its own surface form. If the grammar makes a bare stem non-final (obligatory inflection),
         /// synthesis returns nothing and the bare reading is correctly suppressed.
         /// </summary>
-        private static bool BareRootValid(Morpher morpher, RootAllomorph root)
+        private static string UnderlyingForm(RootAllomorph root)
+        {
+            return root.Segments.Representation.Normalize(System.Text.NormalizationForm.FormD);
+        }
+
+        /// <summary>
+        /// The bare-root surface realizations: the surface forms HC synthesizes for the root with no
+        /// affixes (phonology applied). Empty ⇒ the bare root is not a valid word (obligatory
+        /// inflection). A form ≠ the underlying representation is a phonologically-altered surface the
+        /// proposer must match (Solution 1, §C). Reuses the same GenerateWords call the obligatoriness
+        /// check needed, so it is zero extra build cost.
+        /// </summary>
+        private static IReadOnlyCollection<string> BareRootSurfaces(Morpher morpher, RootAllomorph root)
         {
             if (!(root.Morpheme is LexEntry entry))
             {
-                return true;
+                return new[] { UnderlyingForm(root) };
             }
-            string surface = root.Segments.Representation.Normalize(System.Text.NormalizationForm.FormD);
             return morpher
                 .GenerateWords(entry, System.Linq.Enumerable.Empty<Morpheme>(), new FeatureStruct())
-                .Any(g => g.Normalize(System.Text.NormalizationForm.FormD) == surface);
+                .Select(g => g.Normalize(System.Text.NormalizationForm.FormD))
+                .Distinct()
+                .ToList();
         }
 
         private static FeatureStruct RequiredCategory(MorphemicMorphologicalRule rule)
@@ -635,6 +667,29 @@ namespace SIL.Machine.Morphology.HermitCrab
                 state = AddArc(state, fs);
             }
             _tokenOnEntry[state] = MorphToken.Encode(MorphOp.Root, _codec.GetOrAddIndex(root.Morpheme));
+            return state;
+        }
+
+        /// <summary>Build a root chain from a surface STRING (a phonologically-altered realization),
+        /// segmenting it via the table; the chain ends in the underlying root morpheme's token. Returns
+        /// null if the surface has a segment outside the table.</summary>
+        private State<Shape, ShapeNode> BuildRootChainFromSurface(State<Shape, ShapeNode> from, string surface, Morpheme morpheme)
+        {
+            Shape shape;
+            try
+            {
+                shape = _table.Segment(surface);
+            }
+            catch (InvalidShapeException)
+            {
+                return null;
+            }
+            State<Shape, ShapeNode> state = from;
+            foreach (FeatureStruct fs in GetSegments(shape))
+            {
+                state = AddArc(state, fs);
+            }
+            _tokenOnEntry[state] = MorphToken.Encode(MorphOp.Root, _codec.GetOrAddIndex(morpheme));
             return state;
         }
 
