@@ -26,8 +26,8 @@ public class MorphTokenTests
     [Test]
     public void Encode_IdOutOfRange_Throws()
     {
-        Assert.Throws<System.ArgumentOutOfRangeException>(
-            () => MorphToken.Encode(MorphOp.Root, MorphToken.MaxMorphemeId + 1)
+        Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+            MorphToken.Encode(MorphOp.Root, MorphToken.MaxMorphemeId + 1)
         );
         Assert.Throws<System.ArgumentOutOfRangeException>(() => MorphToken.Encode(MorphOp.Root, -1));
     }

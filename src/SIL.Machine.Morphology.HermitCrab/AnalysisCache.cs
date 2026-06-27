@@ -14,8 +14,10 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     public sealed class AnalysisCache
     {
-        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<WordAnalysis>> _store =
-            new System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<WordAnalysis>>();
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<
+            string,
+            IReadOnlyList<WordAnalysis>
+        > _store = new System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<WordAnalysis>>();
 
         /// <summary>Number of words with a stored complete analysis.</summary>
         public int Count => _store.Count;
@@ -36,7 +38,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>Return the cached complete analysis, or compute it once via <paramref name="compute"/> and cache it.</summary>
-        public IReadOnlyList<WordAnalysis> GetOrAdd(string word, System.Func<string, IReadOnlyList<WordAnalysis>> compute)
+        public IReadOnlyList<WordAnalysis> GetOrAdd(
+            string word,
+            System.Func<string, IReadOnlyList<WordAnalysis>> compute
+        )
         {
             return _store.GetOrAdd(word, compute);
         }

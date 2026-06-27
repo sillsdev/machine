@@ -73,7 +73,11 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
             foreach (WordAnalysis a in fromVerified)
             {
                 Assert.That(a.Category, Is.Not.Null, $"verified analysis of {word} lost its category");
-                Assert.That(fromSearch, Does.Contain(a), $"verified analysis of {word} is not a genuine engine analysis");
+                Assert.That(
+                    fromSearch,
+                    Does.Contain(a),
+                    $"verified analysis of {word} is not a genuine engine analysis"
+                );
             }
         }
     }
@@ -107,7 +111,11 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         Dictionary<string, string> sequential = corpus.Distinct().ToDictionary(w => w, w => SigSet(verified, w));
         var parallel = new ConcurrentDictionary<string, string>();
         Parallel.ForEach(corpus, w => parallel[w] = SigSet(verified, w));
-        Assert.That(corpus.Distinct().All(w => parallel[w] == sequential[w]), Is.True, "concurrent analyses diverged from sequential");
+        Assert.That(
+            corpus.Distinct().All(w => parallel[w] == sequential[w]),
+            Is.True,
+            "concurrent analyses diverged from sequential"
+        );
     }
 
     private static string Sig(WordAnalysis a) =>

@@ -179,15 +179,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// pass confirms whether Tier 2 is worth it vs. Tier 3.
         /// </summary>
         public string Tier =>
-            EscapeCount == 0
-                ? "Tier 1 candidate — fully FST-able"
-                : ProbeableEscapeCount == EscapeCount
-                    ? "Tier 2⁺ candidate — every escape is probe-able (surface-invariant): a per-word "
-                        + "un-application probe WOULD recover the fast path once the probe runtime exists; "
-                        + "all escapes are slow in today's engine"
-                    : EscapeCount <= 3
-                        ? "Tier 2 candidate — hybrid (opaque/non-probe-able escapes fall back to search); confirm with corpus fallback rate"
-                        : "Tier 3 — pervasive escapes, search engine only";
+            EscapeCount == 0 ? "Tier 1 candidate — fully FST-able"
+            : ProbeableEscapeCount == EscapeCount
+                ? "Tier 2⁺ candidate — every escape is probe-able (surface-invariant): a per-word "
+                    + "un-application probe WOULD recover the fast path once the probe runtime exists; "
+                    + "all escapes are slow in today's engine"
+            : EscapeCount <= 3
+                ? "Tier 2 candidate — hybrid (opaque/non-probe-able escapes fall back to search); confirm with corpus fallback rate"
+            : "Tier 3 — pervasive escapes, search engine only";
 
         /// <summary>The rules that break FST compilation (the warnings that flip the tier).</summary>
         public IEnumerable<GrammarAdvisory> Escapes =>
@@ -283,7 +282,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         case AffixProcessRule affix:
                             affixExamined++;
-                            AnalyzeAffix(affix.Name, affix.Allomorphs, stratum.Name, surfaceInvariant, advisories, manyAllomorphsThreshold);
+                            AnalyzeAffix(
+                                affix.Name,
+                                affix.Allomorphs,
+                                stratum.Name,
+                                surfaceInvariant,
+                                advisories,
+                                manyAllomorphsThreshold
+                            );
                             break;
                         case RealizationalAffixProcessRule realizational:
                             // Realizational affixes also have Allomorphs and can encode

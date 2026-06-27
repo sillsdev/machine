@@ -57,7 +57,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (certificationCorpus != null)
             {
                 bool closed = GrammarFstClosure.Analyze(language).FstClosed;
-                bool parity = FstVerification.Compare(new Morpher(traceManager, language), fast, certificationCorpus).IsComplete;
+                bool parity = FstVerification
+                    .Compare(new Morpher(traceManager, language), fast, certificationCorpus)
+                    .IsComplete;
                 certified = closed && proposer.CoversAllConstructs && parity;
             }
             return new CachingMorphologicalAnalyzer(fast, pool, cache ?? new AnalysisCache(), certified);

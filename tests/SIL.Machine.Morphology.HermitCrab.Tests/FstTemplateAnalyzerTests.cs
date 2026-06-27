@@ -104,8 +104,15 @@ public class FstTemplateAnalyzerTests : HermitCrabTestBase
         Morphophonemic.AffixTemplates.Add(t);
 
         FstTemplateAnalyzer? fst = null;
-        Assert.DoesNotThrow(() => fst = new FstTemplateAnalyzer(Language), "an unbuildable slot must degrade, not throw");
-        Assert.That(fst!.CoversAllConstructs, Is.False, "reduplication slot → grammar not fully covered (won't certify)");
+        Assert.DoesNotThrow(
+            () => fst = new FstTemplateAnalyzer(Language),
+            "an unbuildable slot must degrade, not throw"
+        );
+        Assert.That(
+            fst!.CoversAllConstructs,
+            Is.False,
+            "reduplication slot → grammar not fully covered (won't certify)"
+        );
         Assert.That(fst!.AnalyzeWord("sag"), Is.Not.Empty, "the rest of the grammar still analyzes");
 
         Morphophonemic.AffixTemplates.Remove(t);

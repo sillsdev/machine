@@ -99,12 +99,7 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
                     Pattern<Word, ShapeNode>.New("1").Annotation(any).Value,
                     Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value,
                 },
-                Rhs =
-                {
-                    new CopyFromInput("1"),
-                    new InsertSegments(Table3, "a"),
-                    new CopyFromInput("2"),
-                },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "a"), new CopyFromInput("2") },
             }
         );
         Morphophonemic.MorphologicalRules.Add(infix);
@@ -130,11 +125,7 @@ public class GrammarFstAdvisorTests : HermitCrabTestBase
         // A vowel-harmony-style rewrite: bounded LHS/RHS, but an UNBOUNDED left environment
         // ("...anything... ___"). By Kaplan & Kay this is a regular relation, but in today's
         // engine it un-applies at many positions and is slow.
-        var harmony = new RewriteRule
-        {
-            Name = "harmony",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(any).Value,
-        };
+        var harmony = new RewriteRule { Name = "harmony", Lhs = Pattern<Word, ShapeNode>.New().Annotation(any).Value };
         harmony.Subrules.Add(
             new RewriteSubrule
             {

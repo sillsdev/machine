@@ -111,10 +111,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .Except(candidateSet)
                     .OrderBy(s => s, StringComparer.Ordinal)
                     .ToList();
-                List<string> extra = candidateSet
-                    .Except(referenceSet)
-                    .OrderBy(s => s, StringComparer.Ordinal)
-                    .ToList();
+                List<string> extra = candidateSet.Except(referenceSet).OrderBy(s => s, StringComparer.Ordinal).ToList();
                 divergences.Add(new AnalysisDivergence(word, missing, extra));
             }
             return new AnalysisComparison(count, divergences);

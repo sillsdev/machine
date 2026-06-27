@@ -16,7 +16,12 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private const string Magic = "hcfstcache/1";
 
-        public static void Save(AnalysisCache cache, MorphemeRegistry registry, string grammarVersion, TextWriter writer)
+        public static void Save(
+            AnalysisCache cache,
+            MorphemeRegistry registry,
+            string grammarVersion,
+            TextWriter writer
+        )
         {
             writer.WriteLine(Magic + "\t" + (grammarVersion ?? string.Empty));
             foreach (KeyValuePair<string, IReadOnlyList<WordAnalysis>> entry in cache.Entries)
@@ -36,7 +41,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// file's grammar version does not match <paramref name="grammarVersion"/> — the caller should
         /// then re-warm. Skips any analysis referencing an unknown morpheme key (defensive).
         /// </summary>
-        public static bool Load(AnalysisCache cache, MorphemeRegistry registry, string grammarVersion, TextReader reader)
+        public static bool Load(
+            AnalysisCache cache,
+            MorphemeRegistry registry,
+            string grammarVersion,
+            TextReader reader
+        )
         {
             string header = reader.ReadLine();
             if (header == null)

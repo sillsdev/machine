@@ -42,10 +42,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Func<Annotation<ShapeNode>, bool> _filter;
         private readonly int _maxStates;
         private readonly Func<RootAllomorph, bool> _bareRootValid;
-        private readonly List<MorphemicMorphologicalRule> _derivSuffixRules =
-            new List<MorphemicMorphologicalRule>();
-        private readonly List<MorphemicMorphologicalRule> _derivPrefixRules =
-            new List<MorphemicMorphologicalRule>();
+        private readonly List<MorphemicMorphologicalRule> _derivSuffixRules = new List<MorphemicMorphologicalRule>();
+        private readonly List<MorphemicMorphologicalRule> _derivPrefixRules = new List<MorphemicMorphologicalRule>();
         private int _stateCount;
         private bool _hasUnbuiltConstructs;
 
@@ -84,7 +82,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         public FstTemplateAnalyzer(Language language, Morpher morpher, int maxStates = 1_000_000, int derivDepth = 2)
             : this(language, root => BareRootValid(morpher, root), maxStates, derivDepth) { }
 
-        private FstTemplateAnalyzer(Language language, Func<RootAllomorph, bool> bareRootValid, int maxStates, int derivDepth)
+        private FstTemplateAnalyzer(
+            Language language,
+            Func<RootAllomorph, bool> bareRootValid,
+            int maxStates,
+            int derivDepth
+        )
         {
             _bareRootValid = bareRootValid;
             _maxStates = maxStates;

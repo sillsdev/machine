@@ -27,7 +27,10 @@ public class FstSenaBenchmark
         TestContext.Out.WriteLine($"census  : {census.Tier} ({census.EscapeCount} escapes)");
         TestContext.Out.WriteLine($"closure : {(closure.FstClosed ? "FST-CLOSED" : "not closed")}");
 
-        var verified = new VerifiedFstAnalyzer(new FstTemplateAnalyzer(language, search), new MorpherPool(() => new Morpher(new TraceManager(), language)));
+        var verified = new VerifiedFstAnalyzer(
+            new FstTemplateAnalyzer(language, search),
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
         var caching = CachingMorphologicalAnalyzer.FromLanguage(new TraceManager(), language, words);
 
         long searchMs = TimeParse("search  ", words, w => search.AnalyzeWord(w).Count());
@@ -39,7 +42,8 @@ public class FstSenaBenchmark
         TestContext.Out.WriteLine(
             $"verified vs search : {(parity.IsComplete ? "IDENTICAL" : parity.Divergences.Count + " divergent words")}  "
                 + $"(grammar certified = {caching.GrammarCertified} → "
-                + (caching.GrammarCertified ? "FST-only, no full search" : "engine/cache backstop") + ")"
+                + (caching.GrammarCertified ? "FST-only, no full search" : "engine/cache backstop")
+                + ")"
         );
         TestContext.Out.WriteLine($"(search total {searchMs} ms)");
     }
@@ -58,7 +62,10 @@ public class FstSenaBenchmark
         int targetCount = int.TryParse(Environment.GetEnvironmentVariable("HC_NEG_COUNT"), out int nc) ? nc : 50;
         var search = new Morpher(new TraceManager(), language) { MaxUnapplications = 0 };
         var raw = new FstTemplateAnalyzer(language, search);
-        var verified = new VerifiedFstAnalyzer(new FstTemplateAnalyzer(language, search), new MorpherPool(() => new Morpher(new TraceManager(), language)));
+        var verified = new VerifiedFstAnalyzer(
+            new FstTemplateAnalyzer(language, search),
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
 
         List<string> real = real0.Take(80).ToList();
         string[] pre = { "ku", "a", "ci", "ka", "mu", "ma", "ni", "wa", "ti", "pa" };
@@ -128,7 +135,9 @@ public class FstSenaBenchmark
             catch (Exception) { }
         }
 
-        TestContext.Out.WriteLine($"negatives: {chosen}; raw FST proposed {fstProposed}; false positives {falsePositives}");
+        TestContext.Out.WriteLine(
+            $"negatives: {chosen}; raw FST proposed {fstProposed}; false positives {falsePositives}"
+        );
         foreach (string e in fp)
         {
             TestContext.Out.WriteLine($"  FALSE POSITIVE: {e}");
@@ -163,7 +172,9 @@ public class FstSenaBenchmark
             "|",
             analyzer
                 .AnalyzeWord(word)
-                .Select(a => string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex)
+                .Select(a =>
+                    string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex
+                )
                 .OrderBy(s => s, StringComparer.Ordinal)
         );
     }
@@ -178,8 +189,7 @@ public class FstSenaBenchmark
         }
         int maxWords = int.TryParse(Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw) ? mw : 60;
         Language language = XmlLanguageLoader.Load(grammarPath!);
-        List<string> words = File
-            .ReadAllLines(wordsPath!)
+        List<string> words = File.ReadAllLines(wordsPath!)
             .Select(w => w.Trim())
             .Where(w => w.Length > 0)
             .Take(maxWords)
@@ -205,7 +215,9 @@ public class FstSenaBenchmark
             catch (Exception) { }
         }
         sw.Stop();
-        TestContext.Out.WriteLine($"{label} : {sw.ElapsedMilliseconds,7} ms  ({(double)sw.ElapsedMilliseconds / words.Count:F1} ms/word, {total} analyses)");
+        TestContext.Out.WriteLine(
+            $"{label} : {sw.ElapsedMilliseconds, 7} ms  ({(double)sw.ElapsedMilliseconds / words.Count:F1} ms/word, {total} analyses)"
+        );
         return sw.ElapsedMilliseconds;
     }
 }
