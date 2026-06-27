@@ -213,6 +213,58 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void Composite_CoversInfixation_WhereFstAloneMisses()
+    {
+        // Point 2: infixation (affix inserted inside the stem). The FST recognizes but does not build
+        // infix slots; the InfixProposer removes the infix's segments at each interior position, recurses
+        // the residual through the FST, and appends the infix morpheme. Here an "a" is infixed after the
+        // first segment: "sag" -> "s·a·ag" = "saag".
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var infix = new AffixProcessRule
+        {
+            Name = "a_infix",
+            Gloss = "INF",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        infix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(any).Value, // first segment
+                    Pattern<Word, ShapeNode>.New("2").Annotation(any).OneOrMore.Value, // rest of stem
+                },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "a"), new CopyFromInput("2") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(infix);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            Assert.That(search.AnalyzeWord("saag").Any(), Is.True, "precondition: 'saag' = INF('sag')");
+
+            var fst = new FstTemplateAnalyzer(Language, new Morpher(TraceManager, Language));
+            Assert.That(fst.AnalyzeWord("saag"), Is.Empty, "baseline: the FST alone does not build infix slots");
+            Assert.That(fst.CoversAllConstructs, Is.False, "infixation marks the FST not-fully-covered");
+
+            var composite = new CompositeProposer(fst, new InfixProposer(Language, fst));
+            Assert.That(composite.CoversAllConstructs, Is.True, "the infix generator covers the skipped op");
+
+            var pool = new MorpherPool(() => new Morpher(new TraceManager(), Language));
+            IMorphologicalAnalyzer verified = new VerifiedFstAnalyzer(composite, pool);
+            AnalysisComparison cmp = FstVerification.Compare(search, verified, new[] { "saag" });
+            Assert.That(cmp.IsComplete, Is.True, "infixation not covered: " + cmp.Format());
+
+            Assert.That(verified.AnalyzeWord("zzz"), Is.Empty, "soundness: a non-word must still yield nothing");
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(infix);
+        }
+    }
+
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 
