@@ -539,6 +539,80 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
     }
 
     [Test]
+    public void LeverTwo_LazyComposition_RecoversBoundaryDeletion_RealTypes()
+    {
+        // Lever 2 with REAL HC types (LEVER_2.md): lazy-compose an inverse-phonology transducer (Pinv)
+        // with the underlying morphotactic FST (FstTemplateAnalyzer.AnalyzeComposed). A "-d" suffix plus
+        // a deletion rule t→∅ / _d means sat+DSF = "satd" → "sad" (the root-final t deletes). The
+        // underlying-only proposer misses "sad"; lazy composition restores the deleted t — constrained by
+        // the lexicon — and recovers [sat, DSF].
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        // Suffix whose underlying form is "kd" but whose "k" deletes before "d" → it surfaces as "d".
+        // All segments are Table1 (the earlier affix-phonology test confirmed Table1 rules fire on
+        // Table1-inserted affix segments), so this avoids the root-table friction.
+        var kdSuffix = new AffixProcessRule
+        {
+            Name = "kd_suffix",
+            Gloss = "KD",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        kdSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table1, "kd") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(kdSuffix);
+        var kDel = new RewriteRule
+        {
+            Name = "k_deletion",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "k")).Value,
+        };
+        kDel.Subrules.Add(
+            new RewriteSubrule // no Rhs ⇒ deletion of k before d
+            {
+                RightEnvironment = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value,
+            }
+        );
+        Surface.PhonologicalRules.Add(kDel);
+        try
+        {
+            var search = new Morpher(TraceManager, Language);
+            var engine = new HashSet<string>(search.AnalyzeWord("sagd").Select(Sig));
+            Assert.That(engine.Any(s => s.Contains("KD")), Is.True, "precondition: 'sagd' = sag+KD (k→∅/_d)");
+
+            // Baseline: the underlying-only proposer has a "k" arc the surface "sagd" cannot match.
+            Assert.That(
+                new FstTemplateAnalyzer(Language).AnalyzeWord("sagd").Select(Sig).Any(s => s.Contains("KD")),
+                Is.False,
+                "baseline: underlying-only proposer misses the deletion form"
+            );
+
+            // Pinv: identity on s/a/g/d, plus an ε-input arc restoring a deleted k immediately before a d.
+            var pinv = new InversePhonology { StartState = 0 };
+            pinv.SetAccepting(0);
+            foreach (string c in new[] { "s", "a", "g", "d" })
+                pinv.AddArc(0, Character(Table1, c), Character(Table1, c), 0);
+            pinv.AddArc(0, null, Character(Table1, "k"), 1); // ε: restore underlying k
+            pinv.AddArc(1, Character(Table1, "d"), Character(Table1, "d"), 0); // ...immediately before a d
+
+            var lex = new FstTemplateAnalyzer(Language); // default ctor: underlying-only arcs
+            var composed = new HashSet<string>(lex.AnalyzeComposed("sagd", pinv).Select(Sig));
+
+            Assert.That(composed.Any(s => s.Contains("KD")), Is.True, "lazy composition must recover the deletion form");
+            Assert.That(composed.IsSubsetOf(engine), Is.True, "soundness: composed candidates ⊆ engine analyses");
+            Assert.That(lex.AnalyzeComposed("saga", pinv), Is.Empty, "a non-word must yield nothing");
+        }
+        finally
+        {
+            Surface.PhonologicalRules.Remove(kDel);
+            Morphophonemic.MorphologicalRules.Remove(kdSuffix);
+        }
+    }
+
+    [Test]
     public void ForwardSynthesis_CoversAffixedForms_AndIsSound()
     {
         // Forward-synthesis precompile: enumerate root × affix combos, synthesize each surface (phonology

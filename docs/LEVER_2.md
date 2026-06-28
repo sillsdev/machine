@@ -69,19 +69,38 @@ exists in-repo. Routes:
 
 ## Build plan (spike-first; the spike targets DELETION)
 
-1. ☐ **Deletion spike** — toy grammar with a *boundary deletion* rule we fully control (e.g. root `sat`
-   + suffix `-d`, rule `t→∅ / _ d`, so `sat+d = satd → "sad"`). Build `Lex` = `FstTemplateAnalyzer`
-   (default ctor). Hand-build the smallest `Pinv` that restores the deleted `t`. Lazy-compose-walk
-   `"sad"` and **recover `[sat, -d]`**, and prove the restoration is *pruned* everywhere the lexicon
-   lacks the `t`. Substitution would pass and lie — deletion is where every prior approach died, so the
-   spike must hit it. If hand-building `Pinv` for one deletion case is too fiddly, that fiddliness *is*
-   the signal about the general compiler.
-2. ☐ **`Pinv` compiler** — generalize the hand-built `Pinv` into a builder (B-probe or B-direct per what
-   the spike teaches), validated on a **two-interacting-rule** cascade (assimilation + deletion).
-3. ☐ **`ComposedLexiconProposer`** — the lazy-compose walk as an `IMorphologicalAnalyzer`/`IConstructProposer`
-   over `Lex` + `Pinv`; verify-gated; wired opt-in like the others.
-4. ☐ **Measure** on Indonesian `meN-`: build time (should be ~grammar-sized, not the 5 s enumeration) and
-   coverage vs. the Lever-1 forward-synth baseline (42→69).
+1. ☑ **Deletion spike (algorithm-level)** — `LeverTwoSpikeTests`: symbol-alphabet lazy composition of a
+   hand-built `Pinv` (with an ε-input arc restoring a deleted `t`) ⊗ a tiny lexicon. Proven:
+   `"sad" → [sat, -d]`; with a bare root `sad` added, **exactly** `{sat+-d, sad}` (restoration is
+   lexicon-constrained — no `ⁿmeⁿnⁿpuⁿlis` garbage); non-word → nothing. Targets deletion, not
+   substitution.
+2. ☑ **Lazy-compose walk, REAL HC types** — `InversePhonology` (surface→underlying transducer with
+   ε-input restoration arcs) + `FstTemplateAnalyzer.AnalyzeComposed` (product walk over
+   `(pinvState, lexState, tokens)`; lexicon ε-arcs and Pinv ε-restorations both handled in the closure).
+   Proven by `LeverTwo_LazyComposition_RecoversBoundaryDeletion_RealTypes`: a `kd`-suffix whose `k`
+   deletes before `d` surfaces as `d`; `"sagd"` recovers `[sag, KD]` by restoring the `k` (lexicon-
+   constrained), sound (⊆ engine), non-word → nothing. **Blockers 1 & 3 resolved; Blocker 2's consuming
+   engine built and proven, including deletion.**
+3. ☐ **`Pinv` compiler** — the remaining Blocker 2 work: auto-build `InversePhonology` from a grammar's
+   phonological rules (the spikes use a *hand-built* `Pinv`). B-probe or B-direct; **must be validated on
+   a two-interacting-rule cascade** (assimilation + deletion) — the advisor's gate, since feeding/bleeding
+   + deletion break clean alignment. This is the genuine frontier.
+4. ☐ **`ComposedLexiconProposer` + measure** — wrap the walk as an opt-in `IConstructProposer`,
+   verify-gated; measure on Indonesian `meN-` (build should be ~grammar-sized, not the 5 s enumeration).
+
+## Status (what is proven vs. the frontier)
+
+**Proven (committed, passing):** the Lever 2 *architecture* is real in this codebase. Lazy composition
+recovers boundary **deletion** — the exact case that broke the runtime inverse — and the lexicon prunes
+the over-restoration, with real HC types end-to-end. Blockers 1 (tokens state-based) and 3 (no
+`Fst.Compose`) are dissolved by the lazy walk; Blocker 2's consuming side is done.
+
+**Frontier (the honest wall):** the general `Pinv` *compiler* — turning a grammar's phonological rules
+(substitution, deletion, assimilation, and their feeding/bleeding cascades) into the `InversePhonology`
+transducer automatically. The spikes prove that *given* the right `Pinv`, everything downstream works;
+building that `Pinv` for arbitrary cascades is the multi-week subsystem. Until it exists, Lever 1
+(guided forward-synthesis, 42→69 on Indonesian) remains the pragmatic accelerator. Soundness is never at
+risk either way — `VerifiedFstAnalyzer` + the parity gate gate everything.
 
 ## Honest gate
 Work the deletion spike for real. If end-to-end recovery + pruning hold, generalize `Pinv` with

@@ -402,6 +402,165 @@ namespace SIL.Machine.Morphology.HermitCrab
             return new WordAnalysis(morphemes, MorphToken.RootIndex(tokens), null);
         }
 
+        private readonly struct PConfig
+        {
+            public PConfig(int pinvState, Config lex)
+            {
+                PinvState = pinvState;
+                Lex = lex;
+            }
+
+            public int PinvState { get; }
+            public Config Lex { get; }
+        }
+
+        /// <summary>
+        /// Lever 2 (LEVER_2.md): lazily compose an inverse-phonology transducer (surface→underlying) with
+        /// this morphotactic acceptor and walk the product over the surface. Pinv consumes surface and
+        /// emits underlying segments; each must unify a lexicon arc, advancing the lexicon and accruing
+        /// its token. Pinv ε-input arcs restore deleted segments and survive only where the lexicon has
+        /// the underlying arc — so the over-generation that broke the boundary-less runtime inverse is
+        /// pruned in lockstep. The lexicon network must be the underlying-only one (default ctor), so
+        /// phonology is applied once (by Pinv), not twice.
+        /// </summary>
+        internal IEnumerable<WordAnalysis> AnalyzeComposed(string word, InversePhonology pinv)
+        {
+            Shape shape;
+            try
+            {
+                shape = _table.Segment(word);
+            }
+            catch (InvalidShapeException)
+            {
+                return Enumerable.Empty<WordAnalysis>();
+            }
+
+            var segments = new List<FeatureStruct>();
+            for (
+                ShapeNode node = shape.GetFirst(n => _filter(n.Annotation));
+                node != shape.End;
+                node = node.GetNext(n => _filter(n.Annotation))
+            )
+            {
+                segments.Add(node.Annotation.FeatureStruct);
+            }
+
+            List<PConfig> current = ComposedClosure(
+                pinv,
+                new List<PConfig> { new PConfig(pinv.StartState, Enter(_start, new uint[0])) }
+            );
+            foreach (FeatureStruct segment in segments)
+            {
+                var next = new List<PConfig>();
+                var seen = new HashSet<string>();
+                foreach (PConfig pc in current)
+                {
+                    foreach (InversePhonology.Arc parc in pinv.ArcsFrom(pc.PinvState))
+                    {
+                        if (parc.IsEpsilonInput || !parc.SurfaceInput.IsUnifiable(segment))
+                        {
+                            continue; // ε-arcs are taken in the closure; this arc must consume the surface segment
+                        }
+                        // Pinv consumed the surface segment and emits an underlying segment: it must match
+                        // a (non-ε) lexicon arc, which advances the lexicon walk and accrues its token.
+                        for (int a = 0; a < pc.Lex.State.Arcs.Count; a++)
+                        {
+                            Arc<Shape, ShapeNode> larc = pc.Lex.State.Arcs[a];
+                            if (!larc.Input.IsEpsilon && larc.Input.FeatureStruct.IsUnifiable(parc.UnderlyingOutput))
+                            {
+                                var nc = new PConfig(parc.Target, Enter(larc.Target, pc.Lex.Tokens));
+                                if (seen.Add(PKey(nc)))
+                                {
+                                    next.Add(nc);
+                                }
+                            }
+                        }
+                    }
+                }
+                current = ComposedClosure(pinv, next);
+                if (current.Count == 0)
+                {
+                    break;
+                }
+            }
+
+            var results = new List<WordAnalysis>();
+            var emitted = new HashSet<string>();
+            foreach (PConfig pc in current)
+            {
+                if (
+                    pinv.IsAccepting(pc.PinvState)
+                    && pc.Lex.State.IsAccepting
+                    && emitted.Add(string.Join(",", pc.Lex.Tokens))
+                )
+                {
+                    results.Add(ToWordAnalysis(pc.Lex.Tokens));
+                }
+            }
+            return results;
+        }
+
+        /// <summary>Closure over both ε kinds: lexicon ε-arcs (advance the lexicon alone) and Pinv
+        /// ε-input restorations (advance Pinv + a matching lexicon arc, consuming no surface).</summary>
+        private List<PConfig> ComposedClosure(InversePhonology pinv, List<PConfig> configs)
+        {
+            var result = new List<PConfig>();
+            var seen = new HashSet<string>();
+            var stack = new Stack<PConfig>();
+            foreach (PConfig pc in configs)
+            {
+                if (seen.Add(PKey(pc)))
+                {
+                    result.Add(pc);
+                    stack.Push(pc);
+                }
+            }
+            while (stack.Count > 0)
+            {
+                PConfig pc = stack.Pop();
+                // (a) lexicon ε-arcs: the morphotactic network's slot-entry/skip transitions.
+                for (int a = 0; a < pc.Lex.State.Arcs.Count; a++)
+                {
+                    Arc<Shape, ShapeNode> larc = pc.Lex.State.Arcs[a];
+                    if (larc.Input.IsEpsilon)
+                    {
+                        var nc = new PConfig(pc.PinvState, Enter(larc.Target, pc.Lex.Tokens));
+                        if (seen.Add(PKey(nc)))
+                        {
+                            result.Add(nc);
+                            stack.Push(nc);
+                        }
+                    }
+                }
+                // (b) Pinv ε-input (deletion-restoration) arcs: emit an underlying segment that must unify
+                // a lexicon arc — the lexicon constraint that prunes spurious restorations.
+                foreach (InversePhonology.Arc parc in pinv.ArcsFrom(pc.PinvState))
+                {
+                    if (!parc.IsEpsilonInput)
+                    {
+                        continue;
+                    }
+                    for (int a = 0; a < pc.Lex.State.Arcs.Count; a++)
+                    {
+                        Arc<Shape, ShapeNode> larc = pc.Lex.State.Arcs[a];
+                        if (!larc.Input.IsEpsilon && larc.Input.FeatureStruct.IsUnifiable(parc.UnderlyingOutput))
+                        {
+                            var nc = new PConfig(parc.Target, Enter(larc.Target, pc.Lex.Tokens));
+                            if (seen.Add(PKey(nc)))
+                            {
+                                result.Add(nc);
+                                stack.Push(nc);
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private string PKey(PConfig pc) =>
+            pc.PinvState + "|" + _stateIds[pc.Lex.State] + ":" + string.Join(",", pc.Lex.Tokens);
+
         /// <summary>Split a template's slots into prefix and suffix; prefixes are reversed to surface order.</summary>
         private void ClassifyTemplate(
             AffixTemplate template,
