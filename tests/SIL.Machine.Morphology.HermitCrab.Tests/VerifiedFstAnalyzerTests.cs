@@ -642,6 +642,51 @@ public class VerifiedFstAnalyzerTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void GrammarFstClosure_BoundedReduplication_TreatsReduplicationAsRegular()
+    {
+        // A reduplication rule makes the grammar non-closed by default (copy is non-regular). With the
+        // boundedReduplication assertion (fixed lexicon, bounded copy ⇒ finite ⇒ regular) the closure
+        // pass treats it as FST-able, so a grammar whose only escape is reduplication becomes closed.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule
+        {
+            Name = "redup",
+            Gloss = "RED",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        // A concatenative feeder in the same stratum (as in Indonesian, where meN- + phonology feed the
+        // reduplication) — so the reduplication escape is actually FED, not vacuously closed.
+        AffixProcessRule feeder = AddSuffix();
+        Morphophonemic.MorphologicalRules.Add(redup);
+        try
+        {
+            Assert.That(
+                GrammarFstClosure.Analyze(Language).FstClosed,
+                Is.False,
+                "reduplication escapes by default (copy is non-regular) when a feeder precedes it"
+            );
+            Assert.That(
+                GrammarFstClosure.Analyze(Language, boundedReduplication: true).FstClosed,
+                Is.True,
+                "bounded reduplication (finite lexicon) is treated as regular ⇒ closed"
+            );
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(redup);
+            Morphophonemic.MorphologicalRules.Remove(feeder);
+        }
+    }
+
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 

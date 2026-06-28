@@ -93,10 +93,18 @@ namespace SIL.Machine.Morphology.HermitCrab
                     break;
                 }
             }
-            // Only the constructs the FST proposer cannot build are worth claiming; concatenative
-            // prefix/suffix are already covered there. Parity remains the real certification arbiter.
+            // Claim every non-concatenative construct we actually synthesized — reduplication, infix,
+            // circumfix, process. Synthesis (GenerateWords) handles them all, so a tabulated entry is
+            // genuine coverage; plain prefix/suffix are already covered by the FST. Parity remains the
+            // real certification arbiter.
             _coveredOps = covered
-                .Where(o => o == MorphOp.Reduplication || o == MorphOp.Infix || o == MorphOp.Process)
+                .Where(o =>
+                    o == MorphOp.Reduplication
+                    || o == MorphOp.Infix
+                    || o == MorphOp.Process
+                    || o == MorphOp.CircumfixPrefix
+                    || o == MorphOp.CircumfixSuffix
+                )
                 .ToArray();
             WasCapped = capped;
             EntryCount = entries;

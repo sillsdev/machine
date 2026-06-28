@@ -950,7 +950,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             var segments = new List<FeatureStruct>();
             for (
                 ShapeNode node = shape.GetFirst(n => _filter(n.Annotation));
-                node != shape.End;
+                node != null && node != shape.End;
                 node = node.GetNext(n => _filter(n.Annotation))
             )
             {

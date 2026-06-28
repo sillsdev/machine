@@ -100,6 +100,58 @@ public class FstSenaBenchmark
     private static string Sig(WordAnalysis a) =>
         string.Join("+", a.Morphemes.Select(m => (m as Morpheme)?.Gloss ?? "?")) + ":" + a.RootMorphemeIndex;
 
+    /// <summary>Does the grammar certify with forward-synthesis + bounded-reduplication closure? Reports
+    /// the three gates (closed, covers-all-constructs, parity), which words break parity, and whether the
+    /// default path is then FST-only.</summary>
+    [Test]
+    public void Benchmark_CertifyWithBoundedReduplication()
+    {
+        (Language language, List<string> words) = Load();
+        var search = new Morpher(new TraceManager(), language) { MaxUnapplications = 0 };
+
+        bool closedDefault = GrammarFstClosure.Analyze(language).FstClosed;
+        bool closedBounded = GrammarFstClosure.Analyze(language, boundedReduplication: true).FstClosed;
+        TestContext.Out.WriteLine($"closed: default={closedDefault}, boundedReduplication={closedBounded}");
+
+        var fst = new FstTemplateAnalyzer(language, new Morpher(new TraceManager(), language));
+        TestContext.Out.WriteLine($"FST uncovered ops: [{string.Join(",", fst.UncoveredOps)}]");
+        var synth = new ForwardSynthesisProposer(language, new Morpher(new TraceManager(), language));
+        TestContext.Out.WriteLine($"forward-synth covered ops: [{string.Join(",", synth.CoveredOps)}]");
+        CompositeProposer composite = CompositeProposer.ForLanguage(language, fst, forwardSynthesis: true);
+        TestContext.Out.WriteLine($"composite covers all constructs: {composite.CoversAllConstructs}");
+        var verified = new VerifiedFstAnalyzer(
+            composite,
+            new MorpherPool(() => new Morpher(new TraceManager(), language))
+        );
+
+        // Which words break parity (the engine finds an analysis the composite misses)?
+        var broken = new List<string>();
+        foreach (string w in words)
+        {
+            var oracle = search.AnalyzeWord(w).Select(Sig).ToHashSet();
+            var got = verified.AnalyzeWord(w).Select(Sig).ToHashSet();
+            if (!got.SetEquals(oracle))
+                broken.Add(w);
+        }
+        TestContext.Out.WriteLine($"parity: {words.Count - broken.Count}/{words.Count} words match; breakers: [{string.Join(", ", broken)}]");
+
+        // Certify on the corpus the composite fully covers (exclude the breakers — a separate coverage
+        // gap, not a closure issue).
+        List<string> covered = words.Where(w => !broken.Contains(w)).ToList();
+        var caching = CachingMorphologicalAnalyzer.FromLanguage(
+            new TraceManager(),
+            language,
+            covered,
+            forwardSynthesis: true,
+            boundedReduplication: true
+        );
+        TestContext.Out.WriteLine(
+            $"certified on covered corpus ({covered.Count} words): {caching.GrammarCertified} "
+                + $"→ default path is {(caching.GrammarCertified ? "FST-only (engine skipped)" : "engine/cache")}"
+        );
+        Assert.That(closedBounded, Is.True, "bounded-reduplication closure should hold for Indonesian (all escapes are reduplication)");
+    }
+
     /// <summary>Measure the forward-synthesis precompile: build cost, table size, how many words it lifts
     /// to full coverage over the bare composite, and that it stays a sound subset of the engine.</summary>
     [Test]

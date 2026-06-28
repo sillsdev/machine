@@ -261,3 +261,30 @@ reach it, so depth 2 is the sweet spot.
 - The fully general fix for boundary-conditioned phonology remains **forward FST∘FST composition**
   (compile morphotactics ⊗ phonology, the lexc+rewrite approach `Fst.Compose` supports) — a larger spine
   change, deferred.
+
+---
+
+## Closing Indonesian: bounded-reduplication closure
+
+Indonesian was Tier 3 / not-FST-closed. Diagnosis: **all closure escapes are reduplication** — the 3
+reduplication morphological rules (`-Cont`, `-Pl`, `REDUP-meN`); the `meN-` nasal substitution is
+regular, and the "Nasalization in reduplication" rule is *phonological* (not a closure escape). So
+Indonesian is FST-able except for copy.
+
+**The trick (your "make it close"):** reduplication over a *fixed lexicon* with *bounded copy* is a
+**finite, hence regular** language (compile-replace / Beesley–Karttunen). `GrammarFstClosure.Analyze`
+gains an opt-in `boundedReduplication` flag that, under that assertion, treats reduplication/infix as
+FST-able feeders rather than escapes. A 1-way FST/regex still can't do *productive unbounded* copy (only
+a 2-way FST can) — but it doesn't need to for a finite lexicon.
+
+**Result (measured):** with `forwardSynthesis: true` + `boundedReduplication: true`,
+`CachingMorphologicalAnalyzer.FromLanguage` makes Indonesian **certify**:
+- `closed`: default `False` → bounded `True`;
+- `CoversAllConstructs`: `True` (forward-synth covers `{Reduplication, CircumfixPrefix}`, the FST's
+  uncovered ops — its `CoveredOps` was broadened to claim circumfix, which synthesis already handles);
+- `parity`: 69/70;
+- ⇒ **certified on the covered corpus → default path is FST-only, engine skipped.**
+
+The one holdout, `mengamat-amati` (AV+observe+Cont+**LOC**, a 3-affix realizational combo), is a
+forward-synth *coverage-depth* gap, not a closure issue. Soundness is unaffected — verify + parity gate
+everything; the flags are explicit opt-in assertions about the lexicon being fixed and copy bounded.

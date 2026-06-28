@@ -75,13 +75,26 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     public static class GrammarFstClosure
     {
-        public static ClosureReport Analyze(Language language)
+        /// <summary>
+        /// Run the feeding-closure pass. <paramref name="boundedReduplication"/> is an explicit caller
+        /// assertion that the grammar's reduplication (and infixation) is <b>bounded for a fixed
+        /// lexicon</b> — bounded copy count over finitely many stems — so the reduplicated/infixed
+        /// language is <b>finite, hence regular</b> (compile-replace / Beesley–Karttunen), and a sibling
+        /// generator (<see cref="ForwardSynthesisProposer"/>/<see cref="ReduplicationProposer"/>/
+        /// <see cref="InfixProposer"/>) precompiles it. Under that assertion those constructs are no
+        /// longer non-regular escapes, so a grammar whose only escapes are reduplication/infix becomes
+        /// <see cref="ClosureReport.FstClosed"/>. It is opt-in (default off) and unsound if reduplication
+        /// is genuinely unbounded/productive over novel stems; the parity gate + verify still backstop.
+        /// </summary>
+        public static ClosureReport Analyze(Language language, bool boundedReduplication = false)
         {
             IList<Stratum> strata = language.Strata;
             int count = strata.Count;
 
             // FST-able "feeders" per stratum: every morphological rule that is NOT a non-regular
-            // escape (concatenative affixes, compounding) plus every phonological rule.
+            // escape (concatenative affixes, compounding) plus every phonological rule. With
+            // boundedReduplication, reduplication/infix are FST-able (finite over a fixed lexicon), so
+            // they count as feeders rather than escapes.
             var feedersPerStratum = new int[count];
             var escapes = new List<KeyValuePair<int, string>>();
             for (int i = 0; i < count; i++)
@@ -89,7 +102,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Stratum stratum = strata[i];
                 foreach (IMorphologicalRule mrule in stratum.MorphologicalRules)
                 {
-                    if (IsEscape(mrule))
+                    if (IsEscape(mrule) && !boundedReduplication)
                     {
                         escapes.Add(new KeyValuePair<int, string>(i, ((AffixProcessRule)mrule).Name));
                     }

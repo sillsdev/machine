@@ -47,17 +47,23 @@ namespace SIL.Machine.Morphology.HermitCrab
             TraceManager traceManager,
             Language language,
             IEnumerable<string> certificationCorpus = null,
-            AnalysisCache cache = null
+            AnalysisCache cache = null,
+            bool forwardSynthesis = false,
+            bool boundedReduplication = false
         )
         {
             var pool = new MorpherPool(() => new Morpher(new TraceManager(), language));
             var fst = new FstTemplateAnalyzer(language, new Morpher(traceManager, language));
-            CompositeProposer proposer = CompositeProposer.ForLanguage(language, fst);
+            // forwardSynthesis adds the root×affix synthesis precompile (covers reduplication/infix for a
+            // bounded-affixation grammar); boundedReduplication tells the closure pass those constructs
+            // are finite-hence-regular for this fixed lexicon, so a grammar whose only escapes are
+            // reduplication/infix can certify. Both opt-in; verify + parity still gate soundness.
+            CompositeProposer proposer = CompositeProposer.ForLanguage(language, fst, forwardSynthesis);
             var fast = new VerifiedFstAnalyzer(proposer, pool);
             bool certified = false;
             if (certificationCorpus != null)
             {
-                bool closed = GrammarFstClosure.Analyze(language).FstClosed;
+                bool closed = GrammarFstClosure.Analyze(language, boundedReduplication).FstClosed;
                 bool parity = FstVerification
                     .Compare(new Morpher(traceManager, language), fast, certificationCorpus)
                     .IsComplete;
