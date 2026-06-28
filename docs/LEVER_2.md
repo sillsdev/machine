@@ -19,63 +19,72 @@ affix adds arcs, not a multiplicative blow-up.
 Lever 1 (per-morpheme surface precompile) is a *local approximation* of this; Lever 2 is the exact,
 global version.
 
-## Target pipeline
+## Target pipeline — LAZY composition (no materialized `Fst.Compose`)
+
+Don't build `Pinv ∘ Lex` as an object. Walk the surface maintaining a frontier of configs
+`(pinvState, lexState, tokens)` — an on-the-fly product automaton:
 
 ```
-        analysis (morpheme tokens)
-              ▲
-              │  read tokens off the traversed lexicon states
-   surface ──▶│  walk  Pinv ∘ Lex   (one composed transducer, built once)
-              │
-   Pinv : surface → underlying     (inverse phonology transducer)
-   Lex  : underlying → underlying  (morphotactic network, identity tape; tokens on states)
+   surface segment s ─▶ for each config (pinvState, lexState, tokens):
+       for each Pinv arc consuming s with underlying output u:        (substitution / identity)
+           if some Lex arc at lexState has input unifying u:
+               advance both → (pinvState', lexState', tokens + tokenOf(lexState'))
+       for each Pinv ε-input arc with underlying output u:            (DELETION restoration — consumes no surface)
+           if some Lex arc at lexState has input unifying u:
+               advance both, re-process s
+   accept where pinvState and lexState are both accepting; emit accumulated tokens
 ```
 
-Analyze = walk the composed transducer on the surface; the lexicon-component of each traversed state
-carries the morpheme token (same token-accumulation the current `FstTemplateAnalyzer` walk already does).
-`VerifiedFstAnalyzer` still confirms — composition need not be perfectly sound, only complete-ish; verify
-is the soundness gate, as everywhere.
+Analyze = this walk; tokens come off the traversed **lex** states exactly as the current
+`FstTemplateAnalyzer` walk already does. `VerifiedFstAnalyzer` still confirms every candidate — verify is
+the soundness gate, as everywhere.
+
+**The property this must prove:** a `Pinv` ε-arc that "restores a deleted segment" only survives if a
+`Lex` arc actually has that underlying segment at that point. That lexicon constraint is *exactly* what
+the runtime inverse lacked (it restored everywhere → `ⁿmeⁿnⁿpuⁿlis`). Composition prunes it because the
+two machines advance in lockstep.
 
 ## The three blockers (and resolution)
 
-**Blocker 1 — tokens live in a side-table, not on an output tape.** `FstTemplateAnalyzer` accumulates
-morpheme tokens via `_tokenOnEntry[state]` during the walk; it is an acceptor, not a transducer.
-*Resolution:* keep tokens **state-based** through composition. A composed state is a pair
-`(pinv-state, lex-state)`; it inherits the token of its `lex-state` component. This needs the composition
-to preserve which `lex-state` each composed state came from — `Fst.Compose` builds `(s1,s2)` pairs
-internally but does not expose the map, so we either (a) extend a composition that records it, or (b)
-encode tokens as pass-through **output symbols** on the lexicon's output tape (classical lexc multichar
-symbols) and read the output tape. (a) is less invasive here.
+**Blocker 1 — tokens in a side-table, not an output tape. → DISSOLVED by lazy composition.** `lexState`
+is in the config, so tokens stay state-based; no token-map to recover, no output-tape hack. The walk is
+a product-automaton extension of the existing `EpsilonClosure`/NFA walk. `Lex` stays the acceptor
+`FstTemplateAnalyzer` already builds — use the **default ctor** (underlying-only arcs, no surface
+precompile, so phonology isn't double-applied).
 
-**Blocker 2 — HC phonology is not a composable FST.** HC compiles rules to `Matcher` (an acceptor FSA)
-+ imperative shape mutation (`AnalysisRewriteRule`/`SynthesisRewriteRule`), *not* to a transducer. There
-is no rewrite-rule→transducer compiler in-repo. *Resolution (the real work):* build one. Two routes:
-  - **B-direct:** compile each `RewriteRule` to an `Fst<Shape,ShapeNode>` transducer (Kaplan–Kay: a
-    bounded rewrite is a regular relation). Hardest; full generality (deletion, epenthesis, environments).
-  - **B-probe (reuse HC, tractable):** build a **bounded-context Mealy transducer by probing synthesis** —
-    states encode the last *k* segments (incl. the boundary marker); for each (context, segment) emit the
-    surface HC synthesizes. Bounded context ⇒ bounded states. Deletion/epenthesis = epsilon/extra output
-    arcs detected by length change. Reuses HC's real phonology (no reimplementation); only the
-    *unbounded-environment* rules (the census escapes) fall outside and ride the engine.
+**Blocker 3 — unification-arc composition. → MOOT.** We never call `Fst.Compose`; the lazy walk unifies
+`Pinv` output against `Lex` input directly (same `IsUnifiable` the walk already uses).
 
-**Blocker 3 — unification-arc composition.** *Resolved by the library:* `Fst.Compose` already composes
-over feature-structure arcs (matches `arc1.output` against `arc2.input`, unifying). Confirmed in
-`src/SIL.Machine/FiniteState/Fst.cs`.
+**Blocker 2 — HC phonology is not a transducer. → THE REAL WORK.** Build `Pinv` (surface→underlying).
+HC compiles rules to `Matcher` + imperative mutation, not a transducer; no rewrite→transducer compiler
+exists in-repo. Routes:
+  - **B-probe (reuse HC):** a bounded-context Mealy transducer built by probing HC synthesis — states
+    encode the last *k* segments (incl. the boundary marker); for each (context, segment) record the
+    surface HC produces; invert. Deletion/epenthesis = ε arcs from length change. **Risk (advisor):** HC
+    phonology is a multi-rule cascade with feeding/bleeding; a per-context probe only reproduces it if
+    the combined effect stays in the window, and deletion breaks clean underlying↔surface alignment.
+    *Must be validated on a two-interacting-rule case, not one rule.*
+  - **B-direct:** compile each `RewriteRule` to a per-rule `Fst` transducer and lazy-compose the cascade
+    (Kaplan–Kay). Classically safe; more work (per-rule compilation).
 
-## Build plan (spike-first, incremental, verify-gated throughout)
+## Build plan (spike-first; the spike targets DELETION)
 
-1. ☐ **Spike** — hand-build two tiny `Fst<Shape,ShapeNode>` transducers with input:output arcs and
-   `Compose` them; confirm the composed relation and that we can walk it on a surface. De-risks
-   Blockers 1 & 3 concretely before any big build.
-2. ☐ **Lexicon-as-transducer** — emit `FstTemplateAnalyzer`'s underlying network as an identity
-   transducer (input=output=underlying segment), tokens preserved per state.
-3. ☐ **Phonology transducer (B-probe, substitution first)** — bounded-context Mealy transducer from
-   synthesis probing; substitution rules only (no length change).
-4. ☐ **Compose + walk + tokens** — `Pinv ∘ Lex`, walk on surface, recover tokens; demonstrate on the
-   `t→d` toy end-to-end (surface→tokens through composition, not the side-table hack).
-5. ☐ **Deletion / epenthesis** — extend the phonology transducer to length-changing arcs; target the
-   Indonesian `meN-` nasal substitution (the case Lever 1 only reaches by enumeration).
-6. ☐ **Measure** on Indonesian: build time (should be ~grammar-sized, not 5 s enumeration) and coverage.
+1. ☐ **Deletion spike** — toy grammar with a *boundary deletion* rule we fully control (e.g. root `sat`
+   + suffix `-d`, rule `t→∅ / _ d`, so `sat+d = satd → "sad"`). Build `Lex` = `FstTemplateAnalyzer`
+   (default ctor). Hand-build the smallest `Pinv` that restores the deleted `t`. Lazy-compose-walk
+   `"sad"` and **recover `[sat, -d]`**, and prove the restoration is *pruned* everywhere the lexicon
+   lacks the `t`. Substitution would pass and lie — deletion is where every prior approach died, so the
+   spike must hit it. If hand-building `Pinv` for one deletion case is too fiddly, that fiddliness *is*
+   the signal about the general compiler.
+2. ☐ **`Pinv` compiler** — generalize the hand-built `Pinv` into a builder (B-probe or B-direct per what
+   the spike teaches), validated on a **two-interacting-rule** cascade (assimilation + deletion).
+3. ☐ **`ComposedLexiconProposer`** — the lazy-compose walk as an `IMorphologicalAnalyzer`/`IConstructProposer`
+   over `Lex` + `Pinv`; verify-gated; wired opt-in like the others.
+4. ☐ **Measure** on Indonesian `meN-`: build time (should be ~grammar-sized, not the 5 s enumeration) and
+   coverage vs. the Lever-1 forward-synth baseline (42→69).
 
-Soundness is never at risk: `VerifiedFstAnalyzer` confirms every candidate, and an uncovered/over-
-generated path falls to the engine via the parity gate. The only variables are coverage and build time.
+## Honest gate
+Work the deletion spike for real. If end-to-end recovery + pruning hold, generalize `Pinv` with
+confidence. If it resists after genuine effort, that is the recorded finding — "Blocker 2
+deletion/cascade is the wall" — and Lever-1 guided enumeration is the documented pragmatic fallback, not
+a silent retreat. Soundness is never at risk either way (verify + parity gate).
