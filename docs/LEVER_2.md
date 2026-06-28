@@ -88,19 +88,44 @@ exists in-repo. Routes:
 4. ☐ **`ComposedLexiconProposer` + measure** — wrap the walk as an opt-in `IConstructProposer`,
    verify-gated; measure on Indonesian `meN-` (build should be ~grammar-sized, not the 5 s enumeration).
 
+## The cascade test (the decisive experiment)
+
+The single-rule deletion spike would "pass and lie" about **cascades** — the real `meN-` case is
+assimilation **+** deletion interacting, which is what produced `ⁿmeⁿnⁿpuⁿlis`. So
+`LazyComposition_RecoversOpaqueTwoRuleCascade` hand-builds a `Pinv` for a two-rule **feeding/opacity**
+cascade — `N→n / _t` then `t→∅ / n_`, underlying `aN+t = "aNt" → "ant" → "an"` (the `t` that *triggered*
+the assimilation then deletes; on the surface its trigger is gone — counterbleeding opacity).
+
+**Result: it works.** A bounded-context `Pinv` that **couples** un-assimilation (`n→N`) with deletion-
+restoration (`ε→t`) *through a state* recovers the opaque `aNt` from `"an"` → `[aN, -t]`, lexicon-
+constrained (exactly one analysis). So a bounded transducer **can represent the inverse of an opaque
+cascade**, and lazy composition recovers it. The Lever 2 architecture is real for cascades — the thing
+that defeated every prior approach.
+
+**Corollary for the compiler:** naive **B-probe** over *underlying* contexts would misread this — the
+`t`-deletion is conditioned on the *surface* `n` that assimilation fed from `N`, not on the underlying
+`N` a probe would see. So the `Pinv` compiler must compose **per-rule** transducers (**B-direct**), not
+probe combined contexts. The cascade test turned that from an assertion into a known fact.
+
 ## Status (what is proven vs. the frontier)
 
-**Proven (committed, passing):** the Lever 2 *architecture* is real in this codebase. Lazy composition
-recovers boundary **deletion** — the exact case that broke the runtime inverse — and the lexicon prunes
-the over-restoration, with real HC types end-to-end. Blockers 1 (tokens state-based) and 3 (no
-`Fst.Compose`) are dissolved by the lazy walk; Blocker 2's consuming side is done.
+**Proven (committed, passing):** the Lever 2 *architecture* is real in this codebase — through **opaque
+cascades**, not just single rules. Lazy composition recovers boundary deletion and a feeding/opacity
+cascade; the lexicon prunes over-restoration; demonstrated with real HC types end-to-end for deletion.
+Blockers 1 (tokens state-based) and 3 (no `Fst.Compose`) are dissolved by the lazy walk; Blocker 2's
+*consuming* engine (`AnalyzeComposed` + `InversePhonology`) is built and proven.
 
-**Frontier (the honest wall):** the general `Pinv` *compiler* — turning a grammar's phonological rules
-(substitution, deletion, assimilation, and their feeding/bleeding cascades) into the `InversePhonology`
-transducer automatically. The spikes prove that *given* the right `Pinv`, everything downstream works;
-building that `Pinv` for arbitrary cascades is the multi-week subsystem. Until it exists, Lever 1
-(guided forward-synthesis, 42→69 on Indonesian) remains the pragmatic accelerator. Soundness is never at
-risk either way — `VerifiedFstAnalyzer` + the parity gate gate everything.
+**Frontier (unstarted, now precisely scoped):** the `Pinv` *compiler* — auto-building `InversePhonology`
+from a grammar's phonological rules. The spikes/tests all use a **hand-built** `Pinv`; the compiler that
+*produces* one from the grammar is not started. The cascade test shows the route must be **B-direct**
+(compile each `RewriteRule` to a transducer, compose the cascade, invert), since probing misreads
+feeding. That per-rule rewrite→transducer compiler over feature-structure `Shape` arcs is the multi-week
+subsystem.
+
+**Honest headline:** architecture proven (incl. cascades) with hand-built inverses; the phonology→
+transducer **compiler is unstarted**, so Lever 2 does **not** yet accelerate a real grammar. **Lever 1**
+(guided forward-synthesis, 42→69 on Indonesian) remains the only thing that accelerates a real grammar
+today. Soundness is never at risk either way — `VerifiedFstAnalyzer` + the parity gate gate everything.
 
 ## Honest gate
 Work the deletion spike for real. If end-to-end recovery + pruning hold, generalize `Pinv` with

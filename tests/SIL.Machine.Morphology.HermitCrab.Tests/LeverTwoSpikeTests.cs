@@ -174,4 +174,43 @@ public class LeverTwoSpikeTests
         HashSet<string> got = Analyze(BuildPinv(), BuildLex(includeSadRoot: true), "saa");
         Assert.That(got, Is.Empty, "a non-word must yield nothing even with deletion-restoration available");
     }
+
+    // ---- Two-rule FEEDING/OPACITY cascade: N→n / _t, then t→∅ / n_. Underlying aN+t = "aNt" → "ant"
+    // (assimilation) → "an" (the t that TRIGGERED the assimilation then deletes — counterbleeding
+    // opacity). On the surface "an" the conditioning t is gone, so this is exactly the interacting-rule
+    // case the advisor flagged and that produced ⁿmeⁿnⁿpuⁿlis in the runtime inverse. ----
+
+    private static Graph BuildCascadePinv()
+    {
+        var g = new Graph { Start = 0 };
+        g.Accepting.Add(0);
+        g.Add(0, "a", "a", 0);
+        g.Add(0, "n", "n", 0); // identity: surface n was underlying n
+        g.Add(0, "n", "N", 1); // un-assimilate: surface n was underlying N (before a now-deleted t)...
+        g.Add(1, "", "t", 0); // ...so restore the deleted t (ε-input). The two ops are COUPLED via state 1.
+        return g;
+    }
+
+    private static Graph BuildCascadeLex()
+    {
+        // root "aN" (underlying, ends in the archiphoneme N) + suffix "-t": 0-a->1-N->2 (root) -t->3 (suffix)
+        var g = new Graph { Start = 0 };
+        g.Add(0, "a", "a", 1);
+        g.Add(1, "N", "N", 2);
+        g.TokenOnEntry[2] = "aN";
+        g.Add(2, "t", "t", 3);
+        g.TokenOnEntry[3] = "-t";
+        g.Accepting.Add(3);
+        return g;
+    }
+
+    [Test]
+    public void LazyComposition_RecoversOpaqueTwoRuleCascade()
+    {
+        // The decisive test: a bounded-context Pinv that COUPLES un-assimilation (n→N) with deletion-
+        // restoration (ε→t) recovers the opaque underlying form. surface "an" → [aN, -t].
+        HashSet<string> got = Analyze(BuildCascadePinv(), BuildCascadeLex(), "an");
+        Assert.That(got, Does.Contain("aN+-t"), "lazy composition must recover the opaque cascade aNt→an");
+        Assert.That(got.Count, Is.EqualTo(1), "exactly the lexicon-valid analysis — opacity restoration is constrained");
+    }
 }
