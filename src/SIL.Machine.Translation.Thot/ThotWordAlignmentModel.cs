@@ -31,6 +31,8 @@ namespace SIL.Machine.Translation.Thot
                     return new ThotIbm3WordAlignmentModel();
                 case ThotWordAlignmentModelType.Ibm4:
                     return new ThotIbm4WordAlignmentModel();
+                case ThotWordAlignmentModelType.Eflomal:
+                    return new ThotEflomalWordAlignmentModel();
             }
             throw new InvalidEnumArgumentException(nameof(type), (int)type, typeof(ThotWordAlignmentModelType));
         }

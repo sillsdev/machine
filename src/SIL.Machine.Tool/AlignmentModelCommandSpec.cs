@@ -37,7 +37,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
         _modelArgument = command.Argument("MODEL_PATH", "The word alignment model.").IsRequired();
         _modelTypeOption = command.Option(
             "-mt|--model-type <MODEL_TYPE>",
-            $"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.Ibm3}\", \"{ToolHelpers.Ibm4}\", \"{ToolHelpers.FastAlign}\".",
+            $"The word alignment model type.\nTypes: \"{ToolHelpers.Hmm}\" (default), \"{ToolHelpers.Ibm1}\", \"{ToolHelpers.Ibm2}\", \"{ToolHelpers.Ibm3}\", \"{ToolHelpers.Ibm4}\", \"{ToolHelpers.FastAlign}\", \"{ToolHelpers.Eflomal}\".",
             CommandOptionType.SingleValue
         );
         _pluginOption = command.Option(
@@ -175,6 +175,17 @@ public class AlignmentModelCommandSpec : ICommandSpec
         SetThotParameter(parameters, thotParameters, "hmm-iters", p => p.HmmIterationCount);
         SetThotParameter(parameters, thotParameters, "ibm3-iters", p => p.Ibm3IterationCount);
         SetThotParameter(parameters, thotParameters, "ibm4-iters", p => p.Ibm4IterationCount);
+        // Eflomal reuses the IBM1/HMM/IBM3 iteration counts above for its IBM1->HMM->fertility
+        // schedule; when none are given it derives the schedule automatically from the corpus.
+        SetThotParameter(parameters, thotParameters, "eflomal-samplers", p => p.EflomalNumSamplers);
+        SetThotParameter(parameters, thotParameters, "eflomal-deterministic", p => p.EflomalDeterministic);
+        SetThotParameter(parameters, thotParameters, "eflomal-seed", p => p.EflomalSeed);
+        SetThotParameter(parameters, thotParameters, "eflomal-lex-norm", p => p.EflomalLexNorm);
+        SetThotParameter(parameters, thotParameters, "eflomal-lex-alpha", p => p.EflomalLexAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-jump-alpha", p => p.EflomalJumpAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-fert-alpha", p => p.EflomalFertilityAlpha);
+        SetThotParameter(parameters, thotParameters, "eflomal-p0", p => p.EflomalP0);
+        SetThotParameter(parameters, thotParameters, "eflomal-jump-window", p => p.EflomalJumpWindow);
         SetThotParameter(parameters, thotParameters, "var-bayes", p => p.VariationalBayes);
         SetThotParameter(parameters, thotParameters, "fa-p0", p => p.FastAlignP0);
         SetThotParameter(parameters, thotParameters, "hmm-p0", p => p.HmmP0);
@@ -235,6 +246,7 @@ public class AlignmentModelCommandSpec : ICommandSpec
             ToolHelpers.FastAlign,
             ToolHelpers.Ibm3,
             ToolHelpers.Ibm4,
+            ToolHelpers.Eflomal,
         };
         validTypes.UnionWith(pluginTypes);
         return string.IsNullOrEmpty(value) || validTypes.Contains(value);

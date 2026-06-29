@@ -19,7 +19,7 @@ namespace SIL.Machine.Translation.Thot
                 return 0;
 
             // add 1 to convert the specified indices to Thot position indices, which are 1-based
-            return Thot.swAlignModel_getIbm2AlignmentProbability(
+            return Thot.swAlignModel_getFastAlignAlignmentProbability(
                 Handle,
                 (uint)(targetIndex + 1),
                 (uint)sourceLen,
