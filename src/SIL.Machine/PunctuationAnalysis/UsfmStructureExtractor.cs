@@ -141,17 +141,6 @@ namespace SIL.Machine.PunctuationAnalysis
             var currentVerseSegments = new List<TextSegment>();
             foreach (TextSegment textSegment in _textSegments)
             {
-                if (textSegment.Book != null)
-                    currentBook = Canon.BookIdToNumber(textSegment.Book);
-                if (textSegment.Chapter > 0)
-                    currentChapter = textSegment.Chapter;
-                if (includeChapters != null && currentBook > 0)
-                {
-                    if (!includeChapters.TryGetValue(currentBook, out List<int> bookChapters))
-                        continue;
-                    if (currentChapter > 0 && bookChapters.Count > 0 && !bookChapters.Contains(currentChapter))
-                        continue;
-                }
                 if (textSegment.MarkerIsInPrecedingContext(UsfmMarkerType.Verse))
                 {
                     if (currentVerseSegments.Count > 0)
@@ -167,6 +156,17 @@ namespace SIL.Machine.PunctuationAnalysis
                         chapters.Add(new Chapter(currentChapterVerses, currentChapter));
                     }
                     currentChapterVerses = new List<Verse>();
+                }
+                if (textSegment.Book != null)
+                    currentBook = Canon.BookIdToNumber(textSegment.Book);
+                if (textSegment.Chapter > 0)
+                    currentChapter = textSegment.Chapter;
+                if (includeChapters != null && currentBook > 0)
+                {
+                    if (!includeChapters.TryGetValue(currentBook, out List<int> bookChapters))
+                        continue;
+                    if (currentChapter > 0 && bookChapters.Count > 0 && !bookChapters.Contains(currentChapter))
+                        continue;
                 }
                 currentVerseSegments.Add(textSegment);
             }
