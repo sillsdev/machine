@@ -326,16 +326,19 @@ public class RustifyBenchmark
             Consume(morpher.AnalyzeWord(words[i]));
 
         System.Console.WriteLine(
-            $"SENAPAR grammar words={words.Count} cores={System.Environment.ProcessorCount} maxUnapp={maxUnapp}"
+            $"SENAPAR grammar words={words.Count} cores={System.Environment.ProcessorCount} maxUnapp={maxUnapp} "
+                + $"serverGC={System.Runtime.GCSettings.IsServerGC}"
         );
         double baseMs = 0;
-        foreach (int dop in new[] { 1, 4, 8, 16 })
+        foreach (int dop in new[] { 1, 2, 4, 8, 16 })
         {
             System.GC.Collect();
             System.GC.WaitForPendingFinalizers();
             System.GC.Collect();
             long bytes0 = System.GC.GetTotalAllocatedBytes(precise: true);
             int gen0 = System.GC.CollectionCount(0);
+            int gen1 = System.GC.CollectionCount(1);
+            int gen2 = System.GC.CollectionCount(2);
             var sw = Stopwatch.StartNew();
             if (dop == 1)
             {
@@ -353,12 +356,15 @@ public class RustifyBenchmark
             sw.Stop();
             long mb = (System.GC.GetTotalAllocatedBytes(precise: true) - bytes0) / 1024 / 1024;
             int gen0Delta = System.GC.CollectionCount(0) - gen0;
+            int gen1Delta = System.GC.CollectionCount(1) - gen1;
+            int gen2Delta = System.GC.CollectionCount(2) - gen2;
             double ms = sw.Elapsed.TotalMilliseconds;
             if (dop == 1)
                 baseMs = ms;
             double wps = words.Count / sw.Elapsed.TotalSeconds;
             System.Console.WriteLine(
-                $"SENAPAR dop={dop,2} ms={ms,8:F0} words/sec={wps,8:F0} scaling={baseMs / ms,5:F2}x MB={mb,5} gen0={gen0Delta}"
+                $"SENAPAR dop={dop,2} ms={ms,8:F0} words/sec={wps,8:F0} scaling={baseMs / ms,5:F2}x MB={mb,5} "
+                    + $"gen0={gen0Delta,4} gen1={gen1Delta,3} gen2={gen2Delta,3}"
             );
         }
     }
