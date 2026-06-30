@@ -13,7 +13,7 @@ public class ChrF3QualityEstimatorTests
         var qualityEstimation = new ChrF3QualityEstimator(slope: 109.6145, intercept: -14.0633);
         List<(MultiKeyRef key, double confidence)> confidences =
         [
-            (new MultiKeyRef("MAT.txt", 1), 0.6020749899712906),
+            (new MultiKeyRef("MAT.txt", 1), 0.6220749899712906),
             (new MultiKeyRef("MAT.txt", 2), 0.5416165991875662),
             (new MultiKeyRef("MRK.txt", 1), 0.40324150219671917),
         ];
@@ -23,8 +23,8 @@ public class ChrF3QualityEstimatorTests
         {
             Assert.That(usabilityTextSegments, Has.Count.EqualTo(3));
             Assert.That(usabilityTextSegments[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(usabilityTextSegments[0].ProjectedChrF3, Is.EqualTo(51.93).Within(0.01));
-            Assert.That(usabilityTextSegments[0].Usability, Is.EqualTo(0.765).Within(0.001));
+            Assert.That(usabilityTextSegments[0].ProjectedChrF3, Is.EqualTo(54.12).Within(0.01));
+            Assert.That(usabilityTextSegments[0].Usability, Is.EqualTo(0.786).Within(0.001));
             Assert.That(usabilityTextSegments[0].Confidence, Is.EqualTo(confidences[0].confidence).Within(0.001));
             Assert.That(usabilityTextSegments[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
             Assert.That(usabilityTextSegments[1].ProjectedChrF3, Is.EqualTo(45.31).Within(0.01));
@@ -36,9 +36,9 @@ public class ChrF3QualityEstimatorTests
             Assert.That(usabilityTextSegments[2].Confidence, Is.EqualTo(confidences[2].confidence).Within(0.001));
             Assert.That(usabilityTexts, Has.Count.EqualTo(2));
             Assert.That(usabilityTexts[0].Label, Is.EqualTo(UsabilityLabel.Yellow));
-            Assert.That(usabilityTexts[0].ProjectedChrF3, Is.EqualTo(48.53).Within(0.01));
-            Assert.That(usabilityTexts[0].Usability, Is.EqualTo(0.728).Within(0.001));
-            Assert.That(usabilityTexts[0].Confidence, Is.EqualTo(0.571).Within(0.001));
+            Assert.That(usabilityTexts[0].ProjectedChrF3, Is.EqualTo(49.56).Within(0.01));
+            Assert.That(usabilityTexts[0].Usability, Is.EqualTo(0.738).Within(0.001));
+            Assert.That(usabilityTexts[0].Confidence, Is.EqualTo(0.580).Within(0.001));
             Assert.That(usabilityTexts[1].Label, Is.EqualTo(UsabilityLabel.Red));
             Assert.That(usabilityTexts[1].ProjectedChrF3, Is.EqualTo(30.14).Within(0.01));
             Assert.That(usabilityTexts[1].Usability, Is.EqualTo(0.465).Within(0.001));
@@ -52,7 +52,7 @@ public class ChrF3QualityEstimatorTests
         var qualityEstimation = new ChrF3QualityEstimator(slope: 109.6145, intercept: -14.0633);
         List<(ScriptureRef key, double confidence)> confidences =
         [
-            (new ScriptureRef(new VerseRef(1, 1, 1)), 0.6020749899712906),
+            (new ScriptureRef(new VerseRef(1, 1, 1)), 0.6220749899712906),
             (new ScriptureRef(new VerseRef(1, 1, 2)), 0.5416165991875662),
             (new ScriptureRef(new VerseRef(1, 2, 1)), 0.40324150219671917),
         ];
@@ -65,8 +65,8 @@ public class ChrF3QualityEstimatorTests
         {
             Assert.That(usabilitySegments, Has.Count.EqualTo(3));
             Assert.That(usabilitySegments[0].Label, Is.EqualTo(UsabilityLabel.Green));
-            Assert.That(usabilitySegments[0].ProjectedChrF3, Is.EqualTo(51.93).Within(0.01));
-            Assert.That(usabilitySegments[0].Usability, Is.EqualTo(0.765).Within(0.001));
+            Assert.That(usabilitySegments[0].ProjectedChrF3, Is.EqualTo(54.12).Within(0.01));
+            Assert.That(usabilitySegments[0].Usability, Is.EqualTo(0.786).Within(0.001));
             Assert.That(usabilitySegments[0].Confidence, Is.EqualTo(confidences[0].confidence).Within(0.001));
             Assert.That(usabilitySegments[1].Label, Is.EqualTo(UsabilityLabel.Yellow));
             Assert.That(usabilitySegments[1].ProjectedChrF3, Is.EqualTo(45.31).Within(0.01));
@@ -78,18 +78,18 @@ public class ChrF3QualityEstimatorTests
             Assert.That(usabilitySegments[2].Confidence, Is.EqualTo(confidences[2].confidence).Within(0.001));
             Assert.That(usabilityChapters, Has.Count.EqualTo(2));
             Assert.That(usabilityChapters[0].Label, Is.EqualTo(UsabilityLabel.Yellow));
-            Assert.That(usabilityChapters[0].ProjectedChrF3, Is.EqualTo(48.53).Within(0.01));
-            Assert.That(usabilityChapters[0].Usability, Is.EqualTo(0.728).Within(0.001));
-            Assert.That(usabilityChapters[0].Confidence, Is.EqualTo(0.571).Within(0.001));
+            Assert.That(usabilityChapters[0].ProjectedChrF3, Is.EqualTo(49.56).Within(0.01));
+            Assert.That(usabilityChapters[0].Usability, Is.EqualTo(0.738).Within(0.001));
+            Assert.That(usabilityChapters[0].Confidence, Is.EqualTo(0.580).Within(0.001));
             Assert.That(usabilityChapters[1].Label, Is.EqualTo(UsabilityLabel.Red));
             Assert.That(usabilityChapters[1].ProjectedChrF3, Is.EqualTo(30.14).Within(0.01));
             Assert.That(usabilityChapters[1].Usability, Is.EqualTo(0.465).Within(0.001));
             Assert.That(usabilityChapters[1].Confidence, Is.EqualTo(confidences[2].confidence).Within(0.001));
             Assert.That(usabilityBooks, Has.Count.EqualTo(1));
-            Assert.That(usabilityBooks[0].Label, Is.EqualTo(UsabilityLabel.Yellow));
-            Assert.That(usabilityBooks[0].ProjectedChrF3, Is.EqualTo(41.68).Within(0.01));
-            Assert.That(usabilityBooks[0].Usability, Is.EqualTo(0.640).Within(0.001));
-            Assert.That(usabilityBooks[0].Confidence, Is.EqualTo(0.508).Within(0.001));
+            Assert.That(usabilityBooks[0].Label, Is.EqualTo(UsabilityLabel.Red));
+            Assert.That(usabilityBooks[0].ProjectedChrF3, Is.EqualTo(42.28).Within(0.01));
+            Assert.That(usabilityBooks[0].Usability, Is.EqualTo(0.647).Within(0.001));
+            Assert.That(usabilityBooks[0].Confidence, Is.EqualTo(0.514).Within(0.001));
         }
     }
 }
