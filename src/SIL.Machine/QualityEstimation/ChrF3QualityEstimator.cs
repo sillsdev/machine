@@ -9,8 +9,14 @@ namespace SIL.Machine.QualityEstimation
     /// <summary>
     /// Provides chrF3 quality estimation for pre-translations.
     /// </summary>
+    /// <remarks>
+    /// The usability score thresholds used are: Green 0.776; Yellow 0.681.
+    /// These correspond to chrF3 thresholds of: Green 53.0; Yellow 44.5.
+    /// </remarks>
     public class ChrF3QualityEstimator
     {
+        private const double GreenThreshold = 0.776;
+        private const double YellowThreshold = 0.681;
         private readonly double _intercept;
         private readonly double _slope;
 
@@ -28,19 +34,20 @@ namespace SIL.Machine.QualityEstimation
         /// <summary>
         /// The threshold values used to calculate the usability label for every book or text.
         /// </summary>
-        public Thresholds BookThresholds { get; set; } = new Thresholds(greenThreshold: 0.745, yellowThreshold: 0.62);
+        public Thresholds BookThresholds { get; set; } =
+            new Thresholds(greenThreshold: GreenThreshold, yellowThreshold: YellowThreshold);
 
         /// <summary>
         /// The threshold values used to calculate the usability label for every chapter.
         /// </summary>
         public Thresholds ChapterThresholds { get; set; } =
-            new Thresholds(greenThreshold: 0.745, yellowThreshold: 0.62);
+            new Thresholds(greenThreshold: GreenThreshold, yellowThreshold: YellowThreshold);
 
         /// <summary>
         /// The threshold values used to calculate the usability label for every segment.
         /// </summary>
         public Thresholds SegmentThresholds { get; set; } =
-            new Thresholds(greenThreshold: 0.745, yellowThreshold: 0.62);
+            new Thresholds(greenThreshold: GreenThreshold, yellowThreshold: YellowThreshold);
 
         /// <summary>
         /// The usable parameters to calculate the usable probabilities.
