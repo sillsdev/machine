@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Nito.AsyncEx;
 using SIL.PlatformUtilities;
 using SIL.Scripture;
 
@@ -12,6 +13,8 @@ namespace SIL.Machine.Corpora
 {
     public static class CorporaUtils
     {
+        public static readonly AsyncLock VersificationLock = new AsyncLock();
+
         public static ISet<int> GetSplitIndices(
             int corpusSize,
             double? percent = null,

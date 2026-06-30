@@ -984,12 +984,13 @@ public class ParallelTextCorpusTests
     [Test]
     public void GetRows_SameVerseRefOneToMany()
     {
-        Versification.Table.Implementation.RemoveAllUnknownVersifications();
-        string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
         ScrVers versification;
-        using (var reader = new StringReader(src))
+        using (CorporaUtils.VersificationLock.Lock())
         {
+            string src = "&MAT 1:2-3 = MAT 1:2\nMAT 1:4 = MAT 1:3\n";
+            using var reader = new StringReader(src);
             versification = Versification.Table.Implementation.Load(reader, "vers.txt", ScrVers.English, "custom");
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
         }
 
         var sourceCorpus = new DictionaryTextCorpus(

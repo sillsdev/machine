@@ -566,7 +566,8 @@ public class UsfmVersificationAnalyzerTests
     {
         baseVersification ??= ScrVers.English;
         ScrVers customVersification = baseVersification;
-        using (var reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(customVrsContents))))
+        using var reader = new StreamReader(new MemoryStream(Encoding.UTF8.GetBytes(customVrsContents)));
+        using (CorporaUtils.VersificationLock.Lock())
         {
             customVersification = Versification.Table.Implementation.Load(
                 reader,
@@ -574,8 +575,9 @@ public class UsfmVersificationAnalyzerTests
                 baseVersification,
                 baseVersification.ToString() + "-" + customVrsContents.GetHashCode()
             );
+            Versification.Table.Implementation.RemoveAllUnknownVersifications();
         }
-        Versification.Table.Implementation.RemoveAllUnknownVersifications();
+
         return customVersification;
     }
 }
