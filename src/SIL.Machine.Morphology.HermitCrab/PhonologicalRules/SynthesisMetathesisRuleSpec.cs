@@ -8,12 +8,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class SynthesisMetathesisRuleSpec : IPhonologicalPatternRuleSpec, IPhonologicalPatternSubruleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _pattern;
+        private readonly Pattern<Word, int> _pattern;
         private readonly string _leftGroupName;
         private readonly string _rightGroupName;
 
         public SynthesisMetathesisRuleSpec(
-            Pattern<Word, ShapeNode> pattern,
+            Pattern<Word, int> pattern,
             string leftGroupName,
             string rightGroupName
         )
@@ -21,17 +21,17 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _leftGroupName = leftGroupName;
             _rightGroupName = rightGroupName;
 
-            _pattern = new Pattern<Word, ShapeNode>();
-            foreach (PatternNode<Word, ShapeNode> node in pattern.Children)
+            _pattern = new Pattern<Word, int>();
+            foreach (PatternNode<Word, int> node in pattern.Children)
             {
-                if (node is Group<Word, ShapeNode> group)
+                if (node is Group<Word, int> group)
                 {
-                    var newGroup = new Group<Word, ShapeNode>(group.Name);
+                    var newGroup = new Group<Word, int>(group.Name);
                     foreach (
-                        Constraint<Word, ShapeNode> constraint in group.Children.Cast<Constraint<Word, ShapeNode>>()
+                        Constraint<Word, int> constraint in group.Children.Cast<Constraint<Word, int>>()
                     )
                     {
-                        Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
+                        Constraint<Word, int> newConstraint = constraint.Clone();
                         newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
                         newGroup.Children.Add(newConstraint);
                     }
@@ -45,27 +45,31 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _pattern.Freeze();
         }
 
-        public Pattern<Word, ShapeNode> Pattern
+        public Pattern<Word, int> Pattern
         {
             get { return _pattern; }
         }
 
         public bool MatchSubrule(
             PhonologicalPatternRule rule,
-            Match<Word, ShapeNode> match,
+            Match<Word, int> match,
             out PhonologicalSubruleMatch subruleMatch
         )
         {
-            subruleMatch = new PhonologicalSubruleMatch(this, match.Range, match.VariableBindings);
+            subruleMatch = new PhonologicalSubruleMatch(
+                this,
+                match.Input.Shape.ToShapeRange(match.Range),
+                match.VariableBindings
+            );
             return true;
         }
 
-        Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.LeftEnvironmentMatcher
+        Matcher<Word, int> IPhonologicalPatternSubruleSpec.LeftEnvironmentMatcher
         {
             get { return null; }
         }
 
-        Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.RightEnvironmentMatcher
+        Matcher<Word, int> IPhonologicalPatternSubruleSpec.RightEnvironmentMatcher
         {
             get { return null; }
         }
@@ -75,18 +79,33 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return true;
         }
 
-        public void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
+        public void ApplyRhs(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
-            ShapeNode start = null,
-                end = null;
-            foreach (GroupCapture<ShapeNode> gc in targetMatch.GroupCaptures)
+            // RUSTIFY Stage 2: group captures are int offsets that go stale on the first structural
+            // mutation (morph.Remove / MoveNodesAfter re-densify the projection), so resolve EVERYTHING
+            // to ShapeNode refs up front — those survive the moves, as the old ShapeNode ranges did.
+            Shape shape = targetMatch.Input.Shape;
+            int? startTag = null,
+                endTag = null;
+            foreach (GroupCapture<int> gc in targetMatch.GroupCaptures)
             {
-                if (start == null || gc.Range.Start.CompareTo(start) < 0)
-                    start = gc.Range.Start;
-                if (end == null || gc.Range.End.CompareTo(end) > 0)
-                    end = gc.Range.End;
+                if (!gc.Success)
+                    continue;
+                if (startTag == null || gc.Range.Start < startTag)
+                    startTag = gc.Range.Start;
+                if (endTag == null || gc.Range.End > endTag)
+                    endTag = gc.Range.End;
             }
-            Debug.Assert(start != null && end != null);
+            Debug.Assert(startTag != null && endTag != null);
+            ShapeNode start = shape.NodeAt(startTag.Value);
+            ShapeNode end = shape.NodeAt(endTag.Value - 1);
+
+            GroupCapture<int> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
+            GroupCapture<int> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
+            Range<ShapeNode> leftRange = shape.ToShapeRange(leftGroup.Range);
+            Range<ShapeNode> rightRange = shape.ToShapeRange(rightGroup.Range);
+            ShapeNode leftEnd = shape.EndNode(leftGroup.Range);
+            ShapeNode beforeRightGroup = shape.NodeAt(rightGroup.Range.Start).Prev;
 
             var morphs = targetMatch
                 .Input.Morphs.Where(ann => ann.Range.Overlaps(start, end))
@@ -95,12 +114,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             foreach (var morph in morphs)
                 morph.Annotation.Remove();
 
-            GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
-            GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
-
-            ShapeNode beforeRightGroup = rightGroup.Range.Start.Prev;
-            MoveNodesAfter(targetMatch.Input.Shape, leftGroup.Range.End, rightGroup.Range);
-            MoveNodesAfter(targetMatch.Input.Shape, beforeRightGroup, leftGroup.Range);
+            MoveNodesAfter(shape, leftEnd, rightRange);
+            MoveNodesAfter(shape, beforeRightGroup, leftRange);
 
             foreach (var morph in morphs)
             {
@@ -110,7 +125,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     morph.Annotation.FeatureStruct
                 );
                 newMorphAnn.Children.AddRange(morph.Children);
-                targetMatch.Input.Annotations.Add(newMorphAnn, false);
+                shape.Annotations.Add(newMorphAnn, false);
             }
         }
 

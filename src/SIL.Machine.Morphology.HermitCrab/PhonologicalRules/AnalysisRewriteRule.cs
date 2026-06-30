@@ -10,7 +10,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class AnalysisRewriteRule : IRule<Word, ShapeNode>
+    public class AnalysisRewriteRule : IRule<Word, int>
     {
         private enum ReapplyType
         {
@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _morpher = morpher;
             _rule = rule;
 
-            var settings = new MatcherSettings<ShapeNode>
+            var settings = new MatcherSettings<int>
             {
                 Direction = rule.Direction == Direction.LeftToRight ? Direction.RightToLeft : Direction.LeftToRight,
                 Filter = ann => ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Anchor),
@@ -50,8 +50,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
                     {
                         foreach (
-                            Constraint<Word, ShapeNode> constraint in sr.Rhs.Children.Cast<
-                                Constraint<Word, ShapeNode>
+                            Constraint<Word, int> constraint in sr.Rhs.Children.Cast<
+                                Constraint<Word, int>
                             >()
                         )
                         {
@@ -106,11 +106,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
         }
 
-        private static bool IsUnifiable(Constraint<Word, ShapeNode> constraint, Pattern<Word, ShapeNode> env)
+        private static bool IsUnifiable(Constraint<Word, int> constraint, Pattern<Word, int> env)
         {
             foreach (
-                Constraint<Word, ShapeNode> curConstraint in env.GetNodesDepthFirst()
-                    .OfType<Constraint<Word, ShapeNode>>()
+                Constraint<Word, int> curConstraint in env.GetNodesDepthFirst()
+                    .OfType<Constraint<Word, int>>()
             )
             {
                 if (

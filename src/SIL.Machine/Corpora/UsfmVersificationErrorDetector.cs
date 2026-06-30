@@ -1,0 +1,356 @@
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using SIL.Scripture;
+
+namespace SIL.Machine.Corpora
+{
+    public enum UsfmVersificationErrorType
+    {
+        MissingChapter,
+        MissingVerse,
+        ExtraVerse,
+        InvalidVerseRange,
+        MissingVerseSegment,
+        ExtraVerseSegment,
+        InvalidChapterNumber,
+        InvalidVerseNumber,
+    }
+
+    public class UsfmVersificationError
+    {
+        private readonly int _bookNum;
+        private readonly int _expectedChapter;
+        private readonly int _expectedVerse;
+        private readonly int _actualChapter;
+        private readonly int _actualVerse;
+        private readonly string _actualValue;
+        private VerseRef? _verseRef = null;
+
+        public UsfmVersificationError(
+            int bookNum,
+            int expectedChapter,
+            int expectedVerse,
+            int actualChapter,
+            int actualVerse,
+            string projectName,
+            VerseRef? verseRef = null
+        )
+        {
+            _bookNum = bookNum;
+            _expectedChapter = expectedChapter;
+            _expectedVerse = expectedVerse;
+            _actualChapter = actualChapter;
+            _actualVerse = actualVerse;
+            _verseRef = verseRef;
+            ProjectName = projectName;
+        }
+
+        public UsfmVersificationError(
+            int bookNum,
+            int expectedChapter,
+            string actualValue,
+            string projectName,
+            UsfmVersificationErrorType type
+        )
+        {
+            _bookNum = bookNum;
+            _expectedChapter = expectedChapter;
+            _actualValue = actualValue;
+            ProjectName = projectName;
+            Type = type;
+        }
+
+        public string ProjectName { get; private set; }
+
+        public UsfmVersificationErrorType Type { get; private set; }
+
+        // Returns true if there is an error
+        public bool CheckError()
+        {
+            //A non-empty chapter is expected
+            if (_expectedChapter > _actualChapter && _expectedVerse != 0)
+            {
+                Type = UsfmVersificationErrorType.MissingChapter;
+                return true;
+            }
+            if (_expectedVerse > _actualVerse && _expectedChapter == _actualChapter)
+            {
+                Type = UsfmVersificationErrorType.MissingVerse;
+                return true;
+            }
+            if (_verseRef != null)
+            {
+                if (string.IsNullOrEmpty(_verseRef.Value.Segment()) && _verseRef.Value.HasSegmentsDefined)
+                {
+                    Type = UsfmVersificationErrorType.MissingVerseSegment;
+                    return true;
+                }
+                if (!string.IsNullOrEmpty(_verseRef.Value.Segment()) && !_verseRef.Value.HasSegmentsDefined)
+                {
+                    Type = UsfmVersificationErrorType.ExtraVerseSegment;
+                    return true;
+                }
+                if (!_verseRef.Value.Valid)
+                {
+                    Type = Map(_verseRef.Value.ValidStatus);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static UsfmVersificationErrorType Map(VerseRef.ValidStatusType validStatus)
+        {
+            switch (validStatus)
+            {
+                case VerseRef.ValidStatusType.OutOfRange:
+                    return UsfmVersificationErrorType.ExtraVerse;
+                case VerseRef.ValidStatusType.VerseRepeated:
+                case VerseRef.ValidStatusType.VerseOutOfOrder:
+                    return UsfmVersificationErrorType.InvalidVerseRange;
+                default:
+                    throw new InvalidEnumArgumentException(
+                        nameof(validStatus),
+                        (int)validStatus,
+                        typeof(VerseRef.ValidStatusType)
+                    );
+            }
+        }
+
+        public string ExpectedVerseRef
+        {
+            get
+            {
+                if (
+                    Type == UsfmVersificationErrorType.ExtraVerse
+                    || Type == UsfmVersificationErrorType.InvalidChapterNumber
+                    || Type == UsfmVersificationErrorType.InvalidVerseNumber
+                )
+                {
+                    return "";
+                }
+
+                // We do not want to throw an exception here, and the VerseRef constructor can throw
+                // an exception with certain invalid verse data; use TryParse instead.
+                if (
+                    !VerseRef.TryParse(
+                        $"{Canon.BookNumberToId(_bookNum)} {_expectedChapter}:{_expectedVerse}",
+                        out VerseRef defaultVerseRef
+                    )
+                )
+                {
+                    return DefaultVerse(_expectedChapter, _expectedVerse);
+                }
+                if (
+                    Type == UsfmVersificationErrorType.MissingVerseSegment
+                    && VerseRef.TryParse(
+                        $"{defaultVerseRef.Book} {defaultVerseRef.Chapter}:{defaultVerseRef.Verse}a",
+                        out VerseRef verseWithSegment
+                    )
+                )
+                {
+                    return verseWithSegment.ToString();
+                }
+                if (Type == UsfmVersificationErrorType.InvalidVerseRange)
+                {
+                    List<VerseRef> sortedAllUniqueVerses = _verseRef
+                        .Value.AllVerses()
+                        .Distinct()
+                        .OrderBy(v => v)
+                        .ToList();
+                    VerseRef firstVerse = sortedAllUniqueVerses[0];
+                    VerseRef lastVerse = sortedAllUniqueVerses[sortedAllUniqueVerses.Count - 1];
+                    if (firstVerse.Equals(lastVerse))
+                    {
+                        return firstVerse.ToString();
+                    }
+                    else if (
+                        VerseRef.TryParse(
+                            $"{firstVerse.Book} {firstVerse.Chapter}:{firstVerse.Verse}-{lastVerse.Verse}",
+                            out VerseRef correctedVerseRangeRef
+                        )
+                    )
+                    {
+                        return correctedVerseRangeRef.ToString();
+                    }
+                }
+                return defaultVerseRef.ToString();
+            }
+        }
+
+        public string ActualVerseRef
+        {
+            get
+            {
+                if (Type == UsfmVersificationErrorType.InvalidChapterNumber)
+                {
+                    return $"{Canon.BookNumberToId(_bookNum)} {_actualValue}";
+                }
+                else if (Type == UsfmVersificationErrorType.InvalidVerseNumber)
+                {
+                    return $"{Canon.BookNumberToId(_bookNum)} {_expectedChapter}:{_actualValue}";
+                }
+                else if (_verseRef != null)
+                {
+                    return _verseRef.ToString();
+                }
+                else
+                {
+                    if (
+                        VerseRef.TryParse(
+                            $"{Canon.BookNumberToId(_bookNum)} {_actualChapter}:{_actualVerse}",
+                            out VerseRef actualVerseRef
+                        )
+                    )
+                    {
+                        return actualVerseRef.ToString();
+                    }
+                }
+                return DefaultVerse(_actualChapter, _actualVerse);
+            }
+        }
+
+        private string DefaultVerse(int chapter, int verse)
+        {
+            string verseString = _actualVerse == -1 ? "" : verse.ToString();
+            return $"{Canon.BookNumberToId(_bookNum)} {chapter}:{verseString}";
+        }
+    }
+
+    public class UsfmVersificationErrorDetector : UsfmParserHandlerBase
+    {
+        private readonly string _projectName;
+        private readonly ScrVers _versification;
+        private int _currentBook;
+        private int _currentChapter;
+        private VerseRef _currentVerse;
+        private readonly List<UsfmVersificationError> _errors;
+
+        public UsfmVersificationErrorDetector(ParatextProjectSettings settings)
+        {
+            _projectName = settings.Name;
+            _versification = settings.Versification;
+            _currentBook = 0;
+            _currentChapter = 0;
+            _currentVerse = new VerseRef();
+            _errors = new List<UsfmVersificationError>();
+        }
+
+        public IReadOnlyList<UsfmVersificationError> Errors => _errors;
+
+        public override void EndUsfm(UsfmParserState state)
+        {
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook))
+            {
+                var versificationError = new UsfmVersificationError(
+                    _currentBook,
+                    _versification.GetLastChapter(_currentBook),
+                    _versification.GetLastVerse(_currentBook, _versification.GetLastChapter(_currentBook)),
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
+                );
+                if (versificationError.CheckError())
+                    _errors.Add(versificationError);
+            }
+        }
+
+        public override void StartBook(UsfmParserState state, string marker, string code)
+        {
+            _currentBook = state.VerseRef.BookNum;
+            _currentChapter = 0;
+            _currentVerse = new VerseRef();
+        }
+
+        public override void Chapter(
+            UsfmParserState state,
+            string number,
+            string marker,
+            string altNumber,
+            string pubNumber
+        )
+        {
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
+            {
+                var versificationError = new UsfmVersificationError(
+                    _currentBook,
+                    _currentChapter,
+                    _versification.GetLastVerse(_currentBook, _currentChapter),
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName
+                );
+                if (versificationError.CheckError())
+                    _errors.Add(versificationError);
+            }
+
+            _currentChapter = state.VerseRef.ChapterNum;
+            _currentVerse = new VerseRef();
+
+            // See whether the chapter number is invalid
+            VerseRef verseRef = state.VerseRef;
+            verseRef.Chapter = number;
+            if (verseRef.ChapterNum == -1)
+            {
+                _errors.Add(
+                    new UsfmVersificationError(
+                        _currentBook,
+                        _currentChapter,
+                        number,
+                        _projectName,
+                        UsfmVersificationErrorType.InvalidChapterNumber
+                    )
+                );
+            }
+        }
+
+        public override void Verse(
+            UsfmParserState state,
+            string number,
+            string marker,
+            string altNumber,
+            string pubNumber
+        )
+        {
+            bool verseInError = false;
+            _currentVerse = state.VerseRef;
+            if (_currentBook > 0 && Canon.IsCanonical(_currentBook) && _currentChapter > 0)
+            {
+                var versificationError = new UsfmVersificationError(
+                    _currentBook,
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _currentChapter,
+                    _currentVerse.AllVerses().Last().VerseNum,
+                    _projectName,
+                    _currentVerse
+                );
+                if (versificationError.CheckError())
+                {
+                    _errors.Add(versificationError);
+                    verseInError = true;
+                }
+            }
+
+            if (!verseInError)
+            {
+                // See whether the verse number is invalid
+                VerseRef verseRef = _currentVerse;
+                verseRef.Verse = number;
+                if (verseRef.VerseNum == -1)
+                {
+                    _errors.Add(
+                        new UsfmVersificationError(
+                            _currentBook,
+                            _currentChapter,
+                            number,
+                            _projectName,
+                            UsfmVersificationErrorType.InvalidVerseNumber
+                        )
+                    );
+                }
+            }
+        }
+    }
+}

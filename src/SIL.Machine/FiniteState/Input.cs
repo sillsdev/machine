@@ -50,6 +50,12 @@ namespace SIL.Machine.FiniteState
         {
             if (unification)
             {
+                // Bit-packed fast path for the common phonological case (no defaults, no negation,
+                // both operands simple symbolic structs). Identical result, no varBindings clone,
+                // no dictionary walk. Falls back to the full engine otherwise.
+                if (!useDefaults && _negatedFSs.Count == 0 && fs.TryFastUnifiable(_fs, out bool fastResult))
+                    return fastResult;
+
                 return fs.IsUnifiable(_fs, useDefaults, varBindings)
                     && _negatedFSs.All(nfs => !fs.IsUnifiable(nfs, useDefaults));
             }

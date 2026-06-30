@@ -10,7 +10,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    public class Word : Freezable<Word>, IAnnotatedData<ShapeNode>, ICloneable<Word>
+    public class Word : Freezable<Word>, IAnnotatedData<int>, ICloneable<Word>
     {
         public const string RootMorphID = "ROOT";
 
@@ -19,8 +19,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         private Shape _shape;
         private readonly List<IMorphologicalRule> _mruleApps;
         private int _mruleAppIndex = -1;
-        private readonly Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
-        private readonly Dictionary<IMorphologicalRule, int> _mrulesApplied;
+        // RUSTIFY lever 2: lazily allocated — these morphological-rule bookkeeping maps stay empty through
+        // the phonological-analysis cascade (where ~345 clones/word happen), so cloning them eagerly per
+        // candidate allocated an empty dictionary for nothing. Null means empty; created on first write.
+        private Dictionary<IMorphologicalRule, int> _mrulesUnapplied;
+        private Dictionary<IMorphologicalRule, int> _mrulesApplied;
         private readonly List<Word> _nonHeadApps;
         private int _nonHeadAppIndex = -1;
         private readonly MprFeatureSet _mprFeatures;
@@ -29,7 +32,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private Stratum _stratum;
         private bool? _isLastAppliedRuleFinal;
         private bool _isPartial;
-        private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
+        private Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices; // lazily allocated (see above)
         private int _mruleAppCount = 0;
         private readonly IList<Word> _alternatives = new List<Word>();
 
@@ -42,16 +45,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             SetRootAllomorph(rootAllomorph);
             RealizationalFeatureStruct = realizationalFS;
             _mruleApps = new List<IMorphologicalRule>();
-            _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
-            _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
+            // _mrulesUnapplied / _mrulesApplied / _disjunctiveAllomorphIndices are lazily allocated (null = empty).
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
-            _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
 
         public Word(Stratum stratum, Shape shape)
         {
+            long ctorBefore =
+                MorpherStatistics.Enabled && MorpherStatistics.AllocationProbe != null
+                    ? MorpherStatistics.AllocationProbe()
+                    : 0L;
             _allomorphs = new Dictionary<string, Allomorph>();
             Stratum = stratum;
             _shape = shape;
@@ -60,13 +65,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             RealizationalFeatureStruct = new FeatureStruct();
             _mprFeatures = new MprFeatureSet();
             _mruleApps = new List<IMorphologicalRule>();
-            _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>();
-            _mrulesApplied = new Dictionary<IMorphologicalRule, int>();
+            // _mrulesUnapplied / _mrulesApplied / _disjunctiveAllomorphIndices are lazily allocated (null = empty).
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
             _isPartial = false;
-            _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
+            if (ctorBefore != 0L)
+                MorpherStatistics.AddWordCtorBytes(MorpherStatistics.AllocationProbe() - ctorBefore);
         }
 
         protected Word(Word word)
@@ -82,18 +87,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             _mprFeatures = word.MprFeatures.Clone();
             _mruleApps = new List<IMorphologicalRule>(word._mruleApps);
             _mruleAppIndex = word._mruleAppIndex;
-            _mrulesUnapplied = new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
-            _mrulesApplied = new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
+            // Lazily-allocated maps: copy only when the source actually has entries (null = empty), so a
+            // candidate cloned during phonological analysis allocates none of these dictionaries.
+            _mrulesUnapplied =
+                word._mrulesUnapplied == null || word._mrulesUnapplied.Count == 0
+                    ? null
+                    : new Dictionary<IMorphologicalRule, int>(word._mrulesUnapplied);
+            _mrulesApplied =
+                word._mrulesApplied == null || word._mrulesApplied.Count == 0
+                    ? null
+                    : new Dictionary<IMorphologicalRule, int>(word._mrulesApplied);
             _nonHeadApps = new List<Word>(word._nonHeadApps.CloneItems());
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
-            _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
-                kvp => kvp.Key,
-                kvp => new HashSet<int>(kvp.Value)
-            );
+            _disjunctiveAllomorphIndices =
+                word._disjunctiveAllomorphIndices == null || word._disjunctiveAllomorphIndices.Count == 0
+                    ? null
+                    : word._disjunctiveAllomorphIndices.ToDictionary(kvp => kvp.Key, kvp => new HashSet<int>(kvp.Value));
             _mruleAppCount = word._mruleAppCount;
         }
 
@@ -102,7 +115,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             get
             {
                 var morphs = new List<Annotation<ShapeNode>>();
-                foreach (Annotation<ShapeNode> ann in Annotations)
+                foreach (Annotation<ShapeNode> ann in _shape.Annotations)
                 {
                     ann.PostorderTraverse(a =>
                     {
@@ -173,14 +186,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _obligatorySyntacticFeatures; }
         }
 
-        public Range<ShapeNode> Range
+        // RUSTIFY Stage 2: Word is the FST's IAnnotatedData and the FST now binds as Fst<Word,int>
+        // (offset = node Tag), so these expose the shape's int-offset projection. Code that wants the
+        // ShapeNode-level annotations/range uses word.Shape.Annotations / word.Shape.Range directly.
+        public Range<int> Range
         {
-            get { return _shape.Range; }
+            get { return _shape.IntRange; }
         }
 
-        public AnnotationList<ShapeNode> Annotations
+        public AnnotationList<int> Annotations
         {
-            get { return _shape.Annotations; }
+            get { return _shape.IntAnnotations; }
         }
 
         public Stratum Stratum
@@ -256,6 +272,10 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal Annotation<ShapeNode> MarkMorph(IEnumerable<ShapeNode> nodes, Allomorph allomorph, string morphID)
         {
+            long markMorphBefore =
+                MorpherStatistics.Enabled && MorpherStatistics.AllocationProbe != null
+                    ? MorpherStatistics.AllocationProbe()
+                    : 0L;
             ShapeNode[] nodeArray = nodes.ToArray();
             Annotation<ShapeNode> ann = null;
             if (nodeArray.Length > 0)
@@ -275,6 +295,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _shape.Annotations.Add(ann, false);
             }
             _allomorphs[allomorph.ID] = allomorph;
+            if (markMorphBefore != 0L)
+                MorpherStatistics.AddMarkMorphBytes(MorpherStatistics.AllocationProbe() - markMorphBefore);
             return ann;
         }
 
@@ -318,7 +340,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             CheckFrozen();
             if (mrule != null)
-                _mrulesUnapplied.UpdateValue(mrule, () => 0, count => count + 1);
+                (_mrulesUnapplied = _mrulesUnapplied ?? new Dictionary<IMorphologicalRule, int>()).UpdateValue(
+                    mrule,
+                    () => 0,
+                    count => count + 1
+                );
             if (!(mrule is RealizationalAffixProcessRule))
             {
                 _mruleApps.Add(mrule);
@@ -333,7 +359,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <returns>The number of unapplications.</returns>
         internal int GetUnapplicationCount(IMorphologicalRule mrule)
         {
-            if (!_mrulesUnapplied.TryGetValue(mrule, out int numUnapplies))
+            if (_mrulesUnapplied == null || !_mrulesUnapplied.TryGetValue(mrule, out int numUnapplies))
                 numUnapplies = 0;
             return numUnapplies;
         }
@@ -349,9 +375,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             // indicate that the current non-head was applied if this is a compounding rule
             if (mrule is CompoundingRule)
                 _nonHeadAppIndex--;
-            _mrulesApplied.UpdateValue(mrule, () => 0, count => count + 1);
+            (_mrulesApplied = _mrulesApplied ?? new Dictionary<IMorphologicalRule, int>()).UpdateValue(
+                mrule,
+                () => 0,
+                count => count + 1
+            );
             if (allomorphIndices != null)
-                _disjunctiveAllomorphIndices.GetOrCreate(_mruleAppCount.ToString()).UnionWith(allomorphIndices);
+                (_disjunctiveAllomorphIndices = _disjunctiveAllomorphIndices ?? new Dictionary<string, HashSet<int>>())
+                    .GetOrCreate(_mruleAppCount.ToString())
+                    .UnionWith(allomorphIndices);
             _mruleAppCount++;
         }
 
@@ -372,7 +404,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <returns>The number of applications.</returns>
         internal int GetApplicationCount(IMorphologicalRule mrule)
         {
-            if (!_mrulesApplied.TryGetValue(mrule, out int numApplies))
+            if (_mrulesApplied == null || !_mrulesApplied.TryGetValue(mrule, out int numApplies))
                 numApplies = 0;
             return numApplies;
         }
@@ -464,7 +496,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Annotation<ShapeNode> morph)
         {
             var morphID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
-            if (_disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices))
+            if (_disjunctiveAllomorphIndices != null && _disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices))
                 return indices;
             return null;
         }
@@ -547,7 +579,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public Word Clone()
         {
-            return new Word(this);
+            if (!MorpherStatistics.Enabled || MorpherStatistics.AllocationProbe == null)
+            {
+                MorpherStatistics.CountWordClone();
+                return new Word(this);
+            }
+            MorpherStatistics.CountWordClone();
+            long before = MorpherStatistics.AllocationProbe();
+            var clone = new Word(this);
+            MorpherStatistics.AddCloneBytes(MorpherStatistics.AllocationProbe() - before);
+            return clone;
         }
 
         public override string ToString()

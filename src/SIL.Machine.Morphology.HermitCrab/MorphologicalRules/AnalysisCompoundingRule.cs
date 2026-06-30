@@ -6,24 +6,24 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class AnalysisCompoundingRule : IRule<Word, ShapeNode>
+    public class AnalysisCompoundingRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
-        private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly List<IRule<Word, int>> _rules;
 
         public AnalysisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
             _morpher = morpher;
             _rule = rule;
 
-            _rules = new List<IRule<Word, ShapeNode>>();
+            _rules = new List<IRule<Word, int>>();
             foreach (CompoundingSubrule sr in rule.Subrules)
             {
                 _rules.Add(
-                    new MultiplePatternRule<Word, ShapeNode>(
+                    new MultiplePatternRule<Word, int>(
                         new AnalysisCompoundingSubruleRuleSpec(sr),
-                        new MatcherSettings<ShapeNode>
+                        new MatcherSettings<int>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
                             MatchingMethod = MatchingMethod.Unification,

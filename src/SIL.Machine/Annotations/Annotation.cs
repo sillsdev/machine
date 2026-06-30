@@ -124,7 +124,18 @@ namespace SIL.Machine.Annotations
             set
             {
                 CheckFrozen();
+                if (_optional == value)
+                    return;
                 _optional = value;
+                // Shape's int-offset projection copies Optional by value and caches against the root
+                // annotation list's Version (see AnnotationList.IncrementVersion). Optional is part of
+                // the projected view but flipping it is not a structural change, so bump the root
+                // list's version here to invalidate the cache — otherwise the matcher keeps seeing the
+                // stale flag and never forks the optional-skip instances (RUSTIFY Stage 2).
+                Annotation<TOffset> top = this;
+                while (top.Parent != null)
+                    top = top.Parent;
+                (top.List as AnnotationList<TOffset>)?.IncrementVersion();
             }
         }
 

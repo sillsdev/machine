@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using SIL.Machine.FiniteState;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.FeatureModel
@@ -140,7 +141,12 @@ namespace SIL.Machine.FeatureModel
 
         public VariableBindings Clone()
         {
-            return new VariableBindings(this);
+            if (!FstStatistics.Enabled || FstStatistics.AllocationProbe == null)
+                return new VariableBindings(this);
+            long before = FstStatistics.AllocationProbe();
+            var result = new VariableBindings(this);
+            FstStatistics.AddVarBindingsBytes(FstStatistics.AllocationProbe() - before);
+            return result;
         }
     }
 }

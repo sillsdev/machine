@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.FiniteState;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
@@ -11,27 +15,36 @@ using SIL.ObjectModel;
 using System.IO;
 #endif
 
-#if !SINGLE_THREADED
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-#endif
-
 namespace SIL.Machine.Morphology.HermitCrab
 {
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
         private readonly Language _lang;
-        private readonly IRule<Word, ShapeNode> _analysisRule;
-        private readonly IRule<Word, ShapeNode> _synthesisRule;
+        private readonly IRule<Word, int> _analysisRule;
+        private readonly IRule<Word, int> _synthesisRule;
         private readonly Dictionary<Stratum, RootAllomorphTrie> _allomorphTries;
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
 
         public Morpher(ITraceManager traceManager, Language lang)
+            : this(traceManager, lang, -1) { }
+
+        /// <param name="maxDegreeOfParallelism">
+        /// Caps the parallelism used <em>within</em> a single parse. A value of 1 makes the
+        /// morpher fully single-threaded (analysis cascade, affix-template unapplication, and
+        /// synthesis all run sequentially) — this is the mode a caller should use when it
+        /// parallelizes <em>across</em> words itself (e.g. FieldWorks' "Parse All Words"), to
+        /// avoid nested parallelism / thread-pool oversubscription. Any value &lt;= 0 defaults
+        /// to <see cref="Environment.ProcessorCount"/> (the historical behavior).
+        /// </param>
+        public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism)
         {
             _lang = lang;
             _traceManager = traceManager;
+            // Must be set before CompileAnalysisRule: the analysis rules choose a sequential vs.
+            // parallel cascade at construction time based on this value.
+            MaxDegreeOfParallelism = maxDegreeOfParallelism <= 0 ? Environment.ProcessorCount : maxDegreeOfParallelism;
             _allomorphTries = new Dictionary<Stratum, RootAllomorphTrie>();
             var morphemes = new ObservableList<Morpheme>();
             foreach (Stratum stratum in _lang.Strata)
@@ -84,6 +97,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
+        /// <summary>
+        /// Caps parallelism used within a single parse; 1 = fully single-threaded.
+        /// Set via the constructor (it influences how the analysis rules are compiled).
+        /// </summary>
+        public int MaxDegreeOfParallelism { get; }
+
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
 
@@ -112,7 +131,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot)
         {
             // convert the word to its phonetic shape
+            long segBefore =
+                MorpherStatistics.Enabled && MorpherStatistics.AllocationProbe != null
+                    ? MorpherStatistics.AllocationProbe()
+                    : 0L;
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
+            if (segBefore != 0L)
+                MorpherStatistics.AddSegmentBytes(MorpherStatistics.AllocationProbe() - segBefore);
 
             var input = new Word(_lang.SurfaceStratum, shape);
             input.Freeze();
@@ -121,7 +146,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             trace = input.CurrentTrace;
 
             // Unapply rules
-            var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
+            long analysisStart = MorpherStatistics.Enabled ? Stopwatch.GetTimestamp() : 0;
+            long analysisBytesBefore =
+                MorpherStatistics.Enabled && MorpherStatistics.AllocationProbe != null
+                    ? MorpherStatistics.AllocationProbe()
+                    : 0L;
+            IList<Word> analyses = _analysisRule.Apply(input).ToList();
+            if (MorpherStatistics.Enabled)
+            {
+                MorpherStatistics.AddAnalysis(Stopwatch.GetTimestamp() - analysisStart, analyses.Count);
+                if (analysisBytesBefore != 0L)
+                    MorpherStatistics.AddAnalysisCascadeBytes(
+                        MorpherStatistics.AllocationProbe() - analysisBytesBefore
+                    );
+            }
 
 #if OUTPUT_ANALYSES
             var lines = new List<string>();
@@ -134,8 +172,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             File.WriteAllLines("analyses.txt", lines.OrderBy(l => l));
 #endif
-            IList<Word> origAnalyses = guessRoot ? analyses.ToList() : null;
+            // analyses is already materialized and Synthesize doesn't mutate it, so no copy needed.
+            IList<Word> origAnalyses = guessRoot ? analyses : null;
+            long synthesisStart = MorpherStatistics.Enabled ? Stopwatch.GetTimestamp() : 0;
             IList<Word> syntheses = Synthesize(word, analyses).ToList();
+            if (MorpherStatistics.Enabled)
+                MorpherStatistics.AddSynthesis(Stopwatch.GetTimestamp() - synthesisStart);
             if (guessRoot && syntheses.Count == 0)
             {
                 // Guess roots when there are no results.
@@ -196,6 +238,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     a => rulePermutations,
                     (a, p) => new { Allomorph = a, RulePermutation = p }
                 ),
+                new ParallelOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism },
                 (synthesisInfo, state) =>
                 {
                     try
@@ -279,53 +322,33 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-#if SINGLE_THREADED
-        private IEnumerable<Word> Synthesize(string word, IEnumerable<Word> analyses)
+        private IEnumerable<Word> Synthesize(string word, IList<Word> analyses)
         {
-            var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-            foreach (Word analysisWord in analyses)
+            // Single-threaded: used when the caller parallelizes across words itself.
+            if (MaxDegreeOfParallelism == 1)
             {
-                foreach (Word synthesisWord in LexicalLookup(analysisWord))
+                var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+                foreach (Word analysisWord in analyses)
                 {
-                    foreach (Word alternative in synthesisWord.ExpandAlternatives())
-                    {
-                        foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
-                        {
-                            if (IsMatch(word, validWord))
-                                matches.Add(validWord);
-                        }
-                    }
+                    foreach (Word validWord in SynthesizeAnalysis(word, analysisWord))
+                        matches.Add(validWord);
                 }
+                return matches;
             }
-            return matches;
-        }
-#else
-        private IEnumerable<Word> Synthesize(string word, ConcurrentQueue<Word> analyses)
-        {
-            var matches = new ConcurrentBag<Word>();
+
+            // Parallel across the candidate analyses of this one word.
+            MorpherStatistics.EnterParallelSection();
+            var parallelMatches = new ConcurrentBag<Word>();
             Exception exception = null;
             Parallel.ForEach(
-                Partitioner.Create(0, analyses.Count),
-                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-                (range, state) =>
+                analyses,
+                new ParallelOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism },
+                (analysisWord, state) =>
                 {
                     try
                     {
-                        for (int i = 0; i < range.Item2 - range.Item1; i++)
-                        {
-                            analyses.TryDequeue(out Word analysisWord);
-                            foreach (Word synthesisWord in LexicalLookup(analysisWord))
-                            {
-                                foreach (Word alternative in synthesisWord.ExpandAlternatives())
-                                {
-                                    foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
-                                    {
-                                        if (IsMatch(word, validWord))
-                                            matches.Add(validWord);
-                                    }
-                                }
-                            }
-                        }
+                        foreach (Word validWord in SynthesizeAnalysis(word, analysisWord))
+                            parallelMatches.Add(validWord);
                     }
                     catch (Exception e)
                     {
@@ -336,9 +359,23 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
             if (exception != null)
                 throw exception;
-            return matches.Distinct(FreezableEqualityComparer<Word>.Default);
+            return parallelMatches.Distinct(FreezableEqualityComparer<Word>.Default);
         }
-#endif
+
+        private IEnumerable<Word> SynthesizeAnalysis(string word, Word analysisWord)
+        {
+            foreach (Word synthesisWord in LexicalLookup(analysisWord))
+            {
+                foreach (Word alternative in synthesisWord.ExpandAlternatives())
+                {
+                    foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                    {
+                        if (IsMatch(word, validWord))
+                            yield return validWord;
+                    }
+                }
+            }
+        }
 
         internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
         {
@@ -378,7 +415,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_traceManager.IsTracing)
                 _traceManager.LexicalLookup(input.Stratum, input);
             CharacterDefinitionTable table = input.Stratum.CharacterDefinitionTable;
-            IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Range);
+            IEnumerable<ShapeNode> shapeNodes = input.Shape.GetNodes(input.Shape.Range);
             foreach (RootAllomorph lexicalPattern in _lexicalPatterns)
             {
                 HashSet<string> shapeSet = new HashSet<string>();

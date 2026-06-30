@@ -10,19 +10,19 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class FeatureAnalysisRewriteRuleSpec : RewriteRuleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _analysisRhs;
+        private readonly Pattern<Word, int> _analysisRhs;
 
         public FeatureAnalysisRewriteRuleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
-            Pattern<Word, ShapeNode> lhs,
+            MatcherSettings<int> matcherSettings,
+            Pattern<Word, int> lhs,
             RewriteSubrule subrule
         )
             : base(false)
         {
             var rhsAntiFSs = new List<FeatureStruct>();
             foreach (
-                Constraint<Word, ShapeNode> constraint in subrule
-                    .Rhs.Children.OfType<Constraint<Word, ShapeNode>>()
+                Constraint<Word, int> constraint in subrule
+                    .Rhs.Children.OfType<Constraint<Word, int>>()
                     .Where(c => c.Type() == HCFeatureSystem.Segment)
             )
             {
@@ -31,28 +31,28 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
             Pattern.Acceptable = match => IsUnapplicationNonvacuous(match, rhsAntiFSs);
 
-            _analysisRhs = new Pattern<Word, ShapeNode>();
+            _analysisRhs = new Pattern<Word, int>();
             int i = 0;
             foreach (
-                Tuple<PatternNode<Word, ShapeNode>, PatternNode<Word, ShapeNode>> tuple in lhs.Children.Zip(
+                Tuple<PatternNode<Word, int>, PatternNode<Word, int>> tuple in lhs.Children.Zip(
                     subrule.Rhs.Children
                 )
             )
             {
-                var lhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item1;
-                var rhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item2;
+                var lhsConstraint = (Constraint<Word, int>)tuple.Item1;
+                var rhsConstraint = (Constraint<Word, int>)tuple.Item2;
 
                 if (lhsConstraint.Type() == HCFeatureSystem.Segment && rhsConstraint.Type() == HCFeatureSystem.Segment)
                 {
-                    Constraint<Word, ShapeNode> targetConstraint = lhsConstraint.Clone();
+                    Constraint<Word, int> targetConstraint = lhsConstraint.Clone();
                     targetConstraint.FeatureStruct.PriorityUnion(rhsConstraint.FeatureStruct);
                     targetConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
-                    Pattern.Children.Add(new Group<Word, ShapeNode>("target" + i) { Children = { targetConstraint } });
+                    Pattern.Children.Add(new Group<Word, int>("target" + i) { Children = { targetConstraint } });
 
                     FeatureStruct fs = rhsConstraint.FeatureStruct.AntiFeatureStruct();
                     fs.Subtract(lhsConstraint.FeatureStruct.AntiFeatureStruct());
                     fs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
-                    _analysisRhs.Children.Add(new Constraint<Word, ShapeNode>(fs));
+                    _analysisRhs.Children.Add(new Constraint<Word, int>(fs));
 
                     i++;
                 }
@@ -62,12 +62,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
         }
 
-        private bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match, IEnumerable<FeatureStruct> rhsAntiFSs)
+        private bool IsUnapplicationNonvacuous(Match<Word, int> match, IEnumerable<FeatureStruct> rhsAntiFSs)
         {
             int i = 0;
             foreach (FeatureStruct fs in rhsAntiFSs)
             {
-                ShapeNode node = match.GroupCaptures["target" + i].Range.GetStart(match.Matcher.Direction);
+                ShapeNode node = match.Input.Shape.GetStartNode(
+                    match.GroupCaptures["target" + i].Range,
+                    match.Matcher.Direction
+                );
                 foreach (SymbolicFeature sf in fs.Features.OfType<SymbolicFeature>())
                 {
                     SymbolicFeatureValue sfv = fs.GetValue(sf);
@@ -97,14 +100,17 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return false;
         }
 
-        private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
+        private void Unapply(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             int i = 0;
             foreach (
-                Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>()
+                Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>()
             )
             {
-                ShapeNode node = targetMatch.GroupCaptures["target" + i].Range.GetStart(targetMatch.Matcher.Direction);
+                ShapeNode node = targetMatch.Input.Shape.GetStartNode(
+                    targetMatch.GroupCaptures["target" + i].Range,
+                    targetMatch.Matcher.Direction
+                );
                 FeatureStruct fs = node.Annotation.FeatureStruct.Clone();
                 fs.PriorityUnion(constraint.FeatureStruct);
                 node.Annotation.FeatureStruct.Union(fs, varBindings);

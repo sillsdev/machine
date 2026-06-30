@@ -188,8 +188,6 @@ public class ParatextProjectSettingsTests
             "BiblicalTerms.xml",
             "en",
             "Standard",
-            "Undefined",
-            "",
             "Public"
         );
     }

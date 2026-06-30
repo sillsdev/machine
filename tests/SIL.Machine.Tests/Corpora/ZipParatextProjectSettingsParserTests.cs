@@ -28,8 +28,6 @@ public class ZipParatextProjectSettingsParserTests
             Assert.That(settings.BiblicalTermsFileName, Is.EqualTo("ProjectBiblicalTerms.xml"));
             Assert.That(settings.LanguageCode, Is.EqualTo("en"));
             Assert.That(settings.TranslationType, Is.EqualTo("Standard"));
-            Assert.That(settings.NormalizationForm, Is.EqualTo("NFC"));
-            Assert.That(settings.Language, Is.EqualTo("English"));
             Assert.That(settings.Visibility, Is.EqualTo("Public"));
         }
     }

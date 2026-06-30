@@ -1032,4 +1032,212 @@ public class FeatureStructTests
         FeatureStruct fs2 = FeatureStruct.NewMutable(featSys).Symbol("ncp").Value;
         Assert.That(fs2.ToString(), Is.EqualTo("[POS:ncp]"));
     }
+
+    // ---------------------------------------------------------------------------------
+    // Copy-on-write characterization tests (safety net for the COW FeatureStruct refactor).
+    // Invariant under test: cloning a FROZEN feature struct and mutating the clone must never
+    // alter the (potentially shared) frozen source — INCLUDING nested children. A naive/shallow
+    // copy-on-write would let the internal recursive mutators (which have no per-level frozen
+    // check) write into a shared frozen child and silently corrupt the source. "No exception"
+    // is therefore insufficient: every test asserts the SOURCE is byte-for-byte unchanged.
+    // ---------------------------------------------------------------------------------
+
+    private static FeatureSystem CowFeatSys()
+    {
+        var featSys = new FeatureSystem
+        {
+            new ComplexFeature("cx1"),
+            new ComplexFeature("cx2"),
+            new SymbolicFeature("a", new FeatureSymbol("a1"), new FeatureSymbol("a2"), new FeatureSymbol("a3")),
+            new SymbolicFeature("b", new FeatureSymbol("b1"), new FeatureSymbol("b2")),
+            new SymbolicFeature("c", new FeatureSymbol("c1"), new FeatureSymbol("c2")),
+        };
+        featSys.Freeze();
+        return featSys;
+    }
+
+    // frozen [cx1:[a:a1 b:b1]]
+    private static FeatureStruct BuildNestedFrozen(FeatureSystem featSys)
+    {
+        return FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1").Symbol("b1")).Value;
+    }
+
+    // frozen [a:a1 b:b1]
+    private static FeatureStruct BuildFlatFrozen(FeatureSystem featSys)
+    {
+        return FeatureStruct.New(featSys).Symbol("a1").Symbol("b1").Value;
+    }
+
+    private static void AssertSourceUnchanged(FeatureStruct source, FeatureStruct expected)
+    {
+        Assert.That(source.ValueEquals(expected), Is.True, "frozen source value changed by a clone mutation");
+        Assert.That(
+            source.ToString(),
+            Is.EqualTo(expected.ToString()),
+            "frozen source string changed by a clone mutation"
+        );
+    }
+
+    [Test]
+    public void Clone_FrozenNested_PriorityUnionOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildNestedFrozen(featSys);
+        FeatureStruct other = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a2")).Value;
+
+        FeatureStruct clone = source.Clone();
+        clone.PriorityUnion(other); // recurses into and mutates the (shared) cx1 child
+
+        AssertSourceUnchanged(source, BuildNestedFrozen(featSys));
+        Assert.That(clone.ValueEquals(source), Is.False, "clone was not actually mutated");
+    }
+
+    [Test]
+    public void Clone_FrozenNested_UnionOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildNestedFrozen(featSys);
+        FeatureStruct other = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1")).Value;
+
+        FeatureStruct clone = source.Clone();
+        clone.Union(other);
+
+        AssertSourceUnchanged(source, BuildNestedFrozen(featSys));
+    }
+
+    [Test]
+    public void Clone_FrozenNested_SubtractOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildNestedFrozen(featSys);
+        FeatureStruct other = FeatureStruct.New(featSys).Feature("cx1").EqualTo(cx1 => cx1.Symbol("a1")).Value;
+
+        FeatureStruct clone = source.Clone();
+        clone.Subtract(other);
+
+        AssertSourceUnchanged(source, BuildNestedFrozen(featSys));
+    }
+
+    [Test]
+    public void Clone_FrozenFlat_AddValueOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildFlatFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+        clone.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")));
+
+        AssertSourceUnchanged(source, BuildFlatFrozen(featSys));
+        Assert.That(source.ContainsFeature(featSys.GetFeature("c")), Is.False);
+        Assert.That(clone.ContainsFeature(featSys.GetFeature("c")), Is.True);
+    }
+
+    [Test]
+    public void Clone_FrozenFlat_RemoveValueOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildFlatFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+        clone.RemoveValue(featSys.GetFeature("b"));
+
+        AssertSourceUnchanged(source, BuildFlatFrozen(featSys));
+        Assert.That(source.ContainsFeature(featSys.GetFeature("b")), Is.True);
+        Assert.That(clone.ContainsFeature(featSys.GetFeature("b")), Is.False);
+    }
+
+    [Test]
+    public void Clone_FrozenFlat_ClearOnClone_LeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildFlatFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+        clone.Clear();
+
+        AssertSourceUnchanged(source, BuildFlatFrozen(featSys));
+        Assert.That(source.IsEmpty, Is.False);
+        Assert.That(clone.IsEmpty, Is.True);
+    }
+
+    [Test]
+    public void Clone_OfFrozen_IsMutable()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildFlatFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+
+        // a fresh clone is NOT frozen: it has no valid frozen hash but it can be mutated
+        Assert.Throws<InvalidOperationException>(() => clone.GetFrozenHashCode());
+        Assert.DoesNotThrow(() =>
+            clone.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")))
+        );
+        // and the frozen source still rejects mutation
+        Assert.Throws<InvalidOperationException>(() =>
+            source.AddValue(featSys.GetFeature("c"), new SymbolicFeatureValue(featSys.GetSymbol("c1")))
+        );
+    }
+
+    [Test]
+    public void Clone_OfFrozen_NeverMutated_EqualsSourceBothDirections()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildNestedFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+
+        Assert.That(source.ValueEquals(clone), Is.True);
+        Assert.That(clone.ValueEquals(source), Is.True);
+        Assert.That(FreezableEqualityComparer<FeatureStruct>.Default.Equals(source, clone), Is.True);
+    }
+
+    [Test]
+    public void Clone_FrozenReentrant_MutateClone_PreservesSharingAndLeavesSourceUnchanged()
+    {
+        FeatureSystem featSys = CowFeatSys();
+        // [cx1:[a:a1](1) cx2->1]  — cx1 and cx2 are the SAME structure (re-entrant)
+        Func<FeatureStruct> build = () =>
+            FeatureStruct
+                .New(featSys)
+                .Feature("cx1")
+                .EqualTo(1, cx1 => cx1.Symbol("a1"))
+                .Feature("cx2")
+                .ReferringTo(1)
+                .Value;
+        FeatureStruct source = build();
+
+        FeatureStruct clone = source.Clone();
+        clone.AddValue(featSys.GetFeature("b"), new SymbolicFeatureValue(featSys.GetSymbol("b1")));
+
+        AssertSourceUnchanged(source, build());
+        // the clone must still share its cx1/cx2 substructure after the inflate
+        Assert.That(
+            ReferenceEquals(clone.GetValue<FeatureStruct>("cx1"), clone.GetValue<FeatureStruct>("cx2")),
+            Is.True,
+            "re-entrant substructure sharing was lost by clone"
+        );
+    }
+
+    [Test]
+    public void Clone_FrozenWithVariable_ReplaceVariablesOnClone_LeavesSourceVariableIntact()
+    {
+        var featSys = new FeatureSystem
+        {
+            new SymbolicFeature("a", new FeatureSymbol("a+", "+"), new FeatureSymbol("a-", "-")),
+            new SymbolicFeature("b", new FeatureSymbol("b+", "+"), new FeatureSymbol("b-", "-")),
+        };
+        featSys.Freeze();
+        Func<FeatureStruct> build = () =>
+            FeatureStruct.New(featSys).Feature("a").EqualToVariable("var1").Symbol("b-").Value;
+        FeatureStruct source = build();
+
+        var bindings = new VariableBindings();
+        bindings["var1"] = new SymbolicFeatureValue(featSys.GetSymbol("a+"));
+        FeatureStruct clone = source.Clone();
+        clone.ReplaceVariables(bindings);
+
+        AssertSourceUnchanged(source, build());
+        Assert.That(clone.ValueEquals(source), Is.False, "ReplaceVariables did not change the clone");
+    }
 }

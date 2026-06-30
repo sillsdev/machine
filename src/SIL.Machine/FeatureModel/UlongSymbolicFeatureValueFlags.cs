@@ -9,6 +9,9 @@ namespace SIL.Machine.FeatureModel
         private readonly ulong _mask;
         private ulong _flags = 0;
 
+        /// <summary>The set of allowed symbols as a raw bitset (bit i = symbol with Index i).</summary>
+        internal ulong RawFlags => _flags;
+
         public UlongSymbolicFeatureValueFlags(SymbolicFeature feature)
         {
             _feature = feature;

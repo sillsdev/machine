@@ -1,10 +1,10 @@
 namespace SIL.Machine.Corpora;
 
-public class MemoryUsfmVersificationAnalyzer(
+public class MemoryParatextProjectVersificationErrorDetector(
     IDictionary<string, string>? files = null,
     ParatextProjectSettings? settings = null
 )
-    : UsfmVersificationAnalyzerBase(
+    : ParatextProjectVersificationErrorDetectorBase(
         new MemoryParatextProjectFileHandler(files),
         settings ?? new DefaultParatextProjectSettings()
     );

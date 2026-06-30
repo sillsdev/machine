@@ -13,24 +13,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             : base(partName) { }
 
         public override void GenerateAnalysisLhs(
-            Pattern<Word, ShapeNode> analysisLhs,
-            IDictionary<string, Pattern<Word, ShapeNode>> partLookup,
+            Pattern<Word, int> analysisLhs,
+            IDictionary<string, Pattern<Word, int>> partLookup,
             IDictionary<string, int> capturedParts
         )
         {
-            Pattern<Word, ShapeNode> pattern = partLookup[PartName];
+            Pattern<Word, int> pattern = partLookup[PartName];
             int count = capturedParts.GetOrCreate(PartName, () => 0);
             string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
             analysisLhs.Children.Add(
-                new Group<Word, ShapeNode>(groupName, pattern.Children.DeepCloneExceptBoundaries())
+                new Group<Word, int>(groupName, pattern.Children.DeepCloneExceptBoundaries())
             );
             capturedParts[PartName]++;
         }
 
-        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
+        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, int> match, Word output)
         {
             var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
-            GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
+            GroupCapture<int> inputGroup = match.GroupCaptures[PartName];
             if (inputGroup.Success)
             {
                 foreach (

@@ -132,8 +132,6 @@ namespace SIL.Machine.Corpora
             }
 
             string visibility = settingsDoc.Root.Element("Visibility")?.Value;
-            string normalizationForm = settingsDoc.Root.Element("NormalizationForm")?.Value ?? "Undefined";
-            string language = settingsDoc.Root.Element("Language")?.Value ?? "";
 
             var settings = new ParatextProjectSettings(
                 guid: guid,
@@ -150,8 +148,6 @@ namespace SIL.Machine.Corpora
                 biblicalTermsFileName: parts[2],
                 languageCode: languageCode,
                 translationType: translationType,
-                normalizationForm: normalizationForm,
-                language: language,
                 visibility: visibility,
                 parentGuid: parentGuid,
                 parentName: parentName

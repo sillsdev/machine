@@ -7,12 +7,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class AnalysisRewriteSubruleSpec : RewriteSubruleSpec
     {
-        private readonly Action<Match<Word, ShapeNode>, Range<ShapeNode>, VariableBindings> _applyAction;
+        private readonly Action<Match<Word, int>, Range<ShapeNode>, VariableBindings> _applyAction;
 
         public AnalysisRewriteSubruleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
+            MatcherSettings<int> matcherSettings,
             RewriteSubrule subrule,
-            Action<Match<Word, ShapeNode>, Range<ShapeNode>, VariableBindings> applyAction
+            Action<Match<Word, int>, Range<ShapeNode>, VariableBindings> applyAction
         )
             : base(
                 matcherSettings,
@@ -23,16 +23,16 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _applyAction = applyAction;
         }
 
-        private static Pattern<Word, ShapeNode> CreateEnvironmentPattern(Pattern<Word, ShapeNode> env)
+        private static Pattern<Word, int> CreateEnvironmentPattern(Pattern<Word, int> env)
         {
-            Pattern<Word, ShapeNode> pattern = null;
+            Pattern<Word, int> pattern = null;
             if (!env.IsEmpty)
-                pattern = new Pattern<Word, ShapeNode>(env.Children.DeepCloneExceptBoundaries());
+                pattern = new Pattern<Word, int>(env.Children.DeepCloneExceptBoundaries());
             return pattern;
         }
 
         public override void ApplyRhs(
-            Match<Word, ShapeNode> targetMatch,
+            Match<Word, int> targetMatch,
             Range<ShapeNode> range,
             VariableBindings varBindings
         )

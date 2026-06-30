@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using SIL.Machine.Annotations;
+using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.ObjectModel;
@@ -21,9 +22,62 @@ namespace SIL.Machine.Morphology.HermitCrab
             return (FeatureSymbol)ann.FeatureStruct.GetValue(HCFeatureSystem.Type);
         }
 
-        public static FeatureSymbol Type(this Constraint<Word, ShapeNode> constraint)
+        public static FeatureSymbol Type(this Constraint<Word, int> constraint)
         {
             return (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.Type);
+        }
+
+        // RUSTIFY Stage 2: the FST binds as Fst<Word,int> and its matcher filters / inspects the
+        // shape's int-offset annotation projection (Annotation<int>), which shares the FeatureStruct
+        // with the ShapeNode annotations — so these read identically to the ShapeNode overloads.
+        public static FeatureSymbol Type(this Annotation<int> ann)
+        {
+            return (FeatureSymbol)ann.FeatureStruct.GetValue(HCFeatureSystem.Type);
+        }
+
+        internal static bool IsDeleted(this Annotation<int> ann)
+        {
+            SymbolicFeatureValue sfv;
+            if (ann.FeatureStruct.TryGetValue(HCFeatureSystem.Deletion, out sfv))
+                return ((FeatureSymbol)sfv) == HCFeatureSystem.Deleted;
+            return false;
+        }
+
+        // ---- RUSTIFY Stage 2: int match/group offset -> ShapeNode resolution ----
+        // The FST binds as Fst<Word,int> with offset = node Tag and half-open annotation ranges
+        // [tag, tag+1). A match/group Range<int> is therefore [leftmostTag, rightmostTag+1): the
+        // leftmost node is NodeAt(Start) and the rightmost is NodeAt(End-1). These helpers re-express
+        // the old ShapeNode range navigation (range.Start/.End/.GetStart(dir)/.GetEnd(dir)) over int
+        // offsets so rule RHS code can keep operating on the segment graph.
+
+        internal static ShapeNode StartNode(this Shape shape, Range<int> range)
+        {
+            return shape.NodeAt(range.Start);
+        }
+
+        internal static ShapeNode EndNode(this Shape shape, Range<int> range)
+        {
+            return shape.NodeAt(range.End - 1);
+        }
+
+        internal static ShapeNode GetStartNode(this Shape shape, Range<int> range, Direction dir)
+        {
+            return dir == Direction.LeftToRight ? shape.NodeAt(range.Start) : shape.NodeAt(range.End - 1);
+        }
+
+        internal static ShapeNode GetEndNode(this Shape shape, Range<int> range, Direction dir)
+        {
+            return dir == Direction.LeftToRight ? shape.NodeAt(range.End - 1) : shape.NodeAt(range.Start);
+        }
+
+        internal static Range<ShapeNode> ToShapeRange(this Shape shape, Range<int> range)
+        {
+            return Range<ShapeNode>.Create(shape.NodeAt(range.Start), shape.NodeAt(range.End - 1));
+        }
+
+        internal static IEnumerable<ShapeNode> GetNodes(this Shape shape, Range<int> range)
+        {
+            return shape.GetNodes(shape.ToShapeRange(range));
         }
 
         internal static FeatureStruct AntiFeatureStruct(this FeatureStruct fs)
@@ -140,14 +194,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             return output;
         }
 
-        internal static IEnumerable<PatternNode<Word, ShapeNode>> DeepCloneExceptBoundaries(
-            this IEnumerable<PatternNode<Word, ShapeNode>> nodes
+        internal static IEnumerable<PatternNode<Word, int>> DeepCloneExceptBoundaries(
+            this IEnumerable<PatternNode<Word, int>> nodes
         )
         {
-            foreach (PatternNode<Word, ShapeNode> node in nodes)
+            foreach (PatternNode<Word, int> node in nodes)
             {
                 if (
-                    node is Constraint<Word, ShapeNode> constraint
+                    node is Constraint<Word, int> constraint
                     && (constraint.FeatureStruct.IsEmpty || constraint.Type() != HCFeatureSystem.Boundary)
                 )
                 {
@@ -155,9 +209,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                if (node is Alternation<Word, ShapeNode> alternation)
+                if (node is Alternation<Word, int> alternation)
                 {
-                    var newAlteration = new Alternation<Word, ShapeNode>(
+                    var newAlteration = new Alternation<Word, int>(
                         alternation.Children.DeepCloneExceptBoundaries()
                     );
                     if (newAlteration.Children.Count > 0)
@@ -165,17 +219,17 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                if (node is Group<Word, ShapeNode> group)
+                if (node is Group<Word, int> group)
                 {
-                    var newGroup = new Group<Word, ShapeNode>(group.Name, group.Children.DeepCloneExceptBoundaries());
+                    var newGroup = new Group<Word, int>(group.Name, group.Children.DeepCloneExceptBoundaries());
                     if (newGroup.Children.Count > 0)
                         yield return newGroup;
                     continue;
                 }
 
-                if (node is Quantifier<Word, ShapeNode> quantifier)
+                if (node is Quantifier<Word, int> quantifier)
                 {
-                    var newQuantifier = new Quantifier<Word, ShapeNode>(
+                    var newQuantifier = new Quantifier<Word, int>(
                         quantifier.MinOccur,
                         quantifier.MaxOccur,
                         quantifier.Children.DeepCloneExceptBoundaries().SingleOrDefault()
@@ -185,9 +239,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                     continue;
                 }
 
-                if (node is Pattern<Word, ShapeNode> pattern)
+                if (node is Pattern<Word, int> pattern)
                 {
-                    var newPattern = new Pattern<Word, ShapeNode>(
+                    var newPattern = new Pattern<Word, int>(
                         pattern.Name,
                         pattern.Children.DeepCloneExceptBoundaries()
                     );

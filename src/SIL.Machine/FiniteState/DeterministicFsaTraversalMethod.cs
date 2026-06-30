@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
-using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -9,16 +8,11 @@ namespace SIL.Machine.FiniteState
         where TData : IAnnotatedData<TOffset>
     {
         public DeterministicFsaTraversalMethod(
-            Fst<TData, TOffset> fst,
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
+            Fst<TData, TOffset> fst
         )
-            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+            : base(fst) { }
 
-        public override IEnumerable<FstResult<TData, TOffset>> Traverse(
+        public override List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
@@ -81,17 +75,11 @@ namespace SIL.Machine.FiniteState
         )
         {
             var instStack = new Stack<DeterministicFsaTraversalInstance<TData, TOffset>>();
-            foreach (
-                DeterministicFsaTraversalInstance<TData, TOffset> inst in Initialize(
-                    ref annIndex,
-                    registers,
-                    cmds,
-                    initAnns
-                )
-            )
-            {
+            List<DeterministicFsaTraversalInstance<TData, TOffset>> insts = InitializeBuffer;
+            insts.Clear();
+            Initialize(ref annIndex, registers, cmds, initAnns, insts);
+            foreach (DeterministicFsaTraversalInstance<TData, TOffset> inst in insts)
                 instStack.Push(inst);
-            }
 
             return instStack;
         }

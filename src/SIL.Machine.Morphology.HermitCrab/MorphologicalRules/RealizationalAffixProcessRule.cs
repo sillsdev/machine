@@ -58,12 +58,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             get { return _allomorphs; }
         }
 
-        public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
+        public override IRule<Word, int> CompileAnalysisRule(Morpher morpher)
         {
             return new AnalysisRealizationalAffixProcessRule(morpher, this);
         }
 
-        public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
+        public override IRule<Word, int> CompileSynthesisRule(Morpher morpher)
         {
             return new SynthesisRealizationalAffixProcessRule(morpher, this);
         }

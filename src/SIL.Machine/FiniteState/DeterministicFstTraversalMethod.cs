@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel;
@@ -13,16 +11,11 @@ namespace SIL.Machine.FiniteState
         where TData : IAnnotatedData<TOffset>
     {
         public DeterministicFstTraversalMethod(
-            Fst<TData, TOffset> fst,
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
+            Fst<TData, TOffset> fst
         )
-            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+            : base(fst) { }
 
-        public override IEnumerable<FstResult<TData, TOffset>> Traverse(
+        public override List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
@@ -143,22 +136,21 @@ namespace SIL.Machine.FiniteState
         )
         {
             var instStack = new Stack<DeterministicFstTraversalInstance<TData, TOffset>>();
-            foreach (
-                DeterministicFstTraversalInstance<TData, TOffset> inst in Initialize(
-                    ref annIndex,
-                    registers,
-                    cmds,
-                    initAnns
-                )
-            )
+            List<DeterministicFstTraversalInstance<TData, TOffset>> insts = InitializeBuffer;
+            insts.Clear();
+            Initialize(ref annIndex, registers, cmds, initAnns, insts);
+            foreach (DeterministicFstTraversalInstance<TData, TOffset> inst in insts)
             {
                 inst.Output = ((ICloneable<TData>)Data).Clone();
-                inst.Mappings.AddRange(
-                    Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-                        .Zip(
-                            inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()),
-                            (a1, a2) => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(a1, a2)
-                        )
+                // Pair each source annotation with its clone via a lockstep preorder walk of the two
+                // isomorphic forests — same result as zipping the two BFS node sequences (dict order
+                // is irrelevant) but without the per-call Queue + SelectMany/Zip iterators + KVPs.
+                DataStructuresExtensions.PairedPreorderTraverse(
+                    Data.Annotations,
+                    inst.Output.Annotations,
+                    inst.Mappings,
+                    (mappings, a1, a2) => mappings[a1] = a2,
+                    Direction.LeftToRight
                 );
                 instStack.Push(inst);
             }

@@ -9,15 +9,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
     {
         private readonly int _targetCount;
 
-        public EpenthesisAnalysisRewriteRuleSpec(MatcherSettings<ShapeNode> matcherSettings, RewriteSubrule subrule)
+        public EpenthesisAnalysisRewriteRuleSpec(MatcherSettings<int> matcherSettings, RewriteSubrule subrule)
             : base(false)
         {
             Pattern.Acceptable = IsUnapplicationNonvacuous;
             _targetCount = subrule.Rhs.Children.Count;
 
-            foreach (Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
+            foreach (Constraint<Word, int> constraint in subrule.Rhs.Children.Cast<Constraint<Word, int>>())
             {
-                Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
+                Constraint<Word, int> newConstraint = constraint.Clone();
                 newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
                 Pattern.Children.Add(newConstraint);
             }
@@ -26,7 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
         }
 
-        private static bool IsUnapplicationNonvacuous(Match<Word, ShapeNode> match)
+        private static bool IsUnapplicationNonvacuous(Match<Word, int> match)
         {
             foreach (ShapeNode node in match.Input.Shape.GetNodes(match.Range))
             {
@@ -37,7 +37,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return false;
         }
 
-        private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
+        private void Unapply(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = range.Start;
             for (int i = 0; i < _targetCount; i++)

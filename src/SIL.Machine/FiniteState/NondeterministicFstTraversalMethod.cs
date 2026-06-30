@@ -14,16 +14,11 @@ namespace SIL.Machine.FiniteState
         where TData : IAnnotatedData<TOffset>
     {
         public NondeterministicFstTraversalMethod(
-            Fst<TData, TOffset> fst,
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
+            Fst<TData, TOffset> fst
         )
-            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+            : base(fst) { }
 
-        public override IEnumerable<FstResult<TData, TOffset>> Traverse(
+        public override List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
@@ -38,12 +33,11 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var traversed = new HashSet<
-                Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]>
-            >(
-                AnonymousEqualityComparer.Create<
-                    Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]>
-                >(KeyEquals, KeyGetHashCode)
+            // Value-type dedup key (was Tuple<,,,>): stored inline in the HashSet, so a push no longer
+            // allocates a heap Tuple. The per-push Outputs snapshot array remains (the key must capture
+            // the outputs at push time, since the instance's Outputs list keeps growing afterward).
+            var traversed = new HashSet<TraversalKey>(
+                AnonymousEqualityComparer.Create<TraversalKey>(KeyEquals, KeyGetHashCode)
             );
             while (instStack.Count != 0)
             {
@@ -57,7 +51,7 @@ namespace SIL.Machine.FiniteState
                     bool isInstReusable = i == inst.State.Arcs.Count - 1;
                     if (arc.Input.IsEpsilon)
                     {
-                        if (!inst.Visited.Contains(arc.Target))
+                        if (!inst.IsVisited(arc.Target))
                         {
                             NondeterministicFstTraversalInstance<TData, TOffset> ti;
                             if (isInstReusable)
@@ -79,24 +73,23 @@ namespace SIL.Machine.FiniteState
                                 ti.Outputs.Add(arc.Outputs[0]);
                             }
 
-                            ti.Visited.Add(arc.Target);
+                            ti.MarkVisited(arc.Target);
                             NondeterministicFstTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(
                                 inst,
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
-                                Tuple.Create(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers,
-                                    newInst.Outputs.ToArray()
-                                );
-                            if (!traversed.Contains(key))
-                            {
+                            var key = new TraversalKey(
+                                newInst.State,
+                                newInst.AnnotationIndex,
+                                newInst.Registers,
+                                newInst.Outputs.ToArray()
+                            );
+                            // Add returns false if already present; this single hash/lookup replaces
+                            // the Contains-then-Add pair (the structural key hash over registers +
+                            // outputs is expensive and this is the innermost traversal loop).
+                            if (traversed.Add(key))
                                 instStack.Push(newInst);
-                                traversed.Add(key);
-                            }
                             if (isInstReusable)
                                 releaseInstance = false;
                             varBindings = null;
@@ -128,19 +121,16 @@ namespace SIL.Machine.FiniteState
                                 )
                             )
                             {
-                                newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> key =
-                                    Tuple.Create(
-                                        newInst.State,
-                                        newInst.AnnotationIndex,
-                                        newInst.Registers,
-                                        newInst.Outputs.ToArray()
-                                    );
-                                if (!traversed.Contains(key))
-                                {
+                                newInst.ClearVisited();
+                                var key = new TraversalKey(
+                                    newInst.State,
+                                    newInst.AnnotationIndex,
+                                    newInst.Registers,
+                                    newInst.Outputs.ToArray()
+                                );
+                                // Single hash/lookup (Add returns false if present) — see note above.
+                                if (traversed.Add(key))
                                     instStack.Push(newInst);
-                                    traversed.Add(key);
-                                }
                             }
                             if (isInstReusable)
                                 releaseInstance = false;
@@ -164,24 +154,45 @@ namespace SIL.Machine.FiniteState
             return new NondeterministicFstTraversalInstance<TData, TOffset>(Fst.RegisterCount);
         }
 
-        private bool KeyEquals(
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> x,
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> y
-        )
+        // Value-type dedup key (was Tuple<State,int,Register[,],Output[]>): stored inline in the
+        // `traversed` HashSet so a push no longer allocates a heap Tuple. Holds the instance's live
+        // Registers by reference and a snapshot of its Outputs, exactly as the Tuple did.
+        private readonly struct TraversalKey
         {
-            return x.Item1.Equals(y.Item1)
-                && x.Item2.Equals(y.Item2)
-                && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3)
-                && x.Item4.SequenceEqual(y.Item4);
+            public readonly State<TData, TOffset> State;
+            public readonly int AnnotationIndex;
+            public readonly Register<TOffset>[,] Registers;
+            public readonly Output<TData, TOffset>[] Outputs;
+
+            public TraversalKey(
+                State<TData, TOffset> state,
+                int annotationIndex,
+                Register<TOffset>[,] registers,
+                Output<TData, TOffset>[] outputs
+            )
+            {
+                State = state;
+                AnnotationIndex = annotationIndex;
+                Registers = registers;
+                Outputs = outputs;
+            }
         }
 
-        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,], Output<TData, TOffset>[]> m)
+        private bool KeyEquals(TraversalKey x, TraversalKey y)
+        {
+            return x.State.Equals(y.State)
+                && x.AnnotationIndex.Equals(y.AnnotationIndex)
+                && Fst.RegistersEqualityComparer.Equals(x.Registers, y.Registers)
+                && x.Outputs.SequenceEqual(y.Outputs);
+        }
+
+        private int KeyGetHashCode(TraversalKey m)
         {
             int code = 23;
-            code = code * 31 + m.Item1.GetHashCode();
-            code = code * 31 + m.Item2.GetHashCode();
-            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
-            code = code * 31 + m.Item4.GetSequenceHashCode();
+            code = code * 31 + m.State.GetHashCode();
+            code = code * 31 + m.AnnotationIndex.GetHashCode();
+            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Registers);
+            code = code * 31 + m.Outputs.GetSequenceHashCode();
             return code;
         }
 
@@ -193,22 +204,21 @@ namespace SIL.Machine.FiniteState
         )
         {
             var instStack = new Stack<NondeterministicFstTraversalInstance<TData, TOffset>>();
-            foreach (
-                NondeterministicFstTraversalInstance<TData, TOffset> inst in Initialize(
-                    ref annIndex,
-                    registers,
-                    cmds,
-                    initAnns
-                )
-            )
+            List<NondeterministicFstTraversalInstance<TData, TOffset>> insts = InitializeBuffer;
+            insts.Clear();
+            Initialize(ref annIndex, registers, cmds, initAnns, insts);
+            foreach (NondeterministicFstTraversalInstance<TData, TOffset> inst in insts)
             {
                 inst.Output = ((ICloneable<TData>)Data).Clone();
-                inst.Mappings.AddRange(
-                    Data.Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-                        .Zip(
-                            inst.Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()),
-                            (a1, a2) => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(a1, a2)
-                        )
+                // Pair each source annotation with its clone via a lockstep preorder walk of the two
+                // isomorphic forests — same result as zipping the two BFS node sequences (dict order
+                // is irrelevant) but without the per-call Queue + SelectMany/Zip iterators + KVPs.
+                DataStructuresExtensions.PairedPreorderTraverse(
+                    Data.Annotations,
+                    inst.Output.Annotations,
+                    inst.Mappings,
+                    (mappings, a1, a2) => mappings[a1] = a2,
+                    Direction.LeftToRight
                 );
                 instStack.Push(inst);
             }

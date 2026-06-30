@@ -6,18 +6,18 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisAffixTemplateRule : IRule<Word, ShapeNode>
+    internal class SynthesisAffixTemplateRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly AffixTemplate _template;
-        private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly List<IRule<Word, int>> _rules;
 
         public SynthesisAffixTemplateRule(Morpher morpher, AffixTemplate template)
         {
             _morpher = morpher;
             _template = template;
-            _rules = new List<IRule<Word, ShapeNode>>(
-                template.Slots.Select(slot => new RuleBatch<Word, ShapeNode>(
+            _rules = new List<IRule<Word, int>>(
+                template.Slots.Select(slot => new RuleBatch<Word, int>(
                     slot.Rules.Select(mr => mr.CompileSynthesisRule(morpher)),
                     false,
                     FreezableEqualityComparer<Word>.Default

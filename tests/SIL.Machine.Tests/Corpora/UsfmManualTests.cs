@@ -2,7 +2,6 @@
 using System.Text.Json;
 using NUnit.Framework;
 using SIL.Machine.PunctuationAnalysis;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
@@ -86,15 +85,13 @@ public class UsfmManualTests
     public void ValidateUsfmVersification()
     {
         using ZipArchive zipArchive = ZipFile.OpenRead(CorporaTestHelpers.UsfmSourceProjectZipPath);
-        var versificationAnalyzer = new ZipUsfmVersificationAnalyzer(zipArchive);
-        UsfmVersificationAnalysis analysis = versificationAnalyzer.AnalyzeUsfmVersification(
-            Canon.AllBookIds.ToDictionary(id => id, id => (HashSet<int>?)null)
-        );
+        var versificationErrorDetector = new ZipParatextProjectVersificationErrorDetector(zipArchive);
+        IReadOnlyList<UsfmVersificationError> errors = versificationErrorDetector.GetUsfmVersificationErrors();
 
         Assert.That(
-            analysis.Diagnostics,
+            errors,
             Has.Count.EqualTo(0),
-            JsonSerializer.Serialize(analysis.Diagnostics, new JsonSerializerOptions { WriteIndented = true })
+            JsonSerializer.Serialize(errors, new JsonSerializerOptions { WriteIndented = true })
         );
     }
 }

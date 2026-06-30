@@ -43,13 +43,6 @@ public class ParatextProjectSettingsParserTests
         }
     }
 
-    [Test]
-    public void NormalizationFormDefault()
-    {
-        ParatextProjectSettings settings = CreateSettings();
-        Assert.That(settings.NormalizationForm, Is.EqualTo("Undefined"));
-    }
-
     private static ParatextProjectSettings CreateSettings(string additionalSettingsXml = "")
     {
         var files = new Dictionary<string, string>
