@@ -43,13 +43,7 @@ namespace SIL.Machine.FiniteState
         /// Re-targets this (pooled) traversal method at a new input without reallocating it or its
         /// instance free-list. Rebuilds the per-input annotation list; keeps <see cref="_cachedInstances"/>.
         /// </summary>
-        public void Reset(
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
-        )
+        public void Reset(TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
         {
             _data = data;
             _varBindings = varBindings;

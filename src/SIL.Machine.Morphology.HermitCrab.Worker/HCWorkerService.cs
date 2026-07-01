@@ -39,7 +39,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker
                 {
                     DeletionReapplications = grammar.DeletionReapplications,
                     MaxStemCount = grammar.MaxStemCount,
-                    MergeEquivalentAnalyses = grammar.MergeEquivalentAnalyses
+                    MergeEquivalentAnalyses = grammar.MergeEquivalentAnalyses,
                 };
                 // Benchmark-only knob (HCWORKER_MAX_UNAPPLICATIONS env var, not part of the wire
                 // contract - FieldWorks never sets this today; see HCParser.LoadParser). Lets the
@@ -79,9 +79,10 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker
             // applies once parsing lives in this process (design §1/§2). HCWORKER_MAX_DOP
             // (benchmark-only, not part of the wire contract) lets the integration bench harness
             // sweep thread counts against the real worker process instead of always maxing out.
-            int maxDop = int.TryParse(Environment.GetEnvironmentVariable("HCWORKER_MAX_DOP"), out int dop) && dop > 0
-                ? dop
-                : Environment.ProcessorCount;
+            int maxDop =
+                int.TryParse(Environment.GetEnvironmentVariable("HCWORKER_MAX_DOP"), out int dop) && dop > 0
+                    ? dop
+                    : Environment.ProcessorCount;
             Parallel.ForEach(
                 words,
                 new ParallelOptions { MaxDegreeOfParallelism = maxDop },
@@ -89,10 +90,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker
                 {
                     try
                     {
-                        results[word] = morpher
-                            .ParseWord(word, out _, guessRoots)
-                            .Select(ToWordAnalysisDto)
-                            .ToArray();
+                        results[word] = morpher.ParseWord(word, out _, guessRoots).Select(ToWordAnalysisDto).ToArray();
                     }
                     catch (Exception)
                     {
@@ -157,11 +155,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker
                         FormStr = formStr,
                         Guessed = allomorph.Guessed,
                         MsaId = ParseIntProperty(allomorph.Morpheme.Properties, HCWorkerConstants.MsaId),
-                        InflTypeId = ParseNullableIntProperty(
-                            allomorph.Morpheme.Properties,
-                            HCWorkerConstants.InflTypeId
-                        ) ?? 0,
-                        MorphemeIndex = morphemeIndex
+                        InflTypeId =
+                            ParseNullableIntProperty(allomorph.Morpheme.Properties, HCWorkerConstants.InflTypeId) ?? 0,
+                        MorphemeIndex = morphemeIndex,
                     }
                 );
             }

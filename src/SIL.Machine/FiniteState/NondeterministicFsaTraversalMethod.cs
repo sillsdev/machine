@@ -9,9 +9,7 @@ namespace SIL.Machine.FiniteState
         : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        public NondeterministicFsaTraversalMethod(
-            Fst<TData, TOffset> fst
-        )
+        public NondeterministicFsaTraversalMethod(Fst<TData, TOffset> fst)
             : base(fst) { }
 
         public override List<FstResult<TData, TOffset>> Traverse(
@@ -96,11 +94,7 @@ namespace SIL.Machine.FiniteState
                             )
                             {
                                 newInst.ClearVisited();
-                                var key = new TraversalKey(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers
-                                );
+                                var key = new TraversalKey(newInst.State, newInst.AnnotationIndex, newInst.Registers);
                                 if (traversed.Add(key))
                                     instStack.Push(newInst);
                             }

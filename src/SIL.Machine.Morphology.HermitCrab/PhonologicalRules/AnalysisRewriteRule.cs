@@ -49,11 +49,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     ruleSpec = new FeatureAnalysisRewriteRuleSpec(settings, rule.Lhs, sr);
                     if (_rule.ApplicationMode == RewriteApplicationMode.Simultaneous)
                     {
-                        foreach (
-                            Constraint<Word, int> constraint in sr.Rhs.Children.Cast<
-                                Constraint<Word, int>
-                            >()
-                        )
+                        foreach (Constraint<Word, int> constraint in sr.Rhs.Children.Cast<Constraint<Word, int>>())
                         {
                             if (constraint.Type() == HCFeatureSystem.Segment)
                             {
@@ -108,10 +104,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         private static bool IsUnifiable(Constraint<Word, int> constraint, Pattern<Word, int> env)
         {
-            foreach (
-                Constraint<Word, int> curConstraint in env.GetNodesDepthFirst()
-                    .OfType<Constraint<Word, int>>()
-            )
+            foreach (Constraint<Word, int> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, int>>())
             {
                 if (
                     curConstraint.Type() == HCFeatureSystem.Segment

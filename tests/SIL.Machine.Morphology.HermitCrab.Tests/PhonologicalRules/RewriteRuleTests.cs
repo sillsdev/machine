@@ -104,11 +104,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("voc+")
             .Value;
 
-        var rule3 = new RewriteRule
-        {
-            Name = "rule3",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
             new RewriteSubrule
@@ -291,11 +287,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
 
-        var rule3 = new RewriteRule
-        {
-            Name = "rule3",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule3 = new RewriteRule { Name = "rule3", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Allophonic.PhonologicalRules.Add(rule3);
         rule3.Subrules.Add(
             new RewriteSubrule
@@ -311,11 +303,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             }
         );
 
-        var rule4 = new RewriteRule
-        {
-            Name = "rule4",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule4 = new RewriteRule { Name = "rule4", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Allophonic.PhonologicalRules.Add(rule4);
         rule4.Subrules.Add(
             new RewriteSubrule
@@ -339,11 +327,7 @@ public class RewriteRuleTests : HermitCrabTestBase
 
         Allophonic.PhonologicalRules.Clear();
 
-        var rule1 = new RewriteRule
-        {
-            Name = "rule1",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
@@ -536,17 +520,10 @@ public class RewriteRuleTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, int>
-                .New()
-                .Annotation(backRndVowel)
-                .Annotation(highVowel)
-                .Annotation(highVowel)
-                .Value,
+            Lhs = Pattern<Word, int>.New().Annotation(backRndVowel).Annotation(highVowel).Annotation(highVowel).Value,
         };
         Allophonic.PhonologicalRules.Add(rule1);
-        rule1.Subrules.Add(
-            new RewriteSubrule { Rhs = Pattern<Word, int>.New().Annotation(t).Annotation(t).Value }
-        );
+        rule1.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, int>.New().Annotation(t).Annotation(t).Value });
 
         var morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bttbtt"), "27");
@@ -571,17 +548,10 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("round+")
             .Value;
 
-        var rule1 = new RewriteRule
-        {
-            Name = "rule1",
-            Lhs = Pattern<Word, int>.New().Annotation(backRndVowel).Value,
-        };
+        var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, int>.New().Annotation(backRndVowel).Value };
         Allophonic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                Rhs = Pattern<Word, int>.New().Annotation(highVowel).Annotation(highVowel).Value,
-            }
+            new RewriteSubrule { Rhs = Pattern<Word, int>.New().Annotation(highVowel).Annotation(highVowel).Value }
         );
 
         var morpher = new Morpher(TraceManager, Language);
@@ -678,11 +648,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("asp+")
             .Value;
 
-        var rule1 = new RewriteRule
-        {
-            Name = "rule1",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
@@ -742,17 +708,10 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Lhs = Pattern<Word, int>.New().Annotation(Character(Table3, "i")).Value;
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                RightEnvironment = Pattern<Word, int>.New().Annotation(Character(Table3, "b")).Value,
-            }
+            new RewriteSubrule { RightEnvironment = Pattern<Word, int>.New().Annotation(Character(Table3, "b")).Value }
         );
 
-        var rule2 = new RewriteRule
-        {
-            Name = "rule2",
-            Lhs = Pattern<Word, int>.New().Annotation(backVowel).Value,
-        };
+        var rule2 = new RewriteRule { Name = "rule2", Lhs = Pattern<Word, int>.New().Annotation(backVowel).Value };
         rule2.Subrules.Add(
             new RewriteSubrule
             {
@@ -771,10 +730,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule1.Lhs = Pattern<Word, int>.New().Annotation(Character(Table3, "u")).Value;
         rule1.Subrules.Clear();
         rule1.Subrules.Add(
-            new RewriteSubrule
-            {
-                LeftEnvironment = Pattern<Word, int>.New().Annotation(Character(Table3, "b")).Value,
-            }
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, int>.New().Annotation(Character(Table3, "b")).Value }
         );
 
         rule2.Lhs = Pattern<Word, int>.New().Annotation(unrndVowel).Value;
@@ -1004,11 +960,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("nasal-")
             .Value;
 
-        var rule1 = new RewriteRule
-        {
-            Name = "rule1",
-            Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
-        };
+        var rule1 = new RewriteRule { Name = "rule1", Lhs = Pattern<Word, int>.New().Annotation(highVowel).Value };
         Morphophonemic.PhonologicalRules.Add(rule1);
         rule1.Subrules.Add(
             new RewriteSubrule
@@ -1340,11 +1292,7 @@ public class RewriteRuleTests : HermitCrabTestBase
         rule4.Subrules.Add(
             new RewriteSubrule
             {
-                Rhs = Pattern<Word, int>
-                    .New()
-                    .Annotation(highFrontUnrndVowel)
-                    .Annotation(highFrontUnrndVowel)
-                    .Value,
+                Rhs = Pattern<Word, int>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value,
                 LeftEnvironment = Pattern<Word, int>.New().Annotation(highVowel).Value,
             }
         );
@@ -1467,18 +1415,12 @@ public class RewriteRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("bubu"), "24", "25", "26", "27", "19");
 
         rule4.Subrules.Clear();
-        rule4.Subrules.Add(
-            new RewriteSubrule { RightEnvironment = Pattern<Word, int>.New().Annotation(cons).Value }
-        );
+        rule4.Subrules.Add(new RewriteSubrule { RightEnvironment = Pattern<Word, int>.New().Annotation(cons).Value });
 
         morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "25", "19");
 
-        rule4.Lhs = Pattern<Word, int>
-            .New()
-            .Annotation(highFrontUnrndVowel)
-            .Annotation(highFrontUnrndVowel)
-            .Value;
+        rule4.Lhs = Pattern<Word, int>.New().Annotation(highFrontUnrndVowel).Annotation(highFrontUnrndVowel).Value;
 
         morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("bubu"), "29", "19");
@@ -1740,11 +1682,7 @@ public class RewriteRuleTests : HermitCrabTestBase
             .Symbol("cont-")
             .Value;
 
-        var disrule1 = new RewriteRule
-        {
-            Name = "disrule1",
-            Lhs = Pattern<Word, int>.New().Annotation(stop).Value,
-        };
+        var disrule1 = new RewriteRule { Name = "disrule1", Lhs = Pattern<Word, int>.New().Annotation(stop).Value };
         Allophonic.PhonologicalRules.Add(disrule1);
         disrule1.Subrules.Add(
             new RewriteSubrule

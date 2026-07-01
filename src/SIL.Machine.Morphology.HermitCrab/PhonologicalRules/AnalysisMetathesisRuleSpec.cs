@@ -24,9 +24,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             Group<Word, int>[] groupOrder = pattern.Children.OfType<Group<Word, int>>().ToArray();
             Dictionary<string, Group<Word, int>> groups = groupOrder.ToDictionary(g => g.Name);
             _pattern = new Pattern<Word, int>();
-            foreach (
-                PatternNode<Word, int> node in pattern.Children.TakeWhile(n => !(n is Group<Word, int>))
-            )
+            foreach (PatternNode<Word, int> node in pattern.Children.TakeWhile(n => !(n is Group<Word, int>)))
             {
                 _pattern.Children.Add(node.Clone());
             }
@@ -49,9 +47,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private void AddGroup(Dictionary<string, Group<Word, int>> groups, string name)
         {
             var newGroup = new Group<Word, int>(name);
-            foreach (
-                Constraint<Word, int> constraint in groups[name].Children.Cast<Constraint<Word, int>>()
-            )
+            foreach (Constraint<Word, int> constraint in groups[name].Children.Cast<Constraint<Word, int>>())
             {
                 Constraint<Word, int> newConstraint = constraint.Clone();
                 newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);

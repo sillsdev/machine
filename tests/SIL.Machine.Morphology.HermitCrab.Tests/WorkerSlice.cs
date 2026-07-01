@@ -69,10 +69,10 @@ public class WorkerSlice
         long mb = (System.GC.GetTotalAllocatedBytes(true) - b0) / 1048576;
         double wps = slice.Count / sw.Elapsed.TotalSeconds;
         System.Console.WriteLine(
-            $"WORKERSLICE idx={sliceIndex,2} of={sliceCount,2} words={slice.Count,4} analyses={analyses} "
-                + $"ms={sw.ElapsedMilliseconds,7} wps={wps,7:F1} MB={mb,5} "
-                + $"gen0={System.GC.CollectionCount(0) - g0,3} gen1={System.GC.CollectionCount(1) - g1,3} "
-                + $"gen2={System.GC.CollectionCount(2) - g2,3} serverGC={System.Runtime.GCSettings.IsServerGC}"
+            $"WORKERSLICE idx={sliceIndex, 2} of={sliceCount, 2} words={slice.Count, 4} analyses={analyses} "
+                + $"ms={sw.ElapsedMilliseconds, 7} wps={wps, 7:F1} MB={mb, 5} "
+                + $"gen0={System.GC.CollectionCount(0) - g0, 3} gen1={System.GC.CollectionCount(1) - g1, 3} "
+                + $"gen2={System.GC.CollectionCount(2) - g2, 3} serverGC={System.Runtime.GCSettings.IsServerGC}"
         );
     }
 }

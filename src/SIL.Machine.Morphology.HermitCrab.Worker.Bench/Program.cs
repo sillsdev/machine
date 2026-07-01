@@ -84,12 +84,12 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
                         WallMs = wallMs,
                         WordsPerSec = wordsPerSec,
                         Speedup = speedup,
-                        AnalysesFound = analysesFound
+                        AnalysesFound = analysesFound,
                     };
                     allResults.Add(result);
                     Console.WriteLine(
-                        $"  threads={dop,2} wallMs={wallMs,9:F0} words/sec={wordsPerSec,8:F0} "
-                            + $"speedup={speedup,5:F2}x analyses={analysesFound}"
+                        $"  threads={dop, 2} wallMs={wallMs, 9:F0} words/sec={wordsPerSec, 8:F0} "
+                            + $"speedup={speedup, 5:F2}x analyses={analysesFound}"
                     );
                 }
                 Console.WriteLine();
@@ -125,7 +125,13 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
             public int AnalysesFound;
         }
 
-        private static RunOutcome RunOnce(string workerExe, string grammarXml, List<string> words, int dop, Options options)
+        private static RunOutcome RunOnce(
+            string workerExe,
+            string grammarXml,
+            List<string> words,
+            int dop,
+            Options options
+        )
         {
             string pipeName = "hcworker-bench-" + Guid.NewGuid().ToString("N");
             var startInfo = new ProcessStartInfo
@@ -134,7 +140,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
                 FileName = workerExe,
                 Arguments = $"{pipeName} {Process.GetCurrentProcess().Id}",
                 CreateNoWindow = true,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
             };
             startInfo.EnvironmentVariables["HCWORKER_MAX_DOP"] = dop.ToString();
             startInfo.EnvironmentVariables["HCWORKER_MAX_UNAPPLICATIONS"] = options.MaxUnapplications.ToString();
@@ -163,7 +169,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
                             CompiledGrammarXml = grammarXml,
                             DeletionReapplications = 0,
                             MaxStemCount = 2,
-                            MergeEquivalentAnalyses = false
+                            MergeEquivalentAnalyses = false,
                         }
                     );
 
@@ -201,7 +207,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
             if (!readTask.Wait(timeout))
                 throw new TimeoutException("Worker process did not signal READY in time.");
             if (readTask.Result != "READY")
-                throw new InvalidOperationException($"Worker process printed unexpected startup line: '{readTask.Result}'");
+                throw new InvalidOperationException(
+                    $"Worker process printed unexpected startup line: '{readTask.Result}'"
+                );
         }
 
         private static string FindRepoRoot()
@@ -210,7 +218,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
             while (dir != null && !File.Exists(Path.Combine(dir.FullName, "Machine.sln")))
                 dir = dir.Parent;
             if (dir == null)
-                throw new InvalidOperationException("Could not locate repo root (no Machine.sln found above " + AppContext.BaseDirectory + ").");
+                throw new InvalidOperationException(
+                    "Could not locate repo root (no Machine.sln found above " + AppContext.BaseDirectory + ")."
+                );
             return dir.FullName;
         }
 
@@ -219,12 +229,19 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
             string projectDir = Path.Combine(repoRoot, "src", "SIL.Machine.Morphology.HermitCrab.Worker");
             foreach (string config in new[] { "Debug", "Release" })
             {
-                string candidate = Path.Combine(projectDir, "bin", config, "net48", "SIL.Machine.Morphology.HermitCrab.Worker.exe");
+                string candidate = Path.Combine(
+                    projectDir,
+                    "bin",
+                    config,
+                    "net48",
+                    "SIL.Machine.Morphology.HermitCrab.Worker.exe"
+                );
                 if (File.Exists(candidate))
                     return candidate;
             }
             throw new InvalidOperationException(
-                "Could not find the built worker exe under " + projectDir
+                "Could not find the built worker exe under "
+                    + projectDir
                     + @"\bin\{Debug,Release}\net48 - build src\SIL.Machine.Morphology.HermitCrab.Worker first."
             );
         }
@@ -280,9 +297,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
 
             public const string Usage =
                 "Usage: SIL.Machine.Morphology.HermitCrab.Worker.Bench.exe "
-                    + "[--grammars sena,indonesian] [--threads 1,2,4,8,16] [--max-words N] "
-                    + "[--max-unapplications N] [--guess-roots true|false] [--repeat N] "
-                    + "[--report <path>] [--worker-exe <path>] [--samples-dir <path>]";
+                + "[--grammars sena,indonesian] [--threads 1,2,4,8,16] [--max-words N] "
+                + "[--max-unapplications N] [--guess-roots true|false] [--repeat N] "
+                + "[--report <path>] [--worker-exe <path>] [--samples-dir <path>]";
 
             public static Options Parse(string[] args)
             {
@@ -295,7 +312,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker.Bench
                     switch (arg)
                     {
                         case "--grammars":
-                            options.Grammars = Next().Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
+                            options.Grammars = Next()
+                                .Split(',')
+                                .Select(s => s.Trim())
+                                .Where(s => s.Length > 0)
+                                .ToList();
                             break;
                         case "--threads":
                             options.Threads = Next().Split(',').Select(s => int.Parse(s.Trim())).ToList();

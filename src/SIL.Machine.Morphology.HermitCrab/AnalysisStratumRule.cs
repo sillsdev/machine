@@ -65,7 +65,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             {
                                 // Honor the within-word parallelism cap rather than running at
                                 // the default (effectively unbounded) scheduler degree.
-                                MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism
+                                MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
                             };
                     _parallelMrules = morpher.MaxDegreeOfParallelism != 1;
                     break;

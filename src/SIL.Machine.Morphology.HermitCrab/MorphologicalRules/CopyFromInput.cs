@@ -21,9 +21,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             Pattern<Word, int> pattern = partLookup[PartName];
             int count = capturedParts.GetOrCreate(PartName, () => 0);
             string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
-            analysisLhs.Children.Add(
-                new Group<Word, int>(groupName, pattern.Children.DeepCloneExceptBoundaries())
-            );
+            analysisLhs.Children.Add(new Group<Word, int>(groupName, pattern.Children.DeepCloneExceptBoundaries()));
             capturedParts[PartName]++;
         }
 

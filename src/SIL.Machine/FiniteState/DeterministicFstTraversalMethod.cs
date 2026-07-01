@@ -10,9 +10,7 @@ namespace SIL.Machine.FiniteState
         : TraversalMethodBase<TData, TOffset, DeterministicFstTraversalInstance<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        public DeterministicFstTraversalMethod(
-            Fst<TData, TOffset> fst
-        )
+        public DeterministicFstTraversalMethod(Fst<TData, TOffset> fst)
             : base(fst) { }
 
         public override List<FstResult<TData, TOffset>> Traverse(

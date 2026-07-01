@@ -226,11 +226,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return output;
         }
 
-        private Word ApplySubrule(
-            CompoundingSubrule sr,
-            Match<Word, int> headMatch,
-            Match<Word, int> nonHeadMatch
-        )
+        private Word ApplySubrule(CompoundingSubrule sr, Match<Word, int> headMatch, Match<Word, int> nonHeadMatch)
         {
             // TODO: unify the variable bindings from the head and non-head matches
             Word output = headMatch.Input.Clone();

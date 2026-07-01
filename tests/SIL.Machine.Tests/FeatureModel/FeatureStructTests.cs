@@ -1017,6 +1017,37 @@ public class FeatureStructTests
         SkipAndCheck(featPos, 17, "v1");
     }
 
+    [Test]
+    public void UlongSymbolicFeatureValueFlags_SixtyFourSymbols_MaskCoversWholeUlong()
+    {
+        // Regression for the 64-symbol boundary: SymbolicFeatureValue.CreateFlags routes a feature
+        // with up to 64 symbols to the ulong implementation, whose mask was computed as
+        // `(1UL << 64) - 1`. A ulong shift count is masked to its low 6 bits, so that is `1UL << 0`
+        // minus 1 == 0, breaking every mask-dependent op. The existing BitArray() test only checks
+        // positive first/last values (Set/Get), so it never exercised the mask at this boundary.
+        var symbols = new System.Collections.Generic.List<FeatureSymbol>();
+        for (int i = 0; i < 64; i++)
+            symbols.Add(new FeatureSymbol("s" + i));
+        var feature = new SymbolicFeature("f64", symbols);
+
+        var all = new UlongSymbolicFeatureValueFlags(feature);
+        all.Set(feature.PossibleSymbols);
+        // A value holding every allowed symbol is fully instantiated / unconstrained.
+        Assert.That(all.HasAllSet(), Is.True, "64-symbol full set must satisfy HasAllSet (mask must be all-ones)");
+
+        // Negating the full set must yield the empty set (not everything, and not itself).
+        ISymbolicFeatureValueFlags none = all.Not();
+        Assert.That(none.HasAnySet(), Is.False, "Not(full set) must be empty at 64 symbols");
+
+        // Negating a single-symbol value must select exactly the other 63.
+        var single = new UlongSymbolicFeatureValueFlags(feature);
+        single.Set(new[] { symbols[0] });
+        ISymbolicFeatureValueFlags rest = single.Not();
+        Assert.That(rest.Get(symbols[0]), Is.False);
+        Assert.That(rest.Get(symbols[63]), Is.True);
+        Assert.That(rest.HasAllSet(), Is.False);
+    }
+
     private static void SkipAndCheck(SymbolicFeature featPos, int iSkip, string sFirst)
     {
         var symbols = featPos.PossibleSymbols.Skip(iSkip);

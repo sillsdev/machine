@@ -41,10 +41,7 @@ public class CompareBench
         System.Reflection.ConstructorInfo? ctor3 = typeof(Morpher).GetConstructor(
             new[] { typeof(ITraceManager), typeof(Language), typeof(int) }
         );
-        Morpher morpher =
-            ctor3 != null
-                ? (Morpher)ctor3.Invoke(new object[] { tm, lang, 1 })
-                : new Morpher(tm, lang);
+        Morpher morpher = ctor3 != null ? (Morpher)ctor3.Invoke(new object[] { tm, lang, 1 }) : new Morpher(tm, lang);
         morpher.MaxUnapplications = maxUnapp;
 
         // Warm up JIT + grammar caches (excluded from the measurement).

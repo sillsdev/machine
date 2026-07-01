@@ -48,8 +48,12 @@ public class RustifyBenchmark
                     words.Add(w);
             }
         }
-        words = new List<string>(new System.Collections.Generic.SortedSet<string>(words, System.StringComparer.Ordinal));
-        int maxWords = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw) ? mw : int.MaxValue;
+        words = new List<string>(
+            new System.Collections.Generic.SortedSet<string>(words, System.StringComparer.Ordinal)
+        );
+        int maxWords = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw)
+            ? mw
+            : int.MaxValue;
         if (words.Count > maxWords)
             words = words.GetRange(0, maxWords);
         int maxUnapp = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_UNAPP"), out int mu) ? mu : 5;
@@ -79,7 +83,8 @@ public class RustifyBenchmark
     public void SenaQuick()
     {
         string repoRoot = FindRepoRoot();
-        string? grammar = System.Environment.GetEnvironmentVariable("HC_GRAMMAR")
+        string? grammar =
+            System.Environment.GetEnvironmentVariable("HC_GRAMMAR")
             ?? System.IO.Path.Combine(repoRoot, "samples", "data", "en-hc.xml");
         string? wordsFile = System.Environment.GetEnvironmentVariable("HC_WORDS");
         Assert.That(grammar, Is.Not.Null.And.Not.Empty, "set HC_GRAMMAR");
@@ -107,7 +112,9 @@ public class RustifyBenchmark
 
         int budgetMs = int.TryParse(System.Environment.GetEnvironmentVariable("HC_BUDGET_MS"), out int b) ? b : 20000;
         int maxUnapp = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_UNAPP"), out int mu) ? mu : 5;
-        int maxWords = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw) ? mw : int.MaxValue;
+        int maxWords = int.TryParse(System.Environment.GetEnvironmentVariable("HC_MAX_WORDS"), out int mw)
+            ? mw
+            : int.MaxValue;
 
         // Apply maxWords cap, and de-duplicate so all words are exercised once.
         var wordSet = new System.Collections.Generic.HashSet<string>(words);
@@ -192,34 +199,34 @@ public class RustifyBenchmark
         );
         System.Console.WriteLine($"  BREAKDOWN (% of total alloc):");
         System.Console.WriteLine(
-            $"    Segment (initial Shape)  {ClonePct(segmentBytes),5:F1}%  ({segmentBytes / 1024}KB, {parsed} words)"
+            $"    Segment (initial Shape)  {ClonePct(segmentBytes), 5:F1}%  ({segmentBytes / 1024}KB, {parsed} words)"
         );
         System.Console.WriteLine(
-            $"    Word.ctor(new)           {ClonePct(wordCtorBytes),5:F1}%  ({wordCtorBytes / 1024}KB, {parsed} words)"
+            $"    Word.ctor(new)           {ClonePct(wordCtorBytes), 5:F1}%  ({wordCtorBytes / 1024}KB, {parsed} words)"
         );
         System.Console.WriteLine(
-            $"    Word.Clone               {ClonePct(cloneBytes),5:F1}%  ({cloneBytes / 1024}KB, {clones} clones, {(parsed > 0 ? clones / parsed : 0)} /word)"
+            $"    Word.Clone               {ClonePct(cloneBytes), 5:F1}%  ({cloneBytes / 1024}KB, {clones} clones, {(parsed > 0 ? clones / parsed : 0)} /word)"
         );
         System.Console.WriteLine(
-            $"    MarkMorph                {ClonePct(markMorphBytes),5:F1}%  ({markMorphBytes / 1024}KB)"
+            $"    MarkMorph                {ClonePct(markMorphBytes), 5:F1}%  ({markMorphBytes / 1024}KB)"
         );
         System.Console.WriteLine(
-            $"    VarBindings.Clone        {ClonePct(varBindingsBytes),5:F1}%  ({varBindingsBytes / 1024}KB, {varBindingsClones} clones, {(parsed > 0 ? varBindingsClones / parsed : 0)} /word)"
+            $"    VarBindings.Clone        {ClonePct(varBindingsBytes), 5:F1}%  ({varBindingsBytes / 1024}KB, {varBindingsClones} clones, {(parsed > 0 ? varBindingsClones / parsed : 0)} /word)"
         );
         System.Console.WriteLine(
-            $"    Registers.Clone          {ClonePct(registerCloneBytes),5:F1}%  ({registerCloneBytes / 1024}KB, {registerClones} clones, {(parsed > 0 ? registerClones / parsed : 0)} /word)"
+            $"    Registers.Clone          {ClonePct(registerCloneBytes), 5:F1}%  ({registerCloneBytes / 1024}KB, {registerClones} clones, {(parsed > 0 ? registerClones / parsed : 0)} /word)"
         );
         System.Console.WriteLine(
-            $"    TraversalMethod          {ClonePct(traversalMethodBytes),5:F1}%  ({traversalMethodBytes / 1024}KB, {traversalMethodCreates} creates, {(parsed > 0 ? traversalMethodCreates / parsed : 0)} /word)"
+            $"    TraversalMethod          {ClonePct(traversalMethodBytes), 5:F1}%  ({traversalMethodBytes / 1024}KB, {traversalMethodCreates} creates, {(parsed > 0 ? traversalMethodCreates / parsed : 0)} /word)"
         );
         System.Console.WriteLine(
-            $"    Scaffold (initAnns/regs) {ClonePct(scaffoldBytes),5:F1}%  ({scaffoldBytes / 1024}KB, {transduceScaffolds} calls)"
+            $"    Scaffold (initAnns/regs) {ClonePct(scaffoldBytes), 5:F1}%  ({scaffoldBytes / 1024}KB, {transduceScaffolds} calls)"
         );
         System.Console.WriteLine(
-            $"    Other (LINQ, FstResult)  {otherPct,5:F1}%  ({(bytes - accountedBytes) / 1024}KB)"
+            $"    Other (LINQ, FstResult)  {otherPct, 5:F1}%  ({(bytes - accountedBytes) / 1024}KB)"
         );
         System.Console.WriteLine(
-            $"  [analysis window superset: {ClonePct(analysisCascadeBytes),5:F1}%  ({analysisCascadeBytes / 1024}KB) — includes Clone/Scaffold/etc]"
+            $"  [analysis window superset: {ClonePct(analysisCascadeBytes), 5:F1}%  ({analysisCascadeBytes / 1024}KB) — includes Clone/Scaffold/etc]"
         );
     }
 
@@ -231,8 +238,12 @@ public class RustifyBenchmark
     private static string FindRepoRoot()
     {
         var dir = new System.IO.DirectoryInfo(TestContext.CurrentContext.TestDirectory);
-        while (dir != null && !System.IO.File.Exists(System.IO.Path.Combine(dir.FullName, "samples", "data", "en-hc.xml")))
+        while (
+            dir != null && !System.IO.File.Exists(System.IO.Path.Combine(dir.FullName, "samples", "data", "en-hc.xml"))
+        )
+        {
             dir = dir.Parent;
+        }
         Assert.That(dir, Is.Not.Null, "could not locate repo root containing samples/data/en-hc.xml");
         return dir!.FullName;
     }
@@ -282,7 +293,8 @@ public class RustifyBenchmark
     public void SenaParallel()
     {
         string repoRoot2 = FindRepoRoot();
-        string? grammar = System.Environment.GetEnvironmentVariable("HC_GRAMMAR")
+        string? grammar =
+            System.Environment.GetEnvironmentVariable("HC_GRAMMAR")
             ?? System.IO.Path.Combine(repoRoot2, "samples", "data", "en-hc.xml");
         string? wordsFile = System.Environment.GetEnvironmentVariable("HC_WORDS");
         Assert.That(grammar, Is.Not.Null.And.Not.Empty, "set HC_GRAMMAR");
@@ -363,8 +375,8 @@ public class RustifyBenchmark
                 baseMs = ms;
             double wps = words.Count / sw.Elapsed.TotalSeconds;
             System.Console.WriteLine(
-                $"SENAPAR dop={dop,2} ms={ms,8:F0} words/sec={wps,8:F0} scaling={baseMs / ms,5:F2}x MB={mb,5} "
-                    + $"gen0={gen0Delta,4} gen1={gen1Delta,3} gen2={gen2Delta,3}"
+                $"SENAPAR dop={dop, 2} ms={ms, 8:F0} words/sec={wps, 8:F0} scaling={baseMs / ms, 5:F2}x MB={mb, 5} "
+                    + $"gen0={gen0Delta, 4} gen1={gen1Delta, 3} gen2={gen2Delta, 3}"
             );
         }
     }

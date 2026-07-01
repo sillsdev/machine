@@ -17,11 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly Pattern<Word, int> _rightEnv;
         private readonly Matcher<Word, int> _rightEnvMatcher;
 
-        public AllomorphEnvironment(
-            ConstraintType type,
-            Pattern<Word, int> leftEnv,
-            Pattern<Word, int> rightEnv
-        )
+        public AllomorphEnvironment(ConstraintType type, Pattern<Word, int> leftEnv, Pattern<Word, int> rightEnv)
         {
             _type = type;
             if (leftEnv != null && !leftEnv.IsLeaf)

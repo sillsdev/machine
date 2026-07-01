@@ -13,10 +13,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private readonly Dictionary<string, Tuple<int, FeatureStruct>> _modifyFromInfos;
         private readonly Dictionary<string, int> _capturedParts;
 
-        public AnalysisMorphologicalTransform(
-            IEnumerable<Pattern<Word, int>> lhs,
-            IList<MorphologicalOutputAction> rhs
-        )
+        public AnalysisMorphologicalTransform(IEnumerable<Pattern<Word, int>> lhs, IList<MorphologicalOutputAction> rhs)
         {
             Dictionary<string, Pattern<Word, int>> partLookup = lhs.ToDictionary(p => p.Name);
             _modifyFromInfos = new Dictionary<string, Tuple<int, FeatureStruct>>();

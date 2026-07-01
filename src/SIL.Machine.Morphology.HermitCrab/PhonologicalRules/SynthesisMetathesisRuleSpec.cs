@@ -12,11 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private readonly string _leftGroupName;
         private readonly string _rightGroupName;
 
-        public SynthesisMetathesisRuleSpec(
-            Pattern<Word, int> pattern,
-            string leftGroupName,
-            string rightGroupName
-        )
+        public SynthesisMetathesisRuleSpec(Pattern<Word, int> pattern, string leftGroupName, string rightGroupName)
         {
             _leftGroupName = leftGroupName;
             _rightGroupName = rightGroupName;
@@ -27,9 +23,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 if (node is Group<Word, int> group)
                 {
                     var newGroup = new Group<Word, int>(group.Name);
-                    foreach (
-                        Constraint<Word, int> constraint in group.Children.Cast<Constraint<Word, int>>()
-                    )
+                    foreach (Constraint<Word, int> constraint in group.Children.Cast<Constraint<Word, int>>())
                     {
                         Constraint<Word, int> newConstraint = constraint.Clone();
                         newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);

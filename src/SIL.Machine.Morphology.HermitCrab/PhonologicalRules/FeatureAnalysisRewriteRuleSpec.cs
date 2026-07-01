@@ -34,9 +34,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _analysisRhs = new Pattern<Word, int>();
             int i = 0;
             foreach (
-                Tuple<PatternNode<Word, int>, PatternNode<Word, int>> tuple in lhs.Children.Zip(
-                    subrule.Rhs.Children
-                )
+                Tuple<PatternNode<Word, int>, PatternNode<Word, int>> tuple in lhs.Children.Zip(subrule.Rhs.Children)
             )
             {
                 var lhsConstraint = (Constraint<Word, int>)tuple.Item1;
@@ -103,9 +101,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private void Unapply(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             int i = 0;
-            foreach (
-                Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>()
-            )
+            foreach (Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>())
             {
                 ShapeNode node = targetMatch.Input.Shape.GetStartNode(
                     targetMatch.GroupCaptures["target" + i].Range,

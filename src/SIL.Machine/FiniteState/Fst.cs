@@ -332,9 +332,8 @@ namespace SIL.Machine.FiniteState
 
             int annIndex = traversalMethod.Annotations.IndexOf(start);
 
-            long scaffoldBefore = (FstStatistics.Enabled && FstStatistics.AllocationProbe != null)
-                ? FstStatistics.AllocationProbe()
-                : 0L;
+            long scaffoldBefore =
+                (FstStatistics.Enabled && FstStatistics.AllocationProbe != null) ? FstStatistics.AllocationProbe() : 0L;
             var initAnns = new HashSet<int>();
             // Reuse the frozen-time initializer partition when available (the hot, shared-grammar
             // path); fall back to building cmds inline for an unfrozen FST.
@@ -379,8 +378,12 @@ namespace SIL.Machine.FiniteState
                     }
                 }
 
-                List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns);
+                List<FstResult<TData, TOffset>> curResults = traversalMethod.Traverse(
+                    ref annIndex,
+                    initRegisters,
+                    cmds,
+                    initAnns
+                );
                 if (curResults.Count > 0)
                 {
                     if (resultList == null)

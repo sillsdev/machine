@@ -10,10 +10,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private readonly IPhonologicalPatternRuleSpec _ruleSpec;
         private readonly Matcher<Word, int> _matcher;
 
-        protected PhonologicalPatternRule(
-            IPhonologicalPatternRuleSpec ruleSpec,
-            MatcherSettings<int> matcherSettings
-        )
+        protected PhonologicalPatternRule(IPhonologicalPatternRuleSpec ruleSpec, MatcherSettings<int> matcherSettings)
         {
             _ruleSpec = ruleSpec;
             _matcher = new Matcher<Word, int>(_ruleSpec.Pattern, matcherSettings);

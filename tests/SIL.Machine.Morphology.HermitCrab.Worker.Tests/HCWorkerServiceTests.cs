@@ -71,7 +71,7 @@ public class HCWorkerServiceTests
         {
             Id = "root",
             Gloss = "sag",
-            SyntacticFeatureStruct = FeatureStruct.New(syntacticFeatSys).Symbol("V").Value
+            SyntacticFeatureStruct = FeatureStruct.New(syntacticFeatSys).Symbol("V").Value,
         };
         root.Allomorphs.Add(new RootAllomorph(new Segments(table, "sag", true)));
         // Simulate what FieldWorks' HCLoader.cs does when it builds the grammar from LCM: tag the
@@ -88,7 +88,7 @@ public class HCWorkerServiceTests
             Name = "WorkerTest",
             PhonologicalFeatureSystem = phoneticFeatSys,
             SyntacticFeatureSystem = syntacticFeatSys,
-            Strata = { stratum }
+            Strata = { stratum },
         };
         _language.CharacterDefinitionTables.Add(table);
 
@@ -120,7 +120,7 @@ public class HCWorkerServiceTests
             CompiledGrammarXml = _grammarXml,
             DeletionReapplications = 0,
             MaxStemCount = 2,
-            MergeEquivalentAnalyses = false
+            MergeEquivalentAnalyses = false,
         };
 
     [Test]
@@ -229,7 +229,7 @@ public class HCWorkerServiceTests
         {
             Id = "root",
             Gloss = "sag",
-            SyntacticFeatureStruct = FeatureStruct.New(syntacticFeatSys).Symbol("V").Value
+            SyntacticFeatureStruct = FeatureStruct.New(syntacticFeatSys).Symbol("V").Value,
         };
         root.Allomorphs.Add(new RootAllomorph(new Segments(table, "sag", true)));
         root.Properties[HCWorkerConstants.MsaId] = RootMsaId;
@@ -261,7 +261,7 @@ public class HCWorkerServiceTests
             Name = "WorkerTest",
             PhonologicalFeatureSystem = phonologicalFeatSys,
             SyntacticFeatureSystem = syntacticFeatSys,
-            Strata = { stratum }
+            Strata = { stratum },
         };
 
         var morpher = new Morpher(new TraceManager(), language);

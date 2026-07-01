@@ -681,11 +681,7 @@ public abstract class HermitCrabTestBase
         entry
             .Allomorphs[0]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, int>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
 
         entry = AddEntry(
@@ -715,20 +711,12 @@ public abstract class HermitCrabTestBase
         entry
             .Allomorphs[1]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, int>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
         entry
             .Allomorphs[2]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, int>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
 
         entry = AddEntry(

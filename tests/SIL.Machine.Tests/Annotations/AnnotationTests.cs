@@ -431,8 +431,7 @@ public class AnnotationTests
             Assert.That(tags.Length > 1 && tags[1] - tags[0] > 1, Is.True, "expected sparse appended tags");
         }
 
-        static Range<int> ToInt(Annotation<ShapeNode> a) =>
-            Range<int>.Create(a.Range.Start.Tag, a.Range.End.Tag + 1);
+        static Range<int> ToInt(Annotation<ShapeNode> a) => Range<int>.Create(a.Range.Start.Tag, a.Range.End.Tag + 1);
 
         foreach (Annotation<ShapeNode> x in anns)
         {

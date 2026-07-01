@@ -8,13 +8,7 @@ namespace SIL.Machine.FiniteState
         where TData : IAnnotatedData<TOffset>
     {
         IList<Annotation<TOffset>> Annotations { get; }
-        void Reset(
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
-        );
+        void Reset(TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults);
         List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,

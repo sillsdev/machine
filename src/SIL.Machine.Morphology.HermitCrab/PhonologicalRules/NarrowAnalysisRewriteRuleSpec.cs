@@ -41,9 +41,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private void Unapply(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
-            foreach (
-                Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>()
-            )
+            foreach (Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>())
             {
                 FeatureStruct fs = constraint.FeatureStruct.Clone();
                 if (varBindings != null)

@@ -80,7 +80,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Worker
             })
             {
                 IsBackground = true,
-                Name = "HCWorker parent-process watchdog"
+                Name = "HCWorker parent-process watchdog",
             };
             watchdog.Start();
         }

@@ -19,6 +19,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private Shape _shape;
         private readonly List<IMorphologicalRule> _mruleApps;
         private int _mruleAppIndex = -1;
+
         // RUSTIFY lever 2: lazily allocated — these morphological-rule bookkeeping maps stay empty through
         // the phonological-analysis cascade (where ~345 clones/word happen), so cloning them eagerly per
         // candidate allocated an empty dictionary for nothing. Null means empty; created on first write.
@@ -106,7 +107,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             _disjunctiveAllomorphIndices =
                 word._disjunctiveAllomorphIndices == null || word._disjunctiveAllomorphIndices.Count == 0
                     ? null
-                    : word._disjunctiveAllomorphIndices.ToDictionary(kvp => kvp.Key, kvp => new HashSet<int>(kvp.Value));
+                    : word._disjunctiveAllomorphIndices.ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => new HashSet<int>(kvp.Value)
+                    );
             _mruleAppCount = word._mruleAppCount;
         }
 
@@ -496,7 +500,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal IEnumerable<int> GetDisjunctiveAllomorphApplications(Annotation<ShapeNode> morph)
         {
             var morphID = (string)morph.FeatureStruct.GetValue(HCFeatureSystem.MorphID);
-            if (_disjunctiveAllomorphIndices != null && _disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices))
+            if (
+                _disjunctiveAllomorphIndices != null
+                && _disjunctiveAllomorphIndices.TryGetValue(morphID, out HashSet<int> indices)
+            )
                 return indices;
             return null;
         }

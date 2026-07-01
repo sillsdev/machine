@@ -211,9 +211,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 if (node is Alternation<Word, int> alternation)
                 {
-                    var newAlteration = new Alternation<Word, int>(
-                        alternation.Children.DeepCloneExceptBoundaries()
-                    );
+                    var newAlteration = new Alternation<Word, int>(alternation.Children.DeepCloneExceptBoundaries());
                     if (newAlteration.Children.Count > 0)
                         yield return newAlteration;
                     continue;
@@ -241,10 +239,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 if (node is Pattern<Word, int> pattern)
                 {
-                    var newPattern = new Pattern<Word, int>(
-                        pattern.Name,
-                        pattern.Children.DeepCloneExceptBoundaries()
-                    );
+                    var newPattern = new Pattern<Word, int>(pattern.Name, pattern.Children.DeepCloneExceptBoundaries());
                     if (newPattern.Children.Count > 0)
                         yield return newPattern;
                 }
