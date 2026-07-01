@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SIL.Machine.Morphology.HermitCrab.Worker</RootNamespace>
+    <AssemblyName>SIL.Machine.Morphology.HermitCrab.Worker</AssemblyName>
+    <Description>Out-of-process Server-GC host for HermitCrab parsing (consumed by FieldWorks).</Description>
+    <IsPackable>false</IsPackable>
+    <AppConfig>App.config</AppConfig>
+  </PropertyGroup>
+
+  <Import Project="../AssemblyInfo.props" />
+
+  <ItemGroup>
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SIL.Machine.Morphology.HermitCrab\SIL.Machine.Morphology.HermitCrab.csproj" />
+  </ItemGroup>
+
+</Project>
