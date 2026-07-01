@@ -55,3 +55,12 @@ tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
 tests/SIL.Machine.Tests/Corpora/TestData/project/*
 tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 .idea
+
+# Local-only HermitCrab benchmark fixtures + FieldWorks project backups (see the worker
+# benchmark harness). Large, machine-specific; the [Explicit] benchmarks fall back to the
+# tracked samples/data/en-hc.xml when these are absent.
+*.fwbackup
+samples/data/sena-hc.xml
+samples/data/sena-words.txt
+samples/data/indonesian-hc.xml
+samples/data/indonesian-words.txt

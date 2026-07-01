@@ -9,30 +9,30 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisCompoundingRule : IRule<Word, ShapeNode>
+    public class SynthesisCompoundingRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
-        private readonly List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>> _subruleMatchers;
+        private readonly List<Tuple<Matcher<Word, int>, Matcher<Word, int>>> _subruleMatchers;
 
         public SynthesisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
             _morpher = morpher;
             _rule = rule;
-            _subruleMatchers = new List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>>();
+            _subruleMatchers = new List<Tuple<Matcher<Word, int>, Matcher<Word, int>>>();
             foreach (CompoundingSubrule sr in rule.Subrules)
                 _subruleMatchers.Add(Tuple.Create(BuildMatcher(sr.HeadLhs), BuildMatcher(sr.NonHeadLhs)));
         }
 
-        private Matcher<Word, ShapeNode> BuildMatcher(IEnumerable<Pattern<Word, ShapeNode>> lhs)
+        private Matcher<Word, int> BuildMatcher(IEnumerable<Pattern<Word, int>> lhs)
         {
-            var pattern = new Pattern<Word, ShapeNode>();
-            foreach (Pattern<Word, ShapeNode> part in lhs)
-                pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.CloneItems()));
+            var pattern = new Pattern<Word, int>();
+            foreach (Pattern<Word, int> part in lhs)
+                pattern.Children.Add(new Group<Word, int>(part.Name, part.Children.CloneItems()));
 
-            return new Matcher<Word, ShapeNode>(
+            return new Matcher<Word, int>(
                 pattern,
-                new MatcherSettings<ShapeNode>
+                new MatcherSettings<int>
                 {
                     Filter = ann =>
                         ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary) && !ann.IsDeleted(),
@@ -167,10 +167,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     continue;
                 }
 
-                Match<Word, ShapeNode> headMatch = _subruleMatchers[i].Item1.Match(input);
+                Match<Word, int> headMatch = _subruleMatchers[i].Item1.Match(input);
                 if (headMatch.Success)
                 {
-                    Match<Word, ShapeNode> nonHeadMatch = _subruleMatchers[i].Item2.Match(input.CurrentNonHead);
+                    Match<Word, int> nonHeadMatch = _subruleMatchers[i].Item2.Match(input.CurrentNonHead);
                     if (nonHeadMatch.Success)
                     {
                         Word outWord = ApplySubrule(_rule.Subrules[i], headMatch, nonHeadMatch);
@@ -226,11 +226,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return output;
         }
 
-        private Word ApplySubrule(
-            CompoundingSubrule sr,
-            Match<Word, ShapeNode> headMatch,
-            Match<Word, ShapeNode> nonHeadMatch
-        )
+        private Word ApplySubrule(CompoundingSubrule sr, Match<Word, int> headMatch, Match<Word, int> nonHeadMatch)
         {
             // TODO: unify the variable bindings from the head and non-head matches
             Word output = headMatch.Input.Clone();

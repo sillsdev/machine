@@ -8,18 +8,18 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public abstract class RewriteRuleSpec : IPhonologicalPatternRuleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _pattern;
+        private readonly Pattern<Word, int> _pattern;
         private readonly List<RewriteSubruleSpec> _subruleSpecs;
         private readonly bool _isTargetEmpty;
 
         protected RewriteRuleSpec(bool isTargetEmpty)
         {
-            _pattern = new Pattern<Word, ShapeNode>();
+            _pattern = new Pattern<Word, int>();
             _subruleSpecs = new List<RewriteSubruleSpec>();
             _isTargetEmpty = isTargetEmpty;
         }
 
-        public Pattern<Word, ShapeNode> Pattern
+        public Pattern<Word, int> Pattern
         {
             get { return _pattern; }
         }
@@ -36,7 +36,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public bool MatchSubrule(
             PhonologicalPatternRule rule,
-            Match<Word, ShapeNode> match,
+            Match<Word, int> match,
             out PhonologicalSubruleMatch subruleMatch
         )
         {
@@ -45,6 +45,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 if (!subruleSpec.IsApplicable(match.Input))
                     continue;
 
+                // RUSTIFY Stage 2: match.Range is now Range<int> ([leftmostTag, rightmostTag+1)); resolve
+                // its bracketing nodes via the shape, then navigate the segment graph as before.
+                Shape shape = match.Input.Shape;
+                ShapeNode rangeStart = shape.NodeAt(match.Range.Start);
+                ShapeNode rangeEnd = shape.NodeAt(match.Range.End - 1);
                 ShapeNode leftNode,
                     rightNode,
                     startNode,
@@ -53,13 +58,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 {
                     if (match.Matcher.Direction == Direction.LeftToRight)
                     {
-                        leftNode = match.Range.Start;
-                        rightNode = match.Range.End.Next;
+                        leftNode = rangeStart;
+                        rightNode = rangeEnd.Next;
                     }
                     else
                     {
-                        leftNode = match.Range.Start.Prev;
-                        rightNode = match.Range.End;
+                        leftNode = rangeStart.Prev;
+                        rightNode = rangeEnd;
                     }
 
                     startNode = leftNode;
@@ -67,10 +72,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 }
                 else
                 {
-                    leftNode = match.Range.Start.Prev;
-                    rightNode = match.Range.End.Next;
-                    startNode = match.Range.Start;
-                    endNode = match.Range.End;
+                    leftNode = rangeStart.Prev;
+                    rightNode = rangeEnd.Next;
+                    startNode = rangeStart;
+                    endNode = rangeEnd;
                 }
 
                 if (leftNode == null || rightNode == null)
@@ -80,9 +85,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 }
 
                 VariableBindings varBindings = match.VariableBindings;
-                Match<Word, ShapeNode> leftEnvMatch = subruleSpec.LeftEnvironmentMatcher?.Match(
+                // left environment is matched right-to-left (see RewriteSubruleSpec)
+                Match<Word, int> leftEnvMatch = subruleSpec.LeftEnvironmentMatcher?.Match(
                     match.Input,
-                    leftNode,
+                    shape.MatchStartOffset(leftNode, Direction.RightToLeft),
                     varBindings
                 );
                 if (leftEnvMatch == null || leftEnvMatch.Success)
@@ -90,9 +96,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     if (leftEnvMatch != null && leftEnvMatch.VariableBindings != null)
                         varBindings = leftEnvMatch.VariableBindings;
 
-                    Match<Word, ShapeNode> rightEnvMatch = subruleSpec.RightEnvironmentMatcher?.Match(
+                    // right environment is matched left-to-right (see RewriteSubruleSpec)
+                    Match<Word, int> rightEnvMatch = subruleSpec.RightEnvironmentMatcher?.Match(
                         match.Input,
-                        rightNode,
+                        shape.MatchStartOffset(rightNode, Direction.LeftToRight),
                         varBindings
                     );
                     if (rightEnvMatch == null || rightEnvMatch.Success)

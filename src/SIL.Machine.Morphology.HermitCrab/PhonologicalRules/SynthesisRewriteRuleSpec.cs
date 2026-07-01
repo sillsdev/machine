@@ -11,9 +11,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
     public class SynthesisRewriteRuleSpec : RewriteRuleSpec
     {
         public SynthesisRewriteRuleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
+            MatcherSettings<int> matcherSettings,
             bool isIterative,
-            Pattern<Word, ShapeNode> lhs,
+            Pattern<Word, int> lhs,
             IEnumerable<RewriteSubrule> subrules
         )
             : base(lhs.IsEmpty)
@@ -23,14 +23,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             if (lhs.IsEmpty)
             {
                 Pattern.Children.Add(
-                    new Constraint<Word, ShapeNode>(
+                    new Constraint<Word, int>(
                         FeatureStruct.New().Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value
                     )
                 );
             }
             else
             {
-                foreach (Constraint<Word, ShapeNode> constraint in lhs.Children.Cast<Constraint<Word, ShapeNode>>())
+                foreach (Constraint<Word, int> constraint in lhs.Children.Cast<Constraint<Word, int>>())
                 {
                     var newConstraint = constraint.Clone();
                     if (isIterative)
@@ -82,15 +82,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
         }
 
-        private static bool CheckTarget(Match<Word, ShapeNode> match, Pattern<Word, ShapeNode> lhs)
+        private static bool CheckTarget(Match<Word, int> match, Pattern<Word, int> lhs)
         {
             foreach (
-                Tuple<ShapeNode, PatternNode<Word, ShapeNode>> tuple in match
+                Tuple<ShapeNode, PatternNode<Word, int>> tuple in match
                     .Input.Shape.GetNodes(match.Range)
                     .Zip(lhs.Children)
             )
             {
-                var constraints = (Constraint<Word, ShapeNode>)tuple.Item2;
+                var constraints = (Constraint<Word, int>)tuple.Item2;
                 if (tuple.Item1.Annotation.Type() != constraints.Type())
                     return false;
             }

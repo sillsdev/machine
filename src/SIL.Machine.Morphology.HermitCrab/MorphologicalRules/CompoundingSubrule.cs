@@ -6,8 +6,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public class CompoundingSubrule
     {
-        private readonly List<Pattern<Word, ShapeNode>> _headLhs;
-        private readonly List<Pattern<Word, ShapeNode>> _nonHeadLhs;
+        private readonly List<Pattern<Word, int>> _headLhs;
+        private readonly List<Pattern<Word, int>> _nonHeadLhs;
         private readonly List<MorphologicalOutputAction> _rhs;
 
         private readonly MprFeatureSet _requiredMprFeatures;
@@ -16,8 +16,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public CompoundingSubrule()
         {
-            _headLhs = new List<Pattern<Word, ShapeNode>>();
-            _nonHeadLhs = new List<Pattern<Word, ShapeNode>>();
+            _headLhs = new List<Pattern<Word, int>>();
+            _nonHeadLhs = new List<Pattern<Word, int>>();
             _rhs = new List<MorphologicalOutputAction>();
 
             _requiredMprFeatures = new MprFeatureSet();
@@ -25,12 +25,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             _outMprFeatures = new MprFeatureSet();
         }
 
-        public IList<Pattern<Word, ShapeNode>> HeadLhs
+        public IList<Pattern<Word, int>> HeadLhs
         {
             get { return _headLhs; }
         }
 
-        public IList<Pattern<Word, ShapeNode>> NonHeadLhs
+        public IList<Pattern<Word, int>> NonHeadLhs
         {
             get { return _nonHeadLhs; }
         }

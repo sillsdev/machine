@@ -240,4 +240,72 @@ public class FstTests : PhoneticTestsBase
         Assert.That(resultsArray.Length, Is.EqualTo(2));
         Assert.That(resultsArray.Select(r => r.Output.String), Is.EquivalentTo(new[] { "cas+.p", "cas.p" }));
     }
+
+    [Test]
+    public void TransduceNondeterministic_MatchesDeterminized()
+    {
+        // Exercises the nondeterministic FST traversal (NondeterministicFstTraversalMethod +
+        // VisitedStates) by transducing an FST directly, without Determinize() first. Oracle:
+        // the accepted outputs must match the determinized FST's (determinization preserves the
+        // relation), which is the same nas-assimilation transducer used by Transduce().
+        var fst = new Fst<AnnotatedStringData, int>(_operations) { UseUnification = false };
+        fst.StartState = fst.CreateAcceptingState();
+        fst.StartState.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas-", "nas?").Value, fst.StartState);
+        fst.StartState.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("nas+").Symbol("cor+", "cor-").Value,
+            fst.StartState
+        );
+        State<AnnotatedStringData, int> s1 = fst.StartState.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor?").Symbol("nas+").Value,
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor-").Value,
+            fst.CreateState()
+        );
+        s1.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("cor-").Value, fst.StartState);
+        State<AnnotatedStringData, int> s2 = fst.StartState.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor?").Symbol("nas+").Value,
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor+").Value,
+            fst.CreateAcceptingState()
+        );
+        s2.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor?").Symbol("nas+").Value,
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor+").Value,
+            s2
+        );
+        s2.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("nas-", "nas?").Symbol("cor+", "cor?").Value,
+            fst.StartState
+        );
+        s2.Arcs.Add(FeatureStruct.New(PhoneticFeatSys).Symbol("nas+").Symbol("cor+").Value, fst.StartState);
+        s2.Arcs.Add(
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor?").Symbol("nas+").Value,
+            FeatureStruct.New(PhoneticFeatSys).Symbol("cor-").Value,
+            s1
+        );
+
+        Assert.That(fst.IsDeterministic, Is.False, "the raw FST must take the nondeterministic traversal path");
+        Fst<AnnotatedStringData, int> dfst = fst.Determinize();
+
+        // This transducer has no epsilon-input arcs, so the raw nondeterministic traversal and the
+        // determinized FST accept exactly the same (input, output) relation. (Epsilon-input FSTs
+        // are always determinized before transducing in production, so raw-NFST transduce of those
+        // is out of scope here.)
+        foreach (string input in new[] { "caNp", "caN", "carp" })
+        {
+            AnnotatedStringData ndData = CreateStringData(input);
+            IEnumerable<FstResult<AnnotatedStringData, int>> ndResults;
+            Assert.That(
+                fst.Transduce(ndData, ndData.Annotations.First, null, true, true, true, out ndResults),
+                Is.True,
+                $"nondeterministic transduce of '{input}' should succeed"
+            );
+            AnnotatedStringData dData = CreateStringData(input);
+            IEnumerable<FstResult<AnnotatedStringData, int>> dResults;
+            Assert.That(dfst.Transduce(dData, dData.Annotations.First, null, true, true, true, out dResults), Is.True);
+            Assert.That(
+                ndResults.Select(r => r.Output.String).Distinct(),
+                Is.EquivalentTo(dResults.Select(r => r.Output.String).Distinct()),
+                $"nondeterministic and determinized transduce of '{input}' must accept the same outputs"
+            );
+        }
+    }
 }

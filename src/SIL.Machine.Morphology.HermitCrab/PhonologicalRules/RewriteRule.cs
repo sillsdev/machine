@@ -18,11 +18,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public RewriteRule()
         {
-            Lhs = Pattern<Word, ShapeNode>.New().Value;
+            Lhs = Pattern<Word, int>.New().Value;
             _subrules = new List<RewriteSubrule>();
         }
 
-        public Pattern<Word, ShapeNode> Lhs { get; set; }
+        public Pattern<Word, int> Lhs { get; set; }
 
         public IList<RewriteSubrule> Subrules
         {
@@ -33,12 +33,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public RewriteApplicationMode ApplicationMode { get; set; }
 
-        public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
+        public override IRule<Word, int> CompileAnalysisRule(Morpher morpher)
         {
             return new AnalysisRewriteRule(morpher, this);
         }
 
-        public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
+        public override IRule<Word, int> CompileSynthesisRule(Morpher morpher)
         {
             return new SynthesisRewriteRule(morpher, this);
         }

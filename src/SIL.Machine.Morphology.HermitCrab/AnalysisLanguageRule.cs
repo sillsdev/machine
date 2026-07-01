@@ -6,11 +6,11 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisLanguageRule : IRule<Word, ShapeNode>
+    internal class AnalysisLanguageRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly List<Stratum> _strata;
-        private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly List<IRule<Word, int>> _rules;
 
         public AnalysisLanguageRule(Morpher morpher, Language language)
         {

@@ -51,8 +51,33 @@ namespace SIL.Machine.FeatureModel
             return new FeatureStructBuilder(featSys, fs.Clone(), true);
         }
 
-        private readonly IDBearerDictionary<Feature, FeatureValue> _definite;
+        private IDBearerDictionary<Feature, FeatureValue> _definite;
         private int? _hashCode;
+
+        /// <summary>
+        /// On/off switch for the bit-packed flat-vector unify fast path. Default on; internal so a
+        /// test can flip it to verify parity against the original unification engine. Not part of
+        /// the public API.
+        /// </summary>
+        internal static bool FlatUnifyEnabled = true;
+
+        // Bit-packed flat unify vector, computed lazily and cached (reset on mutation):
+        //   _flatBits[feature.FlatIndex] = allowed-symbol bits (present) or ~0UL (absent = unconstrained).
+        // _flatState: 0 = not computed, 1 = computed.
+        // _flatComplete: every feature was bit-packable -> safe to use as the *constraint* (arc input).
+        // _flatSafeSegment: every NON-packable feature is non-symbolic (string/complex), which a
+        //   symbolic input can never constrain -> safe to use as the *segment* (extras are ignored).
+        private ulong[] _flatBits;
+        private byte _flatState;
+        private bool _flatComplete;
+        private bool _flatSafeSegment;
+
+        // Copy-on-write: a clone of a FROZEN feature struct borrows the source's (immutable)
+        // backing dictionary instead of deep-copying it. _shared is true until the first
+        // mutation inflates a private copy; _sharedSource is the frozen FS we borrowed from
+        // (needed to seed the re-entrancy map on inflate so the deep copy matches a normal clone).
+        private bool _shared;
+        private FeatureStruct _sharedSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureStruct"/> class.
@@ -76,6 +101,14 @@ namespace SIL.Machine.FeatureModel
             copies[other] = this;
             foreach (KeyValuePair<Feature, FeatureValue> featVal in other._definite)
                 _definite[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
+        }
+
+        // Copy-on-write clone of a frozen source: share its immutable backing; inflate on write.
+        private FeatureStruct(FeatureStruct frozenSource, bool sharedClone)
+        {
+            _definite = frozenSource._definite;
+            _shared = sharedClone;
+            _sharedSource = frozenSource;
         }
 
         /// <summary>
@@ -172,7 +205,7 @@ namespace SIL.Machine.FeatureModel
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            CheckFrozen();
+            EnsureWritable();
             _definite[feature] = value;
         }
 
@@ -183,7 +216,7 @@ namespace SIL.Machine.FeatureModel
             if (value == null)
                 throw new ArgumentNullException("value");
 
-            CheckFrozen();
+            EnsureWritable();
             Feature lastFeature;
             FeatureStruct lastFS;
             if (FollowPath(path, out lastFeature, out lastFS))
@@ -197,7 +230,7 @@ namespace SIL.Machine.FeatureModel
             if (feature == null)
                 throw new ArgumentNullException("feature");
 
-            CheckFrozen();
+            EnsureWritable();
             _definite.Remove(feature);
         }
 
@@ -206,7 +239,7 @@ namespace SIL.Machine.FeatureModel
             if (path == null)
                 throw new ArgumentNullException("path");
 
-            CheckFrozen();
+            EnsureWritable();
             Feature lastFeature;
             FeatureStruct lastFS;
             if (FollowPath(path, out lastFeature, out lastFS))
@@ -217,7 +250,7 @@ namespace SIL.Machine.FeatureModel
 
         public void ReplaceVariables(VariableBindings varBindings)
         {
-            CheckFrozen();
+            EnsureWritable();
             ReplaceVariables(varBindings, new HashSet<FeatureStruct>());
         }
 
@@ -254,7 +287,7 @@ namespace SIL.Machine.FeatureModel
 
         public void RemoveVariables()
         {
-            CheckFrozen();
+            EnsureWritable();
             RemoveVariables(new HashSet<FeatureStruct>());
         }
 
@@ -293,7 +326,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            CheckFrozen();
+            EnsureWritable();
             PriorityUnion(other, varBindings, new Dictionary<FeatureValue, FeatureValue>());
         }
 
@@ -377,7 +410,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            CheckFrozen();
+            EnsureWritable();
             UnionImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -423,7 +456,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            CheckFrozen();
+            EnsureWritable();
             AddImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -477,7 +510,7 @@ namespace SIL.Machine.FeatureModel
             if (other == null)
                 throw new ArgumentNullException("other");
 
-            CheckFrozen();
+            EnsureWritable();
             SubtractImpl(other, varBindings, new Dictionary<FeatureStruct, ISet<FeatureStruct>>());
         }
 
@@ -513,7 +546,7 @@ namespace SIL.Machine.FeatureModel
 
         public void Clear()
         {
-            CheckFrozen();
+            EnsureWritable();
             _definite.Clear();
         }
 
@@ -790,6 +823,88 @@ namespace SIL.Machine.FeatureModel
                 lastFeature = feature;
             }
 
+            return true;
+        }
+
+        // Builds (once, on a frozen struct) the bit-packed flat unify vector. _flatState becomes
+        // 1 (Simple: vector valid) only if every feature is a flat-indexed symbolic feature with a
+        // non-empty ulong value and no variable; otherwise 2 (Complex: must use the slow path).
+        private void EnsureFlat()
+        {
+            if (_flatState != 0)
+                return;
+            int maxIdx = -1;
+            bool complete = true; // all features bit-packable (usable as a constraint/input)
+            bool safeSegment = true; // every non-packable feature is non-symbolic (ignorable in a segment)
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+            {
+                if (
+                    featVal.Key is SymbolicFeature sf
+                    && sf.FlatIndex >= 0
+                    && Dereference(featVal.Value) is SymbolicFeatureValue sv
+                    && sv.TryGetFlatBits(out _)
+                )
+                {
+                    if (sf.FlatIndex > maxIdx)
+                        maxIdx = sf.FlatIndex;
+                }
+                else
+                {
+                    complete = false;
+                    // A symbolic-but-unpackable feature (variable/empty/>64 symbols) CAN be
+                    // constrained by a symbolic input, so it can't be safely ignored in a segment.
+                    if (featVal.Key is SymbolicFeature)
+                        safeSegment = false;
+                }
+            }
+            var arr = new ulong[maxIdx + 1];
+            for (int i = 0; i <= maxIdx; i++)
+                arr[i] = ulong.MaxValue; // absent feature = unconstrained
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+            {
+                if (
+                    featVal.Key is SymbolicFeature sf
+                    && sf.FlatIndex >= 0
+                    && Dereference(featVal.Value) is SymbolicFeatureValue sv
+                    && sv.TryGetFlatBits(out ulong bits)
+                )
+                {
+                    arr[sf.FlatIndex] = bits;
+                }
+            }
+            _flatBits = arr;
+            _flatComplete = complete;
+            _flatSafeSegment = safeSegment;
+            _flatState = 1;
+        }
+
+        // Bit-packed unifiability fast path. Returns false (not handled) when either struct isn't a
+        // frozen, Simple symbolic struct; otherwise sets result and returns true. Provably identical
+        // to IsUnifiable(other, useDefaults:false, varBindings:null) for the simple/no-variable case:
+        // a feature absent on either side is ~0 (the "no constraint" branch), and overlap == unifiable.
+        // this = the segment being matched; other = the arc-input constraint.
+        internal bool TryFastUnifiable(FeatureStruct other, out bool result)
+        {
+            result = false;
+            if (!FlatUnifyEnabled)
+                return false;
+            EnsureFlat();
+            other.EnsureFlat();
+            // The constraint (input) must be fully bit-packed; the segment may carry extra
+            // non-symbolic features the symbolic input can't constrain (so they're ignorable).
+            if (!other._flatComplete || !_flatSafeSegment)
+                return false;
+            ulong[] a = _flatBits;
+            ulong[] b = other._flatBits;
+            int n = a.Length > b.Length ? a.Length : b.Length;
+            for (int i = 0; i < n; i++)
+            {
+                ulong av = i < a.Length ? a[i] : ulong.MaxValue;
+                ulong bv = i < b.Length ? b[i] : ulong.MaxValue;
+                if ((av & bv) == 0)
+                    return true; // result already false: a feature has no common symbol
+            }
+            result = true;
             return true;
         }
 
@@ -1099,6 +1214,10 @@ namespace SIL.Machine.FeatureModel
 
         public new FeatureStruct Clone()
         {
+            // A clone of a frozen FS borrows its immutable backing (copy-on-write); a clone of an
+            // unfrozen FS must be an independent deep copy, since the caller may mutate both.
+            if (IsFrozen)
+                return new FeatureStruct(this, sharedClone: true);
             return new FeatureStruct(this);
         }
 
@@ -1188,10 +1307,25 @@ namespace SIL.Machine.FeatureModel
 
         public bool IsFrozen { get; private set; }
 
-        private void CheckFrozen()
+        // Guards every mutation. Frozen structs stay immutable (throw). A copy-on-write shell
+        // that is still borrowing a frozen backing inflates a private deep copy first, so neither
+        // this struct's mutation nor any recursion into its children can touch shared frozen data.
+        private void EnsureWritable()
         {
             if (IsFrozen)
                 throw new InvalidOperationException("The feature structure is immutable.");
+            // Any mutation invalidates the cached flat unify vector.
+            _flatState = 0;
+            _flatBits = null;
+            if (!_shared)
+                return;
+            var copies = new Dictionary<FeatureValue, FeatureValue> { [_sharedSource] = this };
+            var owned = new IDBearerDictionary<Feature, FeatureValue>();
+            foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
+                owned[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
+            _definite = owned;
+            _shared = false;
+            _sharedSource = null;
         }
 
         public void Freeze()

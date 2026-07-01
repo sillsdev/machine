@@ -13,54 +13,68 @@ namespace SIL.Machine.FiniteState
         where TInst : TraversalInstance<TData, TOffset>
     {
         private readonly Fst<TData, TOffset> _fst;
-        private readonly TData _data;
-        private readonly VariableBindings _varBindings;
-        private readonly bool _startAnchor;
-        private readonly bool _endAnchor;
-        private readonly bool _useDefaults;
+        private TData _data;
+        private VariableBindings _varBindings;
+        private bool _startAnchor;
+        private bool _endAnchor;
+        private bool _useDefaults;
         private readonly List<Annotation<TOffset>> _annotations;
+
+        // Instance free-list, kept across Reset() calls so a traversal method pooled for the
+        // duration of one word (see Fst.Transduce + Morpher per-word reset) reuses instances across
+        // the thousands of Transduce calls that word triggers.
         private readonly Queue<TInst> _cachedInstances;
 
-        protected TraversalMethodBase(
-            Fst<TData, TOffset> fst,
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
-        )
+        // Cached delegate for the per-annotation insertion sort in Reset(). Allocated once here
+        // rather than per Reset() call so the depth-first walk uses the allocation-free
+        // PreorderTraverse(action) form instead of GetNodesDepthFirst(), whose yield state machine
+        // was heap-allocated on every Transduce (Reset runs once per Transduce, thousands per word).
+        private readonly Action<Annotation<TOffset>> _insertAnnotation;
+
+        protected TraversalMethodBase(Fst<TData, TOffset> fst)
         {
             _fst = fst;
+            _annotations = new List<Annotation<TOffset>>();
+            _cachedInstances = new Queue<TInst>();
+            _insertAnnotation = InsertAnnotation;
+        }
+
+        /// <summary>
+        /// Re-targets this (pooled) traversal method at a new input without reallocating it or its
+        /// instance free-list. Rebuilds the per-input annotation list; keeps <see cref="_cachedInstances"/>.
+        /// </summary>
+        public void Reset(TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults)
+        {
             _data = data;
             _varBindings = varBindings;
             _startAnchor = startAnchor;
             _endAnchor = endAnchor;
             _useDefaults = useDefaults;
-            _annotations = new List<Annotation<TOffset>>();
-            // insertion sort
+            _annotations.Clear();
+            // insertion sort (PreorderTraverse with a cached delegate — same depth-first order as
+            // GetNodesDepthFirst but no per-call yield-iterator allocation; see _insertAnnotation).
             foreach (Annotation<TOffset> topAnn in _data.Annotations.GetNodes(_fst.Direction))
-            {
-                foreach (Annotation<TOffset> ann in topAnn.GetNodesDepthFirst(_fst.Direction))
-                {
-                    if (!_fst.Filter(ann))
-                        continue;
+                topAnn.PreorderTraverse(_insertAnnotation, _fst.Direction);
+        }
 
-                    int i = _annotations.Count - 1;
-                    while (i >= 0 && CompareAnnotations(_annotations[i], ann) > 0)
-                    {
-                        if (i + 1 == _annotations.Count)
-                            _annotations.Add(_annotations[i]);
-                        else
-                            _annotations[i + 1] = _annotations[i];
-                        i--;
-                    }
-                    if (i + 1 == _annotations.Count)
-                        _annotations.Add(ann);
-                    else
-                        _annotations[i + 1] = ann;
-                }
+        private void InsertAnnotation(Annotation<TOffset> ann)
+        {
+            if (!_fst.Filter(ann))
+                return;
+
+            int i = _annotations.Count - 1;
+            while (i >= 0 && CompareAnnotations(_annotations[i], ann) > 0)
+            {
+                if (i + 1 == _annotations.Count)
+                    _annotations.Add(_annotations[i]);
+                else
+                    _annotations[i + 1] = _annotations[i];
+                i--;
             }
-            _cachedInstances = new Queue<TInst>();
+            if (i + 1 == _annotations.Count)
+                _annotations.Add(ann);
+            else
+                _annotations[i + 1] = ann;
         }
 
         private int CompareAnnotations(Annotation<TOffset> x, Annotation<TOffset> y)
@@ -87,7 +101,7 @@ namespace SIL.Machine.FiniteState
             get { return _annotations; }
         }
 
-        public abstract IEnumerable<FstResult<TData, TOffset>> Traverse(
+        public abstract List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
@@ -190,14 +204,17 @@ namespace SIL.Machine.FiniteState
             }
         }
 
-        protected IEnumerable<TInst> Initialize(
+        // De-iterator (RUSTIFY lever 1): fills the caller-provided buffer instead of allocating a fresh
+        // List per call (plus a nested List per recursive optional-skip). The buffer is reused per
+        // Transduce by the traversal method (see InitializeStack); recursion appends to the same buffer.
+        protected void Initialize(
             ref int annIndex,
             Register<TOffset>[,] registers,
             IList<TagMapCommand> cmds,
-            ISet<int> initAnns
+            ISet<int> initAnns,
+            List<TInst> output
         )
         {
-            var insts = new List<TInst>();
             TOffset offset = _annotations[annIndex].Range.GetStart(_fst.Direction);
 
             if (_startAnchor)
@@ -212,11 +229,7 @@ namespace SIL.Machine.FiniteState
                     {
                         int nextIndex = GetNextNonoverlappingAnnotationIndex(i);
                         if (nextIndex != _annotations.Count)
-                        {
-                            insts.AddRange(
-                                Initialize(ref nextIndex, (Register<TOffset>[,])registers.Clone(), cmds, initAnns)
-                            );
-                        }
+                            Initialize(ref nextIndex, (Register<TOffset>[,])registers.Clone(), cmds, initAnns, output);
                     }
                 }
             }
@@ -237,20 +250,46 @@ namespace SIL.Machine.FiniteState
                     Array.Copy(registers, inst.Registers, registers.Length);
                     if (!_fst.IgnoreVariables)
                         inst.VariableBindings = _varBindings != null ? _varBindings.Clone() : new VariableBindings();
-                    insts.Add(inst);
+                    output.Add(inst);
                     initAnns.Add(annIndex);
                 }
             }
-
-            return insts;
         }
 
-        protected IEnumerable<TInst> Advance(
+        // RUSTIFY lever 1 (de-iterator): Advance was a `yield`-based iterator, so every call (one per
+        // matched arc, recursively for optional-skip forks — millions/word) allocated an iterator state
+        // machine. It now fills a reusable per-method buffer instead. The traversal method is created
+        // fresh per Transduce (dies in Gen0), so the buffer carries no cross-word retention (the Phase-1b
+        // regression), and Advance is not re-entrant within one method (a re-entrant Transduce gets its
+        // own method instance + buffer). Byte-identical: same results in the same order.
+        // One reusable result buffer per traversal method (per-Transduce → no cross-word retention; can't
+        // be a thread-static — CheckAccepting's Acceptable predicate can re-enter Transduce). Shared by
+        // Initialize and Advance: Initialize fills it once at the start of Traverse and the caller fully
+        // consumes it building the work stack before the main loop's first Advance reuses it, so they
+        // never overlap.
+        private readonly List<TInst> _buffer = new List<TInst>();
+
+        protected List<TInst> InitializeBuffer => _buffer;
+
+        protected List<TInst> Advance(
+            TInst inst,
+            VariableBindings varBindings,
+            Arc<TData, TOffset> arc,
+            ICollection<FstResult<TData, TOffset>> curResults
+        )
+        {
+            _buffer.Clear();
+            AdvanceInto(inst, varBindings, arc, curResults, false, _buffer);
+            return _buffer;
+        }
+
+        private void AdvanceInto(
             TInst inst,
             VariableBindings varBindings,
             Arc<TData, TOffset> arc,
             ICollection<FstResult<TData, TOffset>> curResults,
-            bool optional = false
+            bool optional,
+            List<TInst> output
         )
         {
             inst.Priorities?.Add(arc.Priority);
@@ -271,8 +310,10 @@ namespace SIL.Machine.FiniteState
 
             if (nextIndex < _annotations.Count)
             {
-                var anns = new List<int>();
                 bool cloneOutputs = false;
+                // The same-offset window is a contiguous index range [nextIndex, annsEnd); track its
+                // end bound instead of materializing a List<int> per Advance call (hot path).
+                int annsEnd = nextIndex;
                 for (
                     int i = nextIndex;
                     i < _annotations.Count && _annotations[i].Range.GetStart(_fst.Direction).Equals(nextOffset);
@@ -283,13 +324,12 @@ namespace SIL.Machine.FiniteState
                     {
                         TInst ti = CopyInstance(inst);
                         ti.AnnotationIndex = i;
-                        foreach (TInst ni in Advance(ti, varBindings, arc, curResults, true))
-                        {
-                            yield return ni;
+                        int before = output.Count;
+                        AdvanceInto(ti, varBindings, arc, curResults, true, output);
+                        if (output.Count > before)
                             cloneOutputs = true;
-                        }
                     }
-                    anns.Add(i);
+                    annsEnd = i + 1;
                 }
 
                 ExecuteCommands(
@@ -314,13 +354,13 @@ namespace SIL.Machine.FiniteState
                 inst.State = arc.Target;
 
                 bool first = true;
-                foreach (int curIndex in anns)
+                for (int curIndex = nextIndex; curIndex < annsEnd; curIndex++)
                 {
                     TInst ni = first ? inst : CopyInstance(inst);
                     ni.AnnotationIndex = curIndex;
                     if (varBindings != null)
                         inst.VariableBindings = cloneOutputs ? varBindings.Clone() : varBindings;
-                    yield return ni;
+                    output.Add(ni);
                     cloneOutputs = true;
                     first = false;
                 }
@@ -346,7 +386,7 @@ namespace SIL.Machine.FiniteState
                 inst.State = arc.Target;
                 inst.AnnotationIndex = nextIndex;
                 inst.VariableBindings = varBindings;
-                yield return inst;
+                output.Add(inst);
             }
         }
 

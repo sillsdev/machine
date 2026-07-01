@@ -7,10 +7,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public abstract class AnalysisMorphologicalTransformRuleSpec
         : AnalysisMorphologicalTransform,
-            IPatternRuleSpec<Word, ShapeNode>
+            IPatternRuleSpec<Word, int>
     {
         protected AnalysisMorphologicalTransformRuleSpec(
-            IEnumerable<Pattern<Word, ShapeNode>> lhs,
+            IEnumerable<Pattern<Word, int>> lhs,
             IList<MorphologicalOutputAction> rhs
         )
             : base(lhs, rhs) { }
@@ -20,7 +20,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return true;
         }
 
-        protected bool IsPartCaptured(Match<Word, ShapeNode> match, string partName)
+        protected bool IsPartCaptured(Match<Word, int> match, string partName)
         {
             int count;
             if (CapturedParts.TryGetValue(partName, out count))
@@ -34,6 +34,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return false;
         }
 
-        public abstract Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match);
+        public abstract Word ApplyRhs(PatternRule<Word, int> rule, Match<Word, int> match);
     }
 }

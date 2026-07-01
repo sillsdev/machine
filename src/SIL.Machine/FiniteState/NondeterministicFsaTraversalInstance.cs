@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.FiniteState
@@ -6,24 +5,33 @@ namespace SIL.Machine.FiniteState
     internal class NondeterministicFsaTraversalInstance<TData, TOffset> : TraversalInstance<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        private readonly HashSet<State<TData, TOffset>> _visited;
+        // RUSTIFY lever 1: a value-type bitset over state indices instead of a HashSet<State> — no
+        // per-instance set allocation (the instance is created ~2,927x/word on Sena).
+        private VisitedStates _visited;
 
         public NondeterministicFsaTraversalInstance(int registerCount)
-            : base(registerCount, false)
+            : base(registerCount, false) { }
+
+        public bool IsVisited(State<TData, TOffset> state)
         {
-            _visited = new HashSet<State<TData, TOffset>>();
+            return _visited.Contains(state.Index);
         }
 
-        public ISet<State<TData, TOffset>> Visited
+        public void MarkVisited(State<TData, TOffset> state)
         {
-            get { return _visited; }
+            _visited.Add(state.Index);
+        }
+
+        public void ClearVisited()
+        {
+            _visited.Clear();
         }
 
         public override void CopyTo(TraversalInstance<TData, TOffset> other)
         {
             base.CopyTo(other);
             var otherNfsa = (NondeterministicFsaTraversalInstance<TData, TOffset>)other;
-            otherNfsa.Visited.UnionWith(_visited);
+            otherNfsa._visited.UnionWith(in _visited);
         }
 
         public override void Clear()

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 
 namespace SIL.Machine.FiniteState
 {
@@ -7,7 +8,8 @@ namespace SIL.Machine.FiniteState
         where TData : IAnnotatedData<TOffset>
     {
         IList<Annotation<TOffset>> Annotations { get; }
-        IEnumerable<FstResult<TData, TOffset>> Traverse(
+        void Reset(TData data, VariableBindings varBindings, bool startAnchor, bool endAnchor, bool useDefaults);
+        List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
