@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SIL.Extensions;
-using SIL.Machine.DataStructures;
 using SIL.Machine.FeatureModel.Fluent;
 using SIL.ObjectModel;
 
@@ -51,7 +50,11 @@ namespace SIL.Machine.FeatureModel
             return new FeatureStructBuilder(featSys, fs.Clone(), true);
         }
 
-        private IDBearerDictionary<Feature, FeatureValue> _definite;
+        // Plain Dictionary rather than IDBearerDictionary: the latter kept a *second* parallel
+        // Dictionary<string, FeatureValue> to serve string-ID lookups, doubling the dictionary
+        // allocation on every unify-output / COW-inflation. String-ID lookups are rare (cold external
+        // API) so they now scan _definite by Feature.ID instead (see TryGetValueById/ContainsKeyById).
+        private Dictionary<Feature, FeatureValue> _definite;
         private int? _hashCode;
 
         /// <summary>
@@ -84,7 +87,7 @@ namespace SIL.Machine.FeatureModel
         /// </summary>
         public FeatureStruct()
         {
-            _definite = new IDBearerDictionary<Feature, FeatureValue>();
+            _definite = new Dictionary<Feature, FeatureValue>();
         }
 
         protected FeatureStruct(FeatureStruct other)
@@ -700,9 +703,39 @@ namespace SIL.Machine.FeatureModel
                 throw new ArgumentNullException("featureID");
 
             FeatureValue val;
-            if (_definite.TryGetValue(featureID, out val))
+            if (TryGetValueById(_definite, featureID, out val))
                 return Dereference(val, out value);
             value = null;
+            return false;
+        }
+
+        // String-ID lookups over the plain _definite dictionary (replaces the dropped parallel
+        // string-keyed dictionary). Feature IDs are unique within a struct, so first match wins.
+        private static bool TryGetValueById(
+            Dictionary<Feature, FeatureValue> definite,
+            string id,
+            out FeatureValue value
+        )
+        {
+            foreach (KeyValuePair<Feature, FeatureValue> kvp in definite)
+            {
+                if (kvp.Key.ID == id)
+                {
+                    value = kvp.Value;
+                    return true;
+                }
+            }
+            value = null;
+            return false;
+        }
+
+        private static bool ContainsKeyById(Dictionary<Feature, FeatureValue> definite, string id)
+        {
+            foreach (KeyValuePair<Feature, FeatureValue> kvp in definite)
+            {
+                if (kvp.Key.ID == id)
+                    return true;
+            }
             return false;
         }
 
@@ -735,7 +768,7 @@ namespace SIL.Machine.FeatureModel
             if (FollowPath(path, out lastID, out lastFS))
             {
                 FeatureValue val;
-                if (lastFS._definite.TryGetValue(lastID, out val))
+                if (TryGetValueById(lastFS._definite, lastID, out val))
                     return Dereference(val, out value);
             }
             value = null;
@@ -755,7 +788,7 @@ namespace SIL.Machine.FeatureModel
             if (featureID == null)
                 throw new ArgumentNullException("featureID");
 
-            return _definite.ContainsKey(featureID);
+            return ContainsKeyById(_definite, featureID);
         }
 
         public bool ContainsFeature(IEnumerable<Feature> path)
@@ -778,7 +811,7 @@ namespace SIL.Machine.FeatureModel
             string lastID;
             FeatureStruct lastFS;
             if (FollowPath(path, out lastID, out lastFS))
-                return lastFS._definite.ContainsKey(lastID);
+                return ContainsKeyById(lastFS._definite, lastID);
             return false;
         }
 
@@ -791,7 +824,7 @@ namespace SIL.Machine.FeatureModel
                 if (lastID != null)
                 {
                     FeatureValue curValue;
-                    if (!lastFS._definite.TryGetValue(lastID, out curValue) || !Dereference(curValue, out lastFS))
+                    if (!TryGetValueById(lastFS._definite, lastID, out curValue) || !Dereference(curValue, out lastFS))
                     {
                         lastID = null;
                         lastFS = null;
@@ -1320,7 +1353,7 @@ namespace SIL.Machine.FeatureModel
             if (!_shared)
                 return;
             var copies = new Dictionary<FeatureValue, FeatureValue> { [_sharedSource] = this };
-            var owned = new IDBearerDictionary<Feature, FeatureValue>();
+            var owned = new Dictionary<Feature, FeatureValue>();
             foreach (KeyValuePair<Feature, FeatureValue> featVal in _definite)
                 owned[featVal.Key] = Dereference(featVal.Value).CloneImpl(copies);
             _definite = owned;

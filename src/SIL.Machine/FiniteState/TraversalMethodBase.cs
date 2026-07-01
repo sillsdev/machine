@@ -130,6 +130,33 @@ namespace SIL.Machine.FiniteState
             }
         }
 
+        // Concrete-List overload: the hot callers (arc.Commands, state.Finishers) pass a List, so an
+        // index for-loop avoids boxing the List<T>.Enumerator struct that the IEnumerable foreach incurs
+        // on every arc-advance. Overload resolution routes List args here; the cold IList init path keeps
+        // the IEnumerable overload above.
+        protected static void ExecuteCommands(
+            Register<TOffset>[,] registers,
+            List<TagMapCommand> cmds,
+            Register<TOffset> start,
+            Register<TOffset> end
+        )
+        {
+            for (int i = 0; i < cmds.Count; i++)
+            {
+                TagMapCommand cmd = cmds[i];
+                if (cmd.Src == TagMapCommand.CurrentPosition)
+                {
+                    registers[cmd.Dest, 0] = start;
+                    registers[cmd.Dest, 1] = end;
+                }
+                else
+                {
+                    registers[cmd.Dest, 0] = registers[cmd.Src, 0];
+                    registers[cmd.Dest, 1] = registers[cmd.Src, 1];
+                }
+            }
+        }
+
         protected bool CheckInputMatch(Arc<TData, TOffset> arc, int annIndex, VariableBindings varBindings)
         {
             return annIndex < _annotations.Count
