@@ -56,11 +56,40 @@ namespace SIL.Machine.FiniteState
                 if (!useDefaults && _negatedFSs.Count == 0 && fs.TryFastUnifiable(_fs, out bool fastResult))
                     return fastResult;
 
-                return fs.IsUnifiable(_fs, useDefaults, varBindings)
-                    && _negatedFSs.All(nfs => !fs.IsUnifiable(nfs, useDefaults));
+                if (!fs.IsUnifiable(_fs, useDefaults, varBindings))
+                    return false;
+                return NoneUnifiable(fs, useDefaults);
             }
 
-            return _fs.Subsumes(fs, useDefaults, varBindings) && _negatedFSs.All(nfs => !nfs.Subsumes(fs, useDefaults));
+            return _fs.Subsumes(fs, useDefaults, varBindings) && NoneSubsumed(fs, useDefaults);
+        }
+
+        // Explicit loops instead of `_negatedFSs.All(nfs => ...)`: the lambda's closure (capturing fs
+        // and useDefaults) and the boxed HashSet<T>.Enumerator (via the IEnumerable<T> extension-method
+        // path) were allocated on every call, even for the common case where _negatedFSs is empty.
+        // A plain `foreach` on the concrete HashSet<T> reference uses its unboxed struct enumerator.
+        private bool NoneUnifiable(FeatureStruct fs, bool useDefaults)
+        {
+            if (_negatedFSs.Count == 0)
+                return true;
+            foreach (FeatureStruct nfs in _negatedFSs)
+            {
+                if (fs.IsUnifiable(nfs, useDefaults))
+                    return false;
+            }
+            return true;
+        }
+
+        private bool NoneSubsumed(FeatureStruct fs, bool useDefaults)
+        {
+            if (_negatedFSs.Count == 0)
+                return true;
+            foreach (FeatureStruct nfs in _negatedFSs)
+            {
+                if (nfs.Subsumes(fs, useDefaults))
+                    return false;
+            }
+            return true;
         }
 
         public bool IsSatisfiable

@@ -9,8 +9,17 @@ namespace SIL.Machine.FiniteState
         : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
+        // Hoisted out of Traverse: building this per call allocated a comparer object plus two bound
+        // delegates (KeyEquals/KeyGetHashCode are instance methods) on every Traverse call — thousands
+        // per word. The comparer only closes over `this` (via Fst), so one instance is reusable for the
+        // life of this traversal method.
+        private readonly IEqualityComparer<TraversalKey> _traversalKeyComparer;
+
         public NondeterministicFsaTraversalMethod(Fst<TData, TOffset> fst)
-            : base(fst) { }
+            : base(fst)
+        {
+            _traversalKeyComparer = AnonymousEqualityComparer.Create<TraversalKey>(KeyEquals, KeyGetHashCode);
+        }
 
         public override List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
@@ -30,9 +39,7 @@ namespace SIL.Machine.FiniteState
             // The dedup key is a value type (was Tuple<,,>): the HashSet stores it inline in its slot
             // array, so there is no per-push heap object — `traversed.Add` is the hottest allocation in
             // nondeterministic traversal. Byte-identical equality/hash (same fields, same comparers).
-            var traversed = new HashSet<TraversalKey>(
-                AnonymousEqualityComparer.Create<TraversalKey>(KeyEquals, KeyGetHashCode)
-            );
+            var traversed = new HashSet<TraversalKey>(_traversalKeyComparer);
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
