@@ -40,6 +40,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public IEnumerable<Word> Apply(Word input)
         {
+            if (input.ParseContext?.Step(_rule) == false)
+                return Enumerable.Empty<Word>();
+
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 

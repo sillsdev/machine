@@ -98,6 +98,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
+            ParseContext = word.ParseContext;
             _disjunctiveAllomorphIndices =
                 word._disjunctiveAllomorphIndices == null || word._disjunctiveAllomorphIndices.Count == 0
                     ? null
@@ -225,6 +226,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         public object CurrentTrace { get; set; }
+
+        /// <summary>
+        /// Work budget for the parse this word is part of. Null for words never routed through
+        /// <see cref="Morpher.ParseWord(string, out object, bool, out ParseDiagnostics)"/> (e.g. words built
+        /// directly by rule-level unit tests), in which case budget checks are no-ops (unlimited).
+        /// Reference-shared like <see cref="CurrentTrace"/> — deliberately excluded from <see cref="FreezeImpl"/>
+        /// and <see cref="ValueEquals"/> so dedup semantics are unchanged.
+        /// </summary>
+        internal ParseContext ParseContext { get; set; }
 
         public bool IsPartial
         {
@@ -514,6 +524,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     word = new Word(entry.PrimaryAllomorph, RealizationalFeatureStruct.Clone())
                     {
                         CurrentTrace = CurrentTrace,
+                        ParseContext = ParseContext,
                     };
                     word.Freeze();
                     return true;

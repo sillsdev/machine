@@ -120,6 +120,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public IEnumerable<Word> Apply(Word input)
         {
+            if (input.ParseContext?.Step(_rule) == false)
+                return Enumerable.Empty<Word>();
+
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
@@ -151,6 +154,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                                 j++;
                                 if (j > _morpher.DeletionReapplications)
                                     break;
+                                // Bounded by DeletionReapplications above, but that's a user-set knob with
+                                // no ceiling of its own — still gate each reapplication on the shared budget.
+                                if (input.ParseContext?.Step(_rule) == false)
+                                    break;
                                 data = sr.Item2.Apply(data).SingleOrDefault();
                             }
                         }
@@ -162,6 +169,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             while (data != null)
                             {
                                 srApplied = true;
+                                // Unlike Deletion, this loop has no reapplication ceiling of its own (a
+                                // self-feeding rule can hypothesize forever) — the budget is the only bound.
+                                if (input.ParseContext?.Step(_rule) == false)
+                                    break;
                                 data = sr.Item2.Apply(data).SingleOrDefault();
                             }
                         }

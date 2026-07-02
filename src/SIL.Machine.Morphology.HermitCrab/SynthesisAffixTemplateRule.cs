@@ -27,6 +27,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public IEnumerable<Word> Apply(Word input)
         {
+            if (input.ParseContext?.Step(_template) == false)
+                return Enumerable.Empty<Word>();
+
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginApplyTemplate(_template, input);
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);

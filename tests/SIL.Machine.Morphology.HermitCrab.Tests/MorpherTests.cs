@@ -543,6 +543,151 @@ public class MorpherTests : HermitCrabTestBase
         }
     }
 
+    [Test]
+    public void ParseWord_DefaultBudget_DoesNotTripOnOrdinaryGrammar()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        Assert.That(morpher.MaxParseSteps, Is.EqualTo(Morpher.DefaultMaxParseSteps));
+        Assert.That(morpher.ParseTimeout, Is.EqualTo(Morpher.DefaultParseTimeout));
+
+        IEnumerable<Word> results = morpher.ParseWord("sagd", out _, false, out ParseDiagnostics diagnostics).ToList();
+
+        Assert.That(results, Is.Not.Empty);
+        Assert.That(diagnostics.BudgetExhausted, Is.False);
+        Assert.That(diagnostics.Reason, Is.EqualTo(ParseExhaustionReason.None));
+    }
+
+    [Test]
+    public void ParseWord_StepBudgetExhausted_SoftStopsWithDiagnostics()
+    {
+        // A rule that keeps genuinely unapplying (each unapplication strips one distinct "+d"
+        // morph, so the cascade's own "input == output" infinite-loop guard never trips) with a
+        // MaxApplicationCount high enough that only the new step budget bounds it.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        // No overt exponent: Rhs is a pure copy of the input, so every unapplication produces a
+        // Word with the identical Shape but one more entry in the morphological-rule-application
+        // list. The cascades' infinite-loop guard compares Words by ValueEquals (which includes
+        // that list), so it never trips here — only the new step budget bounds this.
+        var noExponentSuffix = new AffixProcessRule
+        {
+            Id = "REPEAT",
+            Name = "no_exponent_suffix",
+            Gloss = "REPEAT",
+            MaxApplicationCount = 1_000_000,
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        noExponentSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(noExponentSuffix);
+        SetRuleOrder(MorphologicalRuleOrder.Unordered);
+
+        var morpher = new Morpher(TraceManager, Language) { MaxParseSteps = 500, ParseTimeout = TimeSpan.Zero };
+
+        List<Word> results = morpher.ParseWord("sag", out _, false, out ParseDiagnostics diagnostics).ToList();
+
+        Assert.That(diagnostics.BudgetExhausted, Is.True);
+        Assert.That(diagnostics.Reason, Is.EqualTo(ParseExhaustionReason.StepBudget));
+        Assert.That(diagnostics.StepsUsed, Is.GreaterThanOrEqualTo(500));
+        // Soft-stop: never throws, and ParseWord itself must remain usable afterwards.
+        Assert.That(() => morpher.ParseWord("sagd", out _, false), Throws.Nothing);
+    }
+
+    [Test]
+    public void ParseWord_StepBudget_IsDeterministicSingleThreaded()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        // No overt exponent: Rhs is a pure copy of the input, so every unapplication produces a
+        // Word with the identical Shape but one more entry in the morphological-rule-application
+        // list. The cascades' infinite-loop guard compares Words by ValueEquals (which includes
+        // that list), so it never trips here — only the new step budget bounds this.
+        var noExponentSuffix = new AffixProcessRule
+        {
+            Id = "REPEAT",
+            Name = "no_exponent_suffix",
+            Gloss = "REPEAT",
+            MaxApplicationCount = 1_000_000,
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        noExponentSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(noExponentSuffix);
+        SetRuleOrder(MorphologicalRuleOrder.Unordered);
+
+        var morpher = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1)
+        {
+            MaxParseSteps = 500,
+            ParseTimeout = TimeSpan.Zero,
+        };
+
+        morpher.ParseWord("sag", out _, false, out ParseDiagnostics first).ToList();
+        morpher.ParseWord("sag", out _, false, out ParseDiagnostics second).ToList();
+
+        Assert.That(first.StepsUsed, Is.EqualTo(second.StepsUsed));
+    }
+
+    [Test]
+    public void RerunWithDiagnostics_ReportsTopOffendingRule()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        // No overt exponent: Rhs is a pure copy of the input, so every unapplication produces a
+        // Word with the identical Shape but one more entry in the morphological-rule-application
+        // list. The cascades' infinite-loop guard compares Words by ValueEquals (which includes
+        // that list), so it never trips here — only the new step budget bounds this.
+        var noExponentSuffix = new AffixProcessRule
+        {
+            Id = "REPEAT",
+            Name = "no_exponent_suffix",
+            Gloss = "REPEAT",
+            MaxApplicationCount = 1_000_000,
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        noExponentSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(noExponentSuffix);
+        SetRuleOrder(MorphologicalRuleOrder.Unordered);
+
+        var morpher = new Morpher(TraceManager, Language) { MaxParseSteps = 500, ParseTimeout = TimeSpan.Zero };
+
+        ParseDiagnostics diagnostics = morpher.RerunWithDiagnostics("sag", out IEnumerable<Word> results);
+        results.ToList();
+
+        Assert.That(diagnostics.BudgetExhausted, Is.True);
+        Assert.That(diagnostics.TopRules, Is.Not.Empty);
+        Assert.That(diagnostics.TopRules[0].Rule, Is.EqualTo(noExponentSuffix));
+    }
+
     private static string AnalysisSignature(Morpher morpher, string word)
     {
         return string.Join(

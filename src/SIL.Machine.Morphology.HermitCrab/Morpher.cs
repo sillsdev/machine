@@ -70,6 +70,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             MergeEquivalentAnalyses = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
+            MaxParseSteps = DefaultMaxParseSteps;
+            ParseTimeout = DefaultParseTimeout;
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
         }
@@ -79,9 +81,41 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _traceManager; }
         }
 
+        /// <summary>
+        /// Generous default for <see cref="MaxParseSteps"/>, calibrated against the real Indonesian/Sena
+        /// grammars on the rustify engine (see complexity-cap.md Phase 0): observed legitimate max was
+        /// ~13,600 steps (Sena), so this ships ~150x above that ceiling — effectively invisible for real
+        /// grammars but still finite. 0 disables the step budget.
+        /// </summary>
+        public const int DefaultMaxParseSteps = 2_000_000;
+
+        /// <summary>
+        /// Generous default for <see cref="ParseTimeout"/> — a backstop far above any observed legitimate
+        /// single-word parse time on the rustify engine, but still bounded so one pathological word cannot
+        /// stall a "Parse All Words" batch indefinitely. <see cref="TimeSpan.Zero"/> disables the timeout.
+        /// </summary>
+        public static readonly TimeSpan DefaultParseTimeout = TimeSpan.FromSeconds(10);
+
         public int DeletionReapplications { get; set; }
 
         public int MaxStemCount { get; set; }
+
+        /// <summary>
+        /// Max rule applications (analysis + synthesis) per <see cref="ParseWord(string, out object, bool, out ParseDiagnostics)"/>
+        /// call. Ships on with a generous default (<see cref="DefaultMaxParseSteps"/>) so naive consumers are
+        /// protected out of the box; 0 = unlimited. On breach, the parse soft-stops: rules return no further
+        /// results, so whatever analyses/syntheses were already found are still returned, flagged via the
+        /// <see cref="ParseDiagnostics"/> overload. Never throws.
+        /// </summary>
+        public int MaxParseSteps { get; set; }
+
+        /// <summary>
+        /// Wall-clock backstop per <see cref="ParseWord(string, out object, bool, out ParseDiagnostics)"/> call,
+        /// checked periodically alongside the step budget (not on every step, to keep the happy path cheap).
+        /// Ships on with a generous default (<see cref="DefaultParseTimeout"/>); <see cref="TimeSpan.Zero"/> or
+        /// a negative value disables it. Same soft-stop behavior as <see cref="MaxParseSteps"/>.
+        /// </summary>
+        public TimeSpan ParseTimeout { get; set; }
 
         /// <summary>
         /// MaxUnapplications limits the number of unapplications to make it possible
@@ -129,10 +163,46 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot)
         {
+            return ParseWord(word, out trace, guessRoot, out _);
+        }
+
+        /// <summary>
+        /// Parse the specified surface form, possibly tracing the parse. If there are no analyses and
+        /// guessRoot is true, then guess the root. <paramref name="diagnostics"/> reports whether
+        /// <see cref="MaxParseSteps"/>/<see cref="ParseTimeout"/> cut the parse short (soft-stop: the
+        /// returned sequence is whatever was found so far, never an exception).
+        /// </summary>
+        public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot, out ParseDiagnostics diagnostics)
+        {
+            return ParseWordCore(word, out trace, guessRoot, collectRuleCounters: false, out diagnostics);
+        }
+
+        /// <summary>
+        /// Re-parses one word with per-rule application counters enabled and reports the top offenders —
+        /// "word X exceeded N steps; rule Y accounted for most of the applications". Intended for use only
+        /// after a breach is observed via the <see cref="ParseDiagnostics"/> overload: counters add overhead,
+        /// so they are never on during the normal happy path (see complexity-cap.md §3 "cheap happy path").
+        /// </summary>
+        public ParseDiagnostics RerunWithDiagnostics(string word, out IEnumerable<Word> results)
+        {
+            results = ParseWordCore(word, out _, false, collectRuleCounters: true, out ParseDiagnostics diagnostics);
+            return diagnostics;
+        }
+
+        private IEnumerable<Word> ParseWordCore(
+            string word,
+            out object trace,
+            bool guessRoot,
+            bool collectRuleCounters,
+            out ParseDiagnostics diagnostics
+        )
+        {
             // convert the word to its phonetic shape
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
+            var parseContext = new ParseContext(MaxParseSteps, ParseTimeout, shape.Count, collectRuleCounters);
+            input.ParseContext = parseContext;
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
@@ -177,9 +247,28 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 matches.Sort((x, y) => y.Morphs.Count().CompareTo(x.Morphs.Count()));
 
+                diagnostics = CreateParseDiagnostics(parseContext);
                 return matches;
             }
+            diagnostics = CreateParseDiagnostics(parseContext);
             return syntheses;
+        }
+
+        private static ParseDiagnostics CreateParseDiagnostics(ParseContext parseContext)
+        {
+            if (!parseContext.Exhausted)
+                return ParseDiagnostics.None;
+
+            IReadOnlyList<(IHCRule Rule, int Applications)> topRules = null;
+            if (parseContext.DiagnosticsEnabled)
+            {
+                topRules = parseContext
+                    .RuleCounters.Select(kvp => (Rule: kvp.Key, Applications: kvp.Value))
+                    .OrderByDescending(t => t.Applications)
+                    .ToList();
+            }
+
+            return new ParseDiagnostics(true, parseContext.Reason, parseContext.StepsUsed, parseContext.Elapsed, topRules);
         }
 
         /// <summary>
@@ -208,6 +297,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             trace = rootTrace;
 
             var words = new ConcurrentBag<string>();
+            var parseContext = new ParseContext(MaxParseSteps, ParseTimeout, rootEntry.PrimaryAllomorph.Segments.Shape.Count);
 
             Exception exception = null;
             Parallel.ForEach(
@@ -220,12 +310,15 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     try
                     {
-                        var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS);
+                        var synthesisWord = new Word(synthesisInfo.Allomorph, realizationalFS)
+                        {
+                            ParseContext = parseContext,
+                        };
                         foreach (Tuple<IMorphologicalRule, RootAllomorph> rule in synthesisInfo.RulePermutation)
                         {
                             synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
                             if (rule.Item2 != null)
-                                synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()));
+                                synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()) { ParseContext = parseContext });
                         }
 
                         synthesisWord.CurrentTrace = rootTrace;
@@ -307,6 +400,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
                 foreach (Word analysisWord in analyses)
                 {
+                    if (analysisWord.ParseContext?.Exhausted == true)
+                        break;
                     foreach (Word validWord in SynthesizeAnalysis(word, analysisWord))
                         matches.Add(validWord);
                 }
@@ -342,6 +437,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             foreach (Word synthesisWord in LexicalLookup(analysisWord))
             {
+                if (synthesisWord.ParseContext?.Exhausted == true)
+                    yield break;
                 foreach (Word alternative in synthesisWord.ExpandAlternatives())
                 {
                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
@@ -371,6 +468,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .Distinct()
             )
             {
+                if (input.ParseContext?.Exhausted == true)
+                    yield break;
                 foreach (RootAllomorph allomorph in entry.Allomorphs)
                 {
                     Word newWord = input.Clone();

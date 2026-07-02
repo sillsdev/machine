@@ -26,6 +26,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             for (int i = 0; i < _rules.Count && inputSet.Count > 0; i++)
             {
+                if (input.ParseContext?.Exhausted == true)
+                    break;
+
                 if (!_morpher.RuleSelector(_strata[i]))
                     continue;
 

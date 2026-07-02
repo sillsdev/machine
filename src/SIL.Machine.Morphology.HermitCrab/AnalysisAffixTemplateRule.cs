@@ -31,6 +31,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public IEnumerable<Word> Apply(Word input)
         {
+            if (input.ParseContext?.Step(_template) == false)
+                return Enumerable.Empty<Word>();
+
             if (!_morpher.RuleSelector(_template))
                 return Enumerable.Empty<Word>();
 
