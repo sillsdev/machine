@@ -35,6 +35,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private bool _isPartial;
         private Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices; // lazily allocated (see above)
         private int _mruleAppCount = 0;
+        private int _totalUnapplicationCount = 0;
         private readonly IList<Word> _alternatives = new List<Word>();
 
         public Word(RootAllomorph rootAllomorph, FeatureStruct realizationalFS)
@@ -107,6 +108,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         kvp => new HashSet<int>(kvp.Value)
                     );
             _mruleAppCount = word._mruleAppCount;
+            _totalUnapplicationCount = word._totalUnapplicationCount;
         }
 
         public IEnumerable<Annotation<ShapeNode>> Morphs
@@ -253,6 +255,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         internal int MorphologicalRuleApplicationCount => _mruleAppCount;
 
+        /// <summary>
+        /// Total morphological-rule unapplications on this analysis candidate, across all rules
+        /// combined. Carrier for <see cref="Morpher.MaxRuleApplicationsPerWord"/>.
+        /// </summary>
+        internal int TotalUnapplicationCount => _totalUnapplicationCount;
+
         internal bool IsAllMorphologicalRulesApplied
         {
             get { return _mruleAppIndex == -1; }
@@ -341,6 +349,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal void MorphologicalRuleUnapplied(IMorphologicalRule mrule)
         {
             CheckFrozen();
+            _totalUnapplicationCount++;
             if (mrule != null)
                 (_mrulesUnapplied = _mrulesUnapplied ?? new Dictionary<IMorphologicalRule, int>()).UpdateValue(
                     mrule,

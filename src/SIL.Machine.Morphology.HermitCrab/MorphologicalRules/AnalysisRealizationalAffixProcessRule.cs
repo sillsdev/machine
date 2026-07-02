@@ -45,6 +45,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
+            if (
+                _morpher.MaxRuleApplicationsPerWord > 0
+                && input.TotalUnapplicationCount >= _morpher.MaxRuleApplicationsPerWord
+            )
+            {
+                return Enumerable.Empty<Word>();
+            }
+
             FeatureStruct realFS;
             if (!_rule.RealizationalFeatureStruct.Unify(input.RealizationalFeatureStruct, out realFS))
                 return Enumerable.Empty<Word>();

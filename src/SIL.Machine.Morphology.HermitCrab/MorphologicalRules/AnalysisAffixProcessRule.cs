@@ -47,6 +47,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             if (
                 input.GetUnapplicationCount(_rule) >= _rule.MaxApplicationCount
+                || (
+                    _morpher.MaxRuleApplicationsPerWord > 0
+                    && input.TotalUnapplicationCount >= _morpher.MaxRuleApplicationsPerWord
+                )
                 || !_rule.OutSyntacticFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct)
             )
             {

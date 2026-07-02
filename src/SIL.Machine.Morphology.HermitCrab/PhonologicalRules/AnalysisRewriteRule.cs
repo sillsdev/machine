@@ -118,6 +118,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return true;
         }
 
+        private bool ExceedsShapeGrowth(Word data)
+        {
+            return _morpher.MaxAnalysisShapeGrowth >= 0
+                && data.ParseContext != null
+                && data.Shape.Count > data.ParseContext.SurfaceLength + _morpher.MaxAnalysisShapeGrowth;
+        }
+
         public IEnumerable<Word> Apply(Word input)
         {
             if (input.ParseContext?.Step(_rule) == false)
@@ -156,7 +163,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                                     break;
                                 // Bounded by DeletionReapplications above, but that's a user-set knob with
                                 // no ceiling of its own — still gate each reapplication on the shared budget.
-                                if (input.ParseContext?.Step(_rule) == false)
+                                if (input.ParseContext?.Step(_rule) == false || ExceedsShapeGrowth(data))
                                     break;
                                 data = sr.Item2.Apply(data).SingleOrDefault();
                             }
@@ -170,8 +177,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             {
                                 srApplied = true;
                                 // Unlike Deletion, this loop has no reapplication ceiling of its own (a
-                                // self-feeding rule can hypothesize forever) — the budget is the only bound.
-                                if (input.ParseContext?.Step(_rule) == false)
+                                // self-feeding rule can hypothesize forever) — the budget and shape-growth
+                                // cap are the only bounds.
+                                if (input.ParseContext?.Step(_rule) == false || ExceedsShapeGrowth(data))
                                     break;
                                 data = sr.Item2.Apply(data).SingleOrDefault();
                             }

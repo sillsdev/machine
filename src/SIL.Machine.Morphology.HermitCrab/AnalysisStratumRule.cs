@@ -11,6 +11,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     internal class AnalysisStratumRule : IRule<Word, int>
     {
         private readonly IRule<Word, int> _mrulesRule;
+        private readonly PermutationRuleCascade<Word, int> _permutationCascade;
         private readonly IRule<Word, int> _prulesRule;
         private readonly IRule<Word, int> _templatesRule;
         private readonly Stratum _stratum;
@@ -39,11 +40,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // because morphological rules should be considered optional
                     // during unapplication (they are obligatory during application,
                     // but we don't know they have been applied during unapplication).
-                    _mrulesRule = new PermutationRuleCascade<Word, int>(
+                    _permutationCascade = new PermutationRuleCascade<Word, int>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
+                    _mrulesRule = _permutationCascade;
                     break;
                 case MorphologicalRuleOrder.Unordered:
                     // Single-threaded when the caller caps within-word parallelism (e.g. it
@@ -106,8 +108,24 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        private bool ExceedsShapeGrowth(Word word)
+        {
+            return _morpher.MaxAnalysisShapeGrowth >= 0
+                && word.ParseContext != null
+                && word.Shape.Count > word.ParseContext.SurfaceLength + _morpher.MaxAnalysisShapeGrowth;
+        }
+
         public IEnumerable<Word> Apply(Word input)
         {
+            // Re-synced on every call rather than baked in at compile time: MaxRuleApplicationsPerWord
+            // is a mutable Morpher property that callers set via object-initializer syntax after
+            // construction (the same pattern MaxParseSteps/ParseTimeout use), which runs after this
+            // rule was already compiled. No new knob per complexity-cap.md §5.3 — derived from the
+            // existing per-word unapplication cap (0/unlimited maps to no depth limit).
+            if (_permutationCascade != null)
+                _permutationCascade.MaxDepth =
+                    _morpher.MaxRuleApplicationsPerWord > 0 ? _morpher.MaxRuleApplicationsPerWord : -1;
+
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
@@ -136,6 +154,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 // rest of an already-in-flight (but now-empty-yielding) rule cascade.
                 if (input.ParseContext?.Exhausted == true)
                     break;
+
+                // Prune candidates whose hypothesized underlying shape has grown too far past the
+                // surface form — the truly unbounded generator (undone deletions, empty exponents).
+                // Pruned here so they never reach lexical lookup or the next stratum.
+                if (ExceedsShapeGrowth(mruleOutWord))
+                {
+                    continue;
+                }
 
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;

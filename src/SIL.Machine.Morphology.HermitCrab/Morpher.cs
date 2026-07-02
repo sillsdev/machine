@@ -118,6 +118,24 @@ namespace SIL.Machine.Morphology.HermitCrab
         public TimeSpan ParseTimeout { get; set; }
 
         /// <summary>
+        /// Max total morphological-rule unapplications per analysis candidate (≈ max affixes per
+        /// word), checked across <em>all</em> rules combined — closes the loophole where a per-rule
+        /// application cap never trips because no single rule repeats (e.g. rule A unapplies, then B,
+        /// then A again). 0 = unlimited
+        /// (default: some legitimate agglutinative grammars have long affix chains, so this is off by
+        /// default in the library; FieldWorks is expected to opt into a conservative value).
+        /// </summary>
+        public int MaxRuleApplicationsPerWord { get; set; }
+
+        /// <summary>
+        /// Prunes any analysis candidate whose shape exceeds the surface form's length by more than
+        /// this many segments — the one truly unbounded generator, where unapplication hypothesizes
+        /// deleted/epenthesized material and keeps making the underlying form longer. -1 = unlimited
+        /// (default, preserves existing behavior).
+        /// </summary>
+        public int MaxAnalysisShapeGrowth { get; set; } = -1;
+
+        /// <summary>
         /// MaxUnapplications limits the number of unapplications to make it possible
         /// to make it possible to debug words that take 30 minutes to parse
         /// because there are too many unapplications.
@@ -172,7 +190,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <see cref="MaxParseSteps"/>/<see cref="ParseTimeout"/> cut the parse short (soft-stop: the
         /// returned sequence is whatever was found so far, never an exception).
         /// </summary>
-        public IEnumerable<Word> ParseWord(string word, out object trace, bool guessRoot, out ParseDiagnostics diagnostics)
+        public IEnumerable<Word> ParseWord(
+            string word,
+            out object trace,
+            bool guessRoot,
+            out ParseDiagnostics diagnostics
+        )
         {
             return ParseWordCore(word, out trace, guessRoot, collectRuleCounters: false, out diagnostics);
         }
@@ -268,7 +291,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     .ToList();
             }
 
-            return new ParseDiagnostics(true, parseContext.Reason, parseContext.StepsUsed, parseContext.Elapsed, topRules);
+            return new ParseDiagnostics(
+                true,
+                parseContext.Reason,
+                parseContext.StepsUsed,
+                parseContext.Elapsed,
+                topRules
+            );
         }
 
         /// <summary>
@@ -297,7 +326,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             trace = rootTrace;
 
             var words = new ConcurrentBag<string>();
-            var parseContext = new ParseContext(MaxParseSteps, ParseTimeout, rootEntry.PrimaryAllomorph.Segments.Shape.Count);
+            var parseContext = new ParseContext(
+                MaxParseSteps,
+                ParseTimeout,
+                rootEntry.PrimaryAllomorph.Segments.Shape.Count
+            );
 
             Exception exception = null;
             Parallel.ForEach(
@@ -318,7 +351,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                         {
                             synthesisWord.MorphologicalRuleUnapplied(rule.Item1);
                             if (rule.Item2 != null)
-                                synthesisWord.NonHeadUnapplied(new Word(rule.Item2, new FeatureStruct()) { ParseContext = parseContext });
+                                synthesisWord.NonHeadUnapplied(
+                                    new Word(rule.Item2, new FeatureStruct()) { ParseContext = parseContext }
+                                );
                         }
 
                         synthesisWord.CurrentTrace = rootTrace;

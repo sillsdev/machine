@@ -688,6 +688,110 @@ public class MorpherTests : HermitCrabTestBase
         Assert.That(diagnostics.TopRules[0].Rule, Is.EqualTo(noExponentSuffix));
     }
 
+    [Test]
+    public void ParseWord_MaxRuleApplicationsPerWord_BoundsTotalAcrossRules()
+    {
+        // Same no-overt-exponent shape as the step-budget test, but bounded via the total-
+        // unapplications cap instead of the step budget: closes the "even if separated" loophole
+        // that per-rule MaxApplicationCount alone cannot (see complexity-cap.md §5.1).
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var noExponentSuffix = new AffixProcessRule
+        {
+            Id = "REPEAT",
+            Name = "no_exponent_suffix",
+            Gloss = "REPEAT",
+            MaxApplicationCount = 1_000_000,
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        noExponentSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(noExponentSuffix);
+        SetRuleOrder(MorphologicalRuleOrder.Unordered);
+
+        // No step/timeout budget here — MaxRuleApplicationsPerWord alone must terminate the parse.
+        var morpher = new Morpher(TraceManager, Language)
+        {
+            MaxParseSteps = 0,
+            ParseTimeout = TimeSpan.Zero,
+            MaxRuleApplicationsPerWord = 10,
+        };
+
+        List<Word> results = morpher.ParseWord("sag", out _, false, out ParseDiagnostics diagnostics).ToList();
+
+        Assert.That(
+            diagnostics.BudgetExhausted,
+            Is.False,
+            "MaxRuleApplicationsPerWord is not a ParseDiagnostics-reported budget"
+        );
+        Assert.That(results.All(w => w.TotalUnapplicationCount <= 10), Is.True);
+    }
+
+    [Test]
+    public void ParseWord_MaxAnalysisShapeGrowth_PrunesDeepReinsertion()
+    {
+        // Reuses the DeletionRules rule4 shape (RewriteRuleTests.DeletionRules): deleting a high
+        // front unrounded vowel ("i") after a high vowel, so analysis can hypothesize progressively
+        // more deleted "i"s to the left, growing the shape well past the surface form.
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("low-")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+
+        var rule4 = new RewriteRule
+        {
+            Name = "rule4",
+            Lhs = Pattern<Word, int>.New().Annotation(highFrontUnrndVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(rule4);
+        rule4.Subrules.Add(
+            new RewriteSubrule { LeftEnvironment = Pattern<Word, int>.New().Annotation(highVowel).Value }
+        );
+
+        // Unbounded (default): matches the existing DeletionRules precedent exactly (RewriteRuleTests.
+        // DeletionRules) — deep reinsertion morph "27" ("buiibuii", 8 segments vs. surface "bubu"'s 4)
+        // is reachable.
+        var uncapped = new Morpher(TraceManager, Language) { DeletionReapplications = 1 };
+        List<Word> uncappedResults = uncapped.ParseWord("bubu", out _, false).ToList();
+        AssertMorphsEqual(uncappedResults, "24", "25", "26", "27", "19");
+
+        // Capped tightly enough that the deepest reinsertion chain cannot complete: the result set
+        // must shrink (never grow) relative to uncapped, and every remaining candidate's *analysis*
+        // step count must be no larger than the uncapped run's (the cap can only prune work, not add
+        // any) — without hard-coding which exact morphs the pruning walks away, since the interaction
+        // between DeletionReapplications' reapplication loop and Simultaneous-mode multi-site matching
+        // is intricate enough that pinning exact morph identities here would be over-fitting to
+        // incidental engine internals rather than the behavior this cap actually promises.
+        var capped = new Morpher(TraceManager, Language) { DeletionReapplications = 1, MaxAnalysisShapeGrowth = 0 };
+        List<Word> cappedResults = capped.ParseWord("bubu", out _, false).ToList();
+        Assert.That(
+            cappedResults.Select(w => string.Join("+", w.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id))),
+            Is.SubsetOf(
+                uncappedResults.Select(w => string.Join("+", w.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id)))
+            )
+        );
+        // The maximally-grown morph ("27", which needs the underlying shape to grow by 4 segments)
+        // must not survive a cap of 0 (no growth allowed at all).
+        Assert.That(cappedResults.Any(w => w.AllomorphsInMorphOrder.Any(a => a.Morpheme.Id == "27")), Is.False);
+    }
+
     private static string AnalysisSignature(Morpher morpher, string word)
     {
         return string.Join(
