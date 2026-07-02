@@ -73,6 +73,7 @@ public class ComplexityCapCorpusTests
         int wordsParsed = 0;
         int wordsSkipped = 0;
         var pathologicalWords = new List<(string Word, int Steps)>();
+        var topWordsBySteps = new List<(string Word, int Steps, long Ms)>();
         foreach (string word in words)
         {
             ParseDiagnostics diagnostics;
@@ -99,6 +100,11 @@ public class ComplexityCapCorpusTests
             if (diagnostics.BudgetExhausted)
                 pathologicalWords.Add((word, diagnostics.StepsUsed));
 
+            topWordsBySteps.Add((word, diagnostics.StepsUsed, wordSw.ElapsedMilliseconds));
+            topWordsBySteps.Sort((a, b) => b.Steps.CompareTo(a.Steps));
+            if (topWordsBySteps.Count > 5)
+                topWordsBySteps.RemoveAt(topWordsBySteps.Count - 1);
+
             if (diagnostics.StepsUsed > maxSteps)
             {
                 maxSteps = diagnostics.StepsUsed;
@@ -118,6 +124,10 @@ public class ComplexityCapCorpusTests
                 + $"max single-word time {maxWordMs}ms (word '{maxWordMsWord}'), "
                 + $"suggested default MaxParseSteps (100x observed max) = {Math.Max(maxSteps, 1) * 100}"
         );
+
+        TestContext.Out.WriteLine($"{name}: top {topWordsBySteps.Count} words by step count:");
+        foreach ((string word, int steps, long ms) in topWordsBySteps)
+            TestContext.Out.WriteLine($"  '{word}': {steps} steps, {ms}ms");
 
         if (pathologicalWords.Count > 0)
         {
