@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.ObjectModel;
@@ -10,17 +9,19 @@ namespace SIL.Machine.FiniteState
         : TraversalMethodBase<TData, TOffset, NondeterministicFsaTraversalInstance<TData, TOffset>>
         where TData : IAnnotatedData<TOffset>
     {
-        public NondeterministicFsaTraversalMethod(
-            Fst<TData, TOffset> fst,
-            TData data,
-            VariableBindings varBindings,
-            bool startAnchor,
-            bool endAnchor,
-            bool useDefaults
-        )
-            : base(fst, data, varBindings, startAnchor, endAnchor, useDefaults) { }
+        // Hoisted out of Traverse: building this per call allocated a comparer object plus two bound
+        // delegates (KeyEquals/KeyGetHashCode are instance methods) on every Traverse call — thousands
+        // per word. The comparer only closes over `this` (via Fst), so one instance is reusable for the
+        // life of this traversal method.
+        private readonly IEqualityComparer<TraversalKey> _traversalKeyComparer;
 
-        public override IEnumerable<FstResult<TData, TOffset>> Traverse(
+        public NondeterministicFsaTraversalMethod(Fst<TData, TOffset> fst)
+            : base(fst)
+        {
+            _traversalKeyComparer = AnonymousEqualityComparer.Create<TraversalKey>(KeyEquals, KeyGetHashCode);
+        }
+
+        public override List<FstResult<TData, TOffset>> Traverse(
             ref int annIndex,
             Register<TOffset>[,] initRegisters,
             IList<TagMapCommand> initCmds,
@@ -35,12 +36,10 @@ namespace SIL.Machine.FiniteState
             );
 
             var curResults = new List<FstResult<TData, TOffset>>();
-            var traversed = new HashSet<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
-                AnonymousEqualityComparer.Create<Tuple<State<TData, TOffset>, int, Register<TOffset>[,]>>(
-                    KeyEquals,
-                    KeyGetHashCode
-                )
-            );
+            // The dedup key is a value type (was Tuple<,,>): the HashSet stores it inline in its slot
+            // array, so there is no per-push heap object — `traversed.Add` is the hottest allocation in
+            // nondeterministic traversal. Byte-identical equality/hash (same fields, same comparers).
+            var traversed = new HashSet<TraversalKey>(_traversalKeyComparer);
             while (instStack.Count != 0)
             {
                 NondeterministicFsaTraversalInstance<TData, TOffset> inst = instStack.Pop();
@@ -53,7 +52,7 @@ namespace SIL.Machine.FiniteState
                     bool isInstReusable = i == inst.State.Arcs.Count - 1;
                     if (arc.Input.IsEpsilon)
                     {
-                        if (!inst.Visited.Contains(arc.Target))
+                        if (!inst.IsVisited(arc.Target))
                         {
                             NondeterministicFsaTraversalInstance<TData, TOffset> ti;
                             if (isInstReusable)
@@ -68,22 +67,15 @@ namespace SIL.Machine.FiniteState
                                 ti.VariableBindings = varBindings;
                             }
 
-                            ti.Visited.Add(arc.Target);
+                            ti.MarkVisited(arc.Target);
                             NondeterministicFsaTraversalInstance<TData, TOffset> newInst = EpsilonAdvance(
                                 ti,
                                 arc,
                                 curResults
                             );
-                            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                newInst.State,
-                                newInst.AnnotationIndex,
-                                newInst.Registers
-                            );
-                            if (!traversed.Contains(key))
-                            {
+                            var key = new TraversalKey(newInst.State, newInst.AnnotationIndex, newInst.Registers);
+                            if (traversed.Add(key))
                                 instStack.Push(newInst);
-                                traversed.Add(key);
-                            }
                             if (isInstReusable)
                                 releaseInstance = false;
                             varBindings = null;
@@ -108,17 +100,10 @@ namespace SIL.Machine.FiniteState
                                 )
                             )
                             {
-                                newInst.Visited.Clear();
-                                Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> key = Tuple.Create(
-                                    newInst.State,
-                                    newInst.AnnotationIndex,
-                                    newInst.Registers
-                                );
-                                if (!traversed.Contains(key))
-                                {
+                                newInst.ClearVisited();
+                                var key = new TraversalKey(newInst.State, newInst.AnnotationIndex, newInst.Registers);
+                                if (traversed.Add(key))
                                     instStack.Push(newInst);
-                                    traversed.Add(key);
-                                }
                             }
                             if (isInstReusable)
                                 releaseInstance = false;
@@ -142,22 +127,36 @@ namespace SIL.Machine.FiniteState
             return new NondeterministicFsaTraversalInstance<TData, TOffset>(Fst.RegisterCount);
         }
 
-        private bool KeyEquals(
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> x,
-            Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> y
-        )
+        // Value-type dedup key (was Tuple<State,int,Register[,]>): stored inline in the `traversed`
+        // HashSet so a push no longer allocates a heap Tuple. Holds the instance's live Registers by
+        // reference exactly as the Tuple did (same reference + hash-at-Add semantics).
+        private readonly struct TraversalKey
         {
-            return x.Item1.Equals(y.Item1)
-                && x.Item2.Equals(y.Item2)
-                && Fst.RegistersEqualityComparer.Equals(x.Item3, y.Item3);
+            public readonly State<TData, TOffset> State;
+            public readonly int AnnotationIndex;
+            public readonly Register<TOffset>[,] Registers;
+
+            public TraversalKey(State<TData, TOffset> state, int annotationIndex, Register<TOffset>[,] registers)
+            {
+                State = state;
+                AnnotationIndex = annotationIndex;
+                Registers = registers;
+            }
         }
 
-        private int KeyGetHashCode(Tuple<State<TData, TOffset>, int, Register<TOffset>[,]> m)
+        private bool KeyEquals(TraversalKey x, TraversalKey y)
+        {
+            return x.State.Equals(y.State)
+                && x.AnnotationIndex.Equals(y.AnnotationIndex)
+                && Fst.RegistersEqualityComparer.Equals(x.Registers, y.Registers);
+        }
+
+        private int KeyGetHashCode(TraversalKey m)
         {
             int code = 23;
-            code = code * 31 + m.Item1.GetHashCode();
-            code = code * 31 + m.Item2.GetHashCode();
-            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Item3);
+            code = code * 31 + m.State.GetHashCode();
+            code = code * 31 + m.AnnotationIndex.GetHashCode();
+            code = code * 31 + Fst.RegistersEqualityComparer.GetHashCode(m.Registers);
             return code;
         }
 
@@ -169,17 +168,11 @@ namespace SIL.Machine.FiniteState
         )
         {
             var instStack = new Stack<NondeterministicFsaTraversalInstance<TData, TOffset>>();
-            foreach (
-                NondeterministicFsaTraversalInstance<TData, TOffset> inst in Initialize(
-                    ref annIndex,
-                    registers,
-                    cmds,
-                    initAnns
-                )
-            )
-            {
+            List<NondeterministicFsaTraversalInstance<TData, TOffset>> insts = InitializeBuffer;
+            insts.Clear();
+            Initialize(ref annIndex, registers, cmds, initAnns, insts);
+            foreach (NondeterministicFsaTraversalInstance<TData, TOffset> inst in insts)
                 instStack.Push(inst);
-            }
 
             return instStack;
         }

@@ -13,7 +13,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return MorphemeType.Affix; }
         }
 
-        public abstract IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher);
-        public abstract IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher);
+        public abstract IRule<Word, int> CompileAnalysisRule(Morpher morpher);
+        public abstract IRule<Word, int> CompileSynthesisRule(Morpher morpher);
     }
 }

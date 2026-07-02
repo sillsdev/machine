@@ -9,10 +9,20 @@ namespace SIL.Machine.FeatureModel
         private readonly ulong _mask;
         private ulong _flags = 0;
 
+        /// <summary>The set of allowed symbols as a raw bitset (bit i = symbol with Index i).</summary>
+        internal ulong RawFlags => _flags;
+
         public UlongSymbolicFeatureValueFlags(SymbolicFeature feature)
         {
             _feature = feature;
-            _mask = (1UL << feature.PossibleSymbols.Count) - 1UL;
+            int count = feature.PossibleSymbols.Count;
+            // A feature with exactly 64 symbols occupies bits 0..63 (the whole ulong). Computing
+            // the mask as `(1UL << count) - 1` would be wrong here: C# masks a ulong shift count to
+            // its low 6 bits, so `1UL << 64` == `1UL << 0` == 1, giving _mask == 0 — which silently
+            // breaks every mask-dependent op (HasAllSet, negation, and the `not`/`notOther` branches
+            // of IsSupersetOf/Overlaps/IntersectWith/UnionWith/ExceptWith/Not). The dispatch guard in
+            // SymbolicFeatureValue.CreateFlags admits counts up to 64, so this boundary is reachable.
+            _mask = count >= 64 ? ulong.MaxValue : (1UL << count) - 1UL;
         }
 
         private UlongSymbolicFeatureValueFlags(SymbolicFeature feature, ulong mask, ulong flags)

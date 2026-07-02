@@ -5,21 +5,18 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public abstract class PhonologicalPatternRule : IRule<Word, ShapeNode>
+    public abstract class PhonologicalPatternRule : IRule<Word, int>
     {
         private readonly IPhonologicalPatternRuleSpec _ruleSpec;
-        private readonly Matcher<Word, ShapeNode> _matcher;
+        private readonly Matcher<Word, int> _matcher;
 
-        protected PhonologicalPatternRule(
-            IPhonologicalPatternRuleSpec ruleSpec,
-            MatcherSettings<ShapeNode> matcherSettings
-        )
+        protected PhonologicalPatternRule(IPhonologicalPatternRuleSpec ruleSpec, MatcherSettings<int> matcherSettings)
         {
             _ruleSpec = ruleSpec;
-            _matcher = new Matcher<Word, ShapeNode>(_ruleSpec.Pattern, matcherSettings);
+            _matcher = new Matcher<Word, int>(_ruleSpec.Pattern, matcherSettings);
         }
 
-        public Matcher<Word, ShapeNode> Matcher
+        public Matcher<Word, int> Matcher
         {
             get { return _matcher; }
         }

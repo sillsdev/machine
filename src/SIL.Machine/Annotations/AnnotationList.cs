@@ -17,6 +17,30 @@ namespace SIL.Machine.Annotations
         private int _currentID;
         private readonly Annotation<TOffset> _parent;
         private int _hashCode;
+        private int _version;
+
+        /// <summary>
+        /// Monotonically increments on every structural change (add/remove/clear). Lets a consumer
+        /// (e.g. <see cref="Shape"/>'s lazily-built <c>int</c>-offset annotation projection) cheaply
+        /// detect when a cached derivative is stale without diffing the list.
+        /// </summary>
+        internal int Version
+        {
+            get { return _version; }
+        }
+
+        /// <summary>
+        /// Bumps <see cref="Version"/> for a non-structural change that a cached derivative still
+        /// depends on. Specifically: <see cref="Shape"/>'s int-offset projection copies each
+        /// annotation's <see cref="Annotation{TOffset}.Optional"/> flag <em>by value</em>, so flipping
+        /// Optional (during analysis/unapplication) must invalidate that cache even though the list
+        /// structure is unchanged. <see cref="Annotation{TOffset}.Optional"/>'s setter calls this on
+        /// the root list.
+        /// </summary>
+        internal void IncrementVersion()
+        {
+            _version++;
+        }
 
         public AnnotationList()
             : base(new AnnotationComparer(), begin => new Annotation<TOffset>(Range<TOffset>.Null)) { }
@@ -121,6 +145,7 @@ namespace SIL.Machine.Annotations
         public void Add(Annotation<TOffset> node, bool subsume)
         {
             CheckFrozen();
+            _version++;
             if (_parent != null && !_parent.Range.Contains(node.Range))
             {
                 throw new ArgumentException(
@@ -160,6 +185,7 @@ namespace SIL.Machine.Annotations
         public bool Remove(Annotation<TOffset> node, bool preserveChildren)
         {
             CheckFrozen();
+            _version++;
             if (base.Remove(node))
             {
                 if (preserveChildren)
@@ -281,6 +307,7 @@ namespace SIL.Machine.Annotations
         public override void Clear()
         {
             CheckFrozen();
+            _version++;
             base.Clear();
         }
 

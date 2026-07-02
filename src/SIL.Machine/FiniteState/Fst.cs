@@ -25,6 +25,16 @@ namespace SIL.Machine.FiniteState
         private int _nextTag;
         private readonly Dictionary<string, int> _groups;
         private readonly List<TagMapCommand> _initializers;
+
+        // Frozen-time partition of _initializers (see Freeze): the Dest!=0 commands are the per-call
+        // `cmds` list (read-only in traversal), and the Dest==0 commands drive the per-annotation
+        // SetOffset. Precomputing once at Freeze removes a List<TagMapCommand> allocation + the
+        // filter loop from every Transduce call. Null until frozen → Transduce falls back to the
+        // inline build, so unfrozen callers are unaffected. Immutable after Freeze (the FST is shared
+        // read-only across parsing threads), so concurrent reads of the shared cmds list are safe.
+        private List<TagMapCommand> _nonZeroDestInitializers;
+        private List<TagMapCommand> _zeroDestInitializers;
+
         private int _registerCount;
         private Direction _dir;
         private Func<Annotation<TOffset>, bool> _filter;
@@ -312,83 +322,66 @@ namespace SIL.Machine.FiniteState
             out IEnumerable<FstResult<TData, TOffset>> results
         )
         {
-            ITraversalMethod<TData, TOffset> traversalMethod;
-            if (_operations != null)
-            {
-                if (IsDeterministic)
-                {
-                    traversalMethod = new DeterministicFstTraversalMethod<TData, TOffset>(
-                        this,
-                        data,
-                        varBindings,
-                        startAnchor,
-                        endAnchor,
-                        useDefaults
-                    );
-                }
-                else
-                {
-                    traversalMethod = new NondeterministicFstTraversalMethod<TData, TOffset>(
-                        this,
-                        data,
-                        varBindings,
-                        startAnchor,
-                        endAnchor,
-                        useDefaults
-                    );
-                }
-            }
-            else
-            {
-                if (IsDeterministic)
-                {
-                    traversalMethod = new DeterministicFsaTraversalMethod<TData, TOffset>(
-                        this,
-                        data,
-                        varBindings,
-                        startAnchor,
-                        endAnchor,
-                        useDefaults
-                    );
-                }
-                else
-                {
-                    traversalMethod = new NondeterministicFsaTraversalMethod<TData, TOffset>(
-                        this,
-                        data,
-                        varBindings,
-                        startAnchor,
-                        endAnchor,
-                        useDefaults
-                    );
-                }
-            }
+            // A fresh traversal method per Transduce call. Pooling it per-thread across a word was
+            // tried and reverted: the pooled method survives a Gen0 collection, promotes to Gen2,
+            // and the stop-the-world Gen2 serializes parallel parsing (see RUSTIFY Phase 1b). With
+            // allocation now driven down elsewhere, short-lived (die-in-Gen0) is the right tradeoff.
+            ITraversalMethod<TData, TOffset> traversalMethod = CreateTraversalMethod();
+            traversalMethod.Reset(data, varBindings, startAnchor, endAnchor, useDefaults);
             List<FstResult<TData, TOffset>> resultList = null;
 
             int annIndex = traversalMethod.Annotations.IndexOf(start);
 
             var initAnns = new HashSet<int>();
+            // Reuse the frozen-time initializer partition when available (the hot, shared-grammar
+            // path); fall back to building cmds inline for an unfrozen FST.
+            List<TagMapCommand> nonZeroDestInit = _nonZeroDestInitializers;
+            // RUSTIFY lever 1: allocate the initial-register scaffold once and clear it per start
+            // position instead of `new Register[regCount,2]` every outer iteration. Traverse only ever
+            // Array.Copy's it into the initial instances (never retains it), so reuse-after-clear is
+            // byte-identical — and AllMatches (analysis) runs one iteration per start, so this removes
+            // (starts-1) register-array allocations per matcher call.
+            var initRegisters = new Register<TOffset>[_registerCount, 2];
+            bool firstIteration = true;
             while (annIndex < traversalMethod.Annotations.Count && annIndex > -1)
             {
-                var initRegisters = new Register<TOffset>[_registerCount, 2];
+                if (!firstIteration)
+                    Array.Clear(initRegisters, 0, initRegisters.Length);
+                firstIteration = false;
 
-                var cmds = new List<TagMapCommand>();
-                foreach (TagMapCommand cmd in _initializers)
+                List<TagMapCommand> cmds;
+                if (nonZeroDestInit != null)
                 {
-                    if (cmd.Dest == 0)
+                    foreach (TagMapCommand cmd in _zeroDestInitializers)
                     {
                         initRegisters[cmd.Dest, 0]
                             .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
                     }
-                    else
+                    cmds = nonZeroDestInit;
+                }
+                else
+                {
+                    cmds = new List<TagMapCommand>();
+                    foreach (TagMapCommand cmd in _initializers)
                     {
-                        cmds.Add(cmd);
+                        if (cmd.Dest == 0)
+                        {
+                            initRegisters[cmd.Dest, 0]
+                                .SetOffset(traversalMethod.Annotations[annIndex].Range.GetStart(_dir), true);
+                        }
+                        else
+                        {
+                            cmds.Add(cmd);
+                        }
                     }
                 }
 
-                List<FstResult<TData, TOffset>> curResults = traversalMethod
-                    .Traverse(ref annIndex, initRegisters, cmds, initAnns)
-                    .ToList();
+                List<FstResult<TData, TOffset>> curResults = traversalMethod.Traverse(
+                    ref annIndex,
+                    initRegisters,
+                    cmds,
+                    initAnns
+                );
                 if (curResults.Count > 0)
                 {
                     if (resultList == null)
@@ -409,8 +402,29 @@ namespace SIL.Machine.FiniteState
                 return false;
             }
 
-            results = allMatches ? resultList.Distinct() : resultList;
+            // Distinct() materializes a lazy iterator + internal set every time it is enumerated;
+            // for 0/1 results there is nothing to dedupe (resultList is non-null with Count >= 1
+            // here), so return the list directly and skip the iterator in that common case.
+            results = (allMatches && resultList.Count > 1) ? resultList.Distinct() : resultList;
             return true;
+        }
+
+        private ITraversalMethod<TData, TOffset> CreateTraversalMethod()
+        {
+            return CreateTraversalMethodCore();
+        }
+
+        private ITraversalMethod<TData, TOffset> CreateTraversalMethodCore()
+        {
+            if (_operations != null)
+            {
+                return IsDeterministic
+                    ? (ITraversalMethod<TData, TOffset>)new DeterministicFstTraversalMethod<TData, TOffset>(this)
+                    : new NondeterministicFstTraversalMethod<TData, TOffset>(this);
+            }
+            return IsDeterministic
+                ? (ITraversalMethod<TData, TOffset>)new DeterministicFsaTraversalMethod<TData, TOffset>(this)
+                : new NondeterministicFsaTraversalMethod<TData, TOffset>(this);
         }
 
         private int ResultCompare(FstResult<TData, TOffset> x, FstResult<TData, TOffset> y)
@@ -2122,6 +2136,21 @@ namespace SIL.Machine.FiniteState
             IsFrozen = true;
             foreach (State<TData, TOffset> state in _states)
                 state.Freeze();
+
+            // Partition the (now immutable) initializers once so Transduce reuses them instead of
+            // rebuilding the cmds list every call. Build into locals and publish the gating field
+            // (_nonZeroDestInitializers) last, so a reader never observes a partially filled list.
+            var zeroDest = new List<TagMapCommand>();
+            var nonZeroDest = new List<TagMapCommand>();
+            foreach (TagMapCommand cmd in _initializers)
+            {
+                if (cmd.Dest == 0)
+                    zeroDest.Add(cmd);
+                else
+                    nonZeroDest.Add(cmd);
+            }
+            _zeroDestInitializers = zeroDest;
+            _nonZeroDestInitializers = nonZeroDest;
         }
 
         public int GetFrozenHashCode()

@@ -8,11 +8,11 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisStratumRule : IRule<Word, ShapeNode>
+    internal class AnalysisStratumRule : IRule<Word, int>
     {
-        private readonly IRule<Word, ShapeNode> _mrulesRule;
-        private readonly IRule<Word, ShapeNode> _prulesRule;
-        private readonly IRule<Word, ShapeNode> _templatesRule;
+        private readonly IRule<Word, int> _mrulesRule;
+        private readonly IRule<Word, int> _prulesRule;
+        private readonly IRule<Word, int> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
 
@@ -20,16 +20,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             _stratum = stratum;
             _morpher = morpher;
-            _prulesRule = new LinearRuleCascade<Word, ShapeNode>(
+            _prulesRule = new LinearRuleCascade<Word, int>(
                 stratum.PhonologicalRules.Select(prule => CompilePhonologicalRule(prule, morpher)).Reverse()
             );
-            _templatesRule = new RuleBatch<Word, ShapeNode>(
+            _templatesRule = new RuleBatch<Word, int>(
                 stratum.AffixTemplates.Select(template => CompileAffixTemplate(template, morpher)),
                 false,
                 FreezableEqualityComparer<Word>.Default
             );
             _mrulesRule = null;
-            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum
+            IEnumerable<IRule<Word, int>> mrules = stratum
                 .MorphologicalRules.Select(mrule => CompileMorphologicalRule(mrule, morpher))
                 .Reverse();
             switch (stratum.MorphologicalRuleOrder)
@@ -39,31 +39,38 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // because morphological rules should be considered optional
                     // during unapplication (they are obligatory during application,
                     // but we don't know they have been applied during unapplication).
-                    _mrulesRule = new PermutationRuleCascade<Word, ShapeNode>(
+                    _mrulesRule = new PermutationRuleCascade<Word, int>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-#if SINGLE_THREADED
-                    _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#else
-                    _mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#endif
+                    // Single-threaded when the caller caps within-word parallelism (e.g. it
+                    // parallelizes across words itself); parallel cascade otherwise.
+                    _mrulesRule =
+                        morpher.MaxDegreeOfParallelism == 1
+                            ? (IRule<Word, int>)
+                                new CombinationRuleCascade<Word, int>(
+                                    mrules,
+                                    true,
+                                    FreezableEqualityComparer<Word>.Default
+                                )
+                            : new ParallelCombinationRuleCascade<Word, int>(
+                                mrules,
+                                true,
+                                FreezableEqualityComparer<Word>.Default
+                            )
+                            {
+                                // Honor the within-word parallelism cap rather than running at
+                                // the default (effectively unbounded) scheduler degree.
+                                MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
+                            };
                     break;
             }
         }
 
-        private IRule<Word, ShapeNode> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
+        private IRule<Word, int> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
         {
             try
             {
@@ -75,7 +82,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private IRule<Word, ShapeNode> CompileMorphologicalRule(IMorphologicalRule mrule, Morpher morpher)
+        private IRule<Word, int> CompileMorphologicalRule(IMorphologicalRule mrule, Morpher morpher)
         {
             try
             {
@@ -87,7 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        private IRule<Word, ShapeNode> CompilePhonologicalRule(IPhonologicalRule prule, Morpher morpher)
+        private IRule<Word, int> CompilePhonologicalRule(IPhonologicalRule prule, Morpher morpher)
         {
             try
             {
@@ -149,7 +156,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
-            foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (Word mruleOutWord in _mrulesRule.Apply(input))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
@@ -168,7 +175,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (Word tempOutWord in _templatesRule.Apply(input))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
