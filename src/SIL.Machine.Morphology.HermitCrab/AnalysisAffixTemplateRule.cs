@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisAffixTemplateRule : IRule<Word, ShapeNode>
+    internal class AnalysisAffixTemplateRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly Morpher _morpher;
         private readonly AffixTemplate _template;
@@ -20,6 +20,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public AnalysisAffixTemplateRule(Morpher morpher, AffixTemplate template)
         {
+            Name = template.Name;
             _morpher = morpher;
             _template = template;
             _rules = new List<IRule<Word, ShapeNode>>(
@@ -29,9 +30,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                     FreezableEqualityComparer<Word>.Default
                 ))
             );
+            AddSubRules(_rules);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_template))
                 return Enumerable.Empty<Word>();
@@ -55,6 +57,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             foreach (Word outWord in output)
                 outWord.SyntacticFeatureStruct.Add(fs);
+
+            AddRuleStats(output.Count);
             return output;
         }
 

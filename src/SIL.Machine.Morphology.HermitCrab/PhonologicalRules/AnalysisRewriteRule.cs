@@ -10,7 +10,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class AnalysisRewriteRule : IRule<Word, ShapeNode>
+    public class AnalysisRewriteRule : InstrumentedRule<Word, ShapeNode>
     {
         private enum ReapplyType
         {
@@ -25,6 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public AnalysisRewriteRule(Morpher morpher, RewriteRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
 
@@ -125,7 +126,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return true;
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
@@ -188,7 +189,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
 
             if (applied)
-                return input.ToEnumerable();
+            {
+                IEnumerable<Word> output = input.ToEnumerable();
+                AddRuleStats(output.Count());
+                return output;
+            }
             return Enumerable.Empty<Word>();
         }
     }

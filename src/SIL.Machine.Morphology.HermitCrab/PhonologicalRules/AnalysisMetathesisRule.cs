@@ -8,7 +8,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class AnalysisMetathesisRule : IRule<Word, ShapeNode>
+    public class AnalysisMetathesisRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly Morpher _morpher;
         private readonly MetathesisRule _rule;
@@ -16,6 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public AnalysisMetathesisRule(Morpher morpher, MetathesisRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
 
@@ -35,7 +36,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _patternRule = new IterativePhonologicalPatternRule(ruleSpec, settings);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
@@ -48,7 +49,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             {
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.PhonologicalRuleUnapplied(_rule, -1, origInput, input);
-                return input.ToEnumerable();
+                {
+                    IEnumerable<Word> output = input.ToEnumerable();
+                    AddRuleStats(output.Count());
+                    return output;
+                }
             }
 
             if (_morpher.TraceManager.IsTracing)

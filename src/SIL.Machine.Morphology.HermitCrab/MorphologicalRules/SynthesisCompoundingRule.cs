@@ -9,7 +9,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisCompoundingRule : IRule<Word, ShapeNode>
+    public class SynthesisCompoundingRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
@@ -17,6 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public SynthesisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
             _subruleMatchers = new List<Tuple<Matcher<Word, ShapeNode>, Matcher<Word, ShapeNode>>>();
@@ -42,7 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             );
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!input.IsMorphologicalRuleApplicable(_rule))
                 return Enumerable.Empty<Word>();
@@ -223,6 +224,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
             }
 
+            AddRuleStats(output.Count);
             return output;
         }
 

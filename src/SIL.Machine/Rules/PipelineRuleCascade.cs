@@ -29,6 +29,7 @@ namespace SIL.Machine.Rules
                 inputSet = outputSet;
             }
 
+            AddRuleStats(outputSet.Count);
             return outputSet;
         }
     }

@@ -4,7 +4,7 @@ using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
 {
-    public class RuleBatch<TData, TOffset> : IRule<TData, TOffset>
+    public class RuleBatch<TData, TOffset> : InstrumentedRule<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
         private readonly List<IRule<TData, TOffset>> _rules;
@@ -22,9 +22,11 @@ namespace SIL.Machine.Rules
 
         public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules, bool disjunctive, IEqualityComparer<TData> comparer)
         {
+            Name = "RuleBatch";
             _rules = new List<IRule<TData, TOffset>>(rules);
             _disjunctive = disjunctive;
             _comparer = comparer;
+            AddSubRules(_rules);
         }
 
         public IReadOnlyList<IRule<TData, TOffset>> Rules
@@ -42,7 +44,7 @@ namespace SIL.Machine.Rules
             get { return _disjunctive; }
         }
 
-        public virtual IEnumerable<TData> Apply(TData input)
+        public override IEnumerable<TData> Apply(TData input)
         {
             var output = new HashSet<TData>(_comparer);
             foreach (IRule<TData, TOffset> rule in _rules)
@@ -52,6 +54,7 @@ namespace SIL.Machine.Rules
                     return output;
             }
 
+            AddRuleStats(output.Count);
             return output;
         }
     }

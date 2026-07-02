@@ -53,6 +53,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
+            ((InstrumentedRule<Word, ShapeNode>)_synthesisRule).Name = "Synthesis";
             MaxStemCount = 2;
             MaxUnapplications = 0;
             MergeEquivalentAnalyses = true;
@@ -119,6 +120,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
             trace = input.CurrentTrace;
+            ((InstrumentedRule<Word, ShapeNode>)_analysisRule).ClearStats();
+            ((InstrumentedRule<Word, ShapeNode>)_synthesisRule).ClearStats();
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
