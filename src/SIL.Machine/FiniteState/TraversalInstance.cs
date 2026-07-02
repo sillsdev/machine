@@ -10,12 +10,17 @@ namespace SIL.Machine.FiniteState
     internal abstract class TraversalInstance<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
-        private readonly Register<TOffset>[,] _registers;
+        // Flat (SZ, single-dimension zero-lower-bound) array instead of Register<TOffset>[,]: the
+        // CLR allocates rectangular (multi-dim) arrays through the general-purpose
+        // Array.CreateInstanceMDArray runtime helper, which a CPU profile showed dominating
+        // self-time on this hot path — SZ arrays get the JIT-inlined fast allocation path instead.
+        // Index i's (start, end) pair lives at [2*i] / [2*i+1].
+        private readonly Register<TOffset>[] _registers;
         private readonly List<int> _priorities;
 
         protected TraversalInstance(int registerCount, bool deterministic)
         {
-            _registers = new Register<TOffset>[registerCount, 2];
+            _registers = new Register<TOffset>[registerCount * 2];
             if (!deterministic)
                 _priorities = new List<int>();
         }
@@ -29,7 +34,7 @@ namespace SIL.Machine.FiniteState
             get { return _priorities; }
         }
 
-        public Register<TOffset>[,] Registers
+        public Register<TOffset>[] Registers
         {
             get { return _registers; }
         }

@@ -12,22 +12,43 @@ namespace SIL.Machine.DataStructures
         private readonly TNode _end;
         private readonly IComparer<TNode> _comparer;
 
-        private readonly Random _rand = new Random();
+        // [ThreadStatic] instead of one Random per BidirList instance: skip-list level selection is
+        // statistical (result shape doesn't affect the byte-identical parse output, only balance), so
+        // sharing one Random per thread is safe. A CPU profile showed constructing a fresh
+        // System.Random per BidirList (i.e. per AnnotationList, i.e. effectively per Word.Clone) —
+        // including its OS-entropy-seeded Xoshiro256** state — as real, avoidable self-time. Each
+        // Word/Shape clone's BidirLists are only ever mutated by the single thread that owns that
+        // clone (the COW invariant: a shared/frozen Shape is read-only), so no cross-thread Random
+        // sharing occurs.
+        [ThreadStatic]
+        private static Random ThreadRand;
+
+        private static Random Rand
+        {
+            get
+            {
+                if (ThreadRand == null)
+                    ThreadRand = new Random();
+                return ThreadRand;
+            }
+        }
+
         private int _size;
 
         protected BidirList(IComparer<TNode> comparer, Func<bool, TNode> marginSelector)
         {
             _begin = marginSelector(true);
             _end = marginSelector(false);
-            _begin.Init(this, 33);
+            // The Begin/End margins grow their tower arrays on demand (see GrowMargins) rather than
+            // pre-allocating the 33-level skip-list maximum: most lists stay shallow, so the eager [33]
+            // margin towers were pure waste — ~70% of the per-AnnotationList tower-array allocation, the
+            // dominant Word.Clone sub-cost on Sena (RUSTIFY Stage 3, increment II). Start at level 0 only.
+            _begin.Init(this, 1);
             _begin.Levels = 1;
-            _end.Init(this, 33);
+            _end.Init(this, 1);
             _end.Levels = 1;
-            for (int i = 0; i < 33; i++)
-            {
-                _begin.SetNext(i, _end);
-                _end.SetPrev(i, _begin);
-            }
+            _begin.SetNext(0, _end);
+            _end.SetPrev(0, _begin);
             _comparer = comparer;
         }
 
@@ -55,13 +76,12 @@ namespace SIL.Machine.DataStructures
             // 1-bits before we encounter the first 0-bit is the level of the node. Since R is
             // 32-bit, the level can be at most 32.
             int level = 0;
-            for (int r = _rand.Next(); (r & 1) == 1; r >>= 1)
+            for (int r = Rand.Next(); (r & 1) == 1; r >>= 1)
             {
                 level++;
                 if (level == _begin.Levels)
                 {
-                    _begin.Levels++;
-                    _end.Levels++;
+                    GrowMargins();
                     break;
                 }
             }
@@ -92,15 +112,29 @@ namespace SIL.Machine.DataStructures
             _size++;
         }
 
+        // Raise the skip list's height by one level: ensure the margins' tower arrays can hold the new
+        // level, link Begin<->End at it, then bump the margin levels. Replaces the old eager 33-level
+        // margin pre-allocation; called only when a freshly added node reaches the current max height.
+        private void GrowMargins()
+        {
+            int newLevel = _begin.Levels;
+            _begin.EnsureLevelCapacity(newLevel + 1);
+            _end.EnsureLevelCapacity(newLevel + 1);
+            _begin.SetNext(newLevel, _end);
+            _end.SetPrev(newLevel, _begin);
+            _begin.Levels = newLevel + 1;
+            _end.Levels = newLevel + 1;
+        }
+
         public virtual void Clear()
         {
             foreach (TNode node in this.ToArray())
                 node.Clear();
-            for (int i = 0; i < 33; i++)
-            {
-                _begin.SetNext(i, _end);
-                _end.SetPrev(i, _begin);
-            }
+            // Reset to height 1; only level 0 needs relinking (higher levels are above Levels and are
+            // never read until GrowMargins re-links them as the list grows tall again). The margin
+            // arrays keep whatever capacity they grew to, which is reused.
+            _begin.SetNext(0, _end);
+            _end.SetPrev(0, _begin);
             _begin.Levels = 1;
             _end.Levels = 1;
             _size = 0;

@@ -29,15 +29,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         }
 
         public override void GenerateAnalysisLhs(
-            Pattern<Word, ShapeNode> analysisLhs,
-            IDictionary<string, Pattern<Word, ShapeNode>> partLookup,
+            Pattern<Word, int> analysisLhs,
+            IDictionary<string, Pattern<Word, int>> partLookup,
             IDictionary<string, int> capturedParts
         )
         {
-            analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(_simpleCtxt.FeatureStruct.Clone()));
+            analysisLhs.Children.Add(new Constraint<Word, int>(_simpleCtxt.FeatureStruct.Clone()));
         }
 
-        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
+        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, int> match, Word output)
         {
             FeatureStruct fs = _simpleCtxt.FeatureStruct.Clone();
             fs.ReplaceVariables(match.VariableBindings);

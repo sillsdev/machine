@@ -25,7 +25,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -54,7 +54,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -71,7 +71,7 @@ public class MorpherTests : HermitCrabTestBase
         tSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") },
             }
         );
@@ -82,10 +82,10 @@ public class MorpherTests : HermitCrabTestBase
         var rule1 = new RewriteRule
         {
             Name = "rule1",
-            Lhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "t")).Value,
+            Lhs = Pattern<Word, int>.New().Annotation(Character(Table1, "t")).Value,
         };
         rule1.Subrules.Add(
-            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(Character(Table1, "d")).Value }
+            new RewriteSubrule { Rhs = Pattern<Word, int>.New().Annotation(Character(Table1, "d")).Value }
         );
         Morphophonemic.PhonologicalRules.Add(rule1);
 
@@ -113,7 +113,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -143,7 +143,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -202,7 +202,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -253,7 +253,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
             }
         );
@@ -288,7 +288,7 @@ public class MorpherTests : HermitCrabTestBase
         siPrefix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new InsertSegments(Table3, "si+"), new CopyFromInput("1") },
             }
         );
@@ -304,7 +304,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
@@ -333,7 +333,7 @@ public class MorpherTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
@@ -453,5 +453,104 @@ public class MorpherTests : HermitCrabTestBase
         // Use Table2 because it has boundaries defined.
         Shape shape = new Segments(Table2, pattern, true).Shape;
         return shape.GetNodes(shape.Range).ToList();
+    }
+
+    [Test]
+    public void AnalyzeWord_SingleThreaded_MatchesParallel()
+    {
+        // Build a small Unordered grammar (the order FieldWorks uses, which exercises the
+        // parallel analysis cascade and parallel affix-template unapplication).
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var parallel = new Morpher(TraceManager, Language); // default: Environment.ProcessorCount
+        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        Assert.That(singleThreaded.MaxDegreeOfParallelism, Is.EqualTo(1));
+
+        // The single-threaded cascade (MaxDegreeOfParallelism == 1) must produce the same analyses
+        // as the parallel cascade.
+        IEnumerable<WordAnalysis> singleResult = singleThreaded.AnalyzeWord("sagd").ToList();
+        IEnumerable<WordAnalysis> parallelResult = parallel.AnalyzeWord("sagd").ToList();
+        Assert.That(
+            singleResult,
+            Is.EquivalentTo(parallelResult),
+            "single-threaded analysis must match the parallel analysis"
+        );
+    }
+
+    [Test]
+    public void AnalyzeWord_ConcurrentRepeatedParsing_IsDeterministic()
+    {
+        // Concurrency safety net for the copy-on-write refactors (Plans A & B): many threads
+        // parse against one shared frozen grammar whose FeatureStructs become shared into
+        // per-parse clones. A COW race would show up as a nondeterministic analysis. Unordered
+        // order exercises the parallel cascade + affix-template paths.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        var words = new[] { "sagd", "sag", "tag", "tagd", "gag", "xyzzy" };
+        Dictionary<string, string> baseline = words.ToDictionary(w => w, w => AnalysisSignature(morpher, w));
+
+        for (int iter = 0; iter < 50; iter++)
+        {
+            var results = new System.Collections.Concurrent.ConcurrentDictionary<string, string>();
+            System.Threading.Tasks.Parallel.ForEach(
+                Enumerable.Range(0, 250),
+                i =>
+                {
+                    string w = words[i % words.Length];
+                    results[w] = AnalysisSignature(morpher, w);
+                }
+            );
+            foreach (string w in words)
+            {
+                Assert.That(
+                    results[w],
+                    Is.EqualTo(baseline[w]),
+                    $"nondeterministic analysis for '{w}' on iteration {iter}"
+                );
+            }
+        }
+    }
+
+    private static string AnalysisSignature(Morpher morpher, string word)
+    {
+        return string.Join(
+            "|",
+            morpher
+                .AnalyzeWord(word)
+                .Select(a => string.Join("+", a.Morphemes.Select(m => m.Id)) + ":" + a.RootMorphemeIndex)
+                .OrderBy(s => s, System.StringComparer.Ordinal)
+        );
     }
 }

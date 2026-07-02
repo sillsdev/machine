@@ -1,29 +1,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
+using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class AnalysisCompoundingRule : IRule<Word, ShapeNode>
+    public class AnalysisCompoundingRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
-        private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly List<IRule<Word, int>> _rules;
 
         public AnalysisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
             _morpher = morpher;
             _rule = rule;
 
-            _rules = new List<IRule<Word, ShapeNode>>();
+            _rules = new List<IRule<Word, int>>();
             foreach (CompoundingSubrule sr in rule.Subrules)
             {
                 _rules.Add(
-                    new MultiplePatternRule<Word, ShapeNode>(
+                    new MultiplePatternRule<Word, int>(
                         new AnalysisCompoundingSubruleRuleSpec(sr),
-                        new MatcherSettings<ShapeNode>
+                        new MatcherSettings<int>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
                             MatchingMethod = MatchingMethod.Unification,
@@ -126,10 +127,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 bool unapplied = false;
                 foreach (Word outWord in srOutput)
                 {
+                    // Clone-then-reassign, not an in-place mutation: outWord may already be frozen (see
+                    // Word.FreezeImpl's comment).
                     if (!_rule.HeadRequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Add(_rule.HeadRequiredSyntacticFeatureStruct);
+                    {
+                        FeatureStruct sfs = outWord.SyntacticFeatureStruct.Clone();
+                        sfs.Add(_rule.HeadRequiredSyntacticFeatureStruct);
+                        outWord.SyntacticFeatureStruct = sfs;
+                    }
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Clear();
+                    {
+                        outWord.SyntacticFeatureStruct = new FeatureStruct();
+                    }
                     outWord.MorphologicalRuleUnapplied(_rule);
 
                     outWord.Freeze();

@@ -9,18 +9,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
     public class AnalysisMorphologicalTransform
     {
-        private readonly Pattern<Word, ShapeNode> _pattern;
+        private readonly Pattern<Word, int> _pattern;
         private readonly Dictionary<string, Tuple<int, FeatureStruct>> _modifyFromInfos;
         private readonly Dictionary<string, int> _capturedParts;
 
-        public AnalysisMorphologicalTransform(
-            IEnumerable<Pattern<Word, ShapeNode>> lhs,
-            IList<MorphologicalOutputAction> rhs
-        )
+        public AnalysisMorphologicalTransform(IEnumerable<Pattern<Word, int>> lhs, IList<MorphologicalOutputAction> rhs)
         {
-            Dictionary<string, Pattern<Word, ShapeNode>> partLookup = lhs.ToDictionary(p => p.Name);
+            Dictionary<string, Pattern<Word, int>> partLookup = lhs.ToDictionary(p => p.Name);
             _modifyFromInfos = new Dictionary<string, Tuple<int, FeatureStruct>>();
-            _pattern = new Pattern<Word, ShapeNode>();
+            _pattern = new Pattern<Word, int>();
             _capturedParts = new Dictionary<string, int>();
             foreach (MorphologicalOutputAction outputAction in rhs)
             {
@@ -46,19 +43,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             get { return _capturedParts; }
         }
 
-        public Pattern<Word, ShapeNode> Pattern
+        public Pattern<Word, int> Pattern
         {
             get { return _pattern; }
         }
 
-        public void GenerateShape(IList<Pattern<Word, ShapeNode>> lhs, Shape shape, Match<Word, ShapeNode> match)
+        public void GenerateShape(IList<Pattern<Word, int>> lhs, Shape shape, Match<Word, int> match)
         {
             shape.Clear();
-            foreach (Pattern<Word, ShapeNode> part in lhs)
+            foreach (Pattern<Word, int> part in lhs)
                 AddPartNodes(part, match, shape);
         }
 
-        private void AddPartNodes(Pattern<Word, ShapeNode> part, Match<Word, ShapeNode> match, Shape output)
+        private void AddPartNodes(Pattern<Word, int> part, Match<Word, int> match, Shape output)
         {
             int count;
             if (_capturedParts.TryGetValue(part.Name, out count))
@@ -83,15 +80,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         private bool AddCapturedPartNodes(
             string partName,
             int index,
-            Match<Word, ShapeNode> match,
+            Match<Word, int> match,
             FeatureStruct modifyFromFS,
             Shape output
         )
         {
-            GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[GetGroupName(partName, index)];
+            GroupCapture<int> inputGroup = match.GroupCaptures[GetGroupName(partName, index)];
             if (inputGroup.Success)
             {
-                Range<ShapeNode> outputRange = match.Input.Shape.CopyTo(inputGroup.Range, output);
+                Range<ShapeNode> outputRange = match.Input.Shape.CopyTo(
+                    match.Input.Shape.ToShapeRange(inputGroup.Range),
+                    output
+                );
                 if (modifyFromFS != null)
                 {
                     foreach (ShapeNode node in output.GetNodes(outputRange))
@@ -106,15 +106,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         }
 
         private void Untruncate(
-            PatternNode<Word, ShapeNode> patternNode,
+            PatternNode<Word, int> patternNode,
             Shape output,
             bool optional,
             VariableBindings varBindings
         )
         {
-            foreach (PatternNode<Word, ShapeNode> node in patternNode.Children)
+            foreach (PatternNode<Word, int> node in patternNode.Children)
             {
-                if (node is Constraint<Word, ShapeNode> constraint && constraint.Type() == HCFeatureSystem.Segment)
+                if (node is Constraint<Word, int> constraint && constraint.Type() == HCFeatureSystem.Segment)
                 {
                     FeatureStruct fs = constraint.FeatureStruct.Clone();
                     fs.ReplaceVariables(varBindings);
@@ -122,7 +122,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
                 else
                 {
-                    if (node is Quantifier<Word, ShapeNode> quantifier)
+                    if (node is Quantifier<Word, int> quantifier)
                     {
                         for (int i = 0; i < quantifier.MaxOccur; i++)
                             Untruncate(quantifier, output, i >= quantifier.MinOccur, varBindings);

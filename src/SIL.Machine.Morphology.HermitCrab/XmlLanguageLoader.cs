@@ -540,12 +540,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             var variables = new Dictionary<string, Tuple<string, SymbolicFeature>>();
 
-            Pattern<Word, ShapeNode> leftEnv = LoadPhoneticTemplate(
+            Pattern<Word, int> leftEnv = LoadPhoneticTemplate(
                 envElem.Elements("LeftEnvironment").Elements("PhoneticTemplate").SingleOrDefault(),
                 variables,
                 defaultTable
             );
-            Pattern<Word, ShapeNode> rightEnv = LoadPhoneticTemplate(
+            Pattern<Word, int> rightEnv = LoadPhoneticTemplate(
                 envElem.Elements("RightEnvironment").Elements("PhoneticTemplate").SingleOrDefault(),
                 variables,
                 defaultTable
@@ -1078,7 +1078,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             XElement reqPhonInputElem,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             Dictionary<string, string> partNames,
-            IList<Pattern<Word, ShapeNode>> lhs,
+            IList<Pattern<Word, int>> lhs,
             CharacterDefinitionTable defaultTable,
             string partNamePrefix = null
         )
@@ -1377,7 +1377,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             return variables;
         }
 
-        private IEnumerable<PatternNode<Word, ShapeNode>> LoadPatternNodes(
+        private IEnumerable<PatternNode<Word, int>> LoadPatternNodes(
             XElement pseqElem,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable,
@@ -1386,12 +1386,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             foreach (XElement recElem in pseqElem.Elements())
             {
-                PatternNode<Word, ShapeNode> node = null;
+                PatternNode<Word, int> node = null;
                 switch (recElem.Name.LocalName)
                 {
                     case "SimpleContext":
                         SimpleContext simpleCtxt = LoadSimpleContext(recElem, variables);
-                        node = new Constraint<Word, ShapeNode>(simpleCtxt.FeatureStruct) { Tag = simpleCtxt };
+                        node = new Constraint<Word, int>(simpleCtxt.FeatureStruct) { Tag = simpleCtxt };
                         break;
 
                     case "Segment":
@@ -1399,7 +1399,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         CharacterDefinition cd = _charDefs[
                             (string)recElem.Attribute(recElem.Name.LocalName == "Segment" ? "segment" : "boundary")
                         ];
-                        node = new Constraint<Word, ShapeNode>(cd.FeatureStruct) { Tag = cd };
+                        node = new Constraint<Word, int>(cd.FeatureStruct) { Tag = cd };
                         break;
 
                     case "OptionalSegmentSequence":
@@ -1407,10 +1407,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                         int min = string.IsNullOrEmpty(minStr) ? 0 : int.Parse(minStr);
                         var maxStr = (string)recElem.Attribute("max");
                         int max = string.IsNullOrEmpty(maxStr) ? -1 : int.Parse(maxStr);
-                        node = new Quantifier<Word, ShapeNode>(
+                        node = new Quantifier<Word, int>(
                             min,
                             max,
-                            new Group<Word, ShapeNode>(LoadPatternNodes(recElem, variables, defaultTable, groupNames))
+                            new Group<Word, int>(LoadPatternNodes(recElem, variables, defaultTable, groupNames))
                         );
                         break;
 
@@ -1418,8 +1418,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         CharacterDefinitionTable segsTable = GetTable(recElem, defaultTable);
                         var shapeStr = (string)recElem.Element("PhoneticShape");
                         var segments = new Segments(segsTable, shapeStr);
-                        node = new Group<Word, ShapeNode>(
-                            segments.Shape.Select(n => new Constraint<Word, ShapeNode>(n.Annotation.FeatureStruct))
+                        node = new Group<Word, int>(
+                            segments.Shape.Select(n => new Constraint<Word, int>(n.Annotation.FeatureStruct))
                         )
                         {
                             Tag = segments,
@@ -1433,7 +1433,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (groupNames == null || string.IsNullOrEmpty(id) || !groupNames.TryGetValue(id, out groupName))
                     yield return node;
                 else
-                    yield return new Group<Word, ShapeNode>(groupName, node);
+                    yield return new Group<Word, int>(groupName, node);
             }
         }
 
@@ -1460,20 +1460,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             return new SimpleContext(nc, ctxtVars);
         }
 
-        private Pattern<Word, ShapeNode> LoadPhoneticTemplate(
+        private Pattern<Word, int> LoadPhoneticTemplate(
             XElement ptempElem,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable = null,
             Dictionary<string, string> groupNames = null
         )
         {
-            var pattern = new Pattern<Word, ShapeNode>();
+            var pattern = new Pattern<Word, int>();
             if (ptempElem != null)
             {
                 if ((string)ptempElem.Attribute("initialBoundaryCondition") == "true")
-                    pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.LeftSideAnchor));
+                    pattern.Children.Add(new Constraint<Word, int>(HCFeatureSystem.LeftSideAnchor));
                 foreach (
-                    PatternNode<Word, ShapeNode> node in LoadPatternNodes(
+                    PatternNode<Word, int> node in LoadPatternNodes(
                         ptempElem.Element("PhoneticSequence"),
                         variables,
                         defaultTable,
@@ -1484,13 +1484,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     pattern.Children.Add(node);
                 }
                 if ((string)ptempElem.Attribute("finalBoundaryCondition") == "true")
-                    pattern.Children.Add(new Constraint<Word, ShapeNode>(HCFeatureSystem.RightSideAnchor));
+                    pattern.Children.Add(new Constraint<Word, int>(HCFeatureSystem.RightSideAnchor));
             }
             pattern.Freeze();
             return pattern;
         }
 
-        private Pattern<Word, ShapeNode> LoadPhoneticSequence(
+        private Pattern<Word, int> LoadPhoneticSequence(
             XElement pseqElem,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable = null,
@@ -1498,8 +1498,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         )
         {
             if (pseqElem == null)
-                return Pattern<Word, ShapeNode>.New().Value;
-            var pattern = new Pattern<Word, ShapeNode>(name, LoadPatternNodes(pseqElem, variables, defaultTable, null));
+                return Pattern<Word, int>.New().Value;
+            var pattern = new Pattern<Word, int>(name, LoadPatternNodes(pseqElem, variables, defaultTable, null));
             pattern.Freeze();
             return pattern;
         }

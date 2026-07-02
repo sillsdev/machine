@@ -12,21 +12,19 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class AnalysisMetathesisRuleSpec : IPhonologicalPatternRuleSpec, IPhonologicalPatternSubruleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _pattern;
+        private readonly Pattern<Word, int> _pattern;
         private readonly string _leftGroupName;
         private readonly string _rightGroupName;
 
-        public AnalysisMetathesisRuleSpec(Pattern<Word, ShapeNode> pattern, string leftGroupName, string rightGroupName)
+        public AnalysisMetathesisRuleSpec(Pattern<Word, int> pattern, string leftGroupName, string rightGroupName)
         {
             _leftGroupName = leftGroupName;
             _rightGroupName = rightGroupName;
 
-            Group<Word, ShapeNode>[] groupOrder = pattern.Children.OfType<Group<Word, ShapeNode>>().ToArray();
-            Dictionary<string, Group<Word, ShapeNode>> groups = groupOrder.ToDictionary(g => g.Name);
-            _pattern = new Pattern<Word, ShapeNode>();
-            foreach (
-                PatternNode<Word, ShapeNode> node in pattern.Children.TakeWhile(n => !(n is Group<Word, ShapeNode>))
-            )
+            Group<Word, int>[] groupOrder = pattern.Children.OfType<Group<Word, int>>().ToArray();
+            Dictionary<string, Group<Word, int>> groups = groupOrder.ToDictionary(g => g.Name);
+            _pattern = new Pattern<Word, int>();
+            foreach (PatternNode<Word, int> node in pattern.Children.TakeWhile(n => !(n is Group<Word, int>)))
             {
                 _pattern.Children.Add(node.Clone());
             }
@@ -35,9 +33,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             AddGroup(groups, rightGroupName);
 
             foreach (
-                PatternNode<Word, ShapeNode> node in pattern
+                PatternNode<Word, int> node in pattern
                     .Children.GetNodes(Direction.RightToLeft)
-                    .TakeWhile(n => !(n is Group<Word, ShapeNode>))
+                    .TakeWhile(n => !(n is Group<Word, int>))
                     .Reverse()
             )
             {
@@ -46,41 +44,43 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _pattern.Freeze();
         }
 
-        private void AddGroup(Dictionary<string, Group<Word, ShapeNode>> groups, string name)
+        private void AddGroup(Dictionary<string, Group<Word, int>> groups, string name)
         {
-            var newGroup = new Group<Word, ShapeNode>(name);
-            foreach (
-                Constraint<Word, ShapeNode> constraint in groups[name].Children.Cast<Constraint<Word, ShapeNode>>()
-            )
+            var newGroup = new Group<Word, int>(name);
+            foreach (Constraint<Word, int> constraint in groups[name].Children.Cast<Constraint<Word, int>>())
             {
-                Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
+                Constraint<Word, int> newConstraint = constraint.Clone();
                 newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
                 newGroup.Children.Add(newConstraint);
             }
             _pattern.Children.Add(newGroup);
         }
 
-        public Pattern<Word, ShapeNode> Pattern
+        public Pattern<Word, int> Pattern
         {
             get { return _pattern; }
         }
 
         public bool MatchSubrule(
             PhonologicalPatternRule rule,
-            Match<Word, ShapeNode> match,
+            Match<Word, int> match,
             out PhonologicalSubruleMatch subruleMatch
         )
         {
-            subruleMatch = new PhonologicalSubruleMatch(this, match.Range, match.VariableBindings);
+            subruleMatch = new PhonologicalSubruleMatch(
+                this,
+                match.Input.Shape.ToShapeRange(match.Range),
+                match.VariableBindings
+            );
             return true;
         }
 
-        Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.LeftEnvironmentMatcher
+        Matcher<Word, int> IPhonologicalPatternSubruleSpec.LeftEnvironmentMatcher
         {
             get { return null; }
         }
 
-        Matcher<Word, ShapeNode> IPhonologicalPatternSubruleSpec.RightEnvironmentMatcher
+        Matcher<Word, int> IPhonologicalPatternSubruleSpec.RightEnvironmentMatcher
         {
             get { return null; }
         }
@@ -91,24 +91,26 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         }
 
         void IPhonologicalPatternSubruleSpec.ApplyRhs(
-            Match<Word, ShapeNode> targetMatch,
+            Match<Word, int> targetMatch,
             Range<ShapeNode> range,
             VariableBindings varBindings
         )
         {
-            ShapeNode start = null,
-                end = null;
-            foreach (GroupCapture<ShapeNode> gc in targetMatch.GroupCaptures)
+            int? startTag = null,
+                endTag = null;
+            foreach (GroupCapture<int> gc in targetMatch.GroupCaptures)
             {
-                if (start == null || gc.Range.Start.CompareTo(start) < 0)
-                    start = gc.Range.Start;
-                if (end == null || gc.Range.End.CompareTo(end) > 0)
-                    end = gc.Range.End;
+                if (!gc.Success)
+                    continue;
+                if (startTag == null || gc.Range.Start < startTag)
+                    startTag = gc.Range.Start;
+                if (endTag == null || gc.Range.End > endTag)
+                    endTag = gc.Range.End;
             }
-            Debug.Assert(start != null && end != null);
+            Debug.Assert(startTag != null && endTag != null);
 
-            GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
-            GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
+            GroupCapture<int> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
+            GroupCapture<int> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
             foreach (
                 Tuple<ShapeNode, ShapeNode> tuple in targetMatch

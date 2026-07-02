@@ -10,33 +10,40 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
     {
         public IterativePhonologicalPatternRule(
             IPhonologicalPatternRuleSpec ruleSpec,
-            MatcherSettings<ShapeNode> matcherSettings
+            MatcherSettings<int> matcherSettings
         )
             : base(ruleSpec, matcherSettings) { }
 
         public override IEnumerable<Word> Apply(Word input)
         {
             bool applied = false;
-            Match<Word, ShapeNode> targetMatch = Matcher.Match(input);
+            Match<Word, int> targetMatch = Matcher.Match(input);
             while (targetMatch.Success)
             {
                 ShapeNode start;
                 PhonologicalSubruleMatch srMatch;
+                // RUSTIFY Stage 2: int offsets in targetMatch.Range go stale once ApplyRhs mutates the
+                // shape (the projection re-densifies), so resolve the directional end/start NODE now —
+                // a ShapeNode handle survives mutation, exactly as the old ShapeNode match range did.
+                // Only one of end/start is ever used per iteration, so resolve it inside its own
+                // branch instead of paying for both NodeAt lookups unconditionally.
                 if (RuleSpec.MatchSubrule(this, targetMatch, out srMatch))
                 {
+                    ShapeNode matchEndNode = input.Shape.GetEndNode(targetMatch.Range, Matcher.Direction);
                     srMatch.SubruleSpec.ApplyRhs(targetMatch, srMatch.Range, srMatch.VariableBindings);
                     applied = true;
-                    start = targetMatch.Range.GetEnd(Matcher.Direction).GetNext(Matcher.Direction);
+                    start = matchEndNode.GetNext(Matcher.Direction);
                 }
                 else
                 {
-                    start = targetMatch.Range.GetStart(Matcher.Direction).GetNext(Matcher.Direction);
+                    ShapeNode matchStartNode = input.Shape.GetStartNode(targetMatch.Range, Matcher.Direction);
+                    start = matchStartNode.GetNext(Matcher.Direction);
                 }
 
                 if (start == null)
                     break;
 
-                targetMatch = Matcher.Match(input, start);
+                targetMatch = Matcher.Match(input, input.Shape.MatchStartOffset(start, Matcher.Direction));
             }
 
             if (applied)

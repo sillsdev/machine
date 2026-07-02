@@ -7,7 +7,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class SynthesisMetathesisRule : IRule<Word, ShapeNode>
+    public class SynthesisMetathesisRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly MetathesisRule _rule;
@@ -20,7 +20,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
             var ruleSpec = new SynthesisMetathesisRuleSpec(rule.Pattern, rule.LeftSwitchName, rule.RightSwitchName);
 
-            var settings = new MatcherSettings<ShapeNode>
+            var settings = new MatcherSettings<int>
             {
                 Direction = rule.Direction,
                 Filter = ann =>

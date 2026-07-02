@@ -1119,7 +1119,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private XElement WritePhoneticTemplate(
-            Pattern<Word, ShapeNode> pattern,
+            Pattern<Word, int> pattern,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable = null,
             string prefix = null
@@ -1134,9 +1134,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             return phonTempElem;
         }
 
-        private bool IsAnchor(PatternNode<Word, ShapeNode> node, FeatureSymbol type)
+        private bool IsAnchor(PatternNode<Word, int> node, FeatureSymbol type)
         {
-            if (node is Constraint<Word, ShapeNode> constraint)
+            if (node is Constraint<Word, int> constraint)
             {
                 return constraint.Type() == HCFeatureSystem.Anchor
                     && (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.AnchorType) == type;
@@ -1146,7 +1146,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private XElement WritePhoneticSequence(
-            Pattern<Word, ShapeNode> pattern,
+            Pattern<Word, int> pattern,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable = null,
             string prefix = null
@@ -1155,20 +1155,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             var seqElem = new XElement("PhoneticSequence");
             if (!string.IsNullOrEmpty(pattern.Name))
                 seqElem.Add(new XAttribute("id", Normalize((prefix ?? "") + pattern.Name)));
-            foreach (PatternNode<Word, ShapeNode> node in pattern.Children)
+            foreach (PatternNode<Word, int> node in pattern.Children)
                 seqElem.Add(WritePatternNodes(node, variables, defaultTable, prefix ?? "", null));
             return seqElem;
         }
 
         private IEnumerable<XElement> WritePatternNodes(
-            PatternNode<Word, ShapeNode> node,
+            PatternNode<Word, int> node,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable,
             string prefix,
             string id
         )
         {
-            if (node is Constraint<Word, ShapeNode> constraint)
+            if (node is Constraint<Word, int> constraint)
             {
                 if (constraint.Tag == null)
                     yield break;
@@ -1187,13 +1187,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 yield break;
             }
 
-            if (node is Quantifier<Word, ShapeNode> quantifier)
+            if (node is Quantifier<Word, int> quantifier)
             {
                 yield return WriteOptionalSegmentSequence(quantifier, variables, defaultTable, id);
                 yield break;
             }
 
-            if (node is Group<Word, ShapeNode> group)
+            if (node is Group<Word, int> group)
             {
                 if (!string.IsNullOrEmpty(group.Name))
                 {
@@ -1219,7 +1219,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 else
                 {
                     // Normal group
-                    foreach (PatternNode<Word, ShapeNode> childNode in group.Children)
+                    foreach (PatternNode<Word, int> childNode in group.Children)
                     {
                         foreach (XElement elem in WritePatternNodes(childNode, variables, defaultTable, prefix, id))
                             yield return elem;
@@ -1277,7 +1277,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         private XElement WriteOptionalSegmentSequence(
-            Quantifier<Word, ShapeNode> quantifier,
+            Quantifier<Word, int> quantifier,
             Dictionary<string, Tuple<string, SymbolicFeature>> variables,
             CharacterDefinitionTable defaultTable,
             string id

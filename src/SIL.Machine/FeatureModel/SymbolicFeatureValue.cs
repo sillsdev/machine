@@ -94,6 +94,18 @@ namespace SIL.Machine.FeatureModel
             get { return _feature.PossibleSymbols.Where(_flags.Get); }
         }
 
+        // For the flat bit-packed unify fast path: this value's allowed symbols as a raw ulong
+        // bitset. Returns false (forcing the slow path) for variables or non-ulong (>64 symbol)
+        // backing, or an empty set (so a fs-only empty value can't be wrongly skipped).
+        internal bool TryGetFlatBits(out ulong bits)
+        {
+            bits = 0;
+            if (IsVariable || !(_flags is UlongSymbolicFeatureValueFlags ulong_flags))
+                return false;
+            bits = ulong_flags.RawFlags;
+            return bits != 0;
+        }
+
         public bool IsSupersetOf(SymbolicFeatureValue other, bool notOther = false)
         {
             return IsSupersetOf(false, other, notOther);

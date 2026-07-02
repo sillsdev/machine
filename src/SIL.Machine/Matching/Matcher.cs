@@ -19,6 +19,12 @@ namespace SIL.Machine.Matching
         private Fst<TData, TOffset> _fsa;
         private readonly IEqualityComparer<Match<TData, TOffset>> _matchComparer;
 
+        // Memoizes match.ID -> split parts. IDs come from the (fixed, small) set of accepting-state
+        // labels, so re-splitting the same string on every result is wasted allocation. The matcher is
+        // shared read-only across parallel parses, so the cache must be concurrent.
+        private readonly System.Collections.Concurrent.ConcurrentDictionary<string, string[]> _idSplitCache =
+            new System.Collections.Concurrent.ConcurrentDictionary<string, string[]>();
+
         public Matcher(Pattern<TData, TOffset> pattern)
             : this(pattern, new MatcherSettings<TOffset>()) { }
 
@@ -201,7 +207,9 @@ namespace SIL.Machine.Matching
                 matchRange,
                 input,
                 groupCaptures,
-                string.IsNullOrEmpty(match.ID) ? new string[0] : match.ID.Split('*'),
+                string.IsNullOrEmpty(match.ID)
+                    ? Array.Empty<string>()
+                    : _idSplitCache.GetOrAdd(match.ID, id => id.Split('*')),
                 match.VariableBindings,
                 match.NextAnnotation
             );

@@ -12,16 +12,12 @@ namespace SIL.Machine.Morphology.HermitCrab
     public class AllomorphEnvironment : IEquatable<AllomorphEnvironment>
     {
         private readonly ConstraintType _type;
-        private readonly Pattern<Word, ShapeNode> _leftEnv;
-        private readonly Matcher<Word, ShapeNode> _leftEnvMatcher;
-        private readonly Pattern<Word, ShapeNode> _rightEnv;
-        private readonly Matcher<Word, ShapeNode> _rightEnvMatcher;
+        private readonly Pattern<Word, int> _leftEnv;
+        private readonly Matcher<Word, int> _leftEnvMatcher;
+        private readonly Pattern<Word, int> _rightEnv;
+        private readonly Matcher<Word, int> _rightEnvMatcher;
 
-        public AllomorphEnvironment(
-            ConstraintType type,
-            Pattern<Word, ShapeNode> leftEnv,
-            Pattern<Word, ShapeNode> rightEnv
-        )
+        public AllomorphEnvironment(ConstraintType type, Pattern<Word, int> leftEnv, Pattern<Word, int> rightEnv)
         {
             _type = type;
             if (leftEnv != null && !leftEnv.IsLeaf)
@@ -29,9 +25,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!leftEnv.IsFrozen)
                     throw new ArgumentException("The pattern is not frozen.", "leftEnv");
                 _leftEnv = leftEnv;
-                _leftEnvMatcher = new Matcher<Word, ShapeNode>(
+                _leftEnvMatcher = new Matcher<Word, int>(
                     leftEnv,
-                    new MatcherSettings<ShapeNode>
+                    new MatcherSettings<int>
                     {
                         AnchoredToStart = true,
                         Direction = Direction.RightToLeft,
@@ -47,9 +43,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (!rightEnv.IsFrozen)
                     throw new ArgumentException("The pattern is not frozen.", "rightEnv");
                 _rightEnv = rightEnv;
-                _rightEnvMatcher = new Matcher<Word, ShapeNode>(
+                _rightEnvMatcher = new Matcher<Word, int>(
                     rightEnv,
-                    new MatcherSettings<ShapeNode>
+                    new MatcherSettings<int>
                     {
                         AnchoredToStart = true,
                         Filter = ann =>
@@ -68,12 +64,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public string Name { get; set; }
 
-        public Pattern<Word, ShapeNode> LeftEnvironment
+        public Pattern<Word, int> LeftEnvironment
         {
             get { return _leftEnv; }
         }
 
-        public Pattern<Word, ShapeNode> RightEnvironment
+        public Pattern<Word, int> RightEnvironment
         {
             get { return _rightEnv; }
         }
@@ -87,10 +83,24 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private bool IsMatch(Word word, Annotation<ShapeNode> morph)
         {
-            if (_leftEnvMatcher != null && !_leftEnvMatcher.IsMatch(word, morph.Range.Start.Prev))
+            // RUSTIFY Stage 2: the env matchers are Matcher<Word,int>; pass the bracketing node's
+            // direction-aware start offset (left env matches RtL, right env LtR — see the ctor).
+            if (
+                _leftEnvMatcher != null
+                && !_leftEnvMatcher.IsMatch(
+                    word,
+                    word.Shape.MatchStartOffset(morph.Range.Start.Prev, Direction.RightToLeft)
+                )
+            )
                 return false;
 
-            if (_rightEnvMatcher != null && !_rightEnvMatcher.IsMatch(word, morph.Range.End.Next))
+            if (
+                _rightEnvMatcher != null
+                && !_rightEnvMatcher.IsMatch(
+                    word,
+                    word.Shape.MatchStartOffset(morph.Range.End.Next, Direction.LeftToRight)
+                )
+            )
                 return false;
 
             return true;

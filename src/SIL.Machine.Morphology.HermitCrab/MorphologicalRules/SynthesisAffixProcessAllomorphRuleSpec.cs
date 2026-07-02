@@ -8,17 +8,17 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisAffixProcessAllomorphRuleSpec : IPatternRuleSpec<Word, ShapeNode>
+    public class SynthesisAffixProcessAllomorphRuleSpec : IPatternRuleSpec<Word, int>
     {
         private readonly AffixProcessAllomorph _allomorph;
-        private readonly Pattern<Word, ShapeNode> _pattern;
+        private readonly Pattern<Word, int> _pattern;
         private readonly HashSet<MorphologicalOutputAction> _nonAllomorphActions;
 
         public SynthesisAffixProcessAllomorphRuleSpec(AffixProcessAllomorph allomorph)
         {
             _allomorph = allomorph;
 
-            IList<Pattern<Word, ShapeNode>> lhs = _allomorph.Lhs;
+            IList<Pattern<Word, int>> lhs = _allomorph.Lhs;
             IList<MorphologicalOutputAction> rhs = _allomorph.Rhs;
             _nonAllomorphActions = new HashSet<MorphologicalOutputAction>();
             var redupParts = new List<List<MorphologicalOutputAction>>();
@@ -119,12 +119,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
             }
 
-            _pattern = new Pattern<Word, ShapeNode>();
-            foreach (Pattern<Word, ShapeNode> part in lhs)
-                _pattern.Children.Add(new Group<Word, ShapeNode>(part.Name, part.Children.CloneItems()));
+            _pattern = new Pattern<Word, int>();
+            foreach (Pattern<Word, int> part in lhs)
+                _pattern.Children.Add(new Group<Word, int>(part.Name, part.Children.CloneItems()));
         }
 
-        public Pattern<Word, ShapeNode> Pattern
+        public Pattern<Word, int> Pattern
         {
             get { return _pattern; }
         }
@@ -134,7 +134,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             return true;
         }
 
-        public Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
+        public Word ApplyRhs(PatternRule<Word, int> rule, Match<Word, int> match)
         {
             Word output = match.Input.Clone();
             output.Shape.Clear();

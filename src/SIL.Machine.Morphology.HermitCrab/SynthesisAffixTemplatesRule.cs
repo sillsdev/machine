@@ -7,12 +7,12 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisAffixTemplatesRule : IRule<Word, ShapeNode>
+    internal class SynthesisAffixTemplatesRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly Stratum _stratum;
         private readonly List<AffixTemplate> _templates;
-        private readonly List<IRule<Word, ShapeNode>> _templateRules;
+        private readonly List<IRule<Word, int>> _templateRules;
 
         public SynthesisAffixTemplatesRule(Morpher morpher, Stratum stratum)
         {

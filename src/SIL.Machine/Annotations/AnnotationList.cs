@@ -17,6 +17,81 @@ namespace SIL.Machine.Annotations
         private int _currentID;
         private readonly Annotation<TOffset> _parent;
         private int _hashCode;
+        private int _version;
+
+        /// <summary>
+        /// Monotonically increments on every structural change (add/remove/clear). Lets a consumer
+        /// (e.g. <see cref="Shape"/>'s lazily-built <c>int</c>-offset annotation projection) cheaply
+        /// detect when a cached derivative is stale without diffing the list.
+        /// </summary>
+        internal int Version
+        {
+            get { return _version; }
+        }
+
+        /// <summary>
+        /// Bumps <see cref="Version"/> for a non-structural change that a cached derivative still
+        /// depends on. Specifically: <see cref="Shape"/>'s int-offset projection copies each
+        /// annotation's <see cref="Annotation{TOffset}.Optional"/> flag <em>by value</em>, so flipping
+        /// Optional (during analysis/unapplication) must invalidate that cache even though the list
+        /// structure is unchanged. <see cref="Annotation{TOffset}.Optional"/>'s setter calls this on
+        /// the root list.
+        /// </summary>
+        internal void IncrementVersion()
+        {
+            _version++;
+        }
+
+        // Cache of filtered+direction-sorted annotation views for FST traversal (see
+        // TraversalMethodBase.Reset). Only populated on FROZEN lists — a frozen list (and its
+        // annotations' FeatureStructs) is immutable, so the filtered view is final; for unfrozen
+        // lists a rule's in-place FeatureStruct edit could silently invalidate a cached view, so
+        // they never cache. Keyed by filter-delegate reference: filters come from a handful of
+        // compiler-cached non-capturing lambdas (one per rule-class call site), so the chain stays
+        // tiny (≤ filters × directions). Lock-free CAS publish; a lost race just rebuilds once.
+        private sealed class FilteredView
+        {
+            internal readonly object Filter;
+            internal readonly Direction Direction;
+            internal readonly List<Annotation<TOffset>> Annotations;
+            internal readonly FilteredView Next;
+
+            internal FilteredView(
+                object filter,
+                Direction direction,
+                List<Annotation<TOffset>> annotations,
+                FilteredView next
+            )
+            {
+                Filter = filter;
+                Direction = direction;
+                Annotations = annotations;
+                Next = next;
+            }
+        }
+
+        private FilteredView _filteredViews;
+
+        internal List<Annotation<TOffset>> GetFilteredView(object filter, Direction dir)
+        {
+            for (FilteredView v = _filteredViews; v != null; v = v.Next)
+            {
+                if (ReferenceEquals(v.Filter, filter) && v.Direction == dir)
+                    return v.Annotations;
+            }
+            return null;
+        }
+
+        internal void AddFilteredView(object filter, Direction dir, List<Annotation<TOffset>> annotations)
+        {
+            while (true)
+            {
+                FilteredView head = _filteredViews;
+                var entry = new FilteredView(filter, dir, annotations, head);
+                if (System.Threading.Interlocked.CompareExchange(ref _filteredViews, entry, head) == head)
+                    return;
+            }
+        }
 
         public AnnotationList()
             : base(new AnnotationComparer(), begin => new Annotation<TOffset>(Range<TOffset>.Null)) { }
@@ -121,6 +196,7 @@ namespace SIL.Machine.Annotations
         public void Add(Annotation<TOffset> node, bool subsume)
         {
             CheckFrozen();
+            _version++;
             if (_parent != null && !_parent.Range.Contains(node.Range))
             {
                 throw new ArgumentException(
@@ -160,6 +236,7 @@ namespace SIL.Machine.Annotations
         public bool Remove(Annotation<TOffset> node, bool preserveChildren)
         {
             CheckFrozen();
+            _version++;
             if (base.Remove(node))
             {
                 if (preserveChildren)
@@ -281,6 +358,7 @@ namespace SIL.Machine.Annotations
         public override void Clear()
         {
             CheckFrozen();
+            _version++;
             base.Clear();
         }
 

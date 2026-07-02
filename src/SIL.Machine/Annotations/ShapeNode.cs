@@ -7,8 +7,17 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Annotations
 {
+    /// <summary>
+    /// A node in a <see cref="Shape"/>. As of the RUSTIFY flat-shape rework (Phase 3b-impl, Stage 1)
+    /// this is a <em>handle</em> into its owning <see cref="Shape"/>'s flat backing arrays rather than a
+    /// self-contained doubly-linked-list node: the prev/next links and the frozen flag live in the owner
+    /// arrays addressed by <see cref="Index"/>. The handle object added to a shape is stored as the
+    /// canonical one-per-slot handle, so reference identity (and therefore <c>==</c>, dictionary keys and
+    /// <see cref="Range{TOffset}"/> endpoint identity) is preserved exactly as before. <see cref="Tag"/>
+    /// stays on the node so it survives a node being moved between shapes.
+    /// </summary>
     public class ShapeNode
-        : OrderedBidirListNode<ShapeNode>,
+        : IOrderedBidirListNode<ShapeNode>,
             IComparable<ShapeNode>,
             IComparable,
             ICloneable<ShapeNode>,
@@ -17,11 +26,29 @@ namespace SIL.Machine.Annotations
     {
         private readonly Annotation<ShapeNode> _ann;
         private int _tag;
+        private bool _detachedFrozen;
+
+        // Equals() is intentionally left as the default (reference equality) — ShapeNode is used as
+        // an identity key in Shape.EnsureIntProjection's per-Freeze() Dictionary<ShapeNode, int>
+        // (_nodeOffset). A CPU profile showed the CLR's identity-hash fallback (assigned via
+        // AssignOffset's dictionary inserts) contributing real self-time on that hot per-word path.
+        // _id is a construction-order sequence number, immutable for the instance's lifetime (unlike
+        // _tag/Index, which are reassigned as the node moves/is frozen), so it changes nothing about
+        // which nodes compare equal.
+        private static int NextId;
+        private readonly int _id = System.Threading.Interlocked.Increment(ref NextId);
+
+        // The owning shape, or null when this node is detached (created but not yet added, or removed).
+        internal Shape Owner { get; set; }
+
+        // Slot index into the owner's flat arrays; -1 when detached.
+        internal int Index { get; set; }
 
         public ShapeNode(FeatureStruct fs)
         {
             _ann = new Annotation<ShapeNode>(Range<ShapeNode>.Create(this), fs);
             _tag = int.MinValue;
+            Index = -1;
         }
 
         protected ShapeNode(ShapeNode node)
@@ -43,6 +70,54 @@ namespace SIL.Machine.Annotations
         public Annotation<ShapeNode> Annotation
         {
             get { return _ann; }
+        }
+
+        public IBidirList<ShapeNode> List
+        {
+            get { return Owner; }
+        }
+
+        public ShapeNode Next
+        {
+            get { return Owner?.GetNextLink(Index); }
+        }
+
+        public ShapeNode Prev
+        {
+            get { return Owner?.GetPrevLink(Index); }
+        }
+
+        public ShapeNode GetNext(Direction dir)
+        {
+            if (Owner == null)
+                return null;
+            return Owner.GetNext(this, dir);
+        }
+
+        public ShapeNode GetPrev(Direction dir)
+        {
+            if (Owner == null)
+                return null;
+            return Owner.GetPrev(this, dir);
+        }
+
+        public bool Remove()
+        {
+            if (Owner == null)
+                return false;
+            return Owner.Remove(this);
+        }
+
+        public void AddAfter(ShapeNode newNode, Direction dir)
+        {
+            if (Owner == null)
+                return;
+            Owner.AddAfter(this, newNode, dir);
+        }
+
+        public void AddAfter(ShapeNode newNode)
+        {
+            AddAfter(newNode, Direction.LeftToRight);
         }
 
         public int CompareTo(ShapeNode other)
@@ -113,13 +188,31 @@ namespace SIL.Machine.Annotations
                 throw new InvalidOperationException("The shape node is immutable.");
         }
 
-        public bool IsFrozen { get; private set; }
+        public bool IsFrozen
+        {
+            get { return Owner != null ? Owner.IsNodeFrozen(Index) : _detachedFrozen; }
+        }
 
         public void Freeze()
         {
             if (IsFrozen)
                 return;
-            IsFrozen = true;
+            if (Owner != null)
+                Owner.SetNodeFrozen(Index);
+            else
+                _detachedFrozen = true;
+        }
+
+        // Called by Shape.Detach when a frozen node is removed/cleared, so IsFrozen keeps reporting
+        // true for the node's remaining (now-detached) lifetime instead of silently flipping to false.
+        internal void MarkDetachedFrozen()
+        {
+            _detachedFrozen = true;
+        }
+
+        public override int GetHashCode()
+        {
+            return _id;
         }
 
         public int GetFrozenHashCode()

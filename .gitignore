@@ -55,3 +55,13 @@ tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
 tests/SIL.Machine.Tests/Corpora/TestData/project/*
 tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 .idea
+
+# Local-only HermitCrab benchmark fixtures (real Sena/Indonesian grammars + word lists, used
+# for ad hoc perf/allocation testing) + FieldWorks project backups. Large and/or not licensed
+# for this repo, so they stay untracked; any [Explicit] benchmark that wants them falls back to
+# the tracked samples/data/en-hc.xml when they're absent.
+*.fwbackup
+samples/data/sena-hc.xml
+samples/data/sena-words.txt
+samples/data/indonesian-hc.xml
+samples/data/indonesian-words.txt

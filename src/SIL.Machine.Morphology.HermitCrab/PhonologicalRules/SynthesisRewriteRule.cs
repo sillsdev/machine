@@ -8,7 +8,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class SynthesisRewriteRule : IRule<Word, ShapeNode>
+    public class SynthesisRewriteRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly RewriteRule _rule;
@@ -19,7 +19,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             _morpher = morpher;
             _rule = rule;
 
-            var settings = new MatcherSettings<ShapeNode>
+            var settings = new MatcherSettings<int>
             {
                 Direction = rule.Direction,
                 Filter = ann =>

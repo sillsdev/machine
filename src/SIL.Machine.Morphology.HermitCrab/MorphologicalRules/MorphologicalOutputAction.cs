@@ -25,8 +25,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         }
 
         public abstract void GenerateAnalysisLhs(
-            Pattern<Word, ShapeNode> analysisLhs,
-            IDictionary<string, Pattern<Word, ShapeNode>> partLookup,
+            Pattern<Word, int> analysisLhs,
+            IDictionary<string, Pattern<Word, int>> partLookup,
             IDictionary<string, int> capturedParts
         );
 
@@ -35,11 +35,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         /// </summary>
         /// <param name="match">The match.</param>
         /// <param name="output">The output word synthesis.</param>
-        public abstract IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output);
+        public abstract IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, int> match, Word output);
 
-        protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<ShapeNode> range)
+        // RUSTIFY Stage 2: range is now an int-offset match/group range; its leftmost node is NodeAt(Start).
+        protected IEnumerable<ShapeNode> GetSkippedOptionalNodes(Shape shape, Range<int> range)
         {
-            ShapeNode node = range.Start.Prev;
+            ShapeNode node = shape.NodeAt(range.Start).Prev;
             var skippedNodes = new List<ShapeNode>();
             while (node.Annotation.Optional)
             {
