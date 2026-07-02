@@ -444,13 +444,30 @@ across rustify's 100-file rewrite is not. Concretely:
 6. **HC0004/HC0008 precision**: self-feeding/cycle detection via unification is
    approximate; acceptable false-positive rate for a Warning? Start conservative
    (high-confidence patterns only), widen with field feedback.
-7. **Sena calibration is based on a ~1% sample (72/7,121 words)**, not a full corpus run
-   (see §4.1) — the worst-observed-word figures used to set `DefaultMaxParseSteps`/
-   `DefaultParseTimeout` are a floor, not a proven ceiling. Re-baseline against the full
-   corpus (accept the multi-hour run, or parallelize it) before treating these as final,
-   and specifically check whether any word exceeds the current 50,000,000-step default.
-8. **`DefaultParseTimeout` = 30s will still truncate some legitimate Sena words** (one
-   observed at 105s). Whether 30s is the right number — vs. a larger default, vs. no
-   default timeout with only a step budget, vs. a per-consumer-tunable-only knob with no
-   shipped default at all — is a real product decision that needs field input, not
-   something this investigation can resolve alone.
+7. **Update 2026-07-02, still open:** a separate investigation (sharded 8-way, Release-mode
+   scan of the full Sena corpus — see `docs/hermitcrab-parse-algorithm-analysis.md`,
+   currently uncommitted on a sibling `parse-optimization` branch, not yet landed here)
+   got much further than this branch's own single-threaded Debug-mode attempt (which was
+   killed after ~1 hour at 283/7,121 words — some individual words alone took 50+ seconds
+   at that build/threading combination, and the earlier ~1% sample already showed the
+   corpus has a long tail). That scan found: p90 ≈ 2,000,000 steps; ~16% of words exceed
+   1,000,000 steps; worst observed so far ≥ 39,900,000 steps (`kukucitirani`) — under the
+   50,000,000-step default, but with much less headroom than the original ~1% sample
+   suggested, and still not confirmed as a true corpus-wide maximum. Re-baselining against
+   a complete, verified full-corpus run (ideally the sharded/Release harness, not this
+   branch's test-suite-based one) remains open.
+8. **Update 2026-07-02, confirmed, not yet resolved:** the same investigation confirms
+   `DefaultParseTimeout` = 30s trips on *dozens* of legitimate Sena words (single-threaded
+   times of 100–250s observed), not just the one word noted in the original finding above.
+   The product-decision question (raise the default? drop it in favor of the step budget
+   alone? make it a no-shipped-default, per-consumer-only knob?) still needs field input.
+9. **New finding, 2026-07-02:** the same investigation reports that `cinacemerwa` — Sena's
+   most expensive known word (37.5M steps, and notably a word that yields *zero* valid
+   parses) — crashed the NUnit test host outright, apparently from memory pressure during
+   candidate-explosion, independent of the step/timeout budgets (which bound *steps*, not
+   *allocations*). This means the current Layer 1/2 budgets do not fully protect against a
+   pathological word exhausting memory before it exhausts its step or time budget. Whether
+   this needs a third bound (e.g. a candidate-count or allocation ceiling) or is
+   sufficiently addressed by the algorithmic fixes under investigation on `parse-optimization`
+   (which would shrink the candidate set directly, see that branch's
+   `docs/hermitcrab-parse-algorithm-analysis.md` §4) is undecided.
