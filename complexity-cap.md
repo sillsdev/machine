@@ -1,6 +1,8 @@
 # Complexity Cap: Bounding Pathological HermitCrab Parses
 
-**Status:** Plan (not started) — sequencing and defaults decided, see §8/§10
+**Status:** Phases 0–3 implemented and committed on `complexity-cap` (stacked on `hc-rustify`,
+see §8); Phase 4 (FieldWorks integration) is a separate follow-up in the FW repo. Sena
+calibration is a ~1% sample pending a full-corpus re-baseline — see §10 items 7–8.
 **Author:** drafted 2026-07-02
 **Related:** PR #446 (hc-rustify performance work), FieldWorks out-of-process HC worker (FW PR #983)
 
@@ -411,13 +413,13 @@ across rustify's 100-file rewrite is not. Concretely:
 
 ## 9. Phases
 
-| Phase | Deliverable | Depends on | Est. size |
-|---|---|---|---|
-| 0 | Branch off `hc-rustify`. Baseline `indonesian`/`sena` on rustify (max steps/time observed → derive generous `MaxParseSteps`/`ParseTimeout` defaults); build 1–2 pathological variants of the indonesian grammar; repro harness | `hc-rustify` | S |
-| 1 | `ParseContext`, `MaxParseSteps` + `ParseTimeout`, soft-stop checks, `ParseDiagnostics` overload, breach re-run with per-rule counters | 0 | M |
-| 2 | `MaxRuleApplicationsPerWord`, `MaxAnalysisShapeGrowth`, cascade depth cap | 1 (shares `ParseContext`) | M |
-| 3 | `GrammarAnalyzer` + HC0001–HC0008, CLI, "Writing performant HC grammars" guide | — (parallelizable) | M–L |
-| 4 | FieldWorks follow-ups: worker DTO status field, FLEx "diagnose word" + parser-report lint surfacing, set conservative caps in HCLoader | 1–3, FW repo | separate effort |
+| Phase | Deliverable | Depends on | Est. size | Status |
+|---|---|---|---|---|
+| 0 | Branch off `hc-rustify`. Baseline `indonesian`/`sena` on rustify (max steps/time observed → derive generous `MaxParseSteps`/`ParseTimeout` defaults); build 1–2 pathological variants of the indonesian grammar; repro harness | `hc-rustify` | S | **Done** (Indonesian fully baselined; Sena ~1% sampled — see §10.7) |
+| 1 | `ParseContext`, `MaxParseSteps` + `ParseTimeout`, soft-stop checks, `ParseDiagnostics` overload, breach re-run with per-rule counters | 0 | M | **Done** (commit b3fd2b55) |
+| 2 | `MaxRuleApplicationsPerWord`, `MaxAnalysisShapeGrowth`, cascade depth cap | 1 (shares `ParseContext`) | M | **Done** (commit e68f0984) |
+| 3 | `GrammarAnalyzer` + HC0001–HC0008, CLI, "Writing performant HC grammars" guide | — (parallelizable) | M–L | **Done** (commit c8a39aeb) |
+| 4 | FieldWorks follow-ups: worker DTO status field, FLEx "diagnose word" + parser-report lint surfacing, set conservative caps in HCLoader | 1–3, FW repo | separate effort | Not started (separate repo) |
 
 ## 10. Open questions
 
