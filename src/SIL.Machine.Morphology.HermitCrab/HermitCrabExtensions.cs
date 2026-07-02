@@ -27,6 +27,34 @@ namespace SIL.Machine.Morphology.HermitCrab
             return (FeatureSymbol)constraint.FeatureStruct.GetValue(HCFeatureSystem.Type);
         }
 
+        /// <summary>
+        /// Whether <paramref name="constraint"/> could satisfy every segment constraint in
+        /// <paramref name="environment"/> — i.e. whether a segment matching <paramref name="constraint"/>
+        /// could itself sit in that environment again. Shared by <see cref="PhonologicalRules.AnalysisRewriteRule"/>
+        /// (which uses it to pick <c>ReapplyType.SelfOpaquing</c> at compile time) and
+        /// <see cref="GrammarAnalyzer"/> (which replicates that exact classification statically to flag
+        /// HC0004 self-feeding rules) — both need the identical rule to stay in sync.
+        /// </summary>
+        internal static bool IsUnifiableWithEnvironment(
+            this Constraint<Word, int> constraint,
+            Pattern<Word, int> environment
+        )
+        {
+            foreach (
+                Constraint<Word, int> envConstraint in environment.GetNodesDepthFirst().OfType<Constraint<Word, int>>()
+            )
+            {
+                if (
+                    envConstraint.Type() == HCFeatureSystem.Segment
+                    && !envConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct)
+                )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         // RUSTIFY Stage 2: the FST binds as Fst<Word,int> and its matcher filters / inspects the
         // shape's int-offset annotation projection (Annotation<int>), which shares the FeatureStruct
         // with the ShapeNode annotations — so these read identically to the ShapeNode overloads.

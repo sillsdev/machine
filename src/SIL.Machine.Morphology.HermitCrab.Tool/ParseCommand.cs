@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ManyConsole;
@@ -8,6 +9,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 internal class ParseCommand : ConsoleCommand
 {
     private readonly HCContext _context;
+    private bool _diagnose;
 
     public ParseCommand(HCContext context)
     {
@@ -16,11 +18,18 @@ internal class ParseCommand : ConsoleCommand
         IsCommand("parse", "Parses a word");
         SkipsCommandSummaryBeforeRunning();
         HasAdditionalArguments(1, "<word>");
+        HasOption(
+            "d|diagnose",
+            "reports step budget usage and the top offending rules for this word (see complexity-cap.md)",
+            o => _diagnose = true
+        );
     }
 
     public override int Run(string[] remainingArguments)
     {
         string word = remainingArguments[0];
+        if (_diagnose)
+            return RunDiagnose(word);
         try
         {
             _context.ParseCount++;
@@ -57,6 +66,52 @@ internal class ParseCommand : ConsoleCommand
             _context.Out.WriteLine("The word contains an invalid segment at position {0}.", ise.Position + 1);
             _context.Out.WriteLine();
             return 1;
+        }
+        finally
+        {
+            _diagnose = false;
+        }
+    }
+
+    private int RunDiagnose(string word)
+    {
+        try
+        {
+            ParseDiagnostics diagnostics = _context.Morpher.RerunWithDiagnostics(word, out IEnumerable<Word> results);
+            int resultCount = results.Count();
+            _context.Out.WriteLine(
+                "\"{0}\": {1} result(s), {2} step(s), {3:F1}ms, budget exhausted: {4}{5}",
+                word,
+                resultCount,
+                diagnostics.StepsUsed,
+                diagnostics.Elapsed.TotalMilliseconds,
+                diagnostics.BudgetExhausted,
+                diagnostics.BudgetExhausted ? $" ({diagnostics.Reason})" : ""
+            );
+            _context.Out.WriteLine("Top rules by application count:");
+            foreach ((IHCRule rule, int applications) in diagnostics.TopRules.Take(10))
+            {
+                double pct = 100.0 * applications / Math.Max(diagnostics.StepsUsed, 1);
+                _context.Out.WriteLine(
+                    "  {0,8} ({1,5:F1}%)  {2} '{3}'",
+                    applications,
+                    pct,
+                    rule.GetType().Name,
+                    rule.Name
+                );
+            }
+            _context.Out.WriteLine();
+            return 0;
+        }
+        catch (InvalidShapeException ise)
+        {
+            _context.Out.WriteLine("The word contains an invalid segment at position {0}.", ise.Position + 1);
+            _context.Out.WriteLine();
+            return 1;
+        }
+        finally
+        {
+            _diagnose = false;
         }
     }
 

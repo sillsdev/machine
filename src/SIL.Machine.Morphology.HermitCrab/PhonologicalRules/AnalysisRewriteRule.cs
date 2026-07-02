@@ -54,8 +54,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                             if (constraint.Type() == HCFeatureSystem.Segment)
                             {
                                 if (
-                                    !IsUnifiable(constraint, sr.LeftEnvironment)
-                                    || !IsUnifiable(constraint, sr.RightEnvironment)
+                                    !constraint.IsUnifiableWithEnvironment(sr.LeftEnvironment)
+                                    || !constraint.IsUnifiableWithEnvironment(sr.RightEnvironment)
                                 )
                                 {
                                     reapplyType = ReapplyType.SelfOpaquing;
@@ -100,22 +100,6 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
                 _rules.Add(Tuple.Create(reapplyType, patternRule));
             }
-        }
-
-        private static bool IsUnifiable(Constraint<Word, int> constraint, Pattern<Word, int> env)
-        {
-            foreach (Constraint<Word, int> curConstraint in env.GetNodesDepthFirst().OfType<Constraint<Word, int>>())
-            {
-                if (
-                    curConstraint.Type() == HCFeatureSystem.Segment
-                    && !curConstraint.FeatureStruct.IsUnifiable(constraint.FeatureStruct)
-                )
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private bool ExceedsShapeGrowth(Word data)

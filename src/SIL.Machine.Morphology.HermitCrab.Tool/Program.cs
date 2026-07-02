@@ -92,6 +92,7 @@ internal class Program
             new TracingCommand(context),
             new TestCommand(context),
             new StatsCommand(context),
+            new LintCommand(context),
         };
 
         string input;

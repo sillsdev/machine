@@ -10,14 +10,6 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     public sealed class ParseDiagnostics
     {
-        public static readonly ParseDiagnostics None = new ParseDiagnostics(
-            false,
-            ParseExhaustionReason.None,
-            0,
-            TimeSpan.Zero,
-            null
-        );
-
         internal ParseDiagnostics(
             bool budgetExhausted,
             ParseExhaustionReason reason,

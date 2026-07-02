@@ -82,19 +82,31 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// Generous default for <see cref="MaxParseSteps"/>, calibrated against the real Indonesian/Sena
-        /// grammars on the rustify engine (see complexity-cap.md Phase 0): observed legitimate max was
-        /// ~13,600 steps (Sena), so this ships ~150x above that ceiling — effectively invisible for real
-        /// grammars but still finite. 0 disables the step budget.
+        /// Generous default for <see cref="MaxParseSteps"/>. Calibrated against the real Indonesian
+        /// (~2,500-line grammar, worst observed word ~10,400 steps) and Sena (~33,000-line grammar, worst
+        /// observed word so far 14,905,517 steps / 105.3s, from a partial corpus sample) grammars — see
+        /// complexity-cap.md Phase 0. Legitimate cost varies by roughly 1000x between these two grammars
+        /// because Sena's agglutinative verb morphology combines many candidate affix slots, so this is set
+        /// with headroom above the largest legitimate word seen so far rather than as a fixed multiple of
+        /// Indonesian's ceiling. Because only ~1% of the Sena corpus has been sampled, this should be
+        /// re-validated against a full corpus run before being treated as final. In practice
+        /// <see cref="DefaultParseTimeout"/> is expected to trip before this does for slow-but-legitimate
+        /// words, since step cost and wall-clock time track closely (~140k steps/sec observed on Sena); this
+        /// step budget mainly exists to catch algorithmically cheap infinite loops. 0 disables the step
+        /// budget.
         /// </summary>
-        public const int DefaultMaxParseSteps = 2_000_000;
+        public const int DefaultMaxParseSteps = 50_000_000;
 
         /// <summary>
-        /// Generous default for <see cref="ParseTimeout"/> — a backstop far above any observed legitimate
-        /// single-word parse time on the rustify engine, but still bounded so one pathological word cannot
-        /// stall a "Parse All Words" batch indefinitely. <see cref="TimeSpan.Zero"/> disables the timeout.
+        /// Generous default for <see cref="ParseTimeout"/>. This is a genuine product tradeoff, not just a
+        /// safety margin: real Sena words have been observed taking 100+ seconds to parse legitimately (see
+        /// <see cref="DefaultMaxParseSteps"/>), so any finite timeout will occasionally cut off a real parse
+        /// on grammars like Sena. 30 seconds is chosen as generous enough for the vast majority of legitimate
+        /// words while still bounding worst-case per-word latency in a "Parse All Words" batch to something
+        /// human-tolerable. Consumers with expensive grammars and no batch-latency constraint should raise
+        /// this. <see cref="TimeSpan.Zero"/> disables the timeout.
         /// </summary>
-        public static readonly TimeSpan DefaultParseTimeout = TimeSpan.FromSeconds(10);
+        public static readonly TimeSpan DefaultParseTimeout = TimeSpan.FromSeconds(30);
 
         public int DeletionReapplications { get; set; }
 
@@ -279,9 +291,6 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private static ParseDiagnostics CreateParseDiagnostics(ParseContext parseContext)
         {
-            if (!parseContext.Exhausted)
-                return ParseDiagnostics.None;
-
             IReadOnlyList<(IHCRule Rule, int Applications)> topRules = null;
             if (parseContext.DiagnosticsEnabled)
             {
@@ -292,7 +301,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
 
             return new ParseDiagnostics(
-                true,
+                parseContext.Exhausted,
                 parseContext.Reason,
                 parseContext.StepsUsed,
                 parseContext.Elapsed,

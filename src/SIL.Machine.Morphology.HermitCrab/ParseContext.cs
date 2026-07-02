@@ -73,9 +73,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (rule != null && _ruleCounters != null)
                 _ruleCounters.AddOrUpdate(rule, 1, (_, count) => count + 1);
 
-            if (_maxSteps <= 0 && _timeoutTicks < 0)
-                return true;
-
+            // Always counted, even when both limits are disabled: StepsUsed must reflect real work
+            // (calibration/diagnostics rely on it), and a single Interlocked.Increment is the "steady-
+            // state cost ~one counter increment per rule application" the design promises either way.
             int steps = Interlocked.Increment(ref _steps);
             if (_maxSteps > 0 && steps >= _maxSteps)
             {

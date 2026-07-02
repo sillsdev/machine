@@ -92,15 +92,49 @@ the exact failure mode this plan exists to fix — an unbounded parse — remain
 out-of-the-box behavior. A generous cap that never fires for legitimate grammars but
 reliably kills runaway ones is strictly better than silence.
 
-Concrete numbers are calibrated in Phase 0 against the real corpus (§7), not guessed
-here, but the target shape is: run every word in `indonesian-words.txt` (121 words) and
-`sena-words.txt` (7,121 words) against their respective grammars on the rustify engine,
-take the observed max step count / max wall-clock time across that legitimate corpus,
-and set the default to a large multiple of that ceiling (e.g. 50–100×) so it is
-effectively invisible for real grammars but still finite. `ParseTimeout` defaults
-similarly, e.g. a flat few seconds per word — generous for interactive/FLEx single-word
-parses, still bounded for "Parse All Words" batches where one stuck word must not stall
-the run indefinitely.
+**Calibration results (2026-07-02, partial — see caveat below):** running the real
+corpus against the rustify engine shows legitimate cost varies by roughly **1000x**
+between the two grammars, which broke the original "large multiple of Indonesian's
+ceiling" plan:
+
+- `indonesian-words.txt` (121 words, 2,563-line grammar): worst observed word
+  (`mengamat-amati`, a reduplicated compound) took **10,445 steps**. `hc lint` reports
+  this grammar as clean (2 `HC0006` warnings, 0 errors), and `RerunWithDiagnostics`
+  shows the cost is a **flat distribution across ~10 rules** (~6.5% each) — legitimate
+  combinatorial interaction from compounding + reduplication, not one bad rule.
+- `sena-words.txt` (7,121 words, 33,091-line grammar): also lint-clean, but far more
+  expensive per word. The worst word sampled so far, `atawirambo`, took **14,905,517
+  steps / 105.3 seconds** — a successful, legitimate parse with the same flat
+  multi-rule-interaction shape (Sena's agglutinative verb morphology stacks many
+  candidate subject/tense/object affix slots). A separate word, `ndinakupangani`, hit
+  the (now-superseded) 10-second default timeout at only 99,584 steps, i.e. a real word
+  was previously getting truncated by the shipped default.
+- Because a full Sena run takes hours (many individual words take 10s–100+ seconds),
+  **only ~1% of the Sena corpus (72/7,121 words) has actually been sampled.** The
+  14,905,517-step figure is the worst seen so far, not a proven ceiling — this should be
+  re-baselined against the full corpus before the shipped defaults are treated as final.
+
+Given this, the "50–100x a single grammar's ceiling" heuristic below doesn't transfer
+across grammars of very different size/complexity — a multiplier calibrated on
+Indonesian would be irrelevant to Sena's scale, and a multiplier large enough for Sena
+would be absurd for Indonesian. Shipped defaults (`Morpher.DefaultMaxParseSteps` =
+50,000,000, `Morpher.DefaultParseTimeout` = 30s) are instead set with headroom above the
+largest *legitimate* word observed so far across both grammars, on the expectation that
+`ParseTimeout` — not the step count — is what actually trips for slow-but-legitimate
+words in practice, since step cost and wall-clock time track closely (~140k steps/sec
+observed on Sena). The step budget mainly exists to catch algorithmically-cheap infinite
+loops, which are cheap enough per step to blow past millions of steps in a fraction of a
+second regardless of a grammar's normal cost profile. See the doc comments on those two
+constants in `Morpher.cs` for the full reasoning. Note the timeout is a genuine, openly
+acknowledged tradeoff, not just a safety margin: at 30s it will still occasionally
+truncate an expensive-but-legitimate Sena word; raising it protects those words at the
+cost of a slower worst-case "Parse All Words" batch.
+
+Original target shape (superseded by the above, kept for history): run every word in
+`indonesian-words.txt` and `sena-words.txt` against their respective grammars, take the
+observed max step count / max wall-clock time across that legitimate corpus, and set the
+default to a large multiple of that ceiling (e.g. 50–100×) so it is effectively invisible
+for real grammars but still finite.
 
 ### 4.2 Per-parse context, propagated like `CurrentTrace`
 
@@ -408,3 +442,13 @@ across rustify's 100-file rewrite is not. Concretely:
 6. **HC0004/HC0008 precision**: self-feeding/cycle detection via unification is
    approximate; acceptable false-positive rate for a Warning? Start conservative
    (high-confidence patterns only), widen with field feedback.
+7. **Sena calibration is based on a ~1% sample (72/7,121 words)**, not a full corpus run
+   (see §4.1) — the worst-observed-word figures used to set `DefaultMaxParseSteps`/
+   `DefaultParseTimeout` are a floor, not a proven ceiling. Re-baseline against the full
+   corpus (accept the multi-hour run, or parallelize it) before treating these as final,
+   and specifically check whether any word exceeds the current 50,000,000-step default.
+8. **`DefaultParseTimeout` = 30s will still truncate some legitimate Sena words** (one
+   observed at 105s). Whether 30s is the right number — vs. a larger default, vs. no
+   default timeout with only a step budget, vs. a per-consumer-tunable-only knob with no
+   shipped default at all — is a real product decision that needs field input, not
+   something this investigation can resolve alone.
