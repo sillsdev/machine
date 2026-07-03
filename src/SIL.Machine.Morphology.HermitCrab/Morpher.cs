@@ -27,6 +27,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
+        private bool _gatherCorpusStatistics = false;
 
         public Morpher(ITraceManager traceManager, Language lang)
         {
@@ -85,6 +86,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
+        public bool GatherCorpusStatistics
+        {
+            get { return _gatherCorpusStatistics; }
+            set
+            {
+                _gatherCorpusStatistics = value;
+                ClearRuleStats();
+            }
+        }
+
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
 
@@ -120,8 +131,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
             trace = input.CurrentTrace;
-            ((InstrumentedRule<Word, ShapeNode>)_analysisRule).ClearStats();
-            ((InstrumentedRule<Word, ShapeNode>)_synthesisRule).ClearStats();
+            if (!GatherCorpusStatistics)
+            {
+                ClearRuleStats();
+            }
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
