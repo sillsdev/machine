@@ -9,7 +9,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisRealizationalAffixProcessRule : IRule<Word, int>
+    public class SynthesisRealizationalAffixProcessRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly RealizationalAffixProcessRule _rule;
@@ -17,6 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public SynthesisRealizationalAffixProcessRule(Morpher morpher, RealizationalAffixProcessRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
             _rules = new List<PatternRule<Word, int>>();
@@ -38,7 +39,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             }
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
@@ -146,6 +147,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
                     output.Add(outWord);
 
+                    if (_morpher.AccumulateRuleStats)
+                    {
+                        string example = RuleStatsHelper.Example(input);
+                        RecordBucket(RuleStatsHelper.AllomorphGroup, i.ToString(), example);
+                        RecordBucket(RuleStatsHelper.CategoryGroup, RuleStatsHelper.Category(input), example);
+                        RecordBucket(RuleStatsHelper.StemNameGroup, RuleStatsHelper.StemName(input), example);
+                        RecordBucket(RuleStatsHelper.RootDirectGroup, RuleStatsHelper.IsRootDirect(input), example);
+                    }
+
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
                     // environmental constraints until it has a surface form, we will enforce the disjunctive
@@ -168,6 +178,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
             }
 
+            AddRuleStats(output.Count);
             return output;
         }
 

@@ -142,6 +142,23 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
         }
 
+        /// <summary>
+        /// Counts real phonetic segments -- excludes boundary/anchor markers and nodes marked
+        /// <see cref="IsDeleted(ShapeNode)"/> (see parse-optimization.md's Phase 3 note on why deletion
+        /// marks rather than removes a node). Used by <see cref="GrammarAnalyzer"/>'s Phase 4 length-bound
+        /// gates, which reason about how many real segments a candidate could ever justify.
+        /// </summary>
+        internal static int SegmentCount(this Shape shape)
+        {
+            int count = 0;
+            foreach (ShapeNode node in shape)
+            {
+                if (node.Type() == HCFeatureSystem.Segment && !node.IsDeleted())
+                    count++;
+            }
+            return count;
+        }
+
         internal static bool IsIterative(this ShapeNode node)
         {
             return node.Annotation.Data != null;

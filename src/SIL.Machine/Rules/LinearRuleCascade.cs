@@ -26,6 +26,7 @@ namespace SIL.Machine.Rules
         {
             var output = new HashSet<TData>(Comparer);
             ApplyRules(input, 0, output);
+            AddRuleStats(output.Count);
             return output;
         }
 

@@ -81,7 +81,9 @@ namespace SIL.Machine.Rules
                 to = temp;
             }
 
-            return output.Distinct(Comparer);
+            TData[] distinctOutput = output.Distinct(Comparer).ToArray();
+            AddRuleStats(distinctOutput.Length);
+            return distinctOutput;
         }
     }
 }

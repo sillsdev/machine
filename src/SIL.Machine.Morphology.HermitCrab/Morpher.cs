@@ -16,12 +16,37 @@ using System.IO;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
+    /// <remarks>
+    /// <para>
+    /// <b>Corpus-batch hosts running Server GC MUST set a heap hard limit</b> (e.g.
+    /// <c>DOTNET_GCHeapHardLimit</c> or <c>GCHeapHardLimitPercent</c>) when parallelizing across
+    /// words (parse-optimization.md Phase 8, see also <see cref="Morpher(ITraceManager, Language,
+    /// int)"/>'s <c>maxDegreeOfParallelism</c> remarks). Measured 2026-07-03: 16-way concurrency
+    /// with Server GC and no limit reached 45GB on a 64GB host and had to be killed; the same
+    /// workload with <c>DOTNET_GCHeapHardLimit=0x600000000</c> (24GB) completed. A follow-up
+    /// measurement (13 of the heaviest known Sena words, all running concurrently at once --
+    /// a harder case than a real mixed corpus, where lighter words finish early and relieve
+    /// pressure) found this is not always free: wall-clock rose ~30-45% under the same limit
+    /// versus unlimited (e.g. one word went 96.9s → 130.8s) even though every word still
+    /// completed and results stayed byte-identical. The blowup is <em>not</em> the per-parse memo
+    /// tables (<see cref="AnalysisScope.Memo"/>/<see cref="AnalysisScope.TemplateMemo"/>) retaining
+    /// too much -- measured at 6K-8K and 35K-58K stored <see cref="Word"/> instances respectively
+    /// for the heaviest known words, tens of MB at most given <see cref="Shape"/>'s and
+    /// <see cref="FeatureStruct"/>'s copy-on-write sharing -- it is Server GC deferring collection
+    /// of the much larger volume of transient search/replay garbage for throughput, under
+    /// concurrent heavy-word pressure. Set a limit sized to what the host can spare, and expect a
+    /// real (not cosmetic) throughput/memory trade-off under sustained all-heavy concurrent load;
+    /// do not assume the limit is a free safety net on every workload shape.
+    /// </para>
+    /// </remarks>
     public class Morpher : IMorphologicalAnalyzer, IMorphologicalGenerator
     {
         private readonly Language _lang;
         private readonly IRule<Word, int> _analysisRule;
         private readonly IRule<Word, int> _synthesisRule;
         private readonly Dictionary<Stratum, RootAllomorphTrie> _allomorphTries;
+        private readonly Dictionary<Stratum, List<RootAllomorphTrie>> _reachabilityTries;
+        private readonly bool _lexicalGatingQualified;
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
@@ -63,8 +88,23 @@ namespace SIL.Machine.Morphology.HermitCrab
                 morphemes.AddRange(stratum.MorphologicalRules.OfType<AffixProcessRule>());
                 morphemes.AddRange(stratum.AffixTemplates.SelectMany(t => t.Slots).SelectMany(s => s.Rules).Distinct());
             }
+            // parse-optimization.md Phase 5: for each stratum, the tries of itself and every stratum
+            // "deeper" than it -- deeper meaning closer to the root, i.e. earlier in Language.Strata's own
+            // (root-most-first) order, since AnalysisLanguageRule walks strata in the OPPOSITE order
+            // (Reverse(), surface-first) and a candidate currently at stratum S can still be transformed
+            // by every stratum S has yet to reach on its way to the root.
+            _reachabilityTries = new Dictionary<Stratum, List<RootAllomorphTrie>>();
+            var soFar = new List<RootAllomorphTrie>();
+            foreach (Stratum stratum in _lang.Strata)
+            {
+                soFar.Add(_allomorphTries[stratum]);
+                _reachabilityTries[stratum] = new List<RootAllomorphTrie>(soFar);
+            }
+            _lexicalGatingQualified = GrammarAnalyzer.IsEdgeStripperQualified(_lang);
+
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
+            ((InstrumentedRule<Word, int>)_synthesisRule).Name = "Synthesis";
             MaxStemCount = 2;
             MaxUnapplications = 0;
             MergeEquivalentAnalyses = true;
@@ -80,6 +120,56 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         public int DeletionReapplications { get; set; }
+
+        private int? _maxAnalysisLengthOverride;
+        private bool _maxAnalysisLengthOverrideSet;
+
+        /// <summary>
+        /// The longest underlying form (in real segments, i.e. <see cref="HermitCrabExtensions.SegmentCount"/>)
+        /// any analysis candidate can be before it is pruned as unreachable (parse-optimization.md Phase 4's
+        /// "Gate B") -- auto-derived from the grammar (<see cref="GrammarAnalyzer.ComputeMaxAnalysisLength"/>:
+        /// the longest lexicon root plus every rule's own maximum possible insertion) unless explicitly set.
+        /// Setting this (including to <c>null</c>, which disables the gate entirely) overrides the
+        /// auto-derived value; re-derived fresh from the current grammar and <see cref="DeletionReapplications"/>
+        /// on every read otherwise, so it never goes stale if either changes after construction. Auto-derives
+        /// to <c>null</c> (gate off) when the grammar contains a compounding rule or a phonological rule shape
+        /// this analysis can't measure exactly -- see <see cref="GrammarAnalyzer"/>'s remarks.
+        /// </summary>
+        public int? MaxAnalysisLength
+        {
+            get
+            {
+                return _maxAnalysisLengthOverrideSet
+                    ? _maxAnalysisLengthOverride
+                    : GrammarAnalyzer.ComputeMaxAnalysisLength(_lang, DeletionReapplications);
+            }
+            set
+            {
+                _maxAnalysisLengthOverride = value;
+                _maxAnalysisLengthOverrideSet = true;
+            }
+        }
+
+        /// <summary>
+        /// parse-optimization.md Phase 5: prune an analysis subtree before descending into it when no root
+        /// in the current stratum (or any stratum deeper than it) can match ANY contiguous window of the
+        /// candidate's current shape -- see <see cref="GrammarAnalyzer.IsEdgeStripperQualified"/> and
+        /// <see cref="RootAllomorphTrie.ContainsRootAnywhere"/>. <b>Default off</b>, as the plan requires:
+        /// even when set, the gate only actually activates for a given parse when the grammar itself
+        /// qualifies (<see cref="GrammarAnalyzer.IsEdgeStripperQualified"/>, checked once at construction)
+        /// and the call isn't tracing or root-guessing (<see cref="ParseWord(string, out object, bool)"/>'s
+        /// <c>guessRoot</c> synthesizes from lexical PATTERNS, bypassing the real lexicon entirely, so a
+        /// real-lexicon reachability gate would be unsound applied to it). This is the plan's own
+        /// highest-risk phase; turn on only after the corpus A/B protocol in parse-optimization.md's Phase
+        /// 5 section holds for your grammar.
+        /// </summary>
+        public bool EnableLexicalGating { get; set; }
+
+        /// <summary>Reachability check backing <see cref="EnableLexicalGating"/> -- see its remarks.</summary>
+        internal bool HasReachableRoot(Word word)
+        {
+            return _reachabilityTries[word.Stratum].Any(trie => trie.ContainsRootAnywhere(word.Shape));
+        }
 
         public int MaxStemCount { get; set; }
 
@@ -111,6 +201,21 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// When true, ParseWord does not clear rule stats (InstrumentedRule.InputCount/OutputCount/
+        /// ElapsedTime/BucketGroups) at the start of each parse, so they accumulate across an entire corpus
+        /// batch instead of reflecting only the most recent word. Off by default: existing single-word
+        /// callers (e.g. an interactive "why didn't this parse" UI) expect ClearStats every call. The rule
+        /// tree is shared across every ParseWord call on this Morpher, so a caller enabling this on a Morpher
+        /// used from multiple threads is responsible for keeping calls single-threaded (see
+        /// MemoizedCombinationRuleCascade's doc comment on maxDegreeOfParallelism: 1 for corpus-batch runs).
+        /// </summary>
+        public bool AccumulateRuleStats { get; set; }
+
+        public InstrumentedRule<Word, int> AnalysisRuleStats => _analysisRule as InstrumentedRule<Word, int>;
+
+        public InstrumentedRule<Word, int> SynthesisRuleStats => _synthesisRule as InstrumentedRule<Word, int>;
+
+        /// <summary>
         /// Parses the specified surface form.
         /// </summary>
         public IEnumerable<Word> ParseWord(string word)
@@ -133,10 +238,29 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
+            // Skipped while tracing: the nogood cascade this backs skips expansions outright on a hit,
+            // which would also skip the trace events those expansions fire (parse-optimization.md Phase 2
+            // ground rules -- traces must stay byte-identical to the unmemoized engine).
+            if (!_traceManager.IsTracing)
+            {
+                // Phase 5's lexical gate is unsound under guessRoot (it synthesizes from lexical PATTERNS,
+                // bypassing the real lexicon the gate's reachability index is built from) -- this check
+                // covers the whole parse, not just guessRoot's own fallback branch further down, since the
+                // gate would otherwise have already pruned candidates during _analysisRule.Apply below,
+                // before guessRoot's branch ever runs.
+                bool lexicalGatingActive = EnableLexicalGating && _lexicalGatingQualified && !guessRoot;
+                input.AnalysisScope = new AnalysisScope(lexicalGatingActive);
+            }
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
             trace = input.CurrentTrace;
+
+            if (!AccumulateRuleStats)
+            {
+                AnalysisRuleStats?.ClearStats();
+                SynthesisRuleStats?.ClearStats();
+            }
 
             // Unapply rules
             IList<Word> analyses = _analysisRule.Apply(input).ToList();
@@ -340,6 +464,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> SynthesizeAnalysis(string word, Word analysisWord)
         {
+            // Gate A from parse-optimization.md's Phase 4 sketch (pre-phonology length-vs-target pruning)
+            // was attempted and reverted here: `alternative` at this point is still essentially the bare
+            // root allomorph -- the pending affix trail's own insertions haven't been applied yet, they
+            // happen inside _synthesisRule.Apply below alongside phonology -- so comparing its length to
+            // the target surface length without also accounting for that trail's own insertions produced
+            // false rejections (confirmed against the unit suite: CompoundingRuleTests/MetathesisRuleTests
+            // regressed). A correct version would need to sum each pending trail rule's own max insertion
+            // (GrammarAnalyzer already computes this per-rule for Gate B) rather than compare bare-root
+            // length directly -- left as follow-up, not attempted this pass.
             foreach (Word synthesisWord in LexicalLookup(analysisWord))
             {
                 foreach (Word alternative in synthesisWord.ExpandAlternatives())

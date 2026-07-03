@@ -10,7 +10,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class AnalysisRewriteRule : IRule<Word, int>
+    public class AnalysisRewriteRule : InstrumentedRule<Word, int>
     {
         private enum ReapplyType
         {
@@ -25,6 +25,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public AnalysisRewriteRule(Morpher morpher, RewriteRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
 
@@ -118,7 +119,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             return true;
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
@@ -173,6 +174,14 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.PhonologicalRuleUnapplied(_rule, i, origInput, input);
                     applied = true;
+
+                    if (_morpher.AccumulateRuleStats)
+                    {
+                        string example = RuleStatsHelper.Example(input);
+                        RecordBucket(RuleStatsHelper.SubruleGroup, i.ToString(), example);
+                        RecordBucket(RuleStatsHelper.CategoryGroup, RuleStatsHelper.Category(input), example);
+                        RecordBucket(RuleStatsHelper.RootDirectGroup, RuleStatsHelper.IsRootDirect(input), example);
+                    }
                 }
                 else if (_morpher.TraceManager.IsTracing)
                 {
@@ -180,6 +189,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 }
             }
 
+            AddRuleStats(applied ? 1 : 0);
             if (applied)
                 return input.ToEnumerable();
             return Enumerable.Empty<Word>();

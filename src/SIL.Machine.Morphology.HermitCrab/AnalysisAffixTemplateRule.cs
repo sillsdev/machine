@@ -10,7 +10,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisAffixTemplateRule : IRule<Word, int>
+    internal class AnalysisAffixTemplateRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly AffixTemplate _template;
@@ -18,6 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public AnalysisAffixTemplateRule(Morpher morpher, AffixTemplate template)
         {
+            Name = template.Name;
             _morpher = morpher;
             _template = template;
             _rules = new List<IRule<Word, int>>(
@@ -27,9 +28,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                     FreezableEqualityComparer<Word>.Default
                 ))
             );
+            AddSubRules(_rules);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_template))
                 return Enumerable.Empty<Word>();
@@ -41,7 +43,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
-            Word inWord = input.Clone();
+            // Shape-sharing clone (parse-optimization.md Phase 10a): this clone is frozen on the next
+            // line and nothing between clone and freeze touches the shape -- slot rules only ever READ
+            // it (FST matching), and their outputs are separate deep clones. Falls back to a deep copy
+            // automatically when input's shape isn't frozen yet (e.g. unmemoized/tracing paths).
+            Word inWord = input.CloneShareFrozenShape();
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -60,6 +66,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 sfs.Add(fs);
                 outWord.SyntacticFeatureStruct = sfs;
             }
+            AddRuleStats(output.Count);
             return output;
         }
 

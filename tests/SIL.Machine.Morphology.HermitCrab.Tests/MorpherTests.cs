@@ -553,4 +553,303 @@ public class MorpherTests : HermitCrabTestBase
                 .OrderBy(s => s, System.StringComparer.Ordinal)
         );
     }
+
+    [Test]
+    public void ParseWord_SingleThreaded_MatchesParallel_WithCompounding()
+    {
+        // Exercises the Phase-3 positive-memo replay path (parse-optimization.md) specifically for
+        // compounding, not just plain affixes: an affix rule that commutes with a compounding rule --
+        // both peers in the same Unordered MorphologicalRules cascade -- means the analysis cascade can
+        // revisit an equal AnalysisStateKey (same shape/features/rule-counts/non-head count) reached via
+        // different arrival orders, where the accumulated _nonHeadApps prefix need not be identical
+        // across arrivals even though the key treats non-heads as a bare count. Word.ReplayOnto grafts
+        // each arrival's OWN accumulated trail/non-head prefix onto a memoized subtree's suffix rather
+        // than reusing the memoized arrival's prefix verbatim -- if that graft were wrong, the memoized
+        // single-threaded cascade would diverge from the (unmemoized) parallel cascade here.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var rule1 = new CompoundingRule { Name = "rule1" };
+        Allophonic.MorphologicalRules.Add(rule1);
+        rule1.Subrules.Add(
+            new CompoundingSubrule
+            {
+                HeadLhs = { Pattern<Word, int>.New("head").Annotation(any).OneOrMore.Value },
+                NonHeadLhs = { Pattern<Word, int>.New("nonHead").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
+            }
+        );
+
+        var prefix = new AffixProcessRule
+        {
+            Name = "prefix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Feature(Head)
+                .EqualTo(head => head.Feature("tense").EqualTo("past"))
+                .Value,
+        };
+        Allophonic.MorphologicalRules.Insert(0, prefix);
+        prefix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
+            }
+        );
+
+        var parallel = new Morpher(TraceManager, Language);
+        var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+        foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
+        {
+            List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
+            List<Word> parallelResult = parallel.ParseWord(word).ToList();
+            Assert.That(
+                singleResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal),
+                Is.EqualTo(parallelResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal)),
+                $"single-threaded parse of '{word}' must match the parallel parse"
+            );
+        }
+    }
+
+    private static string WordResultSignature(Word word)
+    {
+        // AllomorphsInMorphOrder alone would not catch a broken trail/non-head graft (it walks Shape
+        // annotations, which ReplayOnto never touches) -- MorphemesInApplicationOrder walks _mruleApps/
+        // _nonHeadApps directly, which is exactly what Word.ReplayOnto rewrites.
+        return string.Join("+", word.AllomorphsInMorphOrder.Select(a => a.Morpheme.Id))
+            + "|"
+            + string.Join("+", word.MorphemesInApplicationOrder.Select(m => m.Id));
+    }
+
+    [Test]
+    public void ParseWord_SingleThreaded_MatchesParallel_WithAffixTemplate()
+    {
+        // Exercises the template-battery memo (AnalysisStratumRule.ApplyTemplateBattery) specifically:
+        // TWO free prefix rules that commute with each other and with a template slot suffix. Unapplying
+        // di-then-ku vs ku-then-di reaches the same AnalysisStateKey (same shape, same rule MULTISET)
+        // with a different trail ORDER, so the second arrival replays the first arrival's stored
+        // template outputs with its own trail prefix grafted on (Word.ReplayOnto). One commuting prefix
+        // is NOT enough -- a single rule can only unapply once, so no key would ever be re-arrived at
+        // and the memo would never fire (verified: with one prefix the replay counter stays 0).
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "TPAST",
+            Name = "template_ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        var verbTemplate = new AffixTemplate
+        {
+            Name = "verb_template",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        var diPrefix = new AffixProcessRule
+        {
+            Id = "TDI",
+            Name = "template_di_prefix",
+            Gloss = "DI",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        diPrefix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new InsertSegments(Table3, "di+"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(diPrefix);
+
+        var kuPrefix = new AffixProcessRule
+        {
+            Id = "TKU",
+            Name = "template_ku_prefix",
+            Gloss = "KU",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        kuPrefix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new InsertSegments(Table3, "gu+"), new CopyFromInput("1") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(kuPrefix);
+
+        try
+        {
+            var parallel = new Morpher(TraceManager, Language);
+            var singleThreaded = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+
+            AnalysisStratumRule.DiagTemplateMemoHits = 0;
+            foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
+            {
+                List<Word> singleResult = singleThreaded.ParseWord(word).ToList();
+                List<Word> parallelResult = parallel.ParseWord(word).ToList();
+                Assert.That(
+                    singleResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal),
+                    Is.EqualTo(
+                        parallelResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal)
+                    ),
+                    $"single-threaded parse of '{word}' must match the parallel parse"
+                );
+                Assert.That(
+                    singleResult,
+                    Is.Not.Empty.Or.Property("Count").EqualTo(parallelResult.Count),
+                    $"'{word}' sanity: both engines agree on parse count"
+                );
+            }
+            // Guards against this test going vacuous: the replay path must actually fire for this
+            // grammar. (Mutation-tested like Phase 3's mrule-memo test, with the same result: breaking
+            // the ReplayOnto graft -- returning stored words verbatim -- does NOT fail the equivalence
+            // assertions above, because merge-by-shape plus ExpandAlternatives make trail-order
+            // differences unobservable in final signatures for grammars like this one. The graft's
+            // necessity rests on the construction argument documented in MemoizedCombinationRuleCascade;
+            // this assertion at least pins that the memoized path is exercised at all.)
+            Assert.That(
+                AnalysisStratumRule.DiagTemplateMemoHits,
+                Is.GreaterThan(0),
+                "the template memo's replay path must actually fire for this grammar -- if this "
+                    + "trips, the test grammar no longer forces a re-arrival at an equal state key "
+                    + "and the equivalence assertions above are vacuously passing"
+            );
+        }
+        finally
+        {
+            Morphophonemic.AffixTemplates.Remove(verbTemplate);
+            Morphophonemic.MorphologicalRules.Remove(diPrefix);
+            Morphophonemic.MorphologicalRules.Remove(kuPrefix);
+        }
+    }
+
+    [Test]
+    public void EnableLexicalGating_MatchesDisabled_SimpleAffixGrammar()
+    {
+        // parse-optimization.md Phase 5: on a grammar with no reduplication/compounding/metathesis, the
+        // lexical gate should qualify and activate, but must never change which analyses come out --
+        // it only prunes subtrees that could never reach any root, and Entries["32"] ("sag") is directly
+        // reachable the whole way through this simple suffix's unapplication.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var suffix = new AffixProcessRule
+        {
+            Id = "LEX_GATE_TEST_SUFFIX",
+            Name = "lex_gate_test_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        suffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(suffix);
+        try
+        {
+            Assert.That(
+                GrammarAnalyzer.IsEdgeStripperQualified(Language),
+                Is.True,
+                "precondition: this grammar has no reduplication/compounding/metathesis"
+            );
+
+            var gateOff = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
+            var gateOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1) { EnableLexicalGating = true };
+
+            foreach (string word in new[] { "sagd", "sag" })
+            {
+                List<Word> offResult = gateOff.ParseWord(word).ToList();
+                List<Word> onResult = gateOn.ParseWord(word).ToList();
+                Assert.That(
+                    onResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal),
+                    Is.EqualTo(
+                        offResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal)
+                    ),
+                    $"lexical-gate-on parse of '{word}' must match gate-off parse"
+                );
+            }
+        }
+        finally
+        {
+            Morphophonemic.MorphologicalRules.Remove(suffix);
+        }
+    }
+
+    [Test]
+    public void IsEdgeStripperQualified_ReturnsFalse_ForReduplication()
+    {
+        // The same Lhs part copied twice in Rhs -- GrammarAnalyzer's own definition of reduplication
+        // (mirrors AnalysisMorphologicalTransform's capturedParts[name] > 1 case).
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var redup = new AffixProcessRule
+        {
+            Id = "LEX_GATE_TEST_REDUP",
+            Name = "lex_gate_test_redup",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        redup.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("1") },
+            }
+        );
+        Allophonic.MorphologicalRules.Add(redup);
+        try
+        {
+            Assert.That(GrammarAnalyzer.IsEdgeStripperQualified(Language), Is.False);
+        }
+        finally
+        {
+            Allophonic.MorphologicalRules.Remove(redup);
+        }
+    }
+
+    [Test]
+    public void IsEdgeStripperQualified_ReturnsFalse_ForInfixation()
+    {
+        // Material inserted BETWEEN two copied (and here, distinct) parts splits the input's own
+        // contiguous material apart -- a real root's contiguous window in the lexicon would no longer
+        // appear as a contiguous window in this rule's output.
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var infix = new AffixProcessRule
+        {
+            Id = "LEX_GATE_TEST_INFIX",
+            Name = "lex_gate_test_infix",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        infix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, int>.New("2").Annotation(any).OneOrMore.Value,
+                },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table1, "um"), new CopyFromInput("2") },
+            }
+        );
+        Allophonic.MorphologicalRules.Add(infix);
+        try
+        {
+            Assert.That(GrammarAnalyzer.IsEdgeStripperQualified(Language), Is.False);
+        }
+        finally
+        {
+            Allophonic.MorphologicalRules.Remove(infix);
+        }
+    }
 }

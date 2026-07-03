@@ -1368,10 +1368,31 @@ namespace SIL.Machine.FeatureModel
             _sharedSource = null;
         }
 
+        // Test hook: incremented every time Freeze() takes the shared-hash shortcut below. A hash- or
+        // value-equality assertion alone can't tell the shortcut apart from the (equally correct) full
+        // walk, since both compute the same result -- this counter is what makes the regression test
+        // non-vacuous (parse-optimization.md Phase 3/3b hit this exact trap with ReplayOnto's memo
+        // tests, both of which passed even when the replay/graft logic was mutated to a no-op).
+        internal static long DiagSharedFreezeHits;
+
         public void Freeze()
         {
             if (IsFrozen)
                 return;
+
+            // A copy-on-write clone that was never mutated still borrows _sharedSource's exact
+            // _definite reference (see EnsureWritable): its hash cannot differ, since a frozen
+            // source's _definite subtree is immutable and any mutation of this clone would have
+            // already inflated a private copy and cleared _shared. Skip the full FreezeImpl walk
+            // and adopt the cached hash directly -- the same shortcut Shape.Freeze() already takes
+            // for its own copy-on-write clones (parse-optimization.md Phase 7b).
+            if (_shared && _sharedSource != null)
+            {
+                IsFrozen = true;
+                _hashCode = _sharedSource.GetFrozenHashCode();
+                DiagSharedFreezeHits++;
+                return;
+            }
 
             _hashCode = FreezeImpl(new HashSet<FeatureValue>());
         }

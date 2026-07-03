@@ -8,7 +8,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
-    public class SynthesisRewriteRule : IRule<Word, int>
+    public class SynthesisRewriteRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly RewriteRule _rule;
@@ -16,6 +16,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public SynthesisRewriteRule(Morpher morpher, RewriteRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
 
@@ -48,17 +49,17 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
             Word origInput = null;
+            bool collectResults = _morpher.TraceManager.IsTracing || _morpher.AccumulateRuleStats;
             if (_morpher.TraceManager.IsTracing)
-            {
                 origInput = input.Clone();
+            if (collectResults)
                 input.CurrentRuleResults = new Dictionary<int, Tuple<FailureReason, object>>();
-            }
 
             bool applied = _patternRule.Apply(input).Any();
 
@@ -81,8 +82,29 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                         _morpher.TraceManager.PhonologicalRuleNotApplied(_rule, i, input, FailureReason.Pattern, null);
                     }
                 }
-                input.CurrentRuleResults = null;
             }
+
+            if (applied && _morpher.AccumulateRuleStats)
+            {
+                string example = RuleStatsHelper.Example(input);
+                for (int i = 0; i < _rule.Subrules.Count; i++)
+                {
+                    if (
+                        input.CurrentRuleResults.TryGetValue(i, out Tuple<FailureReason, object> reason)
+                        && reason.Item1 == FailureReason.None
+                    )
+                    {
+                        RecordBucket(RuleStatsHelper.SubruleGroup, i.ToString(), example);
+                        break;
+                    }
+                }
+                RecordBucket(RuleStatsHelper.CategoryGroup, RuleStatsHelper.Category(input), example);
+                RecordBucket(RuleStatsHelper.RootDirectGroup, RuleStatsHelper.IsRootDirect(input), example);
+            }
+            if (collectResults)
+                input.CurrentRuleResults = null;
+
+            AddRuleStats(applied ? 1 : 0);
             if (applied)
                 return input.ToEnumerable();
             return Enumerable.Empty<Word>();

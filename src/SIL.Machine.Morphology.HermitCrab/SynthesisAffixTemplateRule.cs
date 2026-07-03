@@ -6,7 +6,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisAffixTemplateRule : IRule<Word, int>
+    internal class SynthesisAffixTemplateRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly AffixTemplate _template;
@@ -14,6 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public SynthesisAffixTemplateRule(Morpher morpher, AffixTemplate template)
         {
+            Name = template.Name;
             _morpher = morpher;
             _template = template;
             _rules = new List<IRule<Word, int>>(
@@ -23,14 +24,16 @@ namespace SIL.Machine.Morphology.HermitCrab
                     FreezableEqualityComparer<Word>.Default
                 ))
             );
+            AddSubRules(_rules);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginApplyTemplate(_template, input);
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             ApplySlots(input, 0, output);
+            AddRuleStats(output.Count);
             return output;
         }
 

@@ -7,7 +7,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisAffixTemplatesRule : IRule<Word, int>
+    internal class SynthesisAffixTemplatesRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly Stratum _stratum;
@@ -16,13 +16,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public SynthesisAffixTemplatesRule(Morpher morpher, Stratum stratum)
         {
+            Name = stratum.Name;
             _morpher = morpher;
             _stratum = stratum;
             _templates = stratum.AffixTemplates.ToList();
             _templateRules = _templates.Select(temp => temp.CompileSynthesisRule(morpher)).ToList();
+            AddSubRules(_templateRules);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!input.RealizationalFeatureStruct.IsUnifiable(input.SyntacticFeatureStruct))
                 return Enumerable.Empty<Word>();
@@ -74,6 +76,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
 
+            AddRuleStats(output.Count);
             return output;
         }
 

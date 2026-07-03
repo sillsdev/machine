@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
@@ -7,7 +8,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisStratumRule : IRule<Word, int>
+    internal class SynthesisStratumRule : InstrumentedRule<Word, int>
     {
         private readonly IRule<Word, int> _mrulesRule;
         private readonly IRule<Word, int> _prulesRule;
@@ -17,26 +18,25 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public SynthesisStratumRule(Morpher morpher, Stratum stratum)
         {
+            Name = stratum.Name;
             _templatesRule = new SynthesisAffixTemplatesRule(morpher, stratum);
             _mrulesRule = null;
-            IEnumerable<IRule<Word, int>> mrules = stratum.MorphologicalRules.Select(mrule =>
-                mrule.CompileSynthesisRule(morpher)
-            );
+            // Paired (not just the compiled rules) so the Unordered cascade can look up the trail-directed
+            // rule instead of probing the whole battery -- see TrailDirectedRuleCascade.
+            var compiledMRules = stratum
+                .MorphologicalRules.Select(mrule => (Rule: mrule, Compiled: mrule.CompileSynthesisRule(morpher)))
+                .ToList();
             switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
                     _mrulesRule = new LinearRuleCascade<Word, int>(
-                        mrules,
+                        compiledMRules.Select(p => p.Compiled),
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-                    _mrulesRule = new CombinationRuleCascade<Word, int>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
+                    _mrulesRule = new TrailDirectedRuleCascade(compiledMRules, FreezableEqualityComparer<Word>.Default);
                     break;
             }
             _prulesRule = new LinearRuleCascade<Word, int>(
@@ -44,13 +44,17 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
             _stratum = stratum;
             _morpher = morpher;
+            AddSubRule(_mrulesRule);
+            AddSubRule(_prulesRule);
+            AddSubRule(_templatesRule);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_stratum) || input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
                 return input.ToEnumerable();
 
+            long startTime = Stopwatch.GetTimestamp();
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
@@ -88,6 +92,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             if (_morpher.TraceManager.IsTracing && output.Count == 0)
                 _morpher.TraceManager.EndApplyStratum(_stratum, input);
+
+            ElapsedTime += Stopwatch.GetTimestamp() - startTime;
+            AddRuleStats(output.Count);
             return output;
         }
 

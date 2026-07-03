@@ -8,9 +8,9 @@ internal class HCContext(Language language, TextWriter outWriter)
     private Morpher _morpher;
     private readonly TextWriter _outWriter = outWriter;
 
-    public void Compile()
+    public void Compile(bool sequential = false)
     {
-        _morpher = new Morpher(new TraceManager(), _language);
+        _morpher = new Morpher(new TraceManager(), _language, sequential ? 1 : -1);
     }
 
     public Language Language

@@ -55,6 +55,7 @@ tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
 tests/SIL.Machine.Tests/Corpora/TestData/project/*
 tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 .idea
+.worktrees
 
 # Local-only HermitCrab benchmark fixtures (real Sena/Indonesian grammars + word lists, used
 # for ad hoc perf/allocation testing) + FieldWorks project backups. Large and/or not licensed

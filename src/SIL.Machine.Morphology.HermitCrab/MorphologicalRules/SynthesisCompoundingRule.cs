@@ -9,7 +9,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisCompoundingRule : IRule<Word, int>
+    public class SynthesisCompoundingRule : InstrumentedRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly CompoundingRule _rule;
@@ -17,6 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public SynthesisCompoundingRule(Morpher morpher, CompoundingRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
             _subruleMatchers = new List<Tuple<Matcher<Word, int>, Matcher<Word, int>>>();
@@ -42,7 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             );
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!input.IsMorphologicalRuleApplicable(_rule))
                 return Enumerable.Empty<Word>();
@@ -209,6 +210,18 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
                         output.Add(outWord);
+
+                        if (_morpher.AccumulateRuleStats)
+                        {
+                            string example = RuleStatsHelper.Example(input);
+                            RecordBucket(RuleStatsHelper.AllomorphGroup, i.ToString(), example);
+                            RecordBucket(RuleStatsHelper.CategoryGroup, RuleStatsHelper.Category(input), example);
+                            RecordBucket(
+                                RuleStatsHelper.NonHeadCategoryGroup,
+                                RuleStatsHelper.Category(input.CurrentNonHead),
+                                example
+                            );
+                        }
                         break;
                     }
                     if (_morpher.TraceManager.IsTracing)
@@ -228,6 +241,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 }
             }
 
+            AddRuleStats(output.Count);
             return output;
         }
 

@@ -1224,6 +1224,27 @@ public class FeatureStructTests
     }
 
     [Test]
+    public void Clone_OfFrozen_NeverMutated_Freeze_MatchesSourceFrozenHashCode()
+    {
+        // parse-optimization.md Phase 7b: Freeze() on a copy-on-write clone that borrows a frozen
+        // source's exact backing (never mutated, so _shared stays true) must adopt the source's
+        // already-computed hash rather than recomputing it -- the source's _definite subtree is
+        // immutable, so the two are guaranteed to hash identically. A hash/value-equality assertion
+        // alone can't distinguish the shortcut from the (equally correct) full walk -- both compute
+        // the same answer -- so this also asserts the counter that proves the shortcut actually fired.
+        FeatureSystem featSys = CowFeatSys();
+        FeatureStruct source = BuildNestedFrozen(featSys);
+
+        FeatureStruct clone = source.Clone();
+        long hitsBefore = FeatureStruct.DiagSharedFreezeHits;
+        clone.Freeze();
+
+        Assert.That(FeatureStruct.DiagSharedFreezeHits, Is.EqualTo(hitsBefore + 1));
+        Assert.That(clone.GetFrozenHashCode(), Is.EqualTo(source.GetFrozenHashCode()));
+        Assert.That(source.ValueEquals(clone), Is.True);
+    }
+
+    [Test]
     public void Clone_FrozenReentrant_MutateClone_PreservesSharingAndLeavesSourceUnchanged()
     {
         FeatureSystem featSys = CowFeatSys();

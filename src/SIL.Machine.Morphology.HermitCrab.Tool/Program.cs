@@ -20,6 +20,8 @@ internal class Program
         string scriptFile = null;
         bool showHelp = false;
         bool quitOnError = true;
+        bool sequential = false;
+        bool lexicalGate = false;
 
         var p = new OptionSet
         {
@@ -30,6 +32,20 @@ internal class Program
                 "c|continue",
                 "continues when an error occurs while loading the configuration",
                 value => quitOnError = value == null
+            },
+            {
+                "sequential",
+                "parse single-threaded (maxDegreeOfParallelism: 1) -- the mode a caller that "
+                    + "parallelizes across words itself (e.g. batch corpus runs) should use; also the "
+                    + "only mode the analysis nogood cache (parse-optimization.md Phase 2) currently covers",
+                value => sequential = value != null
+            },
+            {
+                "lexical-gate",
+                "enable Morpher.EnableLexicalGating (parse-optimization.md Phase 5) -- default off, "
+                    + "highest-risk optimization; use for A/B corpus verification against a run without "
+                    + "this flag",
+                value => lexicalGate = value != null
             },
             { "h|help", "show this help message and exit", value => showHelp = value != null },
         };
@@ -66,7 +82,8 @@ internal class Program
 
             context = new HCContext(language, output ?? Console.Out);
             Console.Write("Compiling rules... ");
-            context.Compile();
+            context.Compile(sequential);
+            context.Morpher.EnableLexicalGating = lexicalGate;
             Console.WriteLine("done.");
             Console.WriteLine("{0} loaded.", language.Name);
             Console.WriteLine();
@@ -92,6 +109,7 @@ internal class Program
             new TracingCommand(context),
             new TestCommand(context),
             new StatsCommand(context),
+            new BatchCommand(context),
         };
 
         string input;

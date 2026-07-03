@@ -77,5 +77,25 @@ namespace SIL.Machine.Morphology.HermitCrab
                     yield return _allomorphs[match.ID];
             }
         }
+
+        /// <summary>
+        /// parse-optimization.md Phase 5: does some root allomorph in this trie match ANY contiguous
+        /// window of <paramref name="shape"/> (start anchored per attempt, end NOT anchored -- a root is
+        /// typically shorter than the remaining unstripped candidate) -- unlike <see cref="Search"/>,
+        /// which only checks a match starting at the shape's first segment and consuming to its end (the
+        /// bare-root-after-full-unapplication case <see cref="Morpher.SearchRootAllomorphs"/> uses this
+        /// for). Used as a cheap admissibility check before descending into an analysis subtree: if no
+        /// window matches anywhere, no root in this stratum can ever be reached from here.
+        /// </summary>
+        public bool ContainsRootAnywhere(Shape shape)
+        {
+            foreach (Annotation<ShapeNode> startAnn in shape.Annotations.Where(ann => _filter(ann)))
+            {
+                IEnumerable<FstResult<Shape, ShapeNode>> matches;
+                if (_fsa.Transduce(shape, startAnn, null, true, false, false, out matches) && matches.Any())
+                    return true;
+            }
+            return false;
+        }
     }
 }

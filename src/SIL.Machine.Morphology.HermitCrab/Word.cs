@@ -70,12 +70,22 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         protected Word(Word word)
+            : this(word, shareFrozenShape: false) { }
+
+        // parse-optimization.md Phase 10a: shareFrozenShape lets clone sites that provably never
+        // mutate the clone's shape (see CloneShareFrozenShape) skip the deep Shape copy -- 10-pre
+        // measured that copy (ShapeNodes + their Annotation<ShapeNode> graphs) at ~25% of all
+        // per-word allocated bytes on heavy Sena words. Sharing only ever happens when the source
+        // shape is already frozen, so the shared instance is immutable: any later mutation attempt
+        // throws (Shape's freeze guards) instead of silently corrupting the other holder, and any
+        // legitimate downstream edit goes through another Clone(), which deep-copies as always.
+        private Word(Word word, bool shareFrozenShape)
         {
             _allomorphs = new Dictionary<string, Allomorph>(word._allomorphs);
             Stratum = word.Stratum;
             Source = word;
             // Don't copy Alternatives.
-            _shape = word._shape.Clone();
+            _shape = shareFrozenShape && word._shape.IsFrozen ? word._shape : word._shape.Clone();
             _rootAllomorph = word._rootAllomorph;
             SyntacticFeatureStruct = word.SyntacticFeatureStruct.Clone();
             RealizationalFeatureStruct = word.RealizationalFeatureStruct.Clone();
@@ -98,6 +108,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
+            AnalysisScope = word.AnalysisScope;
             _disjunctiveAllomorphIndices =
                 word._disjunctiveAllomorphIndices == null || word._disjunctiveAllomorphIndices.Count == 0
                     ? null
@@ -226,6 +237,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public object CurrentTrace { get; set; }
 
+        /// <summary>
+        /// Carrier for the analysis nogood cache (parse-optimization.md Phase 2). Reference-shared like
+        /// <see cref="CurrentTrace"/>, deliberately excluded from <see cref="FreezeImpl"/> and
+        /// <see cref="ValueEquals"/> so dedup semantics are unchanged. Null for words never routed through
+        /// <see cref="Morpher.ParseWord(string, out object)"/> (e.g. words built directly by rule-level
+        /// unit tests) or while tracing, in which case the cascade that reads this must fall back to
+        /// unmemoized behavior rather than throw.
+        /// </summary>
+        internal AnalysisScope AnalysisScope { get; set; }
+
         public bool IsPartial
         {
             get { return _isPartial; }
@@ -255,6 +276,26 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             IMorphologicalRule curRule = _mruleApps[_mruleAppIndex];
             return curRule == rule || (curRule == null && rule is CompoundingRule);
+        }
+
+        /// <summary>
+        /// Exposes the same trail-position state <see cref="IsMorphologicalRuleApplicable"/> checks, so a
+        /// synthesis cascade can look up the one rule (or, when <paramref name="rule"/> comes back null, the
+        /// compounding rules) that could possibly apply next, instead of probing the whole rule battery and
+        /// relying on <see cref="IsMorphologicalRuleApplicable"/> to reject every miss. Returns false when no
+        /// morphological rule can apply at all (<paramref name="rule"/> is meaningless in that case, not "any
+        /// compounding rule" -- that reading only holds when this returns true and <paramref name="rule"/> is
+        /// null).
+        /// </summary>
+        internal bool TryGetNextMorphologicalRuleToApply(out IMorphologicalRule rule)
+        {
+            if (_mruleAppIndex < 0)
+            {
+                rule = null;
+                return false;
+            }
+            rule = _mruleApps[_mruleAppIndex];
+            return true;
         }
 
         internal bool HasRemainingRulesFromStratum(Stratum stratum)
@@ -357,6 +398,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// The full per-rule unapplication-count multiset backing <see cref="GetUnapplicationCount"/>, for
+        /// <see cref="AnalysisStateKey"/> (order-independent analysis-cascade memoization -- see
+        /// parse-optimization.md Phase 2). Null means empty, matching this class's existing lazy-allocation
+        /// convention.
+        /// </summary>
+        internal IReadOnlyDictionary<IMorphologicalRule, int> UnappliedRuleCounts => _mrulesUnapplied;
+
+        /// <summary>
         /// Notifies this word synthesis that the specified morphological rule has applied.
         /// </summary>
         internal void MorphologicalRuleApplied(IMorphologicalRule mrule, IEnumerable<int> allomorphIndices = null)
@@ -416,6 +465,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _nonHeadApps.Count; }
         }
 
+        /// <summary>
+        /// Length of the morphological-rule trail so far -- <c>_mruleApps.Count</c>. Recorded alongside
+        /// <see cref="NonHeadCount"/> at the point a <see cref="AnalysisStateKey"/>'s subtree is memoized
+        /// (parse-optimization.md Phase 3), so a later differently-ordered arrival at the same key knows
+        /// where its own trail ends and the memoized subtree's suffix begins -- see
+        /// <see cref="ReplayOnto"/>.
+        /// </summary>
+        internal int MorphologicalRuleTrailLength => _mruleApps.Count;
+
         internal void NonHeadUnapplied(Word nonHead)
         {
             CheckFrozen();
@@ -472,6 +530,54 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word alternative in _alternatives)
                 alternatives.AddRange(alternative.ExpandAlternatives());
             return alternatives;
+        }
+
+        /// <summary>
+        /// Re-parents a Word computed while exploring the subtree below some analysis-cascade node N onto
+        /// <paramref name="queryNode"/> -- a different Word that reached the same <see cref="AnalysisStateKey"/>
+        /// as N via a different morphological-rule unapplication order (parse-optimization.md Phase 3's
+        /// positive memo; see <see cref="MemoizedCombinationRuleCascade"/>). Everything computed strictly
+        /// WITHIN the subtree -- deeper shape/feature edits, and any rules or non-heads unapplied below N --
+        /// is a deterministic function of N's content alone (Shape, both FeatureStructs, the rule-unapplication
+        /// multiset, and non-head count all match between N and <paramref name="queryNode"/> by definition of
+        /// an equal key), so it is kept as-is from `this`. Only the two ORDERED structures the key deliberately
+        /// summarizes as counts/multisets -- the morphological-rule trail and the non-head list -- have their
+        /// PREFIX (whatever was accumulated before reaching N) replaced with <paramref name="queryNode"/>'s own
+        /// actual prefix, since arrival order can only ever affect that part.
+        /// </summary>
+        /// <param name="queryNode">The word that hit the memo -- its trail/non-heads become the new prefix.</param>
+        /// <param name="mruleTrailPrefixLength">
+        /// <c>_mruleApps.Count</c> of N at the moment its subtree was memoized -- everything in `this`'s trail
+        /// from this index on is the subtree-local suffix to keep.
+        /// </param>
+        /// <param name="nonHeadPrefixLength">Same, for <c>_nonHeadApps</c>.</param>
+        internal Word ReplayOnto(Word queryNode, int mruleTrailPrefixLength, int nonHeadPrefixLength)
+        {
+            // Shape-sharing clone (parse-optimization.md Phase 10a): a replay edits only the two trail
+            // lists below and then freezes -- the shape is never touched, so the deep Shape copy a plain
+            // Clone() makes here (hundreds of thousands of replays per heavy word) is pure waste.
+            Word clone = CloneShareFrozenShape();
+
+            List<IMorphologicalRule> mruleSuffix = clone._mruleApps.GetRange(
+                mruleTrailPrefixLength,
+                clone._mruleApps.Count - mruleTrailPrefixLength
+            );
+            clone._mruleApps.Clear();
+            clone._mruleApps.AddRange(queryNode._mruleApps);
+            clone._mruleApps.AddRange(mruleSuffix);
+            clone._mruleAppIndex = clone._mruleApps.Count - 1;
+
+            List<Word> nonHeadSuffix = clone._nonHeadApps.GetRange(
+                nonHeadPrefixLength,
+                clone._nonHeadApps.Count - nonHeadPrefixLength
+            );
+            clone._nonHeadApps.Clear();
+            clone._nonHeadApps.AddRange(queryNode._nonHeadApps.CloneItems());
+            clone._nonHeadApps.AddRange(nonHeadSuffix);
+            clone._nonHeadAppIndex = clone._nonHeadApps.Count - 1;
+
+            clone.Freeze();
+            return clone;
         }
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
@@ -582,6 +688,21 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Word Clone()
         {
             return new Word(this);
+        }
+
+        /// <summary>
+        /// <see cref="Clone"/>, except the clone shares this word's <see cref="Shape"/> instance instead
+        /// of deep-copying it -- only when that shape is already frozen (otherwise this falls back to a
+        /// normal deep copy, so it is always safe to call). For callers that clone, edit non-shape state,
+        /// and freeze -- never touching the shape -- the deep copy is pure waste: parse-optimization.md
+        /// Phase 10-pre measured the Shape/annotation graph at ~25% of all bytes allocated on heavy
+        /// words, dominated by exactly such clones. The contract is on the caller: the clone's shape must
+        /// never be mutated before the clone is discarded or frozen. Violations fail loudly (the shared
+        /// shape is frozen, so mutation throws) rather than corrupting the source.
+        /// </summary>
+        internal Word CloneShareFrozenShape()
+        {
+            return new Word(this, shareFrozenShape: true);
         }
 
         public override string ToString()
