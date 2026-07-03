@@ -27,7 +27,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
-        private bool _gatherCorpusStatistics = false;
+        private bool _enableCorpusStatistics = false;
 
         public Morpher(ITraceManager traceManager, Language lang)
         {
@@ -86,12 +86,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
-        public bool GatherCorpusStatistics
+        public bool EnableCorpusStatistics
         {
-            get { return _gatherCorpusStatistics; }
+            get { return _enableCorpusStatistics; }
             set
             {
-                _gatherCorpusStatistics = value;
+                _enableCorpusStatistics = value;
                 ClearRuleStats();
             }
         }
@@ -131,7 +131,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
             trace = input.CurrentTrace;
-            if (!GatherCorpusStatistics)
+            if (!EnableCorpusStatistics)
             {
                 ClearRuleStats();
             }
