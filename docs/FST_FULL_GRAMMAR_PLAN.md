@@ -15,8 +15,12 @@
 > closing it took a `FstReplay` fix, a trie compound loop, and (found only during implementation)
 > extending `DerivableToCategory` to treat compounding as a category-transition edge — see Phase G2
 > for the full account of what the original spec got right and what it missed. **Remaining: only
-> Phase I** (the true-FST generalization — a design-only spec, not needed by either current
-> grammar; build it when a grammar that structurally needs it shows up).
+> Phase I** (the true-FST generalization). **Phase I now has a FULL execution spec (2026-07-03,
+> same day): milestones I0–I7 + optional I8, ~6–9 days, each commit-gated with its own tests and
+> verification battery** — the deliberate scope change from "cover these two grammars" to "correct
+> by construction for arbitrary regular HC grammars." Start at I0 and work in order; the marquee
+> new capabilities (word-internal rules, long-distance harmony, deep feeding chains) each get a
+> toy-grammar test that must FAIL on today's composite before the chain makes it pass.
 
 ## Goal (definition of done)
 
@@ -500,35 +504,233 @@ for real by Indonesian's `mrule1`/`mrule2` staying silent on its own non-compoun
 `ndikhali`'s real class-agreement gating on Sena). A dedicated PoS-gated toy test was judged
 redundant given those two real-grammar checks.
 
-## Phase I — the true-FST generalization (lazy per-rule chain) — design notes, build LATER
+## Phase I — the true-FST generalization (lazy per-rule chain) — FULL EXECUTION SPEC (2026-07-03)
 
-Not needed by either current grammar (junction probing + peels close both). This is what makes the
-tool credible for grammars the current mechanisms structurally cannot handle: word-internal rules
-far from morpheme junctions, long-distance harmony (a suffix vowel conditioned by a trigger
-several syllables back), feeding chains deeper than the 2-segment probe window.
+> Speced for implementation in the same style as G1/G2/H (which executed cleanly from these specs).
+> This is the largest remaining item — realistically **6–9 days** across seven commit-gated
+> milestones (I0–I7, below), plus an optional I8. Unlike G/H it is not driven by a failing corpus
+> word: its purpose is to make the fast path correct-by-construction for **arbitrary regular HC
+> grammars**, not just the two measured ones. Everything below was written against a code re-read
+> of `InversePhonology.cs`, `FstTemplateAnalyzer.AnalyzeComposed`/`ComposedClosure`,
+> `RewriteRule` (`Direction`, `ApplicationMode`), and `SIL.Machine.Matching`'s node inventory
+> (`Constraint`/`Quantifier`/`Group`/`Alternation` — the complete set an env compiler must handle).
+
+### What it fixes that nothing else can
+
+Junction probing (Phase C) and the peels are bounded LOCAL mechanisms — exact for grammars whose
+phonology fires within ~2 segments of a morpheme boundary. They structurally cannot represent:
+word-internal rules far from any boundary; long-distance harmony (a suffix vowel conditioned by a
+trigger several syllables back); feeding/bleeding chains deeper than the probe window. The chain
+handles all of these because each rule's inverse automaton carries its own state across the whole
+word.
 
 Theory anchor (so nobody re-litigates feasibility): SPE-style ordered rewrite rules are regular
 (Kaplan & Kay 1994); lexc/xfst/HFST/foma have compiled full morphologies this way for decades. The
 only provably non-regular construct is unbounded copying — which stays with the peel. The reason
-eager composition explodes IN THIS CODEBASE is specific: arcs are FeatureStructs matched by
-unification and cannot be determinized/minimized without destroying multi-analysis enumeration.
-Classical toolkits stay small because they minimize over a CONCRETE alphabet — and HC's surface
-alphabet IS concrete and small (~30 chars/grammar).
+eager composition exploded IN THIS CODEBASE is specific: arcs are FeatureStructs matched by
+unification and cannot be determinized/minimized without destroying multi-analysis enumeration;
+classical toolkits stay small because they minimize over a CONCRETE alphabet — and HC's surface
+alphabet IS concrete and small (~30 chars/grammar). Lazy composition sidesteps the issue entirely:
+the composed machine is **never materialized**, so state explosion is structurally impossible; the
+risk moves to walk-time frontier width, which I6's beam cap bounds.
 
-Design (lazy composition — the composed machine is never materialized, so state explosion is
-structurally impossible; the risk moves to walk-time frontier width, bounded by the beam cap):
+### Governing principle: SUPERSET, NEVER SILENT SKIP
+
+Soundness comes from verify (`FstReplay`), so a rule's compiled inverse only needs to be a
+**superset** of the true inverse relation — over-generation costs verify time, never correctness.
+Every rule therefore compiles at one of three tiers, and the compiler must never claim "supported"
+for something that under-generates:
+
+- **Exact** — environments compiled precisely (including quantified/Kleene spans, see I1); minimal
+  slop. The normal case.
+- **Permissive** — some gating dropped (an env anchor it can't express, an MPR/syntactic-feature
+  gate, a direction subtlety): still a superset, just more verify traffic. The automatic fallback.
+- **Identity-skip** — the rule contributes only identity arcs (today's behavior for unsupported
+  rules): words genuinely needing it fall to the engine. ONLY as an explicit per-rule escape hatch
+  when Permissive measurably blows the beam (I6) — never a silent compiler default.
+
+`ProbeReport` gains a per-rule tier report (rule name → Exact/Permissive/Identity-skip + reason),
+replacing the bare `UnsupportedPhonologyRuleCount` integer. A grammar author must be able to see
+exactly which rule is costing what.
+
+### I0 — data-type groundwork (small)
+
+1. Extend `InversePhonology.Arc` with **ε-output**: `UnderlyingOutput == null` = consume the
+   surface/incoming symbol, emit nothing downstream (needed for epenthesis-inverse, I3). Add
+   `IsEpsilonOutput`; audit the two existing consumers (`AnalyzeComposed`, `ComposedClosure`) to
+   reject/ignore ε-output arcs until I2 lands (they can't appear yet — the v1 compiler never emits
+   them — but make the assumption explicit, not accidental).
+2. Each rule gets its OWN `InversePhonology` instance; the chain is
+   `IReadOnlyList<InversePhonology>` in **reverse application order**. Do not trust this doc for
+   the order — read `AnalysisLanguageRule`/`AnalysisStratumRule` and mirror exactly what the
+   engine's own unapplication does (strata outermost-first, each stratum's phonological rules
+   reversed).
+3. Gates: build green, full suite green (pure additive change).
+
+### I1 — env-pattern→NFA compiler + Exact-tier substitution compiler
+
+1. New `EnvNfaCompiler` (or private to the new compiler class): recursively map a
+   `Pattern<Word, int>` to an NFA fragment of identity pass-through arcs inside the rule's
+   transducer. Node handling — this is the COMPLETE inventory, handle all four:
+   `Constraint` → one identity arc labeled with its FeatureStruct; `Quantifier` (0/1, 0/∞, 1/∞,
+   bounded n..m) → optional edges / self-loops / unrolled repeats; `Group` → sequence;
+   `Alternation` → branch-and-rejoin. **Quantified env spans are what make long-distance harmony
+   Exact-tier** (an "any consonants*" span is just a self-loop) — do not relegate quantifiers to
+   Permissive; they are cheap here. Check how word-edge anchors appear in env patterns
+   (`HCFeatureSystem` anchor annotations) and gate on word start/end if expressible; if awkward,
+   drop anchor gating → Permissive with reason "anchor".
+2. New compiler (new file, e.g. `RuleInverseCompiler.cs`; leave v1 `PhonologyRuleCompiler`
+   untouched until I7 retirement): for each `RewriteRule` subrule, build the inverse transducer:
+   identity self-loops at state 0 for every alphabet segment AND boundary character (boundaries
+   matter from I4 on); one branch per concrete effect: enumerate alphabet segments unifying with
+   the Lhs constraint(s), determine each one's output **by probing the rule's own compiled
+   synthesis rule in isolation** (reuse v1's proven probe trick per concrete segment — do NOT
+   reimplement HC feature arithmetic), and add `[left-env fragment] out:in [right-env fragment]`
+   branches. Multi-segment Lhs = a chain of out_i:in_i arcs (probe the whole window). α-variables
+   in target or env: enumerate concrete alphabet bindings via unification (bounded by alphabet) —
+   the env↔target agreement (Indonesian-nasal-assimilation-style) falls out of enumerating
+   consistent concrete combos. MPR/syntactic-feature-gated subrules: compile ungated → Permissive
+   ("mpr-gate dropped").
+3. Tests (new `RuleInverseCompilerTests.cs`), at the TRANSDUCER level before any walker exists:
+   feed symbol sequences through the automaton by hand (a tiny test-local interpreter is fine),
+   assert accepted surface→underlying mappings and rejected ones, for: plain substitution,
+   left+right env, quantified env span, α-variable agreement, a 2-segment Lhs.
+4. Gates: full suite green; tier report shows Indonesian's 5 rules ≥ Permissive (expected: 3–4
+   Exact once boundaries land in I4; before I4 the boundary-env rules will be Permissive — note it,
+   don't fight it yet).
+
+### I2 — the chain walker
+
+1. Generalize `AnalyzeComposed` from one Pinv to a chain — and make the existing single-Pinv path
+   DELEGATE to a length-1 chain, so there is ONE walker, not two drifting copies, and every
+   existing lockstep test keeps guarding the new code. Config = `(int[] ruleStates, trieConfig)`;
+   generalize `PConfigKey` to hash the vector.
+2. Per surface segment: cascade the symbol down the chain — at level i, arcs consuming the
+   incoming symbol (unification match); each emits one symbol to level i−1 (or nothing, ε-output,
+   from I3 on); level 0's emission must unify a trie arc (advance trie, accrue tokens) exactly as
+   today. Closure step (generalizing `ComposedClosure`): trie ε-arcs, plus PER-LEVEL ε-input arcs
+   — a rule at level i may spontaneously emit a symbol downward (deletion restoration, I3;
+   boundary insertion, I4) that cascades through levels i−1…0 to the trie.
+3. Toy tests (each: engine parses it, CURRENT composite misses it — assert that baseline first —
+   chain covers it, a non-word stays unparsed):
+   - **Word-internal rule**: a rule firing inside the root, conditioned ≥3 segments away from any
+     morpheme boundary (junction probing provably can't see it).
+   - **Two-rule word-internal feeding chain**: rule A's output creates rule B's context,
+     mid-root.
+   - **The marquee general-case test — long-distance harmony**: a suffix vowel agreeing in some
+     feature with the FIRST root vowel across an arbitrary consonant span (quantified env). This
+     is the test that certifies "general", not "two languages".
+4. Gates: full suite green; both real corpora unchanged (chain not yet wired into the composite —
+   these tests construct the chain directly); stats battery on the toy grammars (frontier sizes
+   printed, sanity-check the "rules sit in identity state almost everywhere" claim).
+
+### I3 — deletion-inverse and epenthesis-inverse
+
+1. Deletion (φ→∅): ε-input restoration arcs bracketed by env fragments, exactly v1's concept but
+   through the new compiler; **cap restorations per rule per word** (reuse the engine's own
+   deletion-reapplication bound as the default — find it on `Morpher`; make it a knob). An
+   unconditioned deletion is now compilable (the trie prunes restorations in lockstep) but respect
+   the cap strictly.
+2. Epenthesis (∅→ψ): ε-OUTPUT arcs — consume the epenthesized surface segment, emit nothing
+   (this is what I0's arc extension exists for). Trivially bounded.
+3. Toy tests: word-internal deletion recovered; epenthesis recovered; both with env gating; a
+   non-word rejected for each; cap respected (a word demanding more restorations than the cap
+   falls to unparsed, not a hang).
+
+### I4 — the boundary tape (the principled fix junction probing routed around)
+
+1. Trie build: stop dropping boundary nodes from root/affix chains — build boundary arcs. The
+   BARE walk must treat boundary-labeled arcs as free (ε) moves so its behavior is byte-identical;
+   the chain walk treats them as real symbols. Expect `StateCount` to GROW (each `+` in an affix
+   like `meⁿ+` becomes an arc+state) — measure and record the delta; the H-era state-count lesson
+   applies: any coverage/soundness drift is a bug, a state-count change alone is not.
+2. Chain walk: a global "insert boundary" ε-move — emits a boundary symbol at the TOP of the
+   chain, which passes through every rule's boundary-identity self-loops (from I1.2) down to a
+   trie boundary arc. Only survives where the trie actually has a boundary — the same
+   lexicon-constrains-restoration argument as deletions. Cap insertions per word (configurable;
+   default generous, e.g. 8).
+3. Now boundary-conditioned rules' env fragments (which reference `BoundaryMarker` FeatureStructs)
+   gate correctly on intermediate tapes — the v1 `_alphabet`-excludes-boundaries bug is obsolete
+   rather than fixed.
+4. Gates: bare-walk analyses byte-identical on BOTH corpora (the risky refactor — this gate is the
+   whole point); then the marquee cross-check: **Indonesian with junction probing DISABLED and the
+   chain ENABLED must independently cover all non-redup meN- words** — proving the general
+   mechanism subsumes the special case rather than coexisting untested beside it. Tier report:
+   Indonesian's boundary-env rules move Permissive → Exact.
+
+### I5 — metathesis + application-semantics honesty
+
+1. `MetathesisRule` inverse: bounded window swap — a hold-one-symbol transducer (state remembers
+   the held concrete segment; ~alphabet-sized state count, fine).
+2. **Self-feeding iterative rules** (`ApplicationMode == Iterative` where the output can create a
+   new context for the same rule): one transducer pass models one simultaneous sweep, which
+   under-covers self-feeding. Detect the shape (output unifies the rule's own env/target); flag it
+   in the tier report ("iterative-self-feeding: may under-cover"); OPTIONALLY chain the rule's
+   inverse twice consecutively when detected — implement only if a toy test demonstrates a real
+   miss, otherwise the flag + engine fallback is the honest v-next residual.
+3. RTL `Direction`: the chain walks LTR regardless; for most rules this is absorbed by the
+   superset principle; flag RTL rules Permissive ("direction").
+
+### I6 — the beam cap (closes the oldest open KNOWN_GAPS item)
+
+1. Max live configurations per word across `AnalyzeShape`/`AnalyzeComposed`/the chain (one shared
+   implementation — they're one walker after I2). Default generous (e.g. 10,000), ctor knob.
+   Overflow → stop that word, count it, surface via `ProbeReport.BeamOverflows` and an analyzer
+   property. Never throw, never hang.
+2. Toy pathological test: a grammar+word engineered to explode the frontier (many Permissive-tier
+   rules × ambiguous unification paths); assert graceful "unparsed", bounded wall-time.
+3. This is also the Identity-skip escape hatch's trigger: if a real grammar's rule blows the beam,
+   the tier report + per-rule skip knob is the response, recorded in diagnostics.
+
+### I7 — wiring, measurement, retirement by evidence
+
+1. `ChainPhonologyProposer` replaces `LockstepPhonologyProposer` in `CompositeProposer.ForLanguage`
+   and `FstCoverageProbe.ForLanguage`; chain built once per language.
+2. Full battery, stats-battery reported for EVERY row (states incl. boundary delta, build ms
+   cold+warm, walk p50/p95 chain-on vs chain-off, coverage, unsound): both corpora must hold
+   121/121 and the Sena guarded slice, 0 unsound. Walk p50 regression budget with chain on:
+   ≤ ~1.5×; if exceeded, ship the chain OPT-IN (composite keeps junction probing as default fast
+   path) and record the decision — do not silently eat a regression, do not silently drop the
+   chain.
+3. Retirement strictly by measurement, one commit each: `ComposedPhonologyProposer` and
+   `ForwardSynthesisProposer` (+ its flag threading) go if the chain matches or beats them
+   everywhere they fire; v1 `PhonologyRuleCompiler`'s probing internals go once nothing consumes
+   them (keep the `InversePhonology` type — it's the chain's substrate); `LeverTwoSpikeTests`'
+   hand-built transducers become tests OF the new compiler (assert the compiler now GENERATES what
+   the spike hand-built) rather than being deleted. Junction probing (`DeletionJunctions` + skip
+   arcs) is retired ONLY if chain-on/probing-off matches coverage without blowing the p50 budget;
+   otherwise both stay (probing = precision fast path, chain = completeness backstop) — either
+   outcome is fine, but it must be a measured decision.
+4. Docs: sweep `FST_FAST_PATH_PLAN.md` KNOWN_GAPS (boundary gap, v1 scope, beam cap, §3b — all
+   close), update both plans' STATUS blocks.
+
+### I8 (optional backlog, small, independent) — the last two uncovered MorphOps
+
+After I7 the fast path covers every REGULAR HC construct (all rewrite phonology incl. harmony and
+feeding, metathesis, morphotactics, compounding ≤2 roots) plus peels for non-regular copying. The
+only remaining `UncoveredOps` are `MorphOp.Clitic` (clitic strata compile like affix layers — a
+trie-build extension, likely small) and `MorphOp.Process`/`ModifyFromInput` (simulfix = a
+feature-change over stem segments — expressible as substitution-variant arcs over root chains, or
+left as engine fallback). Neither is needed by any grammar in hand; spec them properly when one is.
+
+### What "general" still does NOT mean (honest boundary)
+
+Unbounded copying (full/partial reduplication) is provably non-regular and stays a peel — that is
+not a limitation of this design but of finite-state mathematics; every FST toolkit ever shipped
+has the same carve-out (xfst's compile-replace is a two-pass trick, not a counterexample).
+Compounding stays bounded at 2 roots (the loop's bound; lift to `MaxStemCount` if a grammar needs
+3). Self-feeding iterative rules may under-cover until I5's optional doubling is implemented —
+flagged, never silent. And the whole edifice keeps the propose-and-verify contract: the chain
+proposes, `FstReplay` confirms, so even a compiler bug costs coverage, never a wrong answer.
+
+Original short design notes (superseded by the spec above, kept for continuity):
 1. Compile each `RewriteRule` subrule to its own small INVERSE transducer over the concrete
    segment alphabet (states = position in the λ·φ·ρ window ⇒ ~5–10 states/rule; textbook
-   construction; replaces `PhonologyRuleCompiler`'s probing v1). Deletion-inverse inserts
-   (bounded by the reapplication cap); epenthesis-inverse deletes; metathesis is a bounded swap;
-   α-variables expand over the concrete alphabet (bounded).
-2. Generalize `AnalyzeComposed` from ONE `InversePhonology` to a CHAIN: a configuration is
-   `(rule₁-state, …, ruleₙ-state, trie-state)`, rules in reverse stratum order — plan §3b of
-   `FST_FAST_PATH_PLAN.md`, which this section supersedes in detail. In practice almost every rule
-   sits in its identity state almost everywhere, so the live frontier multiplier is small.
+   construction; replaces `PhonologyRuleCompiler`'s probing v1).
+2. Generalize `AnalyzeComposed` from ONE `InversePhonology` to a CHAIN — plan §3b of
+   `FST_FAST_PATH_PLAN.md`, which this section supersedes in detail.
 3. Keep boundary nodes as trie arcs (ε on surface, matchable by rule transducers on the
-   intermediate tapes) — the principled fix for the boundary gap that junction probing routed
-   around; kill `FstTemplateAnalyzer._filter`'s boundary-dropping for the composed walk only.
+   intermediate tapes).
 4. Add the frontier **beam cap** (the standing Phase-F/KNOWN_GAPS item) as part of this work —
    overflow ⇒ word counted unparsed, never wrong, never a hang.
 5. Gates: all existing toy tests + both real corpora unchanged; new toy tests for a word-internal
@@ -559,4 +761,4 @@ structurally impossible; the risk moves to walk-time frontier width, bounded by 
 | H (build-time regression) | ✅ done (H1+H2; H3 struck — not a real bug) |
 | G1 (suffix-peel in separator scan) | ✅ done (Indonesian now 121/121) |
 | G2 (compound loop + FstReplay fix) | ✅ done (`ndikhali` 8/8 exact parity; also needed `DerivableToCategory` extension the spec missed) |
-| I (lazy per-rule chain — the true FST) | multi-day; only when a grammar needs it |
+| I (lazy per-rule chain — the true FST) | **FULL EXECUTION SPEC ready (I0–I7 + optional I8), ~6–9 days across 7 commit-gated milestones** |

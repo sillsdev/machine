@@ -36,9 +36,12 @@
 > category-transition edge for a root to reach a POST-COMPOUND-gated template). **Both real
 > grammars this plan and its follow-up target are now fully covered on every word measured.**
 > **If picking this up next**, the only remaining item is Phase I in `FST_FULL_GRAMMAR_PLAN.md` —
-> the lazy per-rule-chain generalization (the true-FST path), a design-only spec not needed by
-> either current grammar; build it only when a grammar that structurally needs it (word-internal
-> interacting phonology, long-distance harmony) shows up.
+> the lazy per-rule-chain generalization (the true-FST path). **As of 2026-07-03 it is a FULL
+> execution spec (milestones I0–I7 + optional I8, ~6–9 days, commit-gated)**, targeting
+> correct-by-construction coverage of arbitrary regular HC grammars (word-internal phonology,
+> long-distance harmony, deep feeding chains), not just the two measured ones. It also closes,
+> properly, several KNOWN_GAPS below: the `PhonologyRuleCompiler` boundary gap and v1 scope limits
+> (superseded by the new per-rule compiler), the frontier beam cap (I6), and §3b's chain walker.
 
 **Audience:** an executing agent (Sonnet) working in this worktree
 (`C:\Users\johnm\Documents\repos\machine-fst-advisor`, branch `fst-advisor`, rebased on `hc-rustify`).
