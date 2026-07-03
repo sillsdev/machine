@@ -95,7 +95,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing && output.Count == 0)
                 _morpher.TraceManager.EndApplyStratum(_stratum, input);
 
-            ElapsedTime += Stopwatch.GetTimestamp() - startTime;
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
             AddRuleStats(output.Count);
             return output;
         }

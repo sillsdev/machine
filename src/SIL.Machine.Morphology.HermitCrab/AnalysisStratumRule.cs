@@ -64,7 +64,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             AddSubRule(_prulesRule);
             AddSubRule(_templatesRule);
-            AddSubRule( _mrulesRule);
+            AddSubRule(_mrulesRule);
         }
 
         private IRule<Word, ShapeNode> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
@@ -150,7 +150,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     break;
             }
 
-            ElapsedTime += Stopwatch.GetTimestamp() - startTime;
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
             AddRuleStats(output.Count);
             return output;
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
@@ -11,7 +12,7 @@ namespace SIL.Machine.Rules
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     /// <typeparam name="TOffset"></typeparam>
-    public abstract class InstrumentedRule<TData, TOffset>: IRule<TData, TOffset>
+    public abstract class InstrumentedRule<TData, TOffset> : IRule<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
         public string Name { get; set; }
@@ -22,6 +23,10 @@ namespace SIL.Machine.Rules
 
         public InstrumentedRule() { }
 
+        /// <summary>
+        /// Add sub-rules to the rule statisics.
+        /// </summary>
+        /// <param name="rules"></param>
         protected void AddSubRules(IEnumerable<IRule<TData, TOffset>> rules)
         {
             foreach (IRule<TData, TOffset> rule in rules)
@@ -30,23 +35,52 @@ namespace SIL.Machine.Rules
             }
         }
 
-        protected void AddSubRule(IRule<TData, TOffset>rule)
+        protected void AddSubRule(IRule<TData, TOffset> rule)
         {
             SubRules.Add(rule as InstrumentedRule<TData, TOffset>);
         }
 
+        /// <summary>
+        /// Add input count and output count to the rule statistics.
+        /// </summary>
         protected void AddRuleStats(int outputCount)
         {
-            InputCount++;
-            OutputCount += outputCount;
+            if (outputCount > 0)
+            {
+                InputCount++;
+                OutputCount += outputCount;
+            }
         }
 
+        /// <summary>
+        /// Add elapsed time to the rule statistics.
+        /// </summary>
+        protected void AddElapsedTime(long elapsedTime)
+        {
+            ElapsedTime += elapsedTime;
+        }
+
+        /// <summary>
+        /// Sort SubRules unless the order matters.
+        /// </summary>
+        public void SortSubRules()
+        {
+            if (Name == "Analysis" || Name == "Synthesis" || Name == "RuleCascade")
+            {
+                return;
+            }
+            SubRules = SubRules.OrderByDescending(rule => rule.OutputCount).ToList();
+        }
+
+        /// <summary>
+        /// Clear all rule statistics.
+        /// </summary>
         public void ClearStats()
         {
             InputCount = 0;
             OutputCount = 0;
             ElapsedTime = 0;
-            foreach (var rule in SubRules)
+            foreach (InstrumentedRule<TData, TOffset> rule in SubRules)
             {
                 rule.ClearStats();
             }

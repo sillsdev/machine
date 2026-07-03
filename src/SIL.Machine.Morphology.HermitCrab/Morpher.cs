@@ -55,7 +55,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _synthesisRule = lang.CompileSynthesisRule(this);
             ((InstrumentedRule<Word, ShapeNode>)_synthesisRule).Name = "Synthesis";
             MaxStemCount = 2;
-            MaxUnapplications = 0;
+            MaxUnapplications = 1000;
             MergeEquivalentAnalyses = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
@@ -164,6 +164,29 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return matches;
             }
             return syntheses;
+        }
+
+        /// <summary>
+        /// Get the top-level rule statistics.
+        /// </summary>
+        public IEnumerable<InstrumentedRule<Word, ShapeNode>> GetRuleStats()
+        {
+            return new List<InstrumentedRule<Word, ShapeNode>>
+            {
+                _analysisRule as InstrumentedRule<Word, ShapeNode>,
+                _synthesisRule as InstrumentedRule<Word, ShapeNode>,
+            };
+        }
+
+        /// <summary>
+        /// Clear all rule statistics.
+        /// </summary>
+        public void ClearRuleStats()
+        {
+            foreach (var rule in GetRuleStats())
+            {
+                rule.ClearStats();
+            }
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
@@ -23,6 +24,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public override IEnumerable<Word> Apply(Word input)
         {
+            long startTime = Stopwatch.GetTimestamp();
             var inputSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
             var tempSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -47,6 +49,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 inputSet = outputSet;
             }
 
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
             AddRuleStats(results.Count());
             return results;
         }
