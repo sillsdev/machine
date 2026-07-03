@@ -184,11 +184,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public IEnumerable<InstrumentedRule<Word, ShapeNode>> GetRuleStats()
         {
-            return new List<InstrumentedRule<Word, ShapeNode>>
+            var list = new List<InstrumentedRule<Word, ShapeNode>>();
+            if (_analysisRule is InstrumentedRule<Word, ShapeNode>)
             {
-                _analysisRule as InstrumentedRule<Word, ShapeNode>,
-                _synthesisRule as InstrumentedRule<Word, ShapeNode>,
-            };
+                list.Add(_analysisRule as InstrumentedRule<Word, ShapeNode>);
+            }
+            if (_synthesisRule is InstrumentedRule<Word, ShapeNode>)
+            {
+                list.Add(_synthesisRule as InstrumentedRule<Word, ShapeNode>);
+            }
+            return list;
         }
 
         /// <summary>
@@ -196,7 +201,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public void ClearRuleStats()
         {
-            foreach (var rule in GetRuleStats())
+            foreach (InstrumentedRule<Word, ShapeNode> rule in GetRuleStats())
             {
                 rule.ClearStats();
             }

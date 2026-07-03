@@ -35,7 +35,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     )
                 );
             }
-            AddSubRules(_rules);
         }
 
         public override IEnumerable<Word> Apply(Word input)
