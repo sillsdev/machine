@@ -29,6 +29,13 @@ namespace SIL.Machine.Rules
         )
             : base(rules, multiApp, comparer) { }
 
+        private int _maxAlternatives = 0;
+
+        public void SetMaxAlternatives(int maxAlternatives)
+        {
+            _maxAlternatives = maxAlternatives;
+        }
+
         public override IEnumerable<TData> Apply(TData input)
         {
             var output = new ConcurrentStack<TData>();
@@ -50,6 +57,10 @@ namespace SIL.Machine.Rules
                                 if (results.Length > 0)
                                 {
                                     output.PushRange(results);
+                                    if (_maxAlternatives > 0 && output.Count > _maxAlternatives)
+                                    {
+                                        throw new TimeoutException("MaxAlternatives exceeded");
+                                    }
 
                                     Tuple<TData, HashSet<int>>[] workItems = results
                                         .Where(res => !Comparer.Equals(work.Item1, res))

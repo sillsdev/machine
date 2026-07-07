@@ -40,6 +40,33 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void AnalyzeWord_MaxAlternatives()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        morpher.MaxAlternatives = 1;
+
+        Assert.Throws<TimeoutException>(() => morpher.AnalyzeWord("sagd"));
+    }
+
+    [Test]
     public void AnalyzeWord_CanAnalyzeLinear_ReturnsCorrectAnalysis()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

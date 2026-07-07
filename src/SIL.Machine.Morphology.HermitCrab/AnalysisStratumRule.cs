@@ -101,12 +101,23 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public IEnumerable<Word> Apply(Word input)
         {
+            int alternativeCount = 0;
+            return CappedApply(input, ref alternativeCount);
+        }
+
+        internal IEnumerable<Word> CappedApply(Word input, ref int alternativeCount)
+        {
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
             Word origInput = input;
             input = input.Clone();
             input.Stratum = _stratum;
+
+            if (_mrulesRule is ParallelCombinationRuleCascade<Word, ShapeNode> parallelMRulesRule)
+            {
+                parallelMRulesRule.SetMaxAlternatives(_morpher.MaxAlternatives);
+            }
 
             _prulesRule.Apply(input);
             input.Freeze();
@@ -125,6 +136,14 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
+                alternativeCount++;
+                if (_morpher.MaxAlternatives > 0 && alternativeCount >= _morpher.MaxAlternatives)
+                {
+                    // Not literally a timeout, but serves the same purpose.
+                    // (A literal timeout would produce different results on different machines.)
+                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
+                    throw new TimeoutException("MaxAlternatives exceeded");
+                }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
                 if (mergeEquivalentAnalyses)
@@ -141,8 +160,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 output.Add(mruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
-                if (_morpher.MaxUnapplications > 0 && output.Count >= _morpher.MaxUnapplications)
-                    break;
             }
             return output;
         }

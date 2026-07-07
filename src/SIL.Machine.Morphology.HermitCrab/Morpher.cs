@@ -54,7 +54,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
-            MaxUnapplications = 0;
+            MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
@@ -76,7 +76,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// to make it possible to debug words that take 30 minutes to parse
         /// because there are too many unapplications.
         /// </summary>
-        public int MaxUnapplications { get; set; }
+        public int MaxAlternatives { get; set; }
 
         /// <summary>
         /// Merge analyses that have equivalent shapes.

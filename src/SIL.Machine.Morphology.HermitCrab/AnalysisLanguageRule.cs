@@ -10,13 +10,13 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         private readonly Morpher _morpher;
         private readonly List<Stratum> _strata;
-        private readonly List<IRule<Word, ShapeNode>> _rules;
+        private readonly List<AnalysisStratumRule> _rules;
 
         public AnalysisLanguageRule(Morpher morpher, Language language)
         {
             _morpher = morpher;
             _strata = language.Strata.Reverse().ToList();
-            _rules = _strata.Select(stratum => stratum.CompileAnalysisRule(morpher)).ToList();
+            _rules = _strata.Select(stratum => new AnalysisStratumRule(morpher, stratum)).ToList();
         }
 
         public IEnumerable<Word> Apply(Word input)
@@ -31,10 +31,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 HashSet<Word> outputSet = tempSet;
                 outputSet.Clear();
+                int alternativeCount = 0;
 
                 foreach (Word inData in inputSet)
                 {
-                    foreach (Word outData in _rules[i].Apply(inData))
+                    foreach (Word outData in _rules[i].CappedApply(inData, ref alternativeCount))
                     {
                         outputSet.Add(outData);
                         results.Add(outData);
