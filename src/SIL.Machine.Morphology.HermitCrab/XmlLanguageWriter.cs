@@ -193,22 +193,37 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             langElem.Add(new XElement("Strata", _language.Strata.Select(WriteStratum)));
 
-            if (_language.MorphemeCoOccurrenceRules.Count > 0)
+            // A caller (e.g. FieldWorks' HCLoader) can populate these rules from morphemes/allomorphs that never
+            // end up written under Strata above — e.g. an ad-hoc prohibition still targets the affix in a slot
+            // whose owning inflectional-affix template was disabled. Skip rules we can't resolve an id for
+            // instead of throwing, since dropping an unwritable constraint is preferable to failing the whole
+            // export.
+            (Morpheme Key, MorphemeCoOccurrenceRule Rule)[] writableMorphemeCoOccurRules = _language
+                .MorphemeCoOccurrenceRules.Where(t =>
+                    _morphemes.ContainsKey(t.Key) && t.Rule.Others.All(m => _morphemes.ContainsKey(m))
+                )
+                .ToArray();
+            if (writableMorphemeCoOccurRules.Length > 0)
             {
                 langElem.Add(
                     new XElement(
                         "MorphemeCoOccurrenceRules",
-                        _language.MorphemeCoOccurrenceRules.Select(t => WriteMorphemeCoOccurrenceRule(t.Key, t.Rule))
+                        writableMorphemeCoOccurRules.Select(t => WriteMorphemeCoOccurrenceRule(t.Key, t.Rule))
                     )
                 );
             }
 
-            if (_language.AllomorphCoOccurrenceRules.Count > 0)
+            (Allomorph Key, AllomorphCoOccurrenceRule Rule)[] writableAllomorphCoOccurRules = _language
+                .AllomorphCoOccurrenceRules.Where(t =>
+                    _allomorphs.ContainsKey(t.Key) && t.Rule.Others.All(a => _allomorphs.ContainsKey(a))
+                )
+                .ToArray();
+            if (writableAllomorphCoOccurRules.Length > 0)
             {
                 langElem.Add(
                     new XElement(
                         "AllomorphCoOccurrenceRules",
-                        _language.AllomorphCoOccurrenceRules.Select(t => WriteAllomorphCoOccurrenceRule(t.Key, t.Rule))
+                        writableAllomorphCoOccurRules.Select(t => WriteAllomorphCoOccurrenceRule(t.Key, t.Rule))
                     )
                 );
             }
