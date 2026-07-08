@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.ObjectModel;
@@ -11,6 +12,7 @@ namespace SIL.Machine.Rules
         private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
         private readonly bool _multiApp;
         private readonly IEqualityComparer<TData> _comparer;
+        protected int _maxAlternatives;
 
         protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
             : this(rules, false) { }
@@ -45,6 +47,17 @@ namespace SIL.Machine.Rules
         public IReadOnlyList<IRule<TData, TOffset>> Rules
         {
             get { return _rules; }
+        }
+
+        public void SetMaxAlternatives(int maxApplications)
+        {
+            _maxAlternatives = maxApplications;
+        }
+
+        public void CheckMaxAlternatives(IEnumerable<TData> output)
+        {
+            if (_maxAlternatives > 0 && output.Count() > _maxAlternatives)
+                throw new TimeoutException("MaxAlternatives exceeded");
         }
 
         public abstract IEnumerable<TData> Apply(TData input);

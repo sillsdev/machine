@@ -23,7 +23,10 @@ namespace SIL.Machine.Rules
                 outputSet.Clear();
 
                 foreach (TData inData in inputSet)
+                {
                     outputSet.UnionWith(ApplyRule(Rules[i], i, inData));
+                    CheckMaxAlternatives(outputSet);
+                }
 
                 tempSet = inputSet;
                 inputSet = outputSet;

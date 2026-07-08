@@ -10,11 +10,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     internal class AnalysisStratumRule : IRule<Word, ShapeNode>
     {
-        private readonly IRule<Word, ShapeNode> _mrulesRule;
+        private readonly RuleCascade<Word, ShapeNode> _mrulesRule;
         private readonly IRule<Word, ShapeNode> _prulesRule;
-        private readonly IRule<Word, ShapeNode> _templatesRule;
+        private readonly RuleBatch<Word, ShapeNode> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
+        private int _maxAlternatives;
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
@@ -99,13 +100,20 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        public void SetMaxAlternatives(int maxAlternatives)
+        {
+            _maxAlternatives = maxAlternatives;
+            _mrulesRule.SetMaxAlternatives(maxAlternatives);
+            _templatesRule.SetMaxAlternatives(maxAlternatives);
+        }
+
         public IEnumerable<Word> Apply(Word input)
         {
             int alternativeCount = 0;
-            return CappedApply(input, ref alternativeCount);
+            return Apply(input, ref alternativeCount);
         }
 
-        internal IEnumerable<Word> CappedApply(Word input, ref int alternativeCount)
+        internal IEnumerable<Word> Apply(Word input, ref int alternativeCount)
         {
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
@@ -113,11 +121,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             Word origInput = input;
             input = input.Clone();
             input.Stratum = _stratum;
-
-            if (_mrulesRule is ParallelCombinationRuleCascade<Word, ShapeNode> parallelMRulesRule)
-            {
-                parallelMRulesRule.SetMaxAlternatives(_morpher.MaxAlternatives);
-            }
 
             _prulesRule.Apply(input);
             input.Freeze();
@@ -137,7 +140,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word mruleOutWord in mruleOutWords)
             {
                 alternativeCount++;
-                if (_morpher.MaxAlternatives > 0 && alternativeCount >= _morpher.MaxAlternatives)
+                if (_morpher.MaxAlternatives > 0 && alternativeCount >= _maxAlternatives)
                 {
                     // Not literally a timeout, but serves the same purpose.
                     // (A literal timeout would produce different results on different machines.)

@@ -31,11 +31,14 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 HashSet<Word> outputSet = tempSet;
                 outputSet.Clear();
+
+                // Limit alternatives accross all invocations of _rules[i].Apply.
                 int alternativeCount = 0;
+                _rules[i].SetMaxAlternatives(_morpher.MaxAlternatives);
 
                 foreach (Word inData in inputSet)
                 {
-                    foreach (Word outData in _rules[i].CappedApply(inData, ref alternativeCount))
+                    foreach (Word outData in _rules[i].Apply(inData, ref alternativeCount))
                     {
                         outputSet.Add(outData);
                         results.Add(outData);
