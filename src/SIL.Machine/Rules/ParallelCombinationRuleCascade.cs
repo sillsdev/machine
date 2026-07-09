@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 
@@ -35,39 +36,52 @@ namespace SIL.Machine.Rules
             var from = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
             from.Push(Tuple.Create(input, !MultipleApplication ? new HashSet<int>() : null));
             var to = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
+            Exception exception = null;
+            int alternativeCount = 0;
             while (!from.IsEmpty)
             {
                 to.Clear();
                 Parallel.ForEach(
                     from,
-                    work =>
+                    (work, state) =>
                     {
-                        for (int i = 0; i < Rules.Count; i++)
+                        try
                         {
-                            if ((work.Item2 == null || !work.Item2.Contains(i)))
+                            for (int i = 0; i < Rules.Count; i++)
                             {
-                                TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
-                                if (results.Length > 0)
+                                if ((work.Item2 == null || !work.Item2.Contains(i)))
                                 {
-                                    output.PushRange(results);
-                                    CheckMaxAlternatives(output);
+                                    TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
+                                    if (results.Length > 0)
+                                    {
+                                        output.PushRange(results);
+                                        Interlocked.Add(ref alternativeCount, results.Length);
+                                        CheckMaxAlternatives(alternativeCount);
 
-                                    Tuple<TData, HashSet<int>>[] workItems = results
-                                        .Where(res => !Comparer.Equals(work.Item1, res))
-                                        .Select(res =>
-                                            Tuple.Create(
-                                                res,
-                                                work.Item2 == null ? null : new HashSet<int>(work.Item2) { i }
+                                        Tuple<TData, HashSet<int>>[] workItems = results
+                                            .Where(res => !Comparer.Equals(work.Item1, res))
+                                            .Select(res =>
+                                                Tuple.Create(
+                                                    res,
+                                                    work.Item2 == null ? null : new HashSet<int>(work.Item2) { i }
+                                                )
                                             )
-                                        )
-                                        .ToArray();
-                                    if (workItems.Length > 0)
-                                        to.PushRange(workItems);
+                                            .ToArray();
+                                        if (workItems.Length > 0)
+                                            to.PushRange(workItems);
+                                    }
                                 }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            state.Stop();
+                            exception = ex;
+                        }
                     }
                 );
+                if (exception != null)
+                    throw exception;
                 ConcurrentStack<Tuple<TData, HashSet<int>>> temp = from;
                 from = to;
                 to = temp;

@@ -39,7 +39,7 @@ namespace SIL.Machine.Rules
                     if (!MultipleApplication || !Comparer.Equals(input, result))
                         ApplyRules(result, MultipleApplication ? i : i + 1, output);
                     output.Add(result);
-                    CheckMaxAlternatives(output);
+                    CheckMaxAlternatives(output.Count);
                 }
             }
         }

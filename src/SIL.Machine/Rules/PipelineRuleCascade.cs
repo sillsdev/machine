@@ -25,7 +25,7 @@ namespace SIL.Machine.Rules
                 foreach (TData inData in inputSet)
                 {
                     outputSet.UnionWith(ApplyRule(Rules[i], i, inData));
-                    CheckMaxAlternatives(outputSet);
+                    CheckMaxAlternatives(outputSet.Count);
                 }
 
                 tempSet = inputSet;

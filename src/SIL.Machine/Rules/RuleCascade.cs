@@ -54,9 +54,9 @@ namespace SIL.Machine.Rules
             _maxAlternatives = maxApplications;
         }
 
-        public void CheckMaxAlternatives(IEnumerable<TData> output)
+        public void CheckMaxAlternatives(int alternativeCount)
         {
-            if (_maxAlternatives > 0 && output.Count() > _maxAlternatives)
+            if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
                 throw new TimeoutException("MaxAlternatives exceeded");
         }
 

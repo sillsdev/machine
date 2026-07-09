@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 
@@ -35,31 +36,44 @@ namespace SIL.Machine.Rules
             var from = new ConcurrentStack<Tuple<TData, int>>();
             from.Push(Tuple.Create(input, 0));
             var to = new ConcurrentStack<Tuple<TData, int>>();
+            Exception exception = null;
+            int alternativeCount = 0;
             while (!from.IsEmpty)
             {
                 to.Clear();
                 Parallel.ForEach(
                     from,
-                    work =>
+                    (work, state) =>
                     {
-                        for (int i = work.Item2; i < Rules.Count; i++)
+                        try
                         {
-                            TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
-                            if (results.Length > 0)
+                            for (int i = work.Item2; i < Rules.Count; i++)
                             {
-                                output.PushRange(results);
-                                CheckMaxAlternatives(output);
+                                TData[] results = ApplyRule(Rules[i], i, work.Item1).ToArray();
+                                if (results.Length > 0)
+                                {
+                                    output.PushRange(results);
+                                    Interlocked.Add(ref alternativeCount, results.Length);
+                                    CheckMaxAlternatives(alternativeCount);
 
-                                Tuple<TData, int>[] workItems = results
-                                    .Where(res => !MultipleApplication || !Comparer.Equals(work.Item1, res))
-                                    .Select(res => Tuple.Create(res, MultipleApplication ? i : i + 1))
-                                    .ToArray();
-                                if (workItems.Length > 0)
-                                    to.PushRange(workItems);
+                                    Tuple<TData, int>[] workItems = results
+                                        .Where(res => !MultipleApplication || !Comparer.Equals(work.Item1, res))
+                                        .Select(res => Tuple.Create(res, MultipleApplication ? i : i + 1))
+                                        .ToArray();
+                                    if (workItems.Length > 0)
+                                        to.PushRange(workItems);
+                                }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            state.Stop();
+                            exception = ex;
                         }
                     }
                 );
+                if (exception != null)
+                    throw exception;
                 ConcurrentStack<Tuple<TData, int>> temp = from;
                 from = to;
                 to = temp;
