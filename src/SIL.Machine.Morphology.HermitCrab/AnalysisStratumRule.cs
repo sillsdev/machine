@@ -140,7 +140,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word mruleOutWord in mruleOutWords)
             {
                 alternativeCount++;
-                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                if (_maxAlternatives > 0 && alternativeCount >= _maxAlternatives)
                 {
                     // Not literally a timeout, but serves the same purpose.
                     // (A literal timeout would produce different results on different machines.)
