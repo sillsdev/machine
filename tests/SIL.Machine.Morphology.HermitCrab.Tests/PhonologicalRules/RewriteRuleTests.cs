@@ -1380,7 +1380,11 @@ public class RewriteRuleTests : HermitCrabTestBase
             Name = "Allophonic",
             MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
         };
-        var surface = new Stratum(Table1) { Name = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+        var surface = new Stratum(Table1)
+        {
+            Name = "Surface",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
 
         var entry = new LexEntry
         {

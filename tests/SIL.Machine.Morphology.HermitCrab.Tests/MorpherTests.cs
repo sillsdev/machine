@@ -775,9 +775,7 @@ public class MorpherTests : HermitCrabTestBase
                 List<Word> onResult = gateOn.ParseWord(word).ToList();
                 Assert.That(
                     onResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal),
-                    Is.EqualTo(
-                        offResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal)
-                    ),
+                    Is.EqualTo(offResult.Select(WordResultSignature).OrderBy(s => s, System.StringComparer.Ordinal)),
                     $"lexical-gate-on parse of '{word}' must match gate-off parse"
                 );
             }

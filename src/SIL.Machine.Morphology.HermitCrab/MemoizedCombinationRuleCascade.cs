@@ -75,7 +75,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 var replayed = new List<Word>(entry.Results.Count);
                 foreach (Word storedResult in entry.Results)
                 {
-                    Word replay = storedResult.ReplayOnto(input, entry.MruleTrailPrefixLength, entry.NonHeadPrefixLength);
+                    Word replay = storedResult.ReplayOnto(
+                        input,
+                        entry.MruleTrailPrefixLength,
+                        entry.NonHeadPrefixLength
+                    );
                     output.Add(replay);
                     replayed.Add(replay);
                 }

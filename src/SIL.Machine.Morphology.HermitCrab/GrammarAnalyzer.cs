@@ -56,7 +56,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (stratum.MorphologicalRules.OfType<CompoundingRule>().Any())
                     return null;
 
-                int longestRoot = stratum.Entries.SelectMany(e => e.Allomorphs).Select(SegmentCount).DefaultIfEmpty(0).Max();
+                int longestRoot = stratum
+                    .Entries.SelectMany(e => e.Allomorphs)
+                    .Select(SegmentCount)
+                    .DefaultIfEmpty(0)
+                    .Max();
                 bound += longestRoot;
 
                 foreach (AffixProcessRule rule in stratum.MorphologicalRules.OfType<AffixProcessRule>())

@@ -87,10 +87,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return false;
             if (!_shape.ValueEquals(other._shape))
                 return false;
-            if (
-                !_syntacticFS.ValueEquals(other._syntacticFS)
-                || !_realizationalFS.ValueEquals(other._realizationalFS)
-            )
+            if (!_syntacticFS.ValueEquals(other._syntacticFS) || !_realizationalFS.ValueEquals(other._realizationalFS))
                 return false;
             return RuleCountsEqual(_ruleCounts, other._ruleCounts);
         }
