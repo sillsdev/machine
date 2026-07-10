@@ -12,17 +12,16 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// "Gate B" -- Gate A, a mirror-image synthesis-side bound, was attempted and reverted; see the note
     /// in <see cref="Morpher.SynthesizeAnalysis"/>). The bound is a deliberately loose over-approximation
     /// -- summed across every rule's own already-declared reapplication limit
-    /// (<see cref="Morphology.HermitCrab.MorphologicalRules.AffixProcessRule.MaxApplicationCount"/>,
-    /// <see cref="Morpher.DeletionReapplications"/>), never estimated -- so it can prune a candidate only
-    /// when NO combination of rules in the grammar could ever produce something that long, regardless of
-    /// which specific root or derivation path is under consideration. Returns null (meaning "no admissible
-    /// bound, gate off") the moment any rule's shape falls outside what this class knows how to measure
-    /// exactly (quantifiers/groups/alternations in a phonological Lhs/Rhs, an insertion-type rewrite
-    /// subrule -- epenthesis/expansion, whose unapplication marks surface segments optional instead of
-    /// removing them, so the running shape length stops bounding the underlying length; see LT-22613 --
-    /// or a compounding rule present at all, since compounding combines multiple full root lengths rather
-    /// than adding a bounded affix) -- per the plan's own rule: skipping only costs pruning opportunity,
-    /// an admissible bound must never be guessed.
+    /// (<see cref="Morphology.HermitCrab.MorphologicalRules.AffixProcessRule.MaxApplicationCount"/>),
+    /// never estimated -- so it can prune a candidate only when NO combination of rules in the grammar
+    /// could ever produce something that long, regardless of which specific root or derivation path is
+    /// under consideration. Returns null (meaning "no admissible bound, gate off") the moment any rule's
+    /// shape falls outside what this class knows how to measure exactly (quantifiers/groups/alternations
+    /// in a phonological Lhs/Rhs, any phonological rewrite subrule whose Lhs and Rhs segment counts differ
+    /// -- see LT-22613, and the remarks on <see cref="TryGetFlatSegmentCount"/>'s caller below -- or a
+    /// compounding rule present at all, since compounding combines multiple full root lengths rather than
+    /// adding a bounded affix) -- per the plan's own rule: skipping only costs pruning opportunity, an
+    /// admissible bound must never be guessed.
     /// </summary>
     public static class GrammarAnalyzer
     {
@@ -31,23 +30,25 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// represent: the longest root allomorph in the lexicon, plus every affix/realizational rule's own
         /// maximum possible net insertion (its allomorphs' <see cref="InsertSegments"/>/
         /// <see cref="InsertSimpleContext"/> actions, summed and multiplied by
-        /// <see cref="Morphology.HermitCrab.MorphologicalRules.AffixProcessRule.MaxApplicationCount"/>),
-        /// plus every phonological deletion-type subrule's maximum possible net restoration. Null if any
-        /// rule in the grammar can't be measured this way (see class remarks).
+        /// <see cref="Morphology.HermitCrab.MorphologicalRules.AffixProcessRule.MaxApplicationCount"/>).
+        /// Null if any rule in the grammar can't be measured this way (see class remarks) -- in
+        /// particular, every phonological rewrite subrule in the grammar must leave Lhs and Rhs segment
+        /// counts equal (a pure feature-changing rule, handled analysis-side by
+        /// <c>FeatureAnalysisRewriteRuleSpec</c>, which mutates matched segments in place and never
+        /// changes the shape's length). Any subrule where they differ -- epenthesis/expansion (Rhs longer)
+        /// or deletion/coalescence (Lhs longer) alike -- is unapplied analysis-side by
+        /// <c>EpenthesisAnalysisRewriteRuleSpec</c>/<c>NarrowAnalysisRewriteRuleSpec</c>, both of which
+        /// grow the candidate shape by inserting <c>Lhs.Count</c> new (Optional, not Deleted) nodes per
+        /// match site regardless of <c>Rhs.Count</c>, while leaving the matched Rhs-shaped region in place
+        /// (also not Deleted). <see cref="HermitCrabExtensions.SegmentCount"/> counts every non-Deleted
+        /// segment, so real per-site growth is always exactly <c>Lhs.Count</c> -- never the naively
+        /// expected <c>Lhs.Count - Rhs.Count</c>, which undercounts by <c>Rhs.Count</c> whenever
+        /// <c>Rhs.Count &gt; 0</c> (LT-22613: first found via epenthesis pruning a valid analysis as
+        /// "too long" on the default non-tracing path while the tracing path, which bypasses this gate,
+        /// parsed it correctly; the same undercount also applies to ordinary deletion/coalescence rules,
+        /// which is why the bail-out is on any count mismatch, not just Rhs longer than Lhs).
         /// </summary>
-        /// <remarks>
-        /// The phonological term is compounding, not additive: <c>AnalysisRewriteRule</c>'s Deletion
-        /// reapply loop runs <see cref="Morpher.DeletionReapplications"/> + 1 passes, and each pass is a
-        /// <c>SimultaneousPhonologicalPatternRule</c> sweep that can restore EVERY non-overlapping match
-        /// site in the current shape at once, not just one -- a real case (<c>RewriteRuleTests
-        /// .MultipleDeletionRules</c>: an 8-segment root deletes two independent "ii" clusters down to a
-        /// 4-segment surface form in one pass) needs more than "count of subrules" restored segments per
-        /// pass. Bounding the number of sites by the current running length (itself already an
-        /// over-approximation of the true pre-phonology length at this point) keeps this sound: real growth
-        /// can never exceed <c>runningLength * subruleDelta</c> per pass, since a simultaneous sweep cannot
-        /// match more sites than there are segments to match against.
-        /// </remarks>
-        public static int? ComputeMaxAnalysisLength(Language language, int deletionReapplications)
+        public static int? ComputeMaxAnalysisLength(Language language)
         {
             int bound = 0;
             foreach (Stratum stratum in language.Strata)
@@ -66,7 +67,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 )
                     bound += MaxAllomorphInsertion(rule.Allomorphs);
 
-                int phonoGrowthRate = 0;
                 foreach (RewriteRule rule in stratum.PhonologicalRules.OfType<RewriteRule>())
                 {
                     if (!TryGetFlatSegmentCount(rule.Lhs, out int lhsCount))
@@ -75,26 +75,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         if (!TryGetFlatSegmentCount(sr.Rhs, out int rhsCount))
                             return null;
-                        // Insertion-type subrule (epenthesis when Lhs is empty, expansion otherwise):
-                        // no admissible bound (LT-22613). Unlike every other unapplication this class
-                        // reasons about, insertion unapplication does not SHRINK the candidate -- it
-                        // marks the possibly-rule-inserted surface segments Optional and leaves them in
-                        // the shape (EpenthesisAnalysisRewriteRuleSpec.Unapply /
-                        // NarrowAnalysisRewriteRuleSpec.Unapply), and lexical lookup later matches with
-                        // those segments skipped. AnalysisStratumRule's gate measures the candidate with
-                        // Shape.SegmentCount, which still counts them, so a surface form that legally
-                        // outgrew the longest root via epenthesis (e.g. "buibui" from root "b+ubu")
-                        // would be pruned as unreachable on the default, non-tracing path while the
-                        // traced path -- which bypasses the gate -- parses it correctly. Per this
-                        // class's ground rule, that means return null (gate off), never guess.
-                        if (lhsCount < rhsCount)
+                        // Any subrule where Lhs and Rhs segment counts differ: no admissible bound
+                        // (LT-22613; see this method's doc comment for the full mechanism). Only a
+                        // count-preserving (pure feature-changing) subrule is safe to ignore here.
+                        if (lhsCount != rhsCount)
                             return null;
-                        if (lhsCount > rhsCount)
-                            phonoGrowthRate += lhsCount - rhsCount;
                     }
                 }
-                for (int pass = 0; pass < deletionReapplications + 1 && phonoGrowthRate > 0; pass++)
-                    bound += bound * phonoGrowthRate;
             }
             return bound;
         }

@@ -130,10 +130,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// "Gate B") -- auto-derived from the grammar (<see cref="GrammarAnalyzer.ComputeMaxAnalysisLength"/>:
         /// the longest lexicon root plus every rule's own maximum possible insertion) unless explicitly set.
         /// Setting this (including to <c>null</c>, which disables the gate entirely) overrides the
-        /// auto-derived value; re-derived fresh from the current grammar and <see cref="DeletionReapplications"/>
-        /// on every read otherwise, so it never goes stale if either changes after construction. Auto-derives
-        /// to <c>null</c> (gate off) when the grammar contains a compounding rule or a phonological rule shape
-        /// this analysis can't measure exactly -- see <see cref="GrammarAnalyzer"/>'s remarks.
+        /// auto-derived value; re-derived fresh from the current grammar on every read otherwise, so it
+        /// never goes stale if the grammar changes after construction. Auto-derives to <c>null</c> (gate
+        /// off) when the grammar contains a compounding rule or a phonological rule shape this analysis
+        /// can't measure exactly -- see <see cref="GrammarAnalyzer"/>'s remarks.
         /// </summary>
         public int? MaxAnalysisLength
         {
@@ -141,7 +141,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 return _maxAnalysisLengthOverrideSet
                     ? _maxAnalysisLengthOverride
-                    : GrammarAnalyzer.ComputeMaxAnalysisLength(_lang, DeletionReapplications);
+                    : GrammarAnalyzer.ComputeMaxAnalysisLength(_lang);
             }
             set
             {

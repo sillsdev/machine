@@ -880,11 +880,44 @@ public class MorpherTests : HermitCrabTestBase
         Allophonic.PhonologicalRules.Add(epenthesis);
         try
         {
-            Assert.That(GrammarAnalyzer.ComputeMaxAnalysisLength(Language, 0), Is.Null);
+            Assert.That(GrammarAnalyzer.ComputeMaxAnalysisLength(Language), Is.Null);
         }
         finally
         {
             Allophonic.PhonologicalRules.Remove(epenthesis);
+        }
+    }
+
+    [Test]
+    public void ComputeMaxAnalysisLength_ReturnsNull_ForDeletionRewriteRule()
+    {
+        // LT-22613 follow-up: a deletion/coalescence-type rewrite subrule (Lhs longer than Rhs) is
+        // unapplied by the same NarrowAnalysisRewriteRuleSpec as expansion, which always inserts
+        // Lhs.Count new (Optional, not Deleted) nodes per match site and leaves the matched Rhs-shaped
+        // region in place (also not Deleted) -- so real per-site growth is Lhs.Count, not the
+        // Lhs.Count - Rhs.Count this method used to budget. That undercounts by Rhs.Count whenever
+        // Rhs.Count > 0, making the bound inadmissible here too, not just for insertion.
+        var vowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Value;
+        var coalescence = new RewriteRule
+        {
+            Name = "coalescence",
+            ApplicationMode = RewriteApplicationMode.Simultaneous,
+            Lhs = Pattern<Word, int>.New().Annotation(vowel).Annotation(vowel).Value,
+        };
+        coalescence.Subrules.Add(new RewriteSubrule { Rhs = Pattern<Word, int>.New().Annotation(vowel).Value });
+        Allophonic.PhonologicalRules.Add(coalescence);
+        try
+        {
+            Assert.That(GrammarAnalyzer.ComputeMaxAnalysisLength(Language), Is.Null);
+        }
+        finally
+        {
+            Allophonic.PhonologicalRules.Remove(coalescence);
         }
     }
 }
