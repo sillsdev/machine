@@ -852,4 +852,39 @@ public class MorpherTests : HermitCrabTestBase
             Allophonic.MorphologicalRules.Remove(infix);
         }
     }
+
+    [Test]
+    public void ComputeMaxAnalysisLength_ReturnsNull_ForInsertionRewriteRule()
+    {
+        // LT-22613: an insertion-type rewrite subrule (Rhs longer than Lhs -- epenthesis when Lhs is
+        // empty) makes the analysis length bound inadmissible: its unapplication marks the inserted
+        // surface segments OPTIONAL rather than removing them (EpenthesisAnalysisRewriteRuleSpec/
+        // NarrowAnalysisRewriteRuleSpec), so a candidate's segment count at AnalysisStratumRule's gate
+        // no longer bounds the underlying length the candidate could still justify. Per this class's
+        // own ground rule, that means "no admissible bound" (null, gate off), not a guessed bound.
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var epenthesis = new RewriteRule { Name = "epenthesis", ApplicationMode = RewriteApplicationMode.Simultaneous };
+        epenthesis.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, int>.New().Annotation(highVowel).Value,
+                LeftEnvironment = Pattern<Word, int>.New().Annotation(highVowel).Value,
+            }
+        );
+        Allophonic.PhonologicalRules.Add(epenthesis);
+        try
+        {
+            Assert.That(GrammarAnalyzer.ComputeMaxAnalysisLength(Language, 0), Is.Null);
+        }
+        finally
+        {
+            Allophonic.PhonologicalRules.Remove(epenthesis);
+        }
+    }
 }

@@ -1342,6 +1342,111 @@ public class RewriteRuleTests : HermitCrabTestBase
     }
 
     [Test]
+    public void EpenthesisRuleWithMinimalLexicon()
+    {
+        // LT-22613 regression: the default (non-tracing) parse path must give the same answer as the
+        // traced path. EpenthesisRules above only passes because this fixture's large lexicon makes
+        // GrammarAnalyzer.ComputeMaxAnalysisLength's auto-derived bound big enough to hide the bug: an
+        // epenthesis rule's unapplication marks the inserted segments OPTIONAL (it never removes them,
+        // see EpenthesisAnalysisRewriteRuleSpec.Unapply), so a surface form that outgrew the longest
+        // root via epenthesis still counts all its segments at AnalysisStratumRule's length gate and
+        // was pruned as "unreachable" -- 0 parses non-traced, 1 parse traced. This grammar is
+        // EpenthesisRules sub-case (1) with the lexicon cut down to root 19 alone ("b+ubu", 4
+        // segments), so surface "buibui" (6 segments) exceeds any bound derived from the lexicon.
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var highFrontUnrndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("back-")
+            .Symbol("round-")
+            .Value;
+
+        var morphophonemic = new Stratum(Table3)
+        {
+            Name = "Morphophonemic",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
+        var allophonic = new Stratum(Table1)
+        {
+            Name = "Allophonic",
+            MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered,
+        };
+        var surface = new Stratum(Table1) { Name = "Surface", MorphologicalRuleOrder = MorphologicalRuleOrder.Unordered };
+
+        var entry = new LexEntry
+        {
+            Id = "19",
+            SyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+            Gloss = "19",
+        };
+        entry.Allomorphs.Add(new RootAllomorph(new Segments(Table3, "b+ubu", true)));
+        morphophonemic.Entries.Add(entry);
+
+        var rule4 = new RewriteRule { Name = "rule4", ApplicationMode = RewriteApplicationMode.Simultaneous };
+        allophonic.PhonologicalRules.Add(rule4);
+        rule4.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, int>.New().Annotation(highFrontUnrndVowel).Value,
+                LeftEnvironment = Pattern<Word, int>.New().Annotation(highVowel).Value,
+            }
+        );
+
+        var lang = new Language
+        {
+            Name = "EpenthesisMinimal",
+            PhonologicalFeatureSystem = Language.PhonologicalFeatureSystem,
+            SyntacticFeatureSystem = Language.SyntacticFeatureSystem,
+            Strata = { morphophonemic, allophonic, surface },
+        };
+
+        var morpher = new Morpher(TraceManager, lang);
+        AssertMorphsEqual(morpher.ParseWord("buibui"), "19");
+
+        // The same over-prune is not Simultaneous-specific -- any insertion-type subrule's
+        // unapplication leaves the inserted segments in the shape as optional nodes. This is
+        // EpenthesisRules's Iterative cons_highBackRndVowel sub-case, same minimal lexicon.
+        var highBackRndVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+        var cons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("voc-")
+            .Value;
+
+        rule4.ApplicationMode = RewriteApplicationMode.Iterative;
+        rule4.Subrules.Clear();
+        rule4.Subrules.Add(
+            new RewriteSubrule
+            {
+                Rhs = Pattern<Word, int>.New().Annotation(highFrontUnrndVowel).Value,
+                LeftEnvironment = Pattern<Word, int>.New().Annotation(cons).Value,
+                RightEnvironment = Pattern<Word, int>.New().Annotation(highBackRndVowel).Value,
+            }
+        );
+
+        morpher = new Morpher(TraceManager, lang);
+        AssertMorphsEqual(morpher.ParseWord("biubiu"), "19");
+    }
+
+    [Test]
     public void DeletionRules()
     {
         var highFrontUnrndVowel = FeatureStruct
