@@ -55,7 +55,7 @@ namespace SIL.Machine.Rules
             foreach (IRule<TData, TOffset> rule in _rules)
             {
                 output.UnionWith(rule.Apply(input));
-                if (_maxAlternatives > 0 && output.Count > _maxAlternatives)
+                if (_maxAlternatives > 0 && output.Count >= _maxAlternatives)
                     throw new TimeoutException("MaxAlternatives exceeded");
                 if (_disjunctive && output.Count > 0)
                     return output;

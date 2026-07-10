@@ -303,6 +303,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> Synthesize(string word, ConcurrentQueue<Word> analyses)
         {
             var matches = new ConcurrentBag<Word>();
+            int alternativeCount = 0;
             Exception exception = null;
             Parallel.ForEach(
                 Partitioner.Create(0, analyses.Count),
@@ -318,6 +319,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
+                                    alternativeCount++;
+                                    if (MaxAlternatives > 0 && alternativeCount >= MaxAlternatives)
+                                        throw new TimeoutException("MaxAlternatives exceeded");
                                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {
                                         if (IsMatch(word, validWord))

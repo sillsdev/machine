@@ -56,7 +56,7 @@ namespace SIL.Machine.Rules
 
         public void CheckMaxAlternatives(int alternativeCount)
         {
-            if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+            if (_maxAlternatives > 0 && alternativeCount >= _maxAlternatives)
                 throw new TimeoutException("MaxAlternatives exceeded");
         }
 
