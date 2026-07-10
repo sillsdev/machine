@@ -17,10 +17,12 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// when NO combination of rules in the grammar could ever produce something that long, regardless of
     /// which specific root or derivation path is under consideration. Returns null (meaning "no admissible
     /// bound, gate off") the moment any rule's shape falls outside what this class knows how to measure
-    /// exactly (quantifiers/groups/alternations in a phonological Lhs/Rhs, or a compounding rule present
-    /// at all, since compounding combines multiple full root lengths rather than adding a bounded affix)
-    /// -- per the plan's own rule: skipping only costs pruning opportunity, an admissible bound must never
-    /// be guessed.
+    /// exactly (quantifiers/groups/alternations in a phonological Lhs/Rhs, an insertion-type rewrite
+    /// subrule -- epenthesis/expansion, whose unapplication marks surface segments optional instead of
+    /// removing them, so the running shape length stops bounding the underlying length; see LT-22613 --
+    /// or a compounding rule present at all, since compounding combines multiple full root lengths rather
+    /// than adding a bounded affix) -- per the plan's own rule: skipping only costs pruning opportunity,
+    /// an admissible bound must never be guessed.
     /// </summary>
     public static class GrammarAnalyzer
     {
@@ -72,6 +74,20 @@ namespace SIL.Machine.Morphology.HermitCrab
                     foreach (RewriteSubrule sr in rule.Subrules)
                     {
                         if (!TryGetFlatSegmentCount(sr.Rhs, out int rhsCount))
+                            return null;
+                        // Insertion-type subrule (epenthesis when Lhs is empty, expansion otherwise):
+                        // no admissible bound (LT-22613). Unlike every other unapplication this class
+                        // reasons about, insertion unapplication does not SHRINK the candidate -- it
+                        // marks the possibly-rule-inserted surface segments Optional and leaves them in
+                        // the shape (EpenthesisAnalysisRewriteRuleSpec.Unapply /
+                        // NarrowAnalysisRewriteRuleSpec.Unapply), and lexical lookup later matches with
+                        // those segments skipped. AnalysisStratumRule's gate measures the candidate with
+                        // Shape.SegmentCount, which still counts them, so a surface form that legally
+                        // outgrew the longest root via epenthesis (e.g. "buibui" from root "b+ubu")
+                        // would be pruned as unreachable on the default, non-tracing path while the
+                        // traced path -- which bypasses the gate -- parses it correctly. Per this
+                        // class's ground rule, that means return null (gate off), never guess.
+                        if (lhsCount < rhsCount)
                             return null;
                         if (lhsCount > rhsCount)
                             phonoGrowthRate += lhsCount - rhsCount;
