@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Kirenti</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- A fully-specified phonological feature system, given to EVERY segment below (no segment is
+         left unspecified on any feature): self-check's own analysis-direction reversal of a
+         phonological subrule that CHANGES a segment's identity (prBacknessHarmony's e->a,
+         prGradation's k->g) requires the subrule's target (Lhs) AND output (Rhs) to be expressed as
+         a FeatureNaturalClass over a real feature system - a bare SegmentNaturalClass/literal
+         Segment target or output for a CHANGING subrule is analysis-unreachable (confirmed by
+         isolated probing: such a subrule always finds zero parses in self-check, regardless of
+         anchoring or an explicit Environment). A literal Segment output remains fine for an
+         IDENTITY subrule (Rhs == Lhs's own segment, nothing actually changes, as in prGradation's
+         anchored word-initial subrule below) and for an Environment condition (never the thing being
+         changed) - see prVowelMerge/prVowelMultiMerge/prEpenthesis's environments, still
+         SegmentNaturalClass-based. featPlace exists solely to keep prGradation's two possible
+         CHANGING outputs ("g" and, via prVowelMerge, "y") mutually distinguishable from each other
+         (both are otherwise-identical "don't care" consonants); it is irrelevant for every other
+         segment and vowels get the placeholder value "vocalic". -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="fVocPlus">+</Symbol><Symbol id="fVocMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighPlus">+</Symbol><Symbol id="fHighMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="fBackPlus">+</Symbol><Symbol id="fBackMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <!-- Every segment in the table must render unambiguously (Shape.ToRegexString falls back to a
+           bracketed character CLASS - e.g. "[dlnmrb]" - for any position whose current FeatureStruct
+           is compatible with more than one CharacterDefinitionTable entry, even a position no rule
+           ever touched), so featPlace must give EVERY consonant a distinct value (paired with
+           featVoice, which already separates k/g and t/d) rather than one shared "elsewhere" bucket. -->
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="fPlaceVelar">velar</Symbol>
+          <Symbol id="fPlacePalatal">palatal</Symbol>
+          <Symbol id="fPlaceDental">dental</Symbol>
+          <Symbol id="fPlaceLateral">lateral</Symbol>
+          <Symbol id="fPlaceNasalN">nasalN</Symbol>
+          <Symbol id="fPlaceNasalM">nasalM</Symbol>
+          <Symbol id="fPlaceRhotic">rhotic</Symbol>
+          <Symbol id="fPlaceSibilant">sibilant</Symbol>
+          <Symbol id="fPlaceBilabial">bilabial</Symbol>
+          <Symbol id="fPlaceVocalic">vocalic</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <!-- Vowels: a/u are back, e/i are front. Harmony (prBacknessHarmony below) only ever backs
+             the front suffix vowel "e" to "a" - "i" never participates, kept front-only so the
+             merge rules (prVowelMerge/prVowelMultiMerge) have an unambiguous, non-harmony-eligible
+             high vowel to work with. -->
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <!-- Consonants. Every consonant gets its own unique featPlace value (see the feature-system
+             comment above): rendering requires every table entry to be feature-unique, not just the
+             ones a rule changes. -->
+
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceDental" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceDental" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceLateral" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceNasalN" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceNasalM" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceRhotic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cY"><Representations><Representation>y</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlacePalatal" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceSibilant" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal wildcard, used only inside MorphologicalInput stem-capture patterns (never as a
+           phonological environment constraint, and never as a CHANGING subrule's target/output). -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- Environment-only class (never a changing subrule's target/output), so a plain
+           feature-space class over featCons is fine. -->
+      <FeatureNaturalClass id="ncConsonant"><Name>Consonant</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+      </FeatureNaturalClass>
+      <!-- The harmony trigger class (an Environment condition, not the position being changed): either
+           back vowel counts, "a" (low) or "u" (high/round) - precision matters here (see
+           constructs.txt "NaturalClass: ... precision"): this class must NOT include "e"/"i" (front)
+           or the rule would never distinguish anything. -->
+      <FeatureNaturalClass id="ncBackVowel"><Name>BackVowel</Name>
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
+      </FeatureNaturalClass>
+      <!-- Single-member FEATURE classes for every position a CHANGING phonological subrule targets or
+           produces (prBacknessHarmony's Lhs="e"/Rhs="a", prVowelMerge's Lhs="i"+"i"/Rhs="y",
+           prVowelMultiMerge's Lhs="u"+"e"+"e"/Rhs="u"+"e", prGradation's Lhs="k"/Rhs="g") - each
+           FeatureValue combination below uniquely picks out exactly one segment in the table above,
+           which is what makes self-check's analysis-direction reversal (and rendering) work. -->
+      <FeatureNaturalClass id="ncE"><Name>FrontE</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncABack"><Name>BackA</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncI"><Name>FrontI</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncU"><Name>BackU</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncGlideY"><Name>GlideY</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featPlace" symbolValues="fPlacePalatal" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncK"><Name>StopK</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+        <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVoicedK"><Name>VoicedVelar</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+        <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+      </FeatureNaturalClass>
+      <!-- Environment-only (RightEnvironment of ruleCollective) - a small explicit member list is
+           fine since it is never a changing subrule's target/output. -->
+      <SegmentNaturalClass id="ncTargetC"><Name>TargetT</Name><Segment segment="cT" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- Iterative long-distance backness harmony: the front suffix vowel "e" backs to "a" whenever
+           a back vowel ("a"/"u") is found within 1-2 intervening consonants to its left (min="1",
+           matching v1 rewrite/quantifier's own bound exactly - min="0" was tried first and rejected:
+           it let harmony misfire on a back vowel immediately adjacent to a front "e" with nothing
+           between them, corrupting SUEEB's own "u-e-e" trigger pattern before prVowelMultiMerge ever
+           saw it) - the bounded OptionalSegmentSequence group is exactly ledger row rewrite/quantifier's
+           "quantified contexts as harmony transparency spans" construct, and the whole rule is
+           ledger row rewrite/longdistance's "harmony as the canonical long-distance rule": the
+           environment reaches past intervening material rather than requiring strict adjacency.
+           multipleApplicationOrder defaults to leftToRightIterative, which is exactly what makes this
+           propagate across an entire suffix chain: once one "e" backs to "a", that "a" is itself a
+           qualifying trigger for the NEXT suffix vowel to its right. This rule must be listed BEFORE
+           prEpenthesis in the stratum's phonologicalRules order (see Stratum below): it needs to see
+           the pre-epenthesis consonant cluster at the seam, not a cluster already split by an
+           epenthetic vowel (which would break the transparency span, since the span only elides
+           over ncConsonant members, not vowels). -->
+      <PhonologicalRule id="prBacknessHarmony">
+        <Name>backnessHarmony</Name>
+        <PhoneticInput>
+          <PhoneticSequence><SimpleContext naturalClass="ncE" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncABack" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <SimpleContext naturalClass="ncBackVowel" />
+                    <OptionalSegmentSequence min="1" max="2"><SimpleContext naturalClass="ncConsonant" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Vowel coalescence at an agglutination seam, case 1/2 (ledger: rewrite/merge, "vowel
+           coalescence at seams", history row 1 provenance carried on the pinning word below): two
+           adjacent front-high "i" segments preceded by back-round "u" collapse to the glide "y" -
+           an explicit LeftEnvironment element, 2 Lhs segments -> 1 Rhs segment. -->
+      <PhonologicalRule id="prVowelMerge">
+        <Name>vowelMerge</Name>
+        <PhoneticInput>
+          <PhoneticSequence><SimpleContext naturalClass="ncI" /><SimpleContext naturalClass="ncI" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncGlideY" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncU" /></PhoneticSequence></PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Vowel coalescence at a seam, case 2/2 (ledger: rewrite/multiplemerge, same "vowel
+           coalescence at seams" note, same history row 1 provenance, carried verbatim as its own
+           distinct string on the pinning word below): the trigger is folded directly into the 3-segment
+           Lhs pattern itself (u+e+e), with NO separate Environment element at all - the structural
+           distinction from prVowelMerge's explicit LeftEnvironment is deliberate, mirroring the two
+           v1 fixtures' differing shapes exactly. 3 Lhs segments -> 2 Rhs segments (a duplicate "e"
+           degeminates, "u" is preserved). -->
+      <PhonologicalRule id="prVowelMultiMerge">
+        <Name>vowelMultiMerge</Name>
+        <PhoneticInput>
+          <PhoneticSequence>
+            <SimpleContext naturalClass="ncU" /><SimpleContext naturalClass="ncE" /><SimpleContext naturalClass="ncE" />
+          </PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncU" /><SimpleContext naturalClass="ncE" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Consonant-gradation allomorphy (ledger: rewrite/disjunctive, "disjunctive subrules as
+           gradation contexts"; also carries constructs.txt's "Boundary markers" construct via the
+           word-initial anchor): two ORDERED subrules on the same rule id, first-match-wins. Subrule 1
+           is anchored to the word boundary (initialBoundaryCondition="true" on an otherwise-empty
+           PhoneticTemplate/PhoneticSequence, i.e. HCFeatureSystem.LeftSideAnchor) and leaves a
+           root-initial "k" at strong grade (unchanged); subrule 2 has NO Environment element at all
+           (the catch-all fallback) and weakens every other "k" - medial or final - to "g". -->
+      <PhonologicalRule id="prGradation">
+        <Name>gradation</Name>
+        <PhoneticInput>
+          <PhoneticSequence><SimpleContext naturalClass="ncK" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cK" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate initialBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVoicedK" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Simultaneous-mode epenthesis (ledger: cross-cutting/disjunctive-tense-simultaneous-epenthesis,
+           unified here with the SAME obligatory/disjunctive tense slot rather than kept as a separate
+           word - an ordinary tense-marked word exercises both at once, per the v2 restructure's
+           whole point): a linking "i" is inserted at every consonant-consonant seam, all at once
+           (multipleApplicationOrder="simultaneous", so a 3+ consonant run gets an "i" at every
+           adjacent C_C boundary within it in one pass, not a re-scanned cascade). Zero-width
+           PhoneticInput (no PhoneticSequence child at all) since this rule inserts rather than
+           changes a segment. Must be listed AFTER prBacknessHarmony (see that rule's own comment). -->
+      <PhonologicalRule id="prEpenthesis" multipleApplicationOrder="simultaneous">
+        <Name>epenthesis</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate>
+              </LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPast mrPres mrPlural ruleCollective ruleInfixDemo"
+        phonologicalRules="prBacknessHarmony prVowelMerge prVowelMultiMerge prGradation prEpenthesis"
+      >
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Obligatory disjunctive tense slot member 1/2 (ledger: negative/obligatory-tense-slot,
+               cross-cutting/disjunctive-tense-simultaneous-epenthesis). Suffix vowel is underlyingly
+               front "-de"; prBacknessHarmony backs it to "-da" for a back-voweled root. -->
+          <MorphologicalRule id="mrPast" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>past</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPast">
+                <MorphologicalInput><PhoneticSequence id="stemPast"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>de</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PAST</MorphemeId>
+          </MorphologicalRule>
+          <!-- Obligatory disjunctive tense slot member 2/2: "-le", same harmony/epenthesis exposure. -->
+          <MorphologicalRule id="mrPres" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>present</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPres">
+                <MorphologicalInput><PhoneticSequence id="stemPres"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPres" /><InsertSegments><PhoneticShape>le</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PRES</MorphemeId>
+          </MorphologicalRule>
+          <!-- Optional number slot, reachable only once the obligatory tense slot is filled (same
+               mechanism as suffixing-quechua's mrPlural / negative/obligatory-tense-slot's mrPlural). -->
+          <MorphologicalRule id="mrPlural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>plural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPlural">
+                <MorphologicalInput><PhoneticSequence id="stemPl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPl" /><InsertSegments><PhoneticShape>ler</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PL</MorphemeId>
+          </MorphologicalRule>
+          <!-- Discontinuous circumfix (ledger: allomorphy/discontinuous-env, "env across intervening
+               segments as harmony-adjacent conditioning"): prefix "e-" + suffix "-ik" wrapped around
+               one copied stem span, gated by ONE RequiredEnvironments condition (must be followed by
+               "t"). Because a circumfix produces two separate contiguous morph pieces, HC's
+               Allomorph.IsWordValid checks this SAME right-environment condition independently at
+               EACH piece's own local right-context (per-occurrence checking on a discontinuous
+               morph) - the suffix piece is always word-final here, so its own local right-context
+               can never satisfy "followed by t", meaning this rule can never actually complete a
+               parse; see the two blocked_by words below, which differ only in whether the PREFIX
+               piece's local context additionally fails (deliberately, to demonstrate the per-piece
+               check fires independently rather than being satisfied "somewhere" in the word). Never
+               referenced by the AffixTemplate (applies freely to posN, unordered). -->
+          <MorphologicalRule id="ruleCollective" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>collective</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCollective">
+                <MorphologicalInput><PhoneticSequence id="stemColl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>e</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="stemColl" />
+                  <InsertSegments><PhoneticShape>ik</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment><RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncTargetC" /></PhoneticSequence></PhoneticTemplate></RightEnvironment></Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>COLL</MorphemeId>
+          </MorphologicalRule>
+          <!-- Infix "-u-" after the first segment (ledger: allomorphy/discontinuous-env's positive/
+               success control - the fixture's infix rule, no environment, always succeeds). Two
+               MorphologicalInput parts: the first segment alone, then the remainder. Never referenced
+               by the AffixTemplate (applies freely to posN, unordered). -->
+          <MorphologicalRule id="ruleInfixDemo" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>intensive</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subInfixDemo">
+                <MorphologicalInput>
+                  <PhoneticSequence id="infFirst"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="infRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="infFirst" />
+                  <InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="infRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>INTS</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <!-- Slot 1: obligatory (optional defaults to "false"), disjunctive 2-way tense choice. -->
+            <Slot morphologicalRules="mrPast mrPres"><Name>tense</Name></Slot>
+            <!-- Slot 2: optional number, reachable only once slot 1 is filled. -->
+            <Slot optional="true" morphologicalRules="mrPlural"><Name>number</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <!-- All-front root: harmony/gradation inactive (control for both). -->
+          <LexicalEntry id="eSemit" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aSemit"><PhoneticShape>semit</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SEMIT</MorphemeId>
+            <Gloss>carry</Gloss>
+          </LexicalEntry>
+          <!-- Back-voweled root containing "k" both word-initially and again later - the flagship
+               word exercising harmony + gradation + epenthesis + the obligatory/disjunctive tense
+               slot all at once, per the v2 restructure's "ordinary words exercise several constructs"
+               goal. -->
+          <LexicalEntry id="eKutak" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aKutak"><PhoneticShape>kutak</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KUTAK</MorphemeId>
+            <Gloss>arrive</Gloss>
+          </LexicalEntry>
+          <!-- Back-voweled root with exactly 2 root-final consonants: with the tense suffix's own
+               consonant, the harmony transparency span sits exactly AT its max=2 bound (see word
+               unt+PAST below) - the boundary case, distinct from kutak's mid-word "k". -->
+          <LexicalEntry id="eUnt" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aUnt"><PhoneticShape>unt</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>UNT</MorphemeId>
+            <Gloss>fall</Gloss>
+          </LexicalEntry>
+          <!-- posN roots for the discontinuous circumfix/infix demo (kept off posV so they are never
+               entangled with the obligatory tense AffixTemplate). -->
+          <LexicalEntry id="eGan" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aGan"><PhoneticShape>gan</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GAN</MorphemeId>
+            <Gloss>roam</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTem" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTem"><PhoneticShape>tem</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TEM</MorphemeId>
+            <Gloss>rest</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSal" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aSal"><PhoneticShape>sal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SAL</MorphemeId>
+            <Gloss>wait</Gloss>
+          </LexicalEntry>
+          <!-- posN roots for the vowel-coalescence (merge/multiplemerge) pins: pure phonology probes,
+               no morphology involved, mirroring v1 rewrite/merge and rewrite/multiplemerge's own
+               single-lexical-entry, zero-morphological-rule minimality. -->
+          <LexicalEntry id="eDuii" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aDuii"><PhoneticShape>duii</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DUII</MorphemeId>
+            <Gloss>weave</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSueeb" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aSueeb"><PhoneticShape>sueeb</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SUEEB</MorphemeId>
+            <Gloss>grind</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

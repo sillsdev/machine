@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>StrRepIdentityProbe</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot">
+        <Name>root</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- DELIBERATELY NO PhonologicalFeatureSystem: this fixture probes the degenerate case the
+         P10 StrRep identity lane exists for. Without phonological features, every char-def's
+         feature bundle is empty, so a SegmentNaturalClass constraint, a literal-segment
+         constraint (an InsertSegments shape re-matched on the analysis side), and a
+         literal-segment allomorph ENVIRONMENT all collapse to "matches any segment" unless
+         char-def identity (C#'s StrRep string feature) is a real matching dimension. Sena is
+         exactly such a grammar. (Contrast allomorphy/disjunctive-recheck, which assigns every
+         segment a unique feature symbol specifically to keep this residual OUT of its probe.) -->
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="charM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charW"><Representations><Representation>w</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="charD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="charPlus">
+          <Representations>
+            <Representation>+</Representation>
+          </Representations>
+        </BoundaryDefinition>
+        <!-- The Sena char42 analog: a "null" boundary with multiple representations. A subrule
+             whose InsertSegments is all-boundary (^0+) realizes a ZERO allomorph; the signature
+             renders this node as the bracketed rep list [(^0)∅]. -->
+        <BoundaryDefinition id="charNull">
+          <Representations>
+            <Representation>^0</Representation>
+            <Representation>∅</Representation>
+          </Representations>
+        </BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <!-- The Sena nc8 ("V-back") analog: an explicit member list that is only distinguishable
+           from "any segment" via char-def identity on this feature-less grammar. -->
+      <SegmentNaturalClass id="ncV">
+        <Name>Vclass</Name>
+        <Segment segment="charU" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rulePfx ruleObj">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- rulePfx: the Sena mu-2/mu-3 class-prefix analog — the DISJUNCTIVE-BREAK probe.
+               Subrule 0 ("mw+") requires a stem-initial ncV member; subrules 1 (the null "^0+")
+               and 2 ("mu+") share identical LHS/constraints, so they free-fluctuate and BOTH fire
+               once reached (SynthesisAffixProcessRule.cs:235-242 + Allomorph.FreeFluctuatesWith).
+               On a consonant-initial stem C# skips subrule 0 (StrRep mismatch) and reaches the
+               null subrule; an engine that lets subrule 0 match "any segment" breaks right after
+               it and never realizes the zero allomorph — Sena's [(^0)(*0)(&0)∅]? gap. -->
+          <MorphologicalRule id="rulePfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>class-prefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubMW">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubMW_stem">
+                    <SimpleContext naturalClass="ncV" />
+                    <OptionalSegmentSequence min="0" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>mw+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubMW_stem" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="msubNull">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubNull_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>^0+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubNull_stem" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="msubMU">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubMU_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>mu+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubMU_stem" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>CL</Gloss>
+          </MorphologicalRule>
+          <!-- ruleObj: the Sena ndi- analog — the ENVIRONMENT-RECHECK probe (P10 part 2).
+               Subrule 0 ("i+") carries a literal-segment RequiredEnvironment (/ _ m): because it
+               is environment-constrained, C#'s synthesis loop does not break after it, subrule 1
+               ("nd+") also fires, and subrule 0 lands in the nd-morph's passed-over set. At final
+               validity (Allomorph.cs:127-152) an "nd+" parse is rejected only when subrule 0's
+               environment is ALSO satisfied at the same morph position (stem starts with a real
+               m). An engine whose environment matcher over-matches literal segments rejects
+               EVERY "nd+" parse — Sena kundiphemba's ku+ndi+... death. -->
+          <MorphologicalRule id="ruleObj" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>obj-prefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubI">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubI_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>i+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubI_stem" />
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment>
+                    <RightEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <Segments>
+                            <PhoneticShape>m</PhoneticShape>
+                          </Segments>
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </RightEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="msubND">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubND_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments>
+                    <PhoneticShape>nd+</PhoneticShape>
+                  </InsertSegments>
+                  <CopyFromInput index="msubND_stem" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>OBJ</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="ePat" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aPat"><PhoneticShape>pat</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>pat</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eUta" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aUta"><PhoneticShape>uta</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>uta</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMat" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aMat"><PhoneticShape>mat</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>mat</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

@@ -1,0 +1,73 @@
+# Converted from conformance/loader/n3-pattern-shapes (v1; kept in place, untouched, until phase G4
+# -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file, unmodified.
+#
+# What this pins (from the v1 fixture's README.md/manifest.json): C#
+# CharacterDefinitionTable.GetShapeNodes(str, allowPattern, ...) has a pattern-language fallback
+# active only when allowPattern=true: at any position where no literal character-definition
+# substring matches, it additionally accepts "[NatClassName]" (bracketed natural-class reference,
+# looked up by the class's <Name> text, not its XML id), "([NatClass])" (optional group), and
+# "[NatClass]*" (Kleene star). Exactly one caller passes allowPattern=true: LoadRootAllomorph, i.e.
+# plain lexicon root-allomorph shapes. This grammar's one lexical entry has PhoneticShape
+# "b[Vowel]t": "b"/"t" match literally, "[Vowel]" doesn't match anything literally at that position,
+# so it falls back to the Vowel natural class ({a, e}), giving signature "|b[ae]t" for any input that
+# unifies against that pattern-derived shape node.
+#
+# Two-part status (carried from the v1 README, important context for any future Rust-adapter run
+# against this fixture): the LOADER half (pinned here) is what N3 tests -- pre-fix, hc-grammar's
+# load_root_allomorph had no pattern-language implementation at all and silently dropped the whole
+# entry. The RUNTIME-MATCHING half (root_trie's CdSet-aware edge matching) is a documented, separate,
+# NOT-yet-fixed follow-on gap in the Rust port (a pattern-derived trie edge born with NO_CHAR_DEF
+# doesn't match a concrete query char_def) -- out of scope for this loader-semantics fixture, whose
+# job is only to pin what the LOADER produces and what the ORACLE (C#) does with it.
+#
+# "bit": "i" is not declared anywhere in this grammar's CharacterDefinitionTable, so the C# oracle's
+# own real status for this word is SKIPPED (InvalidShapeException), not "ok" with zero analyses --
+# v1's expected.tsv row is `2  bit  0  SKIPPED  -`. This is the word's expect_skip: true below (as
+# opposed to expect_fail, which is a genuine zero-parse "ok"). Both harness modes honour the
+# distinction: self-check (RunnerV2.RunAllWords) confirms an InvalidShapeException actually fired, and
+# adapter mode (FixtureMaterializer) materializes status "SKIPPED", so a conforming external adapter
+# that reports SKIPPED for "bit" matches rather than registering a status mismatch.
+
+language: N3-PatternShapes
+inspired_by: ["synthetic loader-semantics probe (not modeling any real language)"]
+sources:
+  - "rust/parity-out/audit/phase2/C-loader-parity.md (Phase-2 audit C finding N3)"
+requires: []
+words:
+  - word: bat
+    note: >-
+      "b[Vowel]t"'s pattern-derived middle position matches "a" -- the whole word unifies against
+      the one lexical entry's pattern-derived shape node, rendering as the char-def-set bracket
+      notation "[ae]" (both Vowel-class members), not the literal "a".
+    provenance: "Phase-2 audit C finding N3 (root-allomorph PhoneticShape pattern-language fallback)"
+    parses:
+      - signature: "|b[ae]t"
+        gloss: bVt
+        rules: []
+        exercises:
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: bet
+    note: >-
+      Same pattern-derived shape node as "bat", matched via its other Vowel-class member ("e")
+      instead -- proves the fallback is a genuine natural-class match, not a literal-string
+      coincidence limited to "a".
+    provenance: "Phase-2 audit C finding N3 (root-allomorph PhoneticShape pattern-language fallback)"
+    parses:
+      - signature: "|b[ae]t"
+        gloss: bVt
+        rules: []
+        exercises:
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: bit
+    note: >-
+      "i" is not declared anywhere in this grammar's CharacterDefinitionTable at all, so the oracle's
+      real status is SKIPPED (InvalidShapeException), not a genuine zero-parse "ok" -- hence
+      expect_skip, not expect_fail. Self-check confirms the InvalidShapeException actually fires;
+      adapter mode materializes status "SKIPPED" (v1's expected.tsv row was "2 bit 0 SKIPPED -"), so
+      an adapter that legitimately reports SKIPPED matches instead of registering a status mismatch.
+    provenance: "Phase-2 audit C finding N3 (root-allomorph PhoneticShape pattern-language fallback)"
+    expect_skip: true
+    exercises:
+      - "Boundary markers (CharacterDefinitionTable)"

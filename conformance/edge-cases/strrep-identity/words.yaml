@@ -1,0 +1,214 @@
+# Converted from conformance/allomorphy/strrep-identity (v1; kept in place, untouched, until phase
+# G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file,
+# unmodified: deliberately NO PhonologicalFeatureSystem at all (every char-def's feature bundle is
+# empty) and NO <MorphemeId> element on either MorphologicalRule (rulePfx, ruleObj) -- like
+# edge-cases/disjunctive-recheck, this fixture's own signatures ("+|mu+?pat" etc.) would change if a
+# MorphemeId were added, so it cannot gain one. See disjunctive-recheck's words.yaml header for the
+# GrammarRuleIndex cross-cutting finding this fixture also depends on (fixed in the same commit).
+#
+# What this pins (from the v1 fixture's README.md/manifest.json, carried forward verbatim): C# makes
+# character identity a real matching dimension -- every char-def's feature struct carries a StrRep
+# (the segment's own representation string), and SegmentNaturalClass/literal-segment
+# constraints/environments consult it. On a grammar with NO phonological features at all (like Sena,
+# and like this fixture), StrRep is the ONLY thing distinguishing one segment from another; an engine
+# that drops this dimension degenerates every such constraint to "matches any segment" -- the exact
+# gap behind Sena's null-allomorph coverage loss (this suite's single largest historical divergence
+# class).
+#
+#   - rulePfx (the Bantu mu-2/mu-3 class-prefix analog -- the DISJUNCTIVE-BREAK probe): subrule 0
+#     ("mw+") requires a stem-initial ncV member ("u"); subrules 1 (the null "^0+") and 2 ("mu+")
+#     share identical LHS/constraints, so they free-fluctuate and BOTH fire once reached. On a
+#     consonant-initial stem C# skips subrule 0 (StrRep mismatch) and reaches the null subrule; an
+#     engine that lets subrule 0 match "any segment" breaks right after it and never realizes the
+#     zero allomorph.
+#   - ruleObj (the Bantu ndi- analog -- the ENVIRONMENT-RECHECK probe, P10 part 2): subrule 0 ("i+")
+#     carries a literal-segment RequiredEnvironment (following "m"): because it is
+#     environment-constrained, C#'s synthesis loop does not break after it, subrule 1 ("nd+") also
+#     fires, and subrule 0 lands in the nd-morph's passed-over set. At final validity
+#     (Allomorph.cs:127-152) an "nd+" parse is rejected only when subrule 0's environment is ALSO
+#     satisfied at the same morph position (stem starts with a real "m").
+#
+# Both rules are on the same posRoot part of speech with morphologicalRuleOrder="unordered", so they
+# can stack in either linear order -- ndpat/imat below each have 3 distinct valid analyses (rulePfx
+# and ruleObj both applied, in either order; or ruleObj alone), all oracle-verified.
+
+language: StrRepIdentityProbe
+inspired_by: ["synthetic StrRep-identity probe (not modeling any real language)"]
+sources:
+  - "P10, StrRep identity dimension on a feature-less grammar"
+requires: []
+words:
+  - word: pat
+    note: >-
+      PAT bare root -- ambiguous between two valid analyses: the null-prefixed one (rulePfx's
+      subrule 1, "^0+", a genuine zero allomorph that free-fluctuates with "mu+") and the plain bare
+      root. Both surface identically as "pat" but are distinct MorphemeId-chain analyses (the
+      shared, deliberate combinatorial-identity trick this whole fixture probes).
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "+|[(^0)∅]?+?pat"
+        gloss: pat-CL
+        rules: [rulePfx]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "|pat"
+        gloss: pat
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: uta
+    note: UTA bare root, no prefix -- a plain control; also the sole ncV ("Vclass") member, used by mwuta/muuta below.
+    parses:
+      - signature: "|uta"
+        gloss: uta
+        rules: []
+        exercises: []
+
+  - word: mat
+    note: MAT bare root -- the same null-prefix/bare-root ambiguity as "pat", on the root ruleObj's own-environment rows below also use.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "+|[(^0)∅]?+?mat"
+        gloss: mat-CL
+        rules: [rulePfx]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "|mat"
+        gloss: mat
+        rules: []
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: mupat
+    note: >-
+      PAT + rulePfx subrule 2 ("mu+", the free-fluctuation partner of the null subrule) -- "pat" is
+      consonant-initial, so subrule 0 ("mw+") is correctly skipped (StrRep mismatch on its
+      stem-initial ncV requirement) and subrule 2 is reached and fires.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "+|mu+?pat"
+        gloss: pat-CL
+        rules: [rulePfx]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: mumat
+    note: The mu+ variant of the mat/rulePfx pair, mirroring mupat on the other root.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "+|mu+?mat"
+        gloss: mat-CL
+        rules: [rulePfx]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: mwpat
+    note: >-
+      rulePfx subrule 0 ("mw+") requires the FOLLOWING stem to start with a ncV member ("u") -- "pat"
+      is consonant-initial, so subrule 0 cannot apply here at all, and no other subrule produces
+      surface "mw+pat" (subrules 1/2 insert "^0+"/"mu+", not "mw+"). Zero parses: this is the
+      StrRep-identity gate itself -- an engine that lets "mw+" match a consonant-initial stem (the
+      pre-fix Rust bug) would wrongly accept this.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    expect_fail: true
+    blocked_by: [rulePfx]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: mwuta
+    note: >-
+      UTA + rulePfx subrule 0 ("mw+") -- "uta" starts with "u" (the sole ncV member), so subrule 0's
+      stem-initial requirement is satisfied and it fires; C#'s synthesis loop breaks immediately
+      after this ordinary (non-environment-constrained) match, so subrules 1/2 are never reached for
+      a vowel-initial stem (see muuta below).
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "+|mw+?uta"
+        gloss: uta-CL
+        rules: [rulePfx]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: muuta
+    note: >-
+      The mirror-image gate of mwpat: "uta" is vowel-initial, so rulePfx subrule 0 ("mw+") matches
+      and the loop breaks right after it -- subrule 2 ("mu+") is never reached for this stem, so
+      surface "mu+uta" has no valid derivation. Zero parses.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    expect_fail: true
+    blocked_by: [rulePfx]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: ndpat
+    note: >-
+      PAT + ruleObj subrule 1 ("nd+"), optionally ALSO with rulePfx's null subrule stacked (the two
+      rules share posRoot with morphologicalRuleOrder="unordered", so both linear orders are valid,
+      plus the ruleObj-alone analysis) -- three distinct, equally-valid analyses, all surfacing
+      "ndpat" (the null prefix's "^0+"/"∅" boundary is invisible in the literal string). Also
+      pins C# GetSkippedOptionalNodes: a word-initial run of optional (boundary) nodes left of the
+      captured stem range is folded into the copy, so the medial zero allomorph survives ruleObj's
+      own stem-copy instead of being silently dropped.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "++|[(^0)∅]?+?nd+?pat"
+        rules: [rulePfx, ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "++|nd+?[(^0)∅]?+?pat"
+        rules: [rulePfx, ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "+|nd+?pat"
+        gloss: pat-OBJ
+        rules: [ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: ndmat
+    note: >-
+      THE distinguishing row (environment re-check): ruleObj subrule 1 ("nd+") used on "mat", but
+      subrule 0's RequiredEnvironment (following "m") is ALSO satisfied at the same morph position
+      (the stem is "mat", which starts with "m") and subrule 0 was recorded as passed-over -- the
+      disjunctive re-check REJECTS this synthesis (right answer for the C# oracle here, but for a
+      pre-fix engine that over-matches literal segments in environments, EVERY "nd+" parse would be
+      wrongly rejected this way -- Sena's "kundiphemba" gap). Zero parses.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    expect_fail: true
+    blocked_by: [ruleObj]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: imat
+    note: >-
+      MAT + ruleObj subrule 0 ("i+", RequiredEnvironment following "m" is satisfied by the "m" of
+      "mat" itself) -- the mirror-image acceptance of ndmat, with the same rulePfx-stacking
+      ambiguity as ndpat (three analyses: subrule 0 alone, or stacked with rulePfx's null subrule in
+      either linear order).
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    parses:
+      - signature: "++|[(^0)∅]?+?i+?mat"
+        rules: [rulePfx, ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "++|i+?[(^0)∅]?+?mat"
+        rules: [rulePfx, ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+      - signature: "+|i+?mat"
+        gloss: mat-OBJ
+        rules: [ruleObj]
+        exercises:
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: ipat
+    note: >-
+      ruleObj subrule 0 ("i+") requires a following "m" -- "pat" starts with "p", so subrule 0's own
+      environment fails outright (the already-ported #5a own-environment gate, not the re-check),
+      and no other subrule produces surface "i+pat" (subrule 1 inserts "nd+", not "i+"). Zero parses.
+    provenance: "P10, StrRep identity dimension on a feature-less grammar"
+    expect_fail: true
+    blocked_by: [ruleObj]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"

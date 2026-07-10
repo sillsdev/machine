@@ -1,0 +1,54 @@
+# Converted from conformance/loader/n2-default-symbol (v1; kept in place, untouched, until phase G4
+# -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file, unmodified.
+#
+# What this pins (from the v1 fixture's README.md/manifest.json): C# XmlLanguageLoader.LoadFeature
+# reads SymbolicFeature@defaultSymbol into SymbolicFeature.DefaultSymbolID, consumed only when
+# useDefaults=true (the four phonological-rule matchers set this) -- for a pattern-pinned feature a
+# data node leaves UNSET, substitute the feature's default value and check THAT, instead of treating
+# "unset" as vacuously compatible with anything. Feature "nas" here declares
+# defaultSymbol="symNasPlus" (+); segment "a" carries no explicit "nas" value; rule "pr1" rewrites
+# ncOral (nas=-) targets to ncLong (len=+).
+#
+# "bat" is the UseDefaults signal: "a"'s effective nas is the default (+), which fails ncOral's
+# nas=- pin, so pr1 must NOT fire during the confirming synthesis and the surface stays "bat". A
+# defaults-unaware matcher (the pre-fix Rust bug: unconstrained lane overlaps any pin) would instead
+# fire the rule, mutate "a" (len=long, char-def identity cleared -> renders as "aa", the only
+# len=Long segment), produce surface "baat" != "bat", and report "-" (no parse) where the correct
+# behavior is "|bat".
+#
+# "bdt" is the control (expected zero parses in BOTH engines): "d" is explicitly nas=- (an explicit
+# value, not a default fallback), so pr1 legitimately fires on it during the confirming synthesis in
+# both engines, and the resynthesized surface is no longer "bdt" -- pins that UseDefaults handling
+# does not over-suppress a rule whose pin is satisfied by an explicit value, proving the "bat"
+# divergence above is really about defaultSymbol, not some other loader/matcher bug.
+
+language: N2-DefaultSymbol
+inspired_by: ["synthetic loader-semantics probe (not modeling any real language)"]
+sources:
+  - "rust/parity-out/audit/phase2/C-loader-parity.md (Phase-2 audit C finding N2)"
+requires: [phonology]
+words:
+  - word: bat
+    note: >-
+      The UseDefaults signal: middle segment "a" carries no explicit "nas" value, so its effective
+      nas (the feature's declared default, +) fails ncOral's nas=- pin -- pr1 (Lengthen oral
+      segment) must NOT fire, and the surface stays "bat" unmutated.
+    provenance: "Phase-2 audit C finding N2 (SymbolicFeature@defaultSymbol / UseDefaults)"
+    parses:
+      - signature: "|bat"
+        gloss: bat
+        rules: []
+        exercises:
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: bdt
+    note: >-
+      Control (expected zero parses in both engines): middle segment "d" is EXPLICITLY nas=- (not a
+      default fallback), so pr1 legitimately fires during the confirming synthesis, mutating "d" so
+      the resynthesized surface is no longer "bdt" -- proves the bat/UseDefaults divergence is
+      really about defaultSymbol, not some other loader/matcher bug.
+    provenance: "Phase-2 audit C finding N2 (SymbolicFeature@defaultSymbol / UseDefaults)"
+    expect_fail: true
+    blocked_by: [pr1]
+    exercises:
+      - "Boundary markers (CharacterDefinitionTable)"

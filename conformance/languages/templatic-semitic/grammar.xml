@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Zemreth</Name>
+    <PartsOfSpeech>
+      <!-- One POS per demo section, deliberately - the same isolation discipline fusional-latin's
+           posAblautV/posN1/posV1/posN2/posV2 established: this grammar packs FIVE phonological rules
+           (prEpenthesis, prProthesis, prSimulFeeding, prIterFeedingControl, prGeminate) into one
+           stratum, and every one of them is scoped via requiredPartsOfSpeech on its own
+           PhonologicalSubrule so it can only ever fire on the one POS its own demo root carries.
+           Without this, e.g. prEpenthesis's unconditional C_C-seam trigger would also fire inside
+           mrFormII's derived output, and prSimulFeeding/prIterFeedingControl (identical Lhs/Env,
+           differing only by multipleApplicationOrder) would both attempt every word in the grammar -
+           exactly the cross-construct collision agglutinative-turkic/fusional-latin's own headers warn
+           about. -->
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+      <PartOfSpeech id="posFormII"><Name>vFormII</Name></PartOfSpeech>
+      <PartOfSpeech id="posHollow"><Name>vHollow</Name></PartOfSpeech>
+      <PartOfSpeech id="posStemName"><Name>vStemName</Name></PartOfSpeech>
+      <PartOfSpeech id="posSimulDemo"><Name>vSimulDemo</Name></PartOfSpeech>
+      <PartOfSpeech id="posIterDemo"><Name>vIterDemo</Name></PartOfSpeech>
+      <PartOfSpeech id="posProthesis"><Name>vProthesis</Name></PartOfSpeech>
+      <PartOfSpeech id="posGeminate"><Name>vGeminate</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- A fully-specified PhonologicalFeatureSystem, EVERY segment given an explicit value for EVERY
+         feature (the G2a finding, restated in agglutinative-turkic/words.yaml's header and
+         fusional-latin/grammar.xml's own comment): mrFormII's InsertSimpleContext, mrPassive's
+         ModifyFromInput, and prSimulFeeding/prIterFeedingControl's HighVowel->BackRnd subrules all
+         CHANGE or introduce a segment's identity via a FeatureNaturalClass, so every segment needs a
+         unique, fully-specified feature bundle or self-check's analysis-direction reversal finds zero
+         parses / renders an ambiguous bracketed class. featPlace (paired with featVoice, exactly
+         Kirenti's own technique) gives every one of the 12 consonants below a distinct combination;
+         featHigh/featBack/featRound are irrelevant to consonants but still filled in (uniformly
+         "-") purely to satisfy full-specification, matching Kirenti's own filler-value precedent. -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="fVocPlus">+</Symbol><Symbol id="fVocMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighPlus">+</Symbol><Symbol id="fHighMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="fBackPlus">+</Symbol><Symbol id="fBackMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featRound"><Name>round</Name><Symbols><Symbol id="fRoundPlus">+</Symbol><Symbol id="fRoundMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="fPlaceVelar">velar</Symbol>
+          <Symbol id="fPlaceDental">dental</Symbol>
+          <Symbol id="fPlaceBilabial">bilabial</Symbol>
+          <Symbol id="fPlaceSibilant">sibilant</Symbol>
+          <Symbol id="fPlaceNasalM">nasalM</Symbol>
+          <Symbol id="fPlaceUvular">uvular</Symbol>
+          <Symbol id="fPlaceLateral">lateral</Symbol>
+          <Symbol id="fPlaceGlottal">glottal</Symbol>
+          <Symbol id="fPlaceRhotic">rhotic</Symbol>
+          <Symbol id="fPlaceVocalic">vocalic</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures>
+      <!-- realizational/stem-name (binyan grades): the HLK ("go") root's three templatic stem
+           alternants are selected by this feature, mirroring fusional-latin's StemName mechanism
+           exactly (see that grammar's own StemNames comment) but modeling a genuinely-attested
+           Semitic phenomenon: Hebrew halak (perfective "went") / yelek (imperfective "goes") is a
+           real synchronic stem suppletion inside one paradigm, cited directly by sources below. -->
+      <SymbolicFeature id="featAspect">
+        <Name>aspect</Name>
+        <Symbols>
+          <Symbol id="symImpf">impf</Symbol>
+          <Symbol id="symPerf">perf</Symbol>
+          <Symbol id="symJuss">juss</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </HeadFeatures>
+    <!-- One StemName per templatic alternant of HLK, overlapping on "perf" - the same region-
+         difference-algebra proof fusional-latin's snP1P2/snP1P3 pins, here modeling Hebrew's real
+         halak/yelek stem alternation instead of Latin principal parts. -->
+    <StemNames>
+      <StemName id="snImpfPerf" partsOfSpeech="posStemName">
+        <Name>ImpfPerf</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featAspect" symbolValues="symImpf" /></AssignedHeadFeatures></Region>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featAspect" symbolValues="symPerf" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+      <StemName id="snPerfJuss" partsOfSpeech="posStemName">
+        <Name>PerfJuss</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featAspect" symbolValues="symPerf" /></AssignedHeadFeatures></Region>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featAspect" symbolValues="symJuss" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+    </StemNames>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <!-- Vowels: a=low/back, i=high/front, u=high/back/round - exactly Kirenti's a/i/u scheme. -->
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundPlus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <!-- Consonants: high/back/round are filler "-" (irrelevant, but full-specification requires
+             an explicit value); featPlace + featVoice jointly make every one of the 12 unique. -->
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceDental" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceDental" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceSibilant" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceNasalM" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cQ"><Representations><Representation>q</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceUvular" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceLateral" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cH"><Representations><Representation>h</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceGlottal" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackMinus" />
+          <FeatureValue feature="featRound" symbolValues="fRoundMinus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceRhotic" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncConsonant"><Name>Consonant</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+      </FeatureNaturalClass>
+      <!-- InsertSimpleContext's inserted node (mrFormII) and ModifyFromInput's input-anchor/output
+           (mrPassive) all need a FULLY-SPECIFIED single-segment class - see the feature-system
+           comment above. -->
+      <FeatureNaturalClass id="ncVowelA"><Name>VowelA</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighMinus" />
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVowelI"><Name>VowelI</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" />
+      </FeatureNaturalClass>
+      <!-- prSimulFeeding/prIterFeedingControl's shared Lhs/Env classes, matching v1 rewrite/
+           simultaneous-feeding's ncHighVowel/ncHFUVowel/ncBackRnd exactly (2-feature environment
+           classes are safe: they're never a CHANGING subrule's own target/output by themselves). -->
+      <FeatureNaturalClass id="ncHighVowel"><Name>HighVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncHFUVowel"><Name>HFUVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncBackRnd"><Name>BackRnd</Name>
+        <FeatureValue feature="featBack" symbolValues="fBackPlus" /><FeatureValue feature="featRound" symbolValues="fRoundPlus" />
+      </FeatureNaturalClass>
+      <!-- rewrite/expand's gemination target: matches literally "d" only (an IDENTITY-class match -
+           the Rhs below outputs the SAME segment twice, so this never needs feature-class reasoning,
+           matching v1 word-initial-epenthesis's own ncTargetC precedent). -->
+      <SegmentNaturalClass id="ncD"><Name>TargetD</Name><Segment segment="cD" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- rewrite/simultaneous-epenthesis (+ agglutinative-turkic's own precedent, reused here for a
+           second grammar): obligatory linking vowel at any C_C seam, Simultaneous mode (every seam in
+           a longer cluster gets its own "i" in one pass, not a re-scanned cascade). Scoped to posV
+           only, so it fires exclusively on the KTB person-suffix paradigm below and never on any
+           other section's derived output. -->
+      <PhonologicalRule id="prEpenthesis" multipleApplicationOrder="simultaneous">
+        <Name>epenthesis</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posV">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- rewrite/word-initial-epenthesis: Arabic-style prothesis (hamzat al-wasl) breaking up a
+           word-initial consonant cluster with a prothetic "i". Scoped to posProthesis only. -->
+      <PhonologicalRule id="prProthesis">
+        <Name>prothesis</Name>
+        <PhoneticInput />
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posProthesis">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate initialBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></LeftEnvironment>
+              <RightEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence><SimpleContext naturalClass="ncConsonant" /><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                </PhoneticTemplate>
+              </RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- rewrite/simultaneous-feeding: HighVowel -> BackRnd / [HFUVowel Cons] _ , Simultaneous mode
+           (matches v1's RewriteRuleTests.MultipleApplicationRules shape exactly). Scoped to
+           posSimulDemo only - see prIterFeedingControl below for the Iterative control sibling,
+           identical Lhs/Rhs/Env, different POS gate and no multipleApplicationOrder attribute. -->
+      <PhonologicalRule id="prSimulFeeding" multipleApplicationOrder="simultaneous">
+        <Name>feedingSimul</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncHighVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posSimulDemo">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncBackRnd" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncHFUVowel" /><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- rewrite/simultaneous-feeding-control-iterative: the Iterative control sibling - identical
+           rule content, no multipleApplicationOrder (defaults to leftToRightIterative), scoped to
+           posIterDemo. Because Iterative re-derives its environment against the shape as mutated so
+           far, the SECOND matching position's environment now sees the FIRST position's already-
+           rewritten value, so only the first of two candidate positions is ever rewritten (bleeding),
+           the mirror image of prSimulFeeding's all-at-once behavior. -->
+      <PhonologicalRule id="prIterFeedingControl">
+        <Name>feedingIter</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncHighVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posIterDemo">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncBackRnd" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncHFUVowel" /><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- rewrite/expand: 1 segment -> 2 identical segments, unconditional (no Environment), modeling
+           gemination-as-spreading (ledger: "segment expansion ~ spreading/gemination"). Scoped to
+           posGeminate only, so it can never touch any other root's "d". Provenance carried verbatim
+           on the word that exercises it (see words.yaml). -->
+      <PhonologicalRule id="prGeminate">
+        <Name>geminate</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncD" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posGeminate">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cD" /><Segment segment="cD" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPerf1sg mrPerf3sg mrFormII mrPassive mrAspImpf mrAspPerf mrAspJuss"
+        phonologicalRules="prEpenthesis prProthesis prSimulFeeding prIterFeedingControl prGeminate"
+      >
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- ===================== KTB person-suffix paradigm (+ Simultaneous epenthesis) ===================== -->
+          <MorphologicalRule id="mrPerf1sg" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>perf1sg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerf1sg">
+                <MorphologicalInput><PhoneticSequence id="stemP1"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP1" /><InsertSegments><PhoneticShape>t</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P1SG</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrPerf3sg" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>perf3sg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerf3sg">
+                <MorphologicalInput><PhoneticSequence id="stemP3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP3" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>P3SG</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== FormII (InsertSimpleContext) + OCP co-occurrence ===================== -->
+          <MorphologicalRule id="mrFormII" requiredPartsOfSpeech="posFormII" outputPartOfSpeech="posFormII">
+            <Name>formII</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subFormII">
+                <MorphologicalInput>
+                  <PhoneticSequence id="fIIFirst"><SimpleContext naturalClass="ncAny" /></PhoneticSequence>
+                  <PhoneticSequence id="fIIRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="fIIFirst" />
+                  <InsertSimpleContext><SimpleContext naturalClass="ncVowelA" /></InsertSimpleContext>
+                  <CopyFromInput index="fIIRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>FORMII</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== Hollow-root internal passive (ModifyFromInput) ===================== -->
+          <MorphologicalRule id="mrPassive" requiredPartsOfSpeech="posHollow" outputPartOfSpeech="posHollow">
+            <Name>passive</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPassive">
+                <MorphologicalInput>
+                  <PhoneticSequence id="passPre"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="passA"><SimpleContext naturalClass="ncVowelA" /></PhoneticSequence>
+                  <PhoneticSequence id="passPost"><OptionalSegmentSequence min="0" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="passPre" />
+                  <ModifyFromInput index="passA"><SimpleContext naturalClass="ncVowelI" /></ModifyFromInput>
+                  <CopyFromInput index="passPost" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PASS</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== HLK stem-name paradigm ===================== -->
+          <MorphologicalRule id="mrAspImpf" requiredPartsOfSpeech="posStemName" outputPartOfSpeech="posStemName">
+            <Name>aspImpf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAspImpf">
+                <MorphologicalInput><PhoneticSequence id="stemImpf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemImpf" /><InsertSegments><PhoneticShape>u</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featAspect" symbolValues="symImpf" /></OutputHeadFeatures>
+            <MorphemeId>IMPF</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrAspPerf" requiredPartsOfSpeech="posStemName" outputPartOfSpeech="posStemName">
+            <Name>aspPerf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAspPerf">
+                <MorphologicalInput><PhoneticSequence id="stemPerf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPerf" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featAspect" symbolValues="symPerf" /></OutputHeadFeatures>
+            <MorphemeId>PERF</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrAspJuss" requiredPartsOfSpeech="posStemName" outputPartOfSpeech="posStemName">
+            <Name>aspJuss</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAspJuss">
+                <MorphologicalInput><PhoneticSequence id="stemJuss"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemJuss" /><InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featAspect" symbolValues="symJuss" /></OutputHeadFeatures>
+            <MorphemeId>JUSS</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- KTB "write" paradigm (posV). -->
+          <LexicalEntry id="eKatab" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aKatab"><PhoneticShape>katab</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KTB</MorphemeId>
+            <Gloss>write</Gloss>
+          </LexicalEntry>
+          <!-- FormII/OCP demo roots (posFormII). SPR is the ordinary, unrestricted root; SMM (C2=C3,
+               a genuine Semitic OCP-fragile shape) is excluded from co-occurring with FormII below. -->
+          <LexicalEntry id="eSpr" partOfSpeech="posFormII">
+            <Allomorphs><Allomorph id="aSpr"><PhoneticShape>spr</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SPR</MorphemeId>
+            <Gloss>count</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSmm" partOfSpeech="posFormII">
+            <Allomorphs><Allomorph id="aSmm"><PhoneticShape>smm</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SMM</MorphemeId>
+            <Gloss>curse</Gloss>
+          </LexicalEntry>
+          <!-- Hollow root QWL "say" (posHollow), Arabic qala/qila-plausible internal passive. -->
+          <LexicalEntry id="eQal" partOfSpeech="posHollow">
+            <Allomorphs><Allomorph id="aQal"><PhoneticShape>qal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>QWL</MorphemeId>
+            <Gloss>say</Gloss>
+          </LexicalEntry>
+          <!-- HLK "go" (posStemName), Hebrew halak/yelek-plausible: default "halak" (no StemName,
+               valid only bare), "hilak" (snImpfPerf), "hulak" (snPerfJuss), overlapping on "perf". -->
+          <LexicalEntry id="eHlk" partOfSpeech="posStemName">
+            <Allomorphs>
+              <Allomorph id="aHalak"><PhoneticShape>halak</PhoneticShape></Allomorph>
+              <Allomorph id="aHilak" stemName="snImpfPerf"><PhoneticShape>hilak</PhoneticShape></Allomorph>
+              <Allomorph id="aHulak" stemName="snPerfJuss"><PhoneticShape>hulak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>HLK</MorphemeId>
+            <Gloss>go</Gloss>
+          </LexicalEntry>
+          <!-- Simultaneous-vs-Iterative feeding/bleeding contrast pair: identical shape "gigigi" on
+               two POS-disjoint roots so prSimulFeeding/prIterFeedingControl never cross-fire. -->
+          <LexicalEntry id="eFeedSimul" partOfSpeech="posSimulDemo">
+            <Allomorphs><Allomorph id="aFeedSimul"><PhoneticShape>gigigi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>FEEDSIM</MorphemeId>
+            <Gloss>sway</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eFeedIter" partOfSpeech="posIterDemo">
+            <Allomorphs><Allomorph id="aFeedIter"><PhoneticShape>gigigi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>FEEDITER</MorphemeId>
+            <Gloss>twirl</Gloss>
+          </LexicalEntry>
+          <!-- Word-initial prothesis demo (posProthesis), bare phonology probe, no morphology. -->
+          <LexicalEntry id="eKtub" partOfSpeech="posProthesis">
+            <Allomorphs><Allomorph id="aKtub"><PhoneticShape>ktub</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KTUB</MorphemeId>
+            <Gloss>write.IMP</Gloss>
+          </LexicalEntry>
+          <!-- Gemination/expand demo (posGeminate), bare phonology probe, no morphology. -->
+          <LexicalEntry id="eRad" partOfSpeech="posGeminate">
+            <Allomorphs><Allomorph id="aRad"><PhoneticShape>rada</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>RAD</MorphemeId>
+            <Gloss>kindle</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <!-- OCP root co-occurrence: FormII cannot apply to a root whose C2=C3 (SMM) - a genuine
+           Semitic Obligatory Contour Principle effect (derivational processes that would create an
+           illegal identical-consonant configuration are blocked). primaryMorpheme references the
+           MorphologicalRule's OWN xml id (mrFormII), not its MorphemeId text, matching suffixing-
+           quechua's mrEvidConjectural precedent; otherMorphemes references the LexicalEntry's own id
+           (eSmm). GrammarRuleIndex's documented convention makes "mrFormII" itself the blocked_by /
+           dead-rule pseudo-id, coinciding with the rule's own id. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrFormII" otherMorphemes="eSmm" adjacency="anywhere" />
+    </MorphemeCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>

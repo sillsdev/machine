@@ -1,0 +1,158 @@
+# Converted from conformance/affix-shapes/truncate (v1; kept in place, untouched, until phase G4 --
+# see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file, unmodified:
+# it carries a PhonologicalFeatureSystem (feeding the NaturalClasses the morphotactic rules below
+# pattern-match against) but declares NO PhonologicalRule/MetathesisRule element anywhere, so
+# RequiresDerivation mechanically derives requires: [] -- truncation here is pure AffixProcessRule
+# morphotactics, no phonological rule involved at all.
+#
+# THE XAMPLE FLOOR (why this fixture exists as its own edge-case rather than folding only into
+# austronesian-phase): austronesian-phase's own truncate word (mrTrunc, "pure"->"pur", SAME
+# provenance string as this fixture's own words below, carried deliberately -- both pin the identical
+# W9.1 construct) lives in a requires:[phonology] grammar (austronesian-phase has real
+# PhonologicalRule elements elsewhere), so it cannot serve as the suite's requires:[] home for
+# truncation coverage. docs/conformance-migration-ledger.md's ledger row for affix-shapes/truncate
+# names this gap explicitly ("XAmple floor: no natural requires-[] home -> edge-cases/
+# truncate-morphotactic duplicate") -- this fixture is that duplicate requires:[] home, so an
+# XAmple-class (phonology-free) engine still gets truncation coverage.
+#
+# Also carries no <MorphemeId> on any MorphologicalRule (mruleTruncTrail/mruleTruncLead/
+# mruleTruncOptIns) or LexicalEntry (root32/root33/root42) -- same v1 authoring choice as
+# edge-cases/disjunctive-recheck and edge-cases/strrep-identity (adding one would change the
+# "+|sa"-style signatures this fixture pins), and it exercises the SAME GrammarRuleIndex Name-based
+# fallback those two fixtures' commit introduced.
+#
+# What this pins (from the v1 fixture's README.md, carried forward verbatim): minimized from
+# AffixProcessRuleTests.TruncateRules's 5 sub-cases down to 3 structurally distinct rules sharing one
+# grammar --
+#   - mruleTruncTrail (case 1/4 combined): a TRAILING segment matched by LITERAL identity
+#     (<Segment segment="charG"/>, not a natural class) is truncated -- root "sag" -> "sa".
+#   - mruleTruncLead (case 2/3 combined): a LEADING segment matched by a NATURAL CLASS (Fricative =
+#     cons+,cont+) is truncated -- root "sag" -> "ag", root "sas" -> "as".
+#   - mruleTruncOptIns (case 5): an OPTIONAL leading segment combined with an InsertSegments in the
+#     SAME Rhs -- root "sas" -> "gas" (optional "s" consumed, "g" inserted), root "bubibi" -> "gbubibi"
+#     (optional part empty, "g" inserted).
+# Because morphologicalRuleOrder="unordered", the oracle finds an UNPLANNED but legitimate SECOND
+# analysis for "gas": root "sas" --(mruleTruncLead, strips "s")--> "as"
+# --(mruleTruncOptIns, optional part empty, inserts "g")--> "gas" -- two rule applications composing
+# to the same surface form as the direct one-rule mruleTruncOptIns analysis. Both signatures are
+# distinct (leading "+"-count differs: "++" for the 2-hop chain, "+" for the 1-hop direct analysis)
+# and both are required; this pins the boundary-count marker surviving a pure-truncation hop with no
+# new output material (LT-21939 / HISTORY-MATRIX row 11's "floating marker" fix, referenced in the
+# v1 README for the Rust port's own parity history -- not itself a claim about this suite's oracle,
+# which is C# throughout).
+
+language: TruncateRulesProbe
+inspired_by: ["synthetic AffixProcessRule truncation probe (not modeling any real language)"]
+sources:
+  - "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+requires: []
+words:
+  - word: sag
+    note: root32 ("sag") bare, no rule applied -- a plain control proving the root itself is valid before any truncation rule touches it.
+    parses:
+      - signature: "|sag"
+        gloss: "32"
+        rules: []
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: sas
+    note: root33 ("sas") bare, no rule applied -- the other plain control root used by the leading-truncation/optional-insertion rows below.
+    parses:
+      - signature: "|sas"
+        gloss: "33"
+        rules: []
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: bubibi
+    note: root42 ("bubibi") bare, no rule applied -- the plain control root used by the optional-insertion row (gbubibi) below.
+    parses:
+      - signature: "|bubibi"
+        gloss: "42"
+        rules: []
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: sa
+    note: >-
+      root32 ("sag") + mruleTruncTrail: the trailing segment matched by LITERAL identity
+      (<Segment segment="charG"/>, not a natural class) is truncated -- "sag" -> "sa".
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "+|sa"
+        gloss: "32-3SGA"
+        rules: [mruleTruncTrail]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: ag
+    note: >-
+      root32 ("sag") + mruleTruncLead: the leading segment matched by the Fricative natural class
+      (cons+,cont+, matching "s") is truncated -- "sag" -> "ag".
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "+|ag"
+        gloss: "32-3SGB"
+        rules: [mruleTruncLead]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: as
+    note: root33 ("sas") + mruleTruncLead, the same leading-fricative truncation as "ag" but on the other root -- "sas" -> "as".
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "+|as"
+        gloss: "33-3SGB"
+        rules: [mruleTruncLead]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: gbubibi
+    note: >-
+      root42 ("bubibi") + mruleTruncOptIns: "bubibi" does not start with "s", so the rule's optional
+      leading segment matches EMPTY (0 occurrences) and the whole stem is copied, with "g" inserted
+      in front -- "bubibi" -> "gbubibi".
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "+|gbubibi"
+        gloss: "42-3SGC"
+        rules: [mruleTruncOptIns]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: gas
+    note: >-
+      THE distinguishing row (unplanned second analysis via morphologicalRuleOrder="unordered"):
+      root33 ("sas") admits TWO independent, equally valid derivations of "gas" --
+      (1) the DIRECT one-rule analysis: mruleTruncOptIns's optional leading segment matches the
+      stem-initial "s" itself (consumed, not copied) and inserts "g" in front of the remainder
+      "as" -> "gas"; and
+      (2) the CHAINED two-rule analysis: mruleTruncLead first strips the leading fricative "s"
+      ("sas" -> "as"), then mruleTruncOptIns applies to THAT result with its optional part empty
+      (since "as" doesn't start with "s") and inserts "g" -> "gas".
+      Both produce byte-identical surface text but are distinct MorphemeId-chain analyses (the
+      chained one carries one more empty-morpheme "+" boundary marker than the direct one) -- a
+      conforming engine must report BOTH.
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "++|gas"
+        gloss: "33-3SGB-3SGC"
+        rules: [mruleTruncLead, mruleTruncOptIns]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+      - signature: "+|gas"
+        gloss: "33-3SGC"
+        rules: [mruleTruncOptIns]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: bag
+    note: >-
+      No lexical entry or rule combination produces "bag" at all -- none of the three roots
+      ("sag"/"sas"/"bubibi") begins with "ba", and no rule's output shape matches it either. A
+      plain, uncontrived zero-parse control (not itself a disjunctive/environment rejection).
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    expect_fail: true
+    exercises:
+      - "AffixProcessRule: subtraction/truncation"

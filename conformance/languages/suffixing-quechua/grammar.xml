@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Chaqru</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <!-- Vowels. -->
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <!-- Consonants ("ch"/"sh" are single digraph segments, matched longest-first by
+             CharacterDefinitionTable.GetShapeNodes, so they never compete with a bare "c"/"h"/"s"
+             segmentation - this grammar never defines bare "c" or "h" at all, only the digraphs.) -->
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cSh"><Representations><Representation>sh</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cW"><Representations><Representation>w</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cY"><Representations><Representation>y</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cCh"><Representations><Representation>ch</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal "matches any segment" class, used only inside MorphologicalInput stem patterns
+           (never as an environment constraint) - the same idiom conformance/negative/obligatory-tense-slot
+           and conformance/cooccurrence/morpheme-adjacency use for their own OptionalSegmentSequence stems. -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <!-- Vowel/Consonant: purely orthographic (SegmentNaturalClass lists members directly, no
+           PhonologicalFeatureSystem needed at all), used ONLY to condition the 1SG person suffix's
+           two allomorphs on the preceding root-final segment - see mrPerson1 below. This is
+           allomorph selection done LEXICALLY (RequiredEnvironments on a MorphologicalSubrule), never
+           via a RewriteRule/PhonologicalRule - this grammar declares none, so requires: [] holds. -->
+      <SegmentNaturalClass id="ncVowel"><Name>Vowel</Name>
+        <Segment segment="cA" /><Segment segment="cI" /><Segment segment="cU" />
+      </SegmentNaturalClass>
+      <SegmentNaturalClass id="ncConsonant"><Name>Consonant</Name>
+        <Segment segment="cK" /><Segment segment="cL" /><Segment segment="cM" /><Segment segment="cN" />
+        <Segment segment="cP" /><Segment segment="cS" /><Segment segment="cSh" /><Segment segment="cT" />
+        <Segment segment="cW" /><Segment segment="cY" /><Segment segment="cCh" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum
+        characterDefinitionTable="table1"
+        morphologicalRuleOrder="unordered"
+        morphologicalRules="mrPerson1 mrPerson2 mrPerson3 mrPerson1PlIncl mrPerson2Pl mrPlural mrEvidDirect mrEvidReportative mrEvidConjectural mrEvidAssum mrEvidMir"
+      >
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Slot 1 (obligatory) member 1/3: 1SG. Two disjunctive, MUTUALLY EXCLUSIVE-environment
+               subrules realize one morpheme (MorphemeId "1SG") as two allomorphs picked purely by
+               the preceding root-final segment - the environment-conditioned allomorph selection
+               task B calls for, done lexically (RequiredEnvironments), not via a phonological rule. -->
+          <MorphologicalRule id="mrPerson1" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>person1sg</Name>
+            <MorphologicalSubrules>
+              <!-- post-consonant allomorph: "-ni" -->
+              <MorphologicalSubrule id="subPerson1PostC">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stemP1c"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemP1c" /><InsertSegments><PhoneticShape>ni</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+              <!-- post-vowel allomorph: "-y" -->
+              <MorphologicalSubrule id="subPerson1PostV">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stemP1v"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemP1v" /><InsertSegments><PhoneticShape>y</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment><LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVowel" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment></Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>1SG</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 1 member 2/3: 2SG, unconstrained shape "-nki". -->
+          <MorphologicalRule id="mrPerson2" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>person2sg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerson2">
+                <MorphologicalInput><PhoneticSequence id="stemP2"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP2" /><InsertSegments><PhoneticShape>nki</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>2SG</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 1 member 3/3: 3SG, unconstrained shape "-n". -->
+          <MorphologicalRule id="mrPerson3" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>person3sg</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerson3">
+                <MorphologicalInput><PhoneticSequence id="stemP3"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP3" /><InsertSegments><PhoneticShape>n</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>3SG</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 1 member 4/5 (W6, cooccurrence/morpheme-adjacency): 1PL.INCL person "-tuku", a
+               4th disjunctive slot-1 member added solely to host the "somewhereToRight" adjacency
+               test: its MorphemeCoOccurrenceRule below requires mrEvidDirect somewhereToRight, so
+               an intervening optional PL between this suffix and DIR does not break satisfaction. -->
+          <MorphologicalRule id="mrPerson1PlIncl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>person1plIncl</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerson1PlIncl">
+                <MorphologicalInput><PhoneticSequence id="stemP1pi"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP1pi" /><InsertSegments><PhoneticShape>tuku</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>1PL.INCL</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 1 member 5/5 (W6, cooccurrence/morpheme-adjacency): 2PL person "-lupa", the
+               somewhereToRight/adjacentToRight distinguishing partner of mrPerson1PlIncl: its
+               MorphemeCoOccurrenceRule requires mrEvidDirect ADJACENT to its right, so the same
+               intervening PL that mrPerson1PlIncl tolerates instead breaks this one. -->
+          <MorphologicalRule id="mrPerson2Pl" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>person2pl</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerson2Pl">
+                <MorphologicalInput><PhoneticSequence id="stemP2pl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemP2pl" /><InsertSegments><PhoneticShape>lupa</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>2PL</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 2 (optional) sole member: plural "-chik". -->
+          <MorphologicalRule id="mrPlural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>plural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPlural">
+                <MorphologicalInput><PhoneticSequence id="stemPl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemPl" /><InsertSegments><PhoneticShape>chik</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PL</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 3 (optional) member 1/3: direct-evidence "-mi". -->
+          <MorphologicalRule id="mrEvidDirect" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>evidDirect</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEvidDirect">
+                <MorphologicalInput><PhoneticSequence id="stemEd"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEd" /><InsertSegments><PhoneticShape>mi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DIR</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 3 member 2/3: reportative-evidence, "Disjunctive allomorphs / free-fluctuation"
+               (constructs.txt): two UNCONSTRAINED subrules ("-si" / "-shi"), neither carrying a
+               RequiredEnvironments - per Allomorph.FreeFluctuatesWith (see
+               conformance/allomorphy/disjunctive-recheck's eGray/eGrey precedent), two allomorphs
+               with identical (empty) constraint sets never reject one another; each surface choice
+               is independently valid, not a case of one "winning" over the other. -->
+          <MorphologicalRule id="mrEvidReportative" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>evidReportative</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEvidRepA">
+                <MorphologicalInput><PhoneticSequence id="stemErA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemErA" /><InsertSegments><PhoneticShape>si</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subEvidRepB">
+                <MorphologicalInput><PhoneticSequence id="stemErB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemErB" /><InsertSegments><PhoneticShape>shi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>REP</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 3 member 3/3: conjectural-evidence "-cha". Excluded from co-occurring with 2SG
+               by the MorphemeCoOccurrenceRule below (an invented epistemic constraint: a speaker
+               cannot mark conjecture about a fact addressed directly to a 2nd-person addressee).
+               It also carries a SECOND MorphemeCoOccurrenceRule (excluding eTupa2, see below) -
+               together the two pin the AND-not-OR co-occurrence semantics of history row 5
+               (90dcee64, #311/LT-22156, cooccurrence/and-semantics-pin): a word is valid only if
+               EVERY rule attached to a morpheme passes, not merely one of them. -->
+          <MorphologicalRule id="mrEvidConjectural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>evidConjectural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEvidConj">
+                <MorphologicalInput><PhoneticSequence id="stemEc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEc" /><InsertSegments><PhoneticShape>cha</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CONJ</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 3 member 4/5 (W6, cooccurrence/morpheme-adjacency): assumptive-evidence "-tan",
+               a sibling of DIR/REP/CONJ added solely to host the "somewhereToLeft" adjacency
+               test: its MorphemeCoOccurrenceRule below requires mrPerson1 SPECIFICALLY (not any
+               person) somewhereToLeft, so an intervening optional PL between PERSON and this
+               suffix does not break satisfaction - PERSON is still "somewhere" to the left. -->
+          <MorphologicalRule id="mrEvidAssum" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>evidAssumptive</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEvidAssum">
+                <MorphologicalInput><PhoneticSequence id="stemEa"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEa" /><InsertSegments><PhoneticShape>tan</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ASSUM</MorphemeId>
+          </MorphologicalRule>
+          <!-- Slot 3 member 5/5 (W6, cooccurrence/morpheme-adjacency): mirative-evidence "-was",
+               the somewhereToLeft/adjacentToLeft distinguishing partner of mrEvidAssum: its
+               MorphemeCoOccurrenceRule requires mrPerson1 ADJACENT to its left, so the same
+               intervening PL that mrEvidAssum tolerates instead breaks this one. -->
+          <MorphologicalRule id="mrEvidMir" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>evidMirative</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subEvidMir">
+                <MorphologicalInput><PhoneticSequence id="stemEm"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemEm" /><InsertSegments><PhoneticShape>was</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MIR</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbTemplate</Name>
+            <!-- Slot 1: obligatory (optional defaults to "false"), disjunctive person choice -
+                 originally 3-way, now 5-way: mrPerson1PlIncl/mrPerson2Pl (W6) exist solely to host
+                 the somewhereToRight/adjacentToRight adjacency tests (see their rule comments). -->
+            <Slot morphologicalRules="mrPerson1 mrPerson2 mrPerson3 mrPerson1PlIncl mrPerson2Pl"><Name>person</Name></Slot>
+            <!-- Slot 2: optional number. -->
+            <Slot optional="true" morphologicalRules="mrPlural"><Name>number</Name></Slot>
+            <!-- Slot 3: optional evidential, originally 3-way choice - together with slots 1-2 this
+                 is the "evidential suffix chain (>=3 slots incl. obligatory + optional)" task B
+                 calls for. Now 5-way: mrEvidAssum/mrEvidMir (W6) exist solely to host the
+                 somewhereToLeft/adjacentToLeft adjacency tests (see their rule comments). -->
+            <Slot optional="true" morphologicalRules="mrEvidDirect mrEvidReportative mrEvidConjectural mrEvidAssum mrEvidMir"><Name>evidential</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eWalak" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aWalak"><PhoneticShape>walak</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>WALAK</MorphemeId>
+            <Gloss>carry.about</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSipu" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aSipu"><PhoneticShape>sipu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SIPU</MorphemeId>
+            <Gloss>weave</Gloss>
+          </LexicalEntry>
+          <!-- eTupa / eTupa2: a deliberately homophonous root PAIR (identical PhoneticShape "tupa"),
+               the ambiguity source for the pilot's required ">=1 ambiguous word with 2+ parses"
+               (word "tupay" below): both lexical entries match during analysis, so the same surface
+               string yields two genuinely distinct analyses (different morpheme ids), not a
+               duplicate of the same one. Homophonous roots are common cross-linguistically, so this
+               is used only here, deliberately, and not for any other word in this fixture. -->
+          <LexicalEntry id="eTupa" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aTupa"><PhoneticShape>tupa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TUPA</MorphemeId>
+            <Gloss>gather</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTupa2" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aTupa2"><PhoneticShape>tupa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TUPA2</MorphemeId>
+            <Gloss>arrive</Gloss>
+          </LexicalEntry>
+          <!-- eTaki: ONE morpheme (MorphemeId "SING"), TWO free-variation allomorphs (W6,
+               cooccurrence/allomorph-basic) - a native/Spanish-contact-loan doublet, "taki"
+               (native) and "kanta" (from Spanish "cantar"), distinguished purely by literal shape
+               (no environment needed, they share no prefix). The AllomorphCoOccurrenceRule below
+               is attached to aKanta ONLY, excluding it from co-occurring with the CONJ evidential
+               subrule (a register restriction: the loan variant resists the native conjectural-
+               evidential marker) - it must NOT fire when the SAME MORPHEME's other allomorph
+               (aTaki) combines with CONJ, proving the rule is scoped to one allomorph, not the
+               whole morpheme (C#'s Allomorph.AllomorphCoOccurrenceRules lives on RootAllomorph,
+               not Morpheme). -->
+          <LexicalEntry id="eTaki" partOfSpeech="posV">
+            <Allomorphs>
+              <Allomorph id="aTaki"><PhoneticShape>taki</PhoneticShape></Allomorph>
+              <Allomorph id="aKanta"><PhoneticShape>kanta</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>SING</MorphemeId>
+            <Gloss>sing</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+    <MorphemeCoOccurrenceRules>
+      <!-- CONJ (conjectural evidential) cannot co-occur with 2SG. This harness's documented
+           convention (see GrammarRuleIndex.cs) for a MorphemeCoOccurrenceRule's "rule id" (the DTD
+           gives the element itself no id attribute) is its primaryMorpheme value - here that is
+           also mrEvidConjectural's own AffixProcessRule id, so both the affix's positive exercise
+           and this rule's rejection attribution collapse onto the one id "mrEvidConjectural" in
+           rules.csv. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidConjectural" otherMorphemes="mrPerson2" adjacency="anywhere" />
+      <!-- W6, cooccurrence/and-semantics-pin (history row 5, 90dcee64, #311/LT-22156): a SECOND
+           MorphemeCoOccurrenceRule on the SAME primaryMorpheme (mrEvidConjectural) - excludes
+           eTupa2, a root that never co-occurs with CONJ in any word in this file (only one root
+           attaches per word, and no CONJ word here uses eTupa2), so this rule is trivially
+           satisfied in every word tested. It mirrors the historical regression's control rule
+           (LT-22156's "dEnclitic"/this suite's own eOther): pre-90dcee64 C# used
+           `.Any(IsWordValid)`, so this trivially-passing rule alone would have wrongly rescued a
+           word that fails the OTHER rule above (2SG+CONJ, "walaknkicha" below) - the correct
+           post-fix AND-across-rules semantics reject it regardless. This rule adds no new
+           behavior by itself; it exists only to prove the AND, not OR, combination. -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="exclude" primaryMorpheme="mrEvidConjectural" otherMorphemes="eTupa2" adjacency="anywhere" />
+      <!-- W6, cooccurrence/morpheme-adjacency: the other 4 MorphCoOccurrenceAdjacency kinds
+           (mrEvidConjectural's rule above already exercises "anywhere"). Each pairs a dedicated
+           slot-1/slot-3 member (added above) with mrPerson1/mrEvidDirect as its "other" morpheme,
+           exploiting this template's own ROOT-PERSON-[PL]-EVID linear order so the optional PL
+           slot is the intervening morph that distinguishes "somewhere" from "adjacent". -->
+      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrEvidAssum" otherMorphemes="mrPerson1" adjacency="somewhereToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrEvidMir" otherMorphemes="mrPerson1" adjacency="adjacentToLeft" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrPerson1PlIncl" otherMorphemes="mrEvidDirect" adjacency="somewhereToRight" />
+      <MorphemeCoOccurrenceRule isActive="yes" type="require" primaryMorpheme="mrPerson2Pl" otherMorphemes="mrEvidDirect" adjacency="adjacentToRight" />
+    </MorphemeCoOccurrenceRules>
+    <AllomorphCoOccurrenceRules>
+      <!-- W6, cooccurrence/allomorph-basic: attached to aKanta ONLY (see eTaki's LexicalEntry
+           comment) - otherAllomorphs references subEvidConj, the id of mrEvidConjectural's ONE
+           MorphologicalSubrule (the AffixProcessAllomorph instance C#'s allomorph dict keys by),
+           not mrEvidConjectural's own MorphologicalRule id (that would be a MorphemeCoOccurrenceRule-
+           only lookup). -->
+      <AllomorphCoOccurrenceRule isActive="yes" type="exclude" primaryAllomorph="aKanta" otherAllomorphs="subEvidConj" adjacency="anywhere" />
+    </AllomorphCoOccurrenceRules>
+  </Language>
+</HermitCrabInput>

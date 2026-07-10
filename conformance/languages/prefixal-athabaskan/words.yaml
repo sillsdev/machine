@@ -1,0 +1,220 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from). This grammar is a pure STRESS grammar (spec Sec3
+# row 7): it embeds no v1 fixture and carries no provenance -- its job is exercising AffixTemplate
+# morphology from the LEFT edge (a prefixal position-class template), which every other roster
+# grammar (all suffix-dominant) leaves untested.
+#
+# The template (innermost -> outermost, i.e. application order for a prefixing rule -- see
+# grammar.xml's AffixTemplate comment): classifier(1, obligatory) - mode(2, obligatory 2-way
+# disjunctive slot) - subject(3, obligatory, adjacent-dependency disjunctive allomorphy) -
+# object(4, optional, DISCONTINUOUS-dependency gate) - advA(5, optional, unconstrained) -
+# advB(6, optional, unconstrained, outermost).
+#
+#   1. shiyidkal -> KAL ("carry", ruleFeatures="mprClassA") + the three OBLIGATORY slots only:
+#      mrClass ("d-") applies first (innermost) -> "dkal"; mrModeTrans ("yi-", ALSO sets
+#      mprHighTrans -- the FUSED portmanteau: one exponent realizing both the aspectual value and
+#      the transitivity-class marking a later slot depends on) applies next -> "yidkal"; mrSubj's
+#      subrule A (gated by mprClassA, "shi-") applies last (outermost of the three) -> "shiyidkal".
+#      Morph chain reads outermost-first (the deep-optional-affix-nesting P12..P1 convention):
+#        -> SBJ+PRF+CLF+KAL|shiyidkal, rules: [mrClass, mrModeTrans, mrSubj]
+#   2. niyidtan -> TAN ("speak", ruleFeatures="mprClassB"), the SAME obligatory chain but mrSubj's
+#      OTHER subrule fires (gated by mprClassB, "ni-" instead of "shi-") -- proves the ADJACENT
+#      lexically-preset-class dependency picks the correct allomorph per root.
+#        -> SBJ+PRF+CLF+TAN|niyidtan, rules: [mrClass, mrModeTrans, mrSubj]
+#   3. bishiyidkal -> KAL's obligatory chain (as in 1) PLUS mrObj ("bi-"): mrObj requires
+#      mprHighTrans, set two slots inward by mrModeTrans (slot 2) -- slot 3 (subject) sits in
+#      between and never touches this feature at all, so this is the DISCONTINUOUS dependency
+#      firing successfully across a skipped, irrelevant obligatory slot.
+#        -> OBJ+SBJ+PRF+CLF+KAL|bishiyidkal, rules: [mrClass, mrModeTrans, mrSubj, mrObj]
+#   4. bishiwodkal -> the DISCONTINUOUS dependency's NEGATIVE control: KAL + mrClass + mrModeIntrans
+#      ("wo-", which does NOT set mprHighTrans -- a genuinely contrastive mode choice, not a free
+#      variant of mrModeTrans) + mrSubj, with mrObj ("bi-") attempted on top. mrObj's
+#      requiredMPRFeatures="mprHighTrans" is unsatisfied (only mrModeTrans sets it), so the object
+#      prefix cannot apply here at all -- zero parses, even though every other slot's own
+#      requirement is individually satisfied.
+#        -> expect_fail, blocked_by: [mrObj]
+#   5. yidkal -> KAL + mrClass + mrModeTrans, but slot 3 (subject) is OBLIGATORY and omitted
+#      entirely -- the template cannot synthesize (or analyze) a completion missing an obligatory
+#      slot (mirrors bantu-verbal's andik / suffixing-quechua's walakchik precedent, mirrored here
+#      from the LEFT edge instead of the right).
+#        -> expect_fail, blocked_by: [mrSubj]
+#
+# The remaining words reuse these same mechanisms on independent combinations (mrModeIntrans alone
+# with no object attempted; the two-optional-slot stack advA+advB; a bare-root omitting ALL THREE
+# obligatory slots) or exercise the LEFT-edge mirror of bantu-verbal's own G2c-flagged finding:
+#
+# Reconciliation against the oracle (self-check): words 1-5 above, and every other word except one,
+# matched the hand derivation on the first self-check run, including both expect_fail words'
+# zero-parse status. ONE deliberate prediction was wrong, and the correction is itself the most
+# useful finding in this file: "gahobishiyidkal" (the textual reverse of the flagship
+# "hogabishiyidkal" -- advA's "ga-" and advB's "ho-" swapped in linear position). Having read
+# bantu-verbal's own andikilisha finding (G2c: an AffixTemplate's slot order is a hard SYNTHESIS
+# constraint, but with two OPTIONAL, generically-shaped ["any segment, 1+"] slots, ANALYSIS can
+# retry to a fixpoint and peel the two affixes off in either linear order), this word was
+# hand-predicted to be ACCEPTED by the same mechanism -- mrAdvA/mrAdvB are just as optional and
+# unconstrained as bantu-verbal's causative/applicative pair. THE ORACLE REJECTS IT (zero parses),
+# contradicting the prediction. Corrected in place below (expect_fail), and the reason why bantu-
+# verbal's trick does NOT generalize here is itself instructive enough to trace all the way to
+# engine source: `AnalysisAffixTemplateRule.ApplySlots` (src/SIL.Machine.Morphology.HermitCrab/
+# AnalysisAffixTemplateRule.cs) walks a template's slots from OUTERMOST to INNERMOST in ONE pass; at
+# each slot index i it tries THAT slot's own rule at the word's CURRENT outer edge, and only if slot
+# i is optional does it fall through to try slot i-1 at the SAME (unstripped) edge -- an obligatory
+# slot's failure to match terminates the whole branch immediately, with no way back to a
+# higher-indexed (already-passed) slot. Bantu-verbal's extensionTemplate has its ONE obligatory slot
+# (finalVowel) at the OUTERMOST position, stripped first and unconditionally, so BOTH of its optional
+# slots (causative, applicative) sit together, unobstructed, all the way to the root -- any
+# out-of-turn match among them can fall through past the other via the optional-skip branch with
+# nothing obligatory in the way. This grammar's swappable pair (advA, advB) is also outermost, but
+# its three obligatory slots (subject, mode, classifier) sit BETWEEN that pair and the root: once
+# advA is stripped out of its canonical (innermost-of-the-pair) turn, the very next slot the
+# algorithm reaches inward is the OBLIGATORY subject slot -- and the actual next characters at the
+# edge are advB's still-unstripped "ho-", not subject's "shi-"/"ni-", so subject's match fails and
+# the whole branch dies with advB never given a chance to be tried (recursion only moves inward, it
+# never revisits a slot index once passed). The complementary "skip advA first, try advB" branch
+# dies exactly the same way one slot later. So the finding, honestly reconciled: an AffixTemplate's
+# fixpoint analysis retry rescues an out-of-canonical-order pair of optional/unconstrained slots
+# ONLY when every slot between that pair and the rest of the successful decomposition is ALSO
+# optional -- an obligatory slot standing between the swappable pair and the root (as this prefixal
+# template's obligatory-innermost design produces, the mirror image of bantu-verbal's
+# obligatory-outermost design) is a hard analysis-side order-enforcement mechanism after all, for
+# THAT specific slot arrangement. G2c's finding is real but not universal; this grammar's structure
+# is the counter-example that shows what condition it actually depends on.
+
+language: Ketselan
+inspired_by: ["Navajo (Athabaskan)"]
+sources:
+  - "WALS - Prefixing vs. suffixing morphology chapter; Athabaskan verb-template surveys"
+  - "Young & Morgan, The Navajo Language: A Grammar and Colloquial Dictionary (verb prefix position classes)"
+  - "Rice, Morpheme Order and Semantic Scope: Word Formation in the Athapaskan Verb (discontinuous/fused prefix dependencies)"
+requires: []
+words:
+  - word: shiyidkal
+    note: >-
+      KAL ("carry") + the three OBLIGATORY slots only (classifier "d-", mode mrModeTrans "yi-",
+      subject mrSubj subrule A "shi-", gated by the root's own preset mprClassA). No optional slot
+      fires. Establishes the minimal well-formed word under this template.
+    parses:
+      - signature: "SBJ+PRF+CLF+KAL|shiyidkal"
+        gloss: carry-CLF-TRANS.PRF-SBJ
+        rules: [mrClass, mrModeTrans, mrSubj]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: niyidtan
+    note: >-
+      TAN ("speak") + the same obligatory chain as shiyidkal, but mrSubj's OTHER subrule fires
+      ("ni-", gated by the root's preset mprClassB instead of mprClassA) -- proves the
+      lexically-preset agreement class correctly conditions which subject allomorph a given root
+      takes (bantu-verbal's kib/bel/nal precedent, applied to prefix-shape selection here).
+    parses:
+      - signature: "SBJ+PRF+CLF+TAN|niyidtan"
+        gloss: speak-CLF-TRANS.PRF-SBJ
+        rules: [mrClass, mrModeTrans, mrSubj]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bishiyidkal
+    note: >-
+      KAL's obligatory chain (as in shiyidkal) plus mrObj ("bi-"): mrObj requires mprHighTrans, set
+      TWO slots inward by mrModeTrans (slot 2) -- slot 3 (subject) sits in between and never
+      touches this feature at all. This is the DISCONTINUOUS slot dependency the roster names: an
+      outer prefix's admissibility hinges on a non-adjacent inner prefix's own choice, skipping an
+      intervening (obligatory but irrelevant-to-this-gate) slot.
+    parses:
+      - signature: "OBJ+SBJ+PRF+CLF+KAL|bishiyidkal"
+        gloss: carry-CLF-TRANS.PRF-SBJ-3OBJ
+        rules: [mrClass, mrModeTrans, mrSubj, mrObj]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: bishiwodkal
+    note: >-
+      The discontinuous dependency's NEGATIVE control: KAL + mrClass + mrModeIntrans ("wo-", a
+      genuinely contrastive mode choice that does NOT set mprHighTrans) + mrSubj, with mrObj
+      ("bi-") attempted on top. mrObj's gate is unsatisfied (only mrModeTrans sets mprHighTrans),
+      so the object prefix cannot apply here even though every other slot's own requirement holds
+      individually. Zero parses -- proves the discontinuous dependency is a genuine gate, not a
+      trivially-always-true one (mrClass/mrModeTrans/mrModeIntrans/mrSubj are all obligatory-slot
+      or always-available material, so without this gate "bishiwodkal" would otherwise parse fine).
+    expect_fail: true
+    blocked_by: [mrObj]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: yidkal
+    note: >-
+      KAL + mrClass + mrModeTrans, but slot 3 (subject) is OBLIGATORY in the AffixTemplate and
+      omitted entirely -- the template cannot synthesize (or analyze) a completion missing an
+      obligatory slot, mirroring bantu-verbal's andik / suffixing-quechua's walakchik precedent
+      from the LEFT edge instead of the right.
+    expect_fail: true
+    blocked_by: [mrSubj]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kal
+    note: >-
+      KAL entirely bare -- all three obligatory slots (classifier, mode, subject) are omitted at
+      once, the simplest possible negative control for an obligatory-slot-heavy template.
+    expect_fail: true
+    blocked_by: [mrClass]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: shiwodkal
+    note: >-
+      KAL + mrClass + mrModeIntrans ("wo-") + mrSubj, with NO object slot attempted -- proves
+      mrModeIntrans is independently well-formed on its own (the discontinuous gate above rejects
+      it only in combination with mrObj, not on its own terms).
+    parses:
+      - signature: "SBJ+IMPF+CLF+KAL|shiwodkal"
+        gloss: carry-CLF-INTR-SBJ
+        rules: [mrClass, mrModeIntrans, mrSubj]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gabishiyidkal
+    note: bishiyidkal's chain plus mrAdvA ("ga-"), the first of the two outermost optional, unconstrained slots.
+    parses:
+      - signature: "ADVA+OBJ+SBJ+PRF+CLF+KAL|gabishiyidkal"
+        gloss: carry-CLF-TRANS.PRF-SBJ-3OBJ-ITER
+        rules: [mrClass, mrModeTrans, mrSubj, mrObj, mrAdvA]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: hogabishiyidkal
+    note: >-
+      The flagship, fully-loaded word: ALL SIX slots fire (classifier, mode, subject, object, advA,
+      advB), in the template's own canonical linear order -- advB ("ho-") outermost, advA ("ga-")
+      just inside it. Exercises 6 of this grammar's 7 rule ids in a single word.
+    parses:
+      - signature: "ADVB+ADVA+OBJ+SBJ+PRF+CLF+KAL|hogabishiyidkal"
+        gloss: carry-CLF-TRANS.PRF-SBJ-3OBJ-ITER-AREAL
+        rules: [mrClass, mrModeTrans, mrSubj, mrObj, mrAdvA, mrAdvB]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: gahobishiyidkal
+    note: >-
+      THE order-swap reconciliation word (see header): the textual reverse of hogabishiyidkal's two
+      outermost prefixes (advA's "ga-" now outermost, advB's "ho-" now just inside it). Hand-predicted
+      ACCEPTED on the strength of bantu-verbal's own andikilisha finding (G2c) -- WRONG: the oracle
+      REJECTS it (zero parses). Reconciled by tracing AnalysisAffixTemplateRule.ApplySlots: bantu-
+      verbal's swappable pair had nothing but optional slots between it and the root (its one
+      obligatory slot, finalVowel, sits outermost and is stripped first, unconditionally); this
+      grammar's swappable pair (advA/advB) has THREE OBLIGATORY slots (subject, mode, classifier)
+      between it and the root. Once advA is stripped out of its canonical turn, the very next slot
+      the single-pass, outer-to-inner analysis walk reaches is the obligatory subject slot -- but the
+      actual next characters are advB's still-unstripped "ho-", not a subject prefix, so subject's
+      match fails and the whole branch dies immediately (the algorithm only moves inward, it can
+      never revisit advB once passed). The symmetric "skip advA, try advB out of turn" branch dies
+      the same way one slot later. So: a fixpoint-retry rescue for an out-of-order optional pair
+      requires EVERY slot between that pair and the root to ALSO be optional -- an obligatory slot in
+      the way (this template's obligatory-innermost design, the mirror of bantu-verbal's
+      obligatory-outermost one) is a real, working order-enforcement mechanism for analysis too, not
+      just synthesis. G2c's finding does not generalize to every template shape; this is the
+      counter-example that shows the actual condition it depends on.
+    expect_fail: true
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"

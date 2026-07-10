@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Ketselan</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- No PhonologicalFeatureSystem/HeadFeatures at all: like suffixing-quechua, this grammar is
+         pure morphotactics (AffixTemplate position-class stress), no PhonologicalRule/
+         ModifyFromInput anywhere - RequiresDerivation mechanically derives requires: [] (a second
+         requires-[] language grammar alongside suffixing-quechua/fusional-latin, a bonus for the
+         XAmple floor). Every MorphologicalInput stem pattern below uses ncAny (never a
+         segment-identity distinction), so the G2a StrRep-identity concern (feature-less grammars
+         degrading SegmentNaturalClass to "any segment") never applies here at all.
+
+         MPR features (per the DTD, MorphologicalPhonologicalRuleFeatures must precede
+         CharacterDefinitionTable) drive two DIFFERENT construct dimensions here, both scoped to
+         this AffixTemplate rather than to free-standing stratum rules (bantu-verbal/fusional-latin's
+         own MPR-groups sections are the non-templated case; this is the templated one):
+           - mprClassA/mprClassB: a lexically-preset agreement CLASS (bantu-verbal's kib/bel/nal
+             precedent) that picks which of mrSubj's two subrules realizes the subject prefix -
+             ordinary disjunctive allomorphy, ADJACENT dependency (the gating feature is preset on
+             the root itself, immediately visible to slot 3).
+           - mprHighTrans: set by mrModeTrans (slot 2) and required by mrObj (slot 4) - TWO
+             positions later, with slot 3 (subject) sitting in between and never touching the
+             feature at all. This is the DISCONTINUOUS slot dependency the roster names: an outer
+             prefix's admissibility hinges on a non-adjacent inner prefix's own choice, skipping over
+             an intervening (always-obligatory, but irrelevant-to-this-gate) slot. -->
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprClassA">ClassA</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprClassB">ClassB</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprHighTrans">HighTrans</MorphologicalPhonologicalRuleFeature>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cH"><Representations><Representation>h</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cW"><Representations><Representation>w</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cY"><Representations><Representation>y</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal "matches any segment" class, used only inside MorphologicalInput stem patterns
+           (the same idiom every phonology-free v2 grammar uses - see suffixing-quechua's own
+           comment on this class). -->
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Slot 1 (innermost, obligatory): classifier/valence prefix "d-", constant shape,
+               Athabaskan D-classifier-plausible. Every word in this grammar carries it. -->
+          <MorphologicalRule id="mrClass" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>classifier</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subClass">
+                <MorphologicalInput><PhoneticSequence id="stemClass"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>d</PhoneticShape></InsertSegments><CopyFromInput index="stemClass" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CLF</MorphemeId>
+            <Gloss>CLF</Gloss>
+          </MorphologicalRule>
+          <!-- Slot 2 (obligatory, 2-way DISJUNCTIVE SLOT - mirrors suffixing-quechua's 3-way person
+               slot exactly, two separate rules/morphemes in one obligatory Slot, not two subrules of
+               one rule, since transitive vs. intransitive mode are contrastive alternatives, not
+               phonologically-conditioned allomorphs of the same thing): mrModeTrans is the FUSED
+               portmanteau this roster names - ONE exponent ("yi-") jointly realizes the aspectual
+               value AND sets mprHighTrans, the feature slot 4 depends on. mrModeIntrans ("wo-")
+               realizes the same slot's OTHER aspectual value but sets no MPR feature at all - the
+               two rules are lexically/grammatically contrastive choices, not free variants. -->
+          <MorphologicalRule id="mrModeTrans" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>modeTransitivePerfective</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subModeTrans">
+                <MorphologicalInput><PhoneticSequence id="stemModeT"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprHighTrans"><InsertSegments><PhoneticShape>yi</PhoneticShape></InsertSegments><CopyFromInput index="stemModeT" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PRF</MorphemeId>
+            <Gloss>TRANS.PRF</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrModeIntrans" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>modeIntransitive</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subModeIntrans">
+                <MorphologicalInput><PhoneticSequence id="stemModeI"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>wo</PhoneticShape></InsertSegments><CopyFromInput index="stemModeI" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>IMPF</MorphemeId>
+            <Gloss>INTR</Gloss>
+          </MorphologicalRule>
+          <!-- Slot 3 (obligatory, ADJACENT-dependency disjunctive allomorphy): one morpheme "SBJ",
+               two subrules gated by the root's own lexically-preset agreement class (mprClassA/
+               mprClassB - bantu-verbal's kib/bel/nal precedent, applied here to condition prefix
+               SHAPE rather than gate rule admissibility outright). -->
+          <MorphologicalRule id="mrSubj" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>subject</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSubjA">
+                <MorphologicalInput requiredMPRFeatures="mprClassA"><PhoneticSequence id="stemSubjA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>shi</PhoneticShape></InsertSegments><CopyFromInput index="stemSubjA" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="subSubjB">
+                <MorphologicalInput requiredMPRFeatures="mprClassB"><PhoneticSequence id="stemSubjB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ni</PhoneticShape></InsertSegments><CopyFromInput index="stemSubjB" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SBJ</MorphemeId>
+            <Gloss>SBJ</Gloss>
+          </MorphologicalRule>
+          <!-- Slot 4 (optional, the DISCONTINUOUS-dependency probe): requires mprHighTrans, set two
+               slots inward by mrModeTrans (slot 2) - slot 3 (subject) sits in between and is
+               obligatory but irrelevant to this gate, so the dependency genuinely skips a slot. -->
+          <MorphologicalRule id="mrObj" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>object</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subObj">
+                <MorphologicalInput requiredMPRFeatures="mprHighTrans"><PhoneticSequence id="stemObj"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>bi</PhoneticShape></InsertSegments><CopyFromInput index="stemObj" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>OBJ</MorphemeId>
+            <Gloss>3OBJ</Gloss>
+          </MorphologicalRule>
+          <!-- Slots 5-6 (both optional, both totally UNCONSTRAINED - the andikilisha-style
+               fixpoint-retry probe, see words.yaml header): the mirror of bantu-verbal's
+               causative/applicative pair, but on the LEFT edge (outermost two prefix positions)
+               instead of two suffix slots. -->
+          <MorphologicalRule id="mrAdvA" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>disjunctA</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAdvA">
+                <MorphologicalInput><PhoneticSequence id="stemAdvA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ga</PhoneticShape></InsertSegments><CopyFromInput index="stemAdvA" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ADVA</MorphemeId>
+            <Gloss>ITER</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrAdvB" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
+            <Name>disjunctB</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAdvB">
+                <MorphologicalInput><PhoneticSequence id="stemAdvB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ho</PhoneticShape></InsertSegments><CopyFromInput index="stemAdvB" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ADVB</MorphemeId>
+            <Gloss>AREAL</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <!-- Declaration order = application order = INNERMOST-to-OUTERMOST for a prefixing
+               template (each rule's InsertSegments+CopyFromInput prepends to the CURRENT stem, so
+               the LAST-applied slot ends up leftmost - confirmed by edge-cases/
+               deep-optional-affix-nesting's own P12..P1 precedent). Slot 1 (classifier) attaches
+               directly to the root; slot 6 (advB) is the outermost, leftmost prefix position. -->
+          <AffixTemplate requiredPartsOfSpeech="posV">
+            <Name>verbPrefixTemplate</Name>
+            <Slot morphologicalRules="mrClass"><Name>classifier</Name></Slot>
+            <Slot morphologicalRules="mrModeTrans mrModeIntrans"><Name>mode</Name></Slot>
+            <Slot morphologicalRules="mrSubj"><Name>subject</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrObj"><Name>object</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrAdvA"><Name>advA</Name></Slot>
+            <Slot optional="true" morphologicalRules="mrAdvB"><Name>advB</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eKal" partOfSpeech="posV" ruleFeatures="mprClassA">
+            <Allomorphs><Allomorph id="aKal"><PhoneticShape>kal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KAL</MorphemeId>
+            <Gloss>carry</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTan" partOfSpeech="posV" ruleFeatures="mprClassB">
+            <Allomorphs><Allomorph id="aTan"><PhoneticShape>tan</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TAN</MorphemeId>
+            <Gloss>speak</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

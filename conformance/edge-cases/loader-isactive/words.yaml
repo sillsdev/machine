@@ -1,0 +1,39 @@
+# Converted from conformance/loader/n1-isactive (v1; kept in place, untouched, until phase G4 -- see
+# docs/conformance-language-suite-plan.md section 5, "the old fixture tree is deleted only when the
+# ledger is complete and section 7's gates pass"). grammar.xml is the same file, unmodified.
+#
+# What this pins (from the v1 fixture's README.md/manifest.json): C# XmlLanguageLoader.LoadLanguage
+# selects the phonological feature system with
+# Elements("PhonologicalFeatureSystem").SingleOrDefault(IsActive) (XmlLanguageLoader.cs:239) -- the
+# one *active* block among the two grammar.xml declares. A loader that ignores isActive and takes
+# the LAST block encountered instead would select the wrong (inactive, "junk"-only) block, and the
+# NaturalClasses' FeatureValue feature="voi" reference would fail to resolve, failing to load the
+# whole grammar. Both this grammar loading successfully AND its two words parsing to plain literal
+# signatures (no char-def-set bracket notation, thanks to the "seg6" disambiguating feature) is what
+# this fixture pins.
+
+language: N1-IsActive
+inspired_by: ["synthetic loader-semantics probe (not modeling any real language)"]
+sources:
+  - "rust/parity-out/audit/phase2/C-loader-parity.md (Phase-2 audit C finding N1)"
+requires: []
+words:
+  - word: kat
+    note: Plain lexical root, no affixes -- proves the grammar loaded at all (the active PhonologicalFeatureSystem block's "voi" feature resolved) and that its signature renders as a plain literal string.
+    provenance: "Phase-2 audit C finding N1 (PhonologicalFeatureSystem@isActive)"
+    parses:
+      - signature: "|kat"
+        gloss: kat
+        rules: []
+        exercises:
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: sod
+    note: Second plain lexical root -- the same isActive-selection proof as "kat", from the language's other lexical entry.
+    provenance: "Phase-2 audit C finding N1 (PhonologicalFeatureSystem@isActive)"
+    parses:
+      - signature: "|sod"
+        gloss: sod
+        rules: []
+        exercises:
+          - "Boundary markers (CharacterDefinitionTable)"
