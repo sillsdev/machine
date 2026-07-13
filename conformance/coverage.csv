@@ -118,6 +118,12 @@ Velamba,dabepez,DAB+NUMPL+AGR|dabepez,Syntactic feature agreement (RequiredHeadF
 Velamba,dabez,DAB+AGR|dabez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 Velamba,kes,KES|kes,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 Velamba,kesez,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Velamba,siliz,SIL+RECURSUF|siliz,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Velamba,siliziz,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Velamba,daleh,DAL+STEMREQ|daleh,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Velamba,daheh,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Velamba,zimed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Velamba,zamed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 Vetruna,mun,STEM|mun,Stem names
 Vetruna,muno,,Stem names
 Vetruna,muns,,Stem names

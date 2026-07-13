@@ -54,10 +54,13 @@ Velamba,mrExtX,xkib;yxkib;xkibz
 Velamba,mrExtY,yxkib
 Velamba,mrFV,andika;andikisha;andikila;andikishila;andikilisha
 Velamba,mrNumPl,dabep;dabepez
+Velamba,mrRecurSuf,siliz;!siliziz
 Velamba,mrRedup,kimbiakimbia
+Velamba,mrStemReq,daleh;!daheh
 Velamba,mrTense,limape
 Velamba,prNasalMutation,mba;!mpa
 Velamba,rrPast,limaile;!limapeile
+Velamba,rrRRealTest,!zimed;!zamed
 Vetruna,mrAblaut,sang
 Vetruna,mrCircumfixGeT,gelobt;gelobth
 Vetruna,mrCompoundConstrained,mitlav;ficlav;!seclav;!genlav;!mitlavlav

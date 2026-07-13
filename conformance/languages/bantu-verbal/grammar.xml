@@ -112,24 +112,29 @@
       <MorphologicalPhonologicalRuleFeature id="mprConcB">ConcB</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprConcC">ConcC</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprConcD">ConcD</MorphologicalPhonologicalRuleFeature>
-      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprExtA mprExtB"><Name>ExtGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
-      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConcA mprConcB"><Name>AllConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
-      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConcC mprConcD"><Name>AnyConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <!-- G5 (code-coverage-driven, second sweep): gates mrRRealTest below (SynthesisRealizationalAffixProcessRule),
            a hard set-membership check so that rule can never spuriously apply to any pre-existing
            word (RequiredHeadFeatures/RealizationalFeatures unify vacuously against a feature no
            other entry ever sets, per the mrAgr/dabez finding above, but requiredMPRFeatures is a
            genuine set-membership gate, not unification). -->
       <MorphologicalPhonologicalRuleFeature id="mprRRealTest">RRealTest</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprExtA mprExtB"><Name>ExtGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConcA mprConcB"><Name>AllConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConcC mprConcD"><Name>AnyConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
     </MorphologicalPhonologicalRuleFeatures>
     <!-- G5 (code-coverage-driven, second sweep): snG5 gates mrStemReq below
          (SynthesisAffixProcessRule.RequiredStemName), previously zero coverage for the FAILURE case
-         (a candidate root without the required stem name). -->
+         (a candidate root without the required stem name). Region carries no AssignedHeadFeatures:
+         RootAllomorph.CheckAllomorphConstraints (StemName.IsRequiredMatch) unifies the region against
+         the word's SyntacticFeatureStruct at root-selection time, and posV7 alone (already on the
+         region via partsOfSpeech) is all we want to require; adding a tense feature there would gate
+         root selection itself on a feature nothing in this derivation ever assigns, masking the
+         RequiredStemName rule-level check (SynthesisAffixProcessRule) this fixture actually targets. -->
     <StemNames>
       <StemName id="snG5" partsOfSpeech="posV7">
         <Name>G5Stem</Name>
         <Regions>
-          <Region><AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></AssignedHeadFeatures></Region>
+          <Region></Region>
         </Regions>
       </StemName>
     </StemNames>
