@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
-namespace SIL.Machine.Morphology.HermitCrab.Conformance.V2;
+namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
 /// Extracts, for one successful parse (<see cref="Word"/>) returned by <c>Morpher.ParseWord</c>,
@@ -29,7 +29,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance.V2;
 /// <b>Documented limitation (ambiguous words):</b> when a surface word has more than one successful
 /// analysis, this global trace walk cannot attribute a specific phonological rule firing to one
 /// analysis branch over another -- it reports the UNION of every phonological rule that fired
-/// anywhere while producing any of the word's results. <see cref="RunnerV2"/> applies this same
+/// anywhere while producing any of the word's results. <see cref="Runner"/> applies this same
 /// phonological-rule set to every one of that word's declared parses, so a false PASS is possible
 /// in principle for an ambiguous word whose two parses use different phonological rules but the
 /// same declared "rules:" set does not distinguish them. This does not affect any G1 fixture (the

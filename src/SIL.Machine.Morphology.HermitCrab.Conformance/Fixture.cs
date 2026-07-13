@@ -3,35 +3,40 @@ using System.IO;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
-/// <summary>One fixture directory under conformance/: its id, path, and parsed manifest.</summary>
-public class Fixture(string directory, FixtureManifest manifest)
+/// <summary>
+/// One fixture directory: exactly <c>grammar.xml</c> + <c>words.yaml</c>, under
+/// <c>conformance/languages/&lt;name&gt;/</c> or <c>conformance/edge-cases/&lt;name&gt;/</c>, per
+/// docs/conformance-language-suite-plan.md section 2. Discovery is scoped to only those two roots.
+/// </summary>
+public class Fixture(string id, string directory, WordsYaml words)
 {
-    public string Id { get; } = manifest.Id;
+    public string Id { get; } = id;
     public string Directory { get; } = directory;
-    public FixtureManifest Manifest { get; } = manifest;
+    public WordsYaml Words { get; } = words;
 
     public string GrammarPath => Path.Combine(Directory, "grammar.xml");
-    public string WordsPath => Path.Combine(Directory, "words.txt");
-    public string ExpectedPath => Path.Combine(Directory, "expected.tsv");
 
-    /// <summary>
-    /// Discovers every fixture under <paramref name="fixturesRoot"/>: any directory (at any depth)
-    /// containing a manifest.json is treated as one fixture.
-    /// </summary>
     public static List<Fixture> DiscoverAll(string fixturesRoot)
     {
         var fixtures = new List<Fixture>();
-        foreach (
-            string manifestPath in System.IO.Directory.EnumerateFiles(
-                fixturesRoot,
-                "manifest.json",
-                SearchOption.AllDirectories
-            )
-        )
+        foreach (string category in new[] { "languages", "edge-cases" })
         {
-            string dir = Path.GetDirectoryName(manifestPath)!;
-            FixtureManifest manifest = FixtureManifest.Load(manifestPath);
-            fixtures.Add(new Fixture(dir, manifest));
+            string categoryRoot = Path.Combine(fixturesRoot, category);
+            if (!System.IO.Directory.Exists(categoryRoot))
+                continue;
+
+            foreach (string dir in System.IO.Directory.EnumerateDirectories(categoryRoot))
+            {
+                string grammarPath = Path.Combine(dir, "grammar.xml");
+                string wordsYamlPath = Path.Combine(dir, "words.yaml");
+                if (!File.Exists(grammarPath) || !File.Exists(wordsYamlPath))
+                    continue;
+
+                string name = Path.GetFileName(dir);
+                string id = $"{category}/{name}";
+                WordsYaml words = WordsYamlLoader.Load(wordsYamlPath);
+                fixtures.Add(new Fixture(id, dir, words));
+            }
         }
         fixtures.Sort((a, b) => string.CompareOrdinal(a.Id, b.Id));
         return fixtures;

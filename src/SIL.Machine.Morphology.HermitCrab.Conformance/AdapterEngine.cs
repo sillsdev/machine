@@ -35,7 +35,7 @@ public class AdapterEngine : IEngine
 
     public IReadOnlySet<string> Capabilities { get; }
 
-    public List<TsvRow> Run(Fixture fixture)
+    public List<TsvRow> Run(MaterializedFixture fixture)
     {
         string outputPath = Path.Combine(Path.GetTempPath(), "hc-conformance-" + Guid.NewGuid().ToString("N") + ".tsv");
         try
@@ -73,7 +73,7 @@ public class AdapterEngine : IEngine
 
             // A fixture's own manifest budget (pathological fixtures) takes over the process
             // timeout for that one run instead of the default 5 minutes, so a runaway adapter gets
-            // killed at the same wall-clock bound Runner enforces, not five minutes later.
+            // killed at the same wall-clock bound MaterializedRunner enforces, not five minutes later.
             int effectiveTimeoutMs =
                 fixture.Manifest.Budget != null ? (int)fixture.Manifest.Budget.WallClockMs : _timeoutMs;
 
@@ -97,7 +97,7 @@ public class AdapterEngine : IEngine
             {
                 // The engine under test itself failed (as opposed to a harness-level problem like
                 // a bad --adapter template, a hung process, or exiting 0 with no output) -- see
-                // EngineCrashException's doc comment for the PASS/FAIL contract this feeds Runner.
+                // EngineCrashException's doc comment for the PASS/FAIL contract this feeds MaterializedRunner.
                 throw new EngineCrashException(
                     $"adapter process exited {process.ExitCode} for fixture '{fixture.Id}'.\nstdout:\n{stdout}\nstderr:\n{stderr}"
                 );

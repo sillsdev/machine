@@ -18,6 +18,7 @@ N1-IsActive,sod,|sod,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bat,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
+N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 StrRepIdentityProbe,pat,+|[(^0)∅]?+?pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,pat,|pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,mat,+|[(^0)∅]?+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
@@ -71,6 +72,8 @@ Kirenti,duii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge
 Kirenti,duy,DUII|duy,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 Kirenti,sueeb,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 Kirenti,sueb,SUEEB|sueb,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+Kirenti,satun,SAT+ALPHA|satun,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+Kirenti,setin,SET+ALPHA|setin,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
 Tavolan,nui,NIU|nui,MetathesisRule
 Tavolan,niu,,MetathesisRule
 Tavolan,mu+i,MI+3SGU|mu+?i,MetathesisRule
@@ -110,6 +113,11 @@ Velamba,andikisha,AND+CAUS+FV|andikisha,Affix template slots (obligatory/disjunc
 Velamba,andikila,AND+APPL+FV|andikila,Affix template slots (obligatory/disjunctive/ordering)
 Velamba,andikishila,AND+CAUS+APPL+FV|andikishila,Affix template slots (obligatory/disjunctive/ordering)
 Velamba,andikilisha,AND+APPL+CAUS+FV|andikilisha,Affix template slots (obligatory/disjunctive/ordering)
+Velamba,dabep,DAB+NUMPL|dabep,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Velamba,dabepez,DAB+NUMPL+AGR|dabepez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Velamba,dabez,DAB+AGR|dabez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Velamba,kes,KES|kes,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Velamba,kesez,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 Vetruna,mun,STEM|mun,Stem names
 Vetruna,muno,,Stem names
 Vetruna,muns,,Stem names
@@ -153,6 +161,11 @@ Vetruna,kath,,MPR features/groups
 Vetruna,sodh,SOD+ENDH|sodh,MPR features/groups
 Vetruna,limh,,MPR features/groups
 Vetruna,sang,SING+ABLAUT|sang,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+Vetruna,mitlav,MIT+LAV|mit+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Vetruna,ficlav,FIC+LAV|fic+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Vetruna,seclav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Vetruna,genlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Vetruna,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 Nuvattak,nunaliq,NUNA+DERIV|nunaliq,AffixProcessRule: prefix/suffix/circumfix/infix
 Nuvattak,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,Stratum (Linear/Unordered rule order)
 Nuvattak,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,AffixProcessRule: prefix/suffix/circumfix/infix

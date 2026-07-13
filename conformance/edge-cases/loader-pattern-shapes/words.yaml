@@ -71,3 +71,19 @@ words:
     expect_skip: true
     exercises:
       - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: bt
+    note: >-
+      G5 (code-coverage-driven): the second lexical entry's pattern "b([Vowel])t" makes the middle
+      position OPTIONAL in the LOADER's shape (the one CharacterDefinitionTable.GetShapeNodes
+      pattern-language branch N3 didn't already cover -- the loader itself runs this branch and
+      builds the optional-annotated shape node regardless of what happens next, so the loader code
+      is exercised either way). Reconciliation finding: at RUNTIME, root-allomorph analysis
+      matching does not actually honor the shape node's Optional annotation the way a phonological
+      environment match does -- "bt" gets zero parses rather than matching with the vowel position
+      skipped. Pinned as the real, verified oracle behavior, not the hand-derivation's original
+      guess (a genuine engine finding, not a fixture bug).
+    provenance: "G5 coverage sweep, CharacterDefinitionTable.GetShapeNodes optional-group '(...)' branch"
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable pattern shapes: optional group / Kleene star"

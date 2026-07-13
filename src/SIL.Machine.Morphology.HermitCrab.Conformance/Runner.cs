@@ -1,26 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
-
-public enum FixtureOutcome
-{
-    Passed,
-    Failed,
-    Skipped,
-}
-
-public class FixtureResult
-{
-    public string FixtureId = "";
-    public FixtureOutcome Outcome;
-    public string Reason = "";
-    public long ElapsedMs;
-    public List<WordResult> WordResults = new();
-}
 
 public class RunReport
 {
@@ -33,193 +18,314 @@ public class RunReport
 }
 
 /// <summary>
-/// Runs every discovered fixture through an <see cref="IEngine"/>, applying category exclusion
-/// (pathological) and capability filtering (manifest "requires" vs. the engine's declared
-/// capabilities), and diffs results against each fixture's expected.tsv.
+/// Runs fixtures under conformance/languages and conformance/edge-cases. Self-check mode is a
+/// custom, in-process loop (it needs per-word signature-SET comparison against words.yaml and
+/// traced-rules verification, neither of which <see cref="MaterializedRunner"/>/<see cref="SelfCheckEngine"/>
+/// does). Adapter mode instead materializes each fixture onto disk and hands it to
+/// <see cref="MaterializedRunner"/> + <see cref="AdapterEngine"/> -- see <see cref="FixtureMaterializer"/>.
 /// </summary>
 public static class Runner
 {
-    public static RunReport Run(List<Fixture> fixtures, IEngine engine, bool includePathological)
+    public static RunReport RunSelfCheck(
+        List<Fixture> fixtures,
+        bool includePathological,
+        IReadOnlySet<string> engineCapabilities,
+        bool propose,
+        TextWriter proposeOutput
+    )
     {
         var report = new RunReport();
-
         foreach (Fixture fixture in fixtures)
         {
-            // category:pathological is the authoritative signal (the only thing docs ever mention);
-            // the manifest's own "pathological" boolean is redundant and, if present, must agree
-            // with it -- a mismatch is a manifest bug, not a runtime condition to silently resolve.
-            bool isPathological = fixture.Manifest.Category == "pathological";
-            var result = new FixtureResult { FixtureId = fixture.Id };
-            if (fixture.Manifest.Pathological.HasValue && fixture.Manifest.Pathological.Value != isPathological)
-            {
-                result.Outcome = FixtureOutcome.Failed;
-                result.Reason =
-                    $"manifest error: pathological={fixture.Manifest.Pathological.Value.ToString().ToLowerInvariant()} "
-                    + $"disagrees with category '{fixture.Manifest.Category}'";
-                report.Results.Add(result);
-                continue;
-            }
-
-            if (isPathological && !includePathological)
-            {
+            FixtureResult result = RunOneSelfCheck(
+                fixture,
+                includePathological,
+                engineCapabilities,
+                propose,
+                proposeOutput
+            );
+            if (result == null)
                 report.ExcludedPathologicalCount++;
-                continue;
-            }
-
-            // manifest.requires must mechanically match what grammar.xml actually contains (see
-            // PROTOCOL.md section 5 / RequiresDerivation) -- a hand-authored drift here is a
-            // manifest bug, caught the same way the pathological/category mismatch above is.
-            List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath);
-            if (
-                !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
-                    new HashSet<string>(fixture.Manifest.Requires, StringComparer.Ordinal)
-                )
-            )
-            {
-                result.Outcome = FixtureOutcome.Failed;
-                result.Reason =
-                    $"manifest error: requires [{string.Join(",", fixture.Manifest.Requires)}] does not match "
-                    + $"grammar-derived [{string.Join(",", derivedRequires)}]";
+            else
                 report.Results.Add(result);
-                continue;
-            }
-
-            List<string> missingCapabilities = fixture
-                .Manifest.Requires.Where(req => !engine.Capabilities.Contains(req))
-                .ToList();
-            if (missingCapabilities.Count > 0)
-            {
-                result.Outcome = FixtureOutcome.Skipped;
-                result.Reason =
-                    $"requires [{string.Join(",", fixture.Manifest.Requires)}], "
-                    + $"engine declares [{string.Join(",", engine.Capabilities.OrderBy(c => c))}]; "
-                    + $"missing [{string.Join(",", missingCapabilities)}]";
-                report.Results.Add(result);
-                continue;
-            }
-
-            // Read once, before the try: the old code re-read expected.tsv from inside the catch
-            // block too, so a genuinely missing file could throw from inside exception handling.
-            List<TsvRow> expected = SignatureTsv.ReadFile(fixture.ExpectedPath);
-
-            var sw = Stopwatch.StartNew();
-            try
-            {
-                List<TsvRow> actual = RunWithBudget(engine, fixture);
-                sw.Stop();
-                result.ElapsedMs = sw.ElapsedMilliseconds;
-
-                // A handful of fixtures deliberately pin a CRASH as their ground truth (e.g.
-                // rewrite/simultaneous-epenthesis-cascade's InfiniteLoopException): the manifest
-                // says so explicitly (expectCrash: true) rather than the harness inferring it from
-                // an empty expected.tsv. If the engine returns normally here, it did not reproduce
-                // that crash, which is itself a conformance failure.
-                if (fixture.Manifest.ExpectCrash)
-                {
-                    result.Outcome = FixtureOutcome.Failed;
-                    result.Reason = "expected crash, engine produced output";
-                }
-                else
-                {
-                    FixtureDiff diff = Diff.Compare(expected, actual);
-                    result.WordResults = diff.WordResults;
-
-                    // Enforced whenever a budget is present, regardless of category: today only
-                    // pathological fixtures carry one, but nothing about the check is category-
-                    // specific.
-                    bool overBudget =
-                        fixture.Manifest.Budget != null && result.ElapsedMs > fixture.Manifest.Budget.WallClockMs;
-
-                    if (overBudget)
-                    {
-                        result.Outcome = FixtureOutcome.Failed;
-                        result.Reason =
-                            $"exceeded wall-clock budget ({result.ElapsedMs}ms > {fixture.Manifest.Budget.WallClockMs}ms)";
-                    }
-                    else if (diff.AllPassed)
-                    {
-                        result.Outcome = FixtureOutcome.Passed;
-                    }
-                    else
-                    {
-                        result.Outcome = FixtureOutcome.Failed;
-                        int failCount = diff.WordResults.Count(w => !w.Passed);
-                        result.Reason = $"{failCount}/{diff.WordResults.Count} word(s) mismatched";
-                    }
-                }
-            }
-            catch (EngineCrashException ex)
-            {
-                sw.Stop();
-                result.ElapsedMs = sw.ElapsedMilliseconds;
-
-                if (fixture.Manifest.ExpectCrash)
-                {
-                    result.Outcome = FixtureOutcome.Passed;
-                    result.Reason = $"engine crashed as expected (manifest expectCrash: true): {ex.Message}";
-                }
-                else
-                {
-                    result.Outcome = FixtureOutcome.Failed;
-                    result.Reason = $"engine crashed: {ex.Message}";
-                }
-            }
-            catch (TimeoutException ex) when (fixture.Manifest.Budget != null)
-            {
-                sw.Stop();
-                result.ElapsedMs = sw.ElapsedMilliseconds;
-
-                result.Outcome = FixtureOutcome.Failed;
-                result.Reason = $"exceeded budget {fixture.Manifest.Budget.WallClockMs}ms: {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                sw.Stop();
-                result.ElapsedMs = sw.ElapsedMilliseconds;
-
-                // Any other exception is a plain harness error (bad --adapter template, process
-                // couldn't start, timed out, etc.) -- never a pass, regardless of expectCrash.
-                result.Outcome = FixtureOutcome.Failed;
-                result.Reason = $"harness error: {ex.Message}";
-            }
-
-            report.Results.Add(result);
         }
-
         return report;
     }
 
-    /// <summary>
-    /// Runs the engine for one fixture. If the manifest carries a budget, engine.Run happens on a
-    /// background thread and this waits up to budget + a small margin; AdapterEngine independently
-    /// plumbs the same budget into its own process timeout (so a subprocess adapter gets killed),
-    /// but self-check's in-process call has no external process to kill, so this watchdog is what
-    /// keeps a runaway self-check parse from hanging the whole harness run. If the watchdog expires,
-    /// a TimeoutException is thrown and the background thread is simply abandoned -- this is a
-    /// short-lived CLI, so a leaked runaway thread on the rare budget-blown fixture is an acceptable
-    /// trade for keeping this shape simple.
-    /// </summary>
-    private static List<TsvRow> RunWithBudget(IEngine engine, Fixture fixture)
+    private static FixtureResult RunOneSelfCheck(
+        Fixture fixture,
+        bool includePathological,
+        IReadOnlySet<string> engineCapabilities,
+        bool propose,
+        TextWriter proposeOutput
+    )
     {
-        FixtureBudget budget = fixture.Manifest.Budget;
-        if (budget == null)
-            return engine.Run(fixture);
+        var result = new FixtureResult { FixtureId = fixture.Id };
 
-        Task<List<TsvRow>> task = Task.Run(() => engine.Run(fixture));
-        long marginMs = Math.Max(budget.WallClockMs / 5, 1000);
+        // Mechanical requires-check against the words.yaml front matter (see PROTOCOL.md section 5 /
+        // RequiresDerivation) -- a hand-authored drift here is a words.yaml bug.
+        List<string> derivedRequires = RequiresDerivation.Derive(fixture.GrammarPath);
+        if (
+            !new HashSet<string>(derivedRequires, StringComparer.Ordinal).SetEquals(
+                new HashSet<string>(fixture.Words.Requires, StringComparer.Ordinal)
+            )
+        )
+        {
+            result.Outcome = FixtureOutcome.Failed;
+            result.Reason =
+                $"words.yaml error: requires [{string.Join(",", fixture.Words.Requires)}] does not match "
+                + $"grammar-derived [{string.Join(",", derivedRequires)}]";
+            return result;
+        }
+
+        bool isPathological = fixture.Words.BudgetMs.HasValue;
+        if (isPathological && !includePathological)
+            return null;
+
+        List<string> missingCapabilities = fixture.Words.Requires.Where(r => !engineCapabilities.Contains(r)).ToList();
+        if (missingCapabilities.Count > 0)
+        {
+            result.Outcome = FixtureOutcome.Skipped;
+            result.Reason =
+                $"requires [{string.Join(",", fixture.Words.Requires)}], missing [{string.Join(",", missingCapabilities)}]";
+            return result;
+        }
+
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            RunWithBudget(fixture, result, propose, proposeOutput);
+            sw.Stop();
+            result.ElapsedMs = sw.ElapsedMilliseconds;
+
+            if (fixture.Words.ExpectCrash)
+            {
+                result.Outcome = FixtureOutcome.Failed;
+                result.Reason = "expected crash, engine produced output";
+            }
+            else
+            {
+                bool overBudget = fixture.Words.BudgetMs.HasValue && result.ElapsedMs > fixture.Words.BudgetMs.Value;
+                if (overBudget)
+                {
+                    result.Outcome = FixtureOutcome.Failed;
+                    result.Reason = $"exceeded wall-clock budget ({result.ElapsedMs}ms > {fixture.Words.BudgetMs}ms)";
+                }
+                else if (result.WordResults.All(w => w.Passed))
+                {
+                    result.Outcome = FixtureOutcome.Passed;
+                }
+                else
+                {
+                    result.Outcome = FixtureOutcome.Failed;
+                    int failCount = result.WordResults.Count(w => !w.Passed);
+                    result.Reason = $"{failCount}/{result.WordResults.Count} word(s) mismatched";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            sw.Stop();
+            result.ElapsedMs = sw.ElapsedMilliseconds;
+            if (fixture.Words.ExpectCrash)
+            {
+                result.Outcome = FixtureOutcome.Passed;
+                result.Reason = $"engine crashed as expected (words.yaml expect_crash: true): {ex.Message}";
+            }
+            else
+            {
+                result.Outcome = FixtureOutcome.Failed;
+                result.Reason = $"engine crashed: {ex.Message}";
+            }
+        }
+
+        return result;
+    }
+
+    // Mirrors MaterializedRunner.RunWithBudget's watchdog shape (see that method's doc comment) -- a
+    // budgeted fixture gets the same "background thread + Task.Wait" timeout enforcement.
+    private static void RunWithBudget(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
+    {
+        if (!fixture.Words.BudgetMs.HasValue)
+        {
+            RunAllWords(fixture, result, propose, proposeOutput);
+            return;
+        }
+
+        long budgetMs = fixture.Words.BudgetMs.Value;
+        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput));
+        long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
         {
-            completed = task.Wait((int)(budget.WallClockMs + marginMs));
+            completed = task.Wait((int)(budgetMs + marginMs));
         }
         catch (AggregateException ex) when (ex.InnerException != null)
         {
-            // Unwrap: rethrow the engine's own exception so the caller's EngineCrashException/
-            // generic catch blocks see the real exception type, not Task's wrapper.
             throw ex.InnerException;
         }
         if (!completed)
-            throw new TimeoutException("watchdog timed out waiting for engine.Run");
-        return task.GetAwaiter().GetResult();
+            throw new TimeoutException("watchdog timed out waiting for self-check engine");
+    }
+
+    private static void RunAllWords(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
+    {
+        Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
+        var traceManager = new TraceManager { IsTracing = true };
+        var morpher = new Morpher(traceManager, language);
+        GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
+
+        foreach (WordEntry word in fixture.Words.Words)
+        {
+            bool guessRoot = word.Parses.Any(p => p.Guess);
+            List<Word> results;
+            object trace;
+            bool wasSkipped = false;
+            try
+            {
+                results = morpher.ParseWord(word.Word, out trace, guessRoot).ToList();
+            }
+            catch (InvalidShapeException)
+            {
+                // The engine SKIPS this word (an undeclared segment, etc.) rather than returning a
+                // zero-parse "ok" -- the adapter contract's "SKIPPED" status. Distinguished from a
+                // genuine 0-parse below so expect_fail (ok) and expect_skip (SKIPPED) each verify the
+                // status the materialized expected.tsv (and any real adapter) will actually diff on.
+                wasSkipped = true;
+                results = new List<Word>();
+                trace = null;
+            }
+
+            string actualSignature = SignatureFormat.BuildSignature(results);
+            string expectedSignature = FixtureMaterializer.BuildExpectedSignature(word);
+            List<string> actualEntries = SignatureTsv.SplitSignature(actualSignature);
+            List<string> expectedEntries = SignatureTsv.SplitSignature(expectedSignature);
+
+            bool signatureMatches = actualEntries.SequenceEqual(expectedEntries, StringComparer.Ordinal);
+            if (!signatureMatches)
+            {
+                result.WordResults.Add(
+                    new WordResult
+                    {
+                        Word = word.Word,
+                        Passed = false,
+                        Detail =
+                            $"expected [{string.Join(" | ", expectedEntries)}] got [{string.Join(" | ", actualEntries)}]",
+                    }
+                );
+                if (propose)
+                    ProposePatchWriter.WriteSignatureProposal(proposeOutput, fixture, word, actualEntries);
+                continue;
+            }
+
+            if (word.ExpectSkip)
+            {
+                // Declared SKIPPED: PASS iff the engine actually threw InvalidShapeException. A word
+                // that instead produced a genuine empty parse set (status "ok") is mis-declared -- it
+                // would diff as ok-vs-SKIPPED against a real adapter, so fail it here too.
+                result.WordResults.Add(
+                    new WordResult
+                    {
+                        Word = word.Word,
+                        Passed = wasSkipped,
+                        Detail = wasSkipped
+                            ? "ok (skipped: InvalidShapeException)"
+                            : "declared expect_skip but engine produced a zero-parse 'ok' without skipping",
+                    }
+                );
+                continue;
+            }
+
+            if (word.ExpectFail)
+            {
+                // Declared genuine zero-parse "ok": PASS iff the engine did NOT skip. A word that was
+                // actually SKIPPED (InvalidShapeException) is mis-declared and should be expect_skip --
+                // it would diff as SKIPPED-vs-ok against a real adapter (adapter mode materializes "ok"
+                // for expect_fail). Keeping self-check strict here keeps the two modes consistent.
+                result.WordResults.Add(
+                    new WordResult
+                    {
+                        Word = word.Word,
+                        Passed = !wasSkipped,
+                        Detail = !wasSkipped
+                            ? "ok (0 parses)"
+                            : "declared expect_fail (status ok) but engine SKIPPED it (InvalidShapeException) -- use expect_skip",
+                    }
+                );
+                continue;
+            }
+
+            // Signature set matched; now verify the traced "rules:" list per parse. Group actual
+            // results by their own individual signature so an ambiguous word's N declared parses
+            // can each be matched to the one result that produced it (signatureMatches above already
+            // proved this is a 1:1 correspondence at the SET level; duplicate signature strings
+            // across parses are not expected and, if they occurred, would just re-check the same
+            // result against every parse sharing that signature).
+            Dictionary<string, List<Word>> actualBySignature = results
+                .GroupBy(w => SignatureFormat.BuildSignature(new[] { w }))
+                .ToDictionary(g => g.Key, g => g.ToList());
+            HashSet<string> wordLevelRuleIds = TraceRuleAttributor.WordLevelRuleIds(trace, ruleIndex);
+
+            bool wordRulesOk = true;
+            var ruleDetails = new List<string>();
+            foreach (ParseEntry parse in word.Parses)
+            {
+                if (!actualBySignature.TryGetValue(parse.Signature, out List<Word> matches) || matches.Count == 0)
+                    continue; // can't happen given signatureMatches, but stay defensive
+                foreach (Word match in matches)
+                {
+                    HashSet<string> actualRuleIds = TraceRuleAttributor.MorphologicalRuleIds(match, ruleIndex);
+                    actualRuleIds.UnionWith(wordLevelRuleIds);
+                    var declaredRuleIds = new HashSet<string>(parse.Rules, StringComparer.Ordinal);
+                    if (!actualRuleIds.SetEquals(declaredRuleIds))
+                    {
+                        wordRulesOk = false;
+                        ruleDetails.Add(
+                            $"parse '{parse.Signature}': declared rules [{string.Join(",", parse.Rules)}] "
+                                + $"!= traced [{string.Join(",", actualRuleIds.OrderBy(x => x, StringComparer.Ordinal))}]"
+                        );
+                    }
+                }
+            }
+
+            result.WordResults.Add(
+                new WordResult
+                {
+                    Word = word.Word,
+                    Passed = wordRulesOk,
+                    Detail = wordRulesOk ? "ok" : string.Join("; ", ruleDetails),
+                }
+            );
+        }
+    }
+
+    // ---- Adapter mode: materialize onto disk + reuse MaterializedRunner/AdapterEngine, unmodified. ----
+
+    public static RunReport RunAdapter(List<Fixture> fixtures, IEngine engine, bool includePathological)
+    {
+        var report = new RunReport();
+        foreach (Fixture fixture in fixtures)
+        {
+            MaterializedFixture materialized = FixtureMaterializer.Materialize(fixture);
+            try
+            {
+                MaterializedRunReport oneReport = MaterializedRunner.Run(
+                    new List<MaterializedFixture> { materialized },
+                    engine,
+                    includePathological
+                );
+                report.ExcludedPathologicalCount += oneReport.ExcludedPathologicalCount;
+                foreach (FixtureResult r in oneReport.Results)
+                {
+                    r.FixtureId = fixture.Id; // already fixture.Id (came from the synthetic manifest); kept explicit for clarity
+                    report.Results.Add(r);
+                }
+            }
+            finally
+            {
+                FixtureMaterializer.Cleanup(materialized);
+            }
+        }
+        return report;
     }
 }

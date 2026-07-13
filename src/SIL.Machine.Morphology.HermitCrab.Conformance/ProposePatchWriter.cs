@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace SIL.Machine.Morphology.HermitCrab.Conformance.V2;
+namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
 /// <c>--propose</c>: on a self-check signature mismatch, prints the <c>words.yaml</c> patch that
@@ -15,7 +15,7 @@ public static class ProposePatchWriter
 {
     public static void WriteSignatureProposal(
         TextWriter output,
-        FixtureV2 fixture,
+        Fixture fixture,
         WordEntry word,
         List<string> actualEntries
     )

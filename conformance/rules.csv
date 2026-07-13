@@ -20,9 +20,11 @@ StrRepIdentityProbe,rulePfx,pat;mat;mupat;mumat;!mwpat;mwuta;!muuta;ndpat;imat
 TruncateRulesProbe,mruleTruncLead,ag;as;gas
 TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas
 TruncateRulesProbe,mruleTruncTrail,sa
+Kirenti,mrAlphaSuf,satun;setin
 Kirenti,mrPast,semitide;semitideler;kutagida;unitide
 Kirenti,mrPlural,semitideler
 Kirenti,mrPres,semitile;kutagila
+Kirenti,prAlphaHighHarmony,satun;setin
 Kirenti,prBacknessHarmony,kutagida;kutagila;!untda
 Kirenti,prEpenthesis,semitide;semitile;semitideler;kutagida;kutagila;unitide
 Kirenti,prGradation,kutagida;kutagila
@@ -42,6 +44,7 @@ Tavolan,mrSimpleMeta,nui;!niu
 Tavolan,mrTrunc,pur
 Tavolan,mrUSuffix,mu+i
 Tavolan,prNonContig,katibɯd;!katabɯd
+Velamba,mrAgr,dabepez;dabez;!kesez
 Velamba,mrAppl,andikila;andikishila;andikilisha
 Velamba,mrCaus,andikisha;andikishila;andikilisha
 Velamba,mrEndH,belh
@@ -50,12 +53,14 @@ Velamba,mrEndZ,xkibz;!yxkibz
 Velamba,mrExtX,xkib;yxkib;xkibz
 Velamba,mrExtY,yxkib
 Velamba,mrFV,andika;andikisha;andikila;andikishila;andikilisha
+Velamba,mrNumPl,dabep;dabepez
 Velamba,mrRedup,kimbiakimbia
 Velamba,mrTense,limape
 Velamba,prNasalMutation,mba;!mpa
 Velamba,rrPast,limaile;!limapeile
 Vetruna,mrAblaut,sang
 Vetruna,mrCircumfixGeT,gelobt;gelobth
+Vetruna,mrCompoundConstrained,mitlav;ficlav;!seclav;!genlav;!mitlavlav
 Vetruna,mrCompoundHN,pannox;!panbenox
 Vetruna,mrCompoundNH,lexdom;lexbedom
 Vetruna,mrEndH,sodh

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using SIL.Machine.Morphology.HermitCrab.Conformance.V2;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
@@ -67,27 +66,19 @@ internal class Program
             return 2;
         }
 
-        // v1 fixtures (manifest.json-keyed) and v2 fixtures (languages/, edge-cases/, words.yaml-keyed)
-        // are discovered independently and never overlap on disk -- see FixtureV2.DiscoverAll's doc
-        // comment. Both run in the same invocation so a single `--fixtures conformance` run covers
-        // the whole suite during the v1->v2 migration window (docs/conformance-language-suite-plan.md
-        // phase G1-G4).
-        List<Fixture> fixtures = Fixture.DiscoverAll(fixturesRoot);
-        List<FixtureV2> fixturesV2;
+        List<Fixture> fixtures;
         try
         {
-            fixturesV2 = FixtureV2.DiscoverAll(fixturesRoot);
+            fixtures = Fixture.DiscoverAll(fixturesRoot);
         }
         catch (WordsYamlException ex)
         {
             Console.Error.WriteLine($"words.yaml error: {ex.Message}");
             return 2;
         }
-        Console.WriteLine(
-            $"discovered {fixtures.Count} v1 fixture(s) and {fixturesV2.Count} v2 fixture(s) under '{fixturesRoot}'"
-        );
+        Console.WriteLine($"discovered {fixtures.Count} fixture(s) under '{fixturesRoot}'");
 
-        if (fixtures.Count == 0 && fixturesV2.Count == 0)
+        if (fixtures.Count == 0)
         {
             Console.Error.WriteLine($"no fixtures discovered under '{fixturesRoot}'");
             return 2;
@@ -95,18 +86,9 @@ internal class Program
 
         if (coverageReport)
         {
-            int rc = 0;
-            if (fixtures.Count > 0)
-            {
-                constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
-                rc = RunCoverageReport(fixtures, constructsPath);
-            }
-            if (fixturesV2.Count > 0)
-            {
-                constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
-                RunCoverageReportV2(fixturesV2, fixturesRoot, constructsPath);
-            }
-            return rc;
+            constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
+            RunCoverageReport(fixtures, fixturesRoot, constructsPath);
+            return 0;
         }
 
         IEngine engine;
@@ -125,35 +107,20 @@ internal class Program
             engine = new SelfCheckEngine(capabilities);
         }
 
-        bool anyRan = false;
-        bool anyFailed = false;
+        RunReport report =
+            adapterTemplate != null
+                ? Runner.RunAdapter(fixtures, engine, includePathological)
+                : Runner.RunSelfCheck(fixtures, includePathological, engine.Capabilities, propose, Console.Out);
+        PrintRunReport(report, engine);
 
-        if (fixtures.Count > 0)
-        {
-            RunReport report = Runner.Run(fixtures, engine, includePathological);
-            PrintRunReport(report, engine);
-            anyRan |= report.Passed > 0 || report.Failed > 0;
-            anyFailed |= report.Failed > 0;
-        }
-
-        if (fixturesV2.Count > 0)
-        {
-            RunnerV2.RunReportV2 reportV2 =
-                adapterTemplate != null
-                    ? RunnerV2.RunAdapter(fixturesV2, engine, includePathological)
-                    : RunnerV2.RunSelfCheck(fixturesV2, includePathological, engine.Capabilities, propose, Console.Out);
-            PrintRunReportV2(reportV2, engine);
-            anyRan |= reportV2.Passed > 0 || reportV2.Failed > 0;
-            anyFailed |= reportV2.Failed > 0;
-        }
-
+        bool anyRan = report.Passed > 0 || report.Failed > 0;
         if (!anyRan)
         {
             Console.Error.WriteLine("no fixtures actually ran (all excluded or skipped) -- treating this as an error");
             return 2;
         }
 
-        return anyFailed ? 1 : 0;
+        return report.Failed > 0 ? 1 : 0;
     }
 
     /// <summary>Returns the argument following <paramref name="flag"/>, or prints usage and returns
@@ -187,7 +154,7 @@ internal class Program
         if (report.ExcludedPathologicalCount > 0)
         {
             Console.WriteLine(
-                $"{report.ExcludedPathologicalCount} pathological fixture(s) excluded by default (--include-pathological to run)"
+                $"{report.ExcludedPathologicalCount} pathological (budget_ms) fixture(s) excluded by default (--include-pathological to run)"
             );
         }
         Console.WriteLine();
@@ -215,66 +182,24 @@ internal class Program
         );
     }
 
-    private static void PrintRunReportV2(RunnerV2.RunReportV2 report, IEngine engine)
-    {
-        Console.WriteLine();
-        Console.WriteLine(
-            $"[v2] engine: {engine.Name}, capabilities: [{string.Join(",", engine.Capabilities.OrderBy(c => c))}]"
-        );
-        if (report.ExcludedPathologicalCount > 0)
-        {
-            Console.WriteLine(
-                $"{report.ExcludedPathologicalCount} pathological (budget_ms) v2 fixture(s) excluded by default (--include-pathological to run)"
-            );
-        }
-        Console.WriteLine();
-
-        foreach (FixtureResult result in report.Results)
-        {
-            string status = result.Outcome switch
-            {
-                FixtureOutcome.Passed => "PASS",
-                FixtureOutcome.Failed => "FAIL",
-                FixtureOutcome.Skipped => "SKIP",
-                _ => "?",
-            };
-            Console.WriteLine($"[{status}] {result.FixtureId} ({result.ElapsedMs}ms) {result.Reason}");
-            if (result.Outcome == FixtureOutcome.Failed)
-            {
-                foreach (WordResult w in result.WordResults.Where(w => !w.Passed))
-                    Console.WriteLine($"    word '{w.Word}': {w.Detail}");
-            }
-        }
-
-        Console.WriteLine();
-        Console.WriteLine(
-            $"[v2] totals: {report.Passed} passed, {report.Failed} failed, {report.Skipped} skipped (of {report.Results.Count} attempted)"
-        );
-    }
-
     // "Tracing" is the one construct the suite deliberately never covers (it was never in
-    // expected.tsv's domain) -- see docs/conformance-language-suite-plan.md sections 3 and 7 (G4).
+    // expected.tsv's domain) -- see docs/conformance-language-suite-plan.md sections 3 and 7.
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
-    private static void RunCoverageReportV2(List<FixtureV2> fixturesV2, string fixturesRoot, string constructsPath)
+    private static void RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
         string coverageCsvPath = Path.Combine(fixturesRoot, "coverage.csv");
         string rulesCsvPath = Path.Combine(fixturesRoot, "rules.csv");
-        CoverageReportV2.CoverageResultV2 result = CoverageReportV2.WriteCsvs(
-            fixturesV2,
-            coverageCsvPath,
-            rulesCsvPath
-        );
+        CoverageReport.CoverageResult result = CoverageReport.WriteCsvs(fixtures, coverageCsvPath, rulesCsvPath);
 
         Console.WriteLine();
-        Console.WriteLine("v2 coverage report");
-        Console.WriteLine("===================");
+        Console.WriteLine("coverage report");
+        Console.WriteLine("===============");
         Console.WriteLine($"wrote {coverageCsvPath}");
         Console.WriteLine($"wrote {rulesCsvPath}");
 
-        // Absolute construct-coverage check against constructs.txt -- the v2-native replacement for the
-        // v1 CoverageReport zero-coverage rollup (which goes inert when the v1 tree is deleted). G4
-        // acceptance: every construct except Tracing is covered.
+        // Absolute construct-coverage check against constructs.txt: every construct except Tracing
+        // must be covered.
         if (File.Exists(constructsPath))
         {
             List<string> checklist = CoverageReport.LoadConstructChecklist(constructsPath);
@@ -300,47 +225,13 @@ internal class Program
         {
             Console.WriteLine();
             Console.WriteLine($"*** {result.DeadRules.Count} DEAD RULE(S) (exercised by zero words) ***");
-            foreach (CoverageReportV2.DeadRule dead in result.DeadRules)
+            foreach (CoverageReport.DeadRule dead in result.DeadRules)
                 Console.WriteLine($"  {dead.FixtureId}: rule '{dead.RuleId}'");
         }
         else
         {
-            Console.WriteLine("0 dead rules across all v2 grammars.");
+            Console.WriteLine("0 dead rules across all grammars.");
         }
-    }
-
-    private static int RunCoverageReport(List<Fixture> fixtures, string constructsPath)
-    {
-        List<string> checklist = CoverageReport.LoadConstructChecklist(constructsPath);
-        CoverageReportResult coverage = CoverageReport.Build(fixtures, checklist);
-
-        Console.WriteLine();
-        Console.WriteLine("Coverage report");
-        Console.WriteLine("===============");
-        foreach (ConstructCoverage cc in coverage.Constructs)
-        {
-            string flags = "";
-            if (cc.HasNegative)
-                flags += " [negative]";
-            if (cc.HasCrossCutting)
-                flags += " [cross-cutting]";
-            string zero = cc.FixtureCount == 0 ? " *** ZERO COVERAGE ***" : "";
-            Console.WriteLine($"{cc.FixtureCount, 3}  {cc.Construct}{flags}{zero}");
-        }
-
-        if (coverage.UnknownConstructsInManifests.Count > 0)
-        {
-            Console.WriteLine();
-            Console.WriteLine("WARNING: construct values used in manifests but not present in constructs.txt:");
-            foreach (string c in coverage.UnknownConstructsInManifests)
-                Console.WriteLine($"  - {c}");
-        }
-
-        int zeroCount = coverage.ZeroCoverage.Count();
-        Console.WriteLine();
-        Console.WriteLine($"{coverage.Constructs.Count} constructs tracked, {zeroCount} at zero coverage.");
-
-        return 0;
     }
 
     private static void PrintUsage()
@@ -362,7 +253,7 @@ internal class Program
               --coverage-report                Print a coverage report instead of running fixtures.
               --constructs <path>               Construct checklist file for --coverage-report
                                                 (default: <fixtures>/constructs.txt).
-              --propose                        v2 self-check only: on a signature mismatch, print
+              --propose                        Self-check only: on a signature mismatch, print
                                                 the words.yaml patch that would reconcile it. Never
                                                 writes any file.
             """

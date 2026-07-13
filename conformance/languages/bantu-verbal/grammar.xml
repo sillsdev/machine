@@ -17,6 +17,9 @@
       <PartOfSpeech id="posV3"><Name>vMprGroups</Name></PartOfSpeech>
       <PartOfSpeech id="posV4"><Name>vExtension</Name></PartOfSpeech>
       <PartOfSpeech id="posV5"><Name>vReduplication</Name></PartOfSpeech>
+      <PartOfSpeech id="posV6"><Name>vAgreement</Name></PartOfSpeech>
+      <!-- G5 (code-coverage-driven, second sweep): mrRecurSuf/mrStemReq below. -->
+      <PartOfSpeech id="posV7"><Name>vSecondSweep</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified PhonologicalFeatureSystem (the G2a finding, restated in templatic-semitic's
          own header): prNasalMutation's Voiceless->Voiced subrule CHANGES a segment's identity via a
@@ -60,7 +63,40 @@
           <Symbol id="symPast">past</Symbol>
         </Symbols>
       </SymbolicFeature>
+      <!-- Syntactic feature agreement (G5, code-coverage-driven; posV6 below): a HeadFeature the
+           agreement chain assigns then requires, mirroring Bantu noun-class-style subject
+           agreement (a plural marker must land before an agreement suffix can attach). -->
+      <SymbolicFeature id="featNum">
+        <Name>num</Name>
+        <Symbols>
+          <Symbol id="symSg">sg</Symbol>
+          <Symbol id="symPl">pl</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <!-- G5 (code-coverage-driven, second sweep): rrRRealTest's own RequiredHeadFeatures, distinct
+           from featNum above so this second-sweep material can never interact with posV6's chain. -->
+      <SymbolicFeature id="featG5">
+        <Name>g5</Name>
+        <Symbols>
+          <Symbol id="symG5A">g5a</Symbol>
+          <Symbol id="symG5B">g5b</Symbol>
+        </Symbols>
+      </SymbolicFeature>
     </HeadFeatures>
+    <!-- FootFeatures (G5, code-coverage-driven): no existing grammar in the suite declared this
+         top-level section at all (SyntacticFeatureSystem.AddFootFeature/FootFeature/FootFeatures
+         were all at zero coverage). featStress is assigned/required by the same posV6 agreement
+         chain as featNum above, alongside it rather than instead of it, so both the head- and
+         foot-feature agreement code paths are exercised together. -->
+    <FootFeatures>
+      <SymbolicFeature id="featStress">
+        <Name>stress</Name>
+        <Symbols>
+          <Symbol id="symStressed">stressed</Symbol>
+          <Symbol id="symUnstressed">unstressed</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </FootFeatures>
     <!-- mpr-groups/output-overwrite: ExtGroup (2-member, outputType="overwrite" is the DTD default,
          spelled out for clarity) - applying mrExtY drops mprExtA rather than accumulating it.
          mpr-groups/required-all: AllConc (matchType="all") and AnyConc (matchType="any", the DTD
@@ -79,7 +115,24 @@
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprExtA mprExtB"><Name>ExtGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConcA mprConcB"><Name>AllConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConcC mprConcD"><Name>AnyConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
+      <!-- G5 (code-coverage-driven, second sweep): gates mrRRealTest below (SynthesisRealizationalAffixProcessRule),
+           a hard set-membership check so that rule can never spuriously apply to any pre-existing
+           word (RequiredHeadFeatures/RealizationalFeatures unify vacuously against a feature no
+           other entry ever sets, per the mrAgr/dabez finding above, but requiredMPRFeatures is a
+           genuine set-membership gate, not unification). -->
+      <MorphologicalPhonologicalRuleFeature id="mprRRealTest">RRealTest</MorphologicalPhonologicalRuleFeature>
     </MorphologicalPhonologicalRuleFeatures>
+    <!-- G5 (code-coverage-driven, second sweep): snG5 gates mrStemReq below
+         (SynthesisAffixProcessRule.RequiredStemName), previously zero coverage for the FAILURE case
+         (a candidate root without the required stem name). -->
+    <StemNames>
+      <StemName id="snG5" partsOfSpeech="posV7">
+        <Name>G5Stem</Name>
+        <Regions>
+          <Region><AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></AssignedHeadFeatures></Region>
+        </Regions>
+      </StemName>
+    </StemNames>
     <CharacterDefinitionTable id="table1">
       <Name>Main</Name>
       <SegmentDefinitions>
@@ -205,6 +258,13 @@
         <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
       </FeatureNaturalClass>
     </NaturalClasses>
+    <Families>
+      <!-- G5 (code-coverage-driven, second sweep): ZAM (regular) and WEP (suppletive) share this
+           family so SynthesisRealizationalAffixProcessRule's OWN Blockable/CheckBlocking path gets
+           exercised (previously only ever exercised through an ordinary MorphologicalRule or a
+           CompoundingRule elsewhere in the suite, never a RealizationalRule). -->
+      <Family id="famRRealBlock">FamRRealBlock</Family>
+    </Families>
     <PhonologicalRuleDefinitions>
       <!-- rewrite/required-pos-subrule + nasal-prefix mutation (Celtic-style mutation coverage rides
            here, per the roster): post-nasal voicing of a stem-initial voiceless stop, a genuine,
@@ -230,7 +290,7 @@
       <Stratum
         characterDefinitionTable="table1"
         morphologicalRuleOrder="linear"
-        morphologicalRules="mrTense rrPast mrExtX mrExtY mrEndZ mrEndW mrEndH mrRedup mrCaus mrAppl mrFV"
+        morphologicalRules="mrTense rrPast mrExtX mrExtY mrEndZ mrEndW mrEndH mrRedup mrCaus mrAppl mrFV mrNumPl mrAgr mrRecurSuf mrStemReq rrRRealTest"
         phonologicalRules="prNasalMutation"
       >
         <Name>Main</Name>
@@ -357,6 +417,83 @@
             </MorphologicalSubrules>
             <MorphemeId>FV</MorphemeId>
           </MorphologicalRule>
+          <!-- ===================== syntactic feature agreement (G5, code-coverage-driven) =====================
+               mrNumPl assigns featNum=pl (OutputHeadFeatures) and featStress=stressed
+               (OutputFootFeatures) to the word it produces; mrAgr only applies to a word that
+               already carries BOTH (RequiredHeadFeatures/RequiredFootFeatures), so "root-AGR"
+               without the intervening "root-NUMPL" first has no analysis that satisfies mrAgr's
+               requirement and gets zero parses (see words.yaml). -->
+          <MorphologicalRule id="mrNumPl" requiredPartsOfSpeech="posV6" outputPartOfSpeech="posV6" outputObligatoryFeatures="featNum">
+            <Name>numPl</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNumPl">
+                <MorphologicalInput><PhoneticSequence id="stemNumPl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemNumPl" /><InsertSegments><PhoneticShape>ep</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featNum" symbolValues="symPl" /></OutputHeadFeatures>
+            <OutputFootFeatures><FeatureValue feature="featStress" symbolValues="symStressed" /></OutputFootFeatures>
+            <MorphemeId>NUMPL</MorphemeId>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrAgr" requiredPartsOfSpeech="posV6" outputPartOfSpeech="posV6">
+            <Name>agr</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAgr">
+                <MorphologicalInput><PhoneticSequence id="stemAgr"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemAgr" /><InsertSegments><PhoneticShape>ez</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RequiredHeadFeatures><FeatureValue feature="featNum" symbolValues="symPl" /></RequiredHeadFeatures>
+            <RequiredFootFeatures><FeatureValue feature="featStress" symbolValues="symStressed" /></RequiredFootFeatures>
+            <MorphemeId>AGR</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== G5 second sweep: MaxApplicationCount (SynthesisAffixProcessRule) =====================
+               Ordinary suffix, same POS in and out so it can (in principle) reapply to its own
+               output; the DTD's own default multipleApplication="1" caps it to exactly one
+               application per derivation. -->
+          <MorphologicalRule id="mrRecurSuf" requiredPartsOfSpeech="posV7" outputPartOfSpeech="posV7">
+            <Name>recurSuf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRecurSuf">
+                <MorphologicalInput><PhoneticSequence id="stemRecurSuf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemRecurSuf" /><InsertSegments><PhoneticShape>iz</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>RECURSUF</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== G5 second sweep: RequiredStemName failure (SynthesisAffixProcessRule) =====================
+               requiredStemName="snG5" only applies to a root whose SELECTED allomorph carries that
+               exact stem name (see StemNames above); DAH's allomorph carries none at all. -->
+          <MorphologicalRule id="mrStemReq" requiredPartsOfSpeech="posV7" outputPartOfSpeech="posV7" requiredStemName="snG5">
+            <Name>stemReq</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subStemReq">
+                <MorphologicalInput><PhoneticSequence id="stemStemReq"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemStemReq" /><InsertSegments><PhoneticShape>eh</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>STEMREQ</MorphemeId>
+          </MorphologicalRule>
+          <!-- ===================== G5 second sweep: RequiredSyntacticFeatureStruct failure + Blockable
+               (SynthesisRealizationalAffixProcessRule) =====================
+               Gated by requiredMPRFeatures="mprRRealTest" on the subrule's own MorphologicalInput so
+               this rule can never spuriously apply to any other word in the grammar (RealizationalRule
+               has no requiredPartsOfSpeech attribute at all; see the MorphologicalPhonologicalRuleFeatures
+               comment above for why a hard MPR gate, not RequiredHeadFeatures, is what makes this safe).
+               RequiredHeadFeatures featG5=symG5B: ZIM (AssignedHeadFeatures featG5=symG5A) genuinely
+               conflicts and fails; ZAM (featG5=symG5B) matches and succeeds, then hits Blockable via
+               famRRealBlock (WEP, the suppletive partner). -->
+          <RealizationalRule id="rrRRealTest">
+            <Name>rRealTest</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRRealTest">
+                <MorphologicalInput requiredMPRFeatures="mprRRealTest"><PhoneticSequence id="stemRRealTest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemRRealTest" /><InsertSegments><PhoneticShape>ed</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <RequiredHeadFeatures><FeatureValue feature="featG5" symbolValues="symG5B" /></RequiredHeadFeatures>
+            <MorphemeId>RREALTEST</MorphemeId>
+          </RealizationalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>
           <AffixTemplate requiredPartsOfSpeech="posV4">
@@ -409,6 +546,64 @@
             <Allomorphs><Allomorph id="aKimbia"><PhoneticShape>kimbia</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>KIMB</MorphemeId>
             <Gloss>run</Gloss>
+          </LexicalEntry>
+          <!-- syntactic feature agreement (posV6): "cook" (Swahili -dab-/-pika- neither in
+               particular; an invented CVC root, plausible for the family). -->
+          <LexicalEntry id="eDab" partOfSpeech="posV6">
+            <Allomorphs><Allomorph id="aDab"><PhoneticShape>dab</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAB</MorphemeId>
+            <Gloss>cook</Gloss>
+          </LexicalEntry>
+          <!-- syntactic feature agreement negative control (posV6): "sing"; AssignedHeadFeatures
+               and AssignedFootFeatures (both previously zero/near-zero coverage) pin this root to
+               featNum=sg / featStress=unstressed, which genuinely conflicts with mrAgr's
+               RequiredHeadFeatures/RequiredFootFeatures (featNum=pl / featStress=stressed). -->
+          <LexicalEntry id="eKes" partOfSpeech="posV6">
+            <Allomorphs><Allomorph id="aKes"><PhoneticShape>kes</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featNum" symbolValues="symSg" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="featStress" symbolValues="symUnstressed" /></AssignedFootFeatures>
+            <MorphemeId>KES</MorphemeId>
+            <Gloss>sing</Gloss>
+          </LexicalEntry>
+          <!-- G5 second sweep: mrRecurSuf (MaxApplicationCount). -->
+          <LexicalEntry id="eSil" partOfSpeech="posV7">
+            <Allomorphs><Allomorph id="aSil"><PhoneticShape>sil</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SIL</MorphemeId>
+            <Gloss>plant</Gloss>
+          </LexicalEntry>
+          <!-- G5 second sweep: mrStemReq (RequiredStemName). DAL's allomorph carries stemName="snG5";
+               DAH's carries none at all, so mrStemReq (requiredStemName="snG5") can never apply to it. -->
+          <LexicalEntry id="eDal" partOfSpeech="posV7">
+            <Allomorphs><Allomorph id="aDal" stemName="snG5"><PhoneticShape>dal</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAL</MorphemeId>
+            <Gloss>dig</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eDah" partOfSpeech="posV7">
+            <Allomorphs><Allomorph id="aDah"><PhoneticShape>dah</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>DAH</MorphemeId>
+            <Gloss>climb</Gloss>
+          </LexicalEntry>
+          <!-- G5 second sweep: rrRRealTest (RequiredSyntacticFeatureStruct failure + Blockable).
+               ZIM's featG5=symG5A genuinely conflicts with the rule's own RequiredHeadFeatures
+               (featG5=symG5B); ZAM's featG5=symG5B matches, and ZAM's family (famRRealBlock) then
+               triggers CheckBlocking via the suppletive WEP. -->
+          <LexicalEntry id="eZim" partOfSpeech="posV7" ruleFeatures="mprRRealTest">
+            <Allomorphs><Allomorph id="aZim"><PhoneticShape>zim</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featG5" symbolValues="symG5A" /></AssignedHeadFeatures>
+            <MorphemeId>ZIM</MorphemeId>
+            <Gloss>fly</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eZam" partOfSpeech="posV7" ruleFeatures="mprRRealTest" family="famRRealBlock">
+            <Allomorphs><Allomorph id="aZam"><PhoneticShape>zam</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featG5" symbolValues="symG5B" /></AssignedHeadFeatures>
+            <MorphemeId>ZAM</MorphemeId>
+            <Gloss>swim</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eWep" partOfSpeech="posV7" family="famRRealBlock">
+            <Allomorphs><Allomorph id="aWep"><PhoneticShape>wep</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featG5" symbolValues="symG5B" /></AssignedHeadFeatures>
+            <MorphemeId>WEP</MorphemeId>
+            <Gloss>dive</Gloss>
           </LexicalEntry>
         </LexicalEntries>
       </Stratum>

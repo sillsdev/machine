@@ -271,9 +271,111 @@ inflection, case stacking, Chukotkan) enters as a whole new `languages/` member 
   every language has at least one non-parse word and the suite has at least one guess-stem word;
   file count ≤ ~45, HermitCrab test suite still green;
   update PR #454 in place (still draft) with the restructure story.
+- **G5 — Coverage-driven hardening.** `constructs.txt`/`coverage.csv`/`rules.csv` measure whether
+  every documented *construct* and grammar *rule* is exercised, but say nothing about how much of
+  `SIL.Machine.Morphology.HermitCrab`'s actual source the suite reaches. Baseline (2026-07-13,
+  `dotnet-coverage collect --output-format cobertura` around a full `--include-pathological`
+  self-check run): 69.2% line coverage (5,056/7,306 lines); excluding `XmlLanguageWriter` (984
+  lines, 0% — serialization, never exercised because the harness only loads grammars) it's 79.97%
+  (5,056/6,322). Two threads close real gaps without expanding the suite's scope:
+  1. **New words in existing grammars**, not a new language (per §6: this is closing gaps in
+     mechanisms the existing roster could already plausibly need, not new typological territory),
+     exercising four `grammar.xml` mechanisms every current language leaves at zero:
+     - Syntactic feature agreement (`RequiredHeadFeatures`/`AssignedHeadFeatures`/
+       `RequiredFootFeatures` on `MorphologicalRule`/`RealizationalRule`/`CompoundingRule`) —
+       natural home: `bantu-verbal` (noun-class agreement) or `agglutinative-turkic`.
+     - Alpha-variable phonological environments (`AlphaVariables`/`VariableFeature`) — natural
+       home: `agglutinative-turkic` (vowel harmony is the textbook alpha-variable use case).
+     - Optional-group and Kleene-star `CharacterDefinitionTable` pattern syntax (`([C])`, `[V]*`)
+       in a NaturalClass shape pattern — any language with an optional coda/onset works.
+     - Compounding constraints exercising `MaxApplicationCount`, non-head/obligatory syntactic
+       features, and `Blockable` retry — natural home: `polysynthetic-inuit` or `fusional-latin`,
+       both of which already have compounding.
+  2. **Targeted coverage chase, file by file**, toward as-close-to-100% as the parse-only harness
+     contract allows, re-measured with the same `dotnet-coverage` invocation after each addition:
+     - `XmlLanguageLoader` (87.7% baseline, 131/1067 lines uncovered) — closed by the feature-
+       agreement and alpha-variable additions above, plus any other unreached `grammar.xml`
+       element/attribute branch a coverage pass turns up.
+     - `CharacterDefinitionTable` (59.7% baseline) — closed by the optional-group/Kleene-star
+       addition above; sweep remaining uncovered lines after.
+     - `SynthesisCompoundingRule` (62.0% baseline) — closed by the compounding-constraints
+       addition above.
+     - Any other class the post-addition run still shows with meaningful uncovered lines
+       (`SynthesisAffixProcessRule`, `SynthesisRealizationalAffixProcessRule`,
+       `SyntacticFeatureSystem`, `AllomorphEnvironment`, and `MprFeatureSet` were all secondary
+       gaps at baseline) gets the same treatment: read the uncovered lines, decide whether a word
+       or grammar addition can reach them, add it, re-measure.
+     Explicitly out of scope (see §8): `Morpher.GenerateWords`/`AnalyzeWord`/`PermuteRules`/
+     `PermuteOtherMorphemes` (a word-generation/analysis API the parse-only harness never calls,
+     by contract) and `XmlLanguageWriter` (serialization, never exercised by a load-only harness)
+     — closing these means testing a different capability, not adding fixture data.
+  Gate: `dotnet-coverage` line coverage on every file named above at or near 100% (any residual
+  gap is a defensive branch/exception path genuinely unreachable through the `grammar.xml` +
+  `words.yaml` surface, and is documented inline as such); zero regression in construct/rule
+  coverage; self-check and adapter mode still green.
 
-Authoring model per John's standing pattern: Sonnet subagents write (G1 harness, G2 grammars),
-Fable reviews each gate.
+  **Status (2026-07-13): first pass done.** All four planned mechanisms landed and verified against
+  the real oracle (self-check green 16/16, adapter mode green 15/15, construct coverage 23/23 —
+  four new construct rows added to `constructs.txt` for the mechanisms themselves, `HermitCrab`
+  test suite still 67/67):
+  - **Syntactic feature agreement** (`bantu-verbal`, posV6): `RequiredHeadFeatures`/
+    `OutputHeadFeatures`/`RequiredFootFeatures`/`OutputFootFeatures` on a new `mrNumPl`→`mrAgr`
+    chain, plus `AssignedHeadFeatures`/`AssignedFootFeatures` on a negative-control root (`kes`) and
+    a new top-level `<FootFeatures>` section (previously declared by zero grammars in the suite).
+    Also closed `outputObligatoryFeatures` for free (loading the attribute exercises the loader
+    regardless of runtime effect, which is `Morpher.GenerateWords`-only and out of scope).
+  - **Alpha-variable phonological environments** (`agglutinative-turkic`, posVAlpha): a new
+    `prAlphaHighHarmony` rule with its own `<VariableFeatures>`/`<AlphaVariable>` — a genuine
+    generative-phonology `[αback]...[αback]` agreement rule, isolated from the grammar's existing
+    (enumerated-subrule) harmony so nothing already-pinned changed. Both predictions (`satun`,
+    `setin`) matched the oracle on the first run.
+  - **`CharacterDefinitionTable` optional-group pattern** (`edge-cases/loader-pattern-shapes`): a
+    second lexical entry `"b([Vowel])t"` alongside the existing bracket-only `"b[Vowel]t"`.
+    Reconciliation finding: the LOADER builds the optional-annotated shape node regardless (so the
+    loader branch is exercised either way), but root-allomorph ANALYSIS matching does not actually
+    honor the Optional annotation at runtime — `"bt"` (vowel absent) gets zero parses rather than
+    matching, unlike a phonological environment match. Pinned as `expect_fail`, documented as a
+    genuine engine finding rather than corrected to fit the original guess.
+  - **`CompoundingRule` constraints** (`fusional-latin`, posCompH/posCompNH): a new
+    `mrCompoundConstrained` exercising `headProdRestrictionsMprFeatures`, per-subrule
+    `requiredMPRFeatures`/`excludedMPRFeatures` on `HeadMorphologicalInput`, and a real
+    `Blockable`/`CheckBlocking` trigger (`famCompBlock`: `GEN` blocked by suppletive `NOV`, the
+    first time this suite's Blockable path is exercised through a *compound* rather than an
+    ordinary `MorphologicalRule`). Reconciliation finding: `outputObligatoryFeatures` on a
+    `CompoundingRule` silently zeroes every parse unless the SAME rule also assigns that feature a
+    value via `OutputHeadFeatures` (an unset-but-obligatory feature fails a completeness check the
+    parse-only harness never otherwise surfaces) — the general lesson (confirmed against
+    `bantu-verbal`'s `mrNumPl`, which self-satisfies the same way) is now recorded here for whoever
+    uses `outputObligatoryFeatures` next.
+
+  Coverage moved from 69.2%→71.0% line / 62.8%→65.1% branch overall
+  (`SIL.Machine.Morphology.HermitCrab`, `dotnet-coverage` cobertura, self-check +
+  `--include-pathological`): `XmlLanguageLoader` 87.7%→91.1%, `CharacterDefinitionTable`
+  59.7%→65.1%, `SynthesisCompoundingRule` 62.0%→75.6%. `SyntacticFeatureSystem` held at 44.4% —
+  traced to `Clear`/`Remove`/the single-arg `Add(Feature)` override/the `HeadFeatures`/`FootFeatures`
+  enumerable getters, none of which the loader or `Morpher` ever call (the loader always uses the
+  2-arg `Add(feature, type)`); this is the same class of genuinely-unreachable API surface as
+  `CharacterDefinitionTable`'s `ICollection` plumbing (`Clear`/`Remove`/non-generic
+  `GetEnumerator`/`IsMatch`/`TrySegment`, the last two reachable only from `Morpher.IsWordValid`,
+  itself `GenerateWords`-only).
+
+  **Remaining for a future pass** (not yet attempted or attempted-and-reverted this round):
+  `SynthesisCompoundingRule` still has `MaxApplicationCount` (51–62), `NonHeadRequiredSyntacticFeatureStruct`
+  failure (86–97), the `ExcludedMprFeatures`-failure branch (structurally unreachable from a
+  2-subrule required/excluded-on-the-same-feature design — a 3rd subrule gated on a *different*
+  feature would be needed), and `HeadPattern`/`NonHeadPattern` match-failure tracing (209–224).
+  `fusional-latin`'s `mitlavlav` word was hand-derived to hit `MaxApplicationCount` via recursive
+  (compound-of-compound) analysis and correctly gets zero parses, but a coverage check after adding
+  it showed the `MaxApplicationCount` lines still unreached — most likely analysis-direction
+  compound-splitting never recurses into a derived (non-lexical) head span at all, so the rejection
+  happens earlier for an unconfirmed reason; the word is kept as a correct pin but the note no
+  longer claims `MaxApplicationCount` attribution. `SynthesisAffixProcessRule` (72.6%) and
+  `SynthesisRealizationalAffixProcessRule` (63.8%) have the same `MaxApplicationCount`/
+  `RequiredSyntacticFeatureStruct`/`Blockable` shape as `SynthesisCompoundingRule` did before this
+  pass and are good candidates for the same treatment. `AllomorphEnvironment` (62.4%) is unexplored.
+
+Authoring model per John's standing pattern: Sonnet subagents write (G1 harness, G2 grammars, G5
+additions), Fable reviews each gate.
 
 ## 8. Non-goals
 
@@ -283,3 +385,8 @@ Fable reviews each gate.
   classes, with sources cited per grammar.
 - Not replacing corpus-level parity testing (Sena/Indonesian/Amharic goldens) wherever the Rust
   port lives.
+- Not chasing code coverage in `Morpher`'s word-generation/analysis API (`GenerateWords`/
+  `AnalyzeWord`/`PermuteRules`/`PermuteOtherMorphemes`) or in `XmlLanguageWriter` (grammar
+  serialization) — see G5. Both are real capabilities of `SIL.Machine.Morphology.HermitCrab`, but
+  neither is reachable through `ParseWord`, which is all a parse-only conformance harness calls;
+  closing that gap would mean testing a different capability, not adding fixture data.

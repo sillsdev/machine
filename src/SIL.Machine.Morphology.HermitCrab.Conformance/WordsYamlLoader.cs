@@ -6,10 +6,10 @@ using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.RepresentationModel;
 
-namespace SIL.Machine.Morphology.HermitCrab.Conformance.V2;
+namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// Strict parser for a v2 fixture's <c>words.yaml</c>, per
+/// Strict parser for a fixture's <c>words.yaml</c>, per
 /// docs/conformance-language-suite-plan.md section 2.1: a fixed key vocabulary (unknown keys are
 /// hard errors) and "plain YAML 1.2 subset only: no anchors, aliases, merge keys, or custom tags".
 /// </summary>

@@ -9,7 +9,8 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// Mechanically derives a fixture's "requires" capability list from its grammar.xml, per
 /// conformance/PROTOCOL.md section 5: today the only defined capability is "phonology", meaning
 /// the grammar contains at least one <c>PhonologicalRule</c> or <c>MetathesisRule</c> element.
-/// <see cref="Runner"/> validates every fixture's <c>manifest.json</c> "requires" against this
+/// <see cref="Runner"/> validates every fixture's <c>words.yaml</c> "requires" (and
+/// <see cref="MaterializedRunner"/> the materialized <c>manifest.json</c> equivalent) against this
 /// derivation, so the field can never silently drift from what the grammar actually contains
 /// (conformance/README.md's own growth-policy instructions already say to determine this by
 /// inspecting the grammar, not by hand-guessing -- this makes that mechanical, not just advisory).

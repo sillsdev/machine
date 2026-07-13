@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- v2 fixture model (conformance/languages, conformance/edge-cases): words.yaml is parsed
+		<!-- Fixture model (conformance/languages, conformance/edge-cases): words.yaml is parsed
 		     with YamlDotNet, a dependency scoped to this project only (per
 		     docs/conformance-language-suite-plan.md section 4, "a new test-side dependency"). -->
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />

@@ -538,3 +538,77 @@ words:
         rules: [mrAblaut]
         exercises:
           - "MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext"
+
+  - word: mitlav
+    note: >-
+      MIT (head, mprCompReq+mprSubA) + LAV (nonhead) -- mrCompoundConstrained's subrule 0
+      (requiredMPRFeatures="mprSubA" on HeadMorphologicalInput) matches since MIT carries mprSubA.
+      G5 (code-coverage-driven): previously zero coverage for a CompoundingSubrule's own per-subrule
+      requiredMPRFeatures/excludedMPRFeatures gating (distinct from the ordinary-MorphologicalRule
+      MPR-groups material elsewhere in this file).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule requiredMPRFeatures/excludedMPRFeatures"
+    parses:
+      - signature: "MIT+LAV|mit+?lav"
+        gloss: send-wash
+        rules: [mrCompoundConstrained]
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: ficlav
+    note: >-
+      FIC (head, mprCompReq only, no mprSubA) + LAV (nonhead) -- subrule 0 fails (FIC lacks
+      mprSubA), so subrule 1 (excludedMPRFeatures="mprSubA") is tried instead and matches, since FIC
+      genuinely excludes mprSubA. Proves the per-subrule MPR gate actually discriminates between the
+      two subrules, not just falls through by pattern order.
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule requiredMPRFeatures/excludedMPRFeatures"
+    parses:
+      - signature: "FIC+LAV|fic+?lav"
+        gloss: make-wash
+        rules: [mrCompoundConstrained]
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: seclav
+    note: >-
+      SEC (head, no ruleFeatures at all) + LAV (nonhead) -- mrCompoundConstrained's own
+      headProdRestrictionsMprFeatures="mprCompReq" requires the head to carry mprCompReq, which SEC
+      does not, so the rule never applies at all (both subrules unreachable). G5 (code-coverage-
+      driven): previously zero coverage for CompoundingRule.headProdRestrictionsMprFeatures.
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule.headProdRestrictionsMprFeatures"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: genlav
+    note: >-
+      GEN (head, mprCompReq, family famCompBlock) + LAV (nonhead) -- the compounding rule itself
+      applies successfully, but GEN's family also contains the suppletive NOV, and CheckBlocking
+      substitutes NOV's own entry in wherever GEN's compound output would surface; the resulting
+      resynthesis ("nov") no longer matches this word's own input shape ("gen+lav"), so the overall
+      analysis has zero parses. G5 (code-coverage-driven): previously zero coverage for
+      CompoundingRule's own Blockable/CheckBlocking path (only ever exercised through an ordinary
+      MorphologicalRule elsewhere in this file, via famCarry).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule Blockable/CheckBlocking"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: mitlavlav
+    note: >-
+      MIT+LAV (mitlav, above) attempted as the HEAD of a further application of the same
+      compounding rule, with LAV again as the nonhead. Hand-derived to hit MaxApplicationCount (the
+      DTD's own default multipleApplication="1" caps one application per derivation), but a
+      dotnet-coverage check after this word was added showed SynthesisCompoundingRule's
+      MaxApplicationCount lines still unreached -- the zero-parse result is real (confirmed by
+      self-check) but its cause is not confirmed to be MaxApplicationCount specifically; most likely
+      analysis-direction compound-splitting does not recurse into a derived (non-lexical) head span
+      at all, rejecting this candidate before MaxApplicationCount is ever checked. Left in as a
+      correct expect_fail pin, but MaxApplicationCount itself remains a documented residual gap (see
+      docs/conformance-language-suite-plan.md G5).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule (MaxApplicationCount attempt, gap remains)"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"

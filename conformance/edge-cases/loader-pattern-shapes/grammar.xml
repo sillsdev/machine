@@ -61,6 +61,18 @@
 						</Allomorphs>
 						<Gloss>bVt</Gloss>
 					</LexicalEntry>
+					<!-- G5 (code-coverage-driven): the optional-group "(...)" branch of GetShapeNodes
+					     (allowPattern) was the one pattern-language construct N3 didn't already cover.
+					     "b([Vowel])t" makes the middle position OPTIONAL, so this one lexical entry
+					     matches "bt" (vowel absent) as well as "bat"/"bet" (vowel present). -->
+					<LexicalEntry id="e2" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="a2">
+								<PhoneticShape>b([Vowel])t</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>bt</Gloss>
+					</LexicalEntry>
 				</LexicalEntries>
 			</Stratum>
 		</Strata>

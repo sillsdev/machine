@@ -35,4 +35,9 @@ MPR features/groups
 Guesser/LexicalGuess
 Disjunctive allomorphs / free-fluctuation
 Stem names
+Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+CharacterDefinitionTable pattern shapes: optional group / Kleene star
+CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
 Tracing (TraceType)

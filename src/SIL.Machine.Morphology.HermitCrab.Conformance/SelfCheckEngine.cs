@@ -27,7 +27,7 @@ public class SelfCheckEngine(IReadOnlySet<string> capabilities = null) : IEngine
     // overridden above.
     public IReadOnlySet<string> Capabilities { get; } = capabilities ?? DefaultCapabilities;
 
-    public List<TsvRow> Run(Fixture fixture)
+    public List<TsvRow> Run(MaterializedFixture fixture)
     {
         Language language;
         Morpher morpher;

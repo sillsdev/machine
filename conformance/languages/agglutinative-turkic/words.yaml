@@ -278,3 +278,49 @@ words:
         rules: [prVowelMultiMerge]
         exercises:
           - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: sat
+    note: SAT ("sit", posVAlpha) bare root, no suffix -- control for satun below.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SAT|sat"
+        gloss: sit
+        rules: []
+        exercises: []
+
+  - word: set
+    note: SET ("stand", posVAlpha) bare root, no suffix -- control for setin below.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SET|set"
+        gloss: stand
+        rules: []
+        exercises: []
+
+  - word: satun
+    note: >-
+      SAT + mrAlphaSuf ("-in" underlyingly) -- the root's own last vowel "a" is back, so
+      prAlphaHighHarmony's alpha variable captures back+ from the LeftEnvironment and imposes it on
+      the suffix's high vowel, turning "i" into "u". Previously zero coverage in the whole suite:
+      no other grammar declares a PhonologicalRule's own VariableFeatures/AlphaVariables at all.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SAT+ALPHA|satun"
+        gloss: sit-ALPHA
+        rules: [mrAlphaSuf, prAlphaHighHarmony]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: setin
+    note: >-
+      SET + mrAlphaSuf -- the root's own last vowel "e" is front, so the captured alpha value is
+      back-, leaving the suffix's high vowel "i" unchanged (an identity case, output == input, the
+      same house style as prGradation's own anchored subrule) -- proves the rule is a genuine
+      agreement, not a one-way rewrite that always backs the vowel.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SET+ALPHA|setin"
+        gloss: stand-ALPHA
+        rules: [mrAlphaSuf, prAlphaHighHarmony]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"

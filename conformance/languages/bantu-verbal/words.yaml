@@ -314,3 +314,145 @@ words:
         rules: [mrAppl, mrCaus, mrFV]
         exercises:
           - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: dabep
+    note: >-
+      DAB ("cook", posV6) + mrNumPl ("-op") -- assigns featNum=pl (OutputHeadFeatures) and
+      featStress=stressed (OutputFootFeatures) to the resulting word. G5 (code-coverage-driven):
+      no other grammar in the suite exercises RequiredHeadFeatures/OutputHeadFeatures/
+      RequiredFootFeatures/OutputFootFeatures at all before this pair of words.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+NUMPL|dabep"
+        gloss: cook-PL
+        rules: [mrNumPl]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dabepez
+    note: >-
+      DAB + mrNumPl + mrAgr ("-ez") -- mrAgr's RequiredHeadFeatures (featNum=pl) and
+      RequiredFootFeatures (featStress=stressed) are both satisfied because mrNumPl already
+      assigned them, so the agreement suffix can attach on top.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+NUMPL+AGR|dabepez"
+        gloss: cook-PL-AGR
+        rules: [mrNumPl, mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dabez
+    note: >-
+      DAB + mrAgr directly, WITHOUT the intervening mrNumPl -- reconciliation finding: a bare root
+      carries no featNum/featStress value at all, and an UNSET feature unifies freely against
+      mrAgr's RequiredHeadFeatures/RequiredFootFeatures (unification, not presence-checking), so
+      this analysis succeeds vacuously rather than failing. Contrast with kesez below, whose root
+      carries an explicit CONFLICTING value via AssignedHeadFeatures/AssignedFootFeatures -- that
+      is what actually trips the requirement.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+AGR|dabez"
+        gloss: cook-AGR
+        rules: [mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kes
+    note: >-
+      KES ("sing", posV6) bare root -- carries AssignedHeadFeatures featNum=sg and
+      AssignedFootFeatures featStress=unstressed directly on the lexical entry (both previously at
+      zero coverage: AssignedFootFeatures had no user anywhere in the suite). A bare-root parse is
+      unaffected by either assignment.
+    provenance: "G5 coverage sweep, LexicalEntry.AssignedHeadFeatures/AssignedFootFeatures"
+    parses:
+      - signature: "KES|kes"
+        gloss: sing
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kesez
+    note: >-
+      KES + mrAgr ("-ez") -- KES's own AssignedHeadFeatures (featNum=sg) genuinely CONFLICTS with
+      mrAgr's RequiredHeadFeatures (featNum=pl), and likewise AssignedFootFeatures (unstressed)
+      conflicts with RequiredFootFeatures (stressed): unification fails on both, so this analysis
+      has zero parses -- the real rejection dabez (above) does NOT demonstrate.
+    provenance: "G5 coverage sweep, LexicalEntry.AssignedHeadFeatures/AssignedFootFeatures"
+    expect_fail: true
+    blocked_by: [mrAgr]
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: siliz
+    note: >-
+      SIL ("plant", posV7) + mrRecurSuf ("-iz"), one application -- a plain control establishing
+      the suffix works at all before silizizi (below) attempts a second application.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.MaxApplicationCount"
+    parses:
+      - signature: "SIL+RECURSUF|siliz"
+        gloss: plant-RECURSUF
+        rules: [mrRecurSuf]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: siliziz
+    note: >-
+      SIL+RECURSUF (siliz, above) with "-iz" attached a SECOND time -- the DTD's own default
+      multipleApplication="1" caps mrRecurSuf to exactly one application per derivation, so this
+      has zero parses.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.MaxApplicationCount"
+    expect_fail: true
+    blocked_by: [mrRecurSuf]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: daleh
+    note: >-
+      DAL ("dig", posV7) + mrStemReq ("-eh") -- DAL's own allomorph carries stemName="snG5", which
+      mrStemReq's requiredStemName="snG5" requires, so it applies.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.RequiredStemName"
+    parses:
+      - signature: "DAL+STEMREQ|daleh"
+        gloss: dig-STEMREQ
+        rules: [mrStemReq]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: daheh
+    note: >-
+      DAH ("climb", posV7) + mrStemReq -- DAH's own allomorph carries no stem name at all, so
+      mrStemReq's requiredStemName="snG5" is never satisfied and this has zero parses.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.RequiredStemName"
+    expect_fail: true
+    blocked_by: [mrStemReq]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: zimed
+    note: >-
+      ZIM ("fly", posV7, mprRRealTest) + rrRRealTest ("-ed") -- ZIM's own AssignedHeadFeatures
+      (featG5=symG5A) genuinely conflicts with the rule's own RequiredHeadFeatures (featG5=symG5B),
+      so RequiredSyntacticFeatureStruct.Unify fails and this has zero parses. mprRRealTest is a
+      hard set-membership gate (see grammar.xml), so this rule can never spuriously apply to any
+      other word in the grammar regardless of this outcome.
+    provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.RequiredSyntacticFeatureStruct"
+    expect_fail: true
+    blocked_by: [rrRRealTest]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: zamed
+    note: >-
+      ZAM ("swim", posV7, mprRRealTest, family famRRealBlock) + rrRRealTest -- ZAM's featG5=symG5B
+      matches the rule's RequiredHeadFeatures, so the rule applies; but ZAM's family also contains
+      the suppletive WEP (also featG5=symG5B), and CheckBlocking substitutes WEP's own entry in
+      wherever ZAM's own output would surface, so the resynthesis ("wep") no longer matches this
+      word's own input shape ("zamed"), and this has zero parses. First time this suite exercises
+      Blockable/CheckBlocking through a RealizationalRule rather than an ordinary MorphologicalRule
+      or a CompoundingRule.
+    provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.Blockable"
+    expect_fail: true
+    blocked_by: [rrRRealTest]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"

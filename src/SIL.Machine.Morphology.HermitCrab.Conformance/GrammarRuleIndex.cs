@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace SIL.Machine.Morphology.HermitCrab.Conformance.V2;
+namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// Independently re-parses a v2 fixture's <c>grammar.xml</c> (not via <see cref="XmlLanguageLoader"/>,
+/// Independently re-parses a fixture's <c>grammar.xml</c> (not via <see cref="XmlLanguageLoader"/>,
 /// whose runtime rule objects lose the XML <c>id</c> attribute for several rule kinds -- see below)
 /// to answer two questions the harness needs for the "rules:" coverage dimension: (1) every rule id
 /// the grammar declares (for dead-rule detection), and (2) how to translate a *runtime* rule
@@ -85,9 +85,9 @@ public class GrammarRuleIndex
                         // MorphemeId to every rule) is byte-for-byte unaffected: this dict only ever
                         // gains an entry when the morpheme-id path was never going to work anyway.
                         // Discovered authoring edge-cases/disjunctive-recheck + edge-cases/strrep-
-                        // identity (both v1 fixtures assign no MorphemeId at all, a deliberate v1
-                        // choice -- adding one would change the "+|wokta"-style signatures those
-                        // fixtures pin) -- see those fixtures' words.yaml headers.
+                        // identity (both assign no MorphemeId at all, a deliberate choice -- adding
+                        // one would change the "+|wokta"-style signatures those fixtures pin) -- see
+                        // those fixtures' words.yaml headers.
                         string name = (string)el.Element("Name");
                         if (name != null)
                             index._ruleIdByRuleName[name] = id;

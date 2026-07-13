@@ -164,7 +164,7 @@ engine both call) invokes the 2-argument `Morpher.ParseWord(word, out trace)` ov
 hardcodes `guessRoot: false`; no CLI command in `SIL.Machine.Morphology.HermitCrab.Tool` exposes the
 3-argument, `guessRoot: true` overload at all. The harness's self-check mode works around this by
 calling `Morpher.ParseWord` directly with `guessRoot: true` whenever a word declares a `guess: true`
-parse (`src/SIL.Machine.Morphology.HermitCrab.Conformance/V2/RunnerV2.cs`) — but **adapter mode
+parse (`src/SIL.Machine.Morphology.HermitCrab.Conformance/Runner.cs`) — but **adapter mode
 cannot**: an external engine driven through the documented `batch` contract has no way to opt into
 guessing, so a fixture with a `guess: true` word is self-check-only until `BatchCommand`/the adapter
 contract gains an opt-in flag for it. Concretely: the harness's adapter-mode materialization **omits

@@ -6,6 +6,10 @@
     <PartsOfSpeech>
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+      <!-- G5 (code-coverage-driven), isolated per house style: alpha-variable phonological harmony,
+           kept off posV/posN so it can never interact with the existing harmony/gradation/merge
+           material above. -->
+      <PartOfSpeech id="posVAlpha"><Name>vAlpha</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified phonological feature system, given to EVERY segment below (no segment is
          left unspecified on any feature): self-check's own analysis-direction reversal of a
@@ -188,6 +192,19 @@
       <!-- Environment-only (RightEnvironment of ruleCollective) - a small explicit member list is
            fine since it is never a changing subrule's target/output. -->
       <SegmentNaturalClass id="ncTargetC"><Name>TargetT</Name><Segment segment="cT" /></SegmentNaturalClass>
+      <!-- Alpha-variable harmony (G5, code-coverage-driven), posVAlpha only. ncVowelAnyBack is the
+           LeftEnvironment trigger class: any vowel, deliberately NOT specifying featBack, so the
+           SAME class matches a/u (back) and e/i (front) alike; the AlphaVariable captures
+           whichever value the actually-matched instance has. ncHighVowelAnyBack is the changing
+           target/output class: high front "i" and high back "u" already differ ONLY in featBack
+           (see the feature table above), so leaving featBack unspecified here lets one class stand
+           for both, with the alpha variable supplying the value that makes the position concrete. -->
+      <FeatureNaturalClass id="ncVowelAnyBack"><Name>VowelAnyBack</Name>
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncHighVowelAnyBack"><Name>HighVowelAnyBack</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featHigh" symbolValues="fHighPlus" />
+      </FeatureNaturalClass>
     </NaturalClasses>
     <PhonologicalRuleDefinitions>
       <!-- Iterative long-distance backness harmony: the front suffix vowel "e" backs to "a" whenever
@@ -318,13 +335,55 @@
           </PhonologicalSubrule>
         </PhonologicalSubrules>
       </PhonologicalRule>
+      <!-- Alpha-variable harmony (G5, code-coverage-driven; posVAlpha only, isolated from the
+           harmony/gradation/merge rules above): a real generative-phonology "[αback]...[αback]"
+           agreement rule, previously zero coverage in the whole suite (VariableFeature/
+           AlphaVariables). The suffix's own high vowel is spelled underlyingly as front "i"
+           (ncHighVowelAnyBack matches both i and u, since they differ only in featBack); the
+           subrule's PhoneticOutput SimpleContext carries the SAME variable ("varBack") as the
+           LeftEnvironment's trigger SimpleContext, so whatever back-value the environment position
+           actually has propagates onto the output: a front-voweled root leaves it "i" (an
+           identity case, output == input, same house style as prGradation's own anchored subrule),
+           a back-voweled root turns it into "u". -->
+      <PhonologicalRule id="prAlphaHighHarmony">
+        <Name>alphaHighHarmony</Name>
+        <VariableFeatures>
+          <VariableFeature id="varBack" name="α" phonologicalFeature="featBack" />
+        </VariableFeatures>
+        <PhoneticInput>
+          <PhoneticSequence><SimpleContext naturalClass="ncHighVowelAnyBack" /></PhoneticSequence>
+        </PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posVAlpha">
+            <PhoneticOutput>
+              <PhoneticSequence>
+                <SimpleContext naturalClass="ncHighVowelAnyBack">
+                  <AlphaVariables><AlphaVariable variableFeature="varBack" polarity="plus" /></AlphaVariables>
+                </SimpleContext>
+              </PhoneticSequence>
+            </PhoneticOutput>
+            <Environment>
+              <LeftEnvironment>
+                <PhoneticTemplate>
+                  <PhoneticSequence>
+                    <SimpleContext naturalClass="ncVowelAnyBack">
+                      <AlphaVariables><AlphaVariable variableFeature="varBack" polarity="plus" /></AlphaVariables>
+                    </SimpleContext>
+                    <OptionalSegmentSequence min="0" max="1"><SimpleContext naturalClass="ncConsonant" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </PhoneticTemplate>
+              </LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
     </PhonologicalRuleDefinitions>
     <Strata>
       <Stratum
         characterDefinitionTable="table1"
         morphologicalRuleOrder="unordered"
-        morphologicalRules="mrPast mrPres mrPlural ruleCollective ruleInfixDemo"
-        phonologicalRules="prBacknessHarmony prVowelMerge prVowelMultiMerge prGradation prEpenthesis"
+        morphologicalRules="mrPast mrPres mrPlural ruleCollective ruleInfixDemo mrAlphaSuf"
+        phonologicalRules="prBacknessHarmony prVowelMerge prVowelMultiMerge prGradation prEpenthesis prAlphaHighHarmony"
       >
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -414,6 +473,19 @@
             </MorphologicalSubrules>
             <MorphemeId>INTS</MorphemeId>
           </MorphologicalRule>
+          <!-- Alpha-variable harmony demo suffix (posVAlpha, G5 code-coverage-driven): underlyingly
+               front "-in", alternated to "-un" by prAlphaHighHarmony when the root's own last vowel
+               is back. -->
+          <MorphologicalRule id="mrAlphaSuf" requiredPartsOfSpeech="posVAlpha" outputPartOfSpeech="posVAlpha">
+            <Name>alphaSuf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subAlphaSuf">
+                <MorphologicalInput><PhoneticSequence id="stemAlphaSuf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemAlphaSuf" /><InsertSegments><PhoneticShape>in</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>ALPHA</MorphemeId>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>
           <AffixTemplate requiredPartsOfSpeech="posV">
@@ -477,6 +549,19 @@
             <Allomorphs><Allomorph id="aSueeb"><PhoneticShape>sueeb</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>SUEEB</MorphemeId>
             <Gloss>grind</Gloss>
+          </LexicalEntry>
+          <!-- Alpha-variable harmony roots (posVAlpha, G5 code-coverage-driven): back-voweled "sat"
+               vs. front-voweled "set", differing only in the root vowel, so mrAlphaSuf's suffix is
+               the only thing that can differ between the two words below. -->
+          <LexicalEntry id="eSat" partOfSpeech="posVAlpha">
+            <Allomorphs><Allomorph id="aSat"><PhoneticShape>sat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SAT</MorphemeId>
+            <Gloss>sit</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eSet" partOfSpeech="posVAlpha">
+            <Allomorphs><Allomorph id="aSet"><PhoneticShape>set</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SET</MorphemeId>
+            <Gloss>stand</Gloss>
           </LexicalEntry>
         </LexicalEntries>
       </Stratum>

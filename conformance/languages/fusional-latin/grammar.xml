@@ -26,6 +26,13 @@
       <PartOfSpeech id="posV1"><Name>v1</Name></PartOfSpeech>
       <PartOfSpeech id="posN2"><Name>n2</Name></PartOfSpeech>
       <PartOfSpeech id="posV2"><Name>v2</Name></PartOfSpeech>
+      <!-- G5 (code-coverage-driven), isolated per house style: mrCompoundConstrained below. posCompH
+           is also this compound's OWN outputPartOfSpeech, so a compound can in principle serve as
+           the head of a further compound ; used to demonstrate MaxApplicationCount rejecting a
+           third application (the DTD's own default multipleApplication="1" already caps a single
+           CompoundingRule to one application per derivation). -->
+      <PartOfSpeech id="posCompH"><Name>compH</Name></PartOfSpeech>
+      <PartOfSpeech id="posCompNH"><Name>compNH</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- requires: [] is a hard constraint for this grammar (mechanically re-derived from this file
          every run: zero PhonologicalRule/MetathesisRule elements). Every alternation below is
@@ -77,6 +84,12 @@
       <MorphologicalPhonologicalRuleFeature id="mprConjB">ConjB</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprConjC">ConjC</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprConjD">ConjD</MorphologicalPhonologicalRuleFeature>
+      <!-- G5 (code-coverage-driven): mrCompoundConstrained's own gating features, distinct from the
+           mpr-groups material above (that's ordinary MorphologicalRule requiredMPRFeatures; this is
+           CompoundingRule's own headProdRestrictionsMprFeatures + per-subrule required/excluded MPR
+           features on HeadMorphologicalInput, previously zero coverage on the CompoundingRule side). -->
+      <MorphologicalPhonologicalRuleFeature id="mprCompReq">CompReq</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprSubA">CompSubA</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprPedA mprPedB"><Name>ThemeGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConjA mprConjB"><Name>AllGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConjC mprConjD"><Name>AnyGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
@@ -154,6 +167,11 @@
            "carry" verb, Latin fero/tuli-plausible) share this family so the regular form is blocked
            from also analyzing once its features collide with TUL's own lexically-fixed tense. -->
       <Family id="famCarry">FamCarry</Family>
+      <!-- G5 (code-coverage-driven): GEN (regular compounding head) and NOV (suppletive) share this
+           family so CompoundingRule's OWN Blockable/CheckBlocking path (SynthesisCompoundingRule.cs)
+           gets exercised; previously only ever exercised through an ordinary MorphologicalRule
+           (famCarry above), never through a compound. -->
+      <Family id="famCompBlock">FamCompBlock</Family>
     </Families>
     <!-- Two strata, not one, because morphologicalRuleOrder is a per-stratum setting and two
          constructs here have genuinely CONFLICTING requirements on it: mpr-groups/output-overwrite
@@ -169,7 +187,7 @@
       <Stratum
         characterDefinitionTable="table1"
         morphologicalRuleOrder="unordered"
-        morphologicalRules="mrPers1 mrPers2 mrPers3 mrTense rrPast mrPast2 mrPl2 mrCircumfixGeT mrSuffixS3 mrNasalInfix mrCompoundHN mrPrefixBe1 mrCompoundNH mrPrefixBe2 mrAblaut"
+        morphologicalRules="mrPers1 mrPers2 mrPers3 mrTense rrPast mrPast2 mrPl2 mrCircumfixGeT mrSuffixS3 mrNasalInfix mrCompoundHN mrPrefixBe1 mrCompoundNH mrPrefixBe2 mrAblaut mrCompoundConstrained"
       >
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -380,6 +398,36 @@
             <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPast" /></OutputHeadFeatures>
             <MorphemeId>ABLAUT</MorphemeId>
           </MorphologicalRule>
+          <!-- ===================== CompoundingRule constraints (G5, code-coverage-driven) =====================
+               Isolated posCompH/posCompNH pair, previously zero coverage on the CompoundingRule side
+               of: headProdRestrictionsMprFeatures, per-subrule requiredMPRFeatures/excludedMPRFeatures
+               (on HeadMorphologicalInput), outputObligatoryFeatures, and Blockable/CheckBlocking.
+               Both subrules propagate mprCompReq onto their output (MPRFeatures="mprCompReq") so a
+               compound can itself satisfy headProdRestrictionsMprFeatures for a further application. -->
+          <CompoundingRule
+            id="mrCompoundConstrained"
+            blockable="true"
+            headPartsOfSpeech="posCompH"
+            nonHeadPartsOfSpeech="posCompNH"
+            outputPartOfSpeech="posCompH"
+            headProdRestrictionsMprFeatures="mprCompReq"
+            outputObligatoryFeatures="featTense"
+          >
+            <Name>compoundConstrained</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput requiredMPRFeatures="mprSubA"><PhoneticSequence id="ccHeadA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="ccNonHeadA"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprCompReq"><CopyFromInput index="ccHeadA" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="ccNonHeadA" /></MorphologicalOutput>
+              </CompoundingSubrule>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput excludedMPRFeatures="mprSubA"><PhoneticSequence id="ccHeadB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></HeadMorphologicalInput>
+                <NonHeadMorphologicalInput><PhoneticSequence id="ccNonHeadB"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></NonHeadMorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprCompReq"><CopyFromInput index="ccHeadB" /><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="ccNonHeadB" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></OutputHeadFeatures>
+          </CompoundingRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
           <!-- realizational/stem-name: three distinct-shape allomorphs of one "bring" verb. -->
@@ -468,6 +516,41 @@
             <Allomorphs><Allomorph id="aSing"><PhoneticShape>sing</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>SING</MorphemeId>
             <Gloss>sing</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eGen" partOfSpeech="posCompH" ruleFeatures="mprCompReq" family="famCompBlock">
+            <Allomorphs><Allomorph id="aGen"><PhoneticShape>gen</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>GEN</MorphemeId>
+            <Gloss>kind</Gloss>
+          </LexicalEntry>
+          <!-- Suppletive partner for GEN (famCompBlock): CheckBlocking substitutes this whole entry
+               in wherever GEN's own compounding output would otherwise surface, so a candidate word
+               built from GEN's compound has no valid resynthesis matching its own input shape. -->
+          <LexicalEntry id="eNov" partOfSpeech="posCompH" family="famCompBlock">
+            <Allomorphs><Allomorph id="aNov"><PhoneticShape>nov</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="featTense" symbolValues="symPres" /></AssignedHeadFeatures>
+            <MorphemeId>NOV</MorphemeId>
+            <Gloss>new</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eMit" partOfSpeech="posCompH" ruleFeatures="mprCompReq mprSubA">
+            <Allomorphs><Allomorph id="aMit"><PhoneticShape>mit</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MIT</MorphemeId>
+            <Gloss>send</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eFic" partOfSpeech="posCompH" ruleFeatures="mprCompReq">
+            <Allomorphs><Allomorph id="aFic"><PhoneticShape>fic</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>FIC</MorphemeId>
+            <Gloss>make</Gloss>
+          </LexicalEntry>
+          <!-- No ruleFeatures at all: fails headProdRestrictionsMprFeatures outright (see sec+lav). -->
+          <LexicalEntry id="eSec" partOfSpeech="posCompH">
+            <Allomorphs><Allomorph id="aSec"><PhoneticShape>sec</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SEC</MorphemeId>
+            <Gloss>cut</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eLav" partOfSpeech="posCompNH">
+            <Allomorphs><Allomorph id="aLav"><PhoneticShape>lav</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>LAV</MorphemeId>
+            <Gloss>wash</Gloss>
           </LexicalEntry>
         </LexicalEntries>
       </Stratum>

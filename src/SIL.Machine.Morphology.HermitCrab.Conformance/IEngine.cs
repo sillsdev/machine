@@ -20,5 +20,5 @@ public interface IEngine
     IReadOnlySet<string> Capabilities { get; }
 
     /// <summary>Runs every word in the fixture's words.txt, returning the resulting TSV rows.</summary>
-    List<TsvRow> Run(Fixture fixture);
+    List<TsvRow> Run(MaterializedFixture fixture);
 }
