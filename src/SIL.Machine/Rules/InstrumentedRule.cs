@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
@@ -20,6 +21,7 @@ namespace SIL.Machine.Rules
         public int OutputCount;
         public long ElapsedTime;
         public IList<InstrumentedRule<TData, TOffset>> SubRules = new List<InstrumentedRule<TData, TOffset>>();
+        private readonly object _lock = new object();
 
         public InstrumentedRule() { }
 
@@ -47,8 +49,8 @@ namespace SIL.Machine.Rules
         {
             if (outputCount > 0)
             {
-                InputCount++;
-                OutputCount += outputCount;
+                Interlocked.Increment(ref InputCount);
+                Interlocked.Add(ref OutputCount, outputCount);
             }
         }
 
@@ -57,7 +59,10 @@ namespace SIL.Machine.Rules
         /// </summary>
         protected void AddElapsedTime(long elapsedTime)
         {
-            ElapsedTime += elapsedTime;
+            lock (_lock)
+            {
+                ElapsedTime += elapsedTime;
+            }
         }
 
         /// <summary>
