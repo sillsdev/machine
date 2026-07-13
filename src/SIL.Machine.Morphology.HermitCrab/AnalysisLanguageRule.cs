@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
@@ -6,7 +7,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisLanguageRule : IRule<Word, ShapeNode>
+    internal class AnalysisLanguageRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly Morpher _morpher;
         private readonly List<Stratum> _strata;
@@ -14,13 +15,16 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public AnalysisLanguageRule(Morpher morpher, Language language)
         {
+            Name = "Analysis";
             _morpher = morpher;
             _strata = language.Strata.Reverse().ToList();
             _rules = _strata.Select(stratum => stratum.CompileAnalysisRule(morpher)).ToList();
+            AddSubRules(_rules);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
+            long startTime = Stopwatch.GetTimestamp();
             var inputSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default) { input };
             var tempSet = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             var results = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -45,6 +49,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 inputSet = outputSet;
             }
 
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
+            AddRuleStats(results.Count());
             return results;
         }
     }

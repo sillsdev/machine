@@ -28,7 +28,9 @@ namespace SIL.Machine.Rules
                 }
             );
 
-            return output.Distinct(Comparer);
+            IEnumerable<TData> distinctOutput = output.Distinct(Comparer);
+            AddRuleStats(distinctOutput.Count());
+            return distinctOutput;
         }
     }
 }

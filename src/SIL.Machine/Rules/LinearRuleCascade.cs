@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using SIL.Machine.Annotations;
 
 namespace SIL.Machine.Rules
@@ -24,8 +25,11 @@ namespace SIL.Machine.Rules
 
         public override IEnumerable<TData> Apply(TData input)
         {
+            long startTime = Stopwatch.GetTimestamp();
             var output = new HashSet<TData>(Comparer);
             ApplyRules(input, 0, output);
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
+            AddRuleStats(output.Count);
             return output;
         }
 

@@ -8,7 +8,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class AnalysisStratumRule : IRule<Word, ShapeNode>
+    internal class AnalysisStratumRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly IRule<Word, ShapeNode> _mrulesRule;
         private readonly IRule<Word, ShapeNode> _prulesRule;
@@ -18,6 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
+            Name = stratum.Name;
             _stratum = stratum;
             _morpher = morpher;
             _prulesRule = new LinearRuleCascade<Word, ShapeNode>(
@@ -61,6 +62,9 @@ namespace SIL.Machine.Morphology.HermitCrab
 #endif
                     break;
             }
+            AddSubRule(_prulesRule);
+            AddSubRule(_templatesRule);
+            AddSubRule(_mrulesRule);
         }
 
         private IRule<Word, ShapeNode> CompileAffixTemplate(AffixTemplate template, Morpher morpher)
@@ -99,8 +103,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
+            long startTime = Stopwatch.GetTimestamp();
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
 
@@ -144,6 +149,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 if (_morpher.MaxUnapplications > 0 && output.Count >= _morpher.MaxUnapplications)
                     break;
             }
+
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
+            AddRuleStats(output.Count);
             return output;
         }
 

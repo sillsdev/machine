@@ -6,7 +6,7 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class AnalysisAffixProcessRule : IRule<Word, ShapeNode>
+    public class AnalysisAffixProcessRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly Morpher _morpher;
         private readonly AffixProcessRule _rule;
@@ -14,6 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public AnalysisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
         {
+            Name = rule.Name;
             _morpher = morpher;
             _rule = rule;
 
@@ -36,7 +37,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             }
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
@@ -70,6 +71,8 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 if (_morpher.TraceManager.IsTracing && !unapplied)
                     _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
             }
+
+            AddRuleStats(output.Count);
             return output;
         }
     }

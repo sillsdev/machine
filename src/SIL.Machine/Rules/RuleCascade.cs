@@ -5,7 +5,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Rules
 {
-    public abstract class RuleCascade<TData, TOffset> : IRule<TData, TOffset>
+    public abstract class RuleCascade<TData, TOffset> : InstrumentedRule<TData, TOffset>
         where TData : IAnnotatedData<TOffset>
     {
         private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
@@ -27,9 +27,11 @@ namespace SIL.Machine.Rules
             IEqualityComparer<TData> comparer
         )
         {
+            Name = "RuleCascade";
             _rules = new ReadOnlyList<IRule<TData, TOffset>>(rules.ToList());
             _multiApp = multiApp;
             _comparer = comparer;
+            AddSubRules(_rules);
         }
 
         public IEqualityComparer<TData> Comparer
@@ -47,7 +49,7 @@ namespace SIL.Machine.Rules
             get { return _rules; }
         }
 
-        public abstract IEnumerable<TData> Apply(TData input);
+        public abstract override IEnumerable<TData> Apply(TData input);
 
         protected virtual IEnumerable<TData> ApplyRule(IRule<TData, TOffset> rule, int index, TData input)
         {

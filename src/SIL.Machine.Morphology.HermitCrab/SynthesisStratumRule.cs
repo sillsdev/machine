@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
@@ -7,7 +8,7 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisStratumRule : IRule<Word, ShapeNode>
+    internal class SynthesisStratumRule : InstrumentedRule<Word, ShapeNode>
     {
         private readonly IRule<Word, ShapeNode> _mrulesRule;
         private readonly IRule<Word, ShapeNode> _prulesRule;
@@ -17,6 +18,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public SynthesisStratumRule(Morpher morpher, Stratum stratum)
         {
+            Name = stratum.Name;
             _templatesRule = new SynthesisAffixTemplatesRule(morpher, stratum);
             _mrulesRule = null;
             IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule =>
@@ -44,9 +46,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             );
             _stratum = stratum;
             _morpher = morpher;
+            AddSubRule(_mrulesRule);
+            AddSubRule(_prulesRule);
+            AddSubRule(_templatesRule);
         }
 
-        public IEnumerable<Word> Apply(Word input)
+        public override IEnumerable<Word> Apply(Word input)
         {
             if (!_morpher.RuleSelector(_stratum) || input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth)
                 return input.ToEnumerable();
@@ -54,6 +59,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginApplyStratum(_stratum, input);
 
+            long startTime = Stopwatch.GetTimestamp();
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
             foreach (Word mruleOutWord in ApplyMorphologicalRules(input).Concat(ApplyTemplates(input)))
             {
@@ -88,6 +94,9 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             if (_morpher.TraceManager.IsTracing && output.Count == 0)
                 _morpher.TraceManager.EndApplyStratum(_stratum, input);
+
+            AddElapsedTime(Stopwatch.GetTimestamp() - startTime);
+            AddRuleStats(output.Count);
             return output;
         }
 
