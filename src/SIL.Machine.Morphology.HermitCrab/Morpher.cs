@@ -319,8 +319,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
-                                    Interlocked.Increment(ref alternativeCount);
-                                    if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
+                                    if (MaxAlternatives > 0 && Interlocked.Increment(ref alternativeCount) > MaxAlternatives)
                                         throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {

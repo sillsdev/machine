@@ -53,8 +53,7 @@ namespace SIL.Machine.Rules
                                 if (results.Length > 0)
                                 {
                                     output.PushRange(results);
-                                    Interlocked.Add(ref alternativeCount, results.Length);
-                                    CheckMaxAlternatives(alternativeCount);
+                                    CheckMaxAlternatives(Interlocked.Add(ref alternativeCount, results.Length));
 
                                     Tuple<TData, int>[] workItems = results
                                         .Where(res => !MultipleApplication || !Comparer.Equals(work.Item1, res))
