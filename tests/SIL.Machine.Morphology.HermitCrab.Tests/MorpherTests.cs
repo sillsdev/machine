@@ -4,6 +4,7 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
+using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -59,11 +60,26 @@ public class MorpherTests : HermitCrabTestBase
             }
         );
         Morphophonemic.MorphologicalRules.Add(edSuffix);
+        var gSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "g_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        gSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+g") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(gSuffix);
 
         var morpher = new Morpher(TraceManager, Language);
         morpher.MaxAlternatives = 1;
 
-        Assert.Throws<TimeoutException>(() => morpher.AnalyzeWord("sagd"));
+        Assert.Throws<MaxAlternativesExceededException>(() => morpher.AnalyzeWord("sagd"));
     }
 
     [Test]

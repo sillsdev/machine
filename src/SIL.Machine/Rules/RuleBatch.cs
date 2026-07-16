@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 
@@ -44,9 +43,10 @@ namespace SIL.Machine.Rules
             get { return _disjunctive; }
         }
 
-        public void SetMaxAlternatives(int maxAlternatives)
+        public int MaxAlternatives
         {
-            _maxAlternatives = maxAlternatives;
+            get { return _maxAlternatives; }
+            set { _maxAlternatives = value; }
         }
 
         public virtual IEnumerable<TData> Apply(TData input)
@@ -55,8 +55,8 @@ namespace SIL.Machine.Rules
             foreach (IRule<TData, TOffset> rule in _rules)
             {
                 output.UnionWith(rule.Apply(input));
-                if (_maxAlternatives > 0 && output.Count >= _maxAlternatives)
-                    throw new TimeoutException("MaxAlternatives exceeded");
+                if (_maxAlternatives > 0 && output.Count > _maxAlternatives)
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 if (_disjunctive && output.Count > 0)
                     return output;
             }

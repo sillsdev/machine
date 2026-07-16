@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.ObjectModel;
@@ -49,15 +48,16 @@ namespace SIL.Machine.Rules
             get { return _rules; }
         }
 
-        public void SetMaxAlternatives(int maxApplications)
+        public int MaxAlternatives
         {
-            _maxAlternatives = maxApplications;
+            get { return _maxAlternatives; }
+            set { _maxAlternatives = value; }
         }
 
-        public void CheckMaxAlternatives(int alternativeCount)
+        protected void CheckMaxAlternatives(int alternativeCount)
         {
-            if (_maxAlternatives > 0 && alternativeCount >= _maxAlternatives)
-                throw new TimeoutException("MaxAlternatives exceeded");
+            if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
         }
 
         public abstract IEnumerable<TData> Apply(TData input);

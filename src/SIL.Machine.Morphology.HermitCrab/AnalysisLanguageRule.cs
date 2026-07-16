@@ -34,7 +34,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 // Limit alternatives accross all invocations of _rules[i].Apply.
                 int alternativeCount = 0;
-                _rules[i].SetMaxAlternatives(_morpher.MaxAlternatives);
+                _rules[i].MaxAlternatives = _morpher.MaxAlternatives;
 
                 foreach (Word inData in inputSet)
                 {

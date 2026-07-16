@@ -14,6 +14,7 @@ using System.IO;
 #if !SINGLE_THREADED
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Threading;
 #endif
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -72,9 +73,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int MaxStemCount { get; set; }
 
         /// <summary>
-        /// MaxUnapplications limits the number of unapplications to make it possible
-        /// to make it possible to debug words that take 30 minutes to parse
-        /// because there are too many unapplications.
+        /// MaxAlternatives limits the number of alternatives considered.
+        /// If the limit is exceeded, then MaxAlternativesExceededException is thrown.
         /// </summary>
         public int MaxAlternatives { get; set; }
 
@@ -319,9 +319,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
-                                    alternativeCount++;
-                                    if (MaxAlternatives > 0 && alternativeCount >= MaxAlternatives)
-                                        throw new TimeoutException("MaxAlternatives exceeded");
+                                    Interlocked.Increment(ref alternativeCount);
+                                    if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
+                                        throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {
                                         if (IsMatch(word, validWord))

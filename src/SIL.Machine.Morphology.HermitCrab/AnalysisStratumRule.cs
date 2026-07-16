@@ -100,11 +100,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        public void SetMaxAlternatives(int maxAlternatives)
+        public int MaxAlternatives
         {
-            _maxAlternatives = maxAlternatives;
-            _mrulesRule.SetMaxAlternatives(maxAlternatives);
-            _templatesRule.SetMaxAlternatives(maxAlternatives);
+            get { return _maxAlternatives; }
+            set
+            {
+                _maxAlternatives = value;
+                _mrulesRule.MaxAlternatives = value;
+                _templatesRule.MaxAlternatives = value;
+            }
         }
 
         public IEnumerable<Word> Apply(Word input)
@@ -140,12 +144,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word mruleOutWord in mruleOutWords)
             {
                 alternativeCount++;
-                if (_maxAlternatives > 0 && alternativeCount >= _maxAlternatives)
+                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
                 {
-                    // Not literally a timeout, but serves the same purpose.
-                    // (A literal timeout would produce different results on different machines.)
                     // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
-                    throw new TimeoutException("MaxAlternatives exceeded");
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
