@@ -46,6 +46,7 @@ namespace SIL.Machine.Rules
                     {
                         output.Add(result);
                     }
+                    CheckMaxAlternatives(output.Count);
                     applied = true;
                 }
 

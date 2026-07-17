@@ -10,6 +10,7 @@ namespace SIL.Machine.Rules
         private readonly List<IRule<TData, TOffset>> _rules;
         private readonly bool _disjunctive;
         private readonly IEqualityComparer<TData> _comparer;
+        private int _maxAlternatives;
 
         public RuleBatch(IEnumerable<IRule<TData, TOffset>> rules)
             : this(rules, EqualityComparer<TData>.Default) { }
@@ -42,12 +43,20 @@ namespace SIL.Machine.Rules
             get { return _disjunctive; }
         }
 
+        public int MaxAlternatives
+        {
+            get { return _maxAlternatives; }
+            set { _maxAlternatives = value; }
+        }
+
         public virtual IEnumerable<TData> Apply(TData input)
         {
             var output = new HashSet<TData>(_comparer);
             foreach (IRule<TData, TOffset> rule in _rules)
             {
                 output.UnionWith(rule.Apply(input));
+                if (_maxAlternatives > 0 && output.Count > _maxAlternatives)
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                 if (_disjunctive && output.Count > 0)
                     return output;
             }

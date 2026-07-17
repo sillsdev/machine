@@ -14,6 +14,7 @@ using System.IO;
 #if !SINGLE_THREADED
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using System.Threading;
 #endif
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -54,7 +55,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _analysisRule = lang.CompileAnalysisRule(this);
             _synthesisRule = lang.CompileSynthesisRule(this);
             MaxStemCount = 2;
-            MaxUnapplications = 0;
+            MaxAlternatives = 0;
             MergeEquivalentAnalyses = true;
             LexEntrySelector = entry => true;
             RuleSelector = rule => true;
@@ -72,11 +73,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         public int MaxStemCount { get; set; }
 
         /// <summary>
-        /// MaxUnapplications limits the number of unapplications to make it possible
-        /// to make it possible to debug words that take 30 minutes to parse
-        /// because there are too many unapplications.
+        /// MaxAlternatives limits the number of alternatives considered.
+        /// If the limit is exceeded, then MaxAlternativesExceededException is thrown.
         /// </summary>
-        public int MaxUnapplications { get; set; }
+        public int MaxAlternatives { get; set; }
 
         /// <summary>
         /// Merge analyses that have equivalent shapes.
@@ -303,6 +303,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> Synthesize(string word, ConcurrentQueue<Word> analyses)
         {
             var matches = new ConcurrentBag<Word>();
+            int alternativeCount = 0;
             Exception exception = null;
             Parallel.ForEach(
                 Partitioner.Create(0, analyses.Count),
@@ -318,6 +319,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                             {
                                 foreach (Word alternative in synthesisWord.ExpandAlternatives())
                                 {
+                                    if (
+                                        MaxAlternatives > 0
+                                        && Interlocked.Increment(ref alternativeCount) > MaxAlternatives
+                                    )
+                                    {
+                                        throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
+                                    }
                                     foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                                     {
                                         if (IsMatch(word, validWord))

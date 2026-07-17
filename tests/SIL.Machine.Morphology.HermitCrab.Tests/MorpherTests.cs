@@ -4,6 +4,7 @@ using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Morphology.HermitCrab.PhonologicalRules;
+using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -37,6 +38,48 @@ public class MorpherTests : HermitCrabTestBase
             morpher.AnalyzeWord("sagd"),
             Is.EquivalentTo(new[] { new WordAnalysis(new IMorpheme[] { Entries["32"], edSuffix }, 0, "V") })
         );
+    }
+
+    [Test]
+    public void AnalyzeWord_MaxAlternatives()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        var edSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "ed_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+d") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(edSuffix);
+        var gSuffix = new AffixProcessRule
+        {
+            Id = "PAST",
+            Name = "g_suffix",
+            Gloss = "PAST",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        gSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+g") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(gSuffix);
+
+        var morpher = new Morpher(TraceManager, Language);
+        morpher.MaxAlternatives = 1;
+
+        Assert.Throws<MaxAlternativesExceededException>(() => morpher.AnalyzeWord("sagd"));
     }
 
     [Test]

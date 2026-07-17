@@ -11,6 +11,7 @@ namespace SIL.Machine.Rules
         private readonly ReadOnlyList<IRule<TData, TOffset>> _rules;
         private readonly bool _multiApp;
         private readonly IEqualityComparer<TData> _comparer;
+        protected int _maxAlternatives;
 
         protected RuleCascade(IEnumerable<IRule<TData, TOffset>> rules)
             : this(rules, false) { }
@@ -45,6 +46,18 @@ namespace SIL.Machine.Rules
         public IReadOnlyList<IRule<TData, TOffset>> Rules
         {
             get { return _rules; }
+        }
+
+        public int MaxAlternatives
+        {
+            get { return _maxAlternatives; }
+            set { _maxAlternatives = value; }
+        }
+
+        protected void CheckMaxAlternatives(int alternativeCount)
+        {
+            if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
         }
 
         public abstract IEnumerable<TData> Apply(TData input);

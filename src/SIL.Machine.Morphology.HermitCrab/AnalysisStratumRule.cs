@@ -10,11 +10,12 @@ namespace SIL.Machine.Morphology.HermitCrab
 {
     internal class AnalysisStratumRule : IRule<Word, ShapeNode>
     {
-        private readonly IRule<Word, ShapeNode> _mrulesRule;
+        private readonly RuleCascade<Word, ShapeNode> _mrulesRule;
         private readonly IRule<Word, ShapeNode> _prulesRule;
-        private readonly IRule<Word, ShapeNode> _templatesRule;
+        private readonly RuleBatch<Word, ShapeNode> _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
+        private int _maxAlternatives;
 
         public AnalysisStratumRule(Morpher morpher, Stratum stratum)
         {
@@ -99,7 +100,24 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        public int MaxAlternatives
+        {
+            get { return _maxAlternatives; }
+            set
+            {
+                _maxAlternatives = value;
+                _mrulesRule.MaxAlternatives = value;
+                _templatesRule.MaxAlternatives = value;
+            }
+        }
+
         public IEnumerable<Word> Apply(Word input)
+        {
+            int alternativeCount = 0;
+            return Apply(input, ref alternativeCount);
+        }
+
+        internal IEnumerable<Word> Apply(Word input, ref int alternativeCount)
         {
             if (_morpher.TraceManager.IsTracing)
                 _morpher.TraceManager.BeginUnapplyStratum(_stratum, input);
@@ -125,6 +143,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyStratum(_stratum, input);
             foreach (Word mruleOutWord in mruleOutWords)
             {
+                alternativeCount++;
+                if (_maxAlternatives > 0 && alternativeCount > _maxAlternatives)
+                {
+                    // Stops before full enumeration because ApplyTemplates and ApplyMorphologicalRules use yield return.
+                    throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
+                }
                 // Skip intermediate sources from phonological rules, templates, and morphological rules.
                 mruleOutWord.Source = origInput;
                 if (mergeEquivalentAnalyses)
@@ -141,8 +165,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 output.Add(mruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
-                if (_morpher.MaxUnapplications > 0 && output.Count >= _morpher.MaxUnapplications)
-                    break;
             }
             return output;
         }
