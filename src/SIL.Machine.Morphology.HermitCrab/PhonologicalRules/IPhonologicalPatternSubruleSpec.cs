@@ -6,10 +6,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public interface IPhonologicalPatternSubruleSpec
     {
-        Matcher<Word, ShapeNode> LeftEnvironmentMatcher { get; }
-        Matcher<Word, ShapeNode> RightEnvironmentMatcher { get; }
+        Matcher<Word, int> LeftEnvironmentMatcher { get; }
+        Matcher<Word, int> RightEnvironmentMatcher { get; }
 
         bool IsApplicable(Word input);
-        void ApplyRhs(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings);
+        void ApplyRhs(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings);
     }
 }

@@ -7,10 +7,10 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
-    internal class SynthesisStratumRule : IRule<Word, ShapeNode>
+    internal class SynthesisStratumRule : IRule<Word, int>
     {
-        private readonly IRule<Word, ShapeNode> _mrulesRule;
-        private readonly IRule<Word, ShapeNode> _prulesRule;
+        private readonly IRule<Word, int> _mrulesRule;
+        private readonly IRule<Word, int> _prulesRule;
         private readonly SynthesisAffixTemplatesRule _templatesRule;
         private readonly Stratum _stratum;
         private readonly Morpher _morpher;
@@ -19,27 +19,27 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             _templatesRule = new SynthesisAffixTemplatesRule(morpher, stratum);
             _mrulesRule = null;
-            IEnumerable<IRule<Word, ShapeNode>> mrules = stratum.MorphologicalRules.Select(mrule =>
+            IEnumerable<IRule<Word, int>> mrules = stratum.MorphologicalRules.Select(mrule =>
                 mrule.CompileSynthesisRule(morpher)
             );
             switch (stratum.MorphologicalRuleOrder)
             {
                 case MorphologicalRuleOrder.Linear:
-                    _mrulesRule = new LinearRuleCascade<Word, ShapeNode>(
+                    _mrulesRule = new LinearRuleCascade<Word, int>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-                    _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
+                    _mrulesRule = new CombinationRuleCascade<Word, int>(
                         mrules,
                         true,
                         FreezableEqualityComparer<Word>.Default
                     );
                     break;
             }
-            _prulesRule = new LinearRuleCascade<Word, ShapeNode>(
+            _prulesRule = new LinearRuleCascade<Word, int>(
                 stratum.PhonologicalRules.Select(prule => prule.CompileSynthesisRule(morpher))
             );
             _stratum = stratum;

@@ -8,12 +8,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class NarrowAnalysisRewriteRuleSpec : RewriteRuleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _analysisRhs;
+        private readonly Pattern<Word, int> _analysisRhs;
         private readonly int _targetCount;
 
         public NarrowAnalysisRewriteRuleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
-            Pattern<Word, ShapeNode> lhs,
+            MatcherSettings<int> matcherSettings,
+            Pattern<Word, int> lhs,
             RewriteSubrule subrule
         )
             : base(subrule.Rhs.IsEmpty)
@@ -24,7 +24,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             if (subrule.Rhs.IsEmpty)
             {
                 Pattern.Children.Add(
-                    new Constraint<Word, ShapeNode>(
+                    new Constraint<Word, int>(
                         FeatureStruct.New().Symbol(HCFeatureSystem.Segment, HCFeatureSystem.Anchor).Value
                     )
                 );
@@ -38,12 +38,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             SubruleSpecs.Add(new AnalysisRewriteSubruleSpec(matcherSettings, subrule, Unapply));
         }
 
-        private void Unapply(Match<Word, ShapeNode> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
+        private void Unapply(Match<Word, int> targetMatch, Range<ShapeNode> range, VariableBindings varBindings)
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
-            foreach (
-                Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>()
-            )
+            foreach (Constraint<Word, int> constraint in _analysisRhs.Children.Cast<Constraint<Word, int>>())
             {
                 FeatureStruct fs = constraint.FeatureStruct.Clone();
                 if (varBindings != null)

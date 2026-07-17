@@ -7,11 +7,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public class NarrowSynthesisRewriteSubruleSpec : SynthesisRewriteSubruleSpec
     {
-        private readonly Pattern<Word, ShapeNode> _rhs;
+        private readonly Pattern<Word, int> _rhs;
         private readonly int _targetCount;
 
         public NarrowSynthesisRewriteSubruleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
+            MatcherSettings<int> matcherSettings,
             bool isIterative,
             int targetCount,
             RewriteSubrule subrule,
@@ -24,15 +24,15 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         }
 
         public override void ApplyRhs(
-            Match<Word, ShapeNode> targetMatch,
+            Match<Word, int> targetMatch,
             Range<ShapeNode> range,
             VariableBindings varBindings
         )
         {
             ShapeNode curNode = range.End;
-            foreach (PatternNode<Word, ShapeNode> node in _rhs.Children)
+            foreach (PatternNode<Word, int> node in _rhs.Children)
             {
-                var constraint = (Constraint<Word, ShapeNode>)node;
+                var constraint = (Constraint<Word, int>)node;
                 FeatureStruct fs = constraint.FeatureStruct.Clone();
                 if (varBindings != null)
                     fs.ReplaceVariables(varBindings);

@@ -31,19 +31,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         }
 
         public override void GenerateAnalysisLhs(
-            Pattern<Word, ShapeNode> analysisLhs,
-            IDictionary<string, Pattern<Word, ShapeNode>> partLookup,
+            Pattern<Word, int> analysisLhs,
+            IDictionary<string, Pattern<Word, int>> partLookup,
             IDictionary<string, int> capturedParts
         )
         {
-            Pattern<Word, ShapeNode> pattern = partLookup[PartName];
+            Pattern<Word, int> pattern = partLookup[PartName];
             int count = capturedParts.GetOrCreate(PartName, () => 0);
             string groupName = AnalysisMorphologicalTransform.GetGroupName(PartName, count);
-            var group = new Group<Word, ShapeNode>(groupName, pattern.Children.DeepCloneExceptBoundaries());
+            var group = new Group<Word, int>(groupName, pattern.Children.DeepCloneExceptBoundaries());
             foreach (
-                Constraint<Word, ShapeNode> constraint in group
+                Constraint<Word, int> constraint in group
                     .GetNodesDepthFirst()
-                    .OfType<Constraint<Word, ShapeNode>>()
+                    .OfType<Constraint<Word, int>>()
                     .Where(c => c.Type() == (FeatureSymbol)_simpleCtxt.FeatureStruct.GetValue(HCFeatureSystem.Type))
             )
             {
@@ -53,10 +53,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             capturedParts[PartName]++;
         }
 
-        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
+        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, int> match, Word output)
         {
             var mappings = new List<Tuple<ShapeNode, ShapeNode>>();
-            GroupCapture<ShapeNode> inputGroup = match.GroupCaptures[PartName];
+            GroupCapture<int> inputGroup = match.GroupCaptures[PartName];
             foreach (
                 ShapeNode inputNode in GetSkippedOptionalNodes(match.Input.Shape, inputGroup.Range)
                     .Concat(match.Input.Shape.GetNodes(inputGroup.Range))

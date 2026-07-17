@@ -7,24 +7,24 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class AnalysisRealizationalAffixProcessRule : IRule<Word, ShapeNode>
+    public class AnalysisRealizationalAffixProcessRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly RealizationalAffixProcessRule _rule;
-        private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly List<PatternRule<Word, int>> _rules;
 
         public AnalysisRealizationalAffixProcessRule(Morpher morpher, RealizationalAffixProcessRule rule)
         {
             _morpher = morpher;
             _rule = rule;
 
-            _rules = new List<PatternRule<Word, ShapeNode>>();
+            _rules = new List<PatternRule<Word, int>>();
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 _rules.Add(
-                    new MultiplePatternRule<Word, ShapeNode>(
+                    new MultiplePatternRule<Word, int>(
                         new AnalysisAffixProcessAllomorphRuleSpec(allo),
-                        new MatcherSettings<ShapeNode>
+                        new MatcherSettings<int>
                         {
                             Filter = ann => ann.Type() == HCFeatureSystem.Segment,
                             MatchingMethod = MatchingMethod.Unification,

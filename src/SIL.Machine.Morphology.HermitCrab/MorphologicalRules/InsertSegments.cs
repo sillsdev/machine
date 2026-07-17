@@ -27,19 +27,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
         }
 
         public override void GenerateAnalysisLhs(
-            Pattern<Word, ShapeNode> analysisLhs,
-            IDictionary<string, Pattern<Word, ShapeNode>> partLookup,
+            Pattern<Word, int> analysisLhs,
+            IDictionary<string, Pattern<Word, int>> partLookup,
             IDictionary<string, int> capturedParts
         )
         {
             foreach (ShapeNode node in _segments.Shape)
             {
                 if (node.Annotation.Type() != HCFeatureSystem.Boundary)
-                    analysisLhs.Children.Add(new Constraint<Word, ShapeNode>(node.Annotation.FeatureStruct));
+                    analysisLhs.Children.Add(new Constraint<Word, int>(node.Annotation.FeatureStruct));
             }
         }
 
-        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, ShapeNode> match, Word output)
+        public override IEnumerable<Tuple<ShapeNode, ShapeNode>> Apply(Match<Word, int> match, Word output)
         {
             Shape shape = _segments.Shape;
             var mappings = new List<Tuple<ShapeNode, ShapeNode>>();

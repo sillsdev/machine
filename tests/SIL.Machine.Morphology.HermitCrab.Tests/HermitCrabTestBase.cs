@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.ObjectModel;
@@ -682,11 +681,7 @@ public abstract class HermitCrabTestBase
         entry
             .Allomorphs[0]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
 
         entry = AddEntry(
@@ -710,26 +705,18 @@ public abstract class HermitCrabTestBase
                 new AllomorphEnvironment(
                     ConstraintType.Require,
                     null,
-                    Pattern<Word, ShapeNode>.New().Annotation(unroundedVowel).Value
+                    Pattern<Word, int>.New().Annotation(unroundedVowel).Value
                 )
             );
         entry
             .Allomorphs[1]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
         entry
             .Allomorphs[2]
             .Environments.Add(
-                new AllomorphEnvironment(
-                    ConstraintType.Require,
-                    null,
-                    Pattern<Word, ShapeNode>.New().Annotation(vowel).Value
-                )
+                new AllomorphEnvironment(ConstraintType.Require, null, Pattern<Word, int>.New().Annotation(vowel).Value)
             );
 
         entry = AddEntry(

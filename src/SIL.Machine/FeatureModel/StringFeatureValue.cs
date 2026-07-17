@@ -234,7 +234,11 @@ namespace SIL.Machine.FeatureModel
         {
             int code = base.GetValuesHashCode();
             code = code * 31 + Not.GetHashCode();
-            code = code * 31 + _values.OrderBy(str => str).GetSequenceHashCode();
+            // Ordinal: these are opaque grammar string-feature values, not user-facing text, and this
+            // hash is computed on the Freeze() hot path (a CPU profile showed the culture-aware default
+            // contributing real self-time via CompareInfo.Compare — same class of fix as FeatureStruct's
+            // OrderBy sites).
+            code = code * 31 + _values.OrderBy(str => str, StringComparer.Ordinal).GetSequenceHashCode();
             return code;
         }
 

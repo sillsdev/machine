@@ -13,23 +13,23 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
     {
         public MetathesisRule()
         {
-            Pattern = Pattern<Word, ShapeNode>.New().Value;
+            Pattern = Pattern<Word, int>.New().Value;
         }
 
         public Direction Direction { get; set; }
 
-        public Pattern<Word, ShapeNode> Pattern { get; set; }
+        public Pattern<Word, int> Pattern { get; set; }
 
         public string LeftSwitchName { get; set; }
 
         public string RightSwitchName { get; set; }
 
-        public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
+        public override IRule<Word, int> CompileAnalysisRule(Morpher morpher)
         {
             return new AnalysisMetathesisRule(morpher, this);
         }
 
-        public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
+        public override IRule<Word, int> CompileSynthesisRule(Morpher morpher)
         {
             return new SynthesisMetathesisRule(morpher, this);
         }

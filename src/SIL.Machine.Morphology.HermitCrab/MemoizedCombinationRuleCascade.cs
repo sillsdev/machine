@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -22,7 +21,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// moment to hang a memo write on, so it is left unmemoized -- callers that want this optimization
     /// should construct their <see cref="Morpher"/> with <c>maxDegreeOfParallelism: 1</c>.
     /// </summary>
-    internal class MemoizedCombinationRuleCascade : RuleCascade<Word, ShapeNode>
+    internal class MemoizedCombinationRuleCascade : RuleCascade<Word, int>
     {
         // Test/reporting hooks (memoization.md's standing hit/miss-count requirement): DiagMemoHits counts
         // positive replays (a stored non-empty subtree grafted onto a new arrival); DiagNogoodHits counts
@@ -32,10 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal static long DiagMemoHits;
         internal static long DiagNogoodHits;
 
-        public MemoizedCombinationRuleCascade(
-            IEnumerable<IRule<Word, ShapeNode>> rules,
-            IEqualityComparer<Word> comparer
-        )
+        public MemoizedCombinationRuleCascade(IEnumerable<IRule<Word, int>> rules, IEqualityComparer<Word> comparer)
             : base(rules, true, comparer) { }
 
         public override IEnumerable<Word> Apply(Word input)

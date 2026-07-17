@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
@@ -60,8 +59,8 @@ public class AffixTemplateTests : HermitCrabTestBase
             {
                 Lhs =
                 {
-                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value,
+                    Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, int>.New("2").Annotation(alvStop).Value,
                 },
                 Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") },
             }
@@ -69,14 +68,14 @@ public class AffixTemplateTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
@@ -97,8 +96,8 @@ public class AffixTemplateTests : HermitCrabTestBase
             {
                 Lhs =
                 {
-                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(labiodental).Value,
+                    Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, int>.New("2").Annotation(labiodental).Value,
                 },
                 Rhs = { new CopyFromInput("1"), new ModifyFromInput("2", voiced), new InsertSegments(Table3, "z") },
             }
@@ -106,7 +105,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Annotation(strident).Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "ɯz") },
             }
         );
@@ -115,8 +114,8 @@ public class AffixTemplateTests : HermitCrabTestBase
             {
                 Lhs =
                 {
-                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(voicelessCons).Value,
+                    Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, int>.New("2").Annotation(voicelessCons).Value,
                 },
                 Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "s") },
             }
@@ -124,7 +123,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "z") },
             }
         );
@@ -143,7 +142,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         evidential.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
@@ -245,8 +244,8 @@ public class AffixTemplateTests : HermitCrabTestBase
             {
                 Lhs =
                 {
-                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
-                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value,
+                    Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, int>.New("2").Annotation(alvStop).Value,
                 },
                 Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") },
             }
@@ -254,14 +253,14 @@ public class AffixTemplateTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
@@ -284,7 +283,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
@@ -303,8 +302,8 @@ public class AffixTemplateTests : HermitCrabTestBase
         crule.Subrules.Add(
             new CompoundingSubrule
             {
-                HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
-                NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+                HeadLhs = { Pattern<Word, int>.New("head").Annotation(any).OneOrMore.Value },
+                NonHeadLhs = { Pattern<Word, int>.New("nonHead").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
             }
         );
@@ -319,7 +318,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
             }
         );
@@ -363,7 +362,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
@@ -379,7 +378,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
             }
         );
@@ -415,7 +414,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
             }
         );
@@ -447,7 +446,7 @@ public class AffixTemplateTests : HermitCrabTestBase
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );

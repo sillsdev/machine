@@ -11,17 +11,17 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 
         public RewriteSubrule()
         {
-            Rhs = Pattern<Word, ShapeNode>.New().Value;
-            LeftEnvironment = Pattern<Word, ShapeNode>.New().Value;
-            RightEnvironment = Pattern<Word, ShapeNode>.New().Value;
+            Rhs = Pattern<Word, int>.New().Value;
+            LeftEnvironment = Pattern<Word, int>.New().Value;
+            RightEnvironment = Pattern<Word, int>.New().Value;
             RequiredSyntacticFeatureStruct = FeatureStruct.New().Value;
             _requiredMprFeatures = new MprFeatureSet();
             _excludedMprFeatures = new MprFeatureSet();
         }
 
-        public Pattern<Word, ShapeNode> Rhs { get; set; }
-        public Pattern<Word, ShapeNode> LeftEnvironment { get; set; }
-        public Pattern<Word, ShapeNode> RightEnvironment { get; set; }
+        public Pattern<Word, int> Rhs { get; set; }
+        public Pattern<Word, int> LeftEnvironment { get; set; }
+        public Pattern<Word, int> RightEnvironment { get; set; }
         public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
         public MprFeatureSet RequiredMprFeatures
         {

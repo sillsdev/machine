@@ -9,23 +9,23 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisRealizationalAffixProcessRule : IRule<Word, ShapeNode>
+    public class SynthesisRealizationalAffixProcessRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly RealizationalAffixProcessRule _rule;
-        private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly List<PatternRule<Word, int>> _rules;
 
         public SynthesisRealizationalAffixProcessRule(Morpher morpher, RealizationalAffixProcessRule rule)
         {
             _morpher = morpher;
             _rule = rule;
-            _rules = new List<PatternRule<Word, ShapeNode>>();
+            _rules = new List<PatternRule<Word, int>>();
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 _rules.Add(
-                    new PatternRule<Word, ShapeNode>(
+                    new PatternRule<Word, int>(
                         new SynthesisAffixProcessAllomorphRuleSpec(allo),
-                        new MatcherSettings<ShapeNode>
+                        new MatcherSettings<int>
                         {
                             Filter = ann =>
                                 ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary)
@@ -118,8 +118,14 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 Word outWord = _rules[i].Apply(input).SingleOrDefault();
                 if (outWord != null)
                 {
-                    outWord.SyntacticFeatureStruct = syntacticFS;
-                    outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RealizationalFeatureStruct);
+                    // Clone before mutating: syntacticFS is shared across every loop iteration (it's
+                    // computed once, above), so mutating it in place here would alias every outWord
+                    // assigned from an earlier iteration to whatever the last PriorityUnion produced.
+                    // Also protects against outWord already being frozen (see Word.FreezeImpl's
+                    // comment).
+                    FeatureStruct sfs = syntacticFS.Clone();
+                    sfs.PriorityUnion(_rule.RealizationalFeatureStruct);
+                    outWord.SyntacticFeatureStruct = sfs;
 
                     outWord.MorphologicalRuleApplied(_rule, appliedAllomorphIndices);
                     appliedAllomorphIndices.Add(i);

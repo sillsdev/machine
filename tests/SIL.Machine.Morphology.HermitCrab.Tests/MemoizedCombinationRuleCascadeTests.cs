@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 using SIL.Machine.Rules;
@@ -29,7 +28,7 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         // -- exactly the redundancy AnalysisStateKey collapses. Only from that shared state can ruleC
         // still apply, so the shared node's own subtree is POSITIVE (one result), not a nogood.
         var cascade = new MemoizedCombinationRuleCascade(
-            new IRule<Word, ShapeNode>[]
+            new IRule<Word, int>[]
             {
                 new SingleUseUnapplyRule(ruleA),
                 new SingleUseUnapplyRule(ruleB),
@@ -74,7 +73,7 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         var ruleA = new AffixProcessRule { Id = "RULE_A", Name = "ruleA" };
         var ruleB = new AffixProcessRule { Id = "RULE_B", Name = "ruleB" };
         var ruleC = new AffixProcessRule { Id = "RULE_C", Name = "ruleC" };
-        IRule<Word, ShapeNode>[] rules =
+        IRule<Word, int>[] rules =
         {
             new SingleUseUnapplyRule(ruleA),
             new SingleUseUnapplyRule(ruleB),
@@ -131,7 +130,7 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         // expansion (ApplyRulesRaw) instead of reading a nonexistent Memo entry or hanging.
         var ruleA = new AffixProcessRule { Id = "RULE_A", Name = "ruleA" };
         var cascade = new MemoizedCombinationRuleCascade(
-            new IRule<Word, ShapeNode>[] { new SingleUseUnapplyRule(ruleA) },
+            new IRule<Word, int>[] { new SingleUseUnapplyRule(ruleA) },
             FreezableEqualityComparer<Word>.Default
         );
 
@@ -171,7 +170,7 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
     // Minimal stand-in for a compiled analysis morphological rule: unapplies `_rule` against the input
     // exactly once (per input), independent of Shape/FeatureStruct pattern matching, so the cascade's
     // own commuting-order redundancy can be exercised without compiling a real FST-backed rule.
-    private sealed class SingleUseUnapplyRule(IMorphologicalRule rule) : IRule<Word, ShapeNode>
+    private sealed class SingleUseUnapplyRule(IMorphologicalRule rule) : IRule<Word, int>
     {
         private readonly IMorphologicalRule _rule = rule;
 

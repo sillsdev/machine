@@ -96,6 +96,18 @@ namespace SIL.Machine.FiniteState
             return string.Format("State {0}", _index);
         }
 
+        // Without this override, GetHashCode() falls back to the CLR's default identity hash
+        // (RuntimeHelpers.GetHashCode's sync-block-index path) — a CPU profile showed that call
+        // dominating self-time on the hot nondeterministic-traversal dedup path (TraversalKey's
+        // hash folds in State.GetHashCode() once per pushed instance). _index is a stable,
+        // already-unique-per-Fst int assigned once at construction, so it is a valid, far cheaper
+        // hash; Equals() is intentionally left as reference equality (state objects are singletons
+        // within their Fst, never recreated), so the Equals/GetHashCode contract still holds.
+        public override int GetHashCode()
+        {
+            return _index;
+        }
+
         private void CheckFrozen()
         {
             if (IsFrozen)

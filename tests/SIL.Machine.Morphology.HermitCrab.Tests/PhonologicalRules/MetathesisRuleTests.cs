@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
@@ -14,7 +13,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         var rule1 = new MetathesisRule
         {
             Name = "rule1",
-            Pattern = Pattern<Word, ShapeNode>
+            Pattern = Pattern<Word, int>
                 .New()
                 .Group("1", group => group.Annotation(Character(Table3, "i")))
                 .Group("2", group => group.Annotation(Character(Table3, "u")))
@@ -36,7 +35,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         var rule1 = new MetathesisRule
         {
             Name = "rule1",
-            Pattern = Pattern<Word, ShapeNode>
+            Pattern = Pattern<Word, int>
                 .New()
                 .Group("1", group => group.Annotation(Character(Table3, "i")))
                 .Group("middle", group => group.Annotation(Character(Table3, "+")))
@@ -53,7 +52,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         uSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+u") },
             }
         );
@@ -70,7 +69,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         var prule = new MetathesisRule
         {
             Name = "rule1",
-            Pattern = Pattern<Word, ShapeNode>
+            Pattern = Pattern<Word, int>
                 .New()
                 .Group("1", group => group.Annotation(Character(Table3, "i")))
                 .Group("2", group => group.Annotation(Character(Table3, "u")))
@@ -85,7 +84,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         iSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "i") },
             }
         );

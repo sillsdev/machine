@@ -8,24 +8,24 @@ using SIL.Machine.Rules;
 
 namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 {
-    public class SynthesisAffixProcessRule : IRule<Word, ShapeNode>
+    public class SynthesisAffixProcessRule : IRule<Word, int>
     {
         private readonly Morpher _morpher;
         private readonly AffixProcessRule _rule;
-        private readonly List<PatternRule<Word, ShapeNode>> _rules;
+        private readonly List<PatternRule<Word, int>> _rules;
 
         public SynthesisAffixProcessRule(Morpher morpher, AffixProcessRule rule)
         {
             _morpher = morpher;
             _rule = rule;
-            _rules = new List<PatternRule<Word, ShapeNode>>();
+            _rules = new List<PatternRule<Word, int>>();
             foreach (AffixProcessAllomorph allo in rule.Allomorphs)
             {
                 var ruleSpec = new SynthesisAffixProcessAllomorphRuleSpec(allo);
                 _rules.Add(
-                    new PatternRule<Word, ShapeNode>(
+                    new PatternRule<Word, int>(
                         ruleSpec,
-                        new MatcherSettings<ShapeNode>
+                        new MatcherSettings<int>
                         {
                             Filter = ann =>
                                 ann.Type().IsOneOf(HCFeatureSystem.Segment, HCFeatureSystem.Boundary)
@@ -178,8 +178,13 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 Word outWord = _rules[i].Apply(input).SingleOrDefault();
                 if (outWord != null)
                 {
-                    outWord.SyntacticFeatureStruct = syntacticFS;
-                    outWord.SyntacticFeatureStruct.PriorityUnion(_rule.OutSyntacticFeatureStruct);
+                    // Clone before mutating: syntacticFS is shared across every loop iteration
+                    // (computed once, above), so mutating it in place would alias every outWord
+                    // assigned from an earlier iteration. Also protects against outWord already being
+                    // frozen (see Word.FreezeImpl's comment).
+                    FeatureStruct sfs = syntacticFS.Clone();
+                    sfs.PriorityUnion(_rule.OutSyntacticFeatureStruct);
+                    outWord.SyntacticFeatureStruct = sfs;
 
                     foreach (Feature obligFeature in _rule.ObligatorySyntacticFeatures)
                         outWord.ObligatorySyntacticFeatures.Add(obligFeature);

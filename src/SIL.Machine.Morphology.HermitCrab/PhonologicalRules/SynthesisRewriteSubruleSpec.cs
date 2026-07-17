@@ -11,7 +11,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         private readonly bool _isIterative;
 
         protected SynthesisRewriteSubruleSpec(
-            MatcherSettings<ShapeNode> matcherSettings,
+            MatcherSettings<int> matcherSettings,
             bool isIterative,
             RewriteSubrule subrule,
             int index

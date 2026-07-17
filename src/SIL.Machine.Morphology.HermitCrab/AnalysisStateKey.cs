@@ -43,6 +43,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _syntacticFS = word.SyntacticFeatureStruct;
             _realizationalFS = word.RealizationalFeatureStruct;
             _nonHeadCount = word.NonHeadCount;
+            // Null means "no rule unapplied yet" -- Word never allocates this non-null-but-empty.
             _ruleCounts = word.UnappliedRuleCounts;
 
             // Defensive: AnalysisAffixTemplateRule.Apply reassigns SyntacticFeatureStruct to a fresh,

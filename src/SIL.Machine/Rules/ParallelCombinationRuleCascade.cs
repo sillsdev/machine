@@ -29,8 +29,16 @@ namespace SIL.Machine.Rules
         )
             : base(rules, multiApp, comparer) { }
 
+        /// <summary>
+        /// Caps the parallelism used by <see cref="Apply"/>. Default -1 (unbounded, the .NET
+        /// default). Set to the morpher's MaxDegreeOfParallelism so the cap is actually honored
+        /// rather than the parallel path running at the default scheduler degree.
+        /// </summary>
+        public int MaxDegreeOfParallelism { get; set; } = -1;
+
         public override IEnumerable<TData> Apply(TData input)
         {
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = MaxDegreeOfParallelism };
             var output = new ConcurrentStack<TData>();
             var from = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
             from.Push(Tuple.Create(input, !MultipleApplication ? new HashSet<int>() : null));
@@ -40,6 +48,7 @@ namespace SIL.Machine.Rules
                 to.Clear();
                 Parallel.ForEach(
                     from,
+                    parallelOptions,
                     work =>
                     {
                         for (int i = 0; i < Rules.Count; i++)

@@ -5,10 +5,10 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
 {
     public interface IPhonologicalPatternRuleSpec
     {
-        Pattern<Word, ShapeNode> Pattern { get; }
+        Pattern<Word, int> Pattern { get; }
         bool MatchSubrule(
             PhonologicalPatternRule rule,
-            Match<Word, ShapeNode> match,
+            Match<Word, int> match,
             out PhonologicalSubruleMatch subruleMatch
         );
     }

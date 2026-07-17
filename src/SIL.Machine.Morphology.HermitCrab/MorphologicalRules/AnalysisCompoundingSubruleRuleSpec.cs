@@ -17,7 +17,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             Pattern.Freeze();
         }
 
-        public override Word ApplyRhs(PatternRule<Word, ShapeNode> rule, Match<Word, ShapeNode> match)
+        public override Word ApplyRhs(PatternRule<Word, int> rule, Match<Word, int> match)
         {
             Word output = match.Input.Clone();
             GenerateShape(_subrule.HeadLhs, output.Shape, match);

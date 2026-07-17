@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
-using SIL.Machine.DataStructures;
 
 namespace SIL.Machine.FiniteState
 {
@@ -34,16 +32,11 @@ namespace SIL.Machine.FiniteState
             base.CopyTo(other);
 
             var otherDfst = (DeterministicFstTraversalInstance<TData, TOffset>)other;
-            Dictionary<Annotation<TOffset>, Annotation<TOffset>> outputMappings = Output
-                .Annotations.SelectMany(a => a.GetNodesBreadthFirst())
-                .Zip(Output.Annotations.SelectMany(a => a.GetNodesBreadthFirst()))
-                .ToDictionary(t => t.Item1, t => t.Item2);
-            otherDfst.Mappings.AddRange(
-                _mappings.Select(kvp => new KeyValuePair<Annotation<TOffset>, Annotation<TOffset>>(
-                    kvp.Key,
-                    outputMappings[kvp.Value]
-                ))
-            );
+            // Identity map: the original zipped this.Output's node sequence with itself, so
+            // outputMappings[v] == v and the block reduces to copying _mappings unchanged.
+            // Avoids a Dictionary + two SelectMany(BFS) + Zip + Select per instance copy.
+            // Byte-identical; otherDfst.Mappings is empty here (GetCachedInstance -> Clear()).
+            otherDfst.Mappings.AddRange(_mappings);
             foreach (Annotation<TOffset> ann in _queue)
                 otherDfst.Queue.Enqueue(ann);
         }

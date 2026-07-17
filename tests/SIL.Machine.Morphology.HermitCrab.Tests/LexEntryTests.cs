@@ -24,7 +24,7 @@ public class LexEntryTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
@@ -62,14 +62,14 @@ public class LexEntryTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") },
             }
         );
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+"), new InsertSimpleContext(d) },
             }
         );
@@ -101,7 +101,7 @@ public class LexEntryTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
@@ -121,7 +121,7 @@ public class LexEntryTests : HermitCrabTestBase
         tSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+t") },
             }
         );
@@ -141,7 +141,7 @@ public class LexEntryTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+s") },
             }
         );
@@ -180,7 +180,7 @@ public class LexEntryTests : HermitCrabTestBase
         edSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "+ɯd") },
             }
         );
@@ -196,7 +196,7 @@ public class LexEntryTests : HermitCrabTestBase
         var vowel = FeatureStruct.New(Language.PhonologicalFeatureSystem).Symbol("voc+").Value;
 
         LexEntry headEntry = Entries["32"];
-        Pattern<Word, ShapeNode> envPattern = Pattern<Word, ShapeNode>.New().Annotation(vowel).Value;
+        Pattern<Word, int> envPattern = Pattern<Word, int>.New().Annotation(vowel).Value;
         var env = new AllomorphEnvironment(ConstraintType.Require, null, envPattern);
         headEntry.PrimaryAllomorph.Environments.Add(env);
 
@@ -276,7 +276,7 @@ public class LexEntryTests : HermitCrabTestBase
         nominalizer.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
             }
         );
@@ -297,7 +297,7 @@ public class LexEntryTests : HermitCrabTestBase
         sSuffix.Allomorphs.Add(
             new AffixProcessAllomorph
             {
-                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Lhs = { Pattern<Word, int>.New("1").Annotation(any).OneOrMore.Value },
                 Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
             }
         );

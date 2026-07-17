@@ -137,14 +137,14 @@ namespace SIL.Machine.Morphology.HermitCrab
             get { return _allomorphCoOccurRules; }
         }
 
-        public override IRule<Word, ShapeNode> CompileAnalysisRule(Morpher morpher)
+        public override IRule<Word, int> CompileAnalysisRule(Morpher morpher)
         {
             return new AnalysisLanguageRule(morpher, this);
         }
 
-        public override IRule<Word, ShapeNode> CompileSynthesisRule(Morpher morpher)
+        public override IRule<Word, int> CompileSynthesisRule(Morpher morpher)
         {
-            return new PipelineRuleCascade<Word, ShapeNode>(
+            return new PipelineRuleCascade<Word, int>(
                 _strata.Select(stratum => stratum.CompileSynthesisRule(morpher)),
                 FreezableEqualityComparer<Word>.Default
             );
