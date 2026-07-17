@@ -49,34 +49,51 @@ public class MemoCorpusVerification
         var elapsedMsPerWord = new List<double>();
         var perWordTimes = new List<(string Word, double OnMs, double OffMs)>();
         var divergences = new List<string>();
-        var timedOut = new List<string>();
+        // Attributed per side (not one shared list): the two calls below now each have their own
+        // try/catch, so a timeout on one side no longer discards a measurement the other side
+        // already made -- this is what lets the per-side mean/p50/p95 below include every word
+        // that side actually completed, not just the words where BOTH sides finished inside the
+        // watchdog.
+        var onTimes = new List<double>();
+        var offTimes = new List<double>();
+        var onTimedOut = new List<string>();
+        var offTimedOut = new List<string>();
         int noParseBoth = 0;
 
         foreach (string word in words)
         {
-            List<string> onSignatures;
-            List<string> offSignatures;
-            double onMs;
-            double offMs;
+            List<string>? onSignatures = null;
+            List<string>? offSignatures = null;
+
+            var swOn = Stopwatch.StartNew();
             try
             {
-                var swOn = Stopwatch.StartNew();
                 onSignatures = RunWithTimeout(() => Signatures(memoOn, word), timeoutMs);
                 swOn.Stop();
-                onMs = swOn.Elapsed.TotalMilliseconds;
-
-                var swOff = Stopwatch.StartNew();
-                offSignatures = RunWithTimeout(() => Signatures(memoOff, word), timeoutMs);
-                swOff.Stop();
-                offMs = swOff.Elapsed.TotalMilliseconds;
+                onTimes.Add(swOn.Elapsed.TotalMilliseconds);
             }
             catch (TimeoutException)
             {
-                timedOut.Add(word);
-                continue;
+                onTimedOut.Add(word);
             }
-            elapsedMsPerWord.Add(onMs + offMs);
-            perWordTimes.Add((word, onMs, offMs));
+
+            var swOff = Stopwatch.StartNew();
+            try
+            {
+                offSignatures = RunWithTimeout(() => Signatures(memoOff, word), timeoutMs);
+                swOff.Stop();
+                offTimes.Add(swOff.Elapsed.TotalMilliseconds);
+            }
+            catch (TimeoutException)
+            {
+                offTimedOut.Add(word);
+            }
+
+            if (onSignatures == null || offSignatures == null)
+                continue;
+
+            elapsedMsPerWord.Add(onTimes[^1] + offTimes[^1]);
+            perWordTimes.Add((word, onTimes[^1], offTimes[^1]));
 
             if (onSignatures.Count == 0 && offSignatures.Count == 0)
                 noParseBoth++;
@@ -95,9 +112,18 @@ public class MemoCorpusVerification
         double p95 = Percentile(elapsedMsPerWord, 0.95);
         double totalMs = elapsedMsPerWord.Sum();
 
-        TestContext.Out.WriteLine($"words attempted: {words.Count}, timed out (>{timeoutMs}ms): {timedOut.Count}");
+        TestContext.Out.WriteLine(
+            $"words attempted: {words.Count}, timed out (>{timeoutMs}ms): memo-on {onTimedOut.Count}, "
+                + $"memo-off {offTimedOut.Count}"
+        );
         TestContext.Out.WriteLine($"words with no parse on both sides: {noParseBoth}");
-        TestContext.Out.WriteLine($"aggregate wall: {totalMs:F1} ms, p50: {p50:F1} ms, p95: {p95:F1} ms");
+        TestContext.Out.WriteLine(
+            $"aggregate wall (words where both sides completed): {totalMs:F1} ms, p50: {p50:F1} ms, p95: {p95:F1} ms"
+        );
+        // Per-side stats, independent of whether the OTHER side timed out on that word -- this is
+        // the mean/p50/p95 a reader wants for an apples-to-apples per-state comparison table.
+        ReportSideStats("memo-on", onTimes, onTimedOut.Count);
+        ReportSideStats("memo-off", offTimes, offTimedOut.Count);
 
         // Count-based vs wall-clock aggregates, reported SEPARATELY on purpose: a corpus is typically
         // bimodal (many cheap words the memo makes slightly slower by losing a thread; a few pathological
@@ -117,17 +143,12 @@ public class MemoCorpusVerification
             $"wall-clock: memo-on total {totalOnMs:F1} ms vs memo-off total {totalOffMs:F1} ms "
                 + $"({(totalOnMs > 0 ? totalOffMs / totalOnMs : 0):F2}x)"
         );
-        if (timedOut.Count > 0)
+        if (onTimedOut.Count > 0 || offTimedOut.Count > 0)
         {
-            // NOT a guaranteed lower bound in either direction: the try block above wraps BOTH the
-            // memo-on and memo-off calls, so a timeout could come from either side -- this harness
-            // never records which one actually timed out. If it was memo-on, the word's true
-            // memo-off time is genuinely unmeasured (could be faster OR slower than the ratio above
-            // implies); only a longer timeout actually resolves it. Report the fact, don't imply a
-            // direction the data doesn't support.
             TestContext.Out.WriteLine(
-                $"(the {timedOut.Count} timed-out word(s) above are excluded from both aggregates; "
-                    + "re-run with a higher HC_MEMO_TIMEOUT_MS to actually measure them)"
+                $"(a word timed out on either side is excluded from the count-based/wall-clock "
+                    + "aggregates above, since those need both sides; it still counts in that side's "
+                    + "own mean/p50/p95 timeout tally reported above)"
             );
         }
         // Per-heavy-word attribution (memoization.md's own methodological rule: an aggregate can be
@@ -146,16 +167,20 @@ public class MemoCorpusVerification
             $"template memo -- positive hits: {AnalysisStratumRule.DiagTemplateMemoHits - templateHitsBefore}, "
                 + $"nogood hits: {AnalysisStratumRule.DiagTemplateNogoodHits - templateNogoodsBefore}"
         );
-        if (timedOut.Count > 0)
+        if (onTimedOut.Count > 0 || offTimedOut.Count > 0)
         {
-            // Named, not just counted: a timed-out word is EXCLUDED from the equality gate above, so
-            // "0 divergences" says nothing about it. These are exactly the candidates for a follow-up
-            // run with a longer HC_MEMO_TIMEOUT_MS (see memoization.md §5's addendum on why this
-            // mattered -- the heavy words are precisely the ones the memo, and the key-completeness
-            // audit, most need to be checked against).
+            // Named, not just counted: a word timed out on either side is EXCLUDED from the equality
+            // gate above, so "0 divergences" says nothing about it. These are exactly the candidates
+            // for a follow-up run with a longer HC_MEMO_TIMEOUT_MS (see memoization.md §5's addendum
+            // on why this mattered -- the heavy words are precisely the ones the memo, and the
+            // key-completeness audit, most need to be checked against).
             TestContext.Out.WriteLine(
-                $"timed-out words (excluded from the equality gate above -- re-run with a higher "
-                    + $"HC_MEMO_TIMEOUT_MS to actually check these): {string.Join(", ", timedOut)}"
+                $"memo-on timed-out words (re-run with a higher HC_MEMO_TIMEOUT_MS to check these): "
+                    + $"{string.Join(", ", onTimedOut)}"
+            );
+            TestContext.Out.WriteLine(
+                $"memo-off timed-out words (re-run with a higher HC_MEMO_TIMEOUT_MS to check these): "
+                    + $"{string.Join(", ", offTimedOut)}"
             );
         }
 
@@ -170,6 +195,56 @@ public class MemoCorpusVerification
             Is.GreaterThan(mruleHitsBefore + templateHitsBefore),
             "the positive replay path must actually have fired somewhere in this corpus -- otherwise "
                 + "this run cannot distinguish a working memo from a no-op one"
+        );
+    }
+
+    // Cross-word batch throughput, distinct from the single-word-at-a-time comparison above: that
+    // test's memo-on side is itself single-threaded per word (maxDegreeOfParallelism: 1, required to
+    // activate the memo), processed one word after another. This measures what a real ingestion
+    // pipeline would see -- N worker threads each doing sequential+memo parsing of a different word
+    // concurrently on one shared Morpher -- to check whether a data-representation change (e.g. the
+    // COW/array Shape rearchitecture) that helps the single-word case also scales better across
+    // threads (less per-clone allocation/GC pressure), not just faster single-threaded.
+    // One Morpher shared across all worker threads: safe because ParseWord touches no per-instance
+    // mutable state after construction (_allomorphTries/_lexicalPatterns are build-once, read-only;
+    // AnalysisScope is a fresh per-call field on the Word being parsed, not on the Morpher) -- the
+    // same concurrent-Apply-on-shared-compiled-rules pattern ParallelCombinationRuleCascade already
+    // relies on for its own (single-word, multi-order) parallelism.
+    [Test]
+    public void MemoFourThreadThroughput_WordsPerSecond()
+    {
+        (Language language, List<string> words) = Load();
+        var memoOn = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: 1);
+        int timeoutMs = int.TryParse(Environment.GetEnvironmentVariable("HC_MEMO_TIMEOUT_MS"), out int t) ? t : 5000;
+        int threads = int.TryParse(Environment.GetEnvironmentVariable("HC_MEMO_THROUGHPUT_THREADS"), out int th)
+            ? th
+            : 4;
+
+        long completed = 0;
+        long timedOut = 0;
+        var sw = Stopwatch.StartNew();
+        Parallel.ForEach(
+            words,
+            new ParallelOptions { MaxDegreeOfParallelism = threads },
+            word =>
+            {
+                try
+                {
+                    RunWithTimeout(() => Signatures(memoOn, word), timeoutMs);
+                    Interlocked.Increment(ref completed);
+                }
+                catch (TimeoutException)
+                {
+                    Interlocked.Increment(ref timedOut);
+                }
+            }
+        );
+        sw.Stop();
+
+        double wordsPerSecond = completed / sw.Elapsed.TotalSeconds;
+        TestContext.Out.WriteLine(
+            $"THROUGHPUT threads={threads} completed={completed} timedOut={timedOut} "
+                + $"elapsedMs={sw.Elapsed.TotalMilliseconds:F1} wordsPerSecond={wordsPerSecond:F2}"
         );
     }
 
@@ -213,6 +288,18 @@ public class MemoCorpusVerification
             return 0;
         int index = (int)Math.Ceiling(fraction * sortedValues.Count) - 1;
         return sortedValues[Math.Clamp(index, 0, sortedValues.Count - 1)];
+    }
+
+    // Machine-parseable (STATS <side> ...) so an outer script can build a cross-run comparison
+    // table without scraping prose. `completed` excludes timeouts, matching Percentile's input.
+    private static void ReportSideStats(string side, List<double> times, int timedOutCount)
+    {
+        List<double> sorted = times.OrderBy(x => x).ToList();
+        double mean = sorted.Count > 0 ? sorted.Average() : 0;
+        TestContext.Out.WriteLine(
+            $"STATS {side} completed={sorted.Count} timedOut={timedOutCount} "
+                + $"meanMs={mean:F1} p50Ms={Percentile(sorted, 0.50):F1} p95Ms={Percentile(sorted, 0.95):F1}"
+        );
     }
 
     private static (Language, List<string>) Load()

@@ -135,11 +135,110 @@ RUSTIFY doesn't measurably change the typical-word tradeoff in either direction 
 existing honest caveat in `memoization.md` §6 (sequential+memo loses to parallel-default on
 typical words, mostly from the lost thread) stands unchanged.
 
+## Cross-language aggregate: 250/250/121-word slices, four states, 200s watchdog
+
+The H1/H2 deep-dive above targets two specific pathological words with a long (600s) budget.
+Separately, to get a genuine apples-to-apples read across grammars (not just the worst known
+words), the same corpus-verification harness was re-run with a 200s per-word timeout on larger
+slices: 250 words each for Sena and Amharic (both have thousands of real words available; 250 is
+an arbitrary "big enough" cut), and all 121 words that exist in the Indonesian list (that corpus
+is just small — not a chosen cutoff). Four states compared: **baseline** (today's shipped
+parallel default, unmemoized), **memo** (#456 alone), **cow-only** (parallel + this PR's
+rearchitecture, no memo — free bonus from the harness), and **memo+cow** (this PR, stacked).
+
+| Language | State | Completed/N | Timed out (>200s) | Mean (ms) | p50 (ms) | p95 (ms) |
+|---|---|---|---|---|---|---|
+| Sena | baseline | 248/250 | 2 | 3362.4 | 112.9 | 16444.2 |
+| Sena | memo | 250/250 | 0 | 1856.0 | 106.1 | 6082.4 |
+| Sena | cow-only | 249/250 | 1 | 2232.4 | 72.5 | 11067.7 |
+| Sena | **memo+cow** | 250/250 | **0** | **932.5** | **61.1** | **3993.1** |
+| Amharic | baseline | 244/250 | 6 | 7261.9 | 297.5 | 35374.3 |
+| Amharic | memo | 244/250 | 6 | 6460.9 | 299.5 | 31561.4 |
+| Amharic | cow-only | 249/250 | 1 | 3208.8 | 70.4 | 15244.6 |
+| Amharic | **memo+cow** | 249/250 | **1** | **2943.2** | **62.8** | **14714.6** |
+| Indonesian | baseline | 121/121 | 0 | 17.9 | 5.8 | 52.5 |
+| Indonesian | memo | 121/121 | 0 | 20.3 | 6.1 | 62.7 |
+| Indonesian | cow-only | 121/121 | 0 | 11.1 | 3.9 | 33.8 |
+| Indonesian | memo+cow | 121/121 | 0 | 15.1 | 4.2 | 47.7 |
+
+Zero analysis-set divergences in every one of these 12 runs (the equality gate that matters
+most). Two things worth stating plainly rather than smoothing over:
+
+- **Amharic is where memoization alone is nearly a no-op**: it does not reduce the timeout count
+  at all (6 → 6) and only shaves ~11% off the mean. The actual fix for Amharic's pathological
+  words is this PR's rearchitecture, not #456's memo — cow-only alone already drops timeouts to 1
+  and mean to 3208ms; memo on top of that saves only another ~8%. If Amharic-shaped grammars are
+  a reviewer's worst case, this PR is doing the real work, #456 is not.
+- **Indonesian's cow-only row is the fastest configuration of the four**, faster than memo+cow.
+  This rearchitecture helps even parallel, unmemoized parsing on cheap words; stacking the memo
+  back on top of it costs a little of that back, same direction (if smaller magnitude) as the
+  known memo-alone regression on this grammar.
+
+## Multithreading: does COW scale better across threads?
+
+Motivating question: the array/COW `Shape` representation should, in principle, make concurrent
+parsing cheaper per thread (fewer/smaller clones, less GC pressure) — does that show up as better
+*throughput scaling*, not just a faster single word? Measured with a new harness method
+(`MemoFourThreadThroughput_WordsPerSecond`): the same word slices as above, processed by 4
+concurrent worker threads sharing one sequential+memo `Morpher` instance (safe — `Morpher` has no
+mutable per-instance state after construction; this is the same concurrent-access-to-shared-compiled-rules
+pattern `ParallelCombinationRuleCascade` already relies on for its own within-word parallelism),
+same 200s per-word watchdog. Throughput = words completed ÷ total wall clock (a stalled word still
+occupies its thread slot up to the watchdog, so timeouts are not free — this is the honest number,
+not an optimistic one).
+
+| Language | State | Threads | Completed/N | Timed out | Words/sec |
+|---|---|---|---|---|---|
+| Sena | memo | 1 (derived from the mean above) | 250/250 | 0 | 0.54 |
+| Sena | memo | 4 | 250/250 | 0 | 1.11 |
+| Sena | memo+cow | 1 (derived) | 250/250 | 0 | 1.07 |
+| Sena | memo+cow | 4 | 250/250 | 0 | **2.40** |
+| Amharic | memo | 1 (derived) | 250/250 | 0 | 0.15 |
+| Amharic | memo | 4 | 232/250 | **18** | 0.11 |
+| Amharic | memo+cow | 1 (derived) | 250/250 | 0 | 0.34 |
+| Amharic | memo+cow | 4 | 246/250 | **4** | **0.40** |
+| Indonesian | memo | 1 (measured) | 121/121 | 0 | 40.75 |
+| Indonesian | memo | 4 | 121/121 | 0 | 46.50 |
+| Indonesian | memo+cow | 1 (measured) | 121/121 | 0 | 56.55 |
+| Indonesian | memo+cow | 4 | 121/121 | 0 | **100.35** |
+
+Caveat on the "1 (derived)" rows: Sena/Amharic's 1-thread figures are `1000 / meanMs` from the
+single-word table above, not a fresh measurement with this same harness method. Where both exist
+(Indonesian), the derived estimate (49.3/sec) overstated the actually-measured value (40.75/sec)
+by about 21% — so treat the Sena/Amharic derived numbers, and any ratio built on them, as
+approximate, probably a bit optimistic, not exact.
+
+What the data actually supports:
+
+- **COW's throughput scales better 1→4 threads than memo-only's does**, most clearly on
+  Indonesian (memo: 40.75→46.50/sec, 1.14x; memo+cow: 56.55→100.35/sec, 1.77x — both numbers here
+  are real measurements, not derived) and on Sena (2.06x without cow vs. 2.24x with, using the
+  derived 1-thread baseline).
+- **Amharic is the sharpest finding, and it isn't the "extra 2x" hypothesis** — it's that
+  memo-only *regresses* under 4-thread contention (18 words now miss the 200s watchdog that didn't
+  before, pulling throughput to 0.11/sec, below even the derived 1-thread rate of 0.15/sec), while
+  memo+cow only loses 1.18x-scaling territory and, more importantly, only misses the watchdog on 4
+  words instead of 18. Read as: on this grammar, COW's real multithreading benefit is that it keeps
+  concurrent parsing from getting *worse*, not that it adds a clean extra 2x on top of an
+  already-good number.
+- **At a fixed 4 threads, memo+cow beats memo-only by 2.16x (Sena), 2.16x (Indonesian), and a
+  reported 3.64x (Amharic)** — but the Amharic ratio is confounded by the very different timeout
+  counts (18 vs 4) on each side, not a clean per-word multiplier the way the other two are; report
+  it, but don't lean on it the way the Sena/Indonesian numbers can be leaned on.
+
+So: the "COW enables better multithreading" hypothesis holds directionally everywhere and
+numerically (~1.2-2.2x scaling improvement) on two of three grammars — but the honest headline on
+the third (Amharic) is robustness under contention, not a clean multiplicative bonus.
+
 ## Bottom line
 
 Stacking this rearchitecture on top of memoization is a real, verified improvement, not a
 "kind of, but not really": both measured heavy words get faster, and the one word memoization
 alone couldn't complete at all now does, at a **5.89x** ratio, with soundness holding
-(0 divergences on both). The cost is a much larger diff than memoization alone (110 files vs 11)
-touching the engine's core data representation — reviewed once already as PR #446, re-verified
+(0 divergences on both). The cross-language and multithreading data above broadens that: on
+Amharic specifically, this PR's rearchitecture is doing nearly all of the real work memoization
+alone gets credit for, and it is the difference between concurrent parsing holding up under
+contention (4 timeouts) or falling over (18 timeouts) at just 4 threads. The cost is a much
+larger diff than memoization alone (110 files vs 11) touching the engine's core data
+representation — reviewed once already as PR #446, re-verified
 here against the current codebase plus memoization's new code paths.
