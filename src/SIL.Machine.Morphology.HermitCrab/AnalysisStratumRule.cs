@@ -46,19 +46,17 @@ namespace SIL.Machine.Morphology.HermitCrab
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-#if SINGLE_THREADED
-                    _mrulesRule = new CombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#else
-                    _mrulesRule = new ParallelCombinationRuleCascade<Word, ShapeNode>(
-                        mrules,
-                        true,
-                        FreezableEqualityComparer<Word>.Default
-                    );
-#endif
+                    // Sequential (and memoized, see MemoizedCombinationRuleCascade) when the caller caps
+                    // within-word parallelism; parallel cascade otherwise.
+                    _mrulesRule =
+                        morpher.MaxDegreeOfParallelism == 1
+                            ? (IRule<Word, ShapeNode>)
+                                new MemoizedCombinationRuleCascade(mrules, FreezableEqualityComparer<Word>.Default)
+                            : new ParallelCombinationRuleCascade<Word, ShapeNode>(
+                                mrules,
+                                true,
+                                FreezableEqualityComparer<Word>.Default
+                            );
                     break;
             }
         }
@@ -166,9 +164,51 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
+        // Test/reporting hooks (memoization.md's standing hit/miss-count requirement), mirroring
+        // MemoizedCombinationRuleCascade's DiagMemoHits/DiagNogoodHits split.
+        internal static long DiagTemplateMemoHits;
+        internal static long DiagTemplateNogoodHits;
+
+        // Runs the affix-template battery for `input`, memoized by AnalysisStateKey (memoization.md),
+        // same replay mechanism as MemoizedCombinationRuleCascade -- see AnalysisScope.InProgress for
+        // why no re-entry guard is needed here. Measured motivation (an archive prototype benchmark on
+        // a Bantu-template grammar): this battery accounted for the large majority of parse wall time
+        // once the mrule cascade's own memo had already shrunk its own share to near-nothing.
+        private IEnumerable<Word> ApplyTemplateBattery(Word input)
+        {
+            AnalysisScope scope = input.AnalysisScope;
+            if (scope == null || _morpher.MaxDegreeOfParallelism != 1)
+                return _templatesRule.Apply(input);
+
+            var key = new AnalysisStateKey(input);
+            if (scope.TemplateMemo.TryGetValue(key, out MemoEntry entry))
+            {
+                if (entry.Results.Count == 0)
+                {
+                    DiagTemplateNogoodHits++;
+                    return Enumerable.Empty<Word>();
+                }
+                var replayed = new List<Word>(entry.Results.Count);
+                foreach (Word stored in entry.Results)
+                    replayed.Add(stored.ReplayOnto(input, entry.MruleTrailPrefixLength, entry.NonHeadPrefixLength));
+                DiagTemplateMemoHits++;
+                return replayed;
+            }
+
+            var results = new List<Word>(_templatesRule.Apply(input));
+            if (scope.HasTemplateMemoCapacity)
+            {
+                scope.TemplateMemo.TryAdd(
+                    key,
+                    new MemoEntry(results, input.MorphologicalRuleTrailLength, input.NonHeadCount)
+                );
+            }
+            return results;
+        }
+
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in _templatesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            foreach (Word tempOutWord in ApplyTemplateBattery(input).Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
