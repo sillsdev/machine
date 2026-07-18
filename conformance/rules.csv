@@ -13,6 +13,8 @@ PathologicalDeepOptionalAffixNesting,mrP8,xxxxxxk;xxxxxxxxxxxxk
 PathologicalDeepOptionalAffixNesting,mrP9,xxxxxxk;xxxxxxxxxxxxk
 DisjunctiveRecheckProbe,ruleD,pakza;!pakda;pitda
 DisjunctiveRecheckProbe,ruleT,!wakta;wokta
+LatinDiacriticProbe,rDim,caféta;kelîta;!añota;!gölta
+LatinDiacriticProbe,rPl,años;cafés;göls;kelîs
 N2-DefaultSymbol,pr1,!bdt
 IterativeEpenthesisCascadeProbe,prule4,
 StrRepIdentityProbe,ruleObj,ndpat;!ndmat;imat;!ipat

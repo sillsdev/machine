@@ -11,6 +11,29 @@ DisjunctiveRecheckProbe,pitza,,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
+LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,años,YEAR+PL|años,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,años,YEAR+PL|años,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,cafés,COFFEE+PL|cafés,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,cafés,COFFEE+PL|cafés,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,cafés,COFFEE+PL|cafés,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,göls,LAKE+PL|göls,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,göls,LAKE+PL|göls,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,göls,LAKE+PL|göls,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,kelîs,WORD+PL|kelîs,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,kelîs,WORD+PL|kelîs,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,kelîs,WORD+PL|kelîs,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,caféta,COFFEE+DIM|caféta,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,caféta,COFFEE+DIM|caféta,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,caféta,COFFEE+DIM|caféta,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,caféta,COFFEE+DIM|caféta,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,AffixProcessRule: prefix/suffix/circumfix/infix
+LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,MorphologicalOutputAction: CopyFromInput/InsertSegments
+LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,Affix template slots (obligatory/disjunctive/ordering)
+LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+LatinDiacriticProbe,añota,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+LatinDiacriticProbe,gölta,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+LatinDiacriticProbe,gül,,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
 N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
