@@ -1366,6 +1366,61 @@ public class UpdateUsfmParserHandlerTests
 \ide UTF-8
 \rem Existing remark
 \c 1
+\p
+\v 1 Some text
+\v 2
+\v 3 Other text
+\c 2
+\rem Existing remark
+\p
+\v 1 More text
+\c 3
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            textBehavior: UpdateUsfmTextBehavior.PreferExisting,
+            remarks: [(0, "New remark 0"), (1, "New remark 1"), (2, "New remark 2"), (3, "New remark 3")]
+        );
+
+        string result =
+            @"\id MAT - Test
+\ide UTF-8
+\rem Existing remark
+\rem New remark 0
+\c 1
+\rem New remark 1
+\p
+\v 1 Some text
+\v 2 Update 2
+\v 3 Other text
+\c 2
+\rem Existing remark
+\rem New remark 2
+\p
+\v 1 More text
+\c 3
+\rem New remark 3
+";
+
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_PassRemark_NoBodyParagraph()
+    {
+        List<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
+        ];
+
+        string usfm =
+            @"\id MAT - Test
+\ide UTF-8
+\rem Existing remark
+\c 1
 \v 1 Some text
 \v 2
 \v 3 Other text
@@ -1389,12 +1444,14 @@ public class UpdateUsfmParserHandlerTests
 \rem New remark 0
 \c 1
 \rem New remark 1
+\nb
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
 \c 2
 \rem Existing remark
 \rem New remark 2
+\nb
 \v 1 More text
 \c 3
 \rem New remark 3
@@ -1455,6 +1512,7 @@ public class UpdateUsfmParserHandlerTests
 \ide UTF-8
 \rem Existing remark
 \c 1
+\q1
 \v 1 Some text
 \v 2
 \v 3 Other text
@@ -1476,6 +1534,7 @@ public class UpdateUsfmParserHandlerTests
 \c 1
 \rem New remark 1.1
 \rem New remark 1.2
+\q1
 \v 1 Some text
 \v 2 Update 2
 \v 3 Other text
