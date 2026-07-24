@@ -490,6 +490,10 @@ namespace SIL.Machine.Corpora
                                     index++;
                             }
 
+                            // If the next token is a verse, add \nb to prevent the verse appearing in the remark
+                            if (tokens[index].Type == UsfmTokenType.Verse)
+                                tokens.Insert(index, new UsfmToken(UsfmTokenType.Paragraph, "nb", null, null));
+
                             tokens.InsertRange(index, remarkTokens.Value);
                         }
                     }
