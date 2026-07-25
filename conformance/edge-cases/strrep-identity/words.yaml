@@ -9,10 +9,10 @@
 # What this pins (from the v1 fixture's README.md/manifest.json, carried forward verbatim): C# makes
 # character identity a real matching dimension -- every char-def's feature struct carries a StrRep
 # (the segment's own representation string), and SegmentNaturalClass/literal-segment
-# constraints/environments consult it. On a grammar with NO phonological features at all (like Sena,
+# constraints/environments consult it. On a grammar with NO phonological features at all (like the reference grammar,
 # and like this fixture), StrRep is the ONLY thing distinguishing one segment from another; an engine
 # that drops this dimension degenerates every such constraint to "matches any segment" -- the exact
-# gap behind Sena's null-allomorph coverage loss (this suite's single largest historical divergence
+# gap behind the reference grammar's null-allomorph coverage loss (this suite's single largest historical divergence
 # class).
 #
 #   - rulePfx (the Bantu mu-2/mu-3 class-prefix analog -- the DISJUNCTIVE-BREAK probe): subrule 0
@@ -173,7 +173,7 @@ words:
       (the stem is "mat", which starts with "m") and subrule 0 was recorded as passed-over -- the
       disjunctive re-check REJECTS this synthesis (right answer for the C# oracle here, but for a
       pre-fix engine that over-matches literal segments in environments, EVERY "nd+" parse would be
-      wrongly rejected this way -- Sena's "kundiphemba" gap). Zero parses.
+      wrongly rejected this way -- the reference grammar's "the recheck-probe word" gap). Zero parses.
     provenance: "P10, StrRep identity dimension on a feature-less grammar"
     expect_fail: true
     blocked_by: [ruleObj]

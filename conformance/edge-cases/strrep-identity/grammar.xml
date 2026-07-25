@@ -13,7 +13,7 @@
          feature bundle is empty, so a SegmentNaturalClass constraint, a literal-segment
          constraint (an InsertSegments shape re-matched on the analysis side), and a
          literal-segment allomorph ENVIRONMENT all collapse to "matches any segment" unless
-         char-def identity (C#'s StrRep string feature) is a real matching dimension. Sena is
+         char-def identity (C#'s StrRep string feature) is a real matching dimension. the reference grammar is
          exactly such a grammar. (Contrast allomorphy/disjunctive-recheck, which assigns every
          segment a unique feature symbol specifically to keep this residual OUT of its probe.) -->
     <CharacterDefinitionTable id="table1">
@@ -35,7 +35,7 @@
             <Representation>+</Representation>
           </Representations>
         </BoundaryDefinition>
-        <!-- The Sena char42 analog: a "null" boundary with multiple representations. A subrule
+        <!-- The the reference grammar char42 analog: a "null" boundary with multiple representations. A subrule
              whose InsertSegments is all-boundary (^0+) realizes a ZERO allomorph; the signature
              renders this node as the bracketed rep list [(^0)∅]. -->
         <BoundaryDefinition id="charNull">
@@ -50,7 +50,7 @@
       <FeatureNaturalClass id="ncAny">
         <Name>Any</Name>
       </FeatureNaturalClass>
-      <!-- The Sena nc8 ("V-back") analog: an explicit member list that is only distinguishable
+      <!-- The the reference grammar nc8 ("V-back") analog: an explicit member list that is only distinguishable
            from "any segment" via char-def identity on this feature-less grammar. -->
       <SegmentNaturalClass id="ncV">
         <Name>Vclass</Name>
@@ -61,13 +61,13 @@
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rulePfx ruleObj">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
-          <!-- rulePfx: the Sena mu-2/mu-3 class-prefix analog — the DISJUNCTIVE-BREAK probe.
+          <!-- rulePfx: the the reference grammar mu-2/mu-3 class-prefix analog — the DISJUNCTIVE-BREAK probe.
                Subrule 0 ("mw+") requires a stem-initial ncV member; subrules 1 (the null "^0+")
                and 2 ("mu+") share identical LHS/constraints, so they free-fluctuate and BOTH fire
                once reached (SynthesisAffixProcessRule.cs:235-242 + Allomorph.FreeFluctuatesWith).
                On a consonant-initial stem C# skips subrule 0 (StrRep mismatch) and reaches the
                null subrule; an engine that lets subrule 0 match "any segment" breaks right after
-               it and never realizes the zero allomorph — Sena's [(^0)(*0)(&0)∅]? gap. -->
+               it and never realizes the zero allomorph — the reference grammar's [(^0)(*0)(&0)∅]? gap. -->
           <MorphologicalRule id="rulePfx" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
             <Name>class-prefix</Name>
             <MorphologicalSubrules>
@@ -120,14 +120,14 @@
             </MorphologicalSubrules>
             <Gloss>CL</Gloss>
           </MorphologicalRule>
-          <!-- ruleObj: the Sena ndi- analog — the ENVIRONMENT-RECHECK probe (P10 part 2).
+          <!-- ruleObj: the the reference grammar ndi- analog — the ENVIRONMENT-RECHECK probe (P10 part 2).
                Subrule 0 ("i+") carries a literal-segment RequiredEnvironment (/ _ m): because it
                is environment-constrained, C#'s synthesis loop does not break after it, subrule 1
                ("nd+") also fires, and subrule 0 lands in the nd-morph's passed-over set. At final
                validity (Allomorph.cs:127-152) an "nd+" parse is rejected only when subrule 0's
                environment is ALSO satisfied at the same morph position (stem starts with a real
                m). An engine whose environment matcher over-matches literal segments rejects
-               EVERY "nd+" parse — Sena kundiphemba's ku+ndi+... death. -->
+               EVERY "nd+" parse — the reference grammar the recheck-probe word's ku+ndi+... death. -->
           <MorphologicalRule id="ruleObj" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
             <Name>obj-prefix</Name>
             <MorphologicalSubrules>
