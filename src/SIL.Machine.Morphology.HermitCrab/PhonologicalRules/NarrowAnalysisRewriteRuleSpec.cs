@@ -1,4 +1,3 @@
-using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -42,7 +41,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
         {
             ShapeNode curNode = IsTargetEmpty ? range.Start : range.End;
             foreach (
-                Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.Cast<Constraint<Word, ShapeNode>>()
+                Constraint<Word, ShapeNode> constraint in _analysisRhs.Children.CastToConstraints(
+                    "The target (left-hand side) of a rewrite rule"
+                )
             )
             {
                 FeatureStruct fs = constraint.FeatureStruct.Clone();

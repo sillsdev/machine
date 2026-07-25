@@ -39,8 +39,12 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 )
             )
             {
-                var lhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item1;
-                var rhsConstraint = (Constraint<Word, ShapeNode>)tuple.Item2;
+                Constraint<Word, ShapeNode> lhsConstraint = tuple.Item1.AsConstraint(
+                    "The target (left-hand side) of a rewrite rule"
+                );
+                Constraint<Word, ShapeNode> rhsConstraint = tuple.Item2.AsConstraint(
+                    "The replacement (right-hand side) of a rewrite subrule"
+                );
 
                 if (lhsConstraint.Type() == HCFeatureSystem.Segment && rhsConstraint.Type() == HCFeatureSystem.Segment)
                 {
