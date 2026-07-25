@@ -29,7 +29,7 @@
 # The remaining words reuse these same five mechanisms (KTB's person-suffix/epenthesis pair, FormII's
 # InsertSimpleContext, the OCP exclusion) on independent lexical/rule material -- the hollow-root
 # internal passive (ModifyFromInput), the HLK stem-name paradigm (StemName region algebra, mirroring
-# fusional-latin's own mun/man/min proof exactly), the Simultaneous-vs-Iterative feeding/bleeding
+# fusional-realizational-morphology's own mun/man/min proof exactly), the Simultaneous-vs-Iterative feeding/bleeding
 # contrast pair, word-initial prothesis, and gemination-as-expansion -- or are expect_fail words whose
 # signature is the empty set. See PROTOCOL.md section 3 for the `-`/empty-signature convention.
 #
@@ -48,12 +48,12 @@
 # every attempted candidate, not just the surviving one. The trace is authoritative per this task's
 # discipline, so rules: was widened to the honest traced union on both words (see their own notes).
 
-language: Zemreth
-inspired_by: ["Arabic (Semitic)", "Amharic (Ethiosemitic)"]
+language: TemplaticRootModification
+inspired_by: ["templatic root-and-pattern morphology: non-concatenative infixation, internal ablaut, and suppletive stem-name alternation (typological pattern, not any specific language)"]
 sources:
   - "WALS - Reduplication and templatic morphology typology chapters"
-  - "McCarthy, Formal Problems in Semitic Phonology and Morphology (1985) - root-and-pattern, OCP"
-  - "Rose & Walker (eds.), Amharic verbal morphology and the HermitCrab reference corpus"
+  - "typological literature on root-and-pattern phonology and morphology, and the Obligatory Contour Principle"
+  - "typological literature on templatic verbal morphology and the HermitCrab reference corpus"
 requires: [phonology]
 words:
   - word: katab
@@ -136,7 +136,7 @@ words:
       - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
 
   - word: qal
-    note: QWL ("say") hollow root, bare, active/citation form -- Arabic qala-plausible.
+    note: QWL ("say") hollow root, bare, active/citation form -- qala-plausible.
     parses:
       - signature: "QWL|qal"
         gloss: say
@@ -146,8 +146,8 @@ words:
   - word: qil
     note: >-
       QWL's internal passive, realized ENTIRELY by changing the root's own medial vowel ("a"->"i")
-      via ModifyFromInput -- no affix at all. Arabic qila ("it was said")-plausible: a genuinely
-      attested Semitic phenomenon, not an invented mechanism. Second half of the zero-coverage
+      via ModifyFromInput -- no affix at all. qila ("it was said")-plausible: a genuinely
+      attested templatic phenomenon, not an invented mechanism. Second half of the zero-coverage
       ModifyFromInput/InsertSimpleContext construct pair (paired with sapr's InsertSimpleContext use
       above).
     parses:
@@ -280,8 +280,8 @@ words:
   - word: iktub
     note: >-
       KTUB ("write.IMP", posProthesis) bare root "ktub" begins with a word-initial 2-consonant
-      cluster ("kt") -- prProthesis obligatorily breaks it with a prothetic "i", Arabic hamzat
-      al-wasl-plausible (cf. Form I imperative "uktub").
+      cluster ("kt") -- prProthesis obligatorily breaks it with a prothetic "i", a word-initial
+      prothesis pattern (cf. Form I imperative "uktub").
     provenance: "P1, RewriteRuleTests.BoundaryRules (bare-root word-initial epenthesis)"
     parses:
       - signature: "KTUB|iktub"

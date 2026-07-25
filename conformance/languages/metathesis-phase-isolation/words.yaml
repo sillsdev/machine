@@ -29,12 +29,12 @@
 # Reconciliation against the oracle (self-check): documented per word where the oracle disagreed with
 # the hand derivation; the trace is authoritative per the task discipline.
 
-language: Tavolan
-inspired_by: ["Tagalog (Austronesian)", "Indonesian (Austronesian)", "Rotuman (Oceanic)", "Leti (Austronesian)"]
+language: MetathesisPhaseIsolation
+inspired_by: ["infix/circumfix/reduplication/metathesis/subtractive-truncation typology (typological pattern, not any specific language)"]
 sources:
   - "WALS - infixation, reduplication, and metathesis typology chapters"
-  - "Blust, The Austronesian Languages (2013) - infix -um-, ke-...-an circumfix, CV- reduplication"
-  - "McCarthy, Rotuman consonant metathesis and the phase distinction; O'odham subtractive perfective"
+  - "WALS - infix, circumfix, and CV-reduplication morphological typology"
+  - "typological literature on consonant metathesis and the phase distinction; subtractive perfective typology"
 requires: [phonology]
 words:
   - word: nui
@@ -95,7 +95,7 @@ words:
           - "AffixProcessRule: prefix/suffix/circumfix/infix"
 
   - word: sumulat
-    note: SULAT ("write", posInfix) + AV -- Tagalog actor-voice -um- infixed after the first consonant, "s"+"um"+"ulat" = "sumulat".
+    note: SULAT ("write", posInfix) + AV -- actor-voice -um- infixed after the first consonant, "s"+"um"+"ulat" = "sumulat".
     provenance: "W9.1 probe, AffixProcessRuleTests.InfixRules"
     parses:
       - signature: "SULAT+AV|sumulat"
@@ -114,7 +114,7 @@ words:
         exercises: []
 
   - word: keadilan
-    note: ADIL ("just", posCircum) + NMLZ -- Indonesian ke-...-an nominalizer wraps the stem, "ke"+"adil"+"an" = "keadilan".
+    note: ADIL ("just", posCircum) + NMLZ -- ke-...-an nominalizer wraps the stem, "ke"+"adil"+"an" = "keadilan".
     provenance: "W9.1 probe, AffixProcessRuleTests.CircumfixRules"
     parses:
       - signature: "NMLZ+ADIL|keadilan"
@@ -165,8 +165,8 @@ words:
   - word: pur
     note: >-
       PURE ("finish", posTrunc) + INCP -- subtractive truncation deletes the literal final "e"
-      (Rotuman deletion/incomplete phase; O'odham subtractive perfective cited in provenance),
-      "pure" -> "pur".
+      (a subtractive incomplete-phase / subtractive-perfective typological pattern, cited in
+      provenance), "pure" -> "pur".
     provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
     parses:
       - signature: "PURE+INCP|pur"

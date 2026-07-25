@@ -1,16 +1,6 @@
 language,word,signature,construct
 PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disjunctive/ordering)
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
-DisjunctiveRecheckProbe,wak,|wak,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,wok,,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,wakta,,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,wokta,+|wokta,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,pakza,+|pakza,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,pakda,,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,pitza,,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
-DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
 LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
 LatinDiacriticProbe,años,YEAR+PL|años,MorphologicalOutputAction: CopyFromInput/InsertSegments
 LatinDiacriticProbe,años,YEAR+PL|años,Affix template slots (obligatory/disjunctive/ordering)
@@ -34,6 +24,16 @@ LatinDiacriticProbe,kelîta,WORD+DIM|kelîta,NaturalClass: Segments vs FeatureNa
 LatinDiacriticProbe,añota,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 LatinDiacriticProbe,gölta,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 LatinDiacriticProbe,gül,,Boundary markers (CharacterDefinitionTable)
+DisjunctiveRecheckProbe,wak,|wak,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,wok,,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,wakta,,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,wokta,+|wokta,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,pakza,+|pakza,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,pakda,,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,pitza,,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
+DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
 N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
@@ -69,221 +69,221 @@ TruncateRulesProbe,gbubibi,+|gbubibi,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,++|gas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,gas,+|gas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bag,,AffixProcessRule: subtraction/truncation
-Kirenti,semitide,SEMIT+PAST|semitide,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,semitide,SEMIT+PAST|semitide,RewriteRule Simultaneous
-Kirenti,semitile,SEMIT+PRES|semitile,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,semitile,SEMIT+PRES|semitile,RewriteRule Simultaneous
-Kirenti,semitideler,SEMIT+PAST+PL|semitideler,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,kutagida,KUTAK+PAST|kutagida,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,kutagida,KUTAK+PAST|kutagida,RewriteRule Simultaneous
-Kirenti,kutagida,KUTAK+PAST|kutagida,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,kutagida,KUTAK+PAST|kutagida,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
-Kirenti,kutagida,KUTAK+PAST|kutagida,Boundary markers (CharacterDefinitionTable)
-Kirenti,kutagila,KUTAK+PRES|kutagila,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,kutagila,KUTAK+PRES|kutagila,RewriteRule Simultaneous
-Kirenti,kutagila,KUTAK+PRES|kutagila,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,kutagila,KUTAK+PRES|kutagila,Boundary markers (CharacterDefinitionTable)
-Kirenti,kutak,,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,kutakler,,Affix template slots (obligatory/disjunctive/ordering)
-Kirenti,unitide,UNT+PAST|unitide,RewriteRule Simultaneous
-Kirenti,unitide,UNT+PAST|unitide,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,untda,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,guan,GAN+INTS|guan,AffixProcessRule: prefix/suffix/circumfix/infix
-Kirenti,etemik,,AffixProcessRule: prefix/suffix/circumfix/infix
-Kirenti,esalik,,AffixProcessRule: prefix/suffix/circumfix/infix
-Kirenti,duii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,duy,DUII|duy,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,sueeb,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,sueb,SUEEB|sueb,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Kirenti,satun,SAT+ALPHA|satun,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-Kirenti,setin,SET+ALPHA|setin,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
-Tavolan,nui,NIU|nui,MetathesisRule
-Tavolan,niu,,MetathesisRule
-Tavolan,mu+i,MI+3SGU|mu+?i,MetathesisRule
-Tavolan,mu+i,MI+3SGU|mu+?i,Boundary markers (CharacterDefinitionTable)
-Tavolan,pui,PU+3SGI|pui,AffixProcessRule: prefix/suffix/circumfix/infix
-Tavolan,sumulat,SULAT+AV|sumulat,AffixProcessRule: prefix/suffix/circumfix/infix
-Tavolan,sumulat,SULAT+AV|sumulat,MorphologicalOutputAction: CopyFromInput/InsertSegments
-Tavolan,keadilan,NMLZ+ADIL|keadilan,AffixProcessRule: prefix/suffix/circumfix/infix
-Tavolan,keadilan,NMLZ+ADIL|keadilan,MorphologicalOutputAction: CopyFromInput/InsertSegments
-Tavolan,tutula,RDP+TULA|tutula,AffixProcessRule: reduplication (ReduplicationHint)
-Tavolan,tulatula,RDPL+TULA|tulatula,AffixProcessRule: reduplication (ReduplicationHint)
-Tavolan,pur,PURE+INCP|pur,AffixProcessRule: subtraction/truncation
-Tavolan,bahain,BAHA+LNK|bahain,AffixProcessRule: prefix/suffix/circumfix/infix
-Tavolan,bahain,BAHA+LNK|bahain,MorphologicalOutputAction: CopyFromInput/InsertSegments
-Tavolan,katibɯd,KTB+PERF|katibɯd,AffixProcessRule: prefix/suffix/circumfix/infix
-Tavolan,katibɯd,KTB+PERF|katibɯd,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Tavolan,katabɯd,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Velamba,mba,PAV|mba,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Velamba,mpa,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Velamba,limaile,LIM+RPAST|limaile,RealizationalAffixProcessRule
-Velamba,limape,LIM+TENSE|limape,RealizationalAffixProcessRule
-Velamba,limapeile,,RealizationalAffixProcessRule
-Velamba,xkib,EXTX+KIB|xkib,MPR features/groups
-Velamba,yxkib,EXTY+EXTX+KIB|yxkib,MPR features/groups
-Velamba,xkibz,EXTX+KIB+ENDZ|xkibz,MPR features/groups
-Velamba,yxkibz,,MPR features/groups
-Velamba,kibw,KIB+ENDW|kibw,MPR features/groups
-Velamba,belw,,MPR features/groups
-Velamba,nalw,,MPR features/groups
-Velamba,kibh,,MPR features/groups
-Velamba,belh,BEL+ENDH|belh,MPR features/groups
-Velamba,nalh,,MPR features/groups
-Velamba,kimbiakimbia,KIMB+RED|kimbiakimbia,AffixProcessRule: reduplication (ReduplicationHint)
-Velamba,andika,AND+FV|andika,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,andik,,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,andikisha,AND+CAUS+FV|andikisha,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,andikila,AND+APPL+FV|andikila,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,andikishila,AND+CAUS+APPL+FV|andikishila,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,andikilisha,AND+APPL+CAUS+FV|andikilisha,Affix template slots (obligatory/disjunctive/ordering)
-Velamba,dabep,DAB+NUMPL|dabep,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-Velamba,dabepez,DAB+NUMPL+AGR|dabepez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-Velamba,dabez,DAB+AGR|dabez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-Velamba,kes,KES|kes,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-Velamba,kesez,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-Velamba,siliz,SIL+RECURSUF|siliz,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Velamba,siliziz,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Velamba,daleh,DAL+STEMREQ|daleh,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Velamba,daheh,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Velamba,zimed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Velamba,zamed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
-Vetruna,mun,STEM|mun,Stem names
-Vetruna,muno,,Stem names
-Vetruna,muns,,Stem names
-Vetruna,munt,,Stem names
-Vetruna,mano,STEM+P1|mano,Stem names
-Vetruna,mans,STEM+P2|mans,Stem names
-Vetruna,mant,,Stem names
-Vetruna,man,,Stem names
-Vetruna,mino,STEM+P1|mino,Stem names
-Vetruna,mins,,Stem names
-Vetruna,mint,STEM+P3|mint,Stem names
-Vetruna,min,,Stem names
-Vetruna,ferid,FER+RPAST|ferid,RealizationalAffixProcessRule
-Vetruna,feres,FER+TENSE|feres,RealizationalAffixProcessRule
-Vetruna,feresid,,RealizationalAffixProcessRule
-Vetruna,tul,TUL|tul,RealizationalAffixProcessRule
-Vetruna,ducit,,RealizationalAffixProcessRule
-Vetruna,ducunt,DUC+PL2|ducunt,RealizationalAffixProcessRule
-Vetruna,gelobt,GET+LOB|gelobt,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,lobh,LOB+S3|lobh,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,gelobth,GET+LOB+S3|gelobth,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,gelobthh,,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,vinc,VIC+PRESSTEM|vinc,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,pannox,PAN+NOXN|pan+?nox,CompoundingRule
-Vetruna,pannox,PAN+NOXV|pan+?nox,CompoundingRule
-Vetruna,benox,BEPFX1+NOXV|benox,AffixProcessRule: prefix/suffix/circumfix/infix
-Vetruna,panbenox,,CompoundingRule
-Vetruna,pandex,,CompoundingRule
-Vetruna,lexdom,LEX+DOMN|lex+?dom,CompoundingRule
-Vetruna,lexdom,LEX+DOMV|lex+?dom,CompoundingRule
-Vetruna,lexbedom,LEX+BEPFX2+DOMV|lex+?bedom,CompoundingRule
-Vetruna,lexbex,,CompoundingRule
-Vetruna,xped,THEMEX+PED|xped,MPR features/groups
-Vetruna,yxped,THEMEY+THEMEX+PED|yxped,MPR features/groups
-Vetruna,xpedz,THEMEX+PED+ENDZ|xpedz,MPR features/groups
-Vetruna,yxpedz,,MPR features/groups
-Vetruna,katw,KAT+ENDW|katw,MPR features/groups
-Vetruna,sodw,,MPR features/groups
-Vetruna,limw,,MPR features/groups
-Vetruna,kath,,MPR features/groups
-Vetruna,sodh,SOD+ENDH|sodh,MPR features/groups
-Vetruna,limh,,MPR features/groups
-Vetruna,sang,SING+ABLAUT|sang,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
-Vetruna,mitlav,MIT+LAV|mit+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-Vetruna,ficlav,FIC+LAV|fic+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-Vetruna,seclav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-Vetruna,genlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-Vetruna,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
-Nuvattak,nunaliq,NUNA+DERIV|nunaliq,AffixProcessRule: prefix/suffix/circumfix/infix
-Nuvattak,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,Stratum (Linear/Unordered rule order)
-Nuvattak,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,AffixProcessRule: prefix/suffix/circumfix/infix
-Nuvattak,nunavuq,,Stratum (Linear/Unordered rule order)
-Nuvattak,akutat,AKU+TATN|aku+?tat,CompoundingRule
-Nuvattak,akutat,AKU+TATN|aku+?tat,Boundary markers (CharacterDefinitionTable)
-Nuvattak,akutat,AKU+TATV|aku+?tat,CompoundingRule
-Nuvattak,akutat,AKU+TATV|aku+?tat,Boundary markers (CharacterDefinitionTable)
-Nuvattak,pitat,PIPFX1+TATV|pitat,AffixProcessRule: prefix/suffix/circumfix/infix
-Nuvattak,akupitat,,CompoundingRule
-Nuvattak,akutas,,CompoundingRule
-Nuvattak,silanuk,SILA+NUKN|sila+?nuk,CompoundingRule
-Nuvattak,silanuk,SILA+NUKN|sila+?nuk,Boundary markers (CharacterDefinitionTable)
-Nuvattak,silanuk,SILA+NUKV|sila+?nuk,CompoundingRule
-Nuvattak,silanuk,SILA+NUKV|sila+?nuk,Boundary markers (CharacterDefinitionTable)
-Nuvattak,silamanuk,SILA+MAPFX2+NUKV|sila+?manuk,CompoundingRule
-Nuvattak,silamak,,CompoundingRule
-Nuvattak,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
-Nuvattak,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
-Nuvattak,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
-Nuvattak,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
-Nuvattak,bubu,DR1|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,bubu,DR2|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,bubu,DR3|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,buibu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,kuuukuuu,MS|kuuukuuu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,kuiikuii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,buuubuuu,MDC|buuubuuu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,buiibuii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,mau,MDC2|mau,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Nuvattak,matu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Ketselan,shiyidkal,SBJ+PRF+CLF+KAL|shiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,niyidtan,SBJ+PRF+CLF+TAN|niyidtan,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,bishiyidkal,OBJ+SBJ+PRF+CLF+KAL|bishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,bishiwodkal,,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,yidkal,,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,kal,,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,shiwodkal,SBJ+IMPF+CLF+KAL|shiwodkal,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,gabishiyidkal,ADVA+OBJ+SBJ+PRF+CLF+KAL|gabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,hogabishiyidkal,ADVB+ADVA+OBJ+SBJ+PRF+CLF+KAL|hogabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
-Ketselan,gahobishiyidkal,,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,tupay,TUPA+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,tupay,TUPA2+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,sipuy,SIPU+1SG|sipuy,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walakni,WALAK+1SG|walakni,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walaknki,WALAK+2SG|walaknki,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,sipun,SIPU+3SG|sipun,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walaknichik,WALAK+1SG+PL|walakni(ch)ik,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,sipuymi,SIPU+1SG+DIR|sipuymi,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walaknkisi,WALAK+2SG+REP|walaknkisi,Disjunctive allomorphs / free-fluctuation
-Chaqru,walaknkishi,WALAK+2SG+REP|walaknki(sh)i,Disjunctive allomorphs / free-fluctuation
-Chaqru,sipuncha,SIPU+3SG+CONJ|sipun(ch)a,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,takiy,SING+1SG|takiy,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,kantay,SING+1SG|kantay,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,takincha,SING+3SG+CONJ|takin(ch)a,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,kantancha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walaknitan,WALAK+1SG+ASSUM|walaknitan,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walaknichiktan,WALAK+1SG+PL+ASSUM|walakni(ch)iktan,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walakntan,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walakniwas,WALAK+1SG+MIR|walakniwas,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walaknichikwas,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,siputukumi,SIPU+1PL.INCL+DIR|siputukumi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,siputukuchikmi,SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,siputuku,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,sipulupami,SIPU+2PL+DIR|sipulupami,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,sipulupachikmi,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Chaqru,walaknkichikmi,WALAK+2SG+PL+DIR|walaknki(ch)ikmi,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walakchik,,Affix template slots (obligatory/disjunctive/ordering)
-Chaqru,walaknkicha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Zemreth,katabit,KTB+P1SG|katabit,RewriteRule Simultaneous
-Zemreth,katabit,KTB+P1SG|katabit,MorphologicalOutputAction: CopyFromInput/InsertSegments
-Zemreth,katabt,,RewriteRule Simultaneous
-Zemreth,kataba,KTB+P3SG|kataba,MorphologicalOutputAction: CopyFromInput/InsertSegments
-Zemreth,sapr,SPR+FORMII|sapr,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
-Zemreth,samm,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
-Zemreth,qil,QWL+PASS|qil,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
-Zemreth,halak,HLK|halak,Stem names
-Zemreth,halaku,,Stem names
-Zemreth,hilaku,HLK+IMPF|hilaku,Stem names
-Zemreth,hilaka,,Stem names
-Zemreth,hilaki,HLK+PERF|hilaki,Stem names
-Zemreth,hulaka,HLK+JUSS|hulaka,Stem names
-Zemreth,hulaku,,Stem names
-Zemreth,hulaki,HLK+PERF|hulaki,Stem names
-Zemreth,gigugu,FEEDSIM|gigugu,RewriteRule Simultaneous
-Zemreth,gigugi,FEEDITER|gigugi,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Zemreth,gigigi,,RewriteRule Simultaneous
-Zemreth,gigigi,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Zemreth,iktub,KTUB|iktub,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Zemreth,ktub,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Zemreth,radda,RAD|radda,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
-Zemreth,rada,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+FusionalRealizationalMorphology,mun,STEM|mun,Stem names
+FusionalRealizationalMorphology,muno,,Stem names
+FusionalRealizationalMorphology,muns,,Stem names
+FusionalRealizationalMorphology,munt,,Stem names
+FusionalRealizationalMorphology,mano,STEM+P1|mano,Stem names
+FusionalRealizationalMorphology,mans,STEM+P2|mans,Stem names
+FusionalRealizationalMorphology,mant,,Stem names
+FusionalRealizationalMorphology,man,,Stem names
+FusionalRealizationalMorphology,mino,STEM+P1|mino,Stem names
+FusionalRealizationalMorphology,mins,,Stem names
+FusionalRealizationalMorphology,mint,STEM+P3|mint,Stem names
+FusionalRealizationalMorphology,min,,Stem names
+FusionalRealizationalMorphology,ferid,FER+RPAST|ferid,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,feres,FER+TENSE|feres,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,feresid,,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,tul,TUL|tul,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,ducit,,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,ducunt,DUC+PL2|ducunt,RealizationalAffixProcessRule
+FusionalRealizationalMorphology,gelobt,GET+LOB|gelobt,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,lobh,LOB+S3|lobh,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,gelobth,GET+LOB+S3|gelobth,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,gelobthh,,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,vinc,VIC+PRESSTEM|vinc,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,pannox,PAN+NOXN|pan+?nox,CompoundingRule
+FusionalRealizationalMorphology,pannox,PAN+NOXV|pan+?nox,CompoundingRule
+FusionalRealizationalMorphology,benox,BEPFX1+NOXV|benox,AffixProcessRule: prefix/suffix/circumfix/infix
+FusionalRealizationalMorphology,panbenox,,CompoundingRule
+FusionalRealizationalMorphology,pandex,,CompoundingRule
+FusionalRealizationalMorphology,lexdom,LEX+DOMN|lex+?dom,CompoundingRule
+FusionalRealizationalMorphology,lexdom,LEX+DOMV|lex+?dom,CompoundingRule
+FusionalRealizationalMorphology,lexbedom,LEX+BEPFX2+DOMV|lex+?bedom,CompoundingRule
+FusionalRealizationalMorphology,lexbex,,CompoundingRule
+FusionalRealizationalMorphology,xped,THEMEX+PED|xped,MPR features/groups
+FusionalRealizationalMorphology,yxped,THEMEY+THEMEX+PED|yxped,MPR features/groups
+FusionalRealizationalMorphology,xpedz,THEMEX+PED+ENDZ|xpedz,MPR features/groups
+FusionalRealizationalMorphology,yxpedz,,MPR features/groups
+FusionalRealizationalMorphology,katw,KAT+ENDW|katw,MPR features/groups
+FusionalRealizationalMorphology,sodw,,MPR features/groups
+FusionalRealizationalMorphology,limw,,MPR features/groups
+FusionalRealizationalMorphology,kath,,MPR features/groups
+FusionalRealizationalMorphology,sodh,SOD+ENDH|sodh,MPR features/groups
+FusionalRealizationalMorphology,limh,,MPR features/groups
+FusionalRealizationalMorphology,sang,SING+ABLAUT|sang,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+FusionalRealizationalMorphology,mitlav,MIT+LAV|mit+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+FusionalRealizationalMorphology,ficlav,FIC+LAV|fic+?lav,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+FusionalRealizationalMorphology,seclav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+FusionalRealizationalMorphology,genlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+FusionalRealizationalMorphology,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+MetathesisPhaseIsolation,nui,NIU|nui,MetathesisRule
+MetathesisPhaseIsolation,niu,,MetathesisRule
+MetathesisPhaseIsolation,mu+i,MI+3SGU|mu+?i,MetathesisRule
+MetathesisPhaseIsolation,mu+i,MI+3SGU|mu+?i,Boundary markers (CharacterDefinitionTable)
+MetathesisPhaseIsolation,pui,PU+3SGI|pui,AffixProcessRule: prefix/suffix/circumfix/infix
+MetathesisPhaseIsolation,sumulat,SULAT+AV|sumulat,AffixProcessRule: prefix/suffix/circumfix/infix
+MetathesisPhaseIsolation,sumulat,SULAT+AV|sumulat,MorphologicalOutputAction: CopyFromInput/InsertSegments
+MetathesisPhaseIsolation,keadilan,NMLZ+ADIL|keadilan,AffixProcessRule: prefix/suffix/circumfix/infix
+MetathesisPhaseIsolation,keadilan,NMLZ+ADIL|keadilan,MorphologicalOutputAction: CopyFromInput/InsertSegments
+MetathesisPhaseIsolation,tutula,RDP+TULA|tutula,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,tulatula,RDPL+TULA|tulatula,AffixProcessRule: reduplication (ReduplicationHint)
+MetathesisPhaseIsolation,pur,PURE+INCP|pur,AffixProcessRule: subtraction/truncation
+MetathesisPhaseIsolation,bahain,BAHA+LNK|bahain,AffixProcessRule: prefix/suffix/circumfix/infix
+MetathesisPhaseIsolation,bahain,BAHA+LNK|bahain,MorphologicalOutputAction: CopyFromInput/InsertSegments
+MetathesisPhaseIsolation,katibɯd,KTB+PERF|katibɯd,AffixProcessRule: prefix/suffix/circumfix/infix
+MetathesisPhaseIsolation,katibɯd,KTB+PERF|katibɯd,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+MetathesisPhaseIsolation,katabɯd,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,nunaliq,NUNA+DERIV|nunaliq,AffixProcessRule: prefix/suffix/circumfix/infix
+PolysyntheticStratalDerivationChain,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,Stratum (Linear/Unordered rule order)
+PolysyntheticStratalDerivationChain,nunaliqvuq,NUNA+DERIV+INFL|nunaliqvuq,AffixProcessRule: prefix/suffix/circumfix/infix
+PolysyntheticStratalDerivationChain,nunavuq,,Stratum (Linear/Unordered rule order)
+PolysyntheticStratalDerivationChain,akutat,AKU+TATN|aku+?tat,CompoundingRule
+PolysyntheticStratalDerivationChain,akutat,AKU+TATN|aku+?tat,Boundary markers (CharacterDefinitionTable)
+PolysyntheticStratalDerivationChain,akutat,AKU+TATV|aku+?tat,CompoundingRule
+PolysyntheticStratalDerivationChain,akutat,AKU+TATV|aku+?tat,Boundary markers (CharacterDefinitionTable)
+PolysyntheticStratalDerivationChain,pitat,PIPFX1+TATV|pitat,AffixProcessRule: prefix/suffix/circumfix/infix
+PolysyntheticStratalDerivationChain,akupitat,,CompoundingRule
+PolysyntheticStratalDerivationChain,akutas,,CompoundingRule
+PolysyntheticStratalDerivationChain,silanuk,SILA+NUKN|sila+?nuk,CompoundingRule
+PolysyntheticStratalDerivationChain,silanuk,SILA+NUKN|sila+?nuk,Boundary markers (CharacterDefinitionTable)
+PolysyntheticStratalDerivationChain,silanuk,SILA+NUKV|sila+?nuk,CompoundingRule
+PolysyntheticStratalDerivationChain,silanuk,SILA+NUKV|sila+?nuk,Boundary markers (CharacterDefinitionTable)
+PolysyntheticStratalDerivationChain,silamanuk,SILA+MAPFX2+NUKV|sila+?manuk,CompoundingRule
+PolysyntheticStratalDerivationChain,silamak,,CompoundingRule
+PolysyntheticStratalDerivationChain,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
+PolysyntheticStratalDerivationChain,takuvuq,taku+INFL|takuvuq,Guesser/LexicalGuess
+PolysyntheticStratalDerivationChain,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
+PolysyntheticStratalDerivationChain,takuvuq,takuvuq|takuvuq,Guesser/LexicalGuess
+PolysyntheticStratalDerivationChain,bubu,DR1|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,bubu,DR2|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,bubu,DR3|bubu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,buibu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,kuuukuuu,MS|kuuukuuu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,kuiikuii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,buuubuuu,MDC|buuubuuu,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,buiibuii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,mau,MDC2|mau,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PolysyntheticStratalDerivationChain,matu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+PrefixalDiscontinuousSlotDependency,shiyidkal,SBJ+PRF+CLF+KAL|shiyidkal,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,niyidtan,SBJ+PRF+CLF+TAN|niyidtan,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,bishiyidkal,OBJ+SBJ+PRF+CLF+KAL|bishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,bishiwodkal,,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,yidkal,,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,kal,,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,shiwodkal,SBJ+IMPF+CLF+KAL|shiwodkal,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,gabishiyidkal,ADVA+OBJ+SBJ+PRF+CLF+KAL|gabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,hogabishiyidkal,ADVB+ADVA+OBJ+SBJ+PRF+CLF+KAL|hogabishiyidkal,Affix template slots (obligatory/disjunctive/ordering)
+PrefixalDiscontinuousSlotDependency,gahobishiyidkal,,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,tupay,TUPA+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,tupay,TUPA2+1SG|tupay,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,sipuy,SIPU+1SG|sipuy,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walakni,WALAK+1SG|walakni,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walaknki,WALAK+2SG|walaknki,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,sipun,SIPU+3SG|sipun,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walaknichik,WALAK+1SG+PL|walakni(ch)ik,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,sipuymi,SIPU+1SG+DIR|sipuymi,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walaknkisi,WALAK+2SG+REP|walaknkisi,Disjunctive allomorphs / free-fluctuation
+SuffixingEvidentialAdjacencyChain,walaknkishi,WALAK+2SG+REP|walaknki(sh)i,Disjunctive allomorphs / free-fluctuation
+SuffixingEvidentialAdjacencyChain,sipuncha,SIPU+3SG+CONJ|sipun(ch)a,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,takiy,SING+1SG|takiy,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,kantay,SING+1SG|kantay,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,takincha,SING+3SG+CONJ|takin(ch)a,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,kantancha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walaknitan,WALAK+1SG+ASSUM|walaknitan,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walaknichiktan,WALAK+1SG+PL+ASSUM|walakni(ch)iktan,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walakntan,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walakniwas,WALAK+1SG+MIR|walakniwas,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walaknichikwas,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,siputukumi,SIPU+1PL.INCL+DIR|siputukumi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,siputukuchikmi,SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,siputuku,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,sipulupami,SIPU+2PL+DIR|sipulupami,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,sipulupachikmi,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingEvidentialAdjacencyChain,walaknkichikmi,WALAK+2SG+PL+DIR|walaknki(ch)ikmi,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walakchik,,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingEvidentialAdjacencyChain,walaknkicha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingExtensionSlotOrdering,mba,PAV|mba,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingExtensionSlotOrdering,mpa,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingExtensionSlotOrdering,limaile,LIM+RPAST|limaile,RealizationalAffixProcessRule
+SuffixingExtensionSlotOrdering,limape,LIM+TENSE|limape,RealizationalAffixProcessRule
+SuffixingExtensionSlotOrdering,limapeile,,RealizationalAffixProcessRule
+SuffixingExtensionSlotOrdering,xkib,EXTX+KIB|xkib,MPR features/groups
+SuffixingExtensionSlotOrdering,yxkib,EXTY+EXTX+KIB|yxkib,MPR features/groups
+SuffixingExtensionSlotOrdering,xkibz,EXTX+KIB+ENDZ|xkibz,MPR features/groups
+SuffixingExtensionSlotOrdering,yxkibz,,MPR features/groups
+SuffixingExtensionSlotOrdering,kibw,KIB+ENDW|kibw,MPR features/groups
+SuffixingExtensionSlotOrdering,belw,,MPR features/groups
+SuffixingExtensionSlotOrdering,nalw,,MPR features/groups
+SuffixingExtensionSlotOrdering,kibh,,MPR features/groups
+SuffixingExtensionSlotOrdering,belh,BEL+ENDH|belh,MPR features/groups
+SuffixingExtensionSlotOrdering,nalh,,MPR features/groups
+SuffixingExtensionSlotOrdering,kimbiakimbia,KIMB+RED|kimbiakimbia,AffixProcessRule: reduplication (ReduplicationHint)
+SuffixingExtensionSlotOrdering,andika,AND+FV|andika,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,andik,,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,andikisha,AND+CAUS+FV|andikisha,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,andikila,AND+APPL+FV|andikila,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,andikishila,AND+CAUS+APPL+FV|andikishila,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,andikilisha,AND+APPL+CAUS+FV|andikilisha,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingExtensionSlotOrdering,dabep,DAB+NUMPL|dabep,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SuffixingExtensionSlotOrdering,dabepez,DAB+NUMPL+AGR|dabepez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SuffixingExtensionSlotOrdering,dabez,DAB+AGR|dabez,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SuffixingExtensionSlotOrdering,kes,KES|kes,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SuffixingExtensionSlotOrdering,kesez,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+SuffixingExtensionSlotOrdering,siliz,SIL+RECURSUF|siliz,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingExtensionSlotOrdering,siliziz,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingExtensionSlotOrdering,daleh,DAL+STEMREQ|daleh,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingExtensionSlotOrdering,daheh,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingExtensionSlotOrdering,zimed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingExtensionSlotOrdering,zamed,,Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+SuffixingVowelHarmony,semitide,SEMIT+PAST|semitide,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,semitide,SEMIT+PAST|semitide,RewriteRule Simultaneous
+SuffixingVowelHarmony,semitile,SEMIT+PRES|semitile,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,semitile,SEMIT+PRES|semitile,RewriteRule Simultaneous
+SuffixingVowelHarmony,semitideler,SEMIT+PAST+PL|semitideler,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,RewriteRule Simultaneous
+SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+SuffixingVowelHarmony,kutagida,KUTAK+PAST|kutagida,Boundary markers (CharacterDefinitionTable)
+SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,RewriteRule Simultaneous
+SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,kutagila,KUTAK+PRES|kutagila,Boundary markers (CharacterDefinitionTable)
+SuffixingVowelHarmony,kutak,,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,kutakler,,Affix template slots (obligatory/disjunctive/ordering)
+SuffixingVowelHarmony,unitide,UNT+PAST|unitide,RewriteRule Simultaneous
+SuffixingVowelHarmony,unitide,UNT+PAST|unitide,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,untda,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,guan,GAN+INTS|guan,AffixProcessRule: prefix/suffix/circumfix/infix
+SuffixingVowelHarmony,etemik,,AffixProcessRule: prefix/suffix/circumfix/infix
+SuffixingVowelHarmony,esalik,,AffixProcessRule: prefix/suffix/circumfix/infix
+SuffixingVowelHarmony,duii,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,duy,DUII|duy,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,sueeb,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,sueb,SUEEB|sueb,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+SuffixingVowelHarmony,satun,SAT+ALPHA|satun,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+SuffixingVowelHarmony,setin,SET+ALPHA|setin,Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+TemplaticRootModification,katabit,KTB+P1SG|katabit,RewriteRule Simultaneous
+TemplaticRootModification,katabit,KTB+P1SG|katabit,MorphologicalOutputAction: CopyFromInput/InsertSegments
+TemplaticRootModification,katabt,,RewriteRule Simultaneous
+TemplaticRootModification,kataba,KTB+P3SG|kataba,MorphologicalOutputAction: CopyFromInput/InsertSegments
+TemplaticRootModification,sapr,SPR+FORMII|sapr,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+TemplaticRootModification,samm,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+TemplaticRootModification,qil,QWL+PASS|qil,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+TemplaticRootModification,halak,HLK|halak,Stem names
+TemplaticRootModification,halaku,,Stem names
+TemplaticRootModification,hilaku,HLK+IMPF|hilaku,Stem names
+TemplaticRootModification,hilaka,,Stem names
+TemplaticRootModification,hilaki,HLK+PERF|hilaki,Stem names
+TemplaticRootModification,hulaka,HLK+JUSS|hulaka,Stem names
+TemplaticRootModification,hulaku,,Stem names
+TemplaticRootModification,hulaki,HLK+PERF|hulaki,Stem names
+TemplaticRootModification,gigugu,FEEDSIM|gigugu,RewriteRule Simultaneous
+TemplaticRootModification,gigugi,FEEDITER|gigugi,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TemplaticRootModification,gigigi,,RewriteRule Simultaneous
+TemplaticRootModification,gigigi,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TemplaticRootModification,iktub,KTUB|iktub,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TemplaticRootModification,ktub,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TemplaticRootModification,radda,RAD|radda,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+TemplaticRootModification,rada,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)

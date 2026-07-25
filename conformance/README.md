@@ -33,16 +33,16 @@ writes. Full schema: `docs/conformance-language-suite-plan.md` §2.1.
 
 ## The eight languages
 
-| Directory | Invented name | Simulates |
+| Directory | Grammar name | Simulates |
 |---|---|---|
-| `agglutinative-turkic` | Kirenti | Turkish/Finnish-style harmony, long suffix chains, gradation allomorphy |
-| `templatic-semitic` | Zemreth | Arabic/Amharic root-and-pattern, stem names, OCP co-occurrence, simultaneous rewrite |
-| `bantu-verbal` | Velamba | Swahili/Sena-style realizational rules, MPR groups, verbal reduplication, nasal mutation |
-| `austronesian-phase` | Tavolan | Tagalog/Rotuman infix, circumfix, reduplication, metathesis, truncation |
-| `polysynthetic-inuit` | Nuvattak | Yup'ik-style stratum ordering, incorporation-style compounding, guessed stems |
-| `suffixing-quechua` | Chaqru | Cuzco Quechua, `requires: []` — the XAmple-eligible, phonology-free grammar |
-| `prefixal-athabaskan` | Ketselan | Navajo-style left-edge position-class template, fused/discontinuous slots |
-| `fusional-latin` | Vetruna | Latin/Russian inflection classes, syncretism, ablaut as sole exponent |
+| `suffixing-vowel-harmony` | SuffixingVowelHarmony | Long-distance backness harmony, long agglutinative suffix chains, consonant-gradation allomorphy |
+| `templatic-root-modification` | TemplaticRootModification | Templatic root-and-pattern morphology, stem names, OCP co-occurrence, simultaneous rewrite |
+| `suffixing-extension-slot-ordering` | SuffixingExtensionSlotOrdering | Realizational rules, MPR groups, verbal reduplication, post-nasal mutation, CARP-style extension ordering |
+| `metathesis-phase-isolation` | MetathesisPhaseIsolation | Infix, circumfix, reduplication, metathesis, subtractive truncation |
+| `polysynthetic-stratal-derivation-chain` | PolysyntheticStratalDerivationChain | Derivation-then-inflection recursion across strata, incorporation-style compounding, guessed stems |
+| `suffixing-evidential-adjacency-chain` | SuffixingEvidentialAdjacencyChain | Evidential suffix chain, morpheme-adjacency co-occurrence, `requires: []` — the XAmple-eligible, phonology-free grammar |
+| `prefixal-discontinuous-slot-dependency` | PrefixalDiscontinuousSlotDependency | Left-edge position-class template, fused/discontinuous slot dependencies |
+| `fusional-realizational-morphology` | FusionalRealizationalMorphology | Inflection classes, syncretism, ablaut as sole exponent, realizational blocking/suppletion |
 
 Each is a dense, synthetic grammar (invented lexemes and segment inventories, no orthographic claim
 about any real language) where ordinary words exercise several constructs at once, rather than a
@@ -86,8 +86,8 @@ The cheap path, in order of preference:
 1. **Add a word.** One `words.yaml` entry (word + `note` + `parses` + `provenance`) in the language
    whose grammar already covers the territory. No harness or grammar changes.
 2. **Extend a grammar** when no existing language's grammar can express the trigger but the
-   phenomenon is family-plausible for one of the eight (e.g. a new Turkic-style harmony
-   interaction belongs in `agglutinative-turkic`).
+   phenomenon is typologically plausible for one of the eight (e.g. a new backness-harmony
+   interaction belongs in `suffixing-vowel-harmony`).
 3. **Add an edge-case** when the pin is engine-internal or too specific to embed naturalistically
    (an XML-loader quirk, a crash, a rule shape no real grammar would contain).
 4. **Add a new `languages/` member** only for genuinely new typological territory not covered by any

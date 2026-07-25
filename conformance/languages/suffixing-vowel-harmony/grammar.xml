@@ -2,7 +2,7 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Kirenti</Name>
+    <Name>SuffixingVowelHarmony</Name>
     <PartsOfSpeech>
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
@@ -412,7 +412,7 @@
             <MorphemeId>PRES</MorphemeId>
           </MorphologicalRule>
           <!-- Optional number slot, reachable only once the obligatory tense slot is filled (same
-               mechanism as suffixing-quechua's mrPlural / negative/obligatory-tense-slot's mrPlural). -->
+               mechanism as suffixing-evidential-adjacency-chain's mrPlural / negative/obligatory-tense-slot's mrPlural). -->
           <MorphologicalRule id="mrPlural" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>plural</Name>
             <MorphologicalSubrules>

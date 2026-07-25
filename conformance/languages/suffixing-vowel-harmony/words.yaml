@@ -51,7 +51,7 @@
 #     segment's feature bundle unique in the table -- confirmed by isolated probing: a bare
 #     SegmentNaturalClass/literal-Segment target or output for a CHANGING subrule always finds ZERO
 #     parses, regardless of anchoring or an explicit Environment). The grammar originally had no
-#     PhonologicalFeatureSystem at all (mirroring suffixing-quechua's phonology-free precedent, which
+#     PhonologicalFeatureSystem at all (mirroring suffixing-evidential-adjacency-chain's phonology-free precedent, which
 #     doesn't need one); this grammar's 4 changing phonological rules needed one added. This is a
 #     genuine, previously-undocumented-outside-this-fixture engine/authoring constraint, not a hand
 #     derivation mistake -- the hand-derived SURFACE FORMS above were all correct from the first
@@ -68,7 +68,7 @@
 #     harmony-eligible word here has >=1 intervening consonant already) but removes the false-positive
 #     zero-consonant case. The oracle was right to reject "sueb" under the min="0" version; the
 #     hand-derivation's IMPLICIT assumption (that harmony only interacts with the words it was
-#     designed for) was naive, exactly as suffixing-quechua's own header warns.
+#     designed for) was naive, exactly as suffixing-evidential-adjacency-chain's own header warns.
 #   - Bug/finding 3 (a harness-tracing bug, found while authoring this grammar and fixed in the same
 #     stage): self-check's traced "rules:" verification (TraceRuleAttributor.cs) originally counted a
 #     phonological rule as "applied" to a word whenever its synthesis pass RAN, regardless of whether
@@ -83,12 +83,12 @@
 #     prBacknessHarmony; bare roots trace []). Per-word phonological-rule attribution is therefore
 #     real: a parse's `rules:` list names exactly the rules that fired with effect on that word.
 
-language: Kirenti
-inspired_by: ["Turkish (Turkic)", "Finnish (Uralic)"]
+language: SuffixingVowelHarmony
+inspired_by: ["suffixing agglutinative morphology with long-distance vowel harmony and consonant gradation (typological pattern, not any specific language)"]
 sources:
   - "WALS ch. 20/21 - Suffixing vs. Prefixing in Inflectional Morphology"
-  - "WALS - Vowel Harmony chapters (Turkic backness harmony typology)"
-  - "Karlsson, Finnish: An Essential Grammar (consonant gradation)"
+  - "WALS - Vowel Harmony chapters (backness harmony typology)"
+  - "WALS - consonant gradation / alternation typology"
 requires: [phonology]
 words:
   - word: semitide
@@ -116,7 +116,7 @@ words:
           - "RewriteRule Simultaneous"
 
   - word: semitideler
-    note: SEMIT + PAST(slot 1, obligatory) + PL(slot 2, optional) -- proves the optional number slot composes once the obligatory tense slot is filled, same mechanism as suffixing-quechua's walaknichik.
+    note: SEMIT + PAST(slot 1, obligatory) + PL(slot 2, optional) -- proves the optional number slot composes once the obligatory tense slot is filled, same mechanism as suffixing-evidential-adjacency-chain's walaknichik.
     parses:
       - signature: "SEMIT+PAST+PL|semitideler"
         gloss: carry-PAST-PL
@@ -156,7 +156,7 @@ words:
           - "Boundary markers (CharacterDefinitionTable)"
 
   - word: kutak
-    note: KUTAK bare, no tense suffix at all -- slot 1 (tense) is obligatory and unfilled, so the AffixTemplate can never produce this output at all (mirrors suffixing-quechua's walakchik / negative/obligatory-tense-slot's "tun") -- zero parses.
+    note: KUTAK bare, no tense suffix at all -- slot 1 (tense) is obligatory and unfilled, so the AffixTemplate can never produce this output at all (mirrors suffixing-evidential-adjacency-chain's walakchik / negative/obligatory-tense-slot's "tun") -- zero parses.
     expect_fail: true
     provenance: "F3 worked example (negative category), hand-authored to close the zero-coverage 'Affix template slots' construct flagged in docs/conformance-framework-plan.md section 6"
     exercises:

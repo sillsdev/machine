@@ -14,7 +14,7 @@
          one somewhere", which a byte-level regression could get right for one position and wrong
          for the other. DELIBERATELY NO PhonologicalFeatureSystem: this is a pure morphotactics
          fixture (requires: [] holds), same idiom as edge-cases/strrep-identity and
-         languages/suffixing-quechua — SegmentNaturalClass lists members directly, no features
+         languages/suffixing-evidential-adjacency-chain — SegmentNaturalClass lists members directly, no features
          needed. -->
     <PartsOfSpeech>
       <PartOfSpeech id="posRoot">
@@ -45,12 +45,12 @@
     </CharacterDefinitionTable>
     <NaturalClasses>
       <!-- Universal "matches any segment" class, used only inside MorphologicalInput stem
-           patterns — same idiom as languages/suffixing-quechua's ncAny. -->
+           patterns — same idiom as languages/suffixing-evidential-adjacency-chain's ncAny. -->
       <FeatureNaturalClass id="ncAny">
         <Name>Any</Name>
       </FeatureNaturalClass>
       <!-- The diacritic class itself, purely orthographic (no PhonologicalFeatureSystem needed,
-           same idiom as suffixing-quechua's ncVowel/ncConsonant): used ONLY as rDim's LeftEnvironment
+           same idiom as suffixing-evidential-adjacency-chain's ncVowel/ncConsonant): used ONLY as rDim's LeftEnvironment
            gate below, so a stem-final diacritic segment is recognized as a genuine NaturalClass
            member, not merely copied through literally. -->
       <SegmentNaturalClass id="ncDiacritic">

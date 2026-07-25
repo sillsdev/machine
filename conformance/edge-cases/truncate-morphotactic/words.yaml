@@ -6,9 +6,9 @@
 # morphotactics, no phonological rule involved at all.
 #
 # THE XAMPLE FLOOR (why this fixture exists as its own edge-case rather than folding only into
-# austronesian-phase): austronesian-phase's own truncate word (mrTrunc, "pure"->"pur", SAME
+# metathesis-phase-isolation): metathesis-phase-isolation's own truncate word (mrTrunc, "pure"->"pur", SAME
 # provenance string as this fixture's own words below, carried deliberately -- both pin the identical
-# W9.1 construct) lives in a requires:[phonology] grammar (austronesian-phase has real
+# W9.1 construct) lives in a requires:[phonology] grammar (metathesis-phase-isolation has real
 # PhonologicalRule elements elsewhere), so it cannot serve as the suite's requires:[] home for
 # truncation coverage. docs/conformance-migration-ledger.md's ledger row for affix-shapes/truncate
 # names this gap explicitly ("XAmple floor: no natural requires-[] home -> edge-cases/

@@ -86,11 +86,11 @@
 #       "adjacentToRight" FAILS (distinguishing pair vs #15) -> zero parses.
 #         -> expect_fail, blocked_by: [mrPerson2Pl]
 
-language: Chaqru
-inspired_by: ["Cuzco Quechua (Quechuan)"]
+language: SuffixingEvidentialAdjacencyChain
+inspired_by: ["suffixing evidential-marking verbal morphology with morpheme-adjacency co-occurrence constraints (typological pattern, not any specific language)"]
 sources:
   - "WALS - Suffixing vs. Prefixing in Inflectional Morphology"
-  - "Adelaar & Muysken, The Languages of the Andes (Quechuan verbal morphology, evidentiality)"
+  - "typological literature on verbal morphology and evidentiality"
   - "Aikhenvald, Evidentiality (2004)"
 requires: []
 words:

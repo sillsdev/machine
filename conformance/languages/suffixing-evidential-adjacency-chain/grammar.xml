@@ -2,7 +2,7 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Chaqru</Name>
+    <Name>SuffixingEvidentialAdjacencyChain</Name>
     <PartsOfSpeech>
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
     </PartsOfSpeech>

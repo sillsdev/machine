@@ -2,14 +2,14 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Nuvattak</Name>
+    <Name>PolysyntheticStratalDerivationChain</Name>
     <PartsOfSpeech>
       <!-- posN/posV drive the derivation-then-inflection stratum chain (the headline construct):
            mrDeriv verbalizes posN->posV in the Derivation stratum, then mrInfl inflects posV->posV in
            the shallower Inflection stratum, so a derived stem built in stratum 0 feeds inflection in
            stratum 1 (recursion across strata). posN1/posV1 (compounding Set 1) and posN2/posV2
            (Set 2) keep the two CompoundingRules on disjoint lexical material, the ledger's own
-           double-count gotcha (mirrors fusional-latin exactly). posDelR/posMultiSeg/posMDC scope the
+           double-count gotcha (mirrors fusional-realizational-morphology exactly). posDelR/posMultiSeg/posMDC scope the
            three seam-phonology probes so each rewrite rule fires only on its own probe root. -->
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
@@ -55,7 +55,7 @@
     <CharacterDefinitionTable id="table1">
       <Name>Main</Name>
       <SegmentDefinitions>
-        <!-- Vowels (Inuit three-vowel system a/i/u): cons-, voc+, place vocalic, voice+. -->
+        <!-- Vowels (a three-vowel a/i/u system): cons-, voc+, place vocalic, voice+. -->
         <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
           <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
           <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowPlus" />
@@ -138,7 +138,7 @@
       </SegmentDefinitions>
       <BoundaryDefinitions>
         <!-- The compounding join marker "+" is a BoundaryDefinition, never a plain SegmentDefinition
-             (the ledger's own compounding gotcha, re-verified in fusional-latin). -->
+             (the ledger's own compounding gotcha, re-verified in fusional-realizational-morphology). -->
         <BoundaryDefinition id="cBnd"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
       </BoundaryDefinitions>
     </CharacterDefinitionTable>

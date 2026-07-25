@@ -28,15 +28,15 @@
 # the hand derivation; the trace is authoritative per the task discipline. In particular, the
 # multi-parse "bubu" word carries prDelReins on every parse because TraceRuleAttributor unions the
 # phonological rules fired across all of a word's analyses (its own documented ambiguous-word
-# limitation, the same one templatic-semitic's gigugu note records) -- here that union is honest
+# limitation, the same one templatic-root-modification's gigugu note records) -- here that union is honest
 # anyway, since every "bubu" analysis genuinely deletes an "i".
 
-language: Nuvattak
-inspired_by: ["Central Alaskan Yup'ik (Eskimo-Aleut)", "Kalaallisut (Eskimo-Aleut)", "Mohawk (Iroquoian)"]
+language: PolysyntheticStratalDerivationChain
+inspired_by: ["polysynthetic derivation-then-inflection across strata, with noun-incorporation-style compounding and recursive postbase-style suffixation (typological pattern, not any specific language)"]
 sources:
   - "WALS - polysynthesis, noun incorporation, and derivation chapters"
-  - "Mithun, The Languages of Native North America (1999) - Eskimo-Aleut derivation strata, Iroquoian incorporation"
-  - "Fortescue, West Greenlandic (Kalaallisut) - recursive derivational suffixation and postbase ordering"
+  - "typological literature on derivation strata and noun incorporation"
+  - "typological literature on recursive derivational suffixation and postbase ordering"
 requires: [phonology]
 words:
   - word: nuna

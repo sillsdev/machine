@@ -2,7 +2,7 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Vetruna</Name>
+    <Name>FusionalRealizationalMorphology</Name>
     <PartsOfSpeech>
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
@@ -43,7 +43,7 @@
          which only looks for PhonologicalRule/MetathesisRule elements) because the one CHANGING
          construct here - mrAblaut's ModifyFromInput ("sing"->"sang", ablaut as the SOLE exponent of
          tense, no affix at all) - needs it for the same reason a phonological RewriteRule does (see
-         agglutinative-turkic/words.yaml's header for the full finding): self-check's analysis-
+         suffixing-vowel-harmony/words.yaml's header for the full finding): self-check's analysis-
          direction reversal and Shape.ToRegexString's rendering both require the changed segment's
          target (Lhs) and output (Rhs) to be a FeatureNaturalClass over a FULLY-SPECIFIED feature
          system where EVERY segment's feature combination is unique - confirmed by isolated probing
@@ -156,7 +156,7 @@
       </BoundaryDefinitions>
     </CharacterDefinitionTable>
     <NaturalClasses>
-      <!-- Universal wildcard for MorphologicalInput stem captures, matching suffixing-quechua's idiom. -->
+      <!-- Universal wildcard for MorphologicalInput stem captures, matching suffixing-evidential-adjacency-chain's idiom. -->
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
       <!-- mrAblaut's target ("i") and output ("a") - see the feature-system comment above. -->
       <FeatureNaturalClass id="ncAblautI"><Name>AblautI</Name><FeatureValue feature="featId" symbolValues="fI" /></FeatureNaturalClass>
@@ -164,7 +164,7 @@
     </NaturalClasses>
     <Families>
       <!-- realizational/family-blocking: DUC (regular) and TUL (irregular, suppletive perfect of a
-           "carry" verb, Latin fero/tuli-plausible) share this family so the regular form is blocked
+           "carry" verb, fero/tuli-plausible) share this family so the regular form is blocked
            from also analyzing once its features collide with TUL's own lexically-fixed tense. -->
       <Family id="famCarry">FamCarry</Family>
       <!-- G5 (code-coverage-driven): GEN (regular compounding head) and NOV (suppletive) share this
@@ -308,7 +308,7 @@
           <!-- ===================== affix-shapes/infix (nasal infix, "vi-n-c-" style) =====================
                Two MorphologicalInput parts (first 2 segments of the root, then the remainder), output
                interleaves a copy of the first part, an inserted "n", then the remainder - root "vic"
-               (Latin vincere-plausible) -> present stem "vinc". -->
+               (vincere-plausible) -> present stem "vinc". -->
           <MorphologicalRule id="mrNasalInfix" requiredPartsOfSpeech="posV" outputPartOfSpeech="posV">
             <Name>nasalInfix</Name>
             <MorphologicalSubrules>
@@ -447,7 +447,7 @@
             <Gloss>carry</Gloss>
           </LexicalEntry>
           <!-- realizational/family-blocking: regular "duc" (lead) vs irregular suppletive "tul"
-               (Latin tuli-plausible perfect of fero), sharing famCarry; TUL's tense is lexically fixed
+               (tuli-plausible perfect of fero), sharing famCarry; TUL's tense is lexically fixed
                to past, so a regular past-tense synthesis of DUC gets blocked in favor of (and
                rejected against) TUL's own shape. -->
           <LexicalEntry id="eDuc" partOfSpeech="posV" family="famCarry">
@@ -461,13 +461,13 @@
             <MorphemeId>TUL</MorphemeId>
             <Gloss>carry.PST.SUPPL</Gloss>
           </LexicalEntry>
-          <!-- affix-shapes/circumfix: "praise" (Latin laudare-plausible). -->
+          <!-- affix-shapes/circumfix: "praise" (laudare-plausible). -->
           <LexicalEntry id="eLob" partOfSpeech="posV">
             <Allomorphs><Allomorph id="aLob"><PhoneticShape>lob</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>LOB</MorphemeId>
             <Gloss>praise</Gloss>
           </LexicalEntry>
-          <!-- affix-shapes/infix: "conquer" (Latin vincere-plausible), root shape "vic" - present
+          <!-- affix-shapes/infix: "conquer" (vincere-plausible), root shape "vic" - present
                stem "vinc" via the nasal infix, perfect stem is the bare root. -->
           <LexicalEntry id="eVic" partOfSpeech="posV">
             <Allomorphs><Allomorph id="aVic"><PhoneticShape>vic</PhoneticShape></Allomorph></Allomorphs>
@@ -511,7 +511,7 @@
             <MorphemeId>DOMV</MorphemeId>
             <Gloss>tame</Gloss>
           </LexicalEntry>
-          <!-- ablaut as sole exponent: "sing" (German singen-plausible), no lexical head features. -->
+          <!-- ablaut as sole exponent: "sing" (singen-plausible), no lexical head features. -->
           <LexicalEntry id="eSing" partOfSpeech="posAblautV">
             <Allomorphs><Allomorph id="aSing"><PhoneticShape>sing</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>SING</MorphemeId>
@@ -617,7 +617,7 @@
           </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
-          <!-- mpr-groups/output-overwrite: "foot" (Latin pes/pedis-plausible). -->
+          <!-- mpr-groups/output-overwrite: "foot" (pes/pedis-plausible). -->
           <LexicalEntry id="ePed" partOfSpeech="posN">
             <Allomorphs><Allomorph id="aPed"><PhoneticShape>ped</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>PED</MorphemeId>

@@ -145,7 +145,7 @@ fires regardless of whether the segment is otherwise ambiguous. A word `"panucho
 defines `"ch"` as one segment renders as `panu(ch)o`, not `panucho`. Easy to miss when hand-deriving
 an expected signature — check a grammar's character definition table for multi-character
 representations before trusting a hand-written signature (see
-`conformance/languages/suffixing-quechua/words.yaml`'s authoring-discipline note for a case this
+`conformance/languages/suffixing-evidential-adjacency-chain/words.yaml`'s authoring-discipline note for a case this
 actually caught).
 
 **Guess-stem rendering (`Guesser`/`LexicalGuess`, pinned in G1).** A guessed root has no

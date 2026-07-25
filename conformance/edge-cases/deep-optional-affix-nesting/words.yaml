@@ -18,7 +18,7 @@
 # from the v1 expected.tsv (translate to signature form), verify against the oracle" instruction --
 # hand-deriving 924 combinatorial variants would be mechanical transcription of a well-understood
 # combinatorial fact (which slots fired), not five hand-reasoned words, so this edge-case (unlike
-# prefixal-athabaskan) is generated from the checked-in oracle output and then self-check-verified,
+# prefixal-discontinuous-slot-dependency) is generated from the checked-in oracle output and then self-check-verified,
 # not authored blind. Every declared (signature, rules) pair below was verified against the live
 # oracle by the self-check gate (RunAllWords) before this file was committed.
 #

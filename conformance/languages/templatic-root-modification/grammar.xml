@@ -2,9 +2,9 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Zemreth</Name>
+    <Name>TemplaticRootModification</Name>
     <PartsOfSpeech>
-      <!-- One POS per demo section, deliberately - the same isolation discipline fusional-latin's
+      <!-- One POS per demo section, deliberately - the same isolation discipline fusional-realizational-morphology's
            posAblautV/posN1/posV1/posN2/posV2 established: this grammar packs FIVE phonological rules
            (prEpenthesis, prProthesis, prSimulFeeding, prIterFeedingControl, prGeminate) into one
            stratum, and every one of them is scoped via requiredPartsOfSpeech on its own
@@ -12,7 +12,7 @@
            Without this, e.g. prEpenthesis's unconditional C_C-seam trigger would also fire inside
            mrFormII's derived output, and prSimulFeeding/prIterFeedingControl (identical Lhs/Env,
            differing only by multipleApplicationOrder) would both attempt every word in the grammar -
-           exactly the cross-construct collision agglutinative-turkic/fusional-latin's own headers warn
+           exactly the cross-construct collision suffixing-vowel-harmony/fusional-realizational-morphology's own headers warn
            about. -->
       <PartOfSpeech id="posV"><Name>v</Name></PartOfSpeech>
       <PartOfSpeech id="posFormII"><Name>vFormII</Name></PartOfSpeech>
@@ -24,15 +24,15 @@
       <PartOfSpeech id="posGeminate"><Name>vGeminate</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified PhonologicalFeatureSystem, EVERY segment given an explicit value for EVERY
-         feature (the G2a finding, restated in agglutinative-turkic/words.yaml's header and
-         fusional-latin/grammar.xml's own comment): mrFormII's InsertSimpleContext, mrPassive's
+         feature (the G2a finding, restated in suffixing-vowel-harmony/words.yaml's header and
+         fusional-realizational-morphology/grammar.xml's own comment): mrFormII's InsertSimpleContext, mrPassive's
          ModifyFromInput, and prSimulFeeding/prIterFeedingControl's HighVowel->BackRnd subrules all
          CHANGE or introduce a segment's identity via a FeatureNaturalClass, so every segment needs a
          unique, fully-specified feature bundle or self-check's analysis-direction reversal finds zero
          parses / renders an ambiguous bracketed class. featPlace (paired with featVoice, exactly
-         Kirenti's own technique) gives every one of the 12 consonants below a distinct combination;
+         SuffixingVowelHarmony's own technique) gives every one of the 12 consonants below a distinct combination;
          featHigh/featBack/featRound are irrelevant to consonants but still filled in (uniformly
-         "-") purely to satisfy full-specification, matching Kirenti's own filler-value precedent. -->
+         "-") purely to satisfy full-specification, matching SuffixingVowelHarmony's own filler-value precedent. -->
     <PhonologicalFeatureSystem>
       <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
       <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="fVocPlus">+</Symbol><Symbol id="fVocMinus">-</Symbol></Symbols></SymbolicFeature>
@@ -57,11 +57,12 @@
       </SymbolicFeature>
     </PhonologicalFeatureSystem>
     <HeadFeatures>
-      <!-- realizational/stem-name (binyan grades): the HLK ("go") root's three templatic stem
-           alternants are selected by this feature, mirroring fusional-latin's StemName mechanism
-           exactly (see that grammar's own StemNames comment) but modeling a genuinely-attested
-           Semitic phenomenon: Hebrew halak (perfective "went") / yelek (imperfective "goes") is a
-           real synchronic stem suppletion inside one paradigm, cited directly by sources below. -->
+      <!-- realizational/stem-name (templatic root-and-pattern stem grades): the HLK ("go") root's
+           three templatic stem alternants are selected by this feature, mirroring
+           fusional-realizational-morphology's StemName mechanism exactly (see that grammar's own
+           StemNames comment) but modeling a genuinely-attested typological phenomenon: a
+           perfective/imperfective stem-vowel alternation inside one paradigm is a real synchronic
+           stem suppletion pattern, cited directly by sources below. -->
       <SymbolicFeature id="featAspect">
         <Name>aspect</Name>
         <Symbols>
@@ -72,8 +73,8 @@
       </SymbolicFeature>
     </HeadFeatures>
     <!-- One StemName per templatic alternant of HLK, overlapping on "perf" - the same region-
-         difference-algebra proof fusional-latin's snP1P2/snP1P3 pins, here modeling Hebrew's real
-         halak/yelek stem alternation instead of Latin principal parts. -->
+         difference-algebra proof fusional-realizational-morphology's snP1P2/snP1P3 pins, here
+         modeling a perfective/imperfective stem alternation instead of principal-parts suppletion. -->
     <StemNames>
       <StemName id="snImpfPerf" partsOfSpeech="posStemName">
         <Name>ImpfPerf</Name>
@@ -93,7 +94,7 @@
     <CharacterDefinitionTable id="table1">
       <Name>Main</Name>
       <SegmentDefinitions>
-        <!-- Vowels: a=low/back, i=high/front, u=high/back/round - exactly Kirenti's a/i/u scheme. -->
+        <!-- Vowels: a=low/back, i=high/front, u=high/back/round - exactly SuffixingVowelHarmony's a/i/u scheme. -->
         <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
           <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
           <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featBack" symbolValues="fBackPlus" />
@@ -223,7 +224,7 @@
       <SegmentNaturalClass id="ncD"><Name>TargetD</Name><Segment segment="cD" /></SegmentNaturalClass>
     </NaturalClasses>
     <PhonologicalRuleDefinitions>
-      <!-- rewrite/simultaneous-epenthesis (+ agglutinative-turkic's own precedent, reused here for a
+      <!-- rewrite/simultaneous-epenthesis (+ suffixing-vowel-harmony's own precedent, reused here for a
            second grammar): obligatory linking vowel at any C_C seam, Simultaneous mode (every seam in
            a longer cluster gets its own "i" in one pass, not a re-scanned cascade). Scoped to posV
            only, so it fires exclusively on the KTB person-suffix paradigm below and never on any
@@ -241,7 +242,7 @@
           </PhonologicalSubrule>
         </PhonologicalSubrules>
       </PhonologicalRule>
-      <!-- rewrite/word-initial-epenthesis: Arabic-style prothesis (hamzat al-wasl) breaking up a
+      <!-- rewrite/word-initial-epenthesis: word-initial prothesis breaking up a
            word-initial consonant cluster with a prothetic "i". Scoped to posProthesis only. -->
       <PhonologicalRule id="prProthesis">
         <Name>prothesis</Name>
@@ -422,7 +423,7 @@
             <Gloss>write</Gloss>
           </LexicalEntry>
           <!-- FormII/OCP demo roots (posFormII). SPR is the ordinary, unrestricted root; SMM (C2=C3,
-               a genuine Semitic OCP-fragile shape) is excluded from co-occurring with FormII below. -->
+               a genuine OCP-fragile shape) is excluded from co-occurring with FormII below. -->
           <LexicalEntry id="eSpr" partOfSpeech="posFormII">
             <Allomorphs><Allomorph id="aSpr"><PhoneticShape>spr</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>SPR</MorphemeId>
@@ -433,13 +434,13 @@
             <MorphemeId>SMM</MorphemeId>
             <Gloss>curse</Gloss>
           </LexicalEntry>
-          <!-- Hollow root QWL "say" (posHollow), Arabic qala/qila-plausible internal passive. -->
+          <!-- Hollow root QWL "say" (posHollow), qala/qila-plausible internal passive. -->
           <LexicalEntry id="eQal" partOfSpeech="posHollow">
             <Allomorphs><Allomorph id="aQal"><PhoneticShape>qal</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>QWL</MorphemeId>
             <Gloss>say</Gloss>
           </LexicalEntry>
-          <!-- HLK "go" (posStemName), Hebrew halak/yelek-plausible: default "halak" (no StemName,
+          <!-- HLK "go" (posStemName), halak/yelek-plausible: default "halak" (no StemName,
                valid only bare), "hilak" (snImpfPerf), "hulak" (snPerfJuss), overlapping on "perf". -->
           <LexicalEntry id="eHlk" partOfSpeech="posStemName">
             <Allomorphs>
@@ -479,7 +480,7 @@
     </Strata>
     <MorphemeCoOccurrenceRules>
       <!-- OCP root co-occurrence: FormII cannot apply to a root whose C2=C3 (SMM) - a genuine
-           Semitic Obligatory Contour Principle effect (derivational processes that would create an
+           Obligatory Contour Principle effect (derivational processes that would create an
            illegal identical-consonant configuration are blocked). primaryMorpheme references the
            MorphologicalRule's OWN xml id (mrFormII), not its MorphemeId text, matching suffixing-
            quechua's mrEvidConjectural precedent; otherMorphemes references the LexicalEntry's own id

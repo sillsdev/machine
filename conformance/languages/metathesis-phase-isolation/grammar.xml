@@ -2,9 +2,9 @@
 <!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
 <HermitCrabInput>
   <Language>
-    <Name>Tavolan</Name>
+    <Name>MetathesisPhaseIsolation</Name>
     <PartsOfSpeech>
-      <!-- One POS per demo, the same isolation discipline templatic-semitic/fusional-latin
+      <!-- One POS per demo, the same isolation discipline templatic-root-modification/fusional-realizational-morphology
            established. The metathesis MetathesisRules cannot be POS-scoped (a MetathesisRule has no
            requiredPartsOfSpeech attribute, unlike a PhonologicalSubrule), so metathesis is isolated a
            different way: each metathesis rule lives in its OWN deep Stratum, and every metathesis
@@ -25,13 +25,13 @@
       <PartOfSpeech id="posNonContig"><Name>vNonContig</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified PhonologicalFeatureSystem (the G2a finding, restated in
-         agglutinative-turkic/words.yaml and templatic-semitic/grammar.xml): prNonContig CHANGES a
+         suffixing-vowel-harmony/words.yaml and templatic-root-modification/grammar.xml): prNonContig CHANGES a
          segment's identity (a->i via a FeatureNaturalClass output), so every segment in table1 gets a
          unique, fully-specified feature bundle or self-check's analysis-direction reversal finds zero
          parses / renders ambiguous bracketed classes even for segments no rule touches. featPlace +
          featVoice make every one of the 11 consonants unique; featHigh/featLow/featBack/featRound are
          filler "-" on consonants (irrelevant but full-specification requires an explicit value),
-         exactly templatic-semitic's own filler precedent. The metathesis rules use SegmentNaturalClass
+         exactly templatic-root-modification's own filler precedent. The metathesis rules use SegmentNaturalClass
          (identity reorder, no feature change), which is fine per the same finding. -->
     <PhonologicalFeatureSystem>
       <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
@@ -289,7 +289,7 @@
                "mi"+"+u" surfaces as "mu+i" which, with the optional boundary, is string-equivalent to
                "mui"/"miu"; a "miu" simple root would therefore collide with it (an extra ambiguous
                parse AND a synthesis-confirm trace-union of mrComplexMeta onto mrSimpleMeta and vice
-               versa, exactly templatic-semitic's gigugu/gigugi limitation). Choosing a disjoint
+               versa, exactly templatic-root-modification's gigugu/gigugi limitation). Choosing a disjoint
                onset "n" keeps each metathesis word's rules: list crisp. -->
           <LexicalEntry id="eNiu" partOfSpeech="posSimpleMeta">
             <Allomorphs><Allomorph id="aNiu"><PhoneticShape>niu</PhoneticShape></Allomorph></Allomorphs>
@@ -311,7 +311,7 @@
         phonologicalRules="prNonContig">
         <Name>Morphology</Name>
         <MorphologicalRuleDefinitions>
-          <!-- affix-shapes/infix: Tagalog actor-voice -um- infixed after the first consonant. -->
+          <!-- affix-shapes/infix: actor-voice -um- infixed after the first consonant. -->
           <MorphologicalRule id="mrInfixUm" requiredPartsOfSpeech="posInfix" outputPartOfSpeech="posInfix">
             <Name>infixUm</Name>
             <MorphologicalSubrules>
@@ -329,7 +329,7 @@
             </MorphologicalSubrules>
             <MorphemeId>AV</MorphemeId>
           </MorphologicalRule>
-          <!-- affix-shapes/circumfix: Indonesian ke-...-an nominalizer. -->
+          <!-- affix-shapes/circumfix: ke-...-an nominalizer. -->
           <MorphologicalRule id="mrCircum" requiredPartsOfSpeech="posCircum" outputPartOfSpeech="posCircum">
             <Name>circumKeAn</Name>
             <MorphologicalSubrules>
@@ -376,8 +376,8 @@
             </MorphologicalSubrules>
             <MorphemeId>RDPL</MorphemeId>
           </MorphologicalRule>
-          <!-- affix-shapes/truncate (subtraction): delete a literal trailing "e" (Rotuman
-               deletion/incomplete phase; O'odham subtractive perfective cited in provenance). -->
+          <!-- affix-shapes/truncate (subtraction): delete a literal trailing "e" (a subtractive
+               incomplete-phase / subtractive-perfective typological pattern, cited in provenance). -->
           <MorphologicalRule id="mrTrunc" requiredPartsOfSpeech="posTrunc" outputPartOfSpeech="posTrunc">
             <Name>truncateFinalE</Name>
             <MorphologicalSubrules>

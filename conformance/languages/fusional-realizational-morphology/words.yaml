@@ -76,11 +76,11 @@
 # Findings 2-7 are documented at their point of relevance in grammar.xml as well. None required a
 # harness change; all were resolved within the grammar itself once understood.
 
-language: Vetruna
-inspired_by: ["Latin (Italic)", "Russian (Slavic)", "German (Germanic) ablaut"]
+language: FusionalRealizationalMorphology
+inspired_by: ["fusional inflectional-class morphology with stem suppletion, realizational rules, and ablaut-as-sole-exponent (typological pattern, not any specific language)"]
 sources:
   - "WALS - Fusion, Exponence, Inflectional Synthesis in Inflectional Morphology chapters"
-  - "Corbett, Suppletion (2007) - inflectional classes, syncretism, principal parts"
+  - "typological literature on suppletion - inflectional classes, syncretism, principal parts"
 requires: []
 words:
   - word: mun
@@ -258,7 +258,7 @@ words:
         exercises: []
 
   - word: gelobt
-    note: LOB circumfixed "ge-...-t" (German ge-...-t past-participle-plausible) -- simultaneous prefix+suffix wrapped around one copied stem span, both pieces contributed by the SAME rule/morpheme id.
+    note: LOB circumfixed "ge-...-t" (ge-...-t past-participle-plausible) -- simultaneous prefix+suffix wrapped around one copied stem span, both pieces contributed by the SAME rule/morpheme id.
     provenance: "W9.1 probe, AffixProcessRuleTests.CircumfixRules"
     parses:
       - signature: "GET+LOB|gelobt"
@@ -296,7 +296,7 @@ words:
       - "AffixProcessRule: prefix/suffix/circumfix/infix"
 
   - word: vic
-    note: VIC ("conquer"), bare -- the perfect-stem shape (Latin vici-plausible), no infix.
+    note: VIC ("conquer"), bare -- the perfect-stem shape (vici-plausible), no infix.
     parses:
       - signature: "VIC|vic"
         gloss: conquer
@@ -304,7 +304,7 @@ words:
         exercises: []
 
   - word: vinc
-    note: VIC's present stem, nasal-infixed ("vi" + "n" + "c") -- Latin vincere-plausible; two MorphologicalInput parts (first 2 segments, then the remainder), "n" inserted between them.
+    note: VIC's present stem, nasal-infixed ("vi" + "n" + "c") -- vincere-plausible; two MorphologicalInput parts (first 2 segments, then the remainder), "n" inserted between them.
     provenance: "W9.1 probe, AffixProcessRuleTests.InfixRules"
     parses:
       - signature: "VIC+PRESSTEM|vinc"
@@ -520,7 +520,7 @@ words:
       - "MPR features/groups"
 
   - word: sing
-    note: SING ("sing", German singen-plausible), bare -- no lexical head features, present-stem citation form.
+    note: SING ("sing", singen-plausible), bare -- no lexical head features, present-stem citation form.
     parses:
       - signature: "SING|sing"
         gloss: sing
@@ -530,8 +530,8 @@ words:
   - word: sang
     note: >-
       SING's past-tense form, realized ENTIRELY by changing the root's own vowel ("i"->"a") via
-      ModifyFromInput -- no affix at all. Ablaut as the sole exponent of the tense category (German
-      singen/sang-plausible).
+      ModifyFromInput -- no affix at all. Ablaut as the sole exponent of the tense category
+      (singen/sang-plausible).
     parses:
       - signature: "SING+ABLAUT|sang"
         gloss: sing-PST.ABLAUT

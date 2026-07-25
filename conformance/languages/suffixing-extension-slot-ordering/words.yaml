@@ -25,7 +25,7 @@
 #        -> expect_fail, blocked_by: [rrPast]
 #
 # The remaining words reuse these same mechanisms on independent lexical/rule material -- MPR
-# features/groups (Overwrite + All/Any gating, mirroring fusional-latin's own proof exactly),
+# features/groups (Overwrite + All/Any gating, mirroring fusional-realizational-morphology's own proof exactly),
 # verbal reduplication (ReduplicationHint, zero coverage today -- this grammar's home), and
 # extension-slot ordering via AffixTemplate (Causative before Applicative, both before the
 # obligatory Final Vowel) -- or are expect_fail words whose signature is the empty set.
@@ -46,21 +46,21 @@
 #      shaped slots, the overall stratum analysis retries the rule set (including the template) to a
 #      fixpoint, so the two affixes can be peeled off across separate template applications in
 #      either order. Corrected in place rather than discarded, since it is a genuine and useful
-#      engine finding for any future template-heavy grammar (prefixal-athabaskan especially).
+#      engine finding for any future template-heavy grammar (prefixal-discontinuous-slot-dependency especially).
 # Every other word in the file matched on the first run.
 
-language: Velamba
-inspired_by: ["Swahili (Bantu)", "Ndebele (Bantu)", "Sena (Bantu)"]
+language: SuffixingExtensionSlotOrdering
+inspired_by: ["noun-class-agreement and CARP-style verbal-extension-ordering typology, with post-nasal-mutation allomorphy (typological pattern, not any specific language)"]
 sources:
-  - "WALS - Reduplication chapters; Bantu noun-class and verbal-template surveys"
-  - "Hyman, Suffix Ordering in Bantu: A Morphocentric Analysis (CARP hierarchy)"
-  - "Katamba, Bantu nominal morphology (in Nurse & Philippson, The Bantu Languages) - post-nasal mutation"
+  - "WALS - Reduplication chapters; noun-class and verbal-template surveys"
+  - "typological literature on suffix ordering (CARP hierarchy: Causative-Applicative-Reciprocal-Passive)"
+  - "typological literature on post-nasal mutation / post-nasal hardening-voicing"
 requires: [phonology]
 words:
   - word: mba
     note: >-
       PAV ("hit", posV) bare root, underlying "mpa" -- prNasalMutation obligatorily voices the "p"
-      to "b" following the nasal "m", a genuine Bantu post-nasal-voicing effect (modeled here as
+      to "b" following the nasal "m", a genuine post-nasal-voicing effect (modeled here as
       already fused into the root's own stored shape, mirroring v1 rewrite/required-pos-subrule's
       own bare-shape minimalism).
     parses:
@@ -231,8 +231,8 @@ words:
 
   - word: kimbiakimbia
     note: >-
-      KIMB fully reduplicated (intensive/repetitive aspect, Swahili kimbia/kimbiakimbia
-      "run"/"run about repeatedly"-plausible): mrRedup copies the whole stem twice.
+      KIMB fully reduplicated (intensive/repetitive aspect, "run"/"run about repeatedly"-
+      plausible): mrRedup copies the whole stem twice.
       redupMorphType="suffix" treats the FIRST copy as the root's own continuing morph and the
       SECOND as the rule's own new morph, so the morph chain reads root-then-RED (confirmed by an
       isolated probe before this word was authored -- see grammar.xml's mrRedup comment). This is
@@ -254,7 +254,7 @@ words:
           - "Affix template slots (obligatory/disjunctive/ordering)"
 
   - word: andik
-    note: AND bare, no Final Vowel at all -- slot 3 (finalVowel) is obligatory and unfilled, so the AffixTemplate can never produce this output (mirrors agglutinative-turkic's kutak / suffixing-quechua's walakchik).
+    note: AND bare, no Final Vowel at all -- slot 3 (finalVowel) is obligatory and unfilled, so the AffixTemplate can never produce this output (mirrors suffixing-vowel-harmony's kutak / suffixing-evidential-adjacency-chain's walakchik).
     expect_fail: true
     exercises:
       - "Affix template slots (obligatory/disjunctive/ordering)"
@@ -281,7 +281,7 @@ words:
   - word: andikishila
     note: >-
       AND + CAUS (slot 1) + APPL (slot 2) + FV (slot 3), ALL THREE slots filled in the template's
-      own fixed order -- the extension-slot-ordering construct's flagship word, Bantu CARP-style
+      own fixed order -- the extension-slot-ordering construct's flagship word, CARP-style
       (Causative before Applicative, both before the obligatory Final Vowel).
     parses:
       - signature: "AND+CAUS+APPL+FV|andikishila"
