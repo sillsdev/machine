@@ -28,7 +28,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 {
                     var newGroup = new Group<Word, ShapeNode>(group.Name);
                     foreach (
-                        Constraint<Word, ShapeNode> constraint in group.Children.Cast<Constraint<Word, ShapeNode>>()
+                        Constraint<Word, ShapeNode> constraint in group.Children.CastToConstraints(
+                            "A switch group of a metathesis rule"
+                        )
                     )
                     {
                         Constraint<Word, ShapeNode> newConstraint = constraint.Clone();

@@ -30,7 +30,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             }
             else
             {
-                foreach (Constraint<Word, ShapeNode> constraint in lhs.Children.Cast<Constraint<Word, ShapeNode>>())
+                foreach (
+                    Constraint<Word, ShapeNode> constraint in lhs.Children.CastToConstraints(
+                        "The target (left-hand side) of a rewrite rule"
+                    )
+                )
                 {
                     var newConstraint = constraint.Clone();
                     if (isIterative)
@@ -90,7 +94,9 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                     .Zip(lhs.Children)
             )
             {
-                var constraints = (Constraint<Word, ShapeNode>)tuple.Item2;
+                Constraint<Word, ShapeNode> constraints = tuple.Item2.AsConstraint(
+                    "The target (left-hand side) of a rewrite rule"
+                );
                 if (tuple.Item1.Annotation.Type() != constraints.Type())
                     return false;
             }

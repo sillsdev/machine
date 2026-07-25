@@ -1923,4 +1923,89 @@ public class RewriteRuleTests : HermitCrabTestBase
         morpher = new Morpher(TraceManager, Language);
         AssertMorphsEqual(morpher.ParseWord("gigugi"), "44");
     }
+
+    // Constraint<TData, TOffset> and Quantifier<TData, TOffset> are both direct subclasses of
+    // PatternNode<TData, TOffset> (siblings, not related by inheritance). The DTD permits an
+    // OptionalSegmentSequence (loaded as a Quantifier) anywhere a plain Segment/SimpleContext is
+    // permitted in a PhoneticSequence, including as the target (Lhs) or replacement (Rhs) of a rewrite
+    // rule -- not just in its environments. Before the fix, the rule specs assumed every top-level
+    // Lhs/Rhs child was a Constraint and cast accordingly, so a DTD-legal Quantifier there crashed with
+    // an unhandled InvalidCastException deep inside Morpher construction. These tests build such rules
+    // directly (bypassing the XML loader, like the rest of this file) and confirm that constructing a
+    // Morpher over them now fails fast with a clear, typed CompileException instead.
+    [Test]
+    public void QuantifierInTargetIsRejectedWithClearError()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+
+        var rule = new RewriteRule
+        {
+            Name = "quantifierInLhs",
+            // The Lhs is a single top-level Quantifier (an optional segment). The subrule has no Rhs
+            // (a deletion, 0 children), so the Lhs/Rhs child counts intentionally differ: this steers
+            // the analysis side to NarrowAnalysisRewriteRuleSpec, which does not cast its Lhs/Rhs
+            // children eagerly, isolating the crash to SynthesisRewriteRuleSpec, which always validates
+            // every Lhs child up front regardless of subrule shape.
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Optional.Value,
+        };
+        Allophonic.PhonologicalRules.Add(rule);
+        rule.Subrules.Add(new RewriteSubrule());
+
+        CompileException ex = Assert.Throws<CompileException>(() => new Morpher(TraceManager, Language));
+        Exception innermost = Innermost(ex);
+        Assert.That(innermost, Is.TypeOf<CompileException>());
+        Assert.That(innermost.Message, Does.Contain("Quantifier"));
+    }
+
+    [Test]
+    public void QuantifierInReplacementIsRejectedWithClearError()
+    {
+        var highVowel = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons-")
+            .Symbol("voc+")
+            .Symbol("high+")
+            .Value;
+        var backRnd = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("back+")
+            .Symbol("round+")
+            .Value;
+
+        var rule = new RewriteRule
+        {
+            Name = "quantifierInRhs",
+            Lhs = Pattern<Word, ShapeNode>.New().Annotation(highVowel).Value,
+        };
+        Allophonic.PhonologicalRules.Add(rule);
+        rule.Subrules.Add(
+            // Lhs and Rhs child counts match (1 == 1), so this exercises FeatureAnalysisRewriteRuleSpec,
+            // which casts both the Lhs and Rhs children eagerly.
+            new RewriteSubrule { Rhs = Pattern<Word, ShapeNode>.New().Annotation(backRnd).Optional.Value }
+        );
+
+        // Before the fix, this already surfaced as a CompileException at the top level (an unrelated,
+        // pre-existing catch-all in AnalysisStratumRule wraps *any* exception from compiling a
+        // phonological rule), but its InnerException was a raw, uninformative InvalidCastException. The
+        // fix replaces that with a clear, typed CompileException naming the unsupported construct.
+        CompileException ex = Assert.Throws<CompileException>(() => new Morpher(TraceManager, Language));
+        Exception innermost = Innermost(ex);
+        Assert.That(innermost, Is.TypeOf<CompileException>());
+        Assert.That(innermost.Message, Does.Contain("Quantifier"));
+    }
+
+    private static Exception Innermost(Exception ex)
+    {
+        while (ex.InnerException != null)
+            ex = ex.InnerException;
+        return ex;
+    }
 }

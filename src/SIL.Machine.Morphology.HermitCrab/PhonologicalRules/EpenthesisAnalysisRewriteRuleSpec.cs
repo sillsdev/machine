@@ -1,4 +1,3 @@
-using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Matching;
@@ -15,7 +14,11 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             Pattern.Acceptable = IsUnapplicationNonvacuous;
             _targetCount = subrule.Rhs.Children.Count;
 
-            foreach (Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.Cast<Constraint<Word, ShapeNode>>())
+            foreach (
+                Constraint<Word, ShapeNode> constraint in subrule.Rhs.Children.CastToConstraints(
+                    "The replacement (right-hand side) of an epenthesis rewrite subrule"
+                )
+            )
             {
                 Constraint<Word, ShapeNode> newConstraint = constraint.Clone();
                 newConstraint.FeatureStruct.AddValue(HCFeatureSystem.Modified, HCFeatureSystem.Clean);
