@@ -26,10 +26,14 @@ MorphologicalOutputAction: CopyFromInput/InsertSegments
 MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
 RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 RewriteRule Simultaneous
+RewriteRule direction (Dir): left-to-right
+RewriteRule direction (Dir): right-to-left
+RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 MetathesisRule
 Affix template slots (obligatory/disjunctive/ordering)
 NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 Boundary markers (CharacterDefinitionTable)
+CharacterDefinitionTable: more than one table, one per stratum
 MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 MPR features/groups
 Guesser/LexicalGuess
