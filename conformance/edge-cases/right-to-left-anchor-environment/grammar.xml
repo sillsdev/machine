@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>RightToLeftAnchorEnvironment</Name>
+    <PartsOfSpeech><PartOfSpeech id="posAny"><Name>Any</Name></PartOfSpeech></PartsOfSpeech>
+    
+    
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featId">
+        <Name>id</Name>
+        <Symbols>
+          <Symbol id="symA">a</Symbol>
+          <Symbol id="symE">e</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="t1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="ca"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="ce"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featId" symbolValues="symE" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncA"><Name>A</Name><Segment segment="ca" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prRtlAnchor" multipleApplicationOrder="rightToLeftIterative">
+        <Name>rtlAnchorDemo</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncA" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><Segment segment="ce" /></PhoneticSequence></PhoneticOutput>
+            <Environment><RightEnvironment><PhoneticTemplate finalBoundaryCondition="true"><PhoneticSequence /></PhoneticTemplate></RightEnvironment></Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="t1" phonologicalRules="prRtlAnchor">
+        <Name>Main</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>aaa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot2">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>aa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
+

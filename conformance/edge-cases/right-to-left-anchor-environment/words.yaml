@@ -1,0 +1,76 @@
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
+# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT
+# the C# founding oracle -- authored and verified against this repo's own Rust engine only.
+# Signatures below are transcribed verbatim from that run, not hand-derived.
+
+language: RightToLeftAnchorEnvironment
+inspired_by: ["synthetic right-to-left word-boundary-anchored rewrite probe (not modeling any real language)"]
+sources:
+  - "openspec/changes/plan-construct-coverage-completion task 4.2 (RightToLeftRewrite: additional in-scope pattern shapes -- Anchor)"
+requires: [phonology]
+words:
+  - word: aae
+    note: >-
+      ROOT1's correctly-rewritten surface form: underlying "aaa" (three "a"s). The rule
+      (`prRtlAnchor`) rewrites "a" -> "e" only when the "a" is IMMEDIATELY followed by the end of
+      the word (`finalBoundaryCondition="true"`, a bare `PatternNode::Anchor` right environment, no
+      other context node). Only the THIRD (word-final) "a" satisfies that; the first two do not
+      (each is followed by another "a", never the boundary), so only the last one rewrites.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT1|aae"
+        rules: [prRtlAnchor]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: ae
+    note: >-
+      ROOT2's correctly-rewritten surface form: underlying "aa" (two "a"s). The second (word-final)
+      "a" rewrites to "e"; the first does not (followed by the second "a", not the boundary).
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT2|ae"
+        rules: [prRtlAnchor]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aaa
+    note: >-
+      ROOT1's own RAW, un-rewritten underlying shape, queried directly as a surface string -- the
+      rule is obligatory wherever its environment matches (the word-final "a" always satisfies
+      `finalBoundaryCondition`), so this exact string is NOT a valid surface form for ROOT1 at all.
+      Proves the rule genuinely fires (obligatorily), rather than being vacuously inapplicable.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aa
+    note: ROOT2's own RAW underlying shape, queried directly -- same reasoning as "aaa" (should have rewritten to "ae").
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: eaa
+    note: >-
+      A WRONGLY-rewritten variant of ROOT1's underlying "aaa": if the anchor were mis-swapped to
+      "word-INITIAL" instead of "word-final" (exactly the mistake `crate::lower::Slot::Anchor`'s own
+      doc warns the mirror-and-reverse construction must not make), the FIRST "a" would rewrite
+      instead of the last, giving this string. Must have no analysis at all under either
+      hypothesis (it is not a valid surface form for ROOT1: the correct rewrite is "aae", and this
+      is neither the correct rewrite nor the raw underlying shape).
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aea
+    note: >-
+      Another structurally-invalid variant of ROOT1's underlying "aaa" (the MIDDLE "a" rewritten
+      instead of the last) -- no position of the LHS class other than the true word-final one ever
+      satisfies the anchored environment, so this is never a valid surface form either.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"

@@ -1,0 +1,104 @@
+# agglutinative-Austronesian reference corpus's pathology mimic -- see STAGING.md and grammar.xml's
+# own header comment. Oracle:
+# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
+# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
+# below are transcribed verbatim from that run, not hand-derived.
+#
+# Authoring note: an early draft gave every vowel (a/e/i/u/o) and several consonants (l/k/s/v/d) an
+# IDENTICAL feature bundle (only `featPlace=vocalic`/`fPlaceOther` respectively distinguished them
+# from other classes, not from each other) -- `pg_parse`'s own shape-rendering correctly collapsed
+# feature-identical segments into a bracketed alternates class (e.g. "t[aeiuo][lvd][aeiuo][ks]"
+# instead of the literal "tulik"), obscuring the actual pin. Fixed by giving every segment a fully
+# unique feature bundle (featHigh/featBack added for the vowels; featPlace values split apart for the
+# consonants) -- see grammar.xml's own PhonologicalFeatureSystem comment. Every signature below is
+# now literal.
+
+language: Ranavu
+inspired_by: ["synthetic agglutinative-Austronesian nasal-assimilation/deletion + MPR-exclusion probe (not modeling any real language)"]
+sources:
+  - "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row)"
+requires: [phonology]
+words:
+  - word: tulik
+    note: TULIK bare root, no prefix -- a plain control.
+    parses:
+      - signature: "TULIK|tulik"
+        rules: []
+
+  - word: menulik
+    note: >-
+      TULIK + mrNPfx: underlying "meN+tulik" -- the placeholder nasal assimilates to alveolar "n"
+      (prNasalAssimAlveolar, root-initial "t" is alveolar), then the now-real "n" triggers
+      prObstruentDeletion on the following VOICELESS obstruent "t" -- "mentulik" -> "menulik". The
+      deletion-junction model behind that agglutinative-Austronesian reference corpus's own
+      meN+tulis -> menulis.
+    provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): placeholder-nasal assimilation + junction deletion"
+    parses:
+      - signature: "NPFX+TULIK|menulik"
+        rules: [mrNPfx, prNasalAssimAlveolar, prObstruentDeletion]
+        # LeftToRightRewrite (constructs.txt row 29): prNasalAssimAlveolar/prObstruentDeletion both
+        # carry no multipleApplicationOrder attribute, so pg-grammar's own loader
+        # (load_rewrite_rule, rust/crates/pg-grammar/src/load.rs) gives each Dir::LeftToRight by
+        # default -- and this word is the fixture's strongest positive witness: BOTH rules actually
+        # fire in sequence (assimilation then deletion) to produce this surface form, not merely
+        # present-but-unused. Previously untagged -- constructs.txt had no row for this
+        # characteristic until G9 (sillsdev/machine PR #465) added row 29.
+        exercises:
+          - "RewriteRule direction (Dir): left-to-right"
+
+  - word: balo
+    note: BALO bare root -- a plain control.
+    parses:
+      - signature: "BALO|balo"
+        rules: []
+
+  - word: membalo
+    note: >-
+      BALO + mrNPfx: underlying "meN+balo" -- the placeholder nasal assimilates to bilabial "m"
+      (prNasalAssimBilabial, root-initial "b" is bilabial); "b" is VOICED, not in the
+      VoicelessObstruent class, so prObstruentDeletion does NOT fire and "b" survives --
+      "membalo", not "memalo". The contrasting (non-deleting) half of the deletion-junction pair.
+    provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): placeholder-nasal assimilation + junction deletion"
+    parses:
+      - signature: "NPFX+BALO|membalo"
+        rules: [mrNPfx, prNasalAssimBilabial]
+
+  - word: sanit
+    note: SANIT bare root, no MPR feature -- a plain control for the MPR-exclusion pair below.
+    parses:
+      - signature: "SANIT|sanit"
+        rules: []
+
+  - word: sanitan
+    note: SANIT + mrSuf ("-an") -- no MPR feature on this root, so mrSuf's excludedMPRFeatures="mprException" gate is vacuously satisfied and the rule applies normally.
+    provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): MPR-gated rule exception (control)"
+    parses:
+      - signature: "SANIT+SUF|sanitan"
+        rules: [mrSuf]
+
+  - word: vokad
+    note: VOKAD bare root (carries ruleFeatures="mprException") -- a plain control.
+    parses:
+      - signature: "VOKAD|vokad"
+        rules: []
+
+  - word: vokadan
+    note: >-
+      THE distinguishing row: VOKAD carries mprException, and mrSuf's MorphologicalInput excludes
+      exactly that feature (excludedMPRFeatures="mprException") -- so "vokadan" (VOKAD + mrSuf) has
+      NO valid derivation. An engine that ignores excludedMPRFeatures would wrongly accept this --
+      the P6 flag-diacritics recall case in miniature (a corpus word's correct parse REQUIRES the
+      exclusion to be honored).
+    provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): MPR-gated rule exception"
+    expect_fail: true
+    blocked_by: [mrSuf]
+
+  - word: vokadi
+    note: >-
+      VOKAD's actual correct derived form: mrSufAlt ("-i") carries no MPR gate at all, so it is
+      the ONLY rule an mprException root can undergo -- the exception-honoring positive control
+      that pairs with vokadan's negative one.
+    provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): MPR-gated rule exception"
+    parses:
+      - signature: "VOKAD+SUFALT|vokadi"
+        rules: [mrSufAlt]

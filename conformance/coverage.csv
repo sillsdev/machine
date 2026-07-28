@@ -1,4 +1,9 @@
 language,word,signature,construct
+BistratalOverlappingSegmentRepresentation,des,ROOT3|des,"CharacterDefinitionTable: more than one table, one per stratum"
+BistratalOverlappingSegmentRepresentation,sed,ROOT4|sed,"CharacterDefinitionTable: more than one table, one per stratum"
+BistratalOverlappingSegmentRepresentation,basi,,"CharacterDefinitionTable: more than one table, one per stratum"
+BistratalOverlappingSegmentRepresentation,abis,,"CharacterDefinitionTable: more than one table, one per stratum"
+BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more than one table, one per stratum"
 PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disjunctive/ordering)
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
 LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
@@ -42,6 +47,13 @@ N3-PatternShapes,bat,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
+Ranavu,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
+RightToLeftAnchorEnvironment,aae,ROOT1|aae,RewriteRule direction (Dir): right-to-left
+RightToLeftAnchorEnvironment,ae,ROOT2|ae,RewriteRule direction (Dir): right-to-left
+RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left
+RightToLeftAnchorEnvironment,aa,,RewriteRule direction (Dir): right-to-left
+RightToLeftAnchorEnvironment,eaa,,RewriteRule direction (Dir): right-to-left
+RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
 StrRepIdentityProbe,pat,+|[(^0)∅]?+?pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,pat,|pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,mat,+|[(^0)∅]?+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
@@ -59,6 +71,8 @@ StrRepIdentityProbe,imat,++|[(^0)∅]?+?i+?mat,NaturalClass: Segments vs Feature
 StrRepIdentityProbe,imat,++|i+?[(^0)∅]?+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,imat,+|i+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 TruncateRulesProbe,sag,|sag,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,sas,|sas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bubibi,|bubibi,AffixProcessRule: subtraction/truncation
