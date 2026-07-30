@@ -173,6 +173,21 @@ namespace SIL.Machine.Translation.Thot
         public static extern uint swAlignModel_getMaxSentenceLength(IntPtr swAlignModelHandle);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint swAlignModel_getNumSentencePairs(IntPtr swAlignModelHandle);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern double swAlignModel_getTrainingAlignment(
+            IntPtr swAlignModelHandle,
+            uint n,
+            IntPtr matrix,
+            ref uint iLen,
+            ref uint jLen
+        );
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void swAlignModel_setEmitTrainingAlignments(IntPtr swAlignModelHandle, bool value);
+
+        [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
         public static extern void swAlignModel_setVariationalBayes(IntPtr swAlignModelHandle, bool variationalBayes);
 
         [DllImport("thot", CallingConvention = CallingConvention.Cdecl)]
