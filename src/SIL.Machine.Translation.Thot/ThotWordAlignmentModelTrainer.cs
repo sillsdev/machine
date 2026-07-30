@@ -26,9 +26,10 @@ namespace SIL.Machine.Translation.Thot
             string sourceFileName,
             string targetFileName,
             string prefFileName,
-            ThotWordAlignmentParameters parameters = null
+            ThotWordAlignmentParameters parameters = null,
+            bool emitTrainingAlignments = false
         )
-            : this(modelType, null, prefFileName, parameters)
+            : this(modelType, null, prefFileName, parameters, emitTrainingAlignments)
         {
             _sourceFileName = sourceFileName;
             _targetFileName = targetFileName;
@@ -38,7 +39,8 @@ namespace SIL.Machine.Translation.Thot
             ThotWordAlignmentModelType modelType,
             IParallelTextCorpus corpus,
             string prefFileName,
-            ThotWordAlignmentParameters parameters = null
+            ThotWordAlignmentParameters parameters = null,
+            bool emitTrainingAlignments = false
         )
         {
             _prefFileName = prefFileName;
@@ -46,6 +48,8 @@ namespace SIL.Machine.Translation.Thot
 
             if (parameters == null)
                 parameters = new ThotWordAlignmentParameters();
+
+            EmitTrainingAlignments = emitTrainingAlignments;
 
             _models = new List<(IntPtr, int)>();
             if (modelType == ThotWordAlignmentModelType.FastAlign)
@@ -197,6 +201,8 @@ namespace SIL.Machine.Translation.Thot
 
         public TrainStats Stats { get; } = new TrainStats();
 
+        public bool EmitTrainingAlignments { get; }
+
         public int MaxCorpusCount { get; set; } = int.MaxValue;
 
         public Task TrainAsync(IProgress<ProgressStatus> progress = null, CancellationToken cancellationToken = default)
@@ -242,6 +248,14 @@ namespace SIL.Machine.Translation.Thot
             curStep++;
             Report();
             cancellationToken.ThrowIfCancellationRequested();
+
+            if (EmitTrainingAlignments)
+            {
+                // Retain the alignments computed during training so that they can be returned without a
+                // separate inference pass. Only the final (most refined) model's alignments are needed,
+                // since that is the model used for inference.
+                Thot.swAlignModel_setEmitTrainingAlignments(Handle, true);
+            }
 
             int trainedSegmentCount = 0;
             foreach ((IntPtr handle, int storedIterationCount) in _models)
