@@ -89,8 +89,13 @@ namespace SIL.Machine.Corpora
         {
             bookId = null;
 
-            if (!fileName.StartsWith(FileNamePrefix) || !fileName.EndsWith(FileNameSuffix))
+            if (
+                !fileName.StartsWith(FileNamePrefix, ignoreCase: true, CultureInfo.InvariantCulture)
+                || !fileName.EndsWith(FileNameSuffix, ignoreCase: true, CultureInfo.InvariantCulture)
+            )
+            {
                 return false;
+            }
 
             string bookPart = fileName.Substring(
                 FileNamePrefix.Length,
