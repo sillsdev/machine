@@ -171,6 +171,14 @@ public class ParatextProjectSettingsTests
         Assert.That(settings.IsBookFileName("PROJ100.SFM", out _), Is.False);
     }
 
+    [Test]
+    public void IsBookFileName_CaseInsensitive()
+    {
+        ParatextProjectSettings settings = CreateSettings("MAT");
+        Assert.That(settings.IsBookFileName("PROJMRK.sfm", out string bookId), Is.True);
+        Assert.That(bookId, Is.EqualTo("MRK"));
+    }
+
     private static ParatextProjectSettings CreateSettings(string fileNameForm)
     {
         return new ParatextProjectSettings(
