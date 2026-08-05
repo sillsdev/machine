@@ -166,10 +166,12 @@ namespace SIL.Machine.Translation.Thot
         public WordAlignmentMatrix GetTrainingAlignment(int n)
         {
             CheckDisposed();
-            IntPtr nativeMatrix = Thot.AllocNativeMatrix(_sourceWords.Count, _targetWords.Count);
 
-            uint iLen = (uint)_sourceWords.Count;
-            uint jLen = (uint)_targetWords.Count;
+            uint iLen = 0;
+            uint jLen = 0;
+            Thot.swAlignModel_getTrainingAlignment(Handle, (uint)n, IntPtr.Zero, ref iLen, ref jLen);
+
+            IntPtr nativeMatrix = Thot.AllocNativeMatrix((int)iLen, (int)jLen);
             try
             {
                 Thot.swAlignModel_getTrainingAlignment(Handle, (uint)n, nativeMatrix, ref iLen, ref jLen);
