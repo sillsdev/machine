@@ -15,6 +15,7 @@ LatinDiacriticProbe,rDim,caféta;kelîta;!añota;!gölta
 LatinDiacriticProbe,rPl,años;cafés;göls;kelîs
 DisjunctiveRecheckProbe,ruleD,pakza;!pakda;pitda
 DisjunctiveRecheckProbe,ruleT,!wakta;wokta
+FreeFluctuatingAllomorphPair,ruleS,kits;!kots
 N2-DefaultSymbol,pr1,!bdt
 Ranavu,mrNPfx,menulik;membalo
 Ranavu,mrSuf,sanitan;!vokadan
@@ -22,8 +23,14 @@ Ranavu,mrSufAlt,vokadi
 Ranavu,prNasalAssimAlveolar,menulik
 Ranavu,prNasalAssimBilabial,membalo
 Ranavu,prObstruentDeletion,menulik
+MprGroupOverwriteWithoutRealizational,mrEndC,udofq;!wudofq
+MprGroupOverwriteWithoutRealizational,mrThemeA,udof;wudof;udofq
+MprGroupOverwriteWithoutRealizational,mrThemeB,wudof
+ProcessMorphologyInPlaceMutation,mrAblaut,a
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae
 IterativeEpenthesisCascadeProbe,prule4,
+StemNameRestrictedRootAllomorph,mrPers1,kapom
+StemNameRestrictedRootAllomorph,mrPers2,tamur
 StrRepIdentityProbe,ruleObj,ndpat;!ndmat;imat;!ipat
 StrRepIdentityProbe,rulePfx,pat;mat;mupat;mumat;!mwpat;mwuta;!muuta;ndpat;imat
 SubruleMorphosyntacticGating,mrDerive,bat

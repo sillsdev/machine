@@ -39,6 +39,12 @@ DisjunctiveRecheckProbe,pitza,,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,pitda,+|pitda,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,gray,|gray,Disjunctive allomorphs / free-fluctuation
 DisjunctiveRecheckProbe,grey,|grey,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,pol,ALT|pol,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,pel,ALT|pel,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,kits,ORD+SSFX|kits,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,kots,,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,kot,ORD|kot,Disjunctive allomorphs / free-fluctuation
+FreeFluctuatingAllomorphPair,kit,,Disjunctive allomorphs / free-fluctuation
 N2-DefaultSymbol,bat,|bat,Boundary markers (CharacterDefinitionTable)
 N2-DefaultSymbol,bdt,,Boundary markers (CharacterDefinitionTable)
 N1-IsActive,kat,|kat,Boundary markers (CharacterDefinitionTable)
@@ -48,12 +54,23 @@ N3-PatternShapes,bet,|b[ae]t,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bit,,Boundary markers (CharacterDefinitionTable)
 N3-PatternShapes,bt,,CharacterDefinitionTable pattern shapes: optional group / Kleene star
 Ranavu,menulik,NPFX+TULIK|menulik,RewriteRule direction (Dir): left-to-right
+MprGroupOverwriteWithoutRealizational,udof,THEMEA+DOF|udof,MPR features/groups
+MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features/groups
+MprGroupOverwriteWithoutRealizational,udofq,THEMEA+DOF+ENDC|udofq,MPR features/groups
+MprGroupOverwriteWithoutRealizational,wudofq,,MPR features/groups
+ProcessMorphologyInPlaceMutation,a,ROOT+ABLAUT|a,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
 RightToLeftAnchorEnvironment,aae,ROOT1|aae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,ae,ROOT2|ae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
+StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
+StemNameRestrictedRootAllomorph,kap,,Stem names
+StemNameRestrictedRootAllomorph,kapom,ROOT+PERS1|kapom,Stem names
+StemNameRestrictedRootAllomorph,tamom,,Stem names
+StemNameRestrictedRootAllomorph,tamur,ROOT+PERS2|tamur,Stem names
+StemNameRestrictedRootAllomorph,kapur,,Stem names
 StrRepIdentityProbe,pat,+|[(^0)∅]?+?pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,pat,|pat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 StrRepIdentityProbe,mat,+|[(^0)∅]?+?mat,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
