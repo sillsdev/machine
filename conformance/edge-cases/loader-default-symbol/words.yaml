@@ -49,6 +49,5 @@ words:
       really about defaultSymbol, not some other loader/matcher bug.
     provenance: "Phase-2 audit C finding N2 (SymbolicFeature@defaultSymbol / UseDefaults)"
     expect_fail: true
-    blocked_by: [pr1]
     exercises:
       - "Boundary markers (CharacterDefinitionTable)"

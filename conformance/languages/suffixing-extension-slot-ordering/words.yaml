@@ -438,7 +438,6 @@ words:
       other word in the grammar regardless of this outcome.
     provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.RequiredSyntacticFeatureStruct"
     expect_fail: true
-    blocked_by: [rrRRealTest]
     exercises:
       - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
 
@@ -453,6 +452,5 @@ words:
       or a CompoundingRule.
     provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.Blockable"
     expect_fail: true
-    blocked_by: [rrRRealTest]
     exercises:
       - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"

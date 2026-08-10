@@ -74,6 +74,34 @@ for the current construct-coverage fraction and dead-rule count rather than trus
 here — `Tracing (TraceType)` is the one construct permanently out of scope, since it was never in
 `expected.tsv`'s domain.
 
+**`blocked_by` and verified vs. label-only attribution.** An `expect_fail` word may optionally name
+the rule(s) responsible in `blocked_by` — but `WordsYamlLoader` only checks the field is non-empty,
+never that the named rule actually participated, so a bare `blocked_by` is an ASSERTION, not
+evidence. `--coverage-report` upgrades an assertion to VERIFIED wherever a real engine channel
+corroborates it: `rules:` on a successful parse is checked against the oracle's own trace; an
+`expect_crash` word is checked against the identity carried by the caught `InfiniteLoopException`;
+and, since 2026-08-10, a `blocked_by` claim on any other `expect_fail` word is checked against the
+oracle's `Trace` tree too (`FailureRuleAttributor.cs`) — specifically a `Blocked` node
+(`Word.CheckBlocking` substituted a suppletive family partner after the rule applied), a `Failed`
+node whose offending allomorph is owned by a morphological rule, or a phonological rule's own
+`Applied` node when the word's failure is a surface-form mismatch (the rule fired and mutated the
+confirming candidate away from the input). A rule whose every exercising word is still an
+unverified `!`-prefixed token in `rules.csv` is LABEL-ONLY — attributed, so not dead, but resting on
+someone's word rather than the engine's. `--coverage-report` prints every label-only attribution
+and fails the run if any of them is not in a small, NAMED, frozen baseline
+(`Program.LabelOnlyBaseline`) — a count would let one rule be silently swapped for another while the
+number stayed the same, so the gate checks identity, not cardinality. As of 2026-08-10 the baseline
+holds exactly one entry: `languages/suffixing-evidential-adjacency-chain`'s `aKanta` — a lexical
+entry's own allomorph (one of two free-variation allomorphs sharing a morpheme), rejected via its
+`AllomorphCoOccurrenceRule`. No trace channel can currently name WHICH allomorph failed: the runtime
+`Allomorph` object never retains its grammar.xml `id` attribute at all (unlike `Morpheme.Id`, which
+every other rule kind resolves through), so closing this needs a new engine capability — an
+`Allomorph.Id` passthrough from `XmlLanguageLoader` — not a conformance-tool fix. See
+`FailureRuleAttributor.cs`'s own doc comment for the full investigation, including two mechanisms
+deliberately NOT used (`FailureReason.RequiredMprFeatures`/`RequiredSyntacticFeatureStruct` on an
+ordinary NotApplied node) because they fire for nearly every word a rule was merely tried against,
+not just the ones it actually rejected.
+
 ## Running it
 
 ```
@@ -84,7 +112,8 @@ dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixt
 dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixtures conformance --adapter "<command template>"
 
 # coverage + dead-rule report: writes fixtures.csv, coverage.csv, and rules.csv; exits non-zero
-# if any grammar rule is exercised by zero words
+# if any grammar rule is exercised by zero words, or if any label-only attribution (see "Coverage
+# philosophy" above) is not in the frozen LabelOnlyBaseline
 dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixtures conformance --coverage-report
 
 # migration parity proof (v1->v2 floors + the permanent absolute construct check)

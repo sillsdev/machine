@@ -233,7 +233,6 @@ words:
       grammar.xml's ruleCollective comment), the word is rejected even though one piece's local check
       passed -- both must pass, not just one.
     expect_fail: true
-    blocked_by: [ruleCollective]
     provenance: "W3.3, history row 51 (987be2fd) per-occurrence environment checking half"
     exercises:
       - "AffixProcessRule: prefix/suffix/circumfix/infix"
@@ -241,7 +240,6 @@ words:
   - word: esalik
     note: SAL circumfixed ("e-sal-ik") -- the minimal-pair partner of etemik, but here the PREFIX piece's own local right-context ("s") already fails to match the required class, so this word fails even more directly (both pieces fail, rather than just one) -- same overall rejection, different reason, proving the per-piece check isn't merely "satisfied somewhere in the word".
     expect_fail: true
-    blocked_by: [ruleCollective]
     exercises:
       - "AffixProcessRule: prefix/suffix/circumfix/infix"
 

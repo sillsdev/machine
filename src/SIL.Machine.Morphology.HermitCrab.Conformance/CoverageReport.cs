@@ -102,6 +102,13 @@ public static class CoverageReport
             // every fixture that doesn't declare expect_crash.
             Dictionary<string, HashSet<string>> crashRuleIdsByWord = ObserveCrashAttributedRuleIds(fixture, ruleIndex);
 
+            // word -> rule ids VERIFIED by a real engine trace (see ObserveTraceAttributedRuleIds)
+            // while actually parsing this fixture's expect_fail words -- deliberately NOT gated on
+            // blocked_by being present (a word can be trace-verified with no hand-written label at
+            // all, exactly like a crash-attributed word; see that method's own doc comment). Empty
+            // for a fixture with no expect_fail word, or where the trace carries no resolvable id.
+            Dictionary<string, HashSet<string>> traceRuleIdsByWord = ObserveTraceAttributedRuleIds(fixture, ruleIndex);
+
             // rule id -> exercising word tokens ("word" for a VERIFIED hit -- a real "rules:" trace
             // match, or a crash whose exception carried the rule's identity -- "!word" for a
             // blocked_by attribution with no verified corroboration).
@@ -131,12 +138,17 @@ public static class CoverageReport
                     }
 
                     crashRuleIdsByWord.TryGetValue(word.Word, out HashSet<string> crashRuleIds);
+                    traceRuleIdsByWord.TryGetValue(word.Word, out HashSet<string> traceRuleIds);
                     IEnumerable<string> ruleIdsForWord = word.BlockedBy;
                     if (crashRuleIds != null)
                         ruleIdsForWord = ruleIdsForWord.Union(crashRuleIds, StringComparer.Ordinal);
+                    if (traceRuleIds != null)
+                        ruleIdsForWord = ruleIdsForWord.Union(traceRuleIds, StringComparer.Ordinal);
                     foreach (string ruleId in ruleIdsForWord)
                     {
-                        bool verified = crashRuleIds != null && crashRuleIds.Contains(ruleId);
+                        bool verified =
+                            (crashRuleIds != null && crashRuleIds.Contains(ruleId))
+                            || (traceRuleIds != null && traceRuleIds.Contains(ruleId));
                         AddExercise(ruleId, verified ? word.Word : "!" + word.Word);
                     }
                 }
@@ -266,6 +278,54 @@ public static class CoverageReport
                 // Any other exception (including an InfiniteLoopException with no rule identity)
                 // reproduces "a crash happened" but not "which rule" -- nothing to attribute here,
                 // so this word's blocked_by (if any) stays label-only.
+            }
+        }
+        return observed;
+    }
+
+    /// <summary>
+    /// For every expect_fail word, actually parses it through the in-process oracle with tracing
+    /// enabled and asks <see cref="FailureRuleAttributor"/> whether the resulting trace tree carries
+    /// a resolvable rule id -- the same standard a real "rules:" trace hit or a crash-attributed rule
+    /// already meets (see <see cref="ObserveCrashAttributedRuleIds"/>), applied to the non-crash
+    /// zero-parse case instead. Deliberately NOT gated on the word already declaring a <c>blocked_by</c>
+    /// label -- a word can be trace-verified with no hand-written label at all (mirroring how a
+    /// crash-attributed word needs none either), and gating on the label would make verification
+    /// depend on the label still being there, defeating the one check that actually proves it:
+    /// deleting the label and confirming the gate still passes. Returns an empty map for a fixture
+    /// with no expect_fail word, or wherever the trace carries no rule id this grammar's index can
+    /// resolve -- callers then fall back to treating the word's blocked_by list (if any) as
+    /// label-only, the same safe default ObserveCrashAttributedRuleIds documents (under-attribute,
+    /// never over-attribute).
+    /// </summary>
+    private static Dictionary<string, HashSet<string>> ObserveTraceAttributedRuleIds(
+        Fixture fixture,
+        GrammarRuleIndex ruleIndex
+    )
+    {
+        var observed = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        if (!fixture.Words.Words.Any(w => w.ExpectFail))
+            return observed;
+
+        Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
+        var morpher = new Morpher(new TraceManager { IsTracing = true }, language);
+        foreach (WordEntry word in fixture.Words.Words)
+        {
+            if (!word.ExpectFail)
+                continue;
+            try
+            {
+                morpher.ParseWord(word.Word, out object trace).ToList();
+                HashSet<string> ruleIds = FailureRuleAttributor.WordLevelFailureRuleIds(trace, ruleIndex);
+                if (ruleIds.Count > 0)
+                    observed[word.Word] = ruleIds;
+            }
+            catch
+            {
+                // A crash (or any other exception) reproduces here too for a word that is ALSO
+                // expect_crash -- nothing to attribute from a trace that never finished, so this
+                // word's blocked_by stays label-only (ObserveCrashAttributedRuleIds is the channel
+                // for that case).
             }
         }
         return observed;

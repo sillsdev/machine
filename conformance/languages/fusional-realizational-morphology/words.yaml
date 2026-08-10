@@ -235,7 +235,6 @@ words:
       substitutes in TUL's own shape; since that substituted shape ("tul") does not match the surface
       "ducit", the candidate is discarded. Zero parses.
     expect_fail: true
-    blocked_by: [mrPast2]
     provenance: "W5, LexFamily blocks a more-general family member (Word.CheckBlocking)"
     exercises:
       - "RealizationalAffixProcessRule"

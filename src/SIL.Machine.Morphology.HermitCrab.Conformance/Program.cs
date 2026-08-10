@@ -87,12 +87,13 @@ internal class Program
         if (coverageReport)
         {
             constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
-            bool anyDeadRules = RunCoverageReport(fixtures, fixturesRoot, constructsPath);
-            // A dead rule is an authoring defect (a grammar.xml rule id no word ever exercises),
-            // not merely informational, so --coverage-report fails the same way self-check already
-            // fails on Failed > 0: exit code reflects a suite that isn't clean, with no separate
-            // flag to remember to pass in CI.
-            return anyDeadRules ? 1 : 0;
+            // A dead rule (a grammar.xml rule id no word ever exercises) or a label-only attribution
+            // outside the frozen baseline (a NEW citation-without-evidence hole) are both authoring
+            // defects, not merely informational, so --coverage-report fails the same way self-check
+            // already fails on Failed > 0: exit code reflects a suite that isn't clean, with no
+            // separate flag to remember to pass in CI.
+            bool anyGateFailure = RunCoverageReport(fixtures, fixturesRoot, constructsPath);
+            return anyGateFailure ? 1 : 0;
         }
 
         IEngine engine;
@@ -190,8 +191,28 @@ internal class Program
     // expected.tsv's domain) -- see docs/conformance-language-suite-plan.md sections 3 and 7.
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
+    /// <summary>
+    /// A NAMED, frozen allowlist of every (fixture, rule id) pair permitted to stay label-only --
+    /// not a count, because a count lets one rule be silently swapped for another while the number
+    /// stays the same. Investigated 2026-08-10: <c>aKanta</c> is a lexical entry's own allomorph
+    /// (an <c>AllomorphCoOccurrenceRule</c> pseudo-id, see <see cref="GrammarRuleIndex"/>'s own doc
+    /// comment), and the runtime <see cref="Allomorph"/> object never retains its grammar.xml
+    /// <c>id</c> attribute at all (unlike <see cref="Morpheme.Id"/>, which every other rule kind
+    /// resolves through) -- so no trace can currently name WHICH of a free-variation morpheme's
+    /// several allomorphs failed. Closing this needs a new engine capability (an
+    /// <c>Allomorph.Id</c> passthrough from the loader), not a conformance-tool fix; see
+    /// <see cref="FailureRuleAttributor"/>'s own doc comment for the full investigation. Any entry
+    /// that appears in <see cref="CoverageReport.CoverageResult.LabelOnlyRules"/> but NOT here is a
+    /// NEW hole this baseline exists to catch -- the gate must fail on it, unconditionally.
+    /// </summary>
+    private static readonly HashSet<(string FixtureId, string RuleId)> LabelOnlyBaseline = new()
+    {
+        ("languages/suffixing-evidential-adjacency-chain", "aKanta"),
+    };
+
     /// <summary>Writes coverage.csv/rules.csv/fixtures.csv and prints the report. Returns true if
-    /// any dead rule was found, which the caller turns into a non-zero exit code.</summary>
+    /// any dead rule was found, or any label-only attribution outside <see cref="LabelOnlyBaseline"/>
+    /// was found, either of which the caller turns into a non-zero exit code.</summary>
     private static bool RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
         string coverageCsvPath = Path.Combine(fixturesRoot, "coverage.csv");
@@ -246,10 +267,14 @@ internal class Program
             Console.WriteLine("0 dead rules across all grammars.");
         }
 
-        // Not gated (a label-only rule has attribution, so it isn't dead), but printed prominently:
-        // a rule exercised ONLY by an unverified blocked_by label is the exact citation-without-
-        // evidence shortcut the dead-rule gate must not let go invisible. See CoverageReport's class
-        // doc comment.
+        // A label-only rule has attribution (so it isn't dead), but every one of them is printed
+        // prominently regardless: exercised ONLY by an unverified blocked_by label is the exact
+        // citation-without-evidence shortcut the dead-rule gate must not let go invisible. See
+        // CoverageReport's class doc comment. Gated separately from dead-rule status: any entry NOT
+        // in the frozen LabelOnlyBaseline is a NEW hole, and the gate fails on it -- see that
+        // field's own doc comment for why a count would not catch a rule silently swapped in place
+        // of another.
+        bool anyNewLabelOnly = false;
         if (result.LabelOnlyRules.Count > 0)
         {
             Console.WriteLine();
@@ -258,14 +283,29 @@ internal class Program
                     + "(exercised only by an unverified 'blocked_by' label, never a verified rules:/crash trace) ***"
             );
             foreach (CoverageReport.LabelOnlyRule labelOnly in result.LabelOnlyRules)
-                Console.WriteLine($"  {labelOnly.FixtureId}: rule '{labelOnly.RuleId}'");
+            {
+                bool baselined = LabelOnlyBaseline.Contains((labelOnly.FixtureId, labelOnly.RuleId));
+                Console.WriteLine(
+                    $"  {labelOnly.FixtureId}: rule '{labelOnly.RuleId}'"
+                        + (baselined ? " (frozen baseline, permitted)" : " *** NOT IN BASELINE ***")
+                );
+                if (!baselined)
+                    anyNewLabelOnly = true;
+            }
+            if (anyNewLabelOnly)
+            {
+                Console.WriteLine(
+                    "*** at least one label-only attribution above is NOT in the frozen baseline -- "
+                        + "this is a NEW hole, not the known one, and fails this gate. ***"
+                );
+            }
         }
         else
         {
             Console.WriteLine("0 label-only attributions across all grammars.");
         }
 
-        return result.DeadRules.Count > 0;
+        return result.DeadRules.Count > 0 || anyNewLabelOnly;
     }
 
     private static void PrintUsage()
