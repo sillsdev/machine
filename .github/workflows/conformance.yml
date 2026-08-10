@@ -1,0 +1,63 @@
+name: Conformance
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "conformance/**"
+      - "src/SIL.Machine.Morphology.HermitCrab*/**"
+  pull_request:
+    paths:
+      - "conformance/**"
+      - "src/SIL.Machine.Morphology.HermitCrab*/**"
+
+jobs:
+  conformance:
+    name: Conformance suite
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore src/SIL.Machine.Morphology.HermitCrab.Conformance/SIL.Machine.Morphology.HermitCrab.Conformance.csproj
+
+      # Gate (a): every fixture's declared parses/rejections must match what the C# oracle
+      # actually produces (self-check mode runs the reference engine in-process against every
+      # words.yaml, including budget_ms pathological fixtures).
+      - name: Run conformance self-check
+        run: >-
+          dotnet run --no-restore --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance --include-pathological
+
+      # Gate (b): zero dead rules. --coverage-report also (re)writes fixtures.csv/coverage.csv/
+      # rules.csv, which the next step checks for staleness. This step's own exit code is the
+      # dead-rule gate (Program.cs returns 1 when CoverageReport.WriteCsvs finds any rule no word
+      # exercises) -- deliberately not grepped from stdout, which would be brittle. `if: always()`
+      # so this still runs (and reports its own true status) even if the self-check step above
+      # failed, keeping the two gates distinguishable in the log rather than one skipping the other.
+      - name: Run coverage report (dead-rule gate)
+        if: always()
+        run: >-
+          dotnet run --no-restore --project src/SIL.Machine.Morphology.HermitCrab.Conformance --
+          --fixtures conformance --coverage-report
+
+      # Gate (c): the checked-in fixtures.csv/coverage.csv/rules.csv must already reflect the
+      # fixtures as they stand -- generated so nobody needs to remember to refresh them, but that
+      # only holds if forgetting to refresh them is a CI failure. Runs after the coverage-report
+      # step (which just regenerated all three) and `if: always()` for the same reason as above:
+      # a dead rule and a stale index are two different failures and must not collapse into one.
+      - name: Verify generated coverage files are fresh
+        if: always()
+        run: |
+          if ! git diff --exit-code -- conformance/fixtures.csv conformance/coverage.csv conformance/rules.csv; then
+            echo "::error::conformance/fixtures.csv, coverage.csv, or rules.csv is stale relative to the fixtures (diff above). Run 'dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixtures conformance --coverage-report' locally and commit the result."
+            exit 1
+          fi

@@ -35,5 +35,11 @@ words:
       Lexical root "bubu" alone (no affixes needed -- this only needs to exercise synthesis, i.e.
       the forward phonological-rule direction). Parsing this word crashes the oracle with an
       uncaught InfiniteLoopException partway through, per the fixture's front-matter expect_crash.
+      prule4 is the rule whose own self-feeding LeftEnvironment match causes the crash (see the
+      file header above), so it is the rule responsible for this word never producing a parse --
+      recorded via blocked_by exactly as any other expect_fail rejection would be, even though the
+      mechanism here is a crash rather than a correctly-rejected analysis.
     provenance: "P13 synthetic oracle: Iterative self-feeding epenthesis crashes; Simultaneous cannot"
     expect_fail: true
+    blocked_by: [prule4]
+    exercises: ["RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"]

@@ -65,6 +65,7 @@ RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,eaa,,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aea,,RewriteRule direction (Dir): right-to-left
+IterativeEpenthesisCascadeProbe,bubu,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 StemNameRestrictedRootAllomorph,tam,ROOT|tam,Stem names
 StemNameRestrictedRootAllomorph,kap,,Stem names
 StemNameRestrictedRootAllomorph,kapom,ROOT+PERS1|kapom,Stem names

@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// Emits the two coverage tables described in docs/conformance-language-suite-plan.md section 4:
+/// Emits the coverage tables described in docs/conformance-language-suite-plan.md section 4:
 /// <c>conformance/coverage.csv</c> (language, word, parse signature, construct -- one row per
-/// parse×construct, expect_fail words getting an empty signature) and <c>conformance/rules.csv</c>
+/// parse×construct, expect_fail words getting an empty signature), <c>conformance/rules.csv</c>
 /// (language, rule id, exercising words -- semicolon-joined, <c>blocked_by</c> attributions marked
-/// with a "!" prefix), plus dead-rule detection: every rule id <see cref="GrammarRuleIndex"/> finds
-/// in a grammar.xml that no word's "rules:"/"blocked_by" ever names.
+/// with a "!" prefix), and <c>conformance/fixtures.csv</c> (one row per fixture: directory,
+/// category, grammar name, and the distinct constructs it exercises -- the generated replacement
+/// for a hand-maintained fixture table in README.md, which goes stale the moment a fixture is
+/// added). Also does dead-rule detection: every rule id <see cref="GrammarRuleIndex"/> finds in a
+/// grammar.xml that no word's "rules:"/"blocked_by" ever names.
 /// </summary>
 public static class CoverageReport
 {
@@ -46,16 +50,26 @@ public static class CoverageReport
         return constructs;
     }
 
-    public static CoverageResult WriteCsvs(List<Fixture> fixtures, string coverageCsvPath, string rulesCsvPath)
+    public static CoverageResult WriteCsvs(
+        List<Fixture> fixtures,
+        string coverageCsvPath,
+        string rulesCsvPath,
+        string fixtureIndexCsvPath
+    )
     {
         var result = new CoverageResult();
         var coverageRows = new List<(string language, string word, string signature, string construct)>();
         var ruleRows = new List<(string language, string ruleId, string words)>();
+        var fixtureRows = new List<(string directory, string category, string grammarName, string exercises)>();
 
         foreach (Fixture fixture in fixtures)
         {
             string language = fixture.Words.Language;
             GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
+            // fixture.Id is "<category>/<directory-name>" (see Fixture.DiscoverAll) -- the category
+            // is always the text before the first '/'.
+            string category = fixture.Id.Split('/', 2)[0];
+            var fixtureExercises = new SortedSet<string>(StringComparer.Ordinal);
 
             // rule id -> exercising word tokens ("word" for a positive rules: hit, "!word" for a
             // blocked_by attribution on an expect_fail word).
@@ -81,6 +95,7 @@ public static class CoverageReport
                     {
                         coverageRows.Add((language, word.Word, "", construct));
                         result.CoveredConstructs.Add(construct);
+                        fixtureExercises.Add(construct);
                     }
                     foreach (string ruleId in word.BlockedBy)
                         AddExercise(ruleId, "!" + word.Word);
@@ -96,6 +111,7 @@ public static class CoverageReport
                         {
                             coverageRows.Add((language, word.Word, parse.Signature, construct));
                             result.CoveredConstructs.Add(construct);
+                            fixtureExercises.Add(construct);
                         }
                         foreach (string ruleId in parse.Rules)
                             AddExercise(ruleId, word.Word);
@@ -126,6 +142,10 @@ public static class CoverageReport
                     );
                 }
             }
+
+            fixtureRows.Add(
+                (fixture.Id, category, LoadGrammarName(fixture.GrammarPath), string.Join(";", fixtureExercises))
+            );
         }
 
         WriteCsv(
@@ -138,8 +158,24 @@ public static class CoverageReport
             new[] { "language", "rule_id", "words" },
             ruleRows.Select(r => new[] { r.language, r.ruleId, r.words })
         );
+        WriteCsv(
+            fixtureIndexCsvPath,
+            new[] { "directory", "category", "grammar_name", "exercises" },
+            fixtureRows.Select(r => new[] { r.directory, r.category, r.grammarName, r.exercises })
+        );
 
         return result;
+    }
+
+    /// <summary>Reads a grammar.xml's top-level <c>&lt;Language&gt;&lt;Name&gt;</c> text, for the
+    /// fixture index -- independent of <see cref="GrammarRuleIndex"/>, which only walks rule
+    /// elements.</summary>
+    private static string LoadGrammarName(string grammarPath)
+    {
+        var settings = new System.Xml.XmlReaderSettings { DtdProcessing = System.Xml.DtdProcessing.Ignore };
+        using System.Xml.XmlReader reader = System.Xml.XmlReader.Create(grammarPath, settings);
+        XDocument doc = XDocument.Load(reader);
+        return (string)doc.Root?.Element("Language")?.Element("Name") ?? "";
     }
 
     private static void WriteCsv(string path, string[] header, IEnumerable<string[]> rows)

@@ -87,8 +87,12 @@ internal class Program
         if (coverageReport)
         {
             constructsPath ??= Path.Combine(fixturesRoot, "constructs.txt");
-            RunCoverageReport(fixtures, fixturesRoot, constructsPath);
-            return 0;
+            bool anyDeadRules = RunCoverageReport(fixtures, fixturesRoot, constructsPath);
+            // A dead rule is an authoring defect (a grammar.xml rule id no word ever exercises),
+            // not merely informational, so --coverage-report fails the same way self-check already
+            // fails on Failed > 0: exit code reflects a suite that isn't clean, with no separate
+            // flag to remember to pass in CI.
+            return anyDeadRules ? 1 : 0;
         }
 
         IEngine engine;
@@ -186,17 +190,26 @@ internal class Program
     // expected.tsv's domain) -- see docs/conformance-language-suite-plan.md sections 3 and 7.
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
-    private static void RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
+    /// <summary>Writes coverage.csv/rules.csv/fixtures.csv and prints the report. Returns true if
+    /// any dead rule was found, which the caller turns into a non-zero exit code.</summary>
+    private static bool RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
     {
         string coverageCsvPath = Path.Combine(fixturesRoot, "coverage.csv");
         string rulesCsvPath = Path.Combine(fixturesRoot, "rules.csv");
-        CoverageReport.CoverageResult result = CoverageReport.WriteCsvs(fixtures, coverageCsvPath, rulesCsvPath);
+        string fixtureIndexCsvPath = Path.Combine(fixturesRoot, "fixtures.csv");
+        CoverageReport.CoverageResult result = CoverageReport.WriteCsvs(
+            fixtures,
+            coverageCsvPath,
+            rulesCsvPath,
+            fixtureIndexCsvPath
+        );
 
         Console.WriteLine();
         Console.WriteLine("coverage report");
         Console.WriteLine("===============");
         Console.WriteLine($"wrote {coverageCsvPath}");
         Console.WriteLine($"wrote {rulesCsvPath}");
+        Console.WriteLine($"wrote {fixtureIndexCsvPath}");
 
         // Absolute construct-coverage check against constructs.txt: every construct except Tracing
         // must be covered.
@@ -232,6 +245,8 @@ internal class Program
         {
             Console.WriteLine("0 dead rules across all grammars.");
         }
+
+        return result.DeadRules.Count > 0;
     }
 
     private static void PrintUsage()
