@@ -28,7 +28,7 @@ MprGroupOverwriteWithoutRealizational,mrThemeA,udof;wudof;udofq
 MprGroupOverwriteWithoutRealizational,mrThemeB,wudof
 ProcessMorphologyInPlaceMutation,mrAblaut,a
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae
-IterativeEpenthesisCascadeProbe,prule4,!bubu
+IterativeEpenthesisCascadeProbe,prule4,bubu
 StemNameRestrictedRootAllomorph,mrPers1,kapom
 StemNameRestrictedRootAllomorph,mrPers2,tamur
 StrRepIdentityProbe,ruleObj,ndpat;!ndmat;imat;!ipat

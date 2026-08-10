@@ -146,6 +146,15 @@ public class GrammarRuleIndex
     /// <summary>Translates a fired phonological rule (from a trace node's Source) back to its grammar.xml rule id, by IHCRule.Name -- see the class doc comment.</summary>
     public string ResolvePhonologicalRuleId(IPhonologicalRule rule)
     {
-        return rule.Name != null && _ruleIdByRuleName.TryGetValue(rule.Name, out string id) ? id : null;
+        return ResolveRuleName(rule.Name);
+    }
+
+    /// <summary>Translates a raw <see cref="IHCRule.Name"/> string -- e.g. an
+    /// <see cref="InfiniteLoopException.RuleName"/> caught from a crashed parse, which has no
+    /// runtime rule object to hand <see cref="ResolvePhonologicalRuleId"/> -- back to its grammar.xml
+    /// rule id. Returns null for a null name or one this index never saw.</summary>
+    public string ResolveRuleName(string name)
+    {
+        return name != null && _ruleIdByRuleName.TryGetValue(name, out string id) ? id : null;
     }
 }

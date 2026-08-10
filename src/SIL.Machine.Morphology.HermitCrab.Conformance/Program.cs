@@ -246,6 +246,25 @@ internal class Program
             Console.WriteLine("0 dead rules across all grammars.");
         }
 
+        // Not gated (a label-only rule has attribution, so it isn't dead), but printed prominently:
+        // a rule exercised ONLY by an unverified blocked_by label is the exact citation-without-
+        // evidence shortcut the dead-rule gate must not let go invisible. See CoverageReport's class
+        // doc comment.
+        if (result.LabelOnlyRules.Count > 0)
+        {
+            Console.WriteLine();
+            Console.WriteLine(
+                $"*** {result.LabelOnlyRules.Count} LABEL-ONLY ATTRIBUTION(S) "
+                    + "(exercised only by an unverified 'blocked_by' label, never a verified rules:/crash trace) ***"
+            );
+            foreach (CoverageReport.LabelOnlyRule labelOnly in result.LabelOnlyRules)
+                Console.WriteLine($"  {labelOnly.FixtureId}: rule '{labelOnly.RuleId}'");
+        }
+        else
+        {
+            Console.WriteLine("0 label-only attributions across all grammars.");
+        }
+
         return result.DeadRules.Count > 0;
     }
 
