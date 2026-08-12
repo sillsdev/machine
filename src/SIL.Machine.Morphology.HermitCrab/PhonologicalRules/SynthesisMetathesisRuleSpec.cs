@@ -100,8 +100,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
             GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
-            // The splice below needs the later group in shape order first; reversed, its second move
-            // re-anchors a group after its own end. An unmatched capture has no start to compare.
+            // The splice below needs the later shape-order group first, or its second move re-anchors past its own end.
             if (leftGroup.Success && rightGroup.Success && leftGroup.Range.Start.CompareTo(rightGroup.Range.Start) < 0)
             {
                 GroupCapture<ShapeNode> earlier = leftGroup;
