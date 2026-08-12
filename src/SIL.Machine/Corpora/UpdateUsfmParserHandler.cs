@@ -49,6 +49,7 @@ namespace SIL.Machine.Corpora
         private int _verseRowIndex;
         private readonly Dictionary<VerseRef, List<RowInfo>> _verseRowsMap;
         private readonly ScrVers _updateRowsVersification;
+        private readonly ScrVers _usfmVersification;
         private readonly List<UsfmToken> _tokens;
         private readonly List<UsfmToken> _updatedText;
         private readonly List<UsfmToken> _embedTokens;
@@ -65,6 +66,10 @@ namespace SIL.Machine.Corpora
         private int _tokenIndex;
         private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
         private readonly bool _compareSegments;
+        private readonly bool _convertUsfmToUpdateRowVersification;
+        private UsfmToken _currentChapterToken;
+        private int _currentChapterNum;
+        private bool _skipNextVerseText;
 
         /// <param name="rows">UpdateUsfmRows must be in order</param>
         public UpdateUsfmParserHandler(
@@ -78,7 +83,9 @@ namespace SIL.Machine.Corpora
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<(int, string)> remarks = null,
             Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
-            bool compareSegments = false
+            bool compareSegments = false,
+            ScrVers usfmVersification = null,
+            bool convertUsfmToUpdateRowVersification = false
         )
         {
             _rows = rows ?? Array.Empty<UpdateUsfmRow>();
@@ -89,6 +96,7 @@ namespace SIL.Machine.Corpora
             _updateRowsVersification = ScrVers.English;
             if (_rows.Count > 0)
                 _updateRowsVersification = _rows.First(r => r.Refs.Count > 0).Refs[0].Versification;
+            _usfmVersification = usfmVersification ?? _updateRowsVersification;
             _tokens = new List<UsfmToken>();
             _updatedText = new List<UsfmToken>();
             _updateBlocks = new Stack<UsfmUpdateBlock>();
@@ -112,6 +120,11 @@ namespace SIL.Machine.Corpora
             if (_errorHandler == null)
                 _errorHandler = (error) => false;
             _compareSegments = compareSegments;
+            _convertUsfmToUpdateRowVersification =
+                convertUsfmToUpdateRowVersification && _updateRowsVersification != _usfmVersification;
+            _currentChapterToken = null;
+            _currentChapterNum = 0;
+            _skipNextVerseText = false;
         }
 
         public IReadOnlyList<UsfmToken> Tokens => _tokens;
@@ -119,6 +132,11 @@ namespace SIL.Machine.Corpora
         public override void EndUsfm(UsfmParserState state)
         {
             CollectUpdatableTokens(state);
+            if (_currentChapterToken != null)
+            {
+                _tokens.Add(_currentChapterToken);
+                _currentChapterToken = null;
+            }
             base.EndUsfm(state);
         }
 
@@ -147,6 +165,12 @@ namespace SIL.Machine.Corpora
             PopNewTokens();
             UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
             _tokens.AddRange(updateBlock.GetTokens());
+
+            if (_currentChapterToken != null)
+            {
+                _tokens.Add(_currentChapterToken);
+                _currentChapterToken = null;
+            }
 
             base.EndBook(state, marker);
         }
@@ -398,7 +422,11 @@ namespace SIL.Machine.Corpora
 
         protected override void EndVerseText(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
         {
-            EndUpdateBlock(state, scriptureRefs);
+            if (!_skipNextVerseText)
+            {
+                EndUpdateBlock(state, scriptureRefs);
+                _skipNextVerseText = false;
+            }
         }
 
         protected override void StartNonVerseText(UsfmParserState state, ScriptureRef scriptureRef)
@@ -564,9 +592,16 @@ namespace SIL.Machine.Corpora
                 UsfmToken token = state.Tokens[_tokenIndex];
                 if (token.Type == UsfmTokenType.Verse)
                 {
-                    string sanitizedVerseData = SanitizeVerseData(token.Data);
-                    token = new UsfmToken(token.Type, token.Marker, token.Text, token.EndMarker, sanitizedVerseData);
+                    VerseRef updatedVerse = UpdateVerseData(state, token);
+                    if (updatedVerse.BookNum != state.VerseRef.BookNum)
+                    {
+                        _tokenIndex++;
+                        _skipNextVerseText = true;
+                        continue;
+                    }
+                    token = new UsfmToken(token.Type, token.Marker, token.Text, token.EndMarker, updatedVerse.Verse);
                 }
+
                 if (CurrentTextType == ScriptureTextType.Embed)
                 {
                     _embedTokens.Add(token);
@@ -582,8 +617,46 @@ namespace SIL.Machine.Corpora
                 {
                     _tokens.Add(token);
                 }
+
                 _tokenIndex++;
             }
+        }
+
+        private VerseRef UpdateVerseData(UsfmParserState state, UsfmToken token)
+        {
+            string updatedVerseData = SanitizeVerseData(token.Data);
+            VerseRef verseRef = state.VerseRef;
+            verseRef.Verse = updatedVerseData;
+            if (_convertUsfmToUpdateRowVersification)
+            {
+                verseRef = verseRef.ChangeVersificationWithSegments(_updateRowsVersification);
+                if (verseRef.ChapterNum != _currentChapterNum && state.VerseRef.BookNum == verseRef.BookNum)
+                {
+                    if (_currentChapterToken != null)
+                    {
+                        _tokens.Add(_currentChapterToken.Copy());
+                        _currentChapterToken = null;
+                    }
+                    else
+                    {
+                        UsfmToken newChapterToken = new UsfmToken(
+                            UsfmTokenType.Chapter,
+                            "c",
+                            "",
+                            "",
+                            verseRef.ChapterNum.ToString()
+                        );
+                        _tokens.Add(newChapterToken);
+                    }
+                    _currentChapterNum = verseRef.ChapterNum;
+                }
+                if (verseRef.ChapterNum == verseRef.Versification.GetLastChapter(verseRef.BookNum))
+                {
+                    _currentChapterToken = null;
+                }
+            }
+
+            return verseRef;
         }
 
         private void CollectReadonlyTokens(UsfmParserState state)
@@ -597,7 +670,16 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    _tokens.Add(token);
+                    if (_convertUsfmToUpdateRowVersification && token.Type == UsfmTokenType.Chapter)
+                    {
+                        if (_currentChapterToken != null)
+                            _tokens.Add(_currentChapterToken);
+                        _currentChapterToken = token;
+                    }
+                    else
+                    {
+                        _tokens.Add(token);
+                    }
                 }
                 _tokenIndex++;
             }
@@ -663,10 +745,13 @@ namespace SIL.Machine.Corpora
         private void StartUpdateBlock(IReadOnlyList<ScriptureRef> scriptureRefs)
         {
             (IReadOnlyList<string> rowTexts, Dictionary<string, object> metadata) = AdvanceRows(scriptureRefs);
-            _updateBlocks.Push(
-                new UsfmUpdateBlock(scriptureRefs, metadata: metadata ?? new Dictionary<string, object>())
-            );
-            PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
+            if (!_skipNextVerseText)
+            {
+                _updateBlocks.Push(
+                    new UsfmUpdateBlock(scriptureRefs, metadata: metadata ?? new Dictionary<string, object>())
+                );
+                PushUpdatedText(rowTexts.Select(t => new UsfmToken(t + " ")));
+            }
         }
 
         private void EndUpdateBlock(UsfmParserState state, IReadOnlyList<ScriptureRef> scriptureRefs)
@@ -757,7 +842,11 @@ namespace SIL.Machine.Corpora
         private void UpdateVerseRowsMap()
         {
             _verseRowsMap.Clear();
-            while (_rowIndex < _rows.Count && _rows[_rowIndex].Refs[0].ChapterNum == _verseRowsRef.ChapterNum)
+            while (
+                _rowIndex < _rows.Count
+                && _rows[_rowIndex].Refs[0].ChangeVersification(_verseRowsRef.Versification).ChapterNum
+                    == _verseRowsRef.ChapterNum
+            )
             {
                 UpdateUsfmRow row = _rows[_rowIndex];
                 var ri = new RowInfo(_rowIndex);
