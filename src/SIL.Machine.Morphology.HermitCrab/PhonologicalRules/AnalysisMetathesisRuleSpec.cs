@@ -31,12 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 _pattern.Children.Add(node.Clone());
             }
 
-            // The analysis pattern has to match the SURFACE, where the two switch groups appear in the
-            // opposite order from the pattern that describes the underlying form. So the group that is
-            // later in the pattern is emitted first. Rules that name the later group as the left switch
-            // already satisfy that; ordering by pattern position instead of by name makes a rule behave
-            // the same whichever way round its switch names are written, and keeps this spec consistent
-            // with the synthesis spec's own normalization.
+            // This pattern matches the surface, where the switch groups appear in reverse pattern order.
             int leftIndex = Array.FindIndex(groupOrder, g => g.Name == leftGroupName);
             int rightIndex = Array.FindIndex(groupOrder, g => g.Name == rightGroupName);
             string firstName = leftIndex < rightIndex ? rightGroupName : leftGroupName;

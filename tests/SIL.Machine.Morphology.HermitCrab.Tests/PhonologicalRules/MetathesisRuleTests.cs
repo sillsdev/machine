@@ -28,11 +28,7 @@ public class MetathesisRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("mui"), "51");
     }
 
-    // Regression: naming the EARLIER group as the left switch threw InvalidOperationException "Failed
-    // to compare two elements in the array", wrapping "Only nodes from the same list can be compared",
-    // instead of producing an analysis. Every pre-existing test here names the later group first, which
-    // is why the intuitive order was never exercised. Direction is irrelevant; this reproduces under
-    // both.
+    // Differs from SimpleRule only in the switch-name order, and must give the same result.
     [Test]
     public void SimpleRule_LeftSwitchNamesEarlierGroup()
     {
