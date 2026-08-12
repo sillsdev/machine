@@ -28,6 +28,31 @@ public class MetathesisRuleTests : HermitCrabTestBase
         AssertMorphsEqual(morpher.ParseWord("mui"), "51");
     }
 
+    // Regression: naming the EARLIER group as the left switch threw InvalidOperationException "Failed
+    // to compare two elements in the array", wrapping "Only nodes from the same list can be compared",
+    // instead of producing an analysis. Every pre-existing test here names the later group first, which
+    // is why the intuitive order was never exercised. Direction is irrelevant; this reproduces under
+    // both.
+    [Test]
+    public void SimpleRule_LeftSwitchNamesEarlierGroup()
+    {
+        var rule1 = new MetathesisRule
+        {
+            Name = "rule1",
+            Pattern = Pattern<Word, ShapeNode>
+                .New()
+                .Group("1", group => group.Annotation(Character(Table3, "i")))
+                .Group("2", group => group.Annotation(Character(Table3, "u")))
+                .Value,
+            LeftSwitchName = "1",
+            RightSwitchName = "2",
+        };
+        Morphophonemic.PhonologicalRules.Add(rule1);
+
+        var morpher = new Morpher(TraceManager, Language);
+        AssertMorphsEqual(morpher.ParseWord("mui"), "51");
+    }
+
     [Test]
     public void ComplexRule()
     {

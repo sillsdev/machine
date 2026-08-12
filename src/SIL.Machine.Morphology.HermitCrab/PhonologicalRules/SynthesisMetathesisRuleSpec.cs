@@ -100,6 +100,18 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             GroupCapture<ShapeNode> leftGroup = targetMatch.GroupCaptures[_leftGroupName];
             GroupCapture<ShapeNode> rightGroup = targetMatch.GroupCaptures[_rightGroupName];
 
+            // The splice below only works when the first group it is handed is the LATER of the two in
+            // shape order: it moves that group's nodes out to the right, then moves the other group
+            // into the gap. Handed them the other way round, the second move re-anchors a group after
+            // its own end, which detaches nodes and leaves annotation ranges spanning two lists.
+            // Nothing in the switch names implies an order, so normalize instead of assuming one.
+            if (leftGroup.Range.Start.CompareTo(rightGroup.Range.Start) < 0)
+            {
+                GroupCapture<ShapeNode> earlier = leftGroup;
+                leftGroup = rightGroup;
+                rightGroup = earlier;
+            }
+
             ShapeNode beforeRightGroup = rightGroup.Range.Start.Prev;
             MoveNodesAfter(targetMatch.Input.Shape, leftGroup.Range.End, rightGroup.Range);
             MoveNodesAfter(targetMatch.Input.Shape, beforeRightGroup, leftGroup.Range);
