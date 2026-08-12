@@ -180,6 +180,15 @@ namespace SIL.Machine.Corpora
             _defaultAttributeName = sourceToken._defaultAttributeName;
         }
 
+        public UsfmToken Copy()
+        {
+            UsfmToken copy = new UsfmToken(Type, Marker, Text, EndMarker, Data);
+            copy.CopyAttributes(this);
+            copy.LineNumber = LineNumber;
+            copy.ColumnNumber = ColumnNumber;
+            return copy;
+        }
+
         private static void AppendAttribute(List<UsfmAttribute> attributes, string name, string value)
         {
             value = value?.Trim(); // don't want to have attribute that is just spaces
