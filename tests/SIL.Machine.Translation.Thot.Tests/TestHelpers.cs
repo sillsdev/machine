@@ -64,6 +64,20 @@ public static class TestHelpers
         return new ParallelTextCorpus(srcCorpus, trgCorpus);
     }
 
+    public static ThotSymmetrizedWordAlignmentModel CreateTrainedModel(
+        IParallelTextCorpus corpus,
+        ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.FastAlign
+    )
+    {
+        var model = ThotSymmetrizedWordAlignmentModel.Create(modelType);
+        model.Heuristic = SymmetrizationHeuristic.GrowDiagFinalAnd;
+        model.EmitTrainingAlignments = true;
+        using ITrainer trainer = model.CreateTrainer(corpus);
+        trainer.TrainAsync().GetAwaiter().GetResult();
+        trainer.SaveAsync().GetAwaiter().GetResult();
+        return model;
+    }
+
     public static ParallelTextCorpus CreateTwoTextParallelCorpus()
     {
         var src = new DictionaryTextCorpus(
