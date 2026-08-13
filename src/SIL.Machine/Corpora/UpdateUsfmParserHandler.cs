@@ -67,7 +67,6 @@ namespace SIL.Machine.Corpora
         private readonly Func<UsfmUpdateBlockHandlerException, bool> _errorHandler;
         private readonly bool _compareSegments;
         private readonly bool _convertUsfmToUpdateRowVersification;
-        private UsfmToken _currentChapterToken;
         private int _currentChapterNum;
         private bool _skipNextVerseText;
 
@@ -122,7 +121,6 @@ namespace SIL.Machine.Corpora
             _compareSegments = compareSegments;
             _convertUsfmToUpdateRowVersification =
                 convertUsfmToUpdateRowVersification && _updateRowsVersification != _usfmVersification;
-            _currentChapterToken = null;
             _currentChapterNum = 0;
             _skipNextVerseText = false;
         }
@@ -132,11 +130,6 @@ namespace SIL.Machine.Corpora
         public override void EndUsfm(UsfmParserState state)
         {
             CollectUpdatableTokens(state);
-            if (_currentChapterToken != null)
-            {
-                _tokens.Add(_currentChapterToken);
-                _currentChapterToken = null;
-            }
             base.EndUsfm(state);
         }
 
@@ -165,12 +158,6 @@ namespace SIL.Machine.Corpora
             PopNewTokens();
             UsfmUpdateBlock updateBlock = _updateBlocks.Pop();
             _tokens.AddRange(updateBlock.GetTokens());
-
-            if (_currentChapterToken != null)
-            {
-                _tokens.Add(_currentChapterToken);
-                _currentChapterToken = null;
-            }
 
             base.EndBook(state, marker);
         }
@@ -632,27 +619,15 @@ namespace SIL.Machine.Corpora
                 verseRef = verseRef.ChangeVersificationWithSegments(_updateRowsVersification);
                 if (verseRef.ChapterNum != _currentChapterNum && state.VerseRef.BookNum == verseRef.BookNum)
                 {
-                    if (_currentChapterToken != null)
-                    {
-                        _tokens.Add(_currentChapterToken.Copy());
-                        _currentChapterToken = null;
-                    }
-                    else
-                    {
-                        UsfmToken newChapterToken = new UsfmToken(
-                            UsfmTokenType.Chapter,
-                            "c",
-                            "",
-                            "",
-                            verseRef.ChapterNum.ToString()
-                        );
-                        _tokens.Add(newChapterToken);
-                    }
+                    UsfmToken newChapterToken = new UsfmToken(
+                        UsfmTokenType.Chapter,
+                        "c",
+                        "",
+                        "",
+                        verseRef.ChapterNum.ToString()
+                    );
+                    _tokens.Add(newChapterToken);
                     _currentChapterNum = verseRef.ChapterNum;
-                }
-                if (verseRef.ChapterNum == verseRef.Versification.GetLastChapter(verseRef.BookNum))
-                {
-                    _currentChapterToken = null;
                 }
             }
 
@@ -670,13 +645,7 @@ namespace SIL.Machine.Corpora
                 }
                 else
                 {
-                    if (_convertUsfmToUpdateRowVersification && token.Type == UsfmTokenType.Chapter)
-                    {
-                        if (_currentChapterToken != null)
-                            _tokens.Add(_currentChapterToken);
-                        _currentChapterToken = token;
-                    }
-                    else
+                    if (!_convertUsfmToUpdateRowVersification || token.Type != UsfmTokenType.Chapter)
                     {
                         _tokens.Add(token);
                     }
