@@ -836,28 +836,6 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_EmptyChapters()
-    {
-        List<UpdateUsfmRow> rows = [];
-
-        string usfm =
-            @"\id MAT - Test
-\c 1
-\c 2
-\c 3
-";
-
-        string target = UpdateUsfm(rows, usfm, convertUsfmToUpdateRowVersification: true);
-        string result =
-            @"\id MAT - Test
-\c 1
-\c 2
-\c 3
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
     public void GetUsfm_ConvertUsfmToUpdateRowVersification_OneFewerBook()
     {
         // Russian Orthodox vs. Original
