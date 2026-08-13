@@ -880,6 +880,7 @@ public class UpdateUsfmParserHandlerTests
         string target = UpdateUsfm(
             rows,
             usfm,
+            bookId: "PSA",
             convertUsfmToUpdateRowVersification: false,
             versification: ScrVers.RussianOrthodox
         );
@@ -895,6 +896,7 @@ public class UpdateUsfmParserHandlerTests
         target = UpdateUsfm(
             rows,
             usfm,
+            bookId: "PSA",
             convertUsfmToUpdateRowVersification: true,
             versification: ScrVers.RussianOrthodox
         );
@@ -925,26 +927,103 @@ public class UpdateUsfmParserHandlerTests
 
         string usfm =
             @"\id DAN - Test
-\c 1
-\c 2
 \c 3
 \v 1-23
 \c 4
+\v 1
 ";
 
         string target = UpdateUsfm(
             rows,
             usfm,
+            bookId: "DAN",
             convertUsfmToUpdateRowVersification: true,
             versification: ScrVers.Original
         );
         string result =
             @"\id DAN - Test
-\c 1
-\c 2
 \c 3
 \v 1-23 Updated verse 1
 \c 4
+\v 1
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_ConvertUsfmToUpdateRowVersification_BackOneVerseToPreviousChapter()
+    {
+        // English vs. Original
+        // ISA 9:1 = ISA 8:23
+
+        List<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef(["ISA 9:1"], ScrVers.English), "Updated verse 1"),
+            new UpdateUsfmRow(ScrRef(["ISA 9:2"], ScrVers.English), "Updated verse 2"),
+        ];
+
+        string usfm =
+            @"\id ISA - Test
+\c 8
+\v 22
+\v 23
+\c 9
+\v 1
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            bookId: "ISA",
+            convertUsfmToUpdateRowVersification: true,
+            versification: ScrVers.Original
+        );
+        string result =
+            @"\id ISA - Test
+\c 8
+\v 22
+\c 9
+\v 1 Updated verse 1
+\v 2 Updated verse 2
+";
+        AssertUsfmEquals(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_ConvertUsfmToUpdateRowVersification_ForwardOneVerseToNextChapter()
+    {
+        // Original vs. English
+        // ISA 8:23 = ISA 9:1
+
+        List<UpdateUsfmRow> rows =
+        [
+            new UpdateUsfmRow(ScrRef(["ISA 8:23"], ScrVers.Original), "Updated verse 23"),
+            new UpdateUsfmRow(ScrRef(["ISA 9:1"], ScrVers.Original), "Updated verse 1"),
+        ];
+
+        string usfm =
+            @"\id ISA - Test
+\c 8
+\v 22
+\c 9
+\v 1
+\v 2
+";
+
+        string target = UpdateUsfm(
+            rows,
+            usfm,
+            bookId: "ISA",
+            convertUsfmToUpdateRowVersification: true,
+            versification: ScrVers.English
+        );
+        string result =
+            @"\id ISA - Test
+\c 8
+\v 22
+\v 23 Updated verse 23
+\c 9
+\v 1 Updated verse 1
 ";
         AssertUsfmEquals(target, result);
     }

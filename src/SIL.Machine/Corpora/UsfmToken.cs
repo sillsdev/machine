@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
 {
@@ -22,7 +23,7 @@ namespace SIL.Machine.Corpora
         Unknown,
     }
 
-    public class UsfmToken : IEquatable<UsfmToken>
+    public class UsfmToken : IEquatable<UsfmToken>, ICloneable<UsfmToken>
     {
         private const string FullAttributeStr = @"(?<name>[-\w]+)\s*\=\s*\""(?<value>.+?)\""\s*";
         private static readonly Regex AttributeRegex = new Regex(
@@ -180,7 +181,7 @@ namespace SIL.Machine.Corpora
             _defaultAttributeName = sourceToken._defaultAttributeName;
         }
 
-        public UsfmToken Copy()
+        public UsfmToken Clone()
         {
             UsfmToken copy = new UsfmToken(Type, Marker, Text, EndMarker, Data);
             copy.CopyAttributes(this);
