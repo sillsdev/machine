@@ -27,6 +27,12 @@
 
         public int TrainingAlignmentCount => _directWordAlignmentModel.TrainingAlignmentCount;
 
+        public static ThotSymmetrizedWordAlignmentModel Create(ThotWordAlignmentModelType modelType) =>
+            new ThotSymmetrizedWordAlignmentModel(
+                ThotWordAlignmentModel.Create(modelType),
+                ThotWordAlignmentModel.Create(modelType)
+            );
+
         public WordAlignmentMatrix GetTrainingAlignment(int n)
         {
             WordAlignmentMatrix bestMatrix = _directWordAlignmentModel.GetTrainingAlignment(n);

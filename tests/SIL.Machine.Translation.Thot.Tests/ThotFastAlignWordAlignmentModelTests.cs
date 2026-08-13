@@ -242,12 +242,14 @@ public class ThotFastAlignWordAlignmentModelTests
     }
 
     [Test]
-    public async Task WordAlignCorpus_TransductiveTextIdsKeepIndexInSync()
+    public void WordAlignCorpus_TransductiveTextIdsKeepIndexInSync()
     {
         // Filtering by text must not desync the training-alignment index: the rows for a requested text
         // must get exactly the alignments they got in the unfiltered pass, not those of earlier rows.
-        IParallelTextCorpus corpus = TestHelpers.CreateTwoTextParallelCorpus();
-        corpus = await corpus.WordAlignAsync(ThotWordAlignmentModelType.FastAlign);
+        // The model is trained up front so that both passes read the same training alignments.
+        IParallelTextCorpus parallelCorpus = TestHelpers.CreateTwoTextParallelCorpus();
+        using ThotSymmetrizedWordAlignmentModel model = TestHelpers.CreateTrainedModel(parallelCorpus);
+        IParallelTextCorpus corpus = parallelCorpus.WordAlign(model);
         List<ParallelTextRow> full = [.. corpus.GetRows()];
         IReadOnlyList<string> text2Expected =
         [
