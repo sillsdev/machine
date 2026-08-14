@@ -6,6 +6,13 @@ repository (`sillsdev/machine`, namespace `SIL.Machine.Morphology.HermitCrab`). 
 covers one topic in enough depth to answer questions about that topic without needing
 local access to the repo — code excerpts, mechanisms, and worked examples are inlined.
 
+## Got a FieldWorks grammar and a question?
+
+Send that person **this link instead**: [`getting-started.md`](getting-started.md) — it
+walks through extracting your grammar as HermitCrab XML and getting ChatGPT/Claude to
+reason about it using this reference. The rest of this README is the reference material
+itself (for the LLM to read), not the human-facing walkthrough.
+
 ## How to use this with an LLM
 
 Paste the **raw** URL of the relevant topic file into your chat, e.g.:
