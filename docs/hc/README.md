@@ -18,7 +18,7 @@ itself (for the LLM to read), not the human-facing walkthrough.
 Paste the **raw** URL of the relevant topic file into your chat, e.g.:
 
 ```
-https://raw.githubusercontent.com/sillsdev/machine/master/docs/hc/affix-templates-and-optionality.md
+https://raw.githubusercontent.com/sillsdev/machine/master/docs/hc/gotchas/affix-template-optional-slots.md
 ```
 
 Then ask your question. Use the raw URL (`raw.githubusercontent.com`), not the normal
@@ -32,18 +32,12 @@ Do not use these guides as a source of real grammar data — see "What belongs h
 
 ## Topics
 
-- [`affix-templates-and-optionality.md`](affix-templates-and-optionality.md) — how HermitCrab's
-  `AffixTemplate`/slot mechanism works, why independently-optional affix slots cause
-  exponential (`O(2^n)`) parse blowup, and the linear-cost alternative (mutually-exclusive
-  rules in one slot).
-- [`grammar-authoring-gotchas.md`](grammar-authoring-gotchas.md) — a construct-by-construct tour
-  of the grammar-authoring surface (strata/rule ordering, natural classes, morphological
-  rules/allomorphs, MPR features & co-occurrence rules, phonological rules, compounding, lexical
-  entries/environments/stem names) with the performance gotcha and fix for each.
-- [`engine-internals-and-complexity.md`](engine-internals-and-complexity.md) — engine/runtime-level
-  gotchas mined from this repo's own conformance fixtures: template-slot backtracking, disjunctive
-  allomorph deferred rechecking, the iterative epenthesis self-feeding crash, batch-abort-on-crash,
-  and compounding split-point enumeration.
+- [`gotchas/`](gotchas/README.md) — one file per performance gotcha (affix-template slot
+  explosion, stratum rule ordering, natural-class feature widening, disjunctive allomorph
+  deferred recheck, MPR/co-occurrence late filtering, MPR `Overwrite` order-dependence,
+  simultaneous-vs-iterative phonological rules, epenthesis/metathesis self-feeding crashes,
+  compounding split-point enumeration, root-allomorph trie bypass, stem-name feature
+  requirements) — see [`gotchas/README.md`](gotchas/README.md) for the full index.
 
 _(Add new topic files here as they're written, with a one-line description each.)_
 
@@ -60,8 +54,8 @@ _(Add new topic files here as they're written, with a one-line description each.
 
 ## Source grounding
 
-Claims in these guides are grounded in the actual source under
-`src/SIL.Machine.Morphology.HermitCrab/` and `src/SIL.Machine/Rules/` as of the commit each
-file was last updated, plus the conformance fixtures under `conformance/`. File/line
-references may drift as the code evolves; if something looks stale, check the live source
-at the paths cited.
+Claims in these guides are grounded in the actual engine source under
+`src/SIL.Machine.Morphology.HermitCrab/` and `src/SIL.Machine/` as of the commit each file was
+last updated — each gotcha file's metadata header names the specific source file(s) it's
+grounded in. File/line references may drift as the code evolves; if something looks stale, check
+the live source at the paths cited.
