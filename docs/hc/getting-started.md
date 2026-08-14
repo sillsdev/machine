@@ -10,16 +10,33 @@ word parse," "why do I get 500 analyses for one word."
 FieldWorks ships a tool, `GenerateHCConfig.exe`, that exports your project's grammar as the
 HermitCrab XML format (the same format HermitCrab itself parses from).
 
-<!-- TODO(john): confirm exact invocation. Typical location is inside the FieldWorks
-     install directory (e.g. `C:\Program Files\SIL\FieldWorks <version>\`), run next to
-     your project. Fill in the real command + required arguments (project name/path,
-     output path) once confirmed, then delete this comment. -->
+**First, close the project in FLEx.** The tool loads the project file directly and fails
+with "currently open in another application" if FLEx (or anything else) still has it open.
 
-```
-GenerateHCConfig.exe <your-project-name>
+**Find the tool.** It's installed next to `FieldWorks.exe` itself, not on your PATH, and the
+exact folder depends on your FieldWorks version. Easiest way to find it — paste this into
+PowerShell:
+
+```powershell
+Get-ChildItem "C:\Program Files\SIL\FieldWorks*\GenerateHCConfig.exe", `
+              "C:\Program Files (x86)\SIL\FieldWorks*\GenerateHCConfig.exe" `
+    -ErrorAction SilentlyContinue
 ```
 
-This produces an XML file (commonly named like `<project>-hc.xml`) — that's your grammar.
+That prints the full path (e.g. `C:\Program Files\SIL\FieldWorks 9\GenerateHCConfig.exe`).
+If it prints nothing, your project's `RootCodeDir` registry override points somewhere else —
+search for `GenerateHCConfig.exe` under wherever FieldWorks itself is installed.
+
+**Run it** against your project's `.fwdata` file:
+
+```powershell
+& "C:\Program Files\SIL\FieldWorks 9\GenerateHCConfig.exe" "C:\path\to\YourProject.fwdata" "C:\path\to\YourProject-hc.xml"
+```
+
+(use the actual path `Get-ChildItem` printed above, and your own project's `.fwdata` path —
+typically under `Documents\My FieldWorks\<project name>\`)
+
+This produces the second file, `YourProject-hc.xml` — that's your grammar.
 
 ## Step 2 — Copy the XML into ChatGPT or Claude
 
