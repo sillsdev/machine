@@ -36,6 +36,14 @@ Do not use these guides as a source of real grammar data — see "What belongs h
   `AffixTemplate`/slot mechanism works, why independently-optional affix slots cause
   exponential (`O(2^n)`) parse blowup, and the linear-cost alternative (mutually-exclusive
   rules in one slot).
+- [`grammar-authoring-gotchas.md`](grammar-authoring-gotchas.md) — a construct-by-construct tour
+  of the grammar-authoring surface (strata/rule ordering, natural classes, morphological
+  rules/allomorphs, MPR features & co-occurrence rules, phonological rules, compounding, lexical
+  entries/environments/stem names) with the performance gotcha and fix for each.
+- [`engine-internals-and-complexity.md`](engine-internals-and-complexity.md) — engine/runtime-level
+  gotchas mined from this repo's own conformance fixtures: template-slot backtracking, disjunctive
+  allomorph deferred rechecking, the iterative epenthesis self-feeding crash, batch-abort-on-crash,
+  and compounding split-point enumeration.
 
 _(Add new topic files here as they're written, with a one-line description each.)_
 
