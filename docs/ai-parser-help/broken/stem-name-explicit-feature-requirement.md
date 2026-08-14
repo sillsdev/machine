@@ -2,7 +2,7 @@
 title: "A stem-name-restricted allomorph needs the feature explicitly assigned, not just compatible"
 implements: src/SIL.Machine.Morphology.HermitCrab/StemName.cs, src/SIL.Machine.Morphology.HermitCrab/RootAllomorph.cs
 category: lexicon
-cost: "not a performance issue — a correctness/silent-failure gotcha"
+symptom: silent-misconfiguration
 grammar_visible: "no — produces silent, correct-per-the-code parse failures with no obvious cause in the XML"
 ---
 

@@ -1,6 +1,6 @@
 # HermitCrab performance gotchas
 
-Part of the [HermitCrab-for-LLMs reference](../README.md). One file per gotcha — each is
+Part of the [AI Parser Help reference](../README.md). One file per gotcha — each is
 self-contained, cites the specific `machine` source file(s) that implement the relevant
 algorithm, and gives a fix. Every gotcha here is grounded in reading the actual HermitCrab
 engine source (`src/SIL.Machine.Morphology.HermitCrab/` and `src/SIL.Machine/`) — none of it
@@ -32,14 +32,13 @@ grammar_visible: <yes | no | partially — can a grammar author see this from th
 | [Iterative epenthesis can crash the engine; metathesis has no numeric backstop at all](epenthesis-metathesis-self-feeding-crash.md) | phonology | hard 256-node cap (epenthesis); unbounded (metathesis) |
 | [Compounding enumerates every split point, and only the head re-derives](compounding-split-point-enumeration.md) | compounding | scales with word length × stem count |
 | [Pattern-shaped root allomorphs bypass the trie and pay a linear-scan cost](root-allomorph-trie-vs-pattern.md) | lexicon | `O(word length)` trie vs. `O(#pattern allomorphs)` linear scan |
-| [A stem-name-restricted allomorph needs the feature explicitly assigned, not just compatible](stem-name-explicit-feature-requirement.md) | lexicon | correctness/silent-failure, not performance |
 
 ## How to use this with an LLM
 
 Paste the raw URL of the specific gotcha file that matches your symptom, e.g.:
 
 ```
-https://raw.githubusercontent.com/sillsdev/machine/master/docs/hc/gotchas/affix-template-optional-slots.md
+https://raw.githubusercontent.com/sillsdev/machine/master/docs/ai-parser-help/speed/affix-template-optional-slots.md
 ```
 
 If you're not sure which one applies, paste this index's raw URL first and describe your

@@ -1,9 +1,10 @@
 # Get help from ChatGPT or Claude with your HermitCrab grammar
 
-Part of the [HermitCrab-for-LLMs reference](README.md). This page is for anyone with a
-FieldWorks Language Explorer (FLEx) project who wants an LLM's help debugging or
-understanding their HermitCrab parser/grammar — e.g. "why is this so slow," "why won't this
-word parse," "why do I get 500 analyses for one word."
+Part of the [AI Parser Help reference](README.md). This page is for anyone with a FieldWorks
+Language Explorer (FLEx) project who wants an LLM's help with their HermitCrab parser/grammar —
+whether it's broken ("why won't this word parse," "why do I get a wrong analysis"), slow ("why
+is this so slow," "why do I get 500 analyses for one word"), or a modeling question ("how should
+I represent this in my grammar").
 
 ## Step 1 — Extract your grammar as HermitCrab XML
 
@@ -49,22 +50,27 @@ uploads — for a large grammar this is more reliable than pasting inline).
 Paste this URL into the same chat:
 
 ```
-https://raw.githubusercontent.com/sillsdev/machine/master/docs/hc/README.md
+https://raw.githubusercontent.com/sillsdev/machine/master/docs/ai-parser-help/README.md
 ```
 
 This tells the LLM where to find the (non-proprietary) documentation of how the HermitCrab
-engine itself works — rule ordering, affix templates, features, complexity pitfalls — so it
-can reason about *your* grammar against the actual engine mechanics rather than guessing.
+engine itself works — rule ordering, affix templates, features, correctness pitfalls, complexity
+pitfalls, and grammar-authoring methodology — so it can reason about *your* grammar against the
+actual engine mechanics rather than guessing. If you already know your question is about
+wrongness, speed, or modeling approach specifically, you can paste the more specific
+`broken/README.md`, `speed/README.md`, or `workflow/README.md` URL instead.
 
 ## Step 4 — Ask your question
 
 Some examples of what to ask, once both your grammar and the reference URL are in the chat:
 
+- "Why does the word `<surface form>` fail to parse / parse with the wrong analysis?"
 - "Why is parsing this word so slow? Is there a combinatorial-explosion pattern in my
   affix templates like the optional-slot one described in the reference?"
-- "Why does the word `<surface form>` fail to parse / parse ambiguously?"
 - "I have a slot with N optional prefixes, most of them null — is there a better way to
   model this in my grammar?"
+- "How should I model a class of nouns whose plural is irregular, given HermitCrab's
+  mechanisms?"
 - "Walk through how stratum `<name>` would apply to the stem `<form>`."
 
 ## A note on privacy
