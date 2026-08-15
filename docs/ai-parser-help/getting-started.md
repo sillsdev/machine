@@ -6,6 +6,10 @@ whether it's broken ("why won't this word parse," "why do I get a wrong analysis
 is this so slow," "why do I get 500 analyses for one word"), or a modeling question ("how should
 I represent this in my grammar").
 
+Want help with real **interlinear texts** (`.flextext` files) instead of, or alongside, the
+grammar itself? See [`texts/getting-started.md`](texts/getting-started.md) — extracting and
+reasoning about connected corpus texts is a different workflow from the one below.
+
 ## Step 1 — Extract your grammar as HermitCrab XML
 
 FieldWorks ships a tool, `GenerateHCConfig.exe`, that exports your project's grammar as the
