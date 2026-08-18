@@ -31,8 +31,13 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 _pattern.Children.Add(node.Clone());
             }
 
-            AddGroup(groups, leftGroupName);
-            AddGroup(groups, rightGroupName);
+            // This pattern matches the surface, where the switch groups appear in reverse pattern order.
+            int leftIndex = Array.FindIndex(groupOrder, g => g.Name == leftGroupName);
+            int rightIndex = Array.FindIndex(groupOrder, g => g.Name == rightGroupName);
+            string firstName = leftIndex < rightIndex ? rightGroupName : leftGroupName;
+            string secondName = leftIndex < rightIndex ? leftGroupName : rightGroupName;
+            AddGroup(groups, firstName);
+            AddGroup(groups, secondName);
 
             foreach (
                 PatternNode<Word, ShapeNode> node in pattern
