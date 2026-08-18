@@ -6,25 +6,22 @@ using SIL.Machine.FeatureModel;
 namespace SIL.Machine.Morphology.HermitCrab
 {
     /// <summary>
-    /// Order-independent identity of an analysis-cascade node, used by the memo cache in
-    /// <see cref="AnalysisStratumRule"/>'s Unordered-mode morphological rule cascade (memoization.md). Two
-    /// Words with an equal key are guaranteed to make identical decisions in every analysis-side
-    /// morphological rule that cascade can invoke -- verified by inspecting what each one reads from its
-    /// input (key-completeness audit, re-run whenever an <c>Analysis*.cs</c> rule changes):
+    /// Order-independent identity of an analysis-cascade node. Two Words with an equal
+    /// key must make identical decisions in every analysis-side rule the cascade can invoke; that is the
+    /// memo's correctness contract, so this key-completeness audit of what each rule reads has to be
+    /// re-run whenever an <c>Analysis*.cs</c> rule changes:
     /// <list type="bullet">
-    /// <item><see cref="MorphologicalRules.AnalysisAffixProcessRule"/>: Shape (FST pattern match) and
-    /// <see cref="Word.SyntacticFeatureStruct"/> (unifiability gate) plus a per-rule unapplication count.</item>
+    /// <item><see cref="MorphologicalRules.AnalysisAffixProcessRule"/>: Shape (FST pattern match),
+    /// <see cref="Word.SyntacticFeatureStruct"/> (unifiability gate), per-rule unapplication count.</item>
     /// <item><see cref="MorphologicalRules.AnalysisCompoundingRule"/>: adds <see cref="Word.NonHeadCount"/>
-    /// (<c>MaxStemCount</c> gate) -- it never reads the non-heads' own content, only the count.</item>
+    /// (<c>MaxStemCount</c> gate) -- never the non-heads' own content, only the count.</item>
     /// <item><see cref="MorphologicalRules.AnalysisRealizationalAffixProcessRule"/>: adds
     /// <see cref="Word.RealizationalFeatureStruct"/>.</item>
     /// </list>
-    /// but never the ORDER those rules were unapplied in -- exactly the redundancy this key collapses.
-    /// Deliberately excludes fields <c>Word.ValueEquals</c> includes for a different purpose (result
-    /// dedup): the unapplication trail as an ordered SEQUENCE (replaced here by an order-independent
-    /// multiset) and <c>_isLastAppliedRuleFinal</c>/<c>IsPartial</c>, which are not read by any
-    /// analysis-side rule (grep-verified against every file matching <c>MorphologicalRules/Analysis*.cs</c>
-    /// and <c>PhonologicalRules/Analysis*.cs</c>).
+    /// No rule reads the order those rules were unapplied in, which is the redundancy this key collapses,
+    /// so the trail is reduced to an unordered multiset here. <c>_isLastAppliedRuleFinal</c> and
+    /// <c>IsPartial</c> are excluded as well: <c>Word.ValueEquals</c> includes them for result dedup, but
+    /// no analysis-side rule reads them.
     /// </summary>
     internal readonly struct AnalysisStateKey : IEquatable<AnalysisStateKey>
     {
@@ -38,6 +35,15 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public AnalysisStateKey(Word word)
         {
+            // The cached hash covers live references -- notably Word.UnappliedRuleCounts, the word's own
+            // mutable dictionary. Keying an unfrozen word would let a later mutation invalidate a stored
+            // key's hash, silently causing permanent misses or entries that no longer match their bucket.
+            if (!word.IsFrozen)
+                throw new ArgumentException(
+                    "The word must be frozen before it can be used as a memo key.",
+                    nameof(word)
+                );
+
             _shape = word.Shape;
             _stratum = word.Stratum;
             _syntacticFS = word.SyntacticFeatureStruct;
@@ -45,9 +51,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadCount = word.NonHeadCount;
             _ruleCounts = word.UnappliedRuleCounts;
 
-            // Defensive: AnalysisAffixTemplateRule.Apply reassigns SyntacticFeatureStruct to a fresh,
-            // unfrozen clone AFTER the owning Word is already frozen (no CheckFrozen() guard on that
-            // setter). Freeze() is idempotent and safe to call again here.
+            // Word.FreezeImpl deliberately leaves SyntacticFeatureStruct unfrozen, and
+            // AnalysisAffixTemplateRule.Apply mutates it in place on already-frozen Words -- no
+            // Word-level CheckFrozen guards that path. Freezing here pins the key's view of it, so a
+            // future rule mutating an already-keyed word throws instead of silently corrupting the table.
+            // Freeze is idempotent.
             _shape.Freeze();
             _syntacticFS.Freeze();
             _realizationalFS.Freeze();
@@ -60,9 +68,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             hash = hash * 31 + _nonHeadCount;
             if (_ruleCounts != null)
             {
-                // XOR, not the usual *31 rolling combine: the multiset is unordered, so the combination
-                // must be commutative -- two dictionaries with the same entries built up in different
-                // unapplication orders must hash identically.
+                // XOR rather than the usual *31 rolling combine: the multiset is unordered, so entries
+                // accumulated in different unapplication orders must still hash identically.
                 int multisetHash = 0;
                 foreach (KeyValuePair<IMorphologicalRule, int> kvp in _ruleCounts)
                     multisetHash ^= (kvp.Key.GetHashCode() * 397) ^ kvp.Value;

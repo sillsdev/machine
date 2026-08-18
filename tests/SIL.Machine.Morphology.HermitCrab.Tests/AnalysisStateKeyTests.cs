@@ -4,11 +4,8 @@ using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
-// Unit battery for the analysis-cascade memo's primitives (memoization.md Stage 2): AnalysisStateKey's
-// order-invariance over the rule-unapplication multiset, its sensitivity to every other field the key
-// captures, and Word.ReplayOnto's prefix/suffix graft. Nothing in production code consumes these yet
-// (that is Stage 3) -- these tests pin the primitives' own contract in isolation, independent of any
-// particular cascade wiring.
+// The memo's primitives in isolation, independent of any cascade wiring: AnalysisStateKey's
+// order-invariance and field sensitivity, its frozen-word requirement, and ReplayOnto's graft.
 [TestFixture]
 public class AnalysisStateKeyTests : HermitCrabTestBase
 {
@@ -18,9 +15,9 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
         var ruleA = new AffixProcessRule { Name = "ruleA" };
         var ruleB = new AffixProcessRule { Name = "ruleB" };
 
-        // Same multiset {ruleA: 2, ruleB: 1}, built up in two genuinely different orders --
-        // wordY touches ruleB first, unlike wordX, so this also exercises different backing
-        // dictionary insertion order, not just a different position for a repeated rule.
+        // Same multiset {ruleA: 2, ruleB: 1} reached in two different orders. wordY touches ruleB first,
+        // so the backing dictionaries also differ in insertion order, not just in a repeated rule's
+        // position.
         Word wordX = NewTestWord();
         wordX.MorphologicalRuleUnapplied(ruleA);
         wordX.MorphologicalRuleUnapplied(ruleB);
@@ -87,21 +84,59 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
     }
 
     [Test]
+    public void Constructor_Throws_WhenWordIsNotFrozen()
+    {
+        Word unfrozen = NewTestWord();
+
+        Assert.That(() => new AnalysisStateKey(unfrozen), Throws.ArgumentException);
+    }
+
+    [Test]
+    public void ReplayOnto_SharesHoistedQueryPrefix_AcrossOneHitsReplays()
+    {
+        Word queryNonHead = NewTestWord("32");
+        queryNonHead.Freeze();
+        Word query = NewTestWord("32");
+        query.NonHeadUnapplied(queryNonHead);
+        query.Freeze();
+
+        Word storedNonHead = NewTestWord("32");
+        storedNonHead.Freeze();
+        Word subtreeNonHead = NewTestWord("33");
+        subtreeNonHead.Freeze();
+        Word memoized = NewTestWord("32");
+        memoized.NonHeadUnapplied(storedNonHead);
+        memoized.NonHeadUnapplied(subtreeNonHead);
+        memoized.Freeze();
+
+        List<Word> hoisted = query.CloneNonHeadsForReplay();
+        Word first = memoized.ReplayOnto(query, 0, 1, hoisted);
+        Word second = memoized.ReplayOnto(query, 0, 1, hoisted);
+
+        // Query's 1 non-head prefix plus the stored subtree's 1 non-head suffix.
+        Assert.That(first.NonHeadCount, Is.EqualTo(2));
+        Assert.That(first.CurrentNonHead.RootAllomorph, Is.SameAs(subtreeNonHead.RootAllomorph));
+        // Both replays share the one hoisted clone, and it is a clone rather than the query's own instance.
+        Assert.That(first.NonHeads[0], Is.SameAs(second.NonHeads[0]));
+        Assert.That(first.NonHeads[0], Is.SameAs(hoisted[0]));
+        Assert.That(first.NonHeads[0], Is.Not.SameAs(queryNonHead));
+    }
+
+    [Test]
     public void ReplayOnto_GraftsQueryPrefixOntoStoredSuffix_ForMruleTrail()
     {
         var ruleA = new AffixProcessRule { Name = "ruleA" };
         var ruleB = new AffixProcessRule { Name = "ruleB" };
         var ruleC = new AffixProcessRule { Name = "ruleC" };
 
-        // The memoized node's own trail was [ruleA, ruleB] at the moment its subtree was recorded, with
-        // ruleA as the length-1 prefix (whatever led to this state) and ruleB as the subtree-local suffix
-        // that must survive the graft.
+        // Trail [ruleA, ruleB] at the moment of the write: ruleA is the length-1 prefix, ruleB the
+        // subtree-local suffix that must survive the graft.
         Word memoized = NewTestWord();
         memoized.MorphologicalRuleUnapplied(ruleA);
         memoized.MorphologicalRuleUnapplied(ruleB);
         memoized.Freeze();
 
-        // A different arrival at the same AnalysisStateKey, via a different prefix: [ruleC].
+        // The same key reached with a different prefix, [ruleC].
         Word query = NewTestWord();
         query.MorphologicalRuleUnapplied(ruleC);
         query.Freeze();
@@ -114,11 +149,8 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
     [Test]
     public void ReplayOnto_GraftsQueryPrefixOntoStoredSuffix_ForNonHeads()
     {
-        // The memoized node had already unapplied one non-head (its own prefix, at the memo point) before
-        // its subtree unapplied a second one -- that second one is the subtree-local suffix to keep. The
-        // two non-heads are built from distinct lexical entries (32 vs 33) so a wrong-prefix graft (e.g.
-        // one that kept storedNonHead instead of subtreeNonHead, or reversed the GetRange window) is
-        // actually distinguishable via RootAllomorph identity, not just NonHeadCount.
+        // Distinct lexical entries (32 vs 33) so that a graft keeping the wrong non-head, or reversing the
+        // GetRange window, is distinguishable by RootAllomorph identity rather than only by count.
         Word storedNonHead = NewTestWord("32");
         storedNonHead.Freeze();
         Word subtreeNonHead = NewTestWord("33");

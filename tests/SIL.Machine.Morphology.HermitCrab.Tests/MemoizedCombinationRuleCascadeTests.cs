@@ -7,12 +7,9 @@ using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
-// Stage 3 of memoization.md: MemoizedCombinationRuleCascade exercised directly, bypassing
-// Morpher/AnalysisStratumRule entirely, so the test can force the exact commuting-order redundancy the
-// memo targets without depending on whether a particular morphology grammar's search happens to revisit
-// a PRODUCTIVE (not just nogood) state -- MorpherTests' end-to-end compounding grammar, checked via the
-// real Morpher pipeline, only ever hits the nogood table on this small a grammar (see its own hit-count
-// diagnostic output), so this is the test that pins the POSITIVE replay path non-vacuously.
+// The cascade exercised directly, bypassing Morpher, so a commuting-order re-arrival at a PRODUCTIVE
+// state can be forced. That matters because the end-to-end grammars in MorpherTests are small enough
+// that they only ever reach the nogood table, leaving the positive replay path untested.
 [TestFixture]
 public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
 {
@@ -23,11 +20,9 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         var ruleB = new AffixProcessRule { Name = "ruleB" };
         var ruleC = new AffixProcessRule { Name = "ruleC" };
 
-        // Each fake rule unapplies its own IMorphologicalRule at most once, so from the initial word,
-        // trying ruleA-then-ruleB-then-ruleC and ruleB-then-ruleA-then-ruleC reach the SAME
-        // AnalysisStateKey after the first two steps (multiset {ruleA:1, ruleB:1}) via different orders
-        // -- exactly the redundancy AnalysisStateKey collapses. Only from that shared state can ruleC
-        // still apply, so the shared node's own subtree is POSITIVE (one result), not a nogood.
+        // Each rule unapplies at most once, so A-then-B and B-then-A reach the same key (multiset
+        // {ruleA:1, ruleB:1}) by different routes. ruleC can still apply from that shared state, making
+        // its subtree positive rather than a nogood.
         var cascade = new MemoizedCombinationRuleCascade(
             new IRule<Word, ShapeNode>[]
             {
@@ -45,9 +40,6 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
         List<Word> results = new List<Word>(cascade.Apply(initial));
 
-        // Every leaf where all 3 rules have been unapplied, in whichever of the two orders explored the
-        // shared {ruleA,ruleB} state first vs via replay, must appear -- and the replay path must have
-        // actually fired (memoization.md's non-vacuousness requirement).
         Assert.That(
             results,
             Has.Some.Matches<Word>(w =>
@@ -66,11 +58,9 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
     [Test]
     public void Apply_PositiveReplayMatchesUnmemoizedResultSet_IncludingTrailOrder()
     {
-        // The previous test proves a replay FIRES; this one proves it produces the RIGHT result. A count
-        // assertion (3 rules applied) would pass even if ReplayOnto grafted the wrong prefix, since counts
-        // are order-invariant -- comparing MorphemesInApplicationOrder (which walks the trail ReplayOnto
-        // rewrites, see WordAnalysisSignature's own doc comment in MorpherTests.cs) catches a wrong-prefix
-        // graft that silently collapses [ruleB,ruleA,ruleC] into a duplicate of [ruleA,ruleB,ruleC].
+        // Compares MorphemesInApplicationOrder rather than rule counts: counts are order-invariant, so
+        // they would pass even if the graft collapsed [ruleB,ruleA,ruleC] into a duplicate of
+        // [ruleA,ruleB,ruleC], whereas the trail is exactly what ReplayOnto rewrites.
         var ruleA = new AffixProcessRule { Id = "RULE_A", Name = "ruleA" };
         var ruleB = new AffixProcessRule { Id = "RULE_B", Name = "ruleB" };
         var ruleC = new AffixProcessRule { Id = "RULE_C", Name = "ruleC" };
@@ -85,9 +75,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         memoized.AnalysisScope = new AnalysisScope();
         memoized.Freeze();
 
+        // No AnalysisScope: takes the unmemoized fallback, the same path a tracing parse takes.
         Word unmemoized = NewTestWord();
-        // AnalysisScope left null -- exercises MemoizedCombinationRuleCascade's own unmemoized fallback
-        // (ApplyRulesRaw), the same path a tracing parse takes.
         unmemoized.Freeze();
 
         var memoizedCascade = new MemoizedCombinationRuleCascade(rules, FreezableEqualityComparer<Word>.Default);
@@ -121,14 +110,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
     [Test]
     public void Apply_FallsBackToUnmemoizedExpansion_WhenKeyIsAlreadyInProgress()
     {
-        // Pins the in-flight re-entry guard (memoization.md's design rule 3 / the InProgress table):
-        // a multiApp cascade can reach the same AnalysisStateKey again while its own first expansion is
-        // still on the call stack (e.g. via a self-loop elsewhere in a real grammar's rule graph).
-        // Rather than construct that reentrancy organically -- the key is monotonic in rule-application
-        // count for straightforward single-use rules, so a real cyclic re-arrival is hard to force here
-        // -- this simulates the in-flight state directly: pre-populate InProgress with the exact key
-        // `initial` will compute, then call Apply and confirm it falls through to a correct, unmemoized
-        // expansion (ApplyRulesRaw) instead of reading a nonexistent Memo entry or hanging.
+        // The in-flight state is simulated by pre-populating InProgress, because single-use rules make the
+        // key monotonic in application count, so a genuine cyclic re-arrival cannot be forced here.
         var ruleA = new AffixProcessRule { Id = "RULE_A", Name = "ruleA" };
         var cascade = new MemoizedCombinationRuleCascade(
             new IRule<Word, ShapeNode>[] { new SingleUseUnapplyRule(ruleA) },
@@ -141,7 +124,7 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         initial.Freeze();
 
         var key = new AnalysisStateKey(initial);
-        scope.InProgress.TryAdd(key, 0);
+        scope.InProgress.Add(key);
 
         long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
         List<Word> results = new List<Word>(cascade.Apply(initial));
@@ -195,9 +178,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         return new Word(Entries["32"].PrimaryAllomorph, FeatureStruct.New().Value) { Stratum = Morphophonemic };
     }
 
-    // Minimal stand-in for a compiled analysis morphological rule: unapplies `_rule` against the input
-    // exactly once (per input), independent of Shape/FeatureStruct pattern matching, so the cascade's
-    // own commuting-order redundancy can be exercised without compiling a real FST-backed rule.
+    // Stand-in for a compiled analysis rule: unapplies once per input, with no Shape/FeatureStruct
+    // matching, so commuting orders can be exercised without a real FST-backed rule.
     private sealed class SingleUseUnapplyRule(IMorphologicalRule rule) : IRule<Word, ShapeNode>
     {
         private readonly IMorphologicalRule _rule = rule;

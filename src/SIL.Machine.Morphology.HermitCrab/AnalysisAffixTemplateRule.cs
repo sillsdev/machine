@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
-#if !SINGLE_THREADED
-using System;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-#endif
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
@@ -47,18 +45,16 @@ namespace SIL.Machine.Morphology.HermitCrab
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-#if SINGLE_THREADED
-            ApplySlots(inWord, _rules.Count - 1, output);
-#else
-            ParallelApplySlots(inWord, output);
-#endif
+            if (_morpher.MaxDegreeOfParallelism == 1)
+                ApplySlots(inWord, _rules.Count - 1, output);
+            else
+                ParallelApplySlots(inWord, output);
 
             foreach (Word outWord in output)
                 outWord.SyntacticFeatureStruct.Add(fs);
             return output;
         }
 
-#if SINGLE_THREADED
         private void ApplySlots(Word inWord, int index, HashSet<Word> output)
         {
             for (int i = index; i >= 0; i--)
@@ -78,7 +74,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.EndUnapplyTemplate(_template, inWord, true);
             output.Add(inWord);
         }
-#else
+
         private void ParallelApplySlots(Word inWord, HashSet<Word> output)
         {
             var outStack = new ConcurrentStack<Word>();
@@ -126,6 +122,5 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             output.UnionWith(outStack);
         }
-#endif
     }
 }
