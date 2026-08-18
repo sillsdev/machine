@@ -43,6 +43,24 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
+            // RealizationalRule has no multipleApplication attribute, so it applies at most once per
+            // word; otherwise a rule cascade that retries a matching rule against its own output would
+            // never terminate.
+            if (input.GetApplicationCount(_rule) >= 1)
+            {
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    _morpher.TraceManager.MorphologicalRuleNotApplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.MaxApplicationCount,
+                        1
+                    );
+                }
+                return Enumerable.Empty<Word>();
+            }
+
             if (!_rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct))
                 return Enumerable.Empty<Word>();
 
