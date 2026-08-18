@@ -160,6 +160,33 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         );
     }
 
+    [Test]
+    public void Apply_EnforcesMaxAlternatives_ForRawAndReplayPaths()
+    {
+        var ruleA = new AffixProcessRule { Id = "RULE_A", Name = "ruleA" };
+        var ruleB = new AffixProcessRule { Id = "RULE_B", Name = "ruleB" };
+        IRule<Word, ShapeNode>[] rules = { new SingleUseUnapplyRule(ruleA), new SingleUseUnapplyRule(ruleB) };
+
+        var rawCascade = new MemoizedCombinationRuleCascade(rules, FreezableEqualityComparer<Word>.Default)
+        {
+            MaxAlternatives = 1,
+        };
+        Word rawInitial = NewTestWord();
+        rawInitial.AnalysisScope = new AnalysisScope();
+        rawInitial.Freeze();
+
+        Assert.Throws<MaxAlternativesExceededException>(() => new List<Word>(rawCascade.Apply(rawInitial)));
+
+        var replayCascade = new MemoizedCombinationRuleCascade(rules, FreezableEqualityComparer<Word>.Default);
+        Word replayInitial = NewTestWord();
+        replayInitial.AnalysisScope = new AnalysisScope();
+        replayInitial.Freeze();
+        _ = new List<Word>(replayCascade.Apply(replayInitial));
+
+        replayCascade.MaxAlternatives = 1;
+        Assert.Throws<MaxAlternativesExceededException>(() => new List<Word>(replayCascade.Apply(replayInitial)));
+    }
+
     private static string TrailSignature(Word word) =>
         string.Join("+", word.MorphemesInApplicationOrder.Select(m => m.Id));
 
