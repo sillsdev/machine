@@ -90,6 +90,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
+            AnalysisScope = word.AnalysisScope;
             _disjunctiveAllomorphIndices = word._disjunctiveAllomorphIndices.ToDictionary(
                 kvp => kvp.Key,
                 kvp => new HashSet<int>(kvp.Value)
@@ -211,6 +212,16 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         public object CurrentTrace { get; set; }
+
+        /// <summary>
+        /// Carrier for the analysis-cascade memo (memoization.md). Reference-shared like
+        /// <see cref="CurrentTrace"/>, deliberately excluded from <c>FreezeImpl</c> and
+        /// <c>ValueEquals</c> so existing dedup semantics are unchanged. Null for words never routed
+        /// through <see cref="Morpher.ParseWord(string, out object)"/> (e.g. words built directly by
+        /// rule-level unit tests) or while tracing, in which case the cascade that reads this must fall
+        /// back to unmemoized behavior rather than throw.
+        /// </summary>
+        internal AnalysisScope AnalysisScope { get; set; }
 
         public bool IsPartial
         {
@@ -339,6 +350,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
+        /// The full per-rule unapplication-count multiset backing <see cref="GetUnapplicationCount"/>, for
+        /// <see cref="AnalysisStateKey"/> (order-independent analysis-cascade memoization, memoization.md).
+        /// </summary>
+        internal IReadOnlyDictionary<IMorphologicalRule, int> UnappliedRuleCounts => _mrulesUnapplied;
+
+        /// <summary>
         /// Notifies this word synthesis that the specified morphological rule has applied.
         /// </summary>
         internal void MorphologicalRuleApplied(IMorphologicalRule mrule, IEnumerable<int> allomorphIndices = null)
@@ -391,6 +408,14 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             get { return _nonHeadApps.Count; }
         }
+
+        /// <summary>
+        /// Length of the morphological-rule trail so far -- <c>_mruleApps.Count</c>. Recorded alongside
+        /// <see cref="NonHeadCount"/> at the point an <see cref="AnalysisStateKey"/>'s subtree is
+        /// memoized (memoization.md), so a later differently-ordered arrival at the same key knows where
+        /// its own trail ends and the memoized subtree's suffix begins -- see <see cref="ReplayOnto"/>.
+        /// </summary>
+        internal int MorphologicalRuleTrailLength => _mruleApps.Count;
 
         internal void NonHeadUnapplied(Word nonHead)
         {
@@ -448,6 +473,52 @@ namespace SIL.Machine.Morphology.HermitCrab
             foreach (Word alternative in _alternatives)
                 alternatives.AddRange(alternative.ExpandAlternatives());
             return alternatives;
+        }
+
+        /// <summary>
+        /// Re-parents a Word computed while exploring the subtree below some analysis-cascade node N onto
+        /// <paramref name="queryNode"/> -- a different Word that reached the same
+        /// <see cref="AnalysisStateKey"/> as N via a different morphological-rule unapplication order
+        /// (memoization.md's positive memo; see <see cref="MemoizedCombinationRuleCascade"/>). Everything
+        /// computed strictly WITHIN the subtree -- deeper shape/feature edits, and any rules or non-heads
+        /// unapplied below N -- is a deterministic function of N's content alone (Shape, both
+        /// FeatureStructs, the rule-unapplication multiset, and non-head count all match between N and
+        /// <paramref name="queryNode"/> by definition of an equal key), so it is kept as-is from `this`.
+        /// Only the two ORDERED structures the key deliberately summarizes as counts/multisets -- the
+        /// morphological-rule trail and the non-head list -- have their PREFIX (whatever was accumulated
+        /// before reaching N) replaced with <paramref name="queryNode"/>'s own actual prefix, since arrival
+        /// order can only ever affect that part.
+        /// </summary>
+        /// <param name="queryNode">The word that hit the memo -- its trail/non-heads become the new prefix.</param>
+        /// <param name="mruleTrailPrefixLength">
+        /// <c>_mruleApps.Count</c> of N at the moment its subtree was memoized -- everything in `this`'s
+        /// trail from this index on is the subtree-local suffix to keep.
+        /// </param>
+        /// <param name="nonHeadPrefixLength">Same, for <c>_nonHeadApps</c>.</param>
+        internal Word ReplayOnto(Word queryNode, int mruleTrailPrefixLength, int nonHeadPrefixLength)
+        {
+            Word clone = Clone();
+
+            List<IMorphologicalRule> mruleSuffix = clone._mruleApps.GetRange(
+                mruleTrailPrefixLength,
+                clone._mruleApps.Count - mruleTrailPrefixLength
+            );
+            clone._mruleApps.Clear();
+            clone._mruleApps.AddRange(queryNode._mruleApps);
+            clone._mruleApps.AddRange(mruleSuffix);
+            clone._mruleAppIndex = clone._mruleApps.Count - 1;
+
+            List<Word> nonHeadSuffix = clone._nonHeadApps.GetRange(
+                nonHeadPrefixLength,
+                clone._nonHeadApps.Count - nonHeadPrefixLength
+            );
+            clone._nonHeadApps.Clear();
+            clone._nonHeadApps.AddRange(queryNode._nonHeadApps.CloneItems());
+            clone._nonHeadApps.AddRange(nonHeadSuffix);
+            clone._nonHeadAppIndex = clone._nonHeadApps.Count - 1;
+
+            clone.Freeze();
+            return clone;
         }
 
         public Allomorph GetAllomorph(Annotation<ShapeNode> morph)
