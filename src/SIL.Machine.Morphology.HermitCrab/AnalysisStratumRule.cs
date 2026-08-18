@@ -51,7 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     // within-word parallelism; parallel cascade otherwise.
                     _mrulesRule =
                         morpher.MaxDegreeOfParallelism == 1
-                            ? (IRule<Word, ShapeNode>)
+                            ? (RuleCascade<Word, ShapeNode>)
                                 new MemoizedCombinationRuleCascade(mrules, FreezableEqualityComparer<Word>.Default)
                             : new ParallelCombinationRuleCascade<Word, ShapeNode>(
                                 mrules,

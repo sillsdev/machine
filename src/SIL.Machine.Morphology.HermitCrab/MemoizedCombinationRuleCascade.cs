@@ -75,6 +75,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                         entry.NonHeadPrefixLength
                     );
                     output.Add(replay);
+                    CheckMaxAlternatives(output.Count);
                     replayed.Add(replay);
                 }
                 DiagMemoHits++;
@@ -111,6 +112,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 {
                     local.Add(result);
                     output.Add(result);
+                    CheckMaxAlternatives(output.Count);
                     // avoid infinite loop -- same guard CombinationRuleCascade uses
                     if (!Comparer.Equals(input, result))
                         local.AddRange(ApplyRules(result, output));
