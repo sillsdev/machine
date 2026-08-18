@@ -4,29 +4,22 @@ using NUnit.Framework;
 namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
-/// Stage 5 of memoization.md: the real-data verification the toy-grammar unit tests (stages 2-4)
-/// cannot provide. The mrule/template unit tests use 2-3-rule synthetic grammars specifically because
-/// they let a specific redundant-order scenario be forced deterministically -- but they cannot exercise
-/// whether <see cref="AnalysisStateKey"/>'s key-completeness audit actually holds against the FULL
-/// analysis-side rule set a real grammar invokes (<c>AnalysisAffixProcessRule</c>,
-/// <c>AnalysisCompoundingRule</c>, <c>AnalysisRealizationalAffixProcessRule</c>, and every phonological
-/// rule feeding into the states those rules read). If the key is missing a field some real rule
-/// consults, it manifests as a divergence on some real word, nowhere else -- this harness is that check.
-///
-/// [Explicit] and env-var driven, modeled on FstSenaBenchmark.cs's convention (this repo never commits
-/// real morphological grammars or word lists -- see the standing grammar-privacy constraint -- so this
-/// test ships with zero embedded grammar/word content and writes no output files, only TestContext
-/// lines, to avoid leaking derived corpus data such as signature dumps into a committed path):
+/// Memo-on/memo-off equality against a real grammar, which is the only way to test
+/// <see cref="AnalysisStateKey"/>'s key-completeness audit against the full analysis-side rule set. The
+/// synthetic unit-test grammars can force a specific redundant order deterministically but cannot reach
+/// that breadth; a key missing a field some real rule reads shows up here and nowhere else.
+/// <para>
+/// [Explicit] and env-var driven because this repo never commits real grammars or word lists: the test
+/// embeds no grammar content and writes only TestContext lines, so no derived corpus data (signature
+/// dumps included) can land in a committed path.
+/// </para>
+/// <code>
 ///   $env:HC_MEMO_GRAMMAR = "...\sena-hc.xml"
 ///   $env:HC_MEMO_WORDS   = "...\sena-words.txt"
 ///   $env:HC_MEMO_MAX_WORDS = "60"          # optional, default 60
 ///   $env:HC_MEMO_TIMEOUT_MS = "5000"       # optional, default 5000 (per-word watchdog)
 ///   dotnet test --filter "FullyQualifiedName~MemoCorpusVerification"
-///
-/// Deliberately NOT the archive's 900-line parallel-benchmark harness (16-way scheduling, GC heap-limit
-/// watchdog): per design, the only new runtime configuration this port introduces is single-threaded
-/// (<c>maxDegreeOfParallelism: 1</c>), so there is no new concurrency to stress-test here -- just a
-/// per-word timeout so one pathological word can't hang the whole run.
+/// </code>
 /// </summary>
 [TestFixture]
 [Explicit("Manual corpus verification against a local, uncommitted real grammar; not part of CI.")]
@@ -99,11 +92,9 @@ public class MemoCorpusVerification
         TestContext.Out.WriteLine($"words with no parse on both sides: {noParseBoth}");
         TestContext.Out.WriteLine($"aggregate wall: {totalMs:F1} ms, p50: {p50:F1} ms, p95: {p95:F1} ms");
 
-        // Count-based vs wall-clock aggregates, reported SEPARATELY on purpose: a corpus is typically
-        // bimodal (many cheap words the memo makes slightly slower by losing a thread; a few pathological
-        // words the memo makes drastically faster) -- collapsing that into one ratio hides which regime a
-        // reader is in. "Most words are a bit slower" and "the corpus finishes much faster in total" are
-        // both true simultaneously and neither contradicts the other.
+        // Count-based and wall-clock aggregates stay separate because a corpus is bimodal: many cheap
+        // words go slightly slower for want of a thread, while a few pathological ones go far faster. One
+        // combined ratio would hide which regime a reader is in, and both statements are true at once.
         int fasterCount = perWordTimes.Count(x => x.OnMs < x.OffMs);
         int slowerCount = perWordTimes.Count(x => x.OnMs > x.OffMs);
         int tiedCount = perWordTimes.Count - fasterCount - slowerCount;
@@ -119,22 +110,17 @@ public class MemoCorpusVerification
         );
         if (timedOut.Count > 0)
         {
-            // NOT a guaranteed lower bound in either direction: the try block above wraps BOTH the
-            // memo-on and memo-off calls, so a timeout could come from either side -- this harness
-            // never records which one actually timed out. If it was memo-on, the word's true
-            // memo-off time is genuinely unmeasured (could be faster OR slower than the ratio above
-            // implies); only a longer timeout actually resolves it. Report the fact, don't imply a
-            // direction the data doesn't support.
+            // The ratio above is not a bound in either direction: one try block wraps both calls, so which
+            // side timed out is unrecorded, and if it was memo-on then that word's memo-off time was never
+            // measured at all.
             TestContext.Out.WriteLine(
                 $"(the {timedOut.Count} timed-out word(s) above are excluded from both aggregates; "
                     + "re-run with a higher HC_MEMO_TIMEOUT_MS to actually measure them)"
             );
         }
-        // Per-heavy-word attribution (memoization.md's own methodological rule: an aggregate can be
-        // dominated by cheap words while hiding what pathological words actually do -- report both).
-        // memo-on is sequential+memo; memo-off is the untouched parallel default, so this is the
-        // user-visible claim (sequential-memo vs today's shipped behavior), not an isolated measurement
-        // of the memo mechanism's own contribution in isolation from single- vs multi-threading.
+        // Per-word attribution as well, since an aggregate dominated by cheap words hides what the
+        // pathological ones do. Note memo-on is sequential while memo-off is the parallel default, so
+        // these times measure the user-visible comparison, not the memo's contribution in isolation.
         TestContext.Out.WriteLine("heaviest words (by memo-off time), memo-on vs memo-off:");
         foreach ((string w, double onMs2, double offMs2) in perWordTimes.OrderByDescending(x => x.OffMs).Take(10))
             TestContext.Out.WriteLine($"  {w}: memo-on {onMs2:F1} ms, memo-off {offMs2:F1} ms");
@@ -148,11 +134,9 @@ public class MemoCorpusVerification
         );
         if (timedOut.Count > 0)
         {
-            // Named, not just counted: a timed-out word is EXCLUDED from the equality gate above, so
-            // "0 divergences" says nothing about it. These are exactly the candidates for a follow-up
-            // run with a longer HC_MEMO_TIMEOUT_MS (see memoization.md §5's addendum on why this
-            // mattered -- the heavy words are precisely the ones the memo, and the key-completeness
-            // audit, most need to be checked against).
+            // Named rather than counted: these words are excluded from the equality gate, so "0
+            // divergences" says nothing about them, and heavy words are exactly what the memo and the
+            // key-completeness audit most need checking against.
             TestContext.Out.WriteLine(
                 $"timed-out words (excluded from the equality gate above -- re-run with a higher "
                     + $"HC_MEMO_TIMEOUT_MS to actually check these): {string.Join(", ", timedOut)}"
@@ -185,20 +169,17 @@ public class MemoCorpusVerification
         }
         catch (InvalidShapeException)
         {
-            // Matches Morpher.AnalyzeWord's own handling: a word list drawn from real text can contain
-            // strings the grammar's character table doesn't cover (e.g. punctuation) -- not a memo
-            // concern, both sides would throw identically.
+            // As Morpher.AnalyzeWord does: a real word list can contain strings the character table does
+            // not cover, which both sides reject identically and which tells us nothing about the memo.
             return new List<string>();
         }
     }
 
-    // Does NOT cancel `action` on timeout -- Morpher.ParseWord has no cooperative-cancellation
-    // hook, so a timed-out word's Task keeps running in the background. This can inflate the
-    // hit/nogood counters and per-word timings reported below with work from an abandoned prior
-    // word, and piled-up orphaned tasks from several timed-out words in a row can starve the
-    // thread pool. Acceptable for this [Explicit], never-in-CI diagnostic harness (the equality
-    // gate itself is unaffected -- a timed-out word is excluded from it either way, see the
-    // caller), but do not read the reported hit counts/timings as precise when timeouts occurred.
+    // Cannot cancel `action`: ParseWord has no cooperative-cancellation hook, so a timed-out word keeps
+    // running in the background, where it can inflate later words' counters and timings, and enough
+    // orphaned tasks in a row can starve the thread pool. Tolerable only because this harness never runs
+    // in CI, and the equality gate excludes timed-out words anyway -- but treat any run that reported
+    // timeouts as having approximate counts.
     private static T RunWithTimeout<T>(Func<T> action, int timeoutMs)
     {
         Task<T> task = Task.Run(action);

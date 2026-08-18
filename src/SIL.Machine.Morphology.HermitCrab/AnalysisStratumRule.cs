@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
@@ -47,8 +48,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                     );
                     break;
                 case MorphologicalRuleOrder.Unordered:
-                    // Sequential (and memoized, see MemoizedCombinationRuleCascade) when the caller caps
-                    // within-word parallelism; parallel cascade otherwise.
                     _mrulesRule =
                         morpher.MaxDegreeOfParallelism == 1
                             ? (RuleCascade<Word, ShapeNode>)
@@ -57,7 +56,10 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 mrules,
                                 true,
                                 FreezableEqualityComparer<Word>.Default
-                            );
+                            )
+                            {
+                                MaxDegreeOfParallelism = morpher.MaxDegreeOfParallelism,
+                            };
                     break;
             }
         }
@@ -186,45 +188,36 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        // Test/reporting hooks (memoization.md's standing hit/miss-count requirement), mirroring
-        // MemoizedCombinationRuleCascade's DiagMemoHits/DiagNogoodHits split.
+        // Counterparts to MemoizedCombinationRuleCascade's counters, for the template table.
         internal static long DiagTemplateMemoHits;
         internal static long DiagTemplateNogoodHits;
 
-        // Runs the affix-template battery for `input`, memoized by AnalysisStateKey (memoization.md),
-        // same replay mechanism as MemoizedCombinationRuleCascade -- see AnalysisScope.InProgress for
-        // why no re-entry guard is needed here. Measured motivation (an archive prototype benchmark on
-        // a Bantu-template grammar): this battery accounted for the large majority of parse wall time
-        // once the mrule cascade's own memo had already shrunk its own share to near-nothing.
+        // The affix-template battery, memoized by AnalysisStateKey against its own table. On
+        // template-heavy grammars this dominates parse time, which is why it is memoized separately from
+        // the mrule cascade. See AnalysisScope.InProgress for why no re-entry guard is needed here.
         private IEnumerable<Word> ApplyTemplateBattery(Word input)
         {
+            // Scope presence is the single source of truth for whether the memo is active; Morpher decides
+            // that once, at install time. Linear strata stay unmemoized because the key-completeness audit
+            // covers only the Unordered cascade.
             AnalysisScope scope = input.AnalysisScope;
-            if (scope == null || _morpher.MaxDegreeOfParallelism != 1)
+            if (scope == null || _stratum.MorphologicalRuleOrder != MorphologicalRuleOrder.Unordered)
                 return _templatesRule.Apply(input);
 
             var key = new AnalysisStateKey(input);
-            if (scope.TemplateMemo.TryGetValue(key, out MemoEntry entry))
+            if (scope.TryReplay(scope.TemplateMemo, key, input, out List<Word> replayed))
             {
-                if (entry.Results.Count == 0)
+                if (replayed.Count == 0)
                 {
-                    DiagTemplateNogoodHits++;
-                    return Enumerable.Empty<Word>();
+                    Interlocked.Increment(ref DiagTemplateNogoodHits);
+                    return replayed;
                 }
-                var replayed = new List<Word>(entry.Results.Count);
-                foreach (Word stored in entry.Results)
-                    replayed.Add(stored.ReplayOnto(input, entry.MruleTrailPrefixLength, entry.NonHeadPrefixLength));
-                DiagTemplateMemoHits++;
+                Interlocked.Increment(ref DiagTemplateMemoHits);
                 return replayed;
             }
 
             var results = new List<Word>(_templatesRule.Apply(input));
-            if (scope.HasTemplateMemoCapacity)
-            {
-                scope.TemplateMemo.TryAdd(
-                    key,
-                    new MemoEntry(results, input.MorphologicalRuleTrailLength, input.NonHeadCount)
-                );
-            }
+            scope.Store(scope.TemplateMemo, key, input, results);
             return results;
         }
 

@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
@@ -9,12 +12,6 @@ using SIL.Machine.Rules;
 using SIL.ObjectModel;
 #if OUTPUT_ANALYSES
 using System.IO;
-#endif
-
-#if !SINGLE_THREADED
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Threading;
 #endif
 
 namespace SIL.Machine.Morphology.HermitCrab
@@ -88,11 +85,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// Caps parallelism used within a single parse's Unordered-order analysis-rule cascade. A value of
-        /// 1 selects the sequential cascade, which is also the only one eligible for the analysis-cascade
-        /// memo (see <see cref="MemoizedCombinationRuleCascade"/>); any other value (default 0) keeps the
-        /// existing parallel cascade. Set via the constructor: it influences how the analysis rules are
-        /// compiled.
+        /// Caps the concurrency used within a single parse. A value of 1 runs the parse fully
+        /// sequentially -- analysis cascade, affix-template unapplication and synthesis alike -- and is the
+        /// only configuration eligible for the analysis-cascade memo (see
+        /// <see cref="MemoizedCombinationRuleCascade"/>). The default of 0, like any value below 1, leaves
+        /// concurrency unbounded. Constructor-only, because it determines how the analysis rules compile.
+        /// <para>
+        /// This must remain a pure performance knob: nothing that changes which analyses a parse returns
+        /// may be gated on it, or the memoized and unmemoized configurations stop being comparable.
+        /// </para>
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
 
@@ -127,9 +128,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
-            // Only the sequential cascade reads AnalysisScope (see MemoizedCombinationRuleCascade);
-            // skip the allocation on the parallel path, and while tracing (tracing must stay
-            // byte-identical to the unmemoized engine).
+            // Installing a scope is what enables the memo. Never while tracing: traces must stay
+            // byte-identical to the unmemoized engine.
             if (!_traceManager.IsTracing && MaxDegreeOfParallelism == 1)
                 input.AnalysisScope = new AnalysisScope();
             input.Freeze();
@@ -296,16 +296,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-#if SINGLE_THREADED
-        private IEnumerable<Word> Synthesize(string word, IEnumerable<Word> analyses)
+        private IEnumerable<Word> Synthesize(string word, ConcurrentQueue<Word> analyses)
+        {
+            if (MaxDegreeOfParallelism == 1)
+                return SynthesizeSequential(word, analyses);
+            return SynthesizeParallel(word, analyses);
+        }
+
+        private IEnumerable<Word> SynthesizeSequential(string word, IEnumerable<Word> analyses)
         {
             var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+            int alternativeCount = 0;
             foreach (Word analysisWord in analyses)
             {
                 foreach (Word synthesisWord in LexicalLookup(analysisWord))
                 {
                     foreach (Word alternative in synthesisWord.ExpandAlternatives())
                     {
+                        alternativeCount++;
+                        if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
+                            throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
                         foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                         {
                             if (IsMatch(word, validWord))
@@ -316,8 +326,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
             return matches;
         }
-#else
-        private IEnumerable<Word> Synthesize(string word, ConcurrentQueue<Word> analyses)
+
+        private IEnumerable<Word> SynthesizeParallel(string word, ConcurrentQueue<Word> analyses)
         {
             var matches = new ConcurrentBag<Word>();
             int alternativeCount = 0;
@@ -363,7 +373,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 throw exception;
             return matches.Distinct(FreezableEqualityComparer<Word>.Default);
         }
-#endif
 
         internal IEnumerable<RootAllomorph> SearchRootAllomorphs(Stratum stratum, Shape shape)
         {
@@ -386,6 +395,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (RootAllomorph allomorph in entry.Allomorphs)
                 {
                     Word newWord = input.Clone();
+                    // Synthesis never reads the memo, and keeping the reference would pin both tables for
+                    // as long as the caller holds the returned words.
+                    newWord.AnalysisScope = null;
                     newWord.RootAllomorph = allomorph;
                     if (_traceManager.IsTracing)
                         _traceManager.SynthesizeWord(_lang, newWord);
@@ -458,6 +470,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         }
                         // Create a new word that uses the root allomorph.
                         Word newWord = input.Clone();
+                        // Synthesis never reads the memo; see LexicalLookup.
+                        newWord.AnalysisScope = null;
                         newWord.RootAllomorph = root;
                         if (_traceManager.IsTracing)
                             _traceManager.SynthesizeWord(_lang, newWord);

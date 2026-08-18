@@ -30,8 +30,18 @@ namespace SIL.Machine.Rules
         )
             : base(rules, multiApp, comparer) { }
 
+        /// <summary>
+        /// Maximum number of concurrent tasks used by <see cref="Apply"/>. Values less than 1 (the
+        /// default is -1) do not limit the degree of parallelism.
+        /// </summary>
+        public int MaxDegreeOfParallelism { get; set; } = -1;
+
         public override IEnumerable<TData> Apply(TData input)
         {
+            var parallelOptions = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = MaxDegreeOfParallelism >= 1 ? MaxDegreeOfParallelism : -1,
+            };
             var output = new ConcurrentStack<TData>();
             var from = new ConcurrentStack<Tuple<TData, HashSet<int>>>();
             from.Push(Tuple.Create(input, !MultipleApplication ? new HashSet<int>() : null));
@@ -43,6 +53,7 @@ namespace SIL.Machine.Rules
                 to.Clear();
                 Parallel.ForEach(
                     from,
+                    parallelOptions,
                     (work, state) =>
                     {
                         try
