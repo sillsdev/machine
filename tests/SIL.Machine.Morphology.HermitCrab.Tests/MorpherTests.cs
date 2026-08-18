@@ -142,6 +142,44 @@ public class MorpherTests : HermitCrabTestBase
     }
 
     [Test]
+    public void ParseWord_UnblockedRealizationalRuleMatchesOwnOutput_DoesNotHang()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+
+        LexEntry entry = AddEntry(
+            "realtest",
+            FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            Morphophonemic,
+            "zag"
+        );
+        entry.MprFeatures.Add(Latinate);
+
+        var realRule = new RealizationalAffixProcessRule { Name = "real_rule", Gloss = "REAL" };
+        realRule.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
+            }
+        );
+        realRule.Allomorphs[0].RequiredMprFeatures.Add(Latinate);
+        Morphophonemic.MorphologicalRules.Add(realRule);
+
+        SetRuleOrder(MorphologicalRuleOrder.Linear);
+        var morpher = new Morpher(TraceManager, Language);
+
+        Word[]? output = null;
+        bool completed = Task.Run(() => output = morpher.ParseWord("zag").ToArray()).Wait(TimeSpan.FromSeconds(10));
+
+        Assert.That(
+            completed,
+            Is.True,
+            "ParseWord did not return: the realizational rule reapplied to its own output without bound."
+        );
+        AssertMorphsEqual(output!, "realtest");
+    }
+
+    [Test]
     public void AnalyzeWord_CannotAnalyze_ReturnsEmptyEnumerable()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
