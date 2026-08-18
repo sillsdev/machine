@@ -29,10 +29,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
 
-        public Morpher(ITraceManager traceManager, Language lang)
+        public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
             _lang = lang;
             _traceManager = traceManager;
+            // Must be set before CompileAnalysisRule: AnalysisStratumRule picks a sequential vs. parallel
+            // cascade for Unordered-order analysis strata at construction time based on this value.
+            MaxDegreeOfParallelism = maxDegreeOfParallelism;
             _allomorphTries = new Dictionary<Stratum, RootAllomorphTrie>();
             var morphemes = new ObservableList<Morpheme>();
             foreach (Stratum stratum in _lang.Strata)
@@ -84,6 +87,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
 
+        /// <summary>
+        /// Caps parallelism used within a single parse's Unordered-order analysis-rule cascade. A value of
+        /// 1 selects the sequential cascade, which is also the only one eligible for the analysis-cascade
+        /// memo (see <see cref="MemoizedCombinationRuleCascade"/>); any other value (default 0) keeps the
+        /// existing parallel cascade. Set via the constructor: it influences how the analysis rules are
+        /// compiled.
+        /// </summary>
+        public int MaxDegreeOfParallelism { get; }
+
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
 
@@ -115,6 +127,11 @@ namespace SIL.Machine.Morphology.HermitCrab
             Shape shape = _lang.SurfaceStratum.CharacterDefinitionTable.Segment(word);
 
             var input = new Word(_lang.SurfaceStratum, shape);
+            // Only the sequential cascade reads AnalysisScope (see MemoizedCombinationRuleCascade);
+            // skip the allocation on the parallel path, and while tracing (tracing must stay
+            // byte-identical to the unmemoized engine).
+            if (!_traceManager.IsTracing && MaxDegreeOfParallelism == 1)
+                input.AnalysisScope = new AnalysisScope();
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
