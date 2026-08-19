@@ -338,15 +338,19 @@ public sealed class DotnetMsbuildCompilationGraphLoaderTests
             Throws.TypeOf<InvalidDataException>());
     }
 
+    // cancellationToken must be threaded all the way into LoadAsync: MsBuildProcessRunner already kills
+    // its child's whole process tree on cancellation (see TryTerminate), but only for the token it is
+    // actually given -- passing CancellationToken.None here would silently disconnect [CancelAfter] from
+    // that kill path and leave a live `dotnet msbuild` running past a cancelled or timed-out test.
     [Test]
     [CancelAfter(120_000)]
-    public async Task LiveLoaderCapturesEveryRestoredNodeWithoutRepositoryWrites()
+    public async Task LiveLoaderCapturesEveryRestoredNodeWithoutRepositoryWrites(CancellationToken cancellationToken)
     {
         string root = RepositoryRoot();
         IReadOnlyDictionary<string, FileStamp> before = RepositoryFileStamps(root);
 
         RepositoryCompilationGraph graph = await new RepositoryCompilationGraphLoader(
-            new MsBuildProcessRunner()).LoadAsync(new RepositoryRoot(root), CancellationToken.None);
+            new MsBuildProcessRunner()).LoadAsync(new RepositoryRoot(root), cancellationToken);
 
         CapturedCompilerInputs firstCapture = graph.Captures.OrderBy(pair => pair.Key.ProjectId, StringComparer.Ordinal).First().Value;
         string compatibilitySource = Path.Combine(root, "src", "SIL.Machine", "Utils", "StringExtensions.cs");

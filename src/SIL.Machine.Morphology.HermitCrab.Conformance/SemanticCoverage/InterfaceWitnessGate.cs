@@ -83,7 +83,8 @@ public static class InterfaceWitnessGate
         return removedCount == 0 ? null : copy;
     }
 
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(20);
+    // Shares CounterfactualGate's constant rather than keeping a second copy that could drift.
+    private static readonly TimeSpan DefaultTimeout = CounterfactualGate.DefaultTimeout;
 
     /// <summary>
     /// Severs <paramref name="element"/>.<paramref name="attribute"/> in <paramref name="fixture"/>'s

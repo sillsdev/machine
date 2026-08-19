@@ -152,5 +152,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Word Output { get; internal set; }
 
         public FailureReason FailureReason { get; internal set; }
+
+        /// <summary>The <see cref="Allomorph"/> a <see cref="TraceType.Failed"/> node's <see cref="FailureReason"/>
+        /// was raised against (e.g. the allomorph whose AllomorphCoOccurrenceRule/Environments check failed) --
+        /// separate from <see cref="Source"/> because <see cref="Allomorph"/> is not an <see cref="IHCRule"/>.</summary>
+        public Allomorph FailureAllomorph { get; internal set; }
     }
 }

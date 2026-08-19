@@ -86,6 +86,28 @@ Regenerate the witness ledger and confirm the cell's status actually changed. Ad
 If the cell did not become `Satisfied`, you have not covered it. Report `no-witness` with what you
 tried. Do not adjust an expectation, weaken a gate, or claim partial success.
 
+### Regenerating fast enough to iterate
+
+The full sweep re-parses every interface in every fixture and takes about seven minutes. You do not
+need it while iterating. Point the tool at a throwaway root holding only your fixture:
+
+```powershell
+$root = "$env:TEMP\cellwork"
+New-Item -ItemType Directory "$root\conformance\languages" -Force | Out-Null
+Copy-Item conformance\languages\<your-fixture> "$root\conformance\languages\" -Recurse
+Copy-Item conformance\HermitCrabInput.dtd,conformance\constructs.txt "$root\conformance\"
+dotnet <hc-conformance.dll> --fixtures "$root\conformance" --repository-root $root `
+    --write-coverage-traceability
+```
+
+That runs in seconds and its rows for your fixture are byte-identical to the ones the full sweep
+produces -- severance is evaluated per fixture, so nothing outside yours can change them.
+
+What it does **not** do is decide the obligation's status. `Satisfied` is a judgement across every
+fixture, and a scoped root cannot see the others. So use the scoped run to answer "do my words flip
+under severance", which is the question you are actually iterating on, and run the full sweep and the
+gate once at the end to answer "is the cell now covered".
+
 ## Phase 6 — Record the claim
 
 Add a `claimed_cells` entry on the word that carries the witness:

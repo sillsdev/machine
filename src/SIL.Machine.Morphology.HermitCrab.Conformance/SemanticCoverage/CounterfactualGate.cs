@@ -115,8 +115,14 @@ public static class CounterfactualGate
     }
 
     // A mutated grammar can drop whatever bounded a search, so a mutant may never terminate. Kept wide
-    // enough that a merely slow mutant is never mistaken for a non-terminating one.
-    private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(20);
+    // enough that a merely slow mutant is never mistaken for a non-terminating one. internal so
+    // InterfaceWitnessGate shares this constant instead of keeping a second copy that could drift.
+    internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(45);
+
+    // A single wall-clock sample cannot tell a genuinely non-terminating mutant from one that merely
+    // lost a race against unrelated load on a shared build machine. Requiring the same mutation to
+    // time out on a second, independent attempt turns one unlucky sample into two that must agree.
+    private const int TimeoutConfirmationAttempts = 2;
 
     /// <summary>Parses every line of <paramref name="wordsPath"/> against a grammar.</summary>
     public static IReadOnlyList<string> EvaluateOneGrammar(
@@ -150,9 +156,37 @@ public static class CounterfactualGate
 
     /// <summary>
     /// Runs the parse in a child process so a mutant that never terminates can be killed. Waiting on an
-    /// in-process task only abandons it: it keeps allocating for the rest of the sweep.
+    /// in-process task only abandons it: it keeps allocating for the rest of the sweep. Requires
+    /// <see cref="TimeoutConfirmationAttempts"/> independent timeouts in a row before reporting one --
+    /// see that constant's own doc comment for why a single sample is not trusted.
     /// </summary>
     private static IReadOnlyList<string> OutcomesWithTimeout(
+        string grammarPath,
+        IReadOnlyList<string> words,
+        TimeSpan timeout,
+        Action<string, long>? onTimed
+    )
+    {
+        TimeoutException lastTimeout;
+        int attempt = 1;
+        while (true)
+        {
+            try
+            {
+                return RunOnceWithTimeout(grammarPath, words, timeout, onTimed);
+            }
+            catch (TimeoutException ex)
+            {
+                lastTimeout = ex;
+                if (attempt++ >= TimeoutConfirmationAttempts)
+                    throw lastTimeout;
+            }
+        }
+    }
+
+    /// <summary>One wall-clock-bounded attempt; see <see cref="TimeoutConfirmationAttempts"/> for why
+    /// <see cref="OutcomesWithTimeout"/> never accepts a single one of these as final.</summary>
+    private static IReadOnlyList<string> RunOnceWithTimeout(
         string grammarPath,
         IReadOnlyList<string> words,
         TimeSpan timeout,

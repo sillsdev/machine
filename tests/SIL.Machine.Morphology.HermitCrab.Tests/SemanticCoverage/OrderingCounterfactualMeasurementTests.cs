@@ -59,8 +59,9 @@ public sealed class OrderingCounterfactualMeasurementTests
         string? MutatedGrammarPath
     );
 
-    // 30s, not CounterfactualGate's 20s: this run's child processes carry no in-process fallback path,
-    // so a genuinely slow (not hung) mutant should not be misreported as a Timeout.
+    // Deliberately not tied to CounterfactualGate.DefaultTimeout: this run's child processes carry no
+    // in-process fallback path, so a genuinely slow (not hung) mutant should not be misreported as a
+    // Timeout.
     private static readonly TimeSpan EvaluationTimeout = TimeSpan.FromSeconds(30);
 
     [Test]
@@ -325,21 +326,23 @@ public sealed class OrderingCounterfactualMeasurementTests
         start.ArgumentList.Add(wordsPath);
         start.EnvironmentVariables["DOTNET_PROCESSOR_COUNT"] = "1";
 
-        using Process child = Process.Start(start) ?? throw new InvalidOperationException("could not start child process");
-        Task<string> outputTask = child.StandardOutput.ReadToEndAsync();
-        Task<string> errorTask = child.StandardError.ReadToEndAsync();
-        if (!child.WaitForExit((int)timeout.TotalMilliseconds))
+        ChildProcessHarness.Result result;
+        try
         {
-            child.Kill(entireProcessTree: true);
+            result = ChildProcessHarness.Run(start, CancellationToken.None, backstop: timeout);
+        }
+        catch (TimeoutException)
+        {
             throw new TimeoutException($"'{grammarPath}' did not complete within {timeout.TotalSeconds:0}s");
         }
 
-        string output = outputTask.GetAwaiter().GetResult();
-        string error = errorTask.GetAwaiter().GetResult();
-        if (child.ExitCode != 0)
-            throw new InvalidOperationException(error.Trim().Length != 0 ? error.Trim() : $"exit code {child.ExitCode}");
+        if (result.ExitCode != 0)
+        {
+            string error = result.StandardError.Trim();
+            throw new InvalidOperationException(error.Length != 0 ? error : $"exit code {result.ExitCode}");
+        }
 
-        return output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line => line.TrimEnd('\r')).ToArray();
+        return result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line => line.TrimEnd('\r')).ToArray();
     }
 
     private static string Cause(ItemResult result)

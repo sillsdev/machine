@@ -153,12 +153,13 @@ writes. Full schema: `docs/conformance-language-suite-plan.md` §2.1.
 
 Each is a dense, synthetic grammar (invented lexemes and segment inventories, no orthographic claim
 about any real language) where ordinary words exercise several constructs at once, rather than a
-one-mechanism probe. `edge-cases/` holds the 21 things no shared grammar can host faithfully:
+one-mechanism probe. `edge-cases/` holds the 25 things no shared grammar can host faithfully:
 loader/XML-semantics probes, an `expect_crash` pin, a `budget_ms` pathological stress case, and
 allomorphy/rewrite pins whose exact rule shape a naturalistic grammar wouldn't contain.
 
-29 fixtures and 424 cases in total. Those counts are not maintained by hand — the manifest carries
-them per fixture, and `--check-manifest` fails on drift.
+33 fixtures and 446 cases in total, summed from `generated/hc-conformance-manifest.v1.json`. The
+manifest's per-fixture `caseCount` is what `--check-manifest` verifies; these two prose totals are
+hand-copied from it and have already drifted once, so read the manifest, not this sentence.
 
 ## What the coverage numbers claim, and what they do not
 

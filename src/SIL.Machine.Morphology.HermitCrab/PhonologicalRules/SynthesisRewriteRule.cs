@@ -32,7 +32,8 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 settings,
                 rule.ApplicationMode == RewriteApplicationMode.Iterative,
                 _rule.Lhs,
-                _rule.Subrules
+                _rule.Subrules,
+                _rule.Name
             );
 
             _patternRule = null;

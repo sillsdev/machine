@@ -29,6 +29,32 @@ that bar today.
 **The suite does not claim 346/346.** It claims 2, and it publishes the other 344 as named gaps that
 cannot be quietly absorbed.
 
+### 344 gaps, but only 26 an author can pick up
+
+That 344 is honest as a count and misleading as a work list.
+
+`DataflowObligationLedger` emits four MC/DC arms per chain, and `FindPairedWitness` can certify
+exactly one of them. It reads the arm's direction off the reader attribute's *name*: a `required*`
+reader blocks on absence, so the arm it can certify is `AbsentGatedForm`; an `excluded*` reader
+blocks on presence, so it is `PresentGatedForm`. Any other reader name returns nothing at all.
+
+| cells | count | can the generator ever mark it Satisfied? |
+|---|---|---|
+| the one certifiable arm on each chain with a `required*`/`excluded*` reader | 28 | yes |
+| the other three arms on those same chains | 84 | no |
+| all four arms on the 12 chains reading `head*`/`nonHead*` | 48 | no -- polarity is unreadable from the name |
+| Mutator cells | 182 | no -- the detectors prove a structural precondition, never a word's outcome |
+| ConditionExtension cells | 4 | no |
+
+So the certifiable denominator is **28, of which 2 are satisfied**. Of the remaining 26, ten sit on
+chains some fixture already exercises and sixteen on chains no fixture exercises yet.
+
+Do not read the other 318 as phantom. A control arm is a real obligation -- this suite's own rule is
+that a gated form proves nothing without one -- and the twelve `head*`/`nonHead*` chains gate real
+behaviour. What those 318 lack is a **certifier**, not a reason to exist. The distinction this ledger
+does not yet draw, and should, is between "unsatisfied" and "nothing can currently establish this",
+because only the first is work someone can pick up.
+
 ## Presence is not coverage
 
 The single most important distinction here, and the one this suite got wrong five times before

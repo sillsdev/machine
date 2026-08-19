@@ -45,7 +45,7 @@ public sealed class CoverageCliAuthorityTests
                 + "dtd:enum/Stratum/cyclicity/cyclic\tno-consumer\tchecked-in prose is not a proof\n"
         );
 
-        ProcessResult result = RunCoverageCli("--coverage-evidence");
+        ProcessResult result = RunCoverageCli("--coverage-evidence", CancellationToken.None);
 
         Assert.That(result.ExitCode, Is.EqualTo(1), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("rejected proof"));
@@ -58,10 +58,10 @@ public sealed class CoverageCliAuthorityTests
     // on the real, expected-for-now backlog (unclassified grammar features) instead.
     [Test]
     [CancelAfter(300_000)]
-    public void CheckedInEmptyCatalogRunsTheAuditAndFailsOnUnclassifiedMappings()
+    public void CheckedInEmptyCatalogRunsTheAuditAndFailsOnUnclassifiedMappings(CancellationToken cancellationToken)
     {
         string root = RepositoryRoot();
-        ProcessResult result = RunCoverageCli("--semantic-coverage", root);
+        ProcessResult result = RunCoverageCli("--semantic-coverage", cancellationToken, root);
 
         Assert.That(result.ExitCode, Is.EqualTo(1), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Not.Contain("audited-source-scopes-empty"));
@@ -78,6 +78,7 @@ public sealed class CoverageCliAuthorityTests
 
         ProcessResult result = RunCoverageCli(
             "--propose-semantic-catalog",
+            CancellationToken.None,
             root,
             "--audited-source-scope",
             "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader");
@@ -92,7 +93,7 @@ public sealed class CoverageCliAuthorityTests
     public void EmptyCatalogWithoutExplicitProposalScopeIsControlledError()
     {
         string root = RepositoryRoot();
-        ProcessResult result = RunCoverageCli("--propose-semantic-catalog", root);
+        ProcessResult result = RunCoverageCli("--propose-semantic-catalog", CancellationToken.None, root);
 
         Assert.That(result.ExitCode, Is.EqualTo(2), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("requires one or more"));
@@ -105,7 +106,7 @@ public sealed class CoverageCliAuthorityTests
     // census from the CLI.
     [Test]
     [CancelAfter(300_000)]
-    public void ScopedProposalRunsTheLiveGraphCensusAndPreservesCatalog()
+    public void ScopedProposalRunsTheLiveGraphCensusAndPreservesCatalog(CancellationToken cancellationToken)
     {
         string root = RepositoryRoot();
         string catalogPath = Path.Combine(root, "conformance", "semantic-catalog.yaml");
@@ -113,6 +114,7 @@ public sealed class CoverageCliAuthorityTests
 
         ProcessResult result = RunCoverageCli(
             "--propose-semantic-catalog",
+            cancellationToken,
             root,
             "--audited-source-scope",
             "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader.Load(System.String)");
@@ -129,6 +131,7 @@ public sealed class CoverageCliAuthorityTests
         string root = CreateSyntheticRepository();
         ProcessResult result = RunCoverageCli(
             "--propose-semantic-catalog",
+            CancellationToken.None,
             root,
             "--audited-source-scope",
             "Fixture.*");
@@ -143,7 +146,7 @@ public sealed class CoverageCliAuthorityTests
         string root = CreateSyntheticRepository();
         File.Delete(Path.Combine(root, "conformance", "semantic-coverage-baseline.txt"));
 
-        ProcessResult result = RunCoverageCli("--semantic-coverage", root);
+        ProcessResult result = RunCoverageCli("--semantic-coverage", CancellationToken.None, root);
 
         Assert.That(result.ExitCode, Is.EqualTo(2), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("semantic coverage authority unavailable"));
@@ -157,14 +160,21 @@ public sealed class CoverageCliAuthorityTests
         Directory.CreateDirectory(fixture);
         File.WriteAllText(Path.Combine(fixture, "grammar.xml"), "<not-closed>");
 
-        ProcessResult result = RunCoverageCli("--semantic-coverage", root);
+        ProcessResult result = RunCoverageCli("--semantic-coverage", CancellationToken.None, root);
 
         Assert.That(result.ExitCode, Is.EqualTo(2), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("semantic coverage authority unavailable"));
         Assert.That(result.CombinedOutput, Does.Not.Contain("Unhandled exception"));
     }
 
-    private ProcessResult RunCoverageCli(string mode, string? repositoryRoot = null, params string[] extraArgs)
+    // cancellationToken is required, not defaulted, so every call site above states outright whether it
+    // rides on the test's own [CancelAfter] token or deliberately has none -- see ChildProcessHarness for
+    // why an unwired token leaves this method's child process running past a cancelled test.
+    private ProcessResult RunCoverageCli(
+        string mode,
+        CancellationToken cancellationToken,
+        string? repositoryRoot = null,
+        params string[] extraArgs)
     {
         string tool = Path.Combine(TestContext.CurrentContext.TestDirectory, "hc-conformance.dll");
         Assert.That(File.Exists(tool), Is.True, $"missing test-side CLI at {tool}");
@@ -182,11 +192,8 @@ public sealed class CoverageCliAuthorityTests
         foreach (string extraArg in extraArgs)
             start.ArgumentList.Add(extraArg);
 
-        using Process process = Process.Start(start)!;
-        string stdout = process.StandardOutput.ReadToEnd();
-        string stderr = process.StandardError.ReadToEnd();
-        process.WaitForExit();
-        return new ProcessResult(process.ExitCode, stdout + stderr);
+        ChildProcessHarness.Result result = ChildProcessHarness.Run(start, cancellationToken);
+        return new ProcessResult(result.ExitCode, result.StandardOutput + result.StandardError);
     }
 
     private static string RepositoryRoot()

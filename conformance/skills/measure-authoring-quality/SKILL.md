@@ -48,8 +48,20 @@ If a failure fits none, add a class rather than forcing it — a new class is a 
 attempt_id  cell_id  skill_version  set  phase_reached  outcome  failure_class  notes
 ```
 
-`skill_version` is mandatory. Yield is only comparable across runs when you know which instructions
-produced it.
+`skill_version` is mandatory, and it is computed rather than typed:
+
+```powershell
+git rev-parse HEAD:conformance/skills
+```
+
+That is the git tree hash of the skills directory. It changes when and only when a skill changes, so
+two runs carrying the same `skill_version` genuinely ran the same instructions, and two that differ
+genuinely did not. A hand-written version number answers neither question, because nothing obliges
+anyone to bump it, and a stale one silently makes two different runs look comparable.
+
+Write the run record to `conformance/harness-runs/first-pass-yield.tsv`, appending -- never rewriting. The
+history is the point: one yield number means little, and the series across skill versions is what
+tells you whether a revision helped.
 
 ## Reporting
 
