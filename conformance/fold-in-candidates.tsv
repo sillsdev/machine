@@ -78,7 +78,6 @@ Interface	AllomorphCoOccurrenceRule.otherAllomorphs	NeverWitnessed	present in 2 
 Interface	AllomorphCoOccurrenceRule.primaryAllomorph	NeverWitnessed	present in 2 fixture(s), witnessed by none
 Interface	AlphaVariable.variableFeature	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	BoundaryMarker.boundary	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	CompoundingRule.headPartsOfSpeech	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	CompoundingRule.nonHeadPartsOfSpeech	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	CompoundingRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	CompoundingRule.outputPartOfSpeech	NeverWitnessed	present in 2 fixture(s), witnessed by none

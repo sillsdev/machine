@@ -282,6 +282,7 @@ PolysyntheticStratalDerivationChain,akutat,AKU+TATV|aku+?tat,Boundary markers (C
 PolysyntheticStratalDerivationChain,pitat,PIPFX1+TATV|pitat,AffixProcessRule: prefix/suffix/circumfix/infix
 PolysyntheticStratalDerivationChain,akupitat,,CompoundingRule
 PolysyntheticStratalDerivationChain,akutas,,CompoundingRule
+PolysyntheticStratalDerivationChain,silaaku,,CompoundingRule
 PolysyntheticStratalDerivationChain,silanuk,SILA+NUKN|sila+?nuk,CompoundingRule
 PolysyntheticStratalDerivationChain,silanuk,SILA+NUKN|sila+?nuk,Boundary markers (CharacterDefinitionTable)
 PolysyntheticStratalDerivationChain,silanuk,SILA+NUKV|sila+?nuk,CompoundingRule

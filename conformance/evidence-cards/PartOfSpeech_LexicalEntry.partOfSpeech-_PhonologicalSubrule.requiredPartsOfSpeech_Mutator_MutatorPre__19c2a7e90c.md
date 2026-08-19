@@ -29,7 +29,7 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Timeout, mutation="removed partOfSpeech from 16 <LexicalEntry> element(s)"
+- Writer (`LexicalEntry.partOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed partOfSpeech from 16 <LexicalEntry> element(s)", example: 'mba': ok::PAV|mba -> ok::-
 - Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)"
 
 ## Grammar citations

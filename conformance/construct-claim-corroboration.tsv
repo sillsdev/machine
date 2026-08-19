@@ -300,6 +300,7 @@ languages/polysynthetic-stratal-derivation-chain	nunaliqvuq	NUNA+DERIV+INFL|nuna
 languages/polysynthetic-stratal-derivation-chain	nunaliqvuq	NUNA+DERIV+INFL|nunaliqvuq	Stratum (Linear/Unordered rule order)	Confirmed	Stratum
 languages/polysynthetic-stratal-derivation-chain	nunavuq	-	Stratum (Linear/Unordered rule order)	Confirmed	Stratum
 languages/polysynthetic-stratal-derivation-chain	pitat	PIPFX1+TATV|pitat	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
+languages/polysynthetic-stratal-derivation-chain	silaaku	-	CompoundingRule	Confirmed	CompoundingRule
 languages/polysynthetic-stratal-derivation-chain	silamak	-	CompoundingRule	Confirmed	CompoundingRule
 languages/polysynthetic-stratal-derivation-chain	silamanuk	SILA+MAPFX2+NUKV|sila+?manuk	CompoundingRule	Confirmed	CompoundingRule
 languages/polysynthetic-stratal-derivation-chain	silanuk	SILA+NUKN|sila+?nuk	Boundary markers (CharacterDefinitionTable)	Confirmed	CharacterDefinitionTable,characterDefinitionTable

@@ -51,9 +51,13 @@ public sealed class GateObligationLedgerTests
         Assert.That(gates, Is.EqualTo(23));
         Assert.That(worthCovering, Is.EqualTo(42));
         Assert.That(evidenced + notEvidenced, Is.EqualTo(rows.Count));
-        Assert.That(evidenced, Is.EqualTo(9));
-        Assert.That(blockedEvidenced, Is.EqualTo(8));
-        Assert.That(controlEvidenced, Is.EqualTo(1));
+        // 9 -> 11 (2026-08-19): silaaku (languages/polysynthetic-stratal-derivation-chain) is a
+        // genuine head-POS mismatch on mrCompoundHN (SILA, posN2, attempted as a head requiring
+        // posN1), so severing CompoundingRule.headPartsOfSpeech -- the gate's own hardcoded
+        // severance target -- actually flips it; akutat already supplied the Control witness.
+        Assert.That(evidenced, Is.EqualTo(11));
+        Assert.That(blockedEvidenced, Is.EqualTo(9));
+        Assert.That(controlEvidenced, Is.EqualTo(2));
     }
 
     // Every gate contributes exactly one Blocked row and one Control row -- the denominator is gate x
@@ -134,7 +138,7 @@ public sealed class GateObligationLedgerTests
     // regression net: if a future corpus/engine change makes one of these silently stop being
     // evidenced, this fails loudly instead of the funnel count quietly drifting.
     [Test]
-    public void EvidencedRowsAreExactlyTheseNineAndEachCarriesAFixtureAndWord()
+    public void EvidencedRowsAreExactlyTheseElevenAndEachCarriesAFixtureAndWord()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -150,6 +154,8 @@ public sealed class GateObligationLedgerTests
                     ("ExcludedStemName", "Blocked"),
                     ("HeadProdRestrictMprFeatures", "Blocked"),
                     ("HeadProdRestrictMprFeatures", "Control"),
+                    ("HeadRequiredSyntacticFeatureStruct", "Blocked"),
+                    ("HeadRequiredSyntacticFeatureStruct", "Control"),
                     ("PartialParse", "Blocked"),
                     ("RequiredMprFeatures", "Blocked"),
                     ("RequiredStemName", "Blocked"),
@@ -160,17 +166,18 @@ public sealed class GateObligationLedgerTests
         Assert.That(evidenced.All(r => r.Fixture != "-" && r.Word != "-"), Is.True);
     }
 
-    // The one gate with BOTH arms evidenced today: HeadProdRestrictMprFeatures's blocking attribute
-    // (CompoundingRule.headProdRestrictionsMprFeatures) sits directly on a CompoundingRule element, so
-    // the Control arm's rule-id resolution actually applies -- unlike every other Evidenced Blocked arm,
+    // The two gates with BOTH arms evidenced today: HeadProdRestrictMprFeatures's blocking attribute
+    // (CompoundingRule.headProdRestrictionsMprFeatures) and HeadRequiredSyntacticFeatureStruct's
+    // (CompoundingRule.headPartsOfSpeech) both sit directly on a CompoundingRule element, so the
+    // Control arm's rule-id resolution actually applies -- unlike every other Evidenced Blocked arm,
     // whose writer element (Allomorph/MorphologicalInput/AffixTemplate/PhonologicalSubrule) is not one
     // GrammarRuleIndex can resolve at all (see GateObligationLedger.RuleIndexedElements). This is the
     // "test the impossibility argument against an already-satisfied one" check: the SAME rule-indexed
-    // mechanism that fails to resolve a Control arm for BoundRoot (Allomorph) succeeds for
-    // HeadProdRestrictMprFeatures (CompoundingRule) -- proving the Control arm's limitation is about the
-    // ELEMENT KIND, not a broken mechanism.
+    // mechanism that fails to resolve a Control arm for BoundRoot (Allomorph) succeeds for both
+    // CompoundingRule-backed gates -- proving the Control arm's limitation is about the ELEMENT KIND,
+    // not a broken mechanism.
     [Test]
-    public void OnlyHeadProdRestrictMprFeaturesHasBothArmsEvidenced()
+    public void TwoGatesHaveBothArmsEvidenced()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -182,7 +189,10 @@ public sealed class GateObligationLedgerTests
             .Select(g => g.Key)
             .ToArray();
 
-        Assert.That(gatesWithBothArmsEvidenced, Is.EqualTo(new[] { "HeadProdRestrictMprFeatures" }));
+        Assert.That(
+            gatesWithBothArmsEvidenced,
+            Is.EquivalentTo(new[] { "HeadProdRestrictMprFeatures", "HeadRequiredSyntacticFeatureStruct" })
+        );
 
         GateObligationLedger.Row boundRootControl = rows.First(r => r.Gate == "BoundRoot" && r.Arm == "Control");
         Assert.That(boundRootControl.Status, Is.EqualTo(GateArmStatus.NotEvidenced));
@@ -193,6 +203,12 @@ public sealed class GateObligationLedgerTests
         );
         Assert.That(headProdControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
         Assert.That(headProdControl.Evidence, Does.Contain("CompoundingRule"));
+
+        GateObligationLedger.Row headRequiredControl = rows.First(r =>
+            r.Gate == "HeadRequiredSyntacticFeatureStruct" && r.Arm == "Control"
+        );
+        Assert.That(headRequiredControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
+        Assert.That(headRequiredControl.Evidence, Does.Contain("CompoundingRule"));
     }
 
     // Mirrors EngineGateInventoryLedgerTests.CheckedInEngineGateInventoryLedgerIsUpToDate: recomputing

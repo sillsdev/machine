@@ -509,7 +509,7 @@ languages/metathesis-phase-isolation	Construct	Boundary markers (CharacterDefini
 languages/metathesis-phase-isolation	Construct	MetathesisRule	claimed-confirmed	3 claim(s)
 languages/metathesis-phase-isolation	Construct	MorphologicalOutputAction: CopyFromInput/InsertSegments	claimed-confirmed	3 claim(s)
 languages/metathesis-phase-isolation	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	3 claim(s)
-languages/polysynthetic-stratal-derivation-chain	Interface	CompoundingRule.headPartsOfSpeech	present-but-inert	Unobservable
+languages/polysynthetic-stratal-derivation-chain	Interface	CompoundingRule.headPartsOfSpeech	witnessed	Evidenced
 languages/polysynthetic-stratal-derivation-chain	Interface	CompoundingRule.nonHeadPartsOfSpeech	present-but-inert	Unobservable
 languages/polysynthetic-stratal-derivation-chain	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 languages/polysynthetic-stratal-derivation-chain	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -525,7 +525,7 @@ languages/polysynthetic-stratal-derivation-chain	Interface	Stratum.morphological
 languages/polysynthetic-stratal-derivation-chain	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 languages/polysynthetic-stratal-derivation-chain	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	3 claim(s)
 languages/polysynthetic-stratal-derivation-chain	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	4 claim(s)
-languages/polysynthetic-stratal-derivation-chain	Construct	CompoundingRule	claimed-confirmed	8 claim(s)
+languages/polysynthetic-stratal-derivation-chain	Construct	CompoundingRule	claimed-confirmed	9 claim(s)
 languages/polysynthetic-stratal-derivation-chain	Construct	Guesser/LexicalGuess	claimed-unmapped	4 claim(s)
 languages/polysynthetic-stratal-derivation-chain	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	13 claim(s)
 languages/polysynthetic-stratal-derivation-chain	Construct	Stratum (Linear/Unordered rule order)	claimed-confirmed	2 claim(s)
@@ -574,15 +574,15 @@ languages/suffixing-extension-slot-ordering	Interface	Allomorph.stemName	witness
 languages/suffixing-extension-slot-ordering	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
-languages/suffixing-extension-slot-ordering	Interface	LexicalEntry.family	timeout	Timeout
-languages/suffixing-extension-slot-ordering	Interface	LexicalEntry.partOfSpeech	timeout	Timeout
+languages/suffixing-extension-slot-ordering	Interface	LexicalEntry.family	witnessed	Evidenced
+languages/suffixing-extension-slot-ordering	Interface	LexicalEntry.partOfSpeech	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Interface	LexicalEntry.ruleFeatures	witnessed	Evidenced
-languages/suffixing-extension-slot-ordering	Interface	MorphologicalInput.requiredMPRFeatures	timeout	Timeout
+languages/suffixing-extension-slot-ordering	Interface	MorphologicalInput.requiredMPRFeatures	required-by-loader	RequiredByLoader
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalOutput.MPRFeatures	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalPhonologicalRuleFeatureGroup.features	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.outputObligatoryFeatures	present-but-inert	Unobservable
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
-languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredPartsOfSpeech	timeout	Timeout
+languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredStemName	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Interface	PhonologicalSubrule.requiredPartsOfSpeech	present-but-inert	Unobservable
 languages/suffixing-extension-slot-ordering	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd

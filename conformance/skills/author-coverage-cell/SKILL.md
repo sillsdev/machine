@@ -16,6 +16,21 @@ You are given an **obligation cell id** from `conformance/dataflow-obligations.t
 make it `Satisfied`: author words in an existing language-family grammar such that severing the
 construct changes a parse, then record the claim.
 
+**Before anything else, run the feasibility check.** Most of an authoring budget has more than once
+been spent proving an obligation impossible:
+
+```powershell
+conformance\tools\check-obligation-feasibility.ps1 -Writer <Element.attr> -Reader <Element.attr> [-ControlElement <Element>]
+```
+
+It answers mechanically whether the attribute can be severed at all, whether one fixture declares both
+ends of the chain, and whether a Control arm can be attributed. If it exits non-zero, this is not an
+authoring task -- record the blocker and stop.
+
+Then read `conformance/docs/severance-mechanics.md`. It states what severance can and cannot do, which
+attributes are unsevereable, and three engine behaviours that each cost an author most of a budget to
+rediscover. Do not reason about severance without it.
+
 Read `conformance/docs/what-it-claims.md` first if you have not. The distinction it draws between
 *present* and *witnessed* is the one this task turns on.
 

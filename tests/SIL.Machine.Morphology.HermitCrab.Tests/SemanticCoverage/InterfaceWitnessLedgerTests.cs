@@ -21,9 +21,13 @@ public sealed class InterfaceWitnessLedgerTests
     }
 
     // Pins the headline this whole split exists to produce: of the 42 interfaces
-    // InterfaceInventoryLedger marks present, only 15 ever reach a word-level Evidenced verdict
-    // ANYWHERE in the corpus -- the other 27 are present-but-never-witnessed (see
+    // InterfaceInventoryLedger marks present, only 16 ever reach a word-level Evidenced verdict
+    // ANYWHERE in the corpus -- the other 26 are present-but-never-witnessed (see
     // FoldInCandidateLedgerTests for that split by category). Presence overclaimed by nearly 3x.
+    // timeout is pinned at 0 deliberately. Four rows here once recorded Timeout and were argued to be
+    // genuinely slow rather than load-dependent; they later resolved on a quieter machine, two of them
+    // to Evidenced. A Timeout is a statement about the machine, not the grammar, so any reappearance
+    // is a signal to re-sweep rather than a verdict to record.
     [Test]
     public void CheckedInLedgerHasTheMeasuredVerdictAndWitnessedInterfaceCounts()
     {
@@ -48,12 +52,12 @@ public sealed class InterfaceWitnessLedgerTests
         );
 
         Assert.That(rows, Has.Count.EqualTo(362));
-        Assert.That(evidenced, Is.EqualTo(73));
+        Assert.That(evidenced, Is.EqualTo(76));
         Assert.That(requiredByDtd, Is.EqualTo(170));
-        Assert.That(requiredByLoader, Is.EqualTo(23));
-        Assert.That(timeout, Is.EqualTo(4));
+        Assert.That(requiredByLoader, Is.EqualTo(24));
+        Assert.That(timeout, Is.EqualTo(0));
         Assert.That(unobservable, Is.EqualTo(92));
-        Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(15));
+        Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(16));
     }
 
     // A concrete instance of the overclaim this ledger exists to catch: InterfaceInventoryLedger

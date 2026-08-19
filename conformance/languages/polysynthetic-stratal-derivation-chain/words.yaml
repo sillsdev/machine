@@ -30,6 +30,11 @@
 # phonological rules fired across all of a word's analyses (its own documented ambiguous-word
 # limitation, the same one templatic-root-modification's gigugu note records) -- here that union is honest
 # anyway, since every "bubu" analysis genuinely deletes an "i".
+#
+# Coverage addendum (bucket-1 obligation sweep): silaaku adds a word only, no grammar change -- the
+# construct it exercises (mrCompoundHN's headPartsOfSpeech) was already declared.
+#   silaaku -> mrCompoundHN attempted with SILA (posN2) as HEAD, mismatching headPartsOfSpeech="posN1"
+#     -> zero parses (HeadRequiredSyntacticFeatureStruct, conformance/gate-obligations.tsv).
 
 language: PolysyntheticStratalDerivationChain
 inspired_by: ["polysynthetic derivation-then-inflection across strata, with noun-incorporation-style compounding and recursive postbase-style suffixation (typological pattern, not any specific language)"]
@@ -143,6 +148,27 @@ words:
     expect_fail: true
     exercises:
       - "CompoundingRule"
+
+  - word: silaaku
+    note: >-
+      SILA ("weather", posN2) attempted as the HEAD of mrCompoundHN, with AKU ("meat", posN1) as
+      nonhead -- mrCompoundHN's own headPartsOfSpeech="posN1" never matches SILA's declared posN2.
+      Unlike a nonhead-POS mismatch (checked, unrecorded, during the analysis-direction root search --
+      AnalysisCompoundingRule.cs:65-73 silently discards a non-conforming nonhead candidate before it
+      is ever passed on for confirmation), a head-POS mismatch survives to the synthesis-direction
+      confirm step and is traced there (SynthesisCompoundingRule.cs:100-114). mrCompoundNH's own
+      attempt at "silaaku" (nonhead=SILA, head=AKU) also fails, on ITS OWN head-side gate
+      (headPartsOfSpeech="posN2 posV2" never matches AKU's posN1). Zero parses.
+    expect_fail: true
+    blocked_by: [mrCompoundHN]
+    exercises:
+      - "CompoundingRule"
+    # Claims the Blocked arm of conformance/gate-obligations.tsv's HeadRequiredSyntacticFeatureStruct
+    # gate. Unlike kutu/patu in edge-cases/compounding-breadth (which fail via HeadRequired
+    # HeadFeatures/HeadRequiredFootFeatures, leaving CompoundingRule.headPartsOfSpeech itself
+    # unaffected by severing), this word's failure is a genuine HEAD PART-OF-SPEECH mismatch, so
+    # severing headPartsOfSpeech -- the gate's own hardcoded severance target
+    # (EngineGateInventoryLedger.DtdAttributes) -- actually flips it.
 
   - word: silanuk
     note: >-

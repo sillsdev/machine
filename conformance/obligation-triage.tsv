@@ -1,0 +1,60 @@
+#	Triage of every unmet coverage obligation, hand-assigned from the blocker each ledger records.
+#	bucket 1 = a word added to an existing grammar should do it
+#	bucket 2 = needs a small grammar change that HCLoader can produce and real morphology exhibits
+#	bucket 3 = legitimate but odd; the word or grammar is strained, so low value
+#	bucket 4 = do not cover, with the reason. Split into EXCLUDED (nothing can ever cover it)
+#	           and TOOLING (a harness gap, not a coverage gap -- fix the tool, not the corpus)
+#	Sources: conformance/gate-obligations.tsv, conformance/dataflow-obligations.tsv,
+#	conformance/fieldworks-producibility.tsv, conformance/engine-gate-inventory.tsv
+kind	item	bucket	construct_in_plain_language	reason
+arm	AllomorphCoOccurrenceRules:Blocked	1	this allomorph may only appear alongside that morpheme	construct present in morphotactic-attribute-breadth; severing it changed no word, so a word is needed that the constraint actually blocks
+arm	AllomorphCoOccurrenceRules:Control	1	same, unblocked	follows once the Blocked arm names a firing instance
+arm	MorphemeCoOccurrenceRules:Blocked	1	this morpheme may only appear alongside that one	construct present in suffixing-evidential-adjacency-chain; severing it changed no word
+arm	MorphemeCoOccurrenceRules:Control	1	same, unblocked	follows once the Blocked arm names a firing instance
+arm	HeadRequiredSyntacticFeatureStruct:Blocked	1	the head of a compound must carry given features	present in compounding-breadth and a language grammar; severing headPartsOfSpeech changed no word
+arm	HeadRequiredSyntacticFeatureStruct:Control	1	same, unblocked	follows the Blocked arm
+arm	NonHeadProdRestrictMprFeatures:Blocked	1	the non-head of a compound must be productive for this rule	exact mirror of the head-side gate already evidenced by seclav/mitlav
+arm	NonHeadProdRestrictMprFeatures:Control	1	same, unblocked	mirror of an evidenced control
+arm	NonHeadRequiredSyntacticFeatureStruct:Blocked	1	the non-head of a compound must carry given features	mirror of the head-side gate
+arm	NonHeadRequiredSyntacticFeatureStruct:Control	1	same, unblocked	mirror of the head-side gate
+cell	LexicalEntry.partOfSpeech->AffixTemplate.requiredPartsOfSpeech	1	a slot template applies only to one part of speech	8 grammars already declare a template POS gate; a root of the wrong category should fail the template
+cell	MorphologicalRule.outputPartOfSpeech->AffixTemplate.requiredPartsOfSpeech	1	a derivation changes category, then a template checks the new one	chain already exercised; needs a word where the derived category fails the template
+cell	MorphologicalRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech	1	a derivation changes category, then a later affix checks it	chain already exercised
+cell	MorphologicalRule.outputPartOfSpeech->PhonologicalSubrule.requiredPartsOfSpeech	1	a derivation changes category, then a sound rule checks it	chain already exercised; idil proves this reader can gate
+cell	LexicalEntry.ruleFeatures->PhonologicalSubrule.requiredMPRFeatures	2	a sound rule fires only on roots flagged for it (exception feature / minor rule)	NO grammar anywhere declares an MPR gate on a phonological subrule; HCLoader emits it (HCLoader.cs:2057) from FLEx's Required rule features
+cell	LexicalEntry.ruleFeatures->PhonologicalSubrule.excludedMPRFeatures	2	a sound rule skips roots flagged as exceptions	same absence; HCLoader.cs:2058 from FLEx's Excluded rule features
+cell	MorphologicalOutput.MPRFeatures->PhonologicalSubrule.requiredMPRFeatures	2	an affix confers a flag that a later sound rule requires	same construct absence, affix-sourced rather than root-sourced
+cell	MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures	2	an affix confers a flag that blocks a later sound rule	same construct absence
+cell	MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures	2	an affix confers a flag that blocks a later affix	reader exists in two fixtures but no fixture pairs it with an affix-sourced writer
+cell	Allomorph.stemName->MorphologicalRule.requiredStemName	2	a rule demands a specific stem (principal parts)	engine compares stem names by object identity; the only fixture with the reader declares ONE StemName, so no word can flip both sides. templatic-root-modification has two but no requiredStemName rule
+cell	LexicalEntry.ruleFeatures->MorphologicalInput.requiredMPRFeatures	2	a root flag that a later affix requires	swept across all 71 words of both hosting fixtures with no flip; needs the ordering structure ygofz used, not just another word
+cell	CompoundingRule.outputPartOfSpeech->AffixTemplate.requiredPartsOfSpeech	2	a compound gets a category, then a template checks it	outputPartOfSpeech exists only in compounding-breadth, which hosts no template POS gate
+cell	CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech	2	a compound gets a category, then an affix checks it	same: writer and reader are in different fixtures
+cell	CompoundingRule.outputPartOfSpeech->PhonologicalSubrule.requiredPartsOfSpeech	2	a compound gets a category, then a sound rule checks it	same: writer and reader are in different fixtures
+arm	HeadPattern:Blocked	2	the head of a compound must match a phonological shape	no fixture's compounding candidates ever fail a shape match; they match by construction
+arm	HeadPattern:Control	2	same, matching	depends on a shape that can fail
+arm	NonHeadPattern:Blocked	2	the non-head of a compound must match a phonological shape	same as HeadPattern
+arm	NonHeadPattern:Control	2	same, matching	same as HeadPattern
+arm	MaxApplicationCount:Blocked	3	an iterating rule stopped by its own application cap	real (bounded reduplication) but a word must reach the cap exactly; strained to construct
+arm	MaxApplicationCount:Control	3	the same rule under the cap	only meaningful beside the Blocked arm
+arm	NonPartialRuleProhibitedAfterFinalTemplate:Blocked	3	a non-partial rule may not apply after the final template	template-ordering edge; present in a fixture but severing final/partial changed no word
+arm	NonPartialRuleProhibitedAfterFinalTemplate:Control	3	same, permitted	follows the Blocked arm
+arm	NonPartialRuleRequiredAfterNonFinalTemplate:Blocked	3	a non-partial rule is required after a non-final template	no fixture combines a partial rule with an explicit non-final template
+arm	NonPartialRuleRequiredAfterNonFinalTemplate:Control	3	same, satisfied	follows the Blocked arm
+arm	ObligatorySyntacticFeatures:Blocked	4-EXCLUDED	a promised feature never got filled in	HCLoader never sets it, so no FieldWorks project can produce the construct; a witness would prove nothing about real use
+arm	ObligatorySyntacticFeatures:Control	4-EXCLUDED	same, satisfied	same
+arm	SurfaceFormMismatch:Blocked	4-EXCLUDED	the engine's own reconstruction disagreed with the surface	no XML reaches it; a pure engine-internal check with no grammar input
+arm	SurfaceFormMismatch:Control	4-EXCLUDED	same, agreeing	same
+arm	BoundRoot:Control	4-TOOLING	a bound root used as a free word	the control word already exists; GrammarRuleIndex cannot resolve Allomorph to a fired-rule id
+arm	ExcludedMprFeatures:Control	4-TOOLING	an affix skipped for a flag it excludes	GrammarRuleIndex cannot resolve MorphologicalInput to a fired-rule id
+arm	ExcludedStemName:Control	4-TOOLING	a rule refusing a specific stem	GrammarRuleIndex cannot resolve Allomorph to a fired-rule id
+arm	PartialParse:Control	4-TOOLING	a parse that consumed only part of the word	GrammarRuleIndex cannot resolve AffixTemplate to a fired-rule id
+arm	RequiredMprFeatures:Control	4-TOOLING	an affix firing on a flag it requires	GrammarRuleIndex cannot resolve MorphologicalInput to a fired-rule id
+arm	RequiredStemName:Control	4-TOOLING	a rule firing on the stem it demands	GrammarRuleIndex cannot resolve Allomorph to a fired-rule id
+arm	RequiredSyntacticFeatureStruct:Control	4-TOOLING	a rule firing on features it requires	GrammarRuleIndex cannot resolve PhonologicalSubrule to a fired-rule id
+arm	DisjunctiveAllomorph:Blocked	4-TOOLING	a more specific allomorph pre-empted a general one	reachable through element content and allomorph order, not an attribute; no isolable severance primitive exists
+arm	DisjunctiveAllomorph:Control	4-TOOLING	same, not pre-empted	same
+arm	Environments:Blocked	4-TOOLING	an allomorph rejected by its environment	reachable through RequiredEnvironments/ExcludedEnvironments element content, not an attribute
+arm	Environments:Control	4-TOOLING	same, accepted	same
+arm	Pattern:Blocked	4-TOOLING	a rule's phonological pattern did not match	reachable through PhoneticSequence element content, not an attribute
+arm	Pattern:Control	4-TOOLING	same, matched	same
