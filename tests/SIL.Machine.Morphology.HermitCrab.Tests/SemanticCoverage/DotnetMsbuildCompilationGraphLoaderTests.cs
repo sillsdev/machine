@@ -26,6 +26,11 @@ public sealed class DotnetMsbuildCompilationGraphLoaderTests
         return string.Empty;
     }
 
+    // The census analyses this repository with the same Roslyn that builds it, so the compiler comes
+    // from the SDK rather than a NuGet package. The SDK version is a floor with latestFeature, not an
+    // exact patch: the graph hash it feeds is recomputed every run and compared against nothing
+    // checked in, so any .NET 10 SDK is self-consistent, and an exact patch is not installable
+    // everywhere.
     [Test]
     public void RepositoryPinsTheCompilerSdkAndRoslynPackage()
     {
@@ -40,8 +45,8 @@ public sealed class DotnetMsbuildCompilationGraphLoaderTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(global.RootElement.GetProperty("sdk").GetProperty("version").GetString(), Is.EqualTo("10.0.303"));
-            Assert.That(global.RootElement.GetProperty("sdk").GetProperty("rollForward").GetString(), Is.EqualTo("disable"));
+            Assert.That(global.RootElement.GetProperty("sdk").GetProperty("version").GetString(), Is.EqualTo("10.0.100"));
+            Assert.That(global.RootElement.GetProperty("sdk").GetProperty("rollForward").GetString(), Is.EqualTo("latestFeature"));
             Assert.That(global.RootElement.GetProperty("sdk").GetProperty("allowPrerelease").GetBoolean(), Is.False);
             Assert.That(project, Does.Not.Contain("PackageReference Include=\"Microsoft.CodeAnalysis.CSharp\""));
             Assert.That(project, Does.Contain("HcRoslynCompilerReferences.props"));
