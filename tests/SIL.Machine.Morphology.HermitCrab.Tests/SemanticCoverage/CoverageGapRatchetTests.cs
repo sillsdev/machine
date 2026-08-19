@@ -86,7 +86,7 @@ public sealed class CoverageGapRatchetTests
     // is a shared, concurrently-owned artifact this fix does not touch. Recorded here by name, not
     // merely by count, so lowering this pin later means finding these two exact ids evidenced, not
     // just watching the total drop.
-    private const int PinnedGapCount = 23;
+    private const int PinnedGapCount = 14;
 
     [Test]
     public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()

@@ -38,6 +38,7 @@ public static class WordsYamlLoader
         "neutralizes",
         "exercises",
         "parses",
+        "claimed_cells",
     };
     private static readonly HashSet<string> ParseKeys = new(StringComparer.Ordinal)
     {
@@ -47,6 +48,21 @@ public static class WordsYamlLoader
         "rules",
         "exercises",
     };
+    private static readonly HashSet<string> ClaimedCellKeys = new(StringComparer.Ordinal)
+    {
+        "cell",
+        "severing",
+        "before",
+        "after",
+        "distinct_from",
+        "proof",
+    };
+
+    // The inline-review bundle is all-or-nothing: a partial before/after (or a severing/proof with no
+    // outcome to check it against) cannot be recomputed, so it is rejected rather than silently treated
+    // as unreviewed. distinct_from is deliberately NOT in this set -- it is checkable on its own
+    // (existence + outcome difference within the fixture) whether or not a review bundle is present.
+    private static readonly string[] ReviewBundleKeys = { "severing", "before", "after", "proof" };
 
     public static WordsYaml Load(string path)
     {
@@ -153,6 +169,13 @@ public static class WordsYamlLoader
         AppendScalarList(map, "blocked_by", entry.BlockedBy, path, $"word '{entry.Word}'");
         AppendScalarList(map, "neutralizes", entry.Neutralizes, path, $"word '{entry.Word}'");
         AppendScalarList(map, "exercises", entry.Exercises, path, $"word '{entry.Word}'");
+        if (map.TryGetValue("claimed_cells", out YamlNode claimedCellsNode))
+        {
+            if (claimedCellsNode is not YamlSequenceNode claimedCellsSeq)
+                throw new WordsYamlException(path, $"word '{entry.Word}'.claimed_cells: expected a sequence");
+            foreach (YamlNode claimNode in claimedCellsSeq.Children)
+                entry.ClaimedCells.Add(ParseClaimedCell(claimNode, entry.Word, path));
+        }
 
         if (entry.ExpectFail && entry.ExpectSkip)
         {
@@ -214,6 +237,38 @@ public static class WordsYamlLoader
         AppendScalarList(map, "exercises", parse.Exercises, path, $"word '{word}'.parses[]");
 
         return parse;
+    }
+
+    private static ClaimedCellEntry ParseClaimedCell(YamlNode node, string word, string path)
+    {
+        if (node is not YamlMappingNode mapNode)
+            throw new WordsYamlException(path, $"word '{word}'.claimed_cells[]: each entry must be a mapping");
+        Dictionary<string, YamlNode> map = RequireMapping(mapNode, ClaimedCellKeys, path, $"word '{word}'.claimed_cells[]");
+
+        var claim = new ClaimedCellEntry { Cell = RequireScalar(map, "cell", path, $"word '{word}'.claimed_cells[]") };
+
+        int bundlePresent = ReviewBundleKeys.Count(map.ContainsKey);
+        if (bundlePresent != 0 && bundlePresent != ReviewBundleKeys.Length)
+        {
+            throw new WordsYamlException(
+                path,
+                $"word '{word}'.claimed_cells[] for '{claim.Cell}': 'severing', 'before', 'after', and "
+                    + "'proof' must all be present or all absent (a partial review bundle cannot be "
+                    + "recomputed, so it would silently read as unreviewed instead of rejected)"
+            );
+        }
+        if (bundlePresent == ReviewBundleKeys.Length)
+        {
+            claim.Severing = RequireScalar(map, "severing", path, $"word '{word}'.claimed_cells[]");
+            claim.Before = RequireScalar(map, "before", path, $"word '{word}'.claimed_cells[]");
+            claim.After = RequireScalar(map, "after", path, $"word '{word}'.claimed_cells[]");
+            claim.Proof = RequireScalar(map, "proof", path, $"word '{word}'.claimed_cells[]");
+        }
+
+        if (map.TryGetValue("distinct_from", out YamlNode distinctFromNode))
+            claim.DistinctFrom = RequireScalarNode(distinctFromNode, path, $"word '{word}'.claimed_cells[].distinct_from");
+
+        return claim;
     }
 
     /// <summary>

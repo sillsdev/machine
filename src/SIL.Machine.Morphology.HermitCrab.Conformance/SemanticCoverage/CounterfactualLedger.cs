@@ -81,8 +81,12 @@ public static class CounterfactualLedger
             candidates.Add((fixture, surfaceIds, baseline, stopwatch.ElapsedMilliseconds));
         }
 
-        // TEMP-BEFORE-MEASUREMENT: discovery order, no short-circuit skip (restored after this run).
-        var bestSoFar = new Dictionary<string, CounterfactualVerdict>(StringComparer.Ordinal);
+        // Deliberately exhaustive: every fixture is evaluated against every surface it contains, in
+        // discovery order, with no short-circuit once some fixture already reaches the best possible
+        // verdict for a surface. A skip there would mean a surface's later fixtures are never even
+        // run, so a languages/* fixture that ALSO reaches Evidenced could never be discovered once an
+        // edge-case fixture (sorted first by Fixture.DiscoverAll) got there first -- exactly the
+        // fold-in-candidates.tsv defect this ledger exists to avoid. See the tie-preserving merge below.
         foreach (var candidate in candidates)
         {
             onFixtureStarted?.Invoke(candidate.Fixture.Id, candidate.SurfaceIds.Length);
@@ -98,8 +102,6 @@ public static class CounterfactualLedger
                         onWordTimed?.Invoke(new WordTiming("mutant", candidate.Fixture.Id, surfaceId, word, ms))
                 );
                 results.Add(result);
-                if (!bestSoFar.TryGetValue(surfaceId, out CounterfactualVerdict existing) || result.Verdict < existing)
-                    bestSoFar[surfaceId] = result.Verdict;
 
                 // A single flip proved nothing; before giving up, see whether an independent
                 // referencing declaration exists that a JOINT flip can pin the delta on instead. Only
@@ -116,23 +118,42 @@ public static class CounterfactualLedger
                             onWordTimed?.Invoke(new WordTiming("mutant", candidate.Fixture.Id, surfaceId, word, ms))
                     );
                     results.Add(jointResult);
-                    if (jointResult.Verdict < bestSoFar[surfaceId])
-                        bestSoFar[surfaceId] = jointResult.Verdict;
                 }
             }
         }
 
-        // The strongest verdict any fixture reaches for a surface is the one that counts.
+        // The strongest verdict any fixture reaches for a surface is the one that counts, and every
+        // fixture tied at that verdict is a real witness -- recording only the first-discovered one
+        // (candidates arrive in Fixture.DiscoverAll's id order, so edge-cases always precede
+        // languages/*) would silently drop a language-grammar witness that ties rather than beats it.
+        // The kept row is still the first-discovered (its example/mutation fields describe that one
+        // run), but WitnessingFixtures names every fixture that reached the same verdict.
+        var bestVerdictBySurface = new Dictionary<string, CounterfactualVerdict>(StringComparer.Ordinal);
+        foreach (CounterfactualResult result in results)
+        {
+            if (!bestVerdictBySurface.TryGetValue(result.SurfaceId, out CounterfactualVerdict existing) || result.Verdict < existing)
+                bestVerdictBySurface[result.SurfaceId] = result.Verdict;
+        }
+
+        var tiedFixturesBySurface = new Dictionary<string, SortedSet<string>>(StringComparer.Ordinal);
+        foreach (CounterfactualResult result in results)
+        {
+            if (result.Verdict != bestVerdictBySurface[result.SurfaceId])
+                continue;
+            if (!tiedFixturesBySurface.TryGetValue(result.SurfaceId, out SortedSet<string>? fixtureIds))
+            {
+                fixtureIds = new SortedSet<string>(StringComparer.Ordinal);
+                tiedFixturesBySurface[result.SurfaceId] = fixtureIds;
+            }
+            fixtureIds.Add(result.FixtureId);
+        }
+
         var best = new SortedDictionary<string, CounterfactualResult>(StringComparer.Ordinal);
         foreach (CounterfactualResult result in results)
         {
-            if (
-                !best.TryGetValue(result.SurfaceId, out CounterfactualResult? existing)
-                || result.Verdict < existing.Verdict
-            )
-            {
-                best[result.SurfaceId] = result;
-            }
+            if (result.Verdict != bestVerdictBySurface[result.SurfaceId] || best.ContainsKey(result.SurfaceId))
+                continue;
+            best[result.SurfaceId] = result with { WitnessingFixtures = tiedFixturesBySurface[result.SurfaceId].ToArray() };
         }
 
         return best.Values.ToArray();
@@ -247,8 +268,8 @@ public static class CounterfactualLedger
                 continue;
             }
             string[] fields = line.Split('\t');
-            if (fields.Length != 9)
-                throw new FormatException($"{RelativePath}: '{line}' must be 9 tab-separated fields");
+            if (fields.Length != 10)
+                throw new FormatException($"{RelativePath}: '{line}' must be 10 tab-separated fields");
             if (!Enum.TryParse(fields[1], out CounterfactualVerdict verdict))
                 throw new FormatException($"{RelativePath}: unknown verdict '{fields[1]}' for '{fields[0]}'");
             if (!Enum.TryParse(fields[7], out CounterexampleKind counterexampleKind))
@@ -263,7 +284,8 @@ public static class CounterfactualLedger
                     fields[5] == NullField ? null : fields[5],
                     fields[6] == NullField ? null : fields[6],
                     counterexampleKind,
-                    fields[8] == NullField ? null : fields[8]
+                    fields[8] == NullField ? null : fields[8],
+                    fields[9].Split(',')
                 )
             );
         }
@@ -296,8 +318,13 @@ public static class CounterfactualLedger
         writer.WriteLine("#                    conclusive with Evidenced; there is no parse-time witness");
         writer.WriteLine("#   Timeout          the mutant did not finish in time, which is not evidence");
         writer.WriteLine("#   Unobservable     neutralizing it changed nothing, which is not evidence");
+        writer.WriteLine("# fixture is the first-discovered fixture reaching verdict (its run is what mutation/");
+        writer.WriteLine("# delta/example describe); witnessed_by is EVERY fixture that reached the identical");
+        writer.WriteLine("# verdict, comma-separated, ALWAYS including fixture -- a tie is not a loss, see");
+        writer.WriteLine("# CounterfactualLedger.Sweep. FoldInCandidateLedger reads this to tell 'only an edge");
+        writer.WriteLine("# case witnesses this' from 'an edge case was merely recorded first'.");
         writer.WriteLine(
-            "surface\tverdict\tfixture\tmutation\tdelta\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome"
+            "surface\tverdict\tfixture\tmutation\tdelta\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome\twitnessed_by"
         );
         foreach (CounterfactualResult r in entries.OrderBy(entry => entry.SurfaceId, StringComparer.Ordinal))
         {
@@ -312,7 +339,8 @@ public static class CounterfactualLedger
                     r.ExampleWord ?? NullField,
                     r.ExampleOutcome ?? NullField,
                     r.CounterexampleKind,
-                    r.CounterexampleOutcome ?? NullField
+                    r.CounterexampleOutcome ?? NullField,
+                    string.Join(",", r.WitnessingFixtures ?? new[] { r.FixtureId })
                 )
             );
         }

@@ -174,7 +174,8 @@ words:
       Positive control for BoundaryDefinition@isActive="yes". mrBoundaryPfx's own output inserts the
       live boundary character "+" itself, so deactivating bLive does not just fail to parse this
       word: it fails to LOAD the grammar at all, because the rule's own PhoneticShape then names an
-      undefined phoneme. That is equally conclusive evidence (CounterfactualVerdict.RequiredToLoad).
+      undefined phoneme. That is a genuine loader-level witness (CounterfactualVerdict.RequiredByLoader),
+      not the strictly weaker RequiredByDtd -- XmlLanguageLoader's own code has to run and fail here.
     parses:
       - signature: "MO+KUL|mo+?kul"
         rules: [mrBoundaryPfx]

@@ -52,6 +52,53 @@ public class WordEntry
     public List<string> Neutralizes { get; } = new();
     public List<string> Exercises { get; } = new();
     public List<ParseEntry> Parses { get; } = new();
+
+    /// <summary>
+    /// Cell ids from conformance/dataflow-obligations.tsv this word is meant to witness -- checked by
+    /// DataflowClaimGate, never trusted by it. A claim can carry the literal machine evidence
+    /// (<see cref="ClaimedCellEntry.Before"/>/<see cref="ClaimedCellEntry.After"/>) it was reviewed
+    /// against, inline and human-readable, so DataflowClaimGate can recompute the severance and a
+    /// reviewer can read the same values without joining four files by hand.
+    /// </summary>
+    public List<ClaimedCellEntry> ClaimedCells { get; } = new();
+}
+
+public class ClaimedCellEntry
+{
+    public string Cell = "";
+
+    /// <summary>Plain-English description of what is removed (e.g. "ruleFeatures on LexicalEntry
+    /// VOKAD"). Read by a reviewer; not itself re-checked -- DataflowClaimGate derives which
+    /// element/attribute to sever from the ledger row, not from this text.</summary>
+    public string Severing = "";
+
+    /// <summary>The word's parse outcome (SignatureFormat's "status::signature" form) BEFORE either the
+    /// writer or the reader is severed. Empty means no inline evidence has been recorded for this claim
+    /// yet -- not a defect, just unreviewed.</summary>
+    public string Before = "";
+
+    /// <summary>The word's parse outcome AFTER severing either the writer or the reader (a genuine
+    /// pair witness means both severances produce the same After). DataflowClaimGate recomputes both
+    /// severances against the CURRENT grammar and treats any mismatch -- of Before or of either After --
+    /// as a stale claim: reviewed once, against evidence that has since moved.</summary>
+    public string After = "";
+
+    /// <summary>
+    /// The plain control word (docs/coverage-strategy.md's "every claim needs a control") that
+    /// demonstrates this cell's condition is not vacuous -- MC/DC independence needs a second case
+    /// differing in exactly this one condition. DataflowClaimGate checks the named word exists in the
+    /// same fixture and that its outcome differs from this word's; it does not (yet) confirm the
+    /// grammar difference between them is the single named condition.
+    /// </summary>
+    public string DistinctFrom = "";
+
+    /// <summary>Prose: why this word demonstrates this cell. Read by a reviewer; not mechanically
+    /// checked.</summary>
+    public string Proof = "";
+
+    /// <summary>Whether the four review fields (Severing/Before/After/Proof) are present as a bundle --
+    /// the loader enforces all-or-nothing, so checking any one of them is equivalent to checking all.</summary>
+    public bool HasReviewBundle => Before.Length != 0;
 }
 
 public class ParseEntry

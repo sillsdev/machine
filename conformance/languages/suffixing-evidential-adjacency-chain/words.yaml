@@ -129,6 +129,20 @@ words:
         exercises:
           - "Affix template slots (obligatory/disjunctive/ordering)"
 
+  - word: walaky
+    note: >-
+      Root WALAK ends in consonant "k", so mrPerson1's post-VOWEL allomorph "-y" (subPerson1PostV,
+      gated by its own RequiredEnvironments requiring a preceding vowel) can never attach to it --
+      only the post-consonant "-ni" allomorph (walakni above) is licensed for this root. Distinct
+      from walakni: that word shows the post-consonant environment being SATISFIED; this one shows
+      the post-vowel environment being VIOLATED, the negative half of the same lexical
+      allomorph-selection gate.
+    provenance: "fold-in: dtd:element/RequiredEnvironments, PresentInLanguageGrammarAlready per conformance/fold-in-candidates.tsv -- walakni/tupay/sipuy alone never flip when RequiredEnvironments is severed, since each already satisfies its own subrule's environment; this word is the one whose current failure the gate is solely responsible for"
+    expect_fail: true
+    blocked_by: [mrPerson1]
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
   - word: walaknki
     note: Root WALAK + 2SG ("-nki"), the unconstrained disjunctive-slot-1 sibling of mrPerson1/mrPerson3.
     parses:

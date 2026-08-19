@@ -17,7 +17,7 @@ public enum InterfaceRefKind
 /// <summary>
 /// Whether a declared interface produces a payload (<see cref="Write"/>), gates on one
 /// (<see cref="Read"/>), or neither -- a plain structural handoff (<see cref="Ref"/>). See
-/// <see cref="InterfaceDirectionClassifier"/> for how this is inferred.
+/// <see cref="SemanticInterfaceDirection"/> for how this is judged.
 /// </summary>
 public enum InterfaceDirection
 {
@@ -27,10 +27,12 @@ public enum InterfaceDirection
 }
 
 /// <summary>
-/// Infers a declared interface's <see cref="InterfaceDirection"/> from its attribute name. This is a
-/// naming CONVENTION the DTD's schema itself does not state -- the DTD says only "this attribute
-/// points at some ID", never "this attribute writes/reads a payload" -- so the prefixes below are the
-/// one place judgment enters this generator, isolated here so it stays reviewable in one spot.
+/// Infers a declared interface's <see cref="InterfaceDirection"/> from its attribute name. Superseded
+/// by <see cref="SemanticInterfaceDirection"/>: this prefix guess disagrees with the engine-checked
+/// table on <c>Allomorph.stemName</c>, <c>LexicalEntry.partOfSpeech</c>, and
+/// <c>LexicalEntry.ruleFeatures</c> (all three seed a payload the prefix rule cannot recognise as a
+/// write). <see cref="InterfaceInventoryLedger.Compute"/> no longer calls this; it is kept, unused,
+/// only because <see cref="InteractionChainLedger"/>'s doc comment cross-references it by name.
 /// </summary>
 internal static class InterfaceDirectionClassifier
 {
@@ -64,22 +66,38 @@ public sealed record InterfaceJunction(string TargetType, int WriterCount, int R
 /// attribute declared anywhere in <c>HermitCrabInput.dtd</c>, resolved against the real corpus to
 /// find which element types it actually points at. Unlike <see cref="RuleInteractionLedger"/> (a
 /// corpus statistic that grows with the fixture set), this ledger's denominator is fixed by the DTD
-/// alone -- adding a fixture can only change which declared interfaces are marked exercised and what
-/// their observed target types are, never how many rows exist.
+/// alone -- adding a fixture can only change which declared interfaces are marked present and what
+/// their observed target types are, never how many rows exist. "Present" here is structural only; see
+/// <see cref="Row"/>'s own doc comment and <see cref="InterfaceWitnessLedger"/> for the semantic claim.
 /// </summary>
 public static class InterfaceInventoryLedger
 {
     public const string RelativePath = "conformance/interface-inventory.tsv";
 
-    private const int ColumnCount = 6;
+    // Read() trims each raw line (matching every other ledger's Read), which strips a trailing tab
+    // along with real whitespace -- fine while the last column is never empty, but fixtures (added
+    // after direction, now the last column) legitimately is empty for a not-present row. "-" instead
+    // of "" for that case is the same sentinel the rest of this directory already uses for exactly
+    // this reason (see EvidenceLedger's NullField), not a new convention.
+    private const string NullField = "-";
+    private const int ColumnCount = 7;
 
+    /// <summary>
+    /// <paramref name="Present"/> is a STRUCTURAL claim only: the attribute resolves to a real IDREF
+    /// somewhere in the corpus. It is NOT evidence that the interface carries anything -- an attribute
+    /// can be present and inert, where deleting it changes no parse. The semantic claim -- does severing
+    /// it ever change a word's parse -- is <see cref="InterfaceWitnessLedger"/>'s job, kept out of this
+    /// cheap, reparse-free ledger on purpose. <paramref name="Fixtures"/> is every fixture where the
+    /// attribute is present; it answers "what would I lose if I deleted this fixture" for PRESENCE only.
+    /// </summary>
     public sealed record Row(
         string Element,
         string Attribute,
         InterfaceRefKind RefKind,
         IReadOnlyList<string> ObservedTargetTypes,
-        bool Exercised,
-        InterfaceDirection Direction
+        bool Present,
+        InterfaceDirection Direction,
+        IReadOnlyList<string> Fixtures
     );
 
     /// <summary>
@@ -87,7 +105,9 @@ public static class InterfaceInventoryLedger
     /// every fixture's grammar: for every element in the corpus that carries the declared attribute
     /// with a non-empty value, its IDREF(S) tokens are looked up in that fixture's own id-to-element
     /// map, and every element type found is recorded as an observed target type for that interface.
-    /// A declared interface with no matching element anywhere in the corpus is unexercised.
+    /// A declared interface with no matching element anywhere in the corpus is not present anywhere.
+    /// This stays cheap and reparse-free on purpose -- see <see cref="InterfaceWitnessLedger"/> for the
+    /// separate, expensive severance sweep that answers whether presence is also witness.
     /// </summary>
     public static IReadOnlyList<Row> Compute(string repositoryRoot)
     {
@@ -104,7 +124,8 @@ public static class InterfaceInventoryLedger
         );
 
         var observedTargets = new Dictionary<(string Element, string Attribute), HashSet<string>>();
-        var exercised = new HashSet<(string Element, string Attribute)>();
+        var present = new HashSet<(string Element, string Attribute)>();
+        var presentFixtures = new Dictionary<(string Element, string Attribute), SortedSet<string>>();
 
         foreach (Fixture fixture in Fixture.DiscoverAll(Path.Combine(repositoryRoot, "conformance")))
         {
@@ -126,7 +147,14 @@ public static class InterfaceInventoryLedger
                         continue;
 
                     var key = (element, attribute);
-                    exercised.Add(key);
+                    present.Add(key);
+                    if (!presentFixtures.TryGetValue(key, out SortedSet<string>? fixtureIds))
+                    {
+                        fixtureIds = new SortedSet<string>(StringComparer.Ordinal);
+                        presentFixtures[key] = fixtureIds;
+                    }
+                    fixtureIds.Add(fixture.Id);
+
                     foreach (string token in SplitIdrefs(value))
                     {
                         if (!idToElement.TryGetValue(token, out string? targetType))
@@ -150,14 +178,18 @@ public static class InterfaceInventoryLedger
             IReadOnlyList<string> targets = observedTargets.TryGetValue(key, out HashSet<string>? set)
                 ? set.OrderBy(t => t, StringComparer.Ordinal).ToArray()
                 : Array.Empty<string>();
+            IReadOnlyList<string> fixtureIds = presentFixtures.TryGetValue(key, out SortedSet<string>? ids)
+                ? ids.ToArray()
+                : Array.Empty<string>();
             rows.Add(
                 new Row(
                     element,
                     attribute,
                     refKind,
                     targets,
-                    exercised.Contains(key),
-                    InterfaceDirectionClassifier.Classify(attribute)
+                    present.Contains(key),
+                    SemanticInterfaceDirection.Classify(element, attribute),
+                    fixtureIds
                 )
             );
         }
@@ -173,7 +205,9 @@ public static class InterfaceInventoryLedger
     /// the payload types that have at least one <see cref="InterfaceDirection.Write"/> edge AND at
     /// least one <see cref="InterfaceDirection.Read"/> edge -- the junctions where a chained
     /// interaction (something writes a payload another construct later reads) is actually possible.
-    /// <see cref="InterfaceDirection.Ref"/> edges contribute to neither count.
+    /// <see cref="InterfaceDirection.Ref"/> edges contribute to neither count. Since <c>Row.Direction</c>
+    /// is now <see cref="SemanticInterfaceDirection"/>'s judgment, this agrees with
+    /// <see cref="InteractionChainLedger.ComputeJunctions"/> by construction rather than by convention.
     /// </summary>
     public static IReadOnlyList<InterfaceJunction> ComputeJunctions(IReadOnlyList<Row> rows)
     {
@@ -269,13 +303,22 @@ public static class InterfaceInventoryLedger
             "# attribute's IDREF(S) tokens actually resolved to, across every fixture's own id-to-element map;"
         );
         writer.WriteLine(
-            "# empty when unexercised. direction (write/read/ref) is inferred from the attribute name by"
+            "# empty when not present. direction (write/read/ref) is SemanticInterfaceDirection's engine-"
         );
         writer.WriteLine(
-            "# InterfaceDirectionClassifier -- a naming convention, not something the DTD itself states."
+            "# checked judgment, not a naming-convention guess -- see its doc comment for what each entry means."
         );
         writer.WriteLine(
-            "element\tattribute\tref_kind\tobserved_target_types\texercised\tdirection"
+            "# present is STRUCTURAL ONLY -- the attribute resolves to a real IDREF somewhere in fixtures"
+        );
+        writer.WriteLine(
+            "# (comma-joined, sorted). It is NOT evidence the interface does anything: an attribute can be"
+        );
+        writer.WriteLine(
+            "# present and inert. See conformance/interface-witness.tsv for the severance-tested claim."
+        );
+        writer.WriteLine(
+            "element\tattribute\tref_kind\tobserved_target_types\tpresent\tdirection\tfixtures"
         );
         foreach (Row row in rows.OrderBy(r => r.Element, StringComparer.Ordinal).ThenBy(r => r.Attribute, StringComparer.Ordinal))
         {
@@ -286,8 +329,9 @@ public static class InterfaceInventoryLedger
                     row.Attribute,
                     row.RefKind,
                     string.Join(",", row.ObservedTargetTypes),
-                    row.Exercised ? "yes" : "no",
-                    row.Direction
+                    row.Present ? "yes" : "no",
+                    row.Direction,
+                    row.Fixtures.Count == 0 ? NullField : string.Join(",", row.Fixtures)
                 )
             );
         }
@@ -321,14 +365,17 @@ public static class InterfaceInventoryLedger
             if (!Enum.TryParse(fields[2], out InterfaceRefKind refKind))
                 throw new FormatException($"{RelativePath}: unknown ref kind '{fields[2]}'");
             if (fields[4] is not ("yes" or "no"))
-                throw new FormatException($"{RelativePath}: unknown exercised flag '{fields[4]}'");
+                throw new FormatException($"{RelativePath}: unknown present flag '{fields[4]}'");
             if (!Enum.TryParse(fields[5], out InterfaceDirection direction))
                 throw new FormatException($"{RelativePath}: unknown direction '{fields[5]}'");
 
             IReadOnlyList<string> targets = fields[3].Length == 0
                 ? Array.Empty<string>()
                 : fields[3].Split(',');
-            rows.Add(new Row(fields[0], fields[1], refKind, targets, fields[4] == "yes", direction));
+            IReadOnlyList<string> fixtures = fields[6] is "" or NullField
+                ? Array.Empty<string>()
+                : fields[6].Split(',');
+            rows.Add(new Row(fields[0], fields[1], refKind, targets, fields[4] == "yes", direction, fixtures));
         }
 
         return rows;

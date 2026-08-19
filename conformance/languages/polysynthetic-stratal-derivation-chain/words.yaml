@@ -75,6 +75,28 @@ words:
     blocked_by: [mrInfl]
     exercises:
       - "Stratum (Linear/Unordered rule order)"
+    # Claims the McDc:AbsentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
+    # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
+    # row -- the inline values below are what it recomputed against, not what it trusts blindly.
+    claimed_cells:
+      - cell: "PartOfSpeech::LexicalEntry.partOfSpeech->MorphologicalRule.requiredPartsOfSpeech::McDc:AbsentGatedForm"
+        severing: >-
+          partOfSpeech across every LexicalEntry (the one that matters here is NUNA's posN), as the
+          writer, or mrInfl's MorphologicalRule.requiredPartsOfSpeech="posV" gate, as the reader --
+          severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::NUNA+INFL|nunavuq"
+        distinct_from: nunaliqvuq
+        proof: >-
+          nunavuq is mrInfl attempted directly on the bare noun NUNA (posN); with both constructs
+          intact, inflection cannot attach (ok::-). Removing either the writer (LexicalEntry's
+          partOfSpeech) or the reader (mrInfl's requiredPartsOfSpeech) lets inflection attach
+          anyway, producing NUNA+INFL|nunavuq -- the AbsentGatedForm arm: the required feature is
+          ABSENT and the rule's requirement GATES on it. nunaliqvuq (NUNA+DERIV+INFL, where mrDeriv
+          verbalizes the root to posV first) is the control that shows mrInfl applies normally once
+          the required POS is actually present, so nunavuq's block is attributable to the gate, not
+          to mrInfl never applying at all.
 
   - word: akutat
     note: >-

@@ -13,7 +13,9 @@
      Slot (qekul, via mrSlotOnly), AffixTemplate (qukul, via mrTemplateOnly/decoyTemplate), and
      BoundaryDefinition (kul= for bDecoy; mo+kul for bLive, which fails to LOAD rather than merely
      failing to parse once bLive is gone, since mrBoundaryPfx's own PhoneticShape "+" then names an
-     undefined phoneme, equally conclusive evidence, per CounterfactualVerdict.RequiredToLoad).
+     undefined phoneme, a genuine loader-level witness, CounterfactualVerdict.RequiredByLoader, NOT
+     the strictly weaker RequiredByDtd: XmlLanguageLoader's own phoneme lookup has to run and fail,
+     unlike RequiredByDtd's document-never-reached-the-engine case).
      pekul is a conjunction over mrDecoy and slotDecoy alone (both stay jointly inactive on purpose,
      as the ORIGINAL, un-separable control) and does not itself separate those two call sites; mrDecoy
      and slotDecoy are why qokul/qekul had to be added as INDEPENDENTLY-reachable rule-only and

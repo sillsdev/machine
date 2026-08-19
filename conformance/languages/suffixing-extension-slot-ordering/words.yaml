@@ -437,6 +437,24 @@ words:
     exercises:
       - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
 
+  - word: kesepez
+    note: >-
+      KES + mrNumPl ("-ep") + mrAgr ("-ez") -- unlike kesez above, mrNumPl runs FIRST, and its own
+      OutputHeadFeatures/OutputFootFeatures overwrite KES's raw AssignedHeadFeatures (sg) and
+      AssignedFootFeatures (unstressed) with pl/stressed before mrAgr ever reads the word's
+      SyntacticFeatureStruct -- so the same root whose direct AGR attachment is impossible (kesez)
+      succeeds once NUMPL has run first. This isolates OutputFootFeatures specifically: KES is the
+      only entry in the whole grammar carrying an explicit, CONFLICTING AssignedFootFeatures value,
+      so it is the only root that can show mrNumPl's OutputFootFeatures actually overwriting rather
+      than merely supplementing an unset value the way dabepez's unset-root case does.
+    provenance: "fold-in: dtd:element/OutputFootFeatures, PresentInLanguageGrammarAlready per conformance/fold-in-candidates.tsv -- previously only witnessed on dabepez, where the root's foot feature starts unset (unification is vacuous either way) so severing OutputFootFeatures there changes nothing"
+    parses:
+      - signature: "KES+NUMPL+AGR|kesepez"
+        gloss: sing-PL-AGR
+        rules: [mrNumPl, mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
   - word: siliz
     note: >-
       SIL ("plant", posV7) + mrRecurSuf ("-iz"), one application -- a plain control establishing

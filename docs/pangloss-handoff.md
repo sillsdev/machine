@@ -7,6 +7,29 @@ programme's own Status section is explicit that a stronger product was considere
 was deliberately not built and why. Every number below was read from a checked-in file at handoff
 time; none is estimated.
 
+## What a consumer has to do, and what it never has to touch
+
+**A consuming engine has exactly one obligation: produce the same parses.** Run the adapter contract
+in `conformance/PROTOCOL.md` section 1 over each fixture's `grammar.xml` and words, and match the
+expected results. That is the whole conformance requirement.
+
+Everything else described below — the counterfactual census, the interface inventory, the severance
+witness sweep, the interaction chains, the data-flow obligations — is **HermitCrab-internal**. It
+exists so this suite can justify the claim that its fixture set is complete. A consumer never runs
+any of it, never regenerates it, and is never measured against it. The generators live in the
+`Conformance` project alongside the fixtures purely because that is where the fixtures are authored.
+
+That division is what makes the coverage claim transferable, and it rests on one property worth
+naming: **an obligation counts as covered only when severing it changes a parse.** That is exactly
+what the witness sweep establishes, and it is why presence was not good enough. A construct whose
+removal changes no parse cannot be detected by any engine comparing parses, so it cannot be part of
+a claim that transfers. Witnessed coverage is precisely the coverage that survives the trip to
+another implementation -- the sweep is not bookkeeping, it is the proof that the words carry the
+claim.
+
+So: if a consuming engine matches every expected parse, it inherits whatever this suite covers,
+without reproducing any of the apparatus that established what that is.
+
 ## What is handed over
 
 Two files per fixture, 33 fixtures total (8 under `conformance/languages/*`, 25 under

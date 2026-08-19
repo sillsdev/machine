@@ -1,8 +1,11 @@
 # agglutinative-Austronesian reference corpus's pathology mimic -- see STAGING.md and grammar.xml's
-# own header comment. Oracle:
-# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
-# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
-# below are transcribed verbatim from that run, not hand-derived.
+# own header comment. Originally authored and verified against PanGloss's Rust engine only
+# (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section); signatures were
+# transcribed verbatim from that run, not hand-derived. Since then also verified against this repo's
+# own C# HermitCrab engine (the founding oracle): every signature, every parse's traced `rules:`
+# list, and the `vokadan` expect_fail all hold under self-check mode
+# (ConformanceFixtureGateTests.EveryConformanceFixturePassesSelfCheck / `hc-conformance --fixtures
+# conformance`, in-process XmlLanguageLoader + Morpher, no divergence found).
 #
 # Authoring note: an early draft gave every vowel (a/e/i/u/o) and several consonants (l/k/s/v/d) an
 # IDENTICAL feature bundle (only `featPlace=vocalic`/`fPlaceOther` respectively distinguished them
@@ -92,6 +95,27 @@ words:
     provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): MPR-gated rule exception"
     expect_fail: true
     blocked_by: [mrSuf]
+    # Claims the McDc:PresentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
+    # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
+    # row -- the inline values below are what it recomputed against, not what it trusts blindly.
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::LexicalEntry.ruleFeatures->MorphologicalInput.excludedMPRFeatures::McDc:PresentGatedForm"
+        severing: >-
+          either VOKAD's LexicalEntry.ruleFeatures="mprException" (the writer) or mrSuf's
+          MorphologicalInput.excludedMPRFeatures="mprException" gate (the reader) -- severing
+          either alone unblocks this word
+        before: "ok::-"
+        after: "ok::VOKAD+SUF|vokadan"
+        distinct_from: sanitan
+        proof: >-
+          vokadan is VOKAD (carries mprException) + mrSuf; with both constructs intact the
+          derivation is blocked (ok::-). Removing either the writer (VOKAD's ruleFeatures) or the
+          reader (mrSuf's excludedMPRFeatures) lets the same derivation through, producing
+          VOKAD+SUF|vokadan -- the PresentGatedForm arm: the feature is PRESENT on the root and the
+          rule's exclusion GATES on it. sanitan (SANIT, no mprException) is the plain control that
+          shows mrSuf fires normally when the feature is simply absent, so vokadan's block is
+          attributable to the gate, not to mrSuf never applying at all.
 
   - word: vokadi
     note: >-

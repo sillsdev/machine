@@ -184,6 +184,45 @@ cross-word phonological context (`PreviousWord`, `NextWord`, `Null`). The aspira
 of any expressible grammar; these are the named exceptions, machine-derived from the proof ledgers
 rather than asserted, and gated so the list cannot drift.
 
+## Who this apparatus is for
+
+All of it -- census, interface inventory, witness sweep, chains, obligations -- exists so
+**HermitCrab** can justify the claim that this fixture set is complete. None of it is a consuming
+engine's problem. A consumer's entire obligation is to produce the same parses; if it does, it
+inherits whatever the suite covers, without reproducing any of the machinery that established what
+that is.
+
+That separation is only sound because of one property: **an obligation counts as covered only when
+severing it changes a parse.** A construct whose removal changes no parse is invisible to an engine
+that compares parses, so it cannot participate in a claim that transfers to one. This is why
+presence was never good enough, and it reframes the severance sweep -- it is not bookkeeping about
+our own fixtures, it is the proof that the words themselves carry the claim.
+
+It also sets the standard for every layer added later. A new obligation is worth declaring only if
+failing it would change a parse. If it would not, no consuming engine could ever fail it, and
+covering it buys nothing.
+
+## The inclusion rule
+
+One sentence decides whether anything belongs in a denominator:
+
+> Test every mechanism that can change a parse. Do not test one that cannot — **unless** it sits in a
+> chain that does, in which case test the chain.
+
+Both halves do work. The first is why presence was never sufficient: a construct whose removal changes
+no parse cannot be detected by an engine comparing parses, so covering it buys nothing and inflates
+the number. The second is why the chain layer exists at all: `A` alone may be inert and `C` alone may
+be inert, while `C -> D -> E` changes the parse, and testing the parts in isolation would have
+concluded there was nothing to test.
+
+This is the test to apply to every proposed obligation, and it is also the disposal rule. A layer
+that cannot show its obligations change parses is measuring its own XML.
+
+Worked consequence: `SymbolicFeature.defaultSymbol` is present in a fixture and severing it changes
+neither of that fixture's words. Under the first half it is out of scope. It returns to scope only if
+some chain routes through it to an observable difference -- which is a question about chains, not
+about the attribute.
+
 ## Two standing cautions
 
 **Mechanical is not the same as meaningful.** The first census was mechanically generated, honestly

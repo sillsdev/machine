@@ -34,6 +34,14 @@ internal class Program
         bool writeRuleInteractionPairs = false;
         bool interfaceInventory = false;
         bool writeInterfaceInventory = false;
+        bool interactionChains = false;
+        bool writeInteractionChains = false;
+        bool dataflowObligations = false;
+        bool writeDataflowObligations = false;
+        bool coverageTraceability = false;
+        bool writeCoverageTraceability = false;
+        bool evidenceCards = false;
+        bool writeEvidenceCards = false;
         string repositoryRoot = null;
 
         for (int i = 0; i < args.Length; i++)
@@ -102,6 +110,30 @@ internal class Program
                 case "--write-interface-inventory":
                     writeInterfaceInventory = true;
                     break;
+                case "--interaction-chains":
+                    interactionChains = true;
+                    break;
+                case "--write-interaction-chains":
+                    writeInteractionChains = true;
+                    break;
+                case "--dataflow-obligations":
+                    dataflowObligations = true;
+                    break;
+                case "--write-dataflow-obligations":
+                    writeDataflowObligations = true;
+                    break;
+                case "--coverage-traceability":
+                    coverageTraceability = true;
+                    break;
+                case "--write-coverage-traceability":
+                    writeCoverageTraceability = true;
+                    break;
+                case "--evidence-cards":
+                    evidenceCards = true;
+                    break;
+                case "--write-evidence-cards":
+                    writeEvidenceCards = true;
+                    break;
                 case "--propose-semantic-catalog":
                     proposeSemanticCatalog = true;
                     break;
@@ -164,6 +196,14 @@ internal class Program
             || writeRuleInteractionPairs
             || interfaceInventory
             || writeInterfaceInventory
+            || interactionChains
+            || writeInteractionChains
+            || dataflowObligations
+            || writeDataflowObligations
+            || coverageTraceability
+            || writeCoverageTraceability
+            || evidenceCards
+            || writeEvidenceCards
         )
         {
             repositoryRoot ??= FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -186,6 +226,15 @@ internal class Program
 
                 if (interfaceInventory || writeInterfaceInventory)
                     return RunInterfaceInventory(repositoryRoot, writeInterfaceInventory);
+
+                if (interactionChains || writeInteractionChains)
+                    return RunInteractionChains(repositoryRoot, writeInteractionChains);
+                if (dataflowObligations || writeDataflowObligations)
+                    return RunDataflowObligations(repositoryRoot, writeDataflowObligations);
+                if (coverageTraceability || writeCoverageTraceability)
+                    return RunCoverageTraceability(repositoryRoot, writeCoverageTraceability);
+                if (evidenceCards || writeEvidenceCards)
+                    return RunEvidenceCards(repositoryRoot, writeEvidenceCards);
 
                 return counterfactual || writeCounterfactual
                     ? RunCounterfactual(repositoryRoot, writeCounterfactual)
@@ -556,12 +605,12 @@ internal class Program
         IReadOnlyList<SemanticCoverage.InterfaceJunction> junctions = SemanticCoverage.InterfaceInventoryLedger.ComputeJunctions(
             rows
         );
-        int exercisedCount = rows.Count(r => r.Exercised);
+        int presentCount = rows.Count(r => r.Present);
         int typedEdgeCount = rows.Sum(r => r.ObservedTargetTypes.Count);
 
         Console.WriteLine($"declared interfaces: {rows.Count}");
-        Console.WriteLine($"  exercised   {exercisedCount}");
-        Console.WriteLine($"  unexercised {rows.Count - exercisedCount}");
+        Console.WriteLine($"  present     {presentCount} (structural only -- see interface-witness.tsv for witness)");
+        Console.WriteLine($"  not present {rows.Count - presentCount}");
         Console.WriteLine($"typed edges: {typedEdgeCount}");
         Console.WriteLine($"junctions: {junctions.Count}");
         foreach (SemanticCoverage.InterfaceJunction junction in junctions)
@@ -592,6 +641,218 @@ internal class Program
 
         Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
         return 0;
+    }
+
+    /// <summary>Recomputes the write/read interaction-chain denominator and checks it against the checked-in ledger, or rewrites it.</summary>
+    private static int RunInteractionChains(string repositoryRoot, bool writeLedger)
+    {
+        IReadOnlyList<SemanticCoverage.InteractionChainLedger.Row> rows = SemanticCoverage.InteractionChainLedger.Compute(
+            repositoryRoot
+        );
+        IReadOnlyList<SemanticCoverage.ChainJunction> junctions = SemanticCoverage.InteractionChainLedger.ComputeJunctions(
+            repositoryRoot
+        );
+        int exercisedCount = rows.Count(r => r.Exercised);
+        int hazardousCount = rows.Count(r => r.Hazardous);
+
+        Console.WriteLine($"junctions: {junctions.Count}");
+        foreach (SemanticCoverage.ChainJunction junction in junctions)
+            Console.WriteLine($"  {junction.PayloadType} ({junction.Writers.Count} writer(s), {junction.Readers.Count} reader(s))");
+        Console.WriteLine($"interaction chains: {rows.Count}");
+        Console.WriteLine($"  exercised   {exercisedCount}");
+        Console.WriteLine($"  unexercised {rows.Count - exercisedCount}");
+        Console.WriteLine($"  hazardous   {hazardousCount}");
+
+        string relative = SemanticCoverage.InteractionChainLedger.RelativePath;
+        string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        string fresh = SemanticCoverage.InteractionChainLedger.ToText(rows);
+
+        if (writeLedger)
+        {
+            SemanticCoverage.InteractionChainLedger.Write(repositoryRoot, rows);
+            Console.WriteLine($"wrote {relative} ({rows.Count} row(s))");
+            return 0;
+        }
+
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"{relative} is missing; regenerate with --write-interaction-chains");
+            return 1;
+        }
+
+        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine($"{relative} is stale; regenerate with --write-interaction-chains");
+            return 1;
+        }
+
+        Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
+        return 0;
+    }
+
+    /// <summary>Recomputes the data-flow/MC/DC obligation-matrix cells and checks them against the checked-in ledger, or rewrites it.</summary>
+    private static int RunDataflowObligations(string repositoryRoot, bool writeLedger)
+    {
+        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> rows = SemanticCoverage.DataflowObligationLedger.Compute(
+            repositoryRoot
+        );
+        int satisfied = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.Satisfied);
+        int notSatisfied = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.NotSatisfied);
+        int unknown = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.Unknown);
+
+        Console.WriteLine($"obligation cells: {rows.Count}");
+        Console.WriteLine($"  satisfied     {satisfied}");
+        Console.WriteLine($"  not_satisfied {notSatisfied}");
+        Console.WriteLine($"  unknown       {unknown}");
+
+        string relative = SemanticCoverage.DataflowObligationLedger.RelativePath;
+        string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        string fresh = SemanticCoverage.DataflowObligationLedger.ToText(rows);
+
+        if (writeLedger)
+        {
+            SemanticCoverage.DataflowObligationLedger.Write(repositoryRoot, rows);
+            Console.WriteLine($"wrote {relative} ({rows.Count} row(s))");
+            return 0;
+        }
+
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"{relative} is missing; regenerate with --write-dataflow-obligations");
+            return 1;
+        }
+
+        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine($"{relative} is stale; regenerate with --write-dataflow-obligations");
+            return 1;
+        }
+
+        Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
+        return 0;
+    }
+
+    /// <summary>Renders (or checks) one reviewable Markdown card per conformance/dataflow-obligations.tsv
+    /// cell under conformance/evidence-cards/. Never recomputes any ledger -- purely a rendering of
+    /// already-checked-in facts, per docs/coverage-review-protocol.md's gate/calibrator split (this is
+    /// input to a review, not a gate itself, so the only failure mode is the render going stale).</summary>
+    private static int RunEvidenceCards(string repositoryRoot, bool writeCards)
+    {
+        IReadOnlyList<SemanticCoverage.EvidenceCard> cards = SemanticCoverage.EvidenceCardGenerator.Compute(repositoryRoot);
+        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> ledgerRows = SemanticCoverage.DataflowObligationLedger.Read(
+            repositoryRoot
+        );
+
+        Console.WriteLine($"evidence cards: {cards.Count}");
+        foreach (SemanticCoverage.ObligationStatus status in Enum.GetValues<SemanticCoverage.ObligationStatus>())
+            Console.WriteLine($"  {status, -13} {ledgerRows.Count(r => r.Status == status)}");
+
+        if (writeCards)
+        {
+            SemanticCoverage.EvidenceCardGenerator.Write(repositoryRoot, cards);
+            Console.WriteLine(
+                $"wrote {cards.Count} card(s) to {SemanticCoverage.EvidenceCardGenerator.RelativeDirectory}"
+            );
+            return 0;
+        }
+
+        SemanticCoverage.EvidenceCardDiff diff = SemanticCoverage.EvidenceCardGenerator.Check(repositoryRoot, cards);
+        foreach (string detail in diff.Details)
+            Console.Error.WriteLine(detail);
+
+        if (!diff.IsCurrent)
+        {
+            Console.Error.WriteLine(
+                $"{SemanticCoverage.EvidenceCardGenerator.RelativeDirectory} is stale ({diff.StaleOrMissingCount} "
+                    + $"missing/stale, {diff.ExtraFileCount} extra); regenerate with --write-evidence-cards"
+            );
+            return 1;
+        }
+
+        Console.WriteLine($"{SemanticCoverage.EvidenceCardGenerator.RelativeDirectory} is current ({cards.Count} card(s))");
+        return 0;
+    }
+
+    /// <summary>
+    /// Regenerates (or checks) the four traceability artifacts together: interface-witness.tsv (the
+    /// only expensive part -- a severance sweep, same cost class as --write-counterfactual), then the
+    /// three cheap joins that read it back: grammar-coverage-ledger.tsv, construct-claim-corroboration.tsv,
+    /// and fold-in-candidates.tsv. Even the non-writing (check) path re-runs the severance sweep, so this
+    /// is a deliberate, occasional command -- never part of ordinary CI -- not a cheap drift check.
+    /// </summary>
+    private static int RunCoverageTraceability(string repositoryRoot, bool writeLedgers)
+    {
+        int WriteOrCheck(string relative, string fresh, Action write)
+        {
+            if (writeLedgers)
+            {
+                write();
+                Console.WriteLine($"wrote {relative}");
+                return 0;
+            }
+
+            string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path))
+            {
+                Console.Error.WriteLine($"{relative} is missing; regenerate with --write-coverage-traceability");
+                return 1;
+            }
+
+            bool same = string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            );
+            if (!same)
+            {
+                Console.Error.WriteLine($"{relative} is stale; regenerate with --write-coverage-traceability");
+                return 1;
+            }
+
+            Console.WriteLine($"{relative} is current");
+            return 0;
+        }
+
+        Console.WriteLine("sweeping interface severance witnesses (this re-parses every present interface x fixture)...");
+        IReadOnlyList<SemanticCoverage.InterfaceWitnessResult> witnessRows = SemanticCoverage.InterfaceWitnessLedger.Sweep(
+            repositoryRoot,
+            onFixtureStarted: (fixtureId, count) => Console.Error.WriteLine($"  {fixtureId} ({count} interface(s))")
+        );
+        int failed = WriteOrCheck(
+            SemanticCoverage.InterfaceWitnessLedger.RelativePath,
+            SemanticCoverage.InterfaceWitnessLedger.ToText(witnessRows),
+            () => SemanticCoverage.InterfaceWitnessLedger.Write(repositoryRoot, witnessRows)
+        );
+
+        // The three joins below read interface-witness.tsv back off disk (see their own doc comments
+        // for why that is deliberate), so in write mode the write above has to have already landed;
+        // WriteOrCheck runs its `write` callback before returning, so that is already guaranteed here.
+        string constructsPath = Path.Combine(repositoryRoot, "conformance", "constructs.txt");
+        IReadOnlyList<SemanticCoverage.ConstructClaimCorroboration.Row> claimRows =
+            SemanticCoverage.ConstructClaimCorroboration.Compute(repositoryRoot, constructsPath);
+        failed += WriteOrCheck(
+            SemanticCoverage.ConstructClaimCorroboration.RelativePath,
+            SemanticCoverage.ConstructClaimCorroboration.ToText(claimRows),
+            () => SemanticCoverage.ConstructClaimCorroboration.Write(repositoryRoot, claimRows)
+        );
+
+        IReadOnlyList<SemanticCoverage.GrammarCoverageLedger.Row> grammarRows =
+            SemanticCoverage.GrammarCoverageLedger.Compute(repositoryRoot);
+        failed += WriteOrCheck(
+            SemanticCoverage.GrammarCoverageLedger.RelativePath,
+            SemanticCoverage.GrammarCoverageLedger.ToText(grammarRows),
+            () => SemanticCoverage.GrammarCoverageLedger.Write(repositoryRoot, grammarRows)
+        );
+
+        IReadOnlyList<SemanticCoverage.FoldInCandidateLedger.Row> foldInRows =
+            SemanticCoverage.FoldInCandidateLedger.Compute(repositoryRoot);
+        failed += WriteOrCheck(
+            SemanticCoverage.FoldInCandidateLedger.RelativePath,
+            SemanticCoverage.FoldInCandidateLedger.ToText(foldInRows),
+            () => SemanticCoverage.FoldInCandidateLedger.Write(repositoryRoot, foldInRows)
+        );
+
+        return failed == 0 ? 0 : 1;
     }
 
     private static int RunCoverageEvidence(string repositoryRoot, bool writeLedger)
@@ -1061,6 +1322,30 @@ internal class Program
                                                 against conformance/interface-inventory.tsv; exits 1
                                                 if stale.
               --write-interface-inventory       Rewrite conformance/interface-inventory.tsv.
+              --interaction-chains              Recompute the write/read interaction-chain denominator
+                                                (writer edge x payload type x reader edge, at each
+                                                interface-inventory junction) and check it against
+                                                conformance/interaction-chains.tsv; exits 1 if stale.
+              --write-interaction-chains        Rewrite conformance/interaction-chains.tsv.
+              --dataflow-obligations            Recompute the data-flow/MC/DC obligation-matrix cells
+                                                (docs/dataflow-coverage-plan.md) from
+                                                conformance/interaction-chains.tsv and check them
+                                                against conformance/dataflow-obligations.tsv; exits 1
+                                                if stale.
+              --write-dataflow-obligations      Rewrite conformance/dataflow-obligations.tsv.
+              --coverage-traceability           Re-sweep interface severance witness (expensive -- one
+                                                reparse per present interface x fixture) and check
+                                                interface-witness.tsv, grammar-coverage-ledger.tsv,
+                                                construct-claim-corroboration.tsv, and
+                                                fold-in-candidates.tsv; exits 1 if any is stale.
+              --write-coverage-traceability     Rewrite all four files above.
+              --evidence-cards                  Render one reviewable Markdown card per
+                                                conformance/dataflow-obligations.tsv cell under
+                                                conformance/evidence-cards/ and check it against what
+                                                is checked in; exits 1 if stale. Never recomputes any
+                                                ledger -- purely a rendering of already-checked-in
+                                                facts (docs/coverage-review-protocol.md).
+              --write-evidence-cards            Rewrite conformance/evidence-cards/.
               --repository-root <path>          Repository root for the flags above.
                                                 (default: <fixtures>/constructs.txt).
               --propose                        Self-check only: on a signature mismatch, print

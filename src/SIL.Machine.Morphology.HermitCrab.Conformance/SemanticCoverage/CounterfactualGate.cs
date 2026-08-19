@@ -57,7 +57,11 @@ public enum CounterfactualVerdict
 /// are captured structurally at the moment <see cref="CounterfactualGate"/> compares a mutant against
 /// the baseline, so a caller building an <see cref="Evidence"/> record never has to regex
 /// <paramref name="Delta"/>'s prose. Left at their defaults (null / <see cref="CounterexampleKind.None"/>)
-/// for verdicts that are not evidence.
+/// for verdicts that are not evidence. <paramref name="WitnessingFixtures"/> is every fixture
+/// <see cref="CounterfactualLedger.Sweep"/> found reaching this exact <paramref name="Verdict"/> for
+/// <paramref name="SurfaceId"/> -- <paramref name="FixtureId"/> is only the first-discovered of that
+/// set, kept for the example fields above, never the only one; null outside <c>Sweep</c>'s own merge,
+/// where "which fixture(s)" is not yet a question being asked.
 /// </summary>
 public sealed record CounterfactualResult(
     string SurfaceId,
@@ -68,7 +72,8 @@ public sealed record CounterfactualResult(
     string? ExampleWord = null,
     string? ExampleOutcome = null,
     CounterexampleKind CounterexampleKind = CounterexampleKind.None,
-    string? CounterexampleOutcome = null
+    string? CounterexampleOutcome = null,
+    IReadOnlyList<string>? WitnessingFixtures = null
 );
 
 /// <summary>One word's measured parse time, for diagnosing which fixtures or mutants run slow.</summary>

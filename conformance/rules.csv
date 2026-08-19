@@ -149,13 +149,13 @@ SuffixingEvidentialAdjacencyChain,mrEvidConjectural,sipuncha;takincha;!walaknkic
 SuffixingEvidentialAdjacencyChain,mrEvidDirect,sipuymi;siputukumi;siputukuchikmi;sipulupami;walaknkichikmi
 SuffixingEvidentialAdjacencyChain,mrEvidMir,walakniwas;!walaknichikwas
 SuffixingEvidentialAdjacencyChain,mrEvidReportative,walaknkisi;walaknkishi
-SuffixingEvidentialAdjacencyChain,mrPerson1,tupay;sipuy;walakni;walaknichik;sipuymi;takiy;kantay;walaknitan;walaknichiktan;walakniwas
+SuffixingEvidentialAdjacencyChain,mrPerson1,tupay;sipuy;walakni;!walaky;walaknichik;sipuymi;takiy;kantay;walaknitan;walaknichiktan;walakniwas
 SuffixingEvidentialAdjacencyChain,mrPerson1PlIncl,siputukumi;siputukuchikmi;!siputuku
 SuffixingEvidentialAdjacencyChain,mrPerson2,walaknki;walaknkisi;walaknkishi;walaknkichikmi
 SuffixingEvidentialAdjacencyChain,mrPerson2Pl,sipulupami;!sipulupachikmi
 SuffixingEvidentialAdjacencyChain,mrPerson3,sipun;sipuncha;takincha
 SuffixingEvidentialAdjacencyChain,mrPlural,walaknichik;walaknichiktan;siputukuchikmi;walaknkichikmi
-SuffixingExtensionSlotOrdering,mrAgr,dabepez;dabez;!kesez
+SuffixingExtensionSlotOrdering,mrAgr,dabepez;dabez;!kesez;kesepez
 SuffixingExtensionSlotOrdering,mrAppl,andikila;andikishila;andikilisha
 SuffixingExtensionSlotOrdering,mrCaus,andikisha;andikishila;andikilisha
 SuffixingExtensionSlotOrdering,mrEndH,belh;sekwh
@@ -164,7 +164,7 @@ SuffixingExtensionSlotOrdering,mrEndZ,xkibz;!yxkibz;sekzw
 SuffixingExtensionSlotOrdering,mrExtX,xkib;yxkib;xkibz
 SuffixingExtensionSlotOrdering,mrExtY,yxkib
 SuffixingExtensionSlotOrdering,mrFV,andika;andikisha;andikila;andikishila;andikilisha
-SuffixingExtensionSlotOrdering,mrNumPl,dabep;dabepez
+SuffixingExtensionSlotOrdering,mrNumPl,dabep;dabepez;kesepez
 SuffixingExtensionSlotOrdering,mrRecurSuf,siliz;!siliziz;dalizeh
 SuffixingExtensionSlotOrdering,mrRedup,kimbiakimbia
 SuffixingExtensionSlotOrdering,mrStemReq,daleh;!daheh;dalizeh
