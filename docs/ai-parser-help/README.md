@@ -20,6 +20,10 @@ texts rather than the grammar:
   reference for FLExText, FieldWorks' interlinear-text interchange format: what it is, how to
   extract it, and how to get an LLM to reason over it correctly, including the `analysisStatus`
   ground-truth caveat and which AI products can actually run code against your uploaded file.
+- **[`fieldworks-help.md`](fieldworks-help.md)** — FieldWorks' own built-in Help system is a large,
+  task-oriented reference for the Grammar tools and UI that isn't fetchable by URL like the rest of
+  this reference. This page explains how to extract and hand its topics to an LLM too, and maps
+  specific topics to the questions this reference answers.
 
 Each file covers one topic in enough depth to answer questions about that topic without needing
 local access to the repo — code excerpts, mechanisms, and worked examples are inlined.

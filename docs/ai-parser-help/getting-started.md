@@ -64,6 +64,11 @@ actual engine mechanics rather than guessing. If you already know your question 
 wrongness, speed, or modeling approach specifically, you can paste the more specific
 `broken/README.md`, `speed/README.md`, or `workflow/README.md` URL instead.
 
+Have a "how do I set this up in FLEx" question rather than a "why is this happening" question?
+FieldWorks also ships its own large built-in Help system, covering every Grammar tool and dialog —
+see [`fieldworks-help.md`](fieldworks-help.md) for how to extract and hand its topics to an LLM
+too (it's a compiled Help file, not a URL you can paste directly).
+
 ## Step 4 — Ask your question
 
 Some examples of what to ask, once both your grammar and the reference URL are in the chat:
