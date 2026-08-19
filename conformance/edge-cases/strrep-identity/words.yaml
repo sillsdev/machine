@@ -1,5 +1,5 @@
-# Converted from conformance/allomorphy/strrep-identity (v1; kept in place, untouched, until phase
-# G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file,
+# Converted from conformance/allomorphy/strrep-identity (v1, removed after the v1->v2 migration's
+# parity proof). grammar.xml is the same file,
 # unmodified: deliberately NO PhonologicalFeatureSystem at all (every char-def's feature bundle is
 # empty) and NO <MorphemeId> element on either MorphologicalRule (rulePfx, ruleObj) -- like
 # edge-cases/disjunctive-recheck, this fixture's own signatures ("+|mu+?pat" etc.) would change if a

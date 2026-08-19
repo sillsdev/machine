@@ -28,6 +28,34 @@ and are never measured against it.
 The ledgers are shipped anyway, because a claim you cannot inspect is a claim you have to take on
 trust.
 
+## Status: what is live, what is frozen, what nobody should extend
+
+This suite is deliberately stopped at a known point rather than finished. The measurement apparatus
+did its job -- it established what the fixtures witness, and it produced the map of what remains --
+and its marginal return then fell to roughly nothing. Freezing it is a decision, not neglect.
+
+**Live, cheap, and worth keeping working.** The self-check, `--check-manifest`, and the drift gates
+that compare a checked-in ledger against a fresh recompute. These run in seconds and they are what
+stop the published numbers from quietly going stale.
+
+**Frozen, and honest as they stand.** The ledgers. They record 14 of 46 gate arms evidenced, 5 of 23
+gates with both MC/DC arms, and 8 defensible obligation cells of 18 worth covering. Those are
+findings, not a backlog. `obligation-triage.tsv` classifies every unmet obligation by the blocker its
+own ledger records, and most of the remainder is either impossible or strained -- read it before
+assuming a number should be higher.
+
+**Do not extend.** The missing severance primitives (whole-element removal, element-content
+severance) exist only to feed a campaign that has ended. The authoring-yield measurement loop
+optimises a process whose output has no consumer. `fieldworks-producibility.tsv` is a hand-researched
+snapshot of an external repository with a demonstrated non-composing failure mode, and patching it
+further buys less than replacing its role would.
+
+**Where the next real gain is, and it is not here.** Two engines already exist and both already speak
+`PROTOCOL.md`. Running them against each other -- on generated grammars, or better, on the grammars
+real projects actually produce -- measures the half of the engine this apparatus does not: not
+whether a rule was correctly declined, but whether the parse it produces is the same one. The three
+defects this suite has found were all of that kind.
+
 ## If you are extending the suite
 
 Start with [decisions-and-lessons.md](decisions-and-lessons.md), not with the code. Several

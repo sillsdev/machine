@@ -23,7 +23,8 @@ public static class ImpossibilityProofs
     /// <summary>The engine contains no reference to the owning element.</summary>
     public const string NoConsumer = "no-consumer";
 
-    /// <summary>The surface's data is carried by the model but never reaches a control-flow decision or the comparison signature.</summary>
+    /// <summary>The surface's data is carried by the model but never reaches a control-flow decision or
+    /// the comparison signature.</summary>
     public const string NotInSignature = "not-in-signature";
 
     /// <summary>An engine defect prevents any word from exercising it; must name fixture and issue.</summary>

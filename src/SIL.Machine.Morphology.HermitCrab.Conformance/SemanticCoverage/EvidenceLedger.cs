@@ -21,7 +21,8 @@ public static class EvidenceLedger
     private const string NullField = "-";
     private const int ColumnCount = 9;
 
-    /// <summary>One ledger line: a <see cref="CoverageItem"/> joined to the <see cref="Evidence"/> that resolves it.</summary>
+    /// <summary>One ledger line: a <see cref="CoverageItem"/> joined to the <see cref="Evidence"/> that
+    /// resolves it.</summary>
     public sealed record Row(
         string ItemId,
         CoverageItemKind Kind,

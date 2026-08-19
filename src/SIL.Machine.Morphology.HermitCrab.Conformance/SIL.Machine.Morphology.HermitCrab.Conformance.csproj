@@ -23,8 +23,8 @@
 
 	<ItemGroup>
         <!-- Fixture model (conformance/languages, conformance/edge-cases): words.yaml is parsed
-		     with YamlDotNet, a dependency scoped to this project only (per
-		     docs/conformance-language-suite-plan.md section 4, "a new test-side dependency"). -->
+		     with YamlDotNet, a dependency scoped to this project only since no other project
+		     needs it. -->
 		<PackageReference Include="JsonSchema.Net" Version="9.4.0" />
 		<PackageReference Include="YamlDotNet" Version="16.3.0" />
 	</ItemGroup>

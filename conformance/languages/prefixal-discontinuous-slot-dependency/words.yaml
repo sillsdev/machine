@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from). This grammar is a pure STRESS grammar (spec Sec3
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from). This grammar is a pure STRESS grammar (spec Sec3
 # row 7): it embeds no v1 fixture and carries no provenance -- its job is exercising AffixTemplate
 # morphology from the LEFT edge (a prefixal position-class template), which every other roster
 # grammar (all suffix-dominant) leaves untested.

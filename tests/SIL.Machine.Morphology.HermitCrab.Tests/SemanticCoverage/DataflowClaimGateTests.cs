@@ -233,9 +233,8 @@ public sealed class DataflowClaimGateTests
         Assert.That(report.Claims.Single().DistinctFromVerified, Is.False);
     }
 
-    // The reverse direction (docs/dataflow-coverage-plan.md): a Satisfied cell no word claims is
-    // reported, never failed. Uses a throwing recompute to also confirm recomputation is never invoked
-    // when there is nothing claimed.
+    // The reverse direction: a Satisfied cell no word claims is reported, never failed. Uses a
+    // throwing recompute to also confirm recomputation is never invoked when there is nothing claimed.
     [Test]
     public void UnclaimedSatisfiedCellIsReportedNotFailed()
     {

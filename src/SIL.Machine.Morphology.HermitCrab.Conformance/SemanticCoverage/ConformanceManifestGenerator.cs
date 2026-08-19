@@ -18,7 +18,6 @@ public static class ConformanceManifestGenerator
     {
         "conformance/constructs.txt",
         "conformance/parity-check.py",
-        "docs/conformance-migration-ledger.md",
         "conformance/schema/words.schema.json",
         "conformance/schema/conformance-manifest.schema.json",
     };

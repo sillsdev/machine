@@ -29,8 +29,8 @@ public enum CounterexampleKind
 
 /// <summary>
 /// One line of the inventory: something the pipeline has committed to cover. Generated, never
-/// hand-maintained -- see docs/coverage-pipeline-design.md. <paramref name="Fixture"/> names where the
-/// item is expected to be evidenced, not necessarily where it ends up evidenced.
+/// hand-maintained. <paramref name="Fixture"/> names where the item is expected to be evidenced,
+/// not necessarily where it ends up evidenced.
 /// </summary>
 public sealed record CoverageItem(string Id, CoverageItemKind Kind, string Origin, string Fixture);
 

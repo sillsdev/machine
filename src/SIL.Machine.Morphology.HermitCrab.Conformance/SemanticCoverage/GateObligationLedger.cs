@@ -38,12 +38,17 @@ public enum GateArmStatus
 /// the failure to the gate directly, rather than inferring an arm from an attribute's spelling.</item>
 /// <item><b>Control</b> -- a word (in the same fixture) where the SAME grammar rule instance that fed
 /// the Blocked arm's gate fires in a SUCCESSFUL parse, proving the rule can apply at all and that the
-/// Blocked arm's failure is attributable to the gate rather than to a rule that never runs. Only
-/// resolvable when the gated construct sits directly on a rule element <see cref="GrammarRuleIndex"/>
-/// can name (<c>MorphologicalRule</c>/<c>CompoundingRule</c>/<c>RealizationalRule</c>) -- an allomorph,
-/// co-occurrence, or template/slot construct has no "Applied" trace event to check against (the same
-/// documented gap <see cref="FailureRuleAttributor"/> already records for allomorph identity), and is
-/// reported <see cref="GateArmStatus.NotEvidenced"/> naming exactly that limitation, never guessed.</item>
+/// Blocked arm's failure is attributable to the gate rather than to a rule that never runs. Resolvable
+/// when the gated construct sits directly on a rule element <see cref="GrammarRuleIndex"/> can name
+/// (<c>MorphologicalRule</c>/<c>CompoundingRule</c>/<c>RealizationalRule</c>/<c>PhonologicalRule</c>/
+/// <c>MetathesisRule</c>), or on one of four child element kinds <see
+/// cref="GrammarRuleIndex.ResolveAncestorRuleId"/> can walk up to a rule ancestor from
+/// (<c>MorphologicalInput</c>, <c>PhonologicalSubrule</c> always resolve this way; <c>Allomorph</c>
+/// and <c>AffixTemplate</c> never do -- neither ever has a rule ancestor, see that method's own doc
+/// comment). A co-occurrence or bare slot construct has no "Applied" trace event to check against at
+/// all (the same documented gap <see cref="FailureRuleAttributor"/> already records for allomorph
+/// identity), and is reported <see cref="GateArmStatus.NotEvidenced"/> naming exactly that limitation,
+/// never guessed.</item>
 /// </list>
 /// </para>
 ///
@@ -72,8 +77,7 @@ public enum GateArmStatus
 /// different question this ledger does not: whether a specific WRITER/READER PAYLOAD PAIR survives the
 /// full MC/DC treatment (n-condition vectors, the four mutator-kill classes) for the 40 write/read
 /// chains <see cref="InteractionChainLedger"/> derives from the DTD. This ledger answers whether each of
-/// the engine's 23 OWN DECISION POINTS is independently shown to matter. See
-/// <c>conformance/docs/how-it-is-computed.md</c> for which number is the headline claim and why.
+/// the engine's 23 OWN DECISION POINTS is independently shown to matter.
 /// </para>
 /// </summary>
 public static class GateObligationLedger
@@ -117,13 +121,28 @@ public static class GateObligationLedger
         "NonHeadPattern",
     };
 
-    /// <summary>Rule elements <see cref="GrammarRuleIndex"/> can resolve to a fired-rule id -- the only
-    /// element kinds this ledger's Control arm can attribute a successful application to.</summary>
+    /// <summary>Rule elements that carry their own <c>id</c> attribute directly -- <see
+    /// cref="GrammarRuleIndex"/> needs no ancestor walk to name the rule these belong to.</summary>
     private static readonly HashSet<string> RuleIndexedElements = new(StringComparer.Ordinal)
     {
         "MorphologicalRule",
         "CompoundingRule",
         "RealizationalRule",
+        "PhonologicalRule",
+        "MetathesisRule",
+    };
+
+    /// <summary>Elements with no rule id of their own that <see cref="GrammarRuleIndex.ResolveAncestorRuleId"/>
+    /// can still name by walking up to the nearest rule-element ancestor. Not every instance resolves: an
+    /// <c>Allomorph</c> is always a child of <c>LexicalEntry</c>, never of a rule, and an <c>AffixTemplate</c> has no
+    /// <c>id</c> attribute of its own (the DTD never declares one) and sits under <c>Stratum</c>, never
+    /// under a rule either -- both genuinely have no rule to attribute a Control arm to.</summary>
+    private static readonly HashSet<string> AncestorResolvableElements = new(StringComparer.Ordinal)
+    {
+        "Allomorph",
+        "MorphologicalInput",
+        "AffixTemplate",
+        "PhonologicalSubrule",
     };
 
     private static bool IsXmlReachable(EngineGateInventoryLedger.Row gateRow) =>
@@ -486,12 +505,13 @@ public static class GateObligationLedger
         IReadOnlyDictionary<string, WordBaseline> baselines
     )
     {
-        if (!RuleIndexedElements.Contains(element))
+        bool ancestorResolvable = AncestorResolvableElements.Contains(element);
+        if (!RuleIndexedElements.Contains(element) && !ancestorResolvable)
         {
             return NotEvidencedArm(
-                $"{element} is not a rule element GrammarRuleIndex resolves to a fired-rule id -- allomorph, "
-                    + "co-occurrence, and template/slot constructs have no \"Applied\" trace event to check against "
-                    + "(the same gap FailureRuleAttributor's own doc comment records for allomorph identity)"
+                $"{element} is not a rule element GrammarRuleIndex resolves to a fired-rule id, directly or by "
+                    + "ancestor -- co-occurrence and template/slot constructs have no \"Applied\" trace event to "
+                    + "check against (the same gap FailureRuleAttributor's own doc comment records for allomorph identity)"
             );
         }
 
@@ -502,10 +522,14 @@ public static class GateObligationLedger
         try
         {
             XDocument doc = XDocument.Load(fixture.GrammarPath);
-            ruleId = doc.Descendants(element)
-                .FirstOrDefault(e => !string.IsNullOrEmpty((string?)e.Attribute(attribute)))
-                ?.Attribute("id")
-                ?.Value;
+            XElement? instance = doc.Descendants(element)
+                .FirstOrDefault(e => !string.IsNullOrEmpty((string?)e.Attribute(attribute)));
+            if (instance is not null)
+            {
+                ruleId = ancestorResolvable
+                    ? GrammarRuleIndex.ResolveAncestorRuleId(instance)
+                    : (string?)instance.Attribute("id");
+            }
         }
         catch
         {
@@ -514,9 +538,12 @@ public static class GateObligationLedger
 
         if (ruleId is null)
         {
-            return NotEvidencedArm(
-                $"the {element} instance carrying {attribute} in {fixtureId} has no XML id attribute; rule-id attribution not possible"
-            );
+            string reason = ancestorResolvable
+                ? $"the {element} instance carrying {attribute} in {fixtureId} has no rule-element ancestor "
+                    + "GrammarRuleIndex can resolve (conformance/docs/severance-mechanics.md) -- it sits outside "
+                    + "any rule, so no rule id exists to attribute a Control arm to"
+                : $"the {element} instance carrying {attribute} in {fixtureId} has no XML id attribute; rule-id attribution not possible";
+            return NotEvidencedArm(reason);
         }
 
         foreach ((string word, WordBaseline wb) in baselines)

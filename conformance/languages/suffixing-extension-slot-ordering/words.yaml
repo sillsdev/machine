@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from).
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from).
 #
 #   1. mba -> PAV ("hit", posV) bare root, underlying "mpa": prNasalMutation (posV-scoped subrule)
 #      obligatorily voices the "p" to "b" following the nasal "m" -> "mba". The raw "mpa" itself can

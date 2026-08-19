@@ -20,11 +20,9 @@ public sealed class EvidenceCardGeneratorTests
         return string.Empty;
     }
 
-    // The two cell ids docs/dataflow-coverage-plan.md's own worked examples name, and
-    // DataflowClaimGateTests already seeds/pins as real, currently-Satisfied, currently-claimed cells.
-    // Deliberately does NOT pin the ledger's total cell count or per-status breakdown -- both move as
-    // the concurrent obligation-fill work lands (see this task's own instruction not to pin counts
-    // that work will move).
+    // The two cell ids DataflowClaimGateTests already seeds/pins as real, currently-Satisfied,
+    // currently-claimed cells. Deliberately does NOT pin the ledger's total cell count or per-status
+    // breakdown -- both move as the obligation-fill work lands.
     private const string VokadanCellId =
         "MorphologicalPhonologicalRuleFeature::LexicalEntry.ruleFeatures->MorphologicalInput.excludedMPRFeatures::McDc:PresentGatedForm";
     private const string NunavuqCellId =
@@ -44,10 +42,9 @@ public sealed class EvidenceCardGeneratorTests
         Assert.That(cards.Select(c => c.FileName).Distinct().Count(), Is.EqualTo(cards.Count));
     }
 
-    // The vokadan cell is the worked example throughout docs/dataflow-coverage-plan.md and
-    // docs/coverage-review-protocol.md: this asserts its card actually carries everything the
-    // reviewer's four checks (predict, cite lines, check counterpart, read prose against values) need
-    // in one screen, not spread across four files.
+    // The vokadan cell is used elsewhere in this suite as the canonical worked example: this asserts
+    // its card actually carries everything the reviewer's four checks (predict, cite lines, check
+    // counterpart, read prose against values) need in one screen, not spread across four files.
     [Test]
     public void VokadanCardCarriesEveryReviewerIngredient()
     {

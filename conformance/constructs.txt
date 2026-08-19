@@ -9,9 +9,8 @@
 # text (verbatim, including punctuation) is the key the coverage report (--coverage-report)
 # cross-references against every word's/parse's "exercises:" entries, emitting coverage.csv and
 # flagging both zero-coverage constructs and dead rules (grammar.xml rule ids no word exercises,
-# emitted in rules.csv). This is a direct transcription of
-# docs/archive/conformance-framework-plan.md section 6 ("Grammar-model construct checklist"); if
-# that table grows, add the new row's construct text here too so the report picks it up.
+# emitted in rules.csv). This file IS the grammar-model construct checklist; add a new row's
+# construct text here the moment a fixture needs it, so the report picks it up.
 #
 # The harness treats an "exercises:" value that ISN'T in this file as a soft warning (a genuinely
 # new construct, or a typo) -- never a hard error.

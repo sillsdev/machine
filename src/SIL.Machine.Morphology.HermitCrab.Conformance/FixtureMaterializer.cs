@@ -8,10 +8,8 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// Materializes a fixture (grammar.xml + words.yaml) into the on-disk adapter shape
 /// (grammar.xml + words.txt + expected.tsv) in a temp directory, plus an in-memory
 /// <see cref="FixtureManifest"/>, so it can be run through <see cref="MaterializedRunner"/> +
-/// <see cref="AdapterEngine"/> for adapter mode, per docs/conformance-language-suite-plan.md
-/// section 2.2 ("The harness materializes words.txt and expected.tsv into a temp directory from
-/// words.yaml before invoking an adapter, so existing adapters ... work unmodified"). This is the
-/// only code path that touches AdapterEngine/MaterializedRunner.
+/// <see cref="AdapterEngine"/> for adapter mode without either needing to know about the
+/// words.yaml format. This is the only code path that touches AdapterEngine/MaterializedRunner.
 /// </summary>
 public static class FixtureMaterializer
 {
@@ -92,7 +90,9 @@ public static class FixtureMaterializer
         catch (IOException) { }
     }
 
-    /// <summary>The signature string materialized into expected.tsv column 5: "-" for a word with zero expected parses (expect_fail), else the ";"-joined, ordinally-sorted set of parses[].signature -- the same shape BatchCommand.BuildSignature itself produces.</summary>
+    /// <summary>The signature string materialized into expected.tsv column 5: "-" for a word with zero expected
+    /// parses (expect_fail), else the ";"-joined, ordinally-sorted set of parses[].signature -- the same shape
+    /// BatchCommand.BuildSignature itself produces.</summary>
     public static string BuildExpectedSignature(WordEntry word)
     {
         if (word.ExpectFail || word.ExpectSkip || word.Parses.Count == 0)

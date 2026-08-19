@@ -3,10 +3,9 @@ using System.Collections.Generic;
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// In-memory model of one <c>words.yaml</c> file, per
-/// docs/conformance-language-suite-plan.md section 2.1. Parsed by <see cref="WordsYamlLoader"/>,
-/// which enforces the strict, fixed key vocabulary documented there -- this class only carries
-/// already-validated data, it does not itself validate anything.
+/// In-memory model of one <c>words.yaml</c> file. Parsed by <see cref="WordsYamlLoader"/>, which
+/// enforces the strict, fixed key vocabulary -- this class only carries already-validated data, it
+/// does not itself validate anything.
 /// </summary>
 public class WordsYaml
 {
@@ -15,10 +14,12 @@ public class WordsYaml
     public List<string> Sources { get; } = new();
     public List<string> Requires { get; } = new();
 
-    /// <summary>Edge-cases only: a wall-clock budget in milliseconds (materialized as manifest.json's budget.wallClockMs).</summary>
+    /// <summary>Edge-cases only: a wall-clock budget in milliseconds (materialized as manifest.json's
+    /// budget.wallClockMs).</summary>
     public long? BudgetMs;
 
-    /// <summary>Edge-cases only: this fixture's ground truth is a crash, not a signature (materialized as manifest.json's expectCrash).</summary>
+    /// <summary>Edge-cases only: this fixture's ground truth is a crash, not a signature (materialized
+    /// as manifest.json's expectCrash).</summary>
     public bool ExpectCrash;
 
     public List<WordEntry> Words { get; } = new();
@@ -84,8 +85,8 @@ public class ClaimedCellEntry
     public string After = "";
 
     /// <summary>
-    /// The plain control word (docs/coverage-strategy.md's "every claim needs a control") that
-    /// demonstrates this cell's condition is not vacuous -- MC/DC independence needs a second case
+    /// The plain control word (every claim needs a control) that demonstrates this cell's condition is
+    /// not vacuous -- MC/DC independence needs a second case
     /// differing in exactly this one condition. DataflowClaimGate checks the named word exists in the
     /// same fixture and that its outcome differs from this word's; it does not (yet) confirm the
     /// grammar difference between them is the single named condition.

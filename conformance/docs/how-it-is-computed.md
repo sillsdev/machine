@@ -78,7 +78,7 @@ context — see `conformance/README.md`) resolve here too, as `no-consumer`/`dea
 by a fixture, but by scanning the engine's own source for a reference to the element and finding
 none.
 
-## Layer 2: interface edges — 60 declared, 42 present, 15 demonstrated
+## Layer 2: interface edges — 60 declared, 44 present, 19 demonstrated
 
 **Denominator.** Every `IDREF`/`IDREFS` attribute `HermitCrabInput.dtd` declares, across 28 elements
 — 60 of them, read straight off the DTD (`interface-inventory.tsv`'s header). Each is a typed
@@ -107,7 +107,7 @@ unions it straight into the same live `MprFeatures` set every reader gates on. S
 `decisions-and-lessons.md` for the fuller account; the fix is the reason interaction chains (layer 3)
 exist as their own denominator rather than being read off `interface-inventory.tsv` directly.
 
-## Layer 3: interaction chains — 40, 11 demonstrated
+## Layer 3: interaction chains — 40 declared, 26 exercised, 9 with a paired witness
 
 A single interface edge in isolation cannot show what happens to a payload *between* one rule
 writing it and another reading it — whether something sits in the path that overwrites, drops, or
@@ -122,8 +122,8 @@ still appears in its own denominator rather than silently vanishing from it.
 
 **Numerator.** A chain counts as exercised when the same identifier appears in both the writer's and
 the reader's attribute values in one fixture — a real but purely **static co-occurrence check**, not
-proof that the payload actually reaches the reader unmutated. `dataflow-coverage-plan.md` gives the
-honest number after correcting for that: of 40 chains, the `all-uses` data-flow criterion (Rapps and
+proof that the payload actually reaches the reader unmutated. Correcting for that: of 40 chains, the
+`all-uses` data-flow criterion (Rapps and
 Weyuker, 1985 — a def-clear path from writer to reader, not merely both present) is met by 11, down
 from 20 in a first published count that used the weaker static check. The suite deliberately targets
 `all-uses` rather than the stronger `all-du-paths` (every path, not just one) — a scoping choice made
@@ -135,10 +135,10 @@ already in hand rather than argued for in advance.
 contains a known **mutating construct** on that payload's path — today, an `outputType="overwrite"`
 MPR feature group. This is what layer 4 turns into obligations.
 
-## Layer 4: obligation cells — 346 enumerated, 18 worth covering, 4 demonstrated
+## Layer 4: obligation cells — 346 enumerated, 18 worth covering, 9 demonstrated
 
 **Denominator.** For every chain in layer 3, derive the specific test cases that would demonstrate
-it, per `dataflow-coverage-plan.md`'s obligation matrix — this is the layer where MC/DC enters:
+it via an obligation matrix — this is the layer where MC/DC enters:
 
 - **Every chain gates — there is no plain, ungated def-use case.** A reader "gates" when it makes a
   control-flow decision based on the payload, and that turns out to be true of all 40 chains, not

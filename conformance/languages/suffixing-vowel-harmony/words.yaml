@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from). Phonological rules apply, in this order, ONCE to
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from). Phonological rules apply, in this order, ONCE to
 # the fully-concatenated underlying word (root+every suffix already joined) per the stratum's
 # `phonologicalRules="prBacknessHarmony prVowelMerge prVowelMultiMerge prGradation prEpenthesis"`
 # order -- NOT incrementally per suffix. That ordering is itself load-bearing: prBacknessHarmony

@@ -112,13 +112,12 @@ The measured value is the ledger's `Overlaps` count: 58 of 1,305 rows, against 3
 1,217 `Undetermined`.
 
 **This "Interaction" row is `conformance/rule-interaction-pairs.tsv`'s generator, and it is a
-per-grammar pruning device, not a coverage denominator** — `docs/coverage-strategy.md` is explicit
-that the row count grows with the fixture set (1,305 rows currently, 1,217 `Undetermined` by
-construction) and must never be cited as bounding the interaction space. The actual mechanical
-denominators above the surface/ordering layers are `docs/coverage-strategy.md`'s integration/edge
-layer (`conformance/interface-inventory.tsv`, DTD-derived, 60 interfaces) and integration/chain layer
-(in progress), both sized from the DTD and engine rather than from how many pairs the current corpus
-happens to contain.
+per-grammar pruning device, not a coverage denominator.** The row count grows with the fixture set
+(1,305 rows currently, 1,217 `Undetermined` by construction) and must never be cited as bounding the
+interaction space. The actual mechanical denominators above the surface/ordering layers are the
+integration/edge layer (`conformance/interface-inventory.tsv`, DTD-derived, 60 interfaces) and the
+integration/chain layer (in progress), both sized from the DTD and engine rather than from how many
+pairs the current corpus happens to contain.
 
 **Ordering is n−1 per list, not n! and not C(n,2).** Adjacent transpositions generate the symmetric group,
 so pinning every adjacent swap pins the total order. The two 16-rule lists in the corpus cost 15 items

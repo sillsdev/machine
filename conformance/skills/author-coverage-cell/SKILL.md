@@ -87,22 +87,36 @@ data only, never named after a real language, typological family in a comment on
 **The tell.** The direction of reasoning is everything. "This cell is red; if I add X the severance
 will flip" is illegitimate even if X is grammatically well-formed and even if it works — the
 grammar became a proof artifact for the cell instead of an independent thing the cell happens to
-measure. "HCLoader.cs:969/1717 read/write MPR features on an ordinary affix; a derivational suffix
-that marks a stem as already-derived and blocks a further derivation is ordinary morphology; let me
+measure. "HCLoader.cs:1873 sets a compound's output category from a field a FLEx user fills in; a compound
+taking a category that a later affix then checks is ordinary morphology; let me
 add that pair and see what it demonstrates" is legitimate, because the construct and its
 justification exist before any cell's colour is consulted.
 
-**Worked legitimate example.** Bucket-2 item D (`MorphologicalOutput.MPRFeatures ->
-MorphologicalInput.excludedMPRFeatures`, "affix-conferred blocking"): HCLoader.cs:969
-(`AffixProcessAllomorph.OutMprFeatures`) writes an MPR payload onto a rule's own output;
-HCLoader.cs:1717 (`AffixProcessAllomorph.ExcludedMprFeatures`) reads it as an exclusion on a later
-rule's input. This is ordinary derivational morphology — a suffix that marks its own output as
-"already derived," making a further derivational step ineligible, exactly the shape English
-`-ize`/`-ization` chains resist re-`-ize`-ing. The engine mechanism (`AddOutput`'s MPR-feature
-write, `IsMatchExcluded`'s membership check) was read and cited *first*; only then were two new
-rules (`mrConferExcl`, `mrExclReader`) and a witness word (`topdori`) added, on an isolated root
-chosen specifically because it carries no family or co-occurrence constraints that could disturb
-anything already tested in that fixture.
+**Worked legitimate example.** Bucket-2 item C (`CompoundingRule.outputPartOfSpeech ->
+MorphologicalRule.requiredPartsOfSpeech`): `HCLoader.cs:1873-1876` and `:1932-1935` set the compound's
+output category from `compoundRule.OverridingMsaOA/ToMsaOA.PartOfSpeechRA` -- a field a FLEx user fills
+in directly on a compound rule. A compound taking a category and a later affix checking it is ordinary
+morphology (*blackbird* is a noun, so noun plural applies). The author read
+`SynthesisCompoundingRule.cs` FIRST, found that the compound's feature struct is seeded from the head's
+required POS before `outputPartOfSpeech` overwrites it, and therefore set the reader's required POS to
+that fallback value rather than an arbitrary third category. An earlier attempt using an unrelated
+category produced an Unobservable severance and is recorded in the commit as what did not work. That is
+the shape to imitate: engine read first, a failed attempt kept, the grammar shaped by the mechanism.
+
+**Worked example of a citation that LOOKS legitimate and is not.** The first version of this section
+used item D (`MorphologicalOutput.MPRFeatures -> MorphologicalInput.excludedMPRFeatures`) and cited
+`HCLoader.cs:969` as the write and `HCLoader.cs:1717` as the read. An adversarial review found that
+`:1717` sits inside `foreach (ILexEntryInflType t in types)` under the comment "block slot from applying
+to irregularly inflected forms": it populates `ExcludedMprFeatures` ONLY from
+`slot.ReferringObjects.OfType<ILexEntryInflType>()`, never from an ordinary affix's output. `:969`'s
+values come from `msa.ToInflectionClassRA`/`ToProdRestrictRC`. The two lines are separate mechanisms that
+share a field NAME, so the authored shape -- an ordinary rule conferring a flag an ordinary sibling
+excludes -- is not producible by FieldWorks at all.
+
+Both citations were real file:line references to real assignments, and the edit passed every automated
+gate including the 33/33 self-check. **A file:line citation is not evidence on its own.** State the
+FLEx source field that flows into the line you cite, and check that your writer's field and your
+reader's field are the same channel. Two producible attributes do not make a producible chain.
 
 **Worked illegitimate example (do not do this).** Suppose `LexicalEntry.ruleFeatures ->
 PhonologicalSubrule.requiredMPRFeatures` is red, and the temptation is: "add a root with

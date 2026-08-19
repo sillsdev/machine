@@ -48,9 +48,9 @@ public sealed class InterfaceInventoryLedgerTests
             TestContext.Out.WriteLine($"junction: {junction.TargetType} writers={junction.WriterCount} readers={junction.ReaderCount}");
 
         Assert.That(rows, Has.Count.EqualTo(60));
-        Assert.That(present, Is.EqualTo(42));
-        Assert.That(rows.Count - present, Is.EqualTo(18));
-        Assert.That(typedEdges, Is.EqualTo(51));
+        Assert.That(present, Is.EqualTo(44));
+        Assert.That(rows.Count - present, Is.EqualTo(16));
+        Assert.That(typedEdges, Is.EqualTo(53));
         Assert.That(junctions, Has.Count.EqualTo(3));
         Assert.That(
             junctions.Select(j => j.TargetType),
@@ -59,7 +59,7 @@ public sealed class InterfaceInventoryLedgerTests
 
         InterfaceJunction mprFeature = junctions.Single(j => j.TargetType == "MorphologicalPhonologicalRuleFeature");
         Assert.That(mprFeature.WriterCount, Is.EqualTo(2));
-        Assert.That(mprFeature.ReaderCount, Is.EqualTo(5));
+        Assert.That(mprFeature.ReaderCount, Is.EqualTo(7));
 
         InterfaceJunction partOfSpeech = junctions.Single(j => j.TargetType == "PartOfSpeech");
         Assert.That(partOfSpeech.WriterCount, Is.EqualTo(3));
@@ -71,8 +71,7 @@ public sealed class InterfaceInventoryLedgerTests
     }
 
     // Every present row must name at least one fixture, and every not-present row must name none --
-    // Fixtures is the fixture-attribution InterfaceInventoryLedger did not previously carry, so this
-    // pins that the two fields (Present, Fixtures) can never disagree with each other.
+    // this pins that the two fields (Present, Fixtures) can never disagree with each other.
     [Test]
     public void PresentRowsNameFixturesAndOnlyPresentRowsDo()
     {

@@ -49,11 +49,16 @@ back to a `grammar.xml` id for exactly these element names:
 `MorphologicalRule`, `RealizationalRule`, `CompoundingRule`, `PhonologicalRule`, `MetathesisRule`,
 plus pseudo-ids for `MorphemeCoOccurrenceRule` / `AllomorphCoOccurrenceRule`.
 
-It does **not** resolve `Allomorph`, `MorphologicalInput`, `AffixTemplate`, or `PhonologicalSubrule`.
-An obligation whose gated construct sits on one of those cannot have its Control arm attributed, even
-when a perfectly good control word already exists in the corpus. That is a tooling gap, not a coverage
-gap, and authoring cannot close it. Each of those four is a child of an element the index *does*
-resolve, so the fix is ancestor-walking rather than new machinery.
+`GrammarRuleIndex.ResolveAncestorRuleId` extends this by walking up from `MorphologicalInput` or
+`PhonologicalSubrule` to their nearest rule-element ancestor -- per the DTD, a `MorphologicalInput` is
+always nested under a `MorphologicalRule`/`RealizationalRule` and a `PhonologicalSubrule` always under
+a `PhonologicalRule`, so both always resolve this way. `Allomorph` and `AffixTemplate` do **not**,
+and never will by ancestor-walking: an `Allomorph` is always a child of `LexicalEntry`, never of any
+rule, and an `AffixTemplate` sits directly under `Stratum` with no `id` attribute of its own either
+(the DTD never declares one) -- there is no rule, and no identity of its own, to attribute a Control
+arm to. An obligation whose gated construct sits on one of those two genuinely cannot have its Control
+arm attributed, no matter what control word exists in the corpus -- this is a structural fact about the
+schema, not a tooling gap.
 
 ## Three engine behaviours that look like something else
 
@@ -74,6 +79,27 @@ subrule inside a loop whose output is the union of every subrule that applies. I
 both tiers, severing it collapses both and neither can be observed alone. If two subrules partition a
 single binary feature exhaustively, one of them always applies and the inner gate can never be the
 sole cause of a failure.
+
+## Producibility does not compose along a chain
+
+`fieldworks-producibility.tsv` is keyed per ATTRIBUTE, and that is weaker than it looks. Two attributes
+can each be producible while the chain between them is not, because HCLoader may populate them from
+different FLEx fields that can never hold the same value.
+
+The measured case: `MorphologicalOutput.MPRFeatures` is producible (`HCLoader.cs:969`, from
+`msa.ToInflectionClassRA`/`ToProdRestrictRC`) and `MorphologicalInput.excludedMPRFeatures` is producible
+(`HCLoader.cs:1717`) -- but `:1717` draws only from `slot.ReferringObjects.OfType<ILexEntryInflType>()`,
+FieldWorks' own mechanism for blocking a slot on irregularly inflected forms. So an affix conferring a
+flag that a sibling affix excludes is NOT producible, even though both ends are.
+
+The same reader IS reachable from a lexical entry: `HCLoader.cs:746` puts the inflType feature on an
+irregular variant's entry, and `:1717` excludes that same feature on the slot. That is why
+`LexicalEntry.* -> MorphologicalInput.excludedMPRFeatures` is genuine and the affix-sourced version is
+not.
+
+So when a chain's producibility matters, check that the writer's FLEx source field and the reader's are
+the same channel. The per-attribute ledger cannot tell you this, and no automated gate in this
+repository can either -- it requires reading HCLoader.
 
 ## A Timeout is a statement about the machine
 

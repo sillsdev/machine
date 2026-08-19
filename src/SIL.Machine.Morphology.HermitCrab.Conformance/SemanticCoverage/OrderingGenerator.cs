@@ -27,7 +27,8 @@ public enum OrderingListKind
     StratumPair,
 }
 
-/// <summary>Which pipeline stage a <see cref="StratumUnit"/> belongs to, per <see cref="OrderingGenerator.EnumerateStratumPairs"/>.</summary>
+/// <summary>Which pipeline stage a <see cref="StratumUnit"/> belongs to, per
+/// <see cref="OrderingGenerator.EnumerateStratumPairs"/>.</summary>
 public enum StratumUnitKind
 {
     /// <summary>A Stratum's <c>morphologicalRules</c> IDREFS member.</summary>
@@ -44,7 +45,8 @@ public enum StratumUnitKind
     PhonologicalRule,
 }
 
-/// <summary>One rule-bearing unit a <see cref="StratumInteractionPair"/> relates -- see <see cref="StratumUnitKind"/>.</summary>
+/// <summary>One rule-bearing unit a <see cref="StratumInteractionPair"/> relates -- see
+/// <see cref="StratumUnitKind"/>.</summary>
 public sealed record StratumUnit(StratumUnitKind Kind, string Label);
 
 /// <summary>
@@ -55,13 +57,16 @@ public sealed record StratumUnit(StratumUnitKind Kind, string Label);
 /// </summary>
 public enum StratumPairKind
 {
-    /// <summary>Both units are in the same pipeline stage (both morphology, or both phonology) of one Stratum.</summary>
+    /// <summary>Both units are in the same pipeline stage (both morphology, or both phonology) of one
+    /// Stratum.</summary>
     SameStage,
 
-    /// <summary>A morphology-stage unit paired with a phonology-stage unit of the SAME Stratum, in that order only.</summary>
+    /// <summary>A morphology-stage unit paired with a phonology-stage unit of the SAME Stratum, in
+    /// that order only.</summary>
     CrossStage,
 
-    /// <summary>A phonology-stage unit of one Stratum paired with a morphology-stage unit of the NEXT Stratum.</summary>
+    /// <summary>A phonology-stage unit of one Stratum paired with a morphology-stage unit of the NEXT
+    /// Stratum.</summary>
     CrossStratum,
 }
 
@@ -85,8 +90,7 @@ public sealed record StratumInteractionPair(
 
 /// <summary>
 /// One ordered declaration found in a fixture's grammar, with >= 2 members -- the unit
-/// <see cref="OrderingGenerator.EnumerateAdjacentPairs"/> turns into adjacent-transposition items. See
-/// docs/coverage-pipeline-design.md's Ordering generator.
+/// <see cref="OrderingGenerator.EnumerateAdjacentPairs"/> turns into adjacent-transposition items.
 /// </summary>
 public sealed record OrderedList(
     string FixtureId,
@@ -131,14 +135,16 @@ public enum DomainRelation
     /// </summary>
     Disjoint,
 
-    /// <summary>They share at least one segment, so the pair can genuinely interact -- including feeding and bleeding via Environment.</summary>
+    /// <summary>They share at least one segment, so the pair can genuinely interact -- including
+    /// feeding and bleeding via Environment.</summary>
     Overlaps,
 
     /// <summary>Something in the pair could not be resolved to a segment set. Never treated as Disjoint.</summary>
     Undetermined,
 }
 
-/// <summary>The disjoint-domains verdict for one <see cref="OrderingItem"/>, with the reasoning that produced it.</summary>
+/// <summary>The disjoint-domains verdict for one <see cref="OrderingItem"/>, with the reasoning that
+/// produced it.</summary>
 public sealed record DisjointDomainsCheck(string ItemId, DomainRelation Relation, string Reason);
 
 /// <summary>

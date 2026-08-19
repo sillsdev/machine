@@ -502,14 +502,6 @@ internal class Program
         return 0;
     }
 
-    /// <summary>
-    /// Reads the checked-in Surface ledger (already refreshed by a prior <c>--write-counterfactual</c>
-    /// run -- never recomputed here, so this mode's cost is the Ordering sweep alone), runs the Ordering
-    /// sweep, combines both into the 332-item CoverageItem inventory, recomputes completeness, and prints
-    /// the breakdown by item kind and by counterexample kind. Never blends Word and LoadFailure counts,
-    /// and never blends Surface and Ordering counts, per docs/coverage-pipeline-design.md's Completeness
-    /// section.
-    /// </summary>
     /// <summary>Generates the fixture manifest, or verifies the checked-in one byte for byte.</summary>
     private static int RunConformanceManifest(string repositoryRoot, bool write)
     {
@@ -575,7 +567,8 @@ internal class Program
         return 0;
     }
 
-    /// <summary>Recomputes every fixture's rule-interaction denominator and checks it against the checked-in ledger, or rewrites it.</summary>
+    /// <summary>Recomputes every fixture's rule-interaction denominator and checks it against the checked-in
+    /// ledger, or rewrites it.</summary>
     private static int RunRuleInteractionPairs(string repositoryRoot, bool writeLedger)
     {
         var rows = new List<SemanticCoverage.RuleInteractionLedger.Row>();
@@ -620,7 +613,8 @@ internal class Program
         return 0;
     }
 
-    /// <summary>Recomputes the DTD-derived interface inventory against the real corpus and checks it against the checked-in ledger, or rewrites it.</summary>
+    /// <summary>Recomputes the DTD-derived interface inventory against the real corpus and checks it against
+    /// the checked-in ledger, or rewrites it.</summary>
     private static int RunInterfaceInventory(string repositoryRoot, bool writeLedger)
     {
         IReadOnlyList<SemanticCoverage.InterfaceInventoryLedger.Row> rows = SemanticCoverage.InterfaceInventoryLedger.Compute(
@@ -667,7 +661,8 @@ internal class Program
         return 0;
     }
 
-    /// <summary>Recomputes the write/read interaction-chain denominator and checks it against the checked-in ledger, or rewrites it.</summary>
+    /// <summary>Recomputes the write/read interaction-chain denominator and checks it against the
+    /// checked-in ledger, or rewrites it.</summary>
     private static int RunInteractionChains(string repositoryRoot, bool writeLedger)
     {
         IReadOnlyList<SemanticCoverage.InteractionChainLedger.Row> rows = SemanticCoverage.InteractionChainLedger.Compute(
@@ -714,7 +709,8 @@ internal class Program
         return 0;
     }
 
-    /// <summary>Recomputes the data-flow/MC/DC obligation-matrix cells and checks them against the checked-in ledger, or rewrites it.</summary>
+    /// <summary>Recomputes the data-flow/MC/DC obligation-matrix cells and checks them against the
+    /// checked-in ledger, or rewrites it.</summary>
     private static int RunDataflowObligations(string repositoryRoot, bool writeLedger)
     {
         IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> rows = SemanticCoverage.DataflowObligationLedger.Compute(
@@ -864,8 +860,7 @@ internal class Program
 
     /// <summary>Renders (or checks) one reviewable Markdown card per conformance/dataflow-obligations.tsv
     /// cell under conformance/evidence-cards/. Never recomputes any ledger -- purely a rendering of
-    /// already-checked-in facts, per docs/coverage-review-protocol.md's gate/calibrator split (this is
-    /// input to a review, not a gate itself, so the only failure mode is the render going stale).</summary>
+    /// already-checked-in facts for a human or reviewing agent to read; the only failure mode is staleness.</summary>
     private static int RunEvidenceCards(string repositoryRoot, bool writeCards)
     {
         IReadOnlyList<SemanticCoverage.EvidenceCard> cards = SemanticCoverage.EvidenceCardGenerator.Compute(repositoryRoot);
@@ -985,6 +980,13 @@ internal class Program
         return failed == 0 ? 0 : 1;
     }
 
+    /// <summary>
+    /// Reads the checked-in Surface ledger (already refreshed by a prior <c>--write-counterfactual</c>
+    /// run -- never recomputed here, so this mode's cost is the Ordering sweep alone), runs the Ordering
+    /// sweep, combines both into the CoverageItem inventory, recomputes completeness, and prints the
+    /// breakdown by item kind and by counterexample kind. Never blends Word and LoadFailure counts, and
+    /// never blends Surface and Ordering counts.
+    /// </summary>
     private static int RunCoverageEvidence(string repositoryRoot, bool writeLedger)
     {
         IReadOnlyList<SemanticCoverage.CounterfactualResult> surfaceResults = SemanticCoverage.CounterfactualLedger.Read(
@@ -1266,8 +1268,8 @@ internal class Program
             Console.Error.WriteLine($"NEW GAP    {id}");
         foreach (string id in stale)
             Console.Error.WriteLine($"NOW COVERED (delete from baseline)  {id}");
-        // Writing happens BEFORE the verdict and never changes it. Regenerating used to exit 0
-        // unconditionally, which absorbed a real regression as a fresh todo line and went green.
+        // Writing happens BEFORE the verdict and never changes it: regenerating the baseline must
+        // never absorb a real regression as a fresh todo line and report success.
         if (writeBaseline)
         {
             SemanticCoverage.GrammarCoverageGate.WriteBaseline(repositoryRoot, classified);
@@ -1354,8 +1356,8 @@ internal class Program
         );
     }
 
-    // "Tracing" is the one construct the suite deliberately never covers (it was never in
-    // expected.tsv's domain) -- see docs/conformance-language-suite-plan.md sections 3 and 7.
+    // "Tracing" is the one construct the suite deliberately never covers: no adapter can produce a
+    // trace through PROTOCOL.md's wire contract, so no word's expected.tsv signature can exercise it.
     private const string OutOfScopeConstruct = "Tracing (TraceType)";
 
     private static void RunCoverageReport(List<Fixture> fixtures, string fixturesRoot, string constructsPath)
@@ -1458,7 +1460,8 @@ internal class Program
                                                 conformance/interaction-chains.tsv; exits 1 if stale.
               --write-interaction-chains        Rewrite conformance/interaction-chains.tsv.
               --dataflow-obligations            Recompute the data-flow/MC/DC obligation-matrix cells
-                                                (docs/dataflow-coverage-plan.md) from
+                                                (all-uses, plus MC/DC on every gate, plus every
+                                                kill-path witnessed) from
                                                 conformance/interaction-chains.tsv and check them
                                                 against conformance/dataflow-obligations.tsv; exits 1
                                                 if stale.
@@ -1474,7 +1477,7 @@ internal class Program
                                                 conformance/evidence-cards/ and check it against what
                                                 is checked in; exits 1 if stale. Never recomputes any
                                                 ledger -- purely a rendering of already-checked-in
-                                                facts (docs/coverage-review-protocol.md).
+                                                facts for a human or reviewing agent to read.
               --write-evidence-cards            Rewrite conformance/evidence-cards/.
               --engine-gate-inventory           Recompute the FailureReason-keyed engine-gate inventory
                                                 (mechanically scanned raise sites + a traced engine

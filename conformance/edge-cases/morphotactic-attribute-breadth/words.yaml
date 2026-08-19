@@ -55,8 +55,8 @@
 # property at all (only MorphologicalRuleOrder exists on the class), confirmed by grepping the whole
 # of src/SIL.Machine.Morphology.HermitCrab for "Cyclicity" and "PhonologicalRuleOrder" as C# identifiers
 # and finding zero hits outside the DTD text and this loader's own unread attribute string. No grammar
-# shape, phonological or otherwise, can make an attribute the engine never consults observable. See
-# docs/counterfactual-rationale-morphotactic.md for the full writeup.
+# shape, phonological or otherwise, can make an attribute the engine never consults observable (see
+# conformance/README.md's exception-surfaces list, "Cyclic strata and simultaneous rule order").
 
 language: MorphotacticAttributeBreadth
 inspired_by: ["synthetic morphotactic-attribute probe (not modeling any real language)"]

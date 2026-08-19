@@ -19,7 +19,8 @@ public static class UnorderedInvariantProofs
 {
     public const string Kind = "unordered-invariant";
 
-    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when its owning Stratum is not unordered.</summary>
+    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when its owning
+    /// Stratum is not unordered.</summary>
     public static Proof? TryBuild(XDocument grammar, OrderingItem item)
     {
         ArgumentNullException.ThrowIfNull(grammar);

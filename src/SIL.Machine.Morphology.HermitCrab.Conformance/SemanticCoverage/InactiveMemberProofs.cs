@@ -28,7 +28,8 @@ public static class InactiveMemberProofs
 {
     public const string Kind = "inactive-member";
 
-    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when neither member is inactive or empty.</summary>
+    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when neither
+    /// member is inactive or empty.</summary>
     public static Proof? TryBuild(XDocument grammar, OrderingItem item)
     {
         ArgumentNullException.ThrowIfNull(grammar);

@@ -25,10 +25,19 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 /// element's <c>&lt;Name&gt;</c> child). None of the four runtime rule kinds retains the XML
 /// <c>id</c> attribute itself anywhere the harness can read it back after loading. This class
 /// rebuilds that lost mapping straight from the XML.
+///
+/// <para>
+/// <see cref="ResolveAncestorRuleId"/> answers a third, related question: given an XML element that
+/// is not itself a rule element (<c>Allomorph</c>, <c>MorphologicalInput</c>, <c>AffixTemplate</c>,
+/// <c>PhonologicalSubrule</c>), which rule -- if any -- it belongs to, by walking up the tree rather
+/// than through a runtime object at all.
+/// </para>
 /// </summary>
 public class GrammarRuleIndex
 {
-    /// <summary>Every rule id declared by the grammar (MorphologicalRule/RealizationalRule/CompoundingRule/PhonologicalRule/MetathesisRule ids, plus the co-occurrence-rule pseudo-ids below), in document order.</summary>
+    /// <summary>Every rule id declared by the grammar (MorphologicalRule/RealizationalRule/CompoundingRule/
+    /// PhonologicalRule/MetathesisRule ids, plus the co-occurrence-rule pseudo-ids below), in document
+    /// order.</summary>
     public List<string> AllRuleIds { get; } = new();
 
     // MorphemeId text -> XML id attribute, for MorphologicalRule/RealizationalRule (AffixProcessRule
@@ -143,9 +152,44 @@ public class GrammarRuleIndex
         return null;
     }
 
-    /// <summary>Translates a fired phonological rule (from a trace node's Source) back to its grammar.xml rule id, by IHCRule.Name -- see the class doc comment.</summary>
+    /// <summary>Translates a fired phonological rule (from a trace node's Source) back to its grammar.xml
+    /// rule id, by IHCRule.Name -- see the class doc comment.</summary>
     public string ResolvePhonologicalRuleId(IPhonologicalRule rule)
     {
         return rule.Name != null && _ruleIdByRuleName.TryGetValue(rule.Name, out string id) ? id : null;
+    }
+
+    /// <summary>Element names that carry a rule's own <c>id</c> attribute directly -- see the class doc
+    /// comment.</summary>
+    private static readonly HashSet<string> RuleElementNames = new(StringComparer.Ordinal)
+    {
+        "MorphologicalRule",
+        "RealizationalRule",
+        "CompoundingRule",
+        "PhonologicalRule",
+        "MetathesisRule",
+    };
+
+    /// <summary>
+    /// Resolves an element that is not itself a rule element -- <c>Allomorph</c>,
+    /// <c>MorphologicalInput</c>, <c>AffixTemplate</c>, <c>PhonologicalSubrule</c> -- to the <c>id</c>
+    /// of its nearest rule-element ancestor, by walking up <paramref name="element"/>'s own XML tree.
+    /// Per the DTD, <c>MorphologicalInput</c> is always nested under a <c>MorphologicalRule</c>/
+    /// <c>RealizationalRule</c> and <c>PhonologicalSubrule</c> always under a <c>PhonologicalRule</c>,
+    /// so those two kinds always resolve. Returns null -- never a guessed id -- when no rule-element
+    /// ancestor exists at all: an
+    /// <c>Allomorph</c> is always a child of <c>LexicalEntry</c>, never of a rule, and an
+    /// <c>AffixTemplate</c> is a direct child of <c>Stratum</c> with no <c>id</c> attribute of its own
+    /// either (the DTD never declares one), so it has no identity to attribute to at all.
+    /// </summary>
+    public static string ResolveAncestorRuleId(XElement element)
+    {
+        ArgumentNullException.ThrowIfNull(element);
+        foreach (XElement ancestor in element.Ancestors())
+        {
+            if (RuleElementNames.Contains(ancestor.Name.LocalName))
+                return (string)ancestor.Attribute("id");
+        }
+        return null;
     }
 }

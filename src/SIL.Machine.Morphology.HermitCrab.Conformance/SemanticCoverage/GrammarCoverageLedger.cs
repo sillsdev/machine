@@ -7,8 +7,8 @@ using System.Linq;
 namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
 /// <summary>Which of the three layers <see cref="GrammarCoverageLedger"/> reports an obligation from.
-/// The fourth layer docs/coverage-strategy.md names -- chains/junctions -- is out of scope here; it is
-/// owned by a concurrent generator (<c>conformance/interaction-chains.tsv</c>).</summary>
+/// A fourth layer -- chains/junctions -- is out of scope here; it is owned by a separate generator
+/// (<c>conformance/interaction-chains.tsv</c>).</summary>
 public enum ObligationLayer
 {
     Surface,

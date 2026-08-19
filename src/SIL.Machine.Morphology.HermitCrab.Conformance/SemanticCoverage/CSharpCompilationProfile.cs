@@ -27,7 +27,8 @@ internal sealed class CSharpCompilationProfile
 
     public static CSharpCompilationProfile Create() => Create(Array.Empty<string>());
 
-    /// <summary>Builds the census reference set, omitting every project in <paramref name="completeProjects"/>.</summary>
+    /// <summary>Builds the census reference set, omitting every project in
+    /// <paramref name="completeProjects"/>.</summary>
     /// <remarks>A project whose sources are compiled in full must not also be referenced as a built
     /// assembly, or every type it declares exists twice. A partially censused project must keep its
     /// reference, because the files the source set omits are only there.</remarks>

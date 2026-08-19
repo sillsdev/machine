@@ -14,7 +14,7 @@
 language: AlphaVariableNameCollision
 inspired_by: ["synthetic two-variable alpha-agreement probe (not modeling any real language)"]
 sources:
-  - "docs/counterfactual-rationale-features.md, dtd:enum/VariableFeature/name/%CE%B1 challenge"
+  - "conformance/semantic-coverage-proofs.tsv, dtd:enum/VariableFeature/name/%CE%B1 label-symmetry challenge"
 requires: [phonology]
 words:
   - word: au

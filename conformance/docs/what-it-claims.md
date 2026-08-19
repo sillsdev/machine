@@ -28,13 +28,13 @@ and that the Blocked arm's failure is attributable to the gate, not to a rule th
 | gates | 23 |
 | obligations (gates × 2 arms) | 46 |
 | worth covering (`xml_reachable`=Yes and `flex_producible`=Yes) | 42 |
-| arms evidenced | **9** (8 Blocked, 1 Control) |
-| gates with *both* arms evidenced | **1** (`HeadProdRestrictMprFeatures`) |
+| arms evidenced | **14** (9 Blocked, 5 Control) |
+| gates with *both* arms evidenced | **5** (`ExcludedMprFeatures`, `HeadProdRestrictMprFeatures`, `HeadRequiredSyntacticFeatureStruct`, `RequiredMprFeatures`, `RequiredSyntacticFeatureStruct`) |
 
 **Why this ledger, not `dataflow-obligations.tsv`, is now the primary claim.** The older ledger
 enumerates four MC/DC arms per writer/reader chain but its generator can certify at most one of them
 per chain (see "342 gaps, but only 14 an author can pick up" below) — of 346 enumerated cells, 28 are
-even certifiable, and only 4 are satisfied. Worse, it has no row at all for six of the engine's 23
+even certifiable, and only 9 are satisfied. Worse, it has no row at all for six of the engine's 23
 gates, because its cells are DTD-attribute write/read pairs and those six gates are not that shape
 (`PartialParse`, `BoundRoot`, `MaxApplicationCount`, `DisjunctiveAllomorph`, `Environments`,
 `SurfaceFormMismatch` — see `how-it-is-computed.md`'s engine-gate-inventory section). Keying the
@@ -67,19 +67,26 @@ ledger, not this one, is the number to cite as the suite's primary claim.
 | layer | denominator | demonstrated | source |
 |---|---|---|---|
 | Unit surfaces | 264 grammar-observable | **110** | `semantic-coverage-counterfactuals.tsv` |
-| Interface edges | 60 declared, 42 present | **15** | `interface-inventory.tsv`, `interface-witness.tsv` |
-| Interaction chains | 40 | **11** | `interaction-chains.tsv` |
-| Obligation cells | 346 enumerated, 18 worth covering | **4** | `dataflow-obligations.tsv`, `fieldworks-producibility.tsv` |
+| Interface edges | 60 declared, 44 present | **19** | `interface-inventory.tsv`, `interface-witness.tsv` |
+| Interaction chains | 40 declared, 26 exercised | **9** paired | `interaction-chains.tsv` |
+| Obligation cells | 346 enumerated, 18 worth covering | **9** | `dataflow-obligations.tsv`, `fieldworks-producibility.tsv` |
+| Gate arms (MC/DC) | 46, 42 worth covering | **14** | `gate-obligations.tsv` |
 
 Each layer is stricter than the one above, so the numbers fall as the demand rises. The unit layer
 asks "does this knob do anything." The cell layer asks "is there a named word whose parse flips when
-this exact payload is severed, with a control proving the rule was capable of firing." Two cells meet
+this exact payload is severed, with a control proving the rule was capable of firing." Nine cells meet
 that bar today.
 
-**The suite does not claim 346/346.** It claims 4, and it publishes every other cell as a named gap that
+**The suite does not claim 346/346.** It claims 9, and it publishes every other cell as a named gap that
 cannot be quietly absorbed.
 
-### 342 gaps, but only 14 an author can pick up
+One row changed what it measures, not just its number. The interaction-chain row used to report the
+chains whose writer and reader are each evidenced *somewhere* -- a weak reading, since two separate
+words can satisfy it. That figure is 23 today. The row now reports chains with a same-word PAIRED
+witness, which is 9 and is the bar the obligation layer actually uses. The weaker number is still
+derivable from `interface-witness.tsv` if anyone wants it; it is simply not what this table claims.
+
+### 337 gaps, but only 9 an author can pick up
 
 That 342 is honest as a count and misleading as a work list.
 
@@ -102,7 +109,14 @@ FieldWorks project could ever exercise them and a witness would prove nothing ab
 six through `CompoundingRule.outputProdRestrictionsMprFeatures` as writer, six through the
 `HeadMorphologicalInput` MPR readers.
 
-**That leaves 18 cells worth covering, of which 4 are satisfied and 14 are outstanding.** The funnel
+**That leaves 18 cells worth covering, of which 9 are satisfied and 9 are outstanding -- but one of the
+nine should not be counted.** An adversarial review found that
+`MorphologicalOutput.MPRFeatures -> MorphologicalInput.excludedMPRFeatures` has a genuine behavioural
+witness on a chain FieldWorks cannot produce: HCLoader populates that reader only from its own
+irregular-form blocking mechanism, never from an affix output. So the defensible figure is **8 of 18**,
+and the ninth is retained in the corpus as an engine test with its coverage claim withdrawn. See
+`severance-mechanics.md`, "Producibility does not compose along a chain" -- the per-attribute
+producibility ledger cannot express this, and no automated gate here can catch it. The funnel
 is the honest form of this number:
 
 | | cells |
@@ -110,7 +124,7 @@ is the honest form of this number:
 | enumerated by the generator | 346 |
 | certifiable by it at all | 28 |
 | also producible by FieldWorks | 18 |
-| satisfied today | **4** |
+| satisfied today | **9** |
 
 Do not read the other 318 as phantom. A control arm is a real obligation -- this suite's own rule is
 that a gated form proves nothing without one -- and the twelve `head*`/`nonHead*` chains gate real

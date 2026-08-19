@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Conformance v1->v2 migration parity proof (docs/conformance-language-suite-plan.md section 5, gate G2e).
+Conformance v1->v2 migration parity proof.
 
 Mechanically verifies the migration floors that guard the ONE irreversible step -- deletion of the v1
 fixture tree -- plus an absolute v2 construct-coverage check that outlives the deletion (gate G4).
@@ -26,7 +26,7 @@ import re
 import sys
 
 OUT_OF_SCOPE = "Tracing (TraceType)"
-EXPECTED_V1_COUNT = 41  # the frozen v1 fixture set (docs/conformance-migration-ledger.md)
+EXPECTED_V1_COUNT = 41  # the frozen v1 fixture set, established during the v1->v2 migration
 
 
 def die(msg):

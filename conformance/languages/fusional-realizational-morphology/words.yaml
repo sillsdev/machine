@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from). This grammar has no phonological rules and no
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from). This grammar has no phonological rules and no
 # AffixTemplate at all (every MorphologicalRule/RealizationalRule/CompoundingRule applies freely,
 # unordered) -- so a bare root is a valid word whenever nothing else (a StemName region, a Family
 # collision, an IsBlocked check) specifically forbids it.
@@ -452,7 +451,7 @@ words:
     blocked_by: [mrEndZ]
     exercises:
       - "MPR features/groups"
-    # Claims the McDc:AbsentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # Claims the McDc:AbsentGatedForm cell of conformance/dataflow-obligations.tsv's obligation matrix.
     # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
     # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
     # row -- the inline values below are what it recomputed against, not what it trusts blindly.
@@ -726,8 +725,7 @@ words:
       self-check) but its cause is not confirmed to be MaxApplicationCount specifically; most likely
       analysis-direction compound-splitting does not recurse into a derived (non-lexical) head span
       at all, rejecting this candidate before MaxApplicationCount is ever checked. Left in as a
-      correct expect_fail pin, but MaxApplicationCount itself remains a documented residual gap (see
-      docs/conformance-language-suite-plan.md G5).
+      correct expect_fail pin, but MaxApplicationCount itself remains a documented residual gap.
     provenance: "G5 coverage sweep, SynthesisCompoundingRule (MaxApplicationCount attempt, gap remains)"
     expect_fail: true
     blocked_by: [mrCompoundConstrained]

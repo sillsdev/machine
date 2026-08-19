@@ -1,5 +1,5 @@
-# Converted from conformance/loader/n3-pattern-shapes (v1; kept in place, untouched, until phase G4
-# -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file, unmodified.
+# Converted from conformance/loader/n3-pattern-shapes (v1, removed after the v1->v2 migration's
+# parity proof). grammar.xml is the same file, unmodified.
 #
 # What this pins (from the v1 fixture's README.md/manifest.json): C#
 # CharacterDefinitionTable.GetShapeNodes(str, allowPattern, ...) has a pattern-language fallback

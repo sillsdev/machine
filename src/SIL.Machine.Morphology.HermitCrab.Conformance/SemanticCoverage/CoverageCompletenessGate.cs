@@ -46,8 +46,7 @@ public sealed record CompletenessReport(
 
 /// <summary>
 /// Recomputes, per <see cref="CoverageItem"/>, whether it resolves to evidence with a counter-example,
-/// a proof that re-verifies, both (stale), or neither (a gap). See docs/coverage-pipeline-design.md's
-/// Completeness section. Never blends <see cref="CounterexampleKind.Word"/> and
+/// a proof that re-verifies, both (stale), or neither (a gap). Never blends <see cref="CounterexampleKind.Word"/> and
 /// <see cref="CounterexampleKind.LoadFailure"/> into one count -- they are different strengths of
 /// evidence and the whole point of the kind is that they stop being summed.
 /// </summary>

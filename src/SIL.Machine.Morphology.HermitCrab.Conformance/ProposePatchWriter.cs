@@ -5,9 +5,8 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
 /// <c>--propose</c>: on a self-check signature mismatch, prints the <c>words.yaml</c> patch that
-/// would reconcile the fixture with what the oracle actually produced, per
-/// docs/conformance-language-suite-plan.md ("a `--propose` mode prints the would-be YAML patch for
-/// a human to accept. No mode ever writes the file."). This class only ever writes to the
+/// would reconcile the fixture with what the oracle actually produced, for a human to accept by
+/// hand. This class only ever writes to the
 /// <see cref="TextWriter"/> it is given -- it has no file-write call anywhere, by construction, so
 /// there is no code path here that could accidentally start writing words.yaml back out.
 /// </summary>

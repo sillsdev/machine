@@ -231,9 +231,9 @@ public sealed class OrderingGeneratorTests
         Assert.That(result.Reason, Does.Contain("not a modeled phonetic-sequence construct"));
     }
 
-    // The test task.md explicitly asks for: a FeatureNaturalClass that overlaps a SegmentNaturalClass
-    // must be detected as Overlaps, never Disjoint. cA is both segNc's sole member and the only
-    // segment satisfying featNc's feature constraint.
+    // A FeatureNaturalClass that overlaps a SegmentNaturalClass must be detected as Overlaps, never
+    // Disjoint. cA is both segNc's sole member and the only segment satisfying featNc's feature
+    // constraint.
     [Test]
     public void DisjointDomainsDetectsAFeatureNaturalClassOverlappingASegmentNaturalClassAsOverlaps()
     {
@@ -394,9 +394,9 @@ public sealed class OrderingGeneratorTests
         Assert.That(result.Reason, Does.Contain("cA"));
     }
 
-    // Real-fixture check against docs/coverage-pipeline-design.md's own pilot candidate #4: the
-    // prAlpha/prHighTrigger adjacent swap in edge-cases/feature-system-breadth. prAlpha's output is
-    // ncV (vowels: cI, cA); prHighTrigger's input is ncS ({cS}); the two never intersect.
+    // Real-fixture check: the prAlpha/prHighTrigger adjacent swap in edge-cases/feature-system-breadth.
+    // prAlpha's output is ncV (vowels: cI, cA); prHighTrigger's input is ncS ({cS}); the two never
+    // intersect.
     [Test]
     public void RealFixtureFeatureSystemBreadthPrAlphaPrHighTriggerPairIsDisjointAndIdMatchesTheHandBuiltPilot()
     {
@@ -436,8 +436,8 @@ public sealed class OrderingGeneratorTests
         Assert.That(result.Reason, Does.Contain("cNlv"), "the shared segment must be the nasal prNasalAssimAlveolar produces and prObstruentDeletion's environment requires");
     }
 
-    // Pins docs/coverage-pipeline-design.md's own measured numbers across the real corpus: 32 lists
-    // with >= 2 members, 146 adjacent pairs total.
+    // Pins measured numbers across the real corpus: 32 lists with >= 2 members, 146 adjacent pairs
+    // total.
     [Test]
     public void RealCorpusProducesTheDesignDocsMeasuredListAndPairCounts()
     {
@@ -473,9 +473,9 @@ public sealed class OrderingGeneratorTests
         }
 
         TestContext.Out.WriteLine($"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}");
-        Assert.That(totalLists, Is.EqualTo(32));
-        Assert.That(totalPairs, Is.EqualTo(146));
-        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(146));
+        Assert.That(totalLists, Is.EqualTo(33));
+        Assert.That(totalPairs, Is.EqualTo(154));
+        Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(154));
     }
 
     // Structural-only census (no engine parsing, so it is safe to run while the corpus is being edited
@@ -687,13 +687,13 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(1305));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1154));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(123));
+        Assert.That(rows, Has.Count.EqualTo(1461));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1267));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(166));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(28));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(30));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(58));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1217));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(63));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1368));
     }
 
     // Mirrors ConformanceFixtureGateTests.CheckedInCoverageTablesAreUpToDate: regenerate the ledger from the

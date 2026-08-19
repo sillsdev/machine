@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from).
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from).
 #
 #   1. katab -> KTB bare, no suffix at all. No C_C seam exists anywhere in "katab" (k-a-t-a-b
 #      alternates C/V throughout), so prEpenthesis (posV-scoped) has no site to fire at.

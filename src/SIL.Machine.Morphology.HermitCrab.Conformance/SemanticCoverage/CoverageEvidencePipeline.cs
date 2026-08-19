@@ -12,7 +12,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 /// items plus every Ordering adjacent pair the corpus declares -- from the two independent sweeps
 /// (<see cref="CounterfactualLedger.Sweep"/> and <see cref="CounterfactualLedger.SweepOrdering"/>) into the
 /// <see cref="CoverageItem"/>/<see cref="Evidence"/>/<see cref="Proof"/> shape
-/// <see cref="CoverageCompletenessGate"/> consumes. See docs/coverage-pipeline-design.md.
+/// <see cref="CoverageCompletenessGate"/> consumes.
 /// </summary>
 public static class CoverageEvidencePipeline
 {
@@ -117,7 +117,8 @@ public static class CoverageEvidencePipeline
         return proofs;
     }
 
-    /// <summary>A grammar loader keyed by fixture id, for <see cref="CoverageCompletenessGate.Evaluate"/> to re-verify disjoint-domains proofs against.</summary>
+    /// <summary>A grammar loader keyed by fixture id, for <see cref="CoverageCompletenessGate.Evaluate"/>
+    /// to re-verify disjoint-domains proofs against.</summary>
     public static Func<string, XDocument> GrammarLoader(string repositoryRoot)
     {
         Dictionary<string, Fixture> fixturesById = Fixture
@@ -126,7 +127,8 @@ public static class CoverageEvidencePipeline
         return fixtureId => XDocument.Load(fixturesById[fixtureId].GrammarPath);
     }
 
-    /// <summary>Every row the combined inventory should write to <see cref="EvidenceLedger"/>: one per item with real evidence.</summary>
+    /// <summary>Every row the combined inventory should write to <see cref="EvidenceLedger"/>: one per
+    /// item with real evidence.</summary>
     public static IReadOnlyList<EvidenceLedger.Row> BuildLedgerRows(IReadOnlyList<CoverageItem> items, IReadOnlyList<Evidence> evidence)
     {
         Dictionary<string, CoverageItem> itemsById = items.ToDictionary(item => item.Id, StringComparer.Ordinal);

@@ -1,5 +1,5 @@
-# Converted from conformance/affix-shapes/truncate (v1; kept in place, untouched, until phase G4 --
-# see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file, unmodified:
+# Converted from conformance/affix-shapes/truncate (v1, removed after the v1->v2 migration's parity
+# proof). grammar.xml is the same file, unmodified:
 # it carries a PhonologicalFeatureSystem (feeding the NaturalClasses the morphotactic rules below
 # pattern-match against) but declares NO PhonologicalRule/MetathesisRule element anywhere, so
 # RequiresDerivation mechanically derives requires: [] -- truncation here is pure AffixProcessRule
@@ -10,10 +10,8 @@
 # provenance string as this fixture's own words below, carried deliberately -- both pin the identical
 # W9.1 construct) lives in a requires:[phonology] grammar (metathesis-phase-isolation has real
 # PhonologicalRule elements elsewhere), so it cannot serve as the suite's requires:[] home for
-# truncation coverage. docs/conformance-migration-ledger.md's ledger row for affix-shapes/truncate
-# names this gap explicitly ("XAmple floor: no natural requires-[] home -> edge-cases/
-# truncate-morphotactic duplicate") -- this fixture is that duplicate requires:[] home, so an
-# XAmple-class (phonology-free) engine still gets truncation coverage.
+# truncation coverage. This fixture is that duplicate requires:[] home, so an XAmple-class
+# (phonology-free) engine still gets truncation coverage.
 #
 # Also carries no <MorphemeId> on any MorphologicalRule (mruleTruncTrail/mruleTruncLead/
 # mruleTruncOptIns) or LexicalEntry (root32/root33/root42) -- same v1 authoring choice as

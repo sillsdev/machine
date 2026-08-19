@@ -35,9 +35,9 @@ internal static class SemanticInterfaceDirection
     // Grouped by element for review. A short rationale sits next to every reclassified or otherwise
     // non-obvious entry; an unremarked entry means the prefix-implied direction and the semantic one
     // agree. "dead" means the DTD declares it but no engine source references the attribute at all
-    // (grep-confirmed against src/SIL.Machine.Morphology.HermitCrab) -- coverage-strategy.md's own
-    // named exception for syntactic subcategorization and the two LexicalEntry obligatory*Features
-    // attributes; direction is recorded for completeness but neither can ever form a junction.
+    // (grep-confirmed against src/SIL.Machine.Morphology.HermitCrab); syntactic subcategorization and
+    // the two LexicalEntry obligatory*Features attributes are exceptions, direction is recorded for
+    // completeness but neither can ever form a junction.
     private static readonly IReadOnlyDictionary<(string Element, string Attribute), InterfaceDirection> Table =
         new Dictionary<(string, string), InterfaceDirection>
         {
@@ -166,8 +166,7 @@ internal static class UnexercisedInterfaceDeclaredPayloadTypes
     // outWord.MprFeatures.AddOutput(_rule.OutputProdRestrictionsMprFeatures)) exactly like their
     // exercised sibling; only the corpus never sets them. PhonologicalSubrule's pair loads through the
     // same LoadMprFeatures call and is read by SynthesisRewriteSubruleSpec's RequiredMprFeatures /
-    // ExcludedMprFeatures gate -- this is the literal construct the whole chain layer exists to test,
-    // per docs/coverage-strategy.md's own canonical example.
+    // ExcludedMprFeatures gate -- this is the literal construct the whole chain layer exists to test.
     private static readonly IReadOnlyDictionary<(string Element, string Attribute), string> Table = new Dictionary<
         (string, string),
         string
@@ -184,9 +183,9 @@ internal static class UnexercisedInterfaceDeclaredPayloadTypes
 }
 
 /// <summary>
-/// A construct that can alter an already-written payload before a later reader gates on it -- the
-/// hazard <c>docs/coverage-strategy.md</c> is built around. The only known instance anywhere in the
-/// grammar is <c>MorphologicalPhonologicalRuleFeatureGroup</c>: <see cref="MprFeatureSet.AddOutput"/>
+/// A construct that can alter an already-written payload before a later reader gates on it. The only
+/// known instance anywhere in the grammar is
+/// <c>MorphologicalPhonologicalRuleFeatureGroup</c>: <see cref="MprFeatureSet.AddOutput"/>
 /// drops every other member of a group whose <c>outputType</c> is (or, per
 /// <c>XmlLanguageLoader.GetGroupOutput</c>'s fallthrough, defaults to) <c>overwrite</c> before unioning
 /// in a new write. PartOfSpeech has no analogous entry: every writer applies its value with a single
@@ -242,8 +241,8 @@ public sealed record ChainJunction(string PayloadType, IReadOnlyList<(string Ele
 /// The checked-in denominator for the interaction-chain layer: one row per (writer edge, payload type,
 /// reader edge) at each <see cref="ChainJunction"/>. Unlike the edge ledger, whose rows are DTD-declared
 /// interfaces one at a time, a row here is a PATH: the composition an edge test cannot see, because
-/// passing both edges in isolation says nothing about what happens to the payload between them
-/// (docs/coverage-strategy.md's canonical MPR-overwrite example). The denominator is junctions x their
+/// passing both edges in isolation says nothing about what happens to the payload between them, the
+/// way an intervening <see cref="MutatingConstructs"/> overwrite can. The denominator is junctions x their
 /// writers x their readers, taken from the DTD/engine (<see cref="SemanticInterfaceDirection"/> decides
 /// which declared interfaces are writers/readers at all; <see cref="UnexercisedInterfaceDeclaredPayloadTypes"/>
 /// fills in the payload type for the ones no fixture exercises, so an entirely-untested reader cannot

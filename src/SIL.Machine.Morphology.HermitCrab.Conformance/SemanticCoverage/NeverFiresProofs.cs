@@ -22,7 +22,8 @@ public static class NeverFiresProofs
 {
     public const string Kind = "never-fires";
 
-    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when neither member is provably dead.</summary>
+    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when neither
+    /// member is provably dead.</summary>
     public static Proof? TryBuild(XDocument grammar, OrderingItem item)
     {
         ArgumentNullException.ThrowIfNull(grammar);

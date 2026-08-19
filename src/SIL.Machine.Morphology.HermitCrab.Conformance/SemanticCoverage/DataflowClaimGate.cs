@@ -33,8 +33,8 @@ public enum DataflowClaimValidity
 /// pair-witness join says the cell is Satisfied) and reviewed (a human recorded the specific ROLE
 /// attribution -- that this word really demonstrates e.g. PresentGatedForm, with the exact before/after
 /// parse to show it) are different facts. Collapsing them would let a stale review read as an active
-/// one, which is the same shape of mistake docs/coverage-strategy.md's severance sweep already exists to
-/// rule out for presence-vs-witness -- this is that rule one level up, for witnessed-vs-reviewed.
+/// one, the same presence-vs-witness confusion a severance sweep elsewhere in this suite already
+/// guards against -- this is that rule one level up, for witnessed-vs-reviewed.
 /// </summary>
 public enum DataflowClaimReviewStatus
 {
@@ -96,16 +96,16 @@ public sealed record DataflowClaimReport(
     /// The one thing that fails a build: every claimed cell id exists in the ledger and its status is
     /// Satisfied. Review staleness deliberately never appears here, and neither does
     /// <see cref="UnclaimedSatisfiedCells"/> -- both are reports, not gates, per this class's own doc
-    /// comment and docs/dataflow-coverage-plan.md's "report, but do not fail on, the reverse direction".
+    /// comment.
     /// </summary>
     public bool AllClaimsValid => Claims.All(c => c.Validity == DataflowClaimValidity.Valid);
 }
 
 /// <summary>
 /// Checks every word's <c>claimed_cells:</c> entries (<see cref="WordEntry.ClaimedCells"/>) against the
-/// checked-in <see cref="DataflowObligationLedger"/>. The whole point of the field, per
-/// docs/dataflow-coverage-plan.md, is that a claim is authored INTENT and intent is only worth anything
-/// checked against outcome -- so this gate never marks a cell covered because a word claims it.
+/// checked-in <see cref="DataflowObligationLedger"/>. The whole point of the field is that a claim is
+/// authored INTENT and intent is only worth anything checked against outcome -- so this gate never
+/// marks a cell covered because a word claims it.
 /// <see cref="DataflowObligationLedger"/>'s own pair-witness join is the sole authority on
 /// <see cref="ObligationStatus.Satisfied"/>; this class only cross-checks a claim against that
 /// already-computed fact, in the direction the field exists to catch:
@@ -134,8 +134,8 @@ public sealed record DataflowClaimReport(
 /// </para>
 ///
 /// <para>
-/// <c>distinct_from</c> (MC/DC independence, docs/coverage-strategy.md's "every claim needs a control")
-/// is checked structurally, independent of the review bundle: the named word must exist in the same
+/// <c>distinct_from</c> (MC/DC independence -- every claim needs a control) is checked structurally,
+/// independent of the review bundle: the named word must exist in the same
 /// fixture and its outcome (currently: <see cref="WordEntry.ExpectFail"/>) must differ from this word's.
 /// This is deliberately the existence-plus-outcome-difference floor, not the fuller check of whether the
 /// grammar difference between the two words is exactly the one named condition -- see this method's own

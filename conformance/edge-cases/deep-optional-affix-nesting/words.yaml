@@ -1,6 +1,6 @@
-# Converted from conformance/pathological/deep-optional-affix-nesting (v1; kept in place, untouched,
-# until phase G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same
-# file, unmodified: 12 independent, all-optional AffixTemplate prefix slots (P1..P12), each inserting
+# Converted from conformance/pathological/deep-optional-affix-nesting (v1, removed after the v1->v2
+# migration's parity proof). grammar.xml is the same file, unmodified: 12 independent, all-optional
+# AffixTemplate prefix slots (P1..P12), each inserting
 # the literal character "x" via InsertSegments+CopyFromInput, requiredPartsOfSpeech="posV" throughout,
 # no PhonologicalRule/MetathesisRule element anywhere -- so RequiresDerivation mechanically derives
 # requires: [] (this fixture is morphotactics-only, not phonology).

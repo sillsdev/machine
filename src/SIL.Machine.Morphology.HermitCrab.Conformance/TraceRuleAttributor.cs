@@ -6,9 +6,9 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
 /// Extracts, for one successful parse (<see cref="Word"/>) returned by <c>Morpher.ParseWord</c>,
-/// the set of grammar rule ids the plan's "rules:" field is verified against, per
-/// docs/conformance-language-suite-plan.md section 2.1 ("self-check runs the oracle with tracing
-/// enabled and FAILs if the traced rule applications don't match the declared list").
+/// the set of grammar rule ids a word's "rules:" field is verified against: self-check runs the
+/// oracle with tracing enabled and fails if the traced rule applications don't match the declared
+/// list.
 ///
 /// <b>Two different sources, because no single API gives both:</b>
 /// <list type="bullet">
@@ -62,7 +62,9 @@ public static class TraceRuleAttributor
         return ids;
     }
 
-    /// <summary>The word-level (not per-result) set of phonological and realizational rule ids fired anywhere in the trace tree rooted at <paramref name="trace"/> -- see the class doc comment for why these two kinds are word-level, not per-result.</summary>
+    /// <summary>The word-level (not per-result) set of phonological and realizational rule ids fired
+    /// anywhere in the trace tree rooted at <paramref name="trace"/> -- see the class doc comment for
+    /// why these two kinds are word-level, not per-result.</summary>
     public static HashSet<string> WordLevelRuleIds(object trace, GrammarRuleIndex index)
     {
         var ids = new HashSet<string>(StringComparer.Ordinal);

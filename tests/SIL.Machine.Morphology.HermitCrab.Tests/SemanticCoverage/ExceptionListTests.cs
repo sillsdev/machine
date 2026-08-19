@@ -7,11 +7,11 @@ namespace SIL.Machine.Morphology.HermitCrab;
 /// Pins conformance/README.md's "named asterisk" exception list against the two ledgers that actually
 /// prove "no engine consumer": `no-consumer` rows in semantic-coverage-proofs.tsv (a surface a fixture
 /// declares, but mutating it changes nothing) and `dead-schema` rows in semantic-coverage-baseline.txt
-/// (a surface no fixture ever attempts, because the engine never reads the owning element at all). The
-/// two were previously read by two different consumers -- only the former fed the README -- so nine
-/// dead-schema surfaces of the same "no engine reads this" shape as the two named exceptions went
-/// unnamed. These tests fail closed the moment either ledger gains a surface the README does not name,
-/// or the README's own count of eleven stops matching the ledgers.
+/// (a surface no fixture ever attempts, because the engine never reads the owning element at all). This
+/// test checks both ledgers together against the README: checking only the one that historically fed
+/// it would leave dead-schema surfaces of the same "no engine reads this" shape as the two named
+/// exceptions unnamed. These tests fail closed the moment either ledger gains a surface the README
+/// does not name, or the README's own count of eleven stops matching the ledgers.
 /// </summary>
 [TestFixture]
 public sealed class ExceptionListTests

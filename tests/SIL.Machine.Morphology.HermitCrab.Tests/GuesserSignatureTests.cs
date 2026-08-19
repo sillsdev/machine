@@ -26,8 +26,7 @@ file static class MiniSignatureFormat
 /// <summary>
 /// Pins the exact rendering of a <c>LexicalGuess</c> (Guesser) parse in the 5-column batch
 /// signature format (<c>SignatureFormat.BuildSignature</c>, transcribed locally below as
-/// <see cref="MiniSignatureFormat.BuildSignature"/>), for
-/// docs/conformance-language-suite-plan.md phase G1's "guess-stem rendering" deliverable.
+/// <see cref="MiniSignatureFormat.BuildSignature"/>).
 ///
 /// Two findings this test documents (see conformance/PROTOCOL.md's guess-stem addendum for the
 /// full writeup):

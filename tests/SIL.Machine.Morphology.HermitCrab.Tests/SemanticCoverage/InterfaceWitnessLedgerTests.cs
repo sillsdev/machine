@@ -24,10 +24,8 @@ public sealed class InterfaceWitnessLedgerTests
     // InterfaceInventoryLedger marks present, only 19 ever reach a word-level Evidenced verdict
     // ANYWHERE in the corpus -- the other 25 are present-but-never-witnessed (see
     // FoldInCandidateLedgerTests for that split by category). Presence overclaimed by nearly 3x.
-    // timeout is pinned at 0 deliberately. Four rows here once recorded Timeout and were argued to be
-    // genuinely slow rather than load-dependent; they later resolved on a quieter machine, two of them
-    // to Evidenced. A Timeout is a statement about the machine, not the grammar, so any reappearance
-    // is a signal to re-sweep rather than a verdict to record.
+    // timeout is pinned at 0 deliberately: a Timeout is a statement about the machine, not the
+    // grammar, so any reappearance is a signal to re-sweep rather than a verdict to record.
     [Test]
     public void CheckedInLedgerHasTheMeasuredVerdictAndWitnessedInterfaceCounts()
     {

@@ -48,8 +48,7 @@ public enum EngineGateStatus
 /// merely tried against a candidate it has nothing to do with, which
 /// <see cref="FailureRuleAttributor"/>'s own doc comment documents as routine for several of these
 /// reasons. "Some word made this gate fire" and "severing a payload provably flipped a parse" are
-/// different claims; this ledger only ever makes the first one. See <c>conformance/docs/how-it-is-computed.md</c>'s
-/// engine-gate-inventory section for the fuller reading.
+/// different claims; this ledger only ever makes the first one.
 /// </para>
 /// </summary>
 public static class EngineGateInventoryLedger
@@ -82,11 +81,10 @@ public static class EngineGateInventoryLedger
     /// RequiredEnvironments/ExcludedEnvironments child ELEMENTS among an allomorph's siblings, again no
     /// attribute; <see cref="FailureReason.SurfaceFormMismatch"/> is a pure engine-internal
     /// reconstruction check with no grammar input at all. Every other gate DOES resolve to a real
-    /// IDREFS/boolean attribute -- including three the assignment that motivated this file guessed had
-    /// none (<see cref="FailureReason.BoundRoot"/> -> <c>Allomorph.isBound</c>,
+    /// IDREFS/boolean attribute -- including three that are easy to assume have none
+    /// (<see cref="FailureReason.BoundRoot"/> -> <c>Allomorph.isBound</c>,
     /// <see cref="FailureReason.MaxApplicationCount"/> -> <c>MorphologicalRule.multipleApplication</c>,
-    /// and <see cref="FailureReason.PartialParse"/> -> <c>Slot.optional</c>/<c>AffixTemplate.final</c>)
-    /// -- see conformance/docs/how-it-is-computed.md for that discrepancy called out explicitly.
+    /// and <see cref="FailureReason.PartialParse"/> -> <c>Slot.optional</c>/<c>AffixTemplate.final</c>).
     /// </summary>
     public static readonly IReadOnlyDictionary<string, string> DtdAttributes = new Dictionary<string, string>(
         StringComparer.Ordinal

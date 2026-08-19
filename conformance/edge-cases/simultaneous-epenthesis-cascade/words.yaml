@@ -1,6 +1,6 @@
-# Converted from conformance/rewrite/simultaneous-epenthesis-cascade (v1; kept in place, untouched,
-# until phase G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same
-# file, unmodified. expect_crash semantics (front matter, below) must match v1's exactly: the engine
+# Converted from conformance/rewrite/simultaneous-epenthesis-cascade (v1, removed after the v1->v2
+# migration's parity proof). grammar.xml is the same file, unmodified. expect_crash semantics (front
+# matter, below) must match v1's exactly: the engine
 # under test is expected to ALSO crash (loading the grammar or parsing the word) for this fixture to
 # PASS; a harness-level problem (bad adapter, process fails to start, timeout) is never treated as a
 # crash match and always FAILs regardless of expect_crash -- see conformance/PROTOCOL.md's

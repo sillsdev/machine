@@ -7,8 +7,8 @@ using System.Text;
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// Emits the two coverage tables described in docs/conformance-language-suite-plan.md section 4:
-/// <c>conformance/coverage.csv</c> (language, word, parse signature, construct -- one row per
+/// Emits two coverage tables: <c>conformance/coverage.csv</c> (language, word, parse signature,
+/// construct -- one row per
 /// parse×construct, expect_fail words getting an empty signature) and <c>conformance/rules.csv</c>
 /// (language, rule id, exercising words -- semicolon-joined, <c>blocked_by</c> attributions marked
 /// with a "!" prefix), plus dead-rule detection: every rule id <see cref="GrammarRuleIndex"/> finds

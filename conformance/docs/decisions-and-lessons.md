@@ -46,8 +46,9 @@ in transit between a write and a read). A fixture built to the wrong count exerc
 witnesses nothing, indistinguishable from a correctly designed one until someone asks what it would
 take to fool it.
 
-**4. A plan's own baseline table.** `docs/dataflow-coverage-plan.md`'s first version measured its own
-starting point — all-defs, all-uses, kill-paths — using `interaction-chains.tsv`'s `exercised` column:
+**4. An internal design document's own baseline table.** An early version of the data-flow coverage
+design measured its own starting point — all-defs, all-uses, kill-paths — using
+`interaction-chains.tsv`'s `exercised` column:
 the same identifier appearing in both a writer's and a reader's attribute values somewhere in one
 fixture, with no ordering, no reachability, and no parse-level evidence. `56ac9773` recomputed it
 against the real severance sweep instead: all-uses fell from a published 20/40 to a witness-grade
@@ -63,10 +64,10 @@ citation: if a future reader finds it, this line should be replaced with the com
 
 **What now prevents a sixth.** No single gate closes this off, because the failure is a habit of
 reasoning rather than a bug in one ledger. What exists instead is the vocabulary and the standing
-question, applied at every later layer: `docs/coverage-strategy.md`'s inclusion rule — *test every
-mechanism that can change a parse; do not test one that cannot, unless it sits in a chain that does*
-— and the requirement, stated in `docs/dataflow-coverage-plan.md`, that a human "yes" on a coverage
-cell carries a hash of the machine evidence it was shown and lapses the moment that evidence moves, so
+question, applied at every later layer: the inclusion rule — *test every mechanism that can change a
+parse; do not test one that cannot, unless it sits in a chain that does* — and the requirement that a
+human "yes" on a coverage cell carries a hash of the machine evidence it was shown and lapses the
+moment that evidence moves, so
 witnessed and reviewed can never quietly collapse into one status again.
 
 ## The rule-interaction-pair ledger's demotion
@@ -86,8 +87,8 @@ statistic about the corpus, not a bound on the engine. `6b6f7ae4` separately cor
 errors that had crept into the pinning comment along the way (a wrong stratum count, a stale total, and
 a citation of the wrong estimate), restating the whole thing as "a corpus statistic, not a bound."
 
-The ledger was not deleted — it does a real job, just a smaller one. `docs/coverage-strategy.md`
-demotes it explicitly to **per-grammar pruning**: given one grammar, which adjacent rule swaps are even
+The ledger was not deleted — it does a real job, just a smaller one. It was demoted explicitly to
+**per-grammar pruning**: given one grammar, which adjacent rule swaps are even
 worth running a counterfactual on, and which are provably inert. It is good at that question and is
 kept for it; it simply stopped being asked the coverage question once that question had a real answer
 (the interaction-chain and obligation-cell layers, layers 3 and 4 of `how-it-is-computed.md`).
@@ -166,12 +167,12 @@ factors and that the marginal yield of full path coverage doesn't justify its co
 testing standard about *input-parameter* interaction, not path coverage, and read on its own terms it
 argues the *opposite* direction for this exact case: a (writer, mutator, reader) triple is a 3-factor
 interaction, squarely inside the 1-to-3-factor band the standard says accounts for most faults — which
-would mandate covering the *full* kill-path space, not license a short list from it. `docs/dataflow-
-coverage-plan.md` states the corrected reasoning in the terms that actually hold: the real
-justification is the classical one already inside the data-flow literature itself — path explosion, and
-the cost of proving an infeasible path infeasible — not a borrowed citation from an adjacent field that
-does not transfer. The same document records, without hiding it, that the criterion was chosen *after*
-the baseline measurement was already in hand (`interaction-chains.tsv` landed a day before the plan),
+would mandate covering the *full* kill-path space, not license a short list from it. The corrected
+reasoning states it in the terms that actually hold: the real justification is the classical one
+already inside the data-flow literature itself — path explosion, and the cost of proving an infeasible
+path infeasible — not a borrowed citation from an adjacent field that does not transfer. The correction
+also records, without hiding it, that the criterion was chosen *after* the baseline measurement was
+already in hand (`interaction-chains.tsv` landed a day before the corrected reasoning was written),
 which does not make all-uses the wrong bound but means it should never be presented as though it
 preceded the number it explains.
 
@@ -210,8 +211,8 @@ The append-mode mirror (the same two orders through a non-overwriting group, bot
 makes this attributable to the overwrite semantics specifically rather than to ordering in general.
 Every later layer in `how-it-is-computed.md` exists to generalize past this one pinned case.
 
-**Mechanical is not the same as meaningful.** `docs/coverage-strategy.md` records that the very first
-semantic census in this suite's history was mechanically generated, honestly gated against drift, and
+**Mechanical is not the same as meaningful.** The very first semantic census in this suite's history
+was mechanically generated, honestly gated against drift, and
 almost useless — complete over a denominator that was roughly 90% XML scaffolding no grammar could
 meaningfully vary. Deriving a number does not make it worth measuring; every layer that followed was
 chosen specifically so each member is semantically load-bearing, not merely countable.

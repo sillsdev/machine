@@ -33,7 +33,8 @@ public static class RuleInteractionLedger
         DomainRelation Relation
     );
 
-    /// <summary>Runs <see cref="OrderingGenerator.EnumerateStratumPairs"/> and classifies every pair for one fixture's grammar.</summary>
+    /// <summary>Runs <see cref="OrderingGenerator.EnumerateStratumPairs"/> and classifies every pair
+    /// for one fixture's grammar.</summary>
     public static IReadOnlyList<Row> Compute(XDocument grammar, string fixtureId)
     {
         ArgumentNullException.ThrowIfNull(grammar);

@@ -354,7 +354,8 @@ public sealed class CoverageCompletenessGateTests
         );
     }
 
-    // Two PhonologicalRule elements whose input/output both name segment "cA", so CheckDisjointDomains recomputes Overlaps.
+    // Two PhonologicalRule elements whose input/output both name segment "cA", so CheckDisjointDomains
+    // recomputes Overlaps.
     private const string OverlappingPhonologicalRulesGrammar = """
         <HermitCrabInput><Language><PhonologicalRuleDefinitions>
           <PhonologicalRule id="pr1"><Name>p1</Name>
@@ -374,7 +375,8 @@ public sealed class CoverageCompletenessGateTests
         </Language></HermitCrabInput>
         """;
 
-    // A Slot pair is never modeled by CheckDisjointDomains, so it is always Undetermined -- the common case, not a corner case.
+    // A Slot pair is never modeled by CheckDisjointDomains, so it is always Undetermined -- the common
+    // case, not a corner case.
     private const string UndeterminedSlotPairGrammar = """
         <HermitCrabInput><Language><Strata><Stratum><Name>Only</Name>
           <AffixTemplates><AffixTemplate><Name>tmpl</Name>

@@ -6,9 +6,9 @@ using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 namespace SIL.Machine.Morphology.HermitCrab;
 
 /// <summary>
-/// Pilots the five candidates docs/coverage-pipeline-design.md names, end to end against the real
-/// checked-in fixtures: a word counter-example that removes a parse, one that adds a parse, a
-/// LoadFailure, a hand-constructed Ordering item, and a Proof-only item.
+/// Pilots five coverage-item candidates end to end against the real checked-in fixtures: a word
+/// counter-example that removes a parse, one that adds a parse, a LoadFailure, a hand-constructed
+/// Ordering item, and a Proof-only item.
 /// </summary>
 [TestFixture]
 public sealed class CoveragePilotCandidatesTests
@@ -199,7 +199,8 @@ public sealed class CoveragePilotCandidatesTests
         }
         else
         {
-            // No word discriminates the swap, so independence must be recomputed from the grammar, not asserted from the words.
+            // No word discriminates the swap, so independence must be recomputed from the grammar, not
+            // asserted from the words.
             XDocument unswapped = XDocument.Load(fixture.GrammarPath);
             OrderingItem orderingItem = OrderingGenerator
                 .EnumerateAdjacentPairs(unswapped, item.Fixture)

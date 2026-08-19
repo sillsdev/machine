@@ -95,7 +95,7 @@ words:
     provenance: "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row): MPR-gated rule exception"
     expect_fail: true
     blocked_by: [mrSuf]
-    # Claims the McDc:PresentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # Claims the McDc:PresentGatedForm cell of conformance/dataflow-obligations.tsv's obligation matrix.
     # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
     # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
     # row -- the inline values below are what it recomputed against, not what it trusts blindly.

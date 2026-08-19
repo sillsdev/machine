@@ -1,6 +1,5 @@
-# Converted from conformance/loader/n1-isactive (v1; kept in place, untouched, until phase G4 -- see
-# docs/conformance-language-suite-plan.md section 5, "the old fixture tree is deleted only when the
-# ledger is complete and section 7's gates pass"). grammar.xml is the same file, unmodified.
+# Converted from conformance/loader/n1-isactive (v1, removed after the v1->v2 migration's parity
+# proof). grammar.xml is the same file, unmodified.
 #
 # What this pins (from the v1 fixture's README.md/manifest.json): C# XmlLanguageLoader.LoadLanguage
 # selects the phonological feature system with

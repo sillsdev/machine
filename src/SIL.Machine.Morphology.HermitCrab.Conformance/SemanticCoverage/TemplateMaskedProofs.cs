@@ -24,7 +24,8 @@ public static class TemplateMaskedProofs
 {
     public const string Kind = "template-masked";
 
-    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when a precondition fails.</summary>
+    /// <summary>Builds a <see cref="Kind"/> proof for <paramref name="item"/>, or null when a
+    /// precondition fails.</summary>
     public static Proof? TryBuild(XDocument grammar, OrderingItem item)
     {
         ArgumentNullException.ThrowIfNull(grammar);

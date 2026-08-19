@@ -187,7 +187,6 @@ public sealed class ConformanceManifestTests
         Copy(GrammarCoverageGate.DtdRelativePath);
         Copy("conformance/constructs.txt");
         Copy("conformance/parity-check.py");
-        Copy("docs/conformance-migration-ledger.md");
         Copy("conformance/schema/words.schema.json");
         Copy("conformance/schema/conformance-manifest.schema.json");
         Copy($"conformance/{fixtureId}/grammar.xml");
@@ -201,7 +200,6 @@ public sealed class ConformanceManifestTests
     [TestCase("conformance/{0}/words.yaml")]
     [TestCase("conformance/constructs.txt")]
     [TestCase("conformance/parity-check.py")]
-    [TestCase("docs/conformance-migration-ledger.md")]
     [TestCase("conformance/schema/words.schema.json")]
     public void EverySourceFileMovesTheSourceHash(string relativeTemplate)
     {

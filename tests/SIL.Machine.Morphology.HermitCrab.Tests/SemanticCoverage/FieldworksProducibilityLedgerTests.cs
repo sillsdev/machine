@@ -7,9 +7,8 @@ namespace SIL.Machine.Morphology.HermitCrab;
 // conformance/fieldworks-producibility.tsv records whether FieldWorks' HCLoader (a component that
 // lives in the separate FieldWorks repo, not this one) can ever produce each construct this suite's
 // other ledgers measure. That repo is not a dependency of this one, so nothing here may open it or
-// fail when its content drifts -- see conformance/docs/how-it-is-computed.md's "third layer" section
-// for why that is a deliberate, permanent limitation rather than an oversight. What these tests DO
-// check is the file's own internal shape: well-formed, and every subject named by two sources
+// fail when its content drifts -- a deliberate, permanent limitation, not an oversight. What these
+// tests DO check is the file's own internal shape: well-formed, and every subject named by two sources
 // already inside this repo (the FailureReason enum and interface-inventory.tsv) appears exactly
 // once. That is exactly what conformance/tools/generate-fieldworks-producibility.ps1 already
 // enforces at generation time; these tests pin the same guarantee against the checked-in file so a
@@ -137,8 +136,7 @@ public sealed class FieldworksProducibilityLedgerTests
 
     // The completeness guarantee: every FailureReason and every interface-inventory attribute
     // ALREADY IN THIS REPO must be covered, and nothing else. This can drift only when this repo's
-    // own sources change -- never when the separate FieldWorks repo changes underneath the verdicts,
-    // which is exactly the limitation conformance/docs/how-it-is-computed.md documents.
+    // own sources change -- never when the separate FieldWorks repo changes underneath the verdicts.
     [Test]
     public void CoversExactlyEveryFailureReasonAndEveryInterfaceAttributeInThisRepo()
     {

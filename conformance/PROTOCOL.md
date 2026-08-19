@@ -216,9 +216,8 @@ genuine conformance failure and is reported as such, per word, and rolled up per
 ## 5. Capability profiles
 
 Not every engine implements every grammar-model construct HermitCrab supports (the motivating case
-is XAmple, SIL's AMPLE-family morphotactic parser, which has no phonological-rule engine at all —
-see `docs/archive/conformance-framework-plan.md` §4.6). Two mechanisms make the suite serve engines
-of different scope without forking it:
+is XAmple, SIL's AMPLE-family morphotactic parser, which has no phonological-rule engine at all).
+Two mechanisms make the suite serve engines of different scope without forking it:
 
 - **Engine capability declaration.** Whoever invokes the harness against an engine declares that
   engine's supported capability set, e.g. `--capabilities phonology` for HermitCrab/`hc-rs`, or
@@ -247,7 +246,7 @@ reference representation — every fixture ships one, and it's what the C# oracl
 `expected.tsv`. An engine that cannot consume that XML directly (XAmple's case: it consumes
 AMPLE-style control/dictionary files) names an alternate, per-fixture grammar file or directory in
 its own registration (e.g. a `grammar.xample/` directory living alongside `grammar.xml` in the
-fixture — see `docs/archive/conformance-framework-plan.md`'s future XAmple-enablement phase, F6).
+fixture, anticipating a future XAmple adapter).
 `words.txt` and `expected.tsv` are always shared across every engine tested against a fixture: one
 word list, one ground truth, regardless of how many different grammar representations exist for it.
 

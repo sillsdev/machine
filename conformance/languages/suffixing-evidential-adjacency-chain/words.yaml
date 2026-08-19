@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G1's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from):
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from):
 #
 #   1. tupay = TUPA-or-TUPA2 (root, homophonous pair) + 1SG. Root ends in vowel "a" -> mrPerson1's
 #      post-vowel allomorph "-y" fires -> "tupa"+"y" = "tupay". Both eTupa and eTupa2 share the exact

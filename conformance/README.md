@@ -45,8 +45,10 @@ out of it.
 behaviour — signature, status, pinned crash — on every fixture its declared capability profile
 admits. "Complete" is currently an *accounting* claim: every inventory item carries an explicit
 status, and uncovered means listed rather than unknown. The inventory is the formalism's surfaces,
-not languages. See `docs/coverage-levels.md` for the levels, the admissibility preconditions, and
-what remains between here and the goal.
+not languages. Coverage is tracked at three levels: a surface's existence in the DTD (complete by
+construction), whether it is load-bearing (evidenced, or classified impossible to evidence with a
+reason), and interactions between surfaces (not yet enumerated) — closing that third level is what
+remains between here and the goal.
 
 **Rule order is part of the contract, not an implementation detail.** A parse runs in two passes:
 the word is **torn down** to find candidate stems, then **built back up** to check the rebuild
@@ -136,7 +138,7 @@ Exactly two files per fixture. `words.yaml` is the single ground truth: front ma
 `provenance` (bug/PR reference), `guess` (a `LexicalGuess` parse),
 `budget_ms`/`expect_crash` (edge-cases only). Signatures are authored-and-verified, never blindly
 regenerated — self-check FAILs on mismatch; `--propose` prints a patch for a human to accept, never
-writes. Full schema: `docs/conformance-language-suite-plan.md` §2.1.
+writes. Full schema: `schema/words.schema.json`.
 
 ## The eight languages
 
@@ -170,8 +172,10 @@ neutralizing it changes a real word's parse. That is a strong claim about each s
 It is **not** a claim about surfaces in combination. Nothing in this suite enumerates or measures
 interactions between surfaces, so a green run means "no uncovered surface is known", never "no
 uncovered behaviour is known". A defect needing two or more surfaces together can sit behind
-fully-covered ingredients indefinitely; one does today, and is described in `docs/coverage-levels.md`
-along with the level model and why the missing measurement is not simply "enumerate the pairs".
+fully-covered ingredients indefinitely; one does today. Enumerating every pairwise interaction is
+not the fix, since the space is combinatorial while the coverage claim is per-surface; closing this
+gap needs selective, named interaction coverage instead, tracked as `conformance/interface-inventory.tsv`
+(integration/edge, landed) plus a capped hand-crafted integration/chain set.
 
 ## Coverage philosophy
 
@@ -214,16 +218,9 @@ The cheap path, in order of preference:
 3. **Add an edge-case** when the pin is engine-internal or too specific to embed naturalistically
    (an XML-loader quirk, a crash, a rule shape no real grammar would contain).
 4. **Add a new `languages/` member** only for genuinely new typological territory not covered by any
-   of the eight (see the future-expansion tier in `docs/conformance-language-suite-plan.md` §3).
+   of the eight, not for an incremental variant of one that already exists.
 
 ## See also
 
 - `PROTOCOL.md` — the adapter contract: CLI shape, TSV format, signature algorithm, capability
   profiles, per-engine grammar representation.
-- `docs/conformance-migration-ledger.md` — the permanent provenance bridge from every v1 fixture to
-  its v2 destination.
-- `docs/conformance-language-suite-plan.md` — the full design rationale, language-selection research,
-  and phased plan this suite was restructured from.
-- `docs/pangloss-handoff.md` — the handoff record for a consuming implementation: exactly what is and
-  is not delivered, current numbers verified against the checked-in files, and the claim scoped
-  precisely.

@@ -1,6 +1,5 @@
-# HAND DERIVATION (authored BEFORE running the oracle, per
-# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
-# rule definitions these derivations reason from).
+# HAND DERIVATION (authored BEFORE running the oracle -- see grammar.xml for the rule definitions
+# these derivations reason from).
 #
 #   1. nuna -> NUNA ("land", posN) bare noun root, no rule -> trivially valid.
 #        -> NUNA|nuna, rules: []
@@ -80,7 +79,7 @@ words:
     blocked_by: [mrInfl]
     exercises:
       - "Stratum (Linear/Unordered rule order)"
-    # Claims the McDc:AbsentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # Claims the McDc:AbsentGatedForm cell of conformance/dataflow-obligations.tsv's obligation matrix.
     # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
     # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
     # row -- the inline values below are what it recomputed against, not what it trusts blindly.

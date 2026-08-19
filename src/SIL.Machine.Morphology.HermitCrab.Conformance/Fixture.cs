@@ -5,8 +5,7 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
 /// One fixture directory: exactly <c>grammar.xml</c> + <c>words.yaml</c>, under
-/// <c>conformance/languages/&lt;name&gt;/</c> or <c>conformance/edge-cases/&lt;name&gt;/</c>, per
-/// docs/conformance-language-suite-plan.md section 2. Discovery is scoped to only those two roots.
+/// <c>conformance/languages/&lt;name&gt;/</c> or <c>conformance/edge-cases/&lt;name&gt;/</c>.
 /// </summary>
 public class Fixture(string id, string directory, WordsYaml words)
 {

@@ -77,18 +77,33 @@ public sealed class InteractionChainLedgerTests
         Assert.That(stemName.Readers, Has.Count.EqualTo(1));
 
         Assert.That(rows, Has.Count.EqualTo(40));
-        Assert.That(exercised, Is.EqualTo(20));
-        Assert.That(rows.Count - exercised, Is.EqualTo(20));
-        Assert.That(hazardous, Is.EqualTo(2));
+        Assert.That(exercised, Is.EqualTo(26));
+        Assert.That(rows.Count - exercised, Is.EqualTo(14));
+        Assert.That(hazardous, Is.EqualTo(4));
 
-        InteractionChainLedger.Row[] hazards = rows.Where(r => r.Hazardous).OrderBy(r => r.WriterElement).ToArray();
-        Assert.That(hazards.Select(h => (h.WriterElement, h.WriterAttribute)), Is.EquivalentTo(
-            new[] { ("LexicalEntry", "ruleFeatures"), ("MorphologicalOutput", "MPRFeatures") }
-        ));
-        Assert.That(hazards.All(h => h.PayloadType == "MorphologicalPhonologicalRuleFeature"), Is.True);
-        Assert.That(hazards.All(h => h.ReaderElement == "MorphologicalInput" && h.ReaderAttribute == "requiredMPRFeatures"), Is.True);
+        InteractionChainLedger.Row[] hazards = rows.Where(r => r.Hazardous).ToArray();
+        // Two MPR writers x two readers. The PhonologicalSubrule pair joined when the exception-feature
+        // obligation cells were covered: an MPR gate on a sound rule is order-hazardous for the same
+        // reason the MorphologicalInput one is -- an Overwrite group can destroy the payload before the
+        // gate reads it, so the outcome depends on rule order rather than on the payload alone.
         Assert.That(
-            hazards.Single(h => h.WriterElement == "MorphologicalOutput").ExercisingFixtures,
+            hazards.Select(h => (h.WriterElement, h.WriterAttribute, h.ReaderElement)),
+            Is.EquivalentTo(
+                new[]
+                {
+                    ("LexicalEntry", "ruleFeatures", "MorphologicalInput"),
+                    ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule"),
+                    ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput"),
+                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule"),
+                }
+            )
+        );
+        Assert.That(hazards.All(h => h.PayloadType == "MorphologicalPhonologicalRuleFeature"), Is.True);
+        Assert.That(hazards.All(h => h.ReaderAttribute == "requiredMPRFeatures"), Is.True);
+        Assert.That(
+            hazards
+                .Single(h => h.WriterElement == "MorphologicalOutput" && h.ReaderElement == "MorphologicalInput")
+                .ExercisingFixtures,
             Contains.Item("edge-cases/mpr-overwrite-order-dependence")
         );
     }
@@ -122,13 +137,14 @@ public sealed class InteractionChainLedgerTests
         Assert.That(SemanticInterfaceDirection.Classify("Allomorph", "stemName"), Is.EqualTo(InterfaceDirection.Write));
     }
 
-    // Every declared writer/reader interface still appears in its own denominator even when no fixture
-    // exercises it -- the two PhonologicalSubrule readers John's brief calls out by name, plus the two
-    // CompoundingRule ProdRestrictionsMprFeatures interfaces this generator additionally found by reading
-    // the engine (XmlLanguageLoader/SynthesisCompoundingRule/AnalysisCompoundingRule), all four correctly
-    // marked unexercised rather than silently missing.
+    // A declared interface appears in its own denominator whether or not any fixture exercises it -- that
+    // is what stops an unexercised construct from being silently absent rather than visibly uncovered.
+    // The two PhonologicalSubrule MPR readers were the original examples and are now EXERCISED, by the
+    // words that closed the exception-feature obligation cells, so they can only carry the first half of
+    // the claim. CompoundingRule.nonHeadProdRestrictionsMprFeatures still carries both: no grammar
+    // declares it, and it must still appear as a reader.
     [Test]
-    public void UnexercisedInterfacesStillAppearInTheirOwnChains()
+    public void DeclaredInterfacesAppearInTheirOwnChainsWhetherExercisedOrNot()
     {
         string root = RepositoryRoot();
         IReadOnlyList<InteractionChainLedger.Row> rows = InteractionChainLedger.Compute(root);
@@ -145,8 +161,16 @@ public sealed class InteractionChainLedgerTests
                 .Where(r => r.ReaderElement == element && r.ReaderAttribute == attribute)
                 .ToArray();
             Assert.That(matches, Is.Not.Empty, $"{element}.{attribute} should appear as a reader");
-            Assert.That(matches.All(r => !r.Exercised), Is.True, $"{element}.{attribute} should be unexercised");
         }
+
+        InteractionChainLedger.Row[] nonHead = rows
+            .Where(r => r.ReaderElement == "CompoundingRule" && r.ReaderAttribute == "nonHeadProdRestrictionsMprFeatures")
+            .ToArray();
+        Assert.That(
+            nonHead.All(r => !r.Exercised),
+            Is.True,
+            "no grammar declares nonHeadProdRestrictionsMprFeatures, so it must still be unexercised"
+        );
 
         InteractionChainLedger.Row[] writerMatches = rows
             .Where(r => r.WriterElement == "CompoundingRule" && r.WriterAttribute == "outputProdRestrictionsMprFeatures")

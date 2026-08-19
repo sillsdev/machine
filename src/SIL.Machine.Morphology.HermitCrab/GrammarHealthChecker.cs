@@ -35,10 +35,12 @@ namespace SIL.Machine.Morphology.HermitCrab
             return findings;
         }
 
-        // Every table's segments must have distinct phonological feature bundles, or a segment-changing rule cannot tell them apart.
+        // Every table's segments must have distinct phonological feature bundles, or a segment-changing
+        // rule cannot tell them apart.
         private static void CheckDuplicateFeatureBundles(Language language, List<GrammarHealthFinding> findings)
         {
-            // No feature system means every bundle is the same empty struct by construction (see PhonologicalBundle), not a collision.
+            // No feature system means every bundle is the same empty struct by construction (see
+            // PhonologicalBundle), not a collision.
             if (language.PhonologicalFeatureSystem.Count == 0)
                 return;
 
@@ -196,7 +198,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        // Same GetMatchingStrReps lookup used to render a shape back to text; boundary/anchor nodes are structural, not graphemes.
+        // Same GetMatchingStrReps lookup used to render a shape back to text; boundary/anchor nodes are
+        // structural, not graphemes.
         private static void CheckSegmentsDeclared(Segments segments, string where, List<GrammarHealthFinding> findings)
         {
             CharacterDefinitionTable table = segments.CharacterDefinitionTable;

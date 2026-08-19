@@ -51,13 +51,20 @@ public sealed class GateObligationLedgerTests
         Assert.That(gates, Is.EqualTo(23));
         Assert.That(worthCovering, Is.EqualTo(42));
         Assert.That(evidenced + notEvidenced, Is.EqualTo(rows.Count));
-        // 9 -> 11 (2026-08-19): silaaku (languages/polysynthetic-stratal-derivation-chain) is a
-        // genuine head-POS mismatch on mrCompoundHN (SILA, posN2, attempted as a head requiring
-        // posN1), so severing CompoundingRule.headPartsOfSpeech -- the gate's own hardcoded
-        // severance target -- actually flips it; akutat already supplied the Control witness.
-        Assert.That(evidenced, Is.EqualTo(11));
+        // 11 -> 14 (2026-08-19): GrammarRuleIndex.ResolveAncestorRuleId taught the index to walk up
+        // from MorphologicalInput and PhonologicalSubrule to their rule-element ancestor (always
+        // MorphologicalRule/RealizationalRule and PhonologicalRule respectively, per the DTD), so the
+        // Control arms of ExcludedMprFeatures, RequiredMprFeatures and RequiredSyntacticFeatureStruct
+        // are now attributable to a rule id that fires in a successful parse elsewhere in the same
+        // fixture. Allomorph and AffixTemplate still resolve to nothing: an Allomorph is always a
+        // child of LexicalEntry, never of a rule, and an AffixTemplate has no id of its own (the DTD
+        // never declares one) and is never nested under a rule either -- both are genuinely
+        // unattributable, not merely unimplemented, so BoundRoot/ExcludedStemName/PartialParse/
+        // RequiredStemName's Control arms remain NotEvidenced. blockedEvidenced is unchanged: this
+        // fix only ever changes how a Control arm's rule id is resolved.
+        Assert.That(evidenced, Is.EqualTo(14));
         Assert.That(blockedEvidenced, Is.EqualTo(9));
-        Assert.That(controlEvidenced, Is.EqualTo(2));
+        Assert.That(controlEvidenced, Is.EqualTo(5));
     }
 
     // Every gate contributes exactly one Blocked row and one Control row -- the denominator is gate x
@@ -138,7 +145,7 @@ public sealed class GateObligationLedgerTests
     // regression net: if a future corpus/engine change makes one of these silently stop being
     // evidenced, this fails loudly instead of the funnel count quietly drifting.
     [Test]
-    public void EvidencedRowsAreExactlyTheseElevenAndEachCarriesAFixtureAndWord()
+    public void EvidencedRowsAreExactlyTheseFourteenAndEachCarriesAFixtureAndWord()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -151,6 +158,7 @@ public sealed class GateObligationLedgerTests
                 {
                     ("BoundRoot", "Blocked"),
                     ("ExcludedMprFeatures", "Blocked"),
+                    ("ExcludedMprFeatures", "Control"),
                     ("ExcludedStemName", "Blocked"),
                     ("HeadProdRestrictMprFeatures", "Blocked"),
                     ("HeadProdRestrictMprFeatures", "Control"),
@@ -158,26 +166,32 @@ public sealed class GateObligationLedgerTests
                     ("HeadRequiredSyntacticFeatureStruct", "Control"),
                     ("PartialParse", "Blocked"),
                     ("RequiredMprFeatures", "Blocked"),
+                    ("RequiredMprFeatures", "Control"),
                     ("RequiredStemName", "Blocked"),
                     ("RequiredSyntacticFeatureStruct", "Blocked"),
+                    ("RequiredSyntacticFeatureStruct", "Control"),
                 }
             )
         );
         Assert.That(evidenced.All(r => r.Fixture != "-" && r.Word != "-"), Is.True);
     }
 
-    // The two gates with BOTH arms evidenced today: HeadProdRestrictMprFeatures's blocking attribute
+    // The five gates with BOTH arms evidenced today. HeadProdRestrictMprFeatures's blocking attribute
     // (CompoundingRule.headProdRestrictionsMprFeatures) and HeadRequiredSyntacticFeatureStruct's
-    // (CompoundingRule.headPartsOfSpeech) both sit directly on a CompoundingRule element, so the
-    // Control arm's rule-id resolution actually applies -- unlike every other Evidenced Blocked arm,
-    // whose writer element (Allomorph/MorphologicalInput/AffixTemplate/PhonologicalSubrule) is not one
-    // GrammarRuleIndex can resolve at all (see GateObligationLedger.RuleIndexedElements). This is the
-    // "test the impossibility argument against an already-satisfied one" check: the SAME rule-indexed
-    // mechanism that fails to resolve a Control arm for BoundRoot (Allomorph) succeeds for both
-    // CompoundingRule-backed gates -- proving the Control arm's limitation is about the ELEMENT KIND,
-    // not a broken mechanism.
+    // (CompoundingRule.headPartsOfSpeech) sit directly on a CompoundingRule element, which carries its
+    // own id. ExcludedMprFeatures/RequiredMprFeatures (MorphologicalInput.*MPRFeatures) and
+    // RequiredSyntacticFeatureStruct (PhonologicalSubrule.requiredPartsOfSpeech) resolve one level up:
+    // GrammarRuleIndex.ResolveAncestorRuleId walks from the writer element to its nearest rule-element
+    // ancestor (always MorphologicalRule/RealizationalRule for MorphologicalInput, always
+    // PhonologicalRule for PhonologicalSubrule, per the DTD). BoundRoot/ExcludedStemName/PartialParse/
+    // RequiredStemName still cannot: their writer element is Allomorph (always a child of
+    // LexicalEntry, never of a rule) or AffixTemplate (no id of its own, and never nested under a
+    // rule either) -- see GrammarRuleIndex.ResolveAncestorRuleId's own doc comment. This is the "test
+    // the impossibility argument against already-satisfied ones" check: the SAME ancestor-resolution
+    // mechanism that fails for BoundRoot (Allomorph) succeeds for the other five -- proving the
+    // Control arm's remaining limitation is about the ELEMENT KIND, not a broken mechanism.
     [Test]
-    public void TwoGatesHaveBothArmsEvidenced()
+    public void FiveGatesHaveBothArmsEvidenced()
     {
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
@@ -191,12 +205,21 @@ public sealed class GateObligationLedgerTests
 
         Assert.That(
             gatesWithBothArmsEvidenced,
-            Is.EquivalentTo(new[] { "HeadProdRestrictMprFeatures", "HeadRequiredSyntacticFeatureStruct" })
+            Is.EquivalentTo(
+                new[]
+                {
+                    "ExcludedMprFeatures",
+                    "HeadProdRestrictMprFeatures",
+                    "HeadRequiredSyntacticFeatureStruct",
+                    "RequiredMprFeatures",
+                    "RequiredSyntacticFeatureStruct",
+                }
+            )
         );
 
         GateObligationLedger.Row boundRootControl = rows.First(r => r.Gate == "BoundRoot" && r.Arm == "Control");
         Assert.That(boundRootControl.Status, Is.EqualTo(GateArmStatus.NotEvidenced));
-        Assert.That(boundRootControl.Evidence, Does.Contain("Allomorph is not a rule element"));
+        Assert.That(boundRootControl.Evidence, Does.Contain("no rule-element ancestor"));
 
         GateObligationLedger.Row headProdControl = rows.First(r =>
             r.Gate == "HeadProdRestrictMprFeatures" && r.Arm == "Control"
@@ -209,6 +232,18 @@ public sealed class GateObligationLedgerTests
         );
         Assert.That(headRequiredControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
         Assert.That(headRequiredControl.Evidence, Does.Contain("CompoundingRule"));
+
+        GateObligationLedger.Row excludedMprControl = rows.First(r =>
+            r.Gate == "ExcludedMprFeatures" && r.Arm == "Control"
+        );
+        Assert.That(excludedMprControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
+        Assert.That(excludedMprControl.Evidence, Does.Contain("MorphologicalInput"));
+
+        GateObligationLedger.Row requiredSyntacticControl = rows.First(r =>
+            r.Gate == "RequiredSyntacticFeatureStruct" && r.Arm == "Control"
+        );
+        Assert.That(requiredSyntacticControl.Status, Is.EqualTo(GateArmStatus.Evidenced));
+        Assert.That(requiredSyntacticControl.Evidence, Does.Contain("PhonologicalSubrule"));
     }
 
     // Mirrors EngineGateInventoryLedgerTests.CheckedInEngineGateInventoryLedgerIsUpToDate: recomputing

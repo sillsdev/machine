@@ -43,11 +43,11 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(639));
+        Assert.That(rows, Has.Count.EqualTo(647));
         Assert.That(distinctFixtures, Is.EqualTo(33));
         Assert.That(surface, Is.EqualTo(189));
-        Assert.That(@interface, Is.EqualTo(362));
-        Assert.That(construct, Is.EqualTo(88));
+        Assert.That(@interface, Is.EqualTo(369));
+        Assert.That(construct, Is.EqualTo(89));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

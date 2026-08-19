@@ -1,5 +1,5 @@
-# Converted from conformance/allomorphy/disjunctive-recheck (v1; kept in place, untouched, until
-# phase G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same file,
+# Converted from conformance/allomorphy/disjunctive-recheck (v1, removed after the v1->v2 migration's
+# parity proof). grammar.xml is the same file,
 # unmodified: deliberately NO <MorphemeId> element on either MorphologicalRule (ruleT, ruleD) -- the
 # v1 fixture pins signatures like "+|wokta" (an empty morph-chain component joined by "+"), which
 # would change if a MorphemeId were added, so this fixture cannot gain one without breaking its own

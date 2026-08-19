@@ -5,8 +5,8 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
 /// <summary>Provenance and integrity for the conformance fixtures PanGloss imports.</summary>
 /// <remarks>Deliberately not a second copy of the ground truth. <c>words.yaml</c> is the single
-/// canonical authored format — it carries the reasoning for each fixture in comments, which no
-/// generated JSON can hold — and <c>grammar.xml</c> is the authoritative grammar. This manifest
+/// canonical authored format -- it carries the reasoning for each fixture in comments, which no
+/// generated JSON can hold -- and <c>grammar.xml</c> is the authoritative grammar. This manifest
 /// records what those files are, which format each conforms to, and the hash a consumer verifies
 /// them against.</remarks>
 public sealed record ConformanceManifest(

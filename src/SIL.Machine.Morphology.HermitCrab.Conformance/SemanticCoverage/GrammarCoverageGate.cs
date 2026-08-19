@@ -24,8 +24,9 @@ public static class GrammarCoverageGate
 {
     public const string BaselineRelativePath = "conformance/semantic-coverage-baseline.txt";
     /// <summary>The published copy of the grammar DTD, under <c>conformance/</c>.</summary>
-    /// <remarks>A consumer receives <c>conformance/</c> alone — PanGloss sparse-checks-out exactly
-    /// that path — so the authority a published product names has to live inside it. The library's
+    /// <remarks>A consumer can receive <c>conformance/</c> alone, sparse-checked-out with no other
+    /// part of this repository present, so the authority a published product names has to live inside
+    /// it. The library's
     /// own copy stays where it is because it is an embedded resource
     /// (<c>SIL.Machine.Morphology.HermitCrab.HermitCrabInput.dtd</c>) that
     /// <c>XmlLanguageLoader</c> reads by manifest name; the two are held byte-identical by

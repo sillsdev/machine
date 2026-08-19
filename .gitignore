@@ -61,3 +61,6 @@ tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 
 # Agent scratch: test result dumps, captured logs, throwaway SDK/CLI state
 .tmp/
+
+# Local pre-PR review artifacts, never committed
+.review/
