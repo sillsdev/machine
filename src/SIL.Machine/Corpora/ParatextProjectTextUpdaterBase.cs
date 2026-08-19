@@ -33,7 +33,8 @@ namespace SIL.Machine.Corpora
             IEnumerable<IUsfmUpdateBlockHandler> updateBlockHandlers = null,
             IEnumerable<(int, string)> remarks = null,
             Func<UsfmUpdateBlockHandlerException, bool> errorHandler = null,
-            bool compareSegments = false
+            bool compareSegments = false,
+            bool convertUsfmToUpdateRowVersification = false
         )
         {
             string fileName = _settings.GetBookFileName(bookId);
@@ -57,7 +58,9 @@ namespace SIL.Machine.Corpora
                 updateBlockHandlers,
                 remarks,
                 errorHandler,
-                compareSegments
+                compareSegments,
+                _settings.Versification,
+                convertUsfmToUpdateRowVersification
             );
             try
             {
