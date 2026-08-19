@@ -15,29 +15,46 @@ the payload is ABSENT and the gated form IS blocked.
 
 ## Machine status
 
-**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain exercised (conformance/interaction-chains.tsv) but no same-word paired severance witness (writer+reader both Evidenced on the same example word in conformance/interface-witness.tsv) was found for this arm
+Ledger evidence: paired witness: severing writer and reader both flip 'idil' from failed to successful parse in languages/metathesis-phase-isolation (conformance/interface-witness.tsv)
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- Claimed by word **'idil'** in `languages/metathesis-phase-isolation` (a `claimed_cells` entry in `words.yaml`).
 
 ## Exact mutation and before/after parse
 
-No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
+### Author's claim (languages/metathesis-phase-isolation / 'idil')
+
+- Severing: ADIL's own partOfSpeech="posCircum" (the writer), or prNonContig's PhonologicalSubrule requiredPartsOfSpeech="posNonContig" (the reader) -- severing either alone lets prNonContig apply to ADIL too
+- Before: `ok::-`
+- After: `ok::ADIL|idil`
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`LexicalEntry.partOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed partOfSpeech from 9 <LexicalEntry> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `languages/metathesis-phase-isolation/grammar.xml`
+
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:263` = "posComplexMeta"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:294` = "posSimpleMeta"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:299` = "posNotUnapplied"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:433` = "posInfix"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:438` = "posCircum"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:443` = "posRedup"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:448` = "posTrunc"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:453` = "posLnk"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:458` = "posNonContig"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:205` = "posNonContig"
+
 ## Author's prose
 
-- No prose recorded: no claim, and no word is identified for this cell.
+- `proof:` (claimed_cells, 'idil' in languages/metathesis-phase-isolation): "idil" needs prNonContig (a -> i before a voiced consonant, gated to a DIFFERENT part of speech, posNonContig) to fire on ADIL's own root; with both constructs intact this word has zero parses (ok::-). Removing either the writer (LexicalEntry's partOfSpeech) or the reader (prNonContig's requiredPartsOfSpeech) lets prNonContig apply to ADIL as well, producing ok::ADIL|idil -- the AbsentGatedForm arm: the required part of speech is ABSENT from ADIL and the phonological subrule's requirement GATES on it. adil (ADIL's own bare, un-raised surface) is the control that shows the root is otherwise ordinary and fully valid, so idil's block is attributable specifically to prNonContig's gate, not to ADIL failing to parse at all.
 
 ## `distinct_from` counterpart
 
-No claim exists for this cell, so no `distinct_from` counterpart is recorded.
+- 'idil' in languages/metathesis-phase-isolation: `distinct_from` **'adil'** (expect_fail=False) vs. this word (expect_fail=True).

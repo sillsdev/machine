@@ -30,7 +30,7 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 ### Machine witness (`conformance/interface-witness.tsv`)
 
 - Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 9 <MorphologicalRule> element(s)"
-- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)", example: 'keadilan': ok::NMLZ+ADIL|keadilan -> ok::-
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/metathesis-phase-isolation`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)", example: 'idil': ok::- -> ok::ADIL|idil
 
 ## Grammar citations
 

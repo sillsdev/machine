@@ -482,7 +482,7 @@ languages/fusional-realizational-morphology	Interface	Stratum.morphologicalRules
 languages/fusional-realizational-morphology	Construct	AffixProcessRule: prefix/suffix/circumfix/infix	claimed-unmapped	6 claim(s)
 languages/fusional-realizational-morphology	Construct	CompoundingRule	claimed-confirmed	8 claim(s)
 languages/fusional-realizational-morphology	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	6 claim(s)
-languages/fusional-realizational-morphology	Construct	MPR features/groups	claimed-unmapped	14 claim(s)
+languages/fusional-realizational-morphology	Construct	MPR features/groups	claimed-unmapped	16 claim(s)
 languages/fusional-realizational-morphology	Construct	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	claimed-confirmed	1 claim(s)
 languages/fusional-realizational-morphology	Construct	RealizationalAffixProcessRule	claimed-unmapped	6 claim(s)
 languages/fusional-realizational-morphology	Construct	Stem names	claimed-unmapped	12 claim(s)
@@ -508,7 +508,7 @@ languages/metathesis-phase-isolation	Construct	AffixProcessRule: subtraction/tru
 languages/metathesis-phase-isolation	Construct	Boundary markers (CharacterDefinitionTable)	claimed-confirmed	1 claim(s)
 languages/metathesis-phase-isolation	Construct	MetathesisRule	claimed-confirmed	3 claim(s)
 languages/metathesis-phase-isolation	Construct	MorphologicalOutputAction: CopyFromInput/InsertSegments	claimed-confirmed	3 claim(s)
-languages/metathesis-phase-isolation	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
+languages/metathesis-phase-isolation	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	3 claim(s)
 languages/polysynthetic-stratal-derivation-chain	Interface	CompoundingRule.headPartsOfSpeech	present-but-inert	Unobservable
 languages/polysynthetic-stratal-derivation-chain	Interface	CompoundingRule.nonHeadPartsOfSpeech	present-but-inert	Unobservable
 languages/polysynthetic-stratal-derivation-chain	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd

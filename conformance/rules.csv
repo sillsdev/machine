@@ -100,7 +100,7 @@ FusionalRealizationalMorphology,mrCompoundHN,pannox;!panbenox;corriv
 FusionalRealizationalMorphology,mrCompoundNH,lexdom;lexbedom
 FusionalRealizationalMorphology,mrEndH,sodh;gofwh
 FusionalRealizationalMorphology,mrEndW,katw;!sodw;gofzw;gofwh
-FusionalRealizationalMorphology,mrEndZ,xpedz;!yxpedz;gofzw
+FusionalRealizationalMorphology,mrEndZ,gofz;!ygofz;xpedz;!yxpedz;gofzw
 FusionalRealizationalMorphology,mrNasalInfix,vinc
 FusionalRealizationalMorphology,mrPast2,!ducit
 FusionalRealizationalMorphology,mrPers1,mano;mino
@@ -125,7 +125,7 @@ MetathesisPhaseIsolation,mrRedupFull,tulatula
 MetathesisPhaseIsolation,mrSimpleMeta,nui;!niu
 MetathesisPhaseIsolation,mrTrunc,pur
 MetathesisPhaseIsolation,mrUSuffix,mu+i
-MetathesisPhaseIsolation,prNonContig,katibɯd;!katabɯd
+MetathesisPhaseIsolation,prNonContig,!idil;katibɯd;!katabɯd
 PolysyntheticStratalDerivationChain,mrCompoundHN,akutat;!akupitat
 PolysyntheticStratalDerivationChain,mrCompoundNH,silanuk;silamanuk
 PolysyntheticStratalDerivationChain,mrDeriv,nunaliq;nunaliqvuq

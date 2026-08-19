@@ -221,6 +221,7 @@ languages/fusional-realizational-morphology	genlav	-	CompoundingRule constraints
 languages/fusional-realizational-morphology	gofhw	-	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	gofwh	GOF+ENDW+ENDH|gofwh	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	gofwz	-	MPR features/groups	Unmapped	-
+languages/fusional-realizational-morphology	gofz	GOF+ENDZ|gofz	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	gofzw	GOF+ENDZ+ENDW|gofzw	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	kath	-	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	katw	KAT+ENDW|katw	MPR features/groups	Unmapped	-
@@ -257,10 +258,12 @@ languages/fusional-realizational-morphology	tul	TUL|tul	RealizationalAffixProces
 languages/fusional-realizational-morphology	vinc	VIC+PRESSTEM|vinc	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/fusional-realizational-morphology	xped	THEMEX+PED|xped	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	xpedz	THEMEX+PED+ENDZ|xpedz	MPR features/groups	Unmapped	-
+languages/fusional-realizational-morphology	ygofz	-	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	yxped	THEMEY+THEMEX+PED|yxped	MPR features/groups	Unmapped	-
 languages/fusional-realizational-morphology	yxpedz	-	MPR features/groups	Unmapped	-
 languages/metathesis-phase-isolation	bahain	BAHA+LNK|bahain	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/metathesis-phase-isolation	bahain	BAHA+LNK|bahain	MorphologicalOutputAction: CopyFromInput/InsertSegments	Confirmed	CopyFromInput,InsertSegments
+languages/metathesis-phase-isolation	idil	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/metathesis-phase-isolation	katabɯd	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/metathesis-phase-isolation	katibɯd	KTB+PERF|katibɯd	AffixProcessRule: prefix/suffix/circumfix/infix	Unmapped	-
 languages/metathesis-phase-isolation	katibɯd	KTB+PERF|katibɯd	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-

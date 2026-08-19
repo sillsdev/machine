@@ -20,14 +20,18 @@ public sealed class ConstructClaimCorroborationTests
         return string.Empty;
     }
 
-    // 441 total claims matches conformance/coverage.csv's own row count (the same (fixture, word,
+    // 444 total claims matches conformance/coverage.csv's own row count (the same (fixture, word,
     // signature, construct) enumeration CoverageReport.WriteCsvs already produces). Of those, 185 map
-    // to a real DTD identifier this fixture's grammar.xml actually contains (Confirmed), 241 name a
+    // to a real DTD identifier this fixture's grammar.xml actually contains (Confirmed), 244 name a
     // construct whose text ConstructClaimCorroboration.MapConstructsToDtdTokens cannot mechanically
     // resolve to any DTD identifier at all (Unmapped -- most constructs are prose, not identifiers,
-    // so this is the expected majority, not a defect), and 15 are Contradicted. (Was 439/184/240/15
-    // before the fold-in words `kesepez` (suffixing-extension-slot-ordering) and `walaky`
-    // (suffixing-evidential-adjacency-chain) each added one claimed-construct row.)
+    // so this is the expected majority, not a defect), and 15 are Contradicted. (Was 441/185/241/15
+    // before the coverage-cell word `idil` (metathesis-phase-isolation) added one claimed-construct
+    // row for its PartOfSpeech::LexicalEntry.partOfSpeech->PhonologicalSubrule.requiredPartsOfSpeech
+    // AbsentGatedForm witness; 442 -> 444 when author-coverage-cell added `gofz`/`ygofz` to
+    // languages/fusional-realizational-morphology, each claiming the prose construct "MPR
+    // features/groups" -- both Unmapped, for `ygofz`'s MorphologicalOutput.MPRFeatures->
+    // MorphologicalInput.requiredMPRFeatures AbsentGatedForm witness.)
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -40,10 +44,10 @@ public sealed class ConstructClaimCorroborationTests
 
         TestContext.Out.WriteLine($"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}");
 
-        Assert.That(rows, Has.Count.EqualTo(441));
+        Assert.That(rows, Has.Count.EqualTo(444));
         Assert.That(confirmed, Is.EqualTo(185));
         Assert.That(contradicted, Is.EqualTo(15));
-        Assert.That(unmapped, Is.EqualTo(241));
+        Assert.That(unmapped, Is.EqualTo(244));
     }
 
     // All 15 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-

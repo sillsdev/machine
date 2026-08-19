@@ -63,6 +63,34 @@ The pair must differ in **exactly one** condition. Two words that both parse as 
 in two conditions establish nothing — and read perfectly well, which is why this is the easiest
 mistake to make.
 
+### Severance is fixture-wide, and that is usually what you are missing
+
+`Sever()` removes an attribute from **every** element in the fixture at once -- not from one entry.
+So removing a payload does not merely turn one match into a mismatch. It can make a gate vacuous, or
+delete a competing analysis, and thereby take a word from failing to parsing. A writer severance
+CAN flip a word from fail to pass on a `required*` reader; the ledger already contains cells proving
+it.
+
+This matters because the paired witness you need is exactly a same-word fail-to-pass flip on both
+sides, and reasoning about severance as if it were per-word makes that look impossible when it is
+not.
+
+### Before you conclude a cell cannot be witnessed, falsify that
+
+A structural argument that a cell is unreachable is a claim like any other, and it is the easiest
+claim to believe because it ends the task. So it carries the heaviest burden of proof here:
+
+**Test your impossibility argument against a cell that is already `Satisfied`.** Read the satisfied
+rows out of `conformance/dataflow-obligations.tsv`, take your argument, and ask whether it would also
+forbid those. If it would, your argument is wrong -- discard it and author the words. This check has
+already caught a confident, well-written, entirely wrong proof that five separate cells were
+unreachable.
+
+`wrong-grammar` is for a construct **absent from every language grammar** -- a fact you establish by
+searching the grammars, not by deriving it. An argument that the words cannot be *made to flip* is
+not that, and reporting it as a corpus finding when you never authored a word is the
+`false-impossibility` failure class. You are expected to try, and a witnessed flip beats a proof.
+
 ## Phase 4 — Author the words
 
 Follow the host fixture's existing conventions exactly: form shape, gloss style, `note:` density,
@@ -132,7 +160,7 @@ Then run the gate and confirm it accepts.
 State, in this order: the cell id, the host grammar and why, the words added, the severance result
 that proves the witness, and the gate outcome.
 
-If you failed, say which phase and which failure class (`wrong-grammar`, `not-minimal-pair`,
+If you failed, say which phase and which failure class (`wrong-grammar`, `false-impossibility`, `not-minimal-pair`,
 `no-witness`, `unrealistic-word`, `bad-cell-id`, `evidence-mismatch`). A classified failure is useful
 data for improving these instructions; an unclassified one is not.
 

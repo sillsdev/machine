@@ -36,6 +36,7 @@ A cell counts only when `DataflowClaimGate` accepts it against a fresh recomputa
 | `wrong-grammar` | chose a fixture that cannot host the construct |
 | `not-minimal-pair` | the cases differ in more than one condition |
 | `no-witness` | the authored word does not flip under severance |
+| `false-impossibility` | concluded the cell unreachable without authoring anything |
 | `unrealistic-word` | form or gloss does not fit the grammar's shape |
 | `bad-cell-id` | claimed a cell that does not exist |
 | `evidence-mismatch` | inline `before`/`after` disagree with recomputation |

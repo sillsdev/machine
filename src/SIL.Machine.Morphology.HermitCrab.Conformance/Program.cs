@@ -42,6 +42,10 @@ internal class Program
         bool writeCoverageTraceability = false;
         bool evidenceCards = false;
         bool writeEvidenceCards = false;
+        bool engineGateInventory = false;
+        bool writeEngineGateInventory = false;
+        bool gateObligations = false;
+        bool writeGateObligations = false;
         string repositoryRoot = null;
 
         for (int i = 0; i < args.Length; i++)
@@ -134,6 +138,18 @@ internal class Program
                 case "--write-evidence-cards":
                     writeEvidenceCards = true;
                     break;
+                case "--engine-gate-inventory":
+                    engineGateInventory = true;
+                    break;
+                case "--write-engine-gate-inventory":
+                    writeEngineGateInventory = true;
+                    break;
+                case "--gate-obligations":
+                    gateObligations = true;
+                    break;
+                case "--write-gate-obligations":
+                    writeGateObligations = true;
+                    break;
                 case "--propose-semantic-catalog":
                     proposeSemanticCatalog = true;
                     break;
@@ -204,6 +220,10 @@ internal class Program
             || writeCoverageTraceability
             || evidenceCards
             || writeEvidenceCards
+            || engineGateInventory
+            || writeEngineGateInventory
+            || gateObligations
+            || writeGateObligations
         )
         {
             repositoryRoot ??= FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -235,6 +255,10 @@ internal class Program
                     return RunCoverageTraceability(repositoryRoot, writeCoverageTraceability);
                 if (evidenceCards || writeEvidenceCards)
                     return RunEvidenceCards(repositoryRoot, writeEvidenceCards);
+                if (engineGateInventory || writeEngineGateInventory)
+                    return RunEngineGateInventory(repositoryRoot, writeEngineGateInventory);
+                if (gateObligations || writeGateObligations)
+                    return RunGateObligations(repositoryRoot, writeGateObligations);
 
                 return counterfactual || writeCounterfactual
                     ? RunCounterfactual(repositoryRoot, writeCounterfactual)
@@ -725,6 +749,112 @@ internal class Program
         if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-dataflow-obligations");
+            return 1;
+        }
+
+        Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
+        return 0;
+    }
+
+    /// <summary>Recomputes the engine-gate inventory (one row per SIL.Machine.Morphology.HermitCrab.
+    /// FailureReason member) -- mechanically scanned raise sites, hand-verified DTD attributes, and an
+    /// actual traced engine sweep for witness evidence -- and checks it against the checked-in ledger,
+    /// or rewrites it.</summary>
+    private static int RunEngineGateInventory(string repositoryRoot, bool writeLedger)
+    {
+        Console.WriteLine("tracing every non-pathological, non-crash fixture's words for engine-gate evidence...");
+        IReadOnlyList<SemanticCoverage.EngineGateInventoryLedger.Row> rows = SemanticCoverage.EngineGateInventoryLedger.Compute(
+            repositoryRoot
+        );
+        int witnessed = rows.Count(r => r.Status == SemanticCoverage.EngineGateStatus.Witnessed);
+        int unreached = rows.Count(r => r.Status == SemanticCoverage.EngineGateStatus.Unreached);
+        int noDtdAttribute = rows.Count(r => r.DtdAttributes == "-");
+
+        Console.WriteLine($"engine gates: {rows.Count}");
+        Console.WriteLine($"  witnessed        {witnessed}");
+        Console.WriteLine($"  unreached        {unreached}");
+        Console.WriteLine($"  no DTD attribute {noDtdAttribute}");
+        foreach (SemanticCoverage.EngineGateInventoryLedger.Row row in rows.Where(r => r.Status == SemanticCoverage.EngineGateStatus.Unreached))
+            Console.Error.WriteLine($"UNREACHED  {row.Gate}  (raise sites: {row.RaiseSites})");
+
+        string relative = SemanticCoverage.EngineGateInventoryLedger.RelativePath;
+        string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        string fresh = SemanticCoverage.EngineGateInventoryLedger.ToText(rows);
+
+        if (writeLedger)
+        {
+            SemanticCoverage.EngineGateInventoryLedger.Write(repositoryRoot, rows);
+            Console.WriteLine($"wrote {relative} ({rows.Count} row(s))");
+            return 0;
+        }
+
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"{relative} is missing; regenerate with --write-engine-gate-inventory");
+            return 1;
+        }
+
+        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine($"{relative} is stale; regenerate with --write-engine-gate-inventory");
+            return 1;
+        }
+
+        Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
+        return 0;
+    }
+
+    /// <summary>Recomputes the gate-keyed MC/DC obligation ledger (Blocked/Control arm per
+    /// FailureReason gate, conformance/gate-obligations.tsv) -- reads the already-checked-in
+    /// engine-gate-inventory.tsv, interface-witness.tsv and fieldworks-producibility.tsv where it can,
+    /// falling back to a fresh severance run only where those do not already cover an attribute -- and
+    /// checks it against the checked-in ledger, or rewrites it.</summary>
+    private static int RunGateObligations(string repositoryRoot, bool writeLedger)
+    {
+        Console.WriteLine("evaluating gate-keyed obligations (engine-gate-inventory + interface-witness, with a severance fallback)...");
+        IReadOnlyList<SemanticCoverage.GateObligationLedger.Row> rows = SemanticCoverage.GateObligationLedger.Compute(
+            repositoryRoot
+        );
+
+        int gates = rows.Select(r => r.Gate).Distinct().Count();
+        int worthCovering = rows.Count(r => r.WorthCovering == "Yes") / 2;
+        int evidenced = rows.Count(r => r.Status == SemanticCoverage.GateArmStatus.Evidenced);
+        int notEvidenced = rows.Count(r => r.Status == SemanticCoverage.GateArmStatus.NotEvidenced);
+        int blockedEvidenced = rows.Count(r => r.Arm == "Blocked" && r.Status == SemanticCoverage.GateArmStatus.Evidenced);
+        int controlEvidenced = rows.Count(r => r.Arm == "Control" && r.Status == SemanticCoverage.GateArmStatus.Evidenced);
+        int bothEvidenced = rows
+            .Where(r => r.Status == SemanticCoverage.GateArmStatus.Evidenced)
+            .GroupBy(r => r.Gate)
+            .Count(g => g.Count() == 2);
+
+        Console.WriteLine($"gates: {gates}  obligations (gate x arm): {rows.Count}");
+        Console.WriteLine($"  worth_covering (xml_reachable=Yes and flex_producible=Yes) {worthCovering}");
+        Console.WriteLine($"  arms evidenced      {evidenced}");
+        Console.WriteLine($"  arms not evidenced  {notEvidenced}");
+        Console.WriteLine($"    Blocked evidenced {blockedEvidenced}");
+        Console.WriteLine($"    Control evidenced {controlEvidenced}");
+        Console.WriteLine($"  gates with BOTH arms evidenced {bothEvidenced}");
+
+        string relative = SemanticCoverage.GateObligationLedger.RelativePath;
+        string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        string fresh = SemanticCoverage.GateObligationLedger.ToText(rows);
+
+        if (writeLedger)
+        {
+            SemanticCoverage.GateObligationLedger.Write(repositoryRoot, rows);
+            Console.WriteLine($"wrote {relative} ({rows.Count} row(s))");
+            return 0;
+        }
+
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"{relative} is missing; regenerate with --write-gate-obligations");
+            return 1;
+        }
+
+        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine($"{relative} is stale; regenerate with --write-gate-obligations");
             return 1;
         }
 
@@ -1346,6 +1476,19 @@ internal class Program
                                                 ledger -- purely a rendering of already-checked-in
                                                 facts (docs/coverage-review-protocol.md).
               --write-evidence-cards            Rewrite conformance/evidence-cards/.
+              --engine-gate-inventory           Recompute the FailureReason-keyed engine-gate inventory
+                                                (mechanically scanned raise sites + a traced engine
+                                                sweep for witness evidence) and check it against
+                                                conformance/engine-gate-inventory.tsv; exits 1 if stale.
+              --write-engine-gate-inventory     Rewrite conformance/engine-gate-inventory.tsv.
+              --gate-obligations                Recompute the gate-keyed MC/DC obligation ledger
+                                                (Blocked/Control arm per FailureReason gate) from
+                                                engine-gate-inventory.tsv, interface-witness.tsv, and
+                                                fieldworks-producibility.tsv (falling back to a fresh
+                                                severance run only where those do not already cover an
+                                                attribute) and check it against
+                                                conformance/gate-obligations.tsv; exits 1 if stale.
+              --write-gate-obligations          Rewrite conformance/gate-obligations.tsv.
               --repository-root <path>          Repository root for the flags above.
                                                 (default: <fixtures>/constructs.txt).
               --propose                        Self-check only: on a signature mismatch, print

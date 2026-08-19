@@ -29,8 +29,8 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'katw': ok::KAT+ENDW|katw -> ok::-
-- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'yxpedz': ok::- -> ok::THEMEY+THEMEX+PED+ENDZ|yxpedz
+- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'gofz': ok::GOF+ENDZ|gofz -> ok::-
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
 
 ## Grammar citations
 

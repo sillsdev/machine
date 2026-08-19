@@ -52,9 +52,16 @@ public sealed class DataflowObligationLedgerTests
         Assert.That(conditionExtension, Is.EqualTo(4));
         Assert.That(mutator, Is.EqualTo(182));
         Assert.That(satisfied + notSatisfied + unknown, Is.EqualTo(rows.Count));
-        Assert.That(satisfied, Is.EqualTo(2));
+        // Raised 3 -> 4, unknown 165 -> 164: author-coverage-cell added 'ygofz' to
+        // languages/fusional-realizational-morphology/words.yaml (MorphologicalPhonologicalRuleFeature::
+        // MorphologicalOutput.MPRFeatures->MorphologicalInput.requiredMPRFeatures::McDc:AbsentGatedForm).
+        // GOF's own lexically-preset mprPedA is destroyed by mrThemeY's Overwrite-group write before
+        // mrEndZ's requiredMPRFeatures gate is checked; severing either mrThemeY's own
+        // MorphologicalOutput.MPRFeatures write (so the overwrite never triggers) or mrEndZ's own
+        // requiredMPRFeatures (so the gate stops needing mprPedA) unblocks the SAME word identically.
+        Assert.That(satisfied, Is.EqualTo(4));
         Assert.That(notSatisfied, Is.EqualTo(178));
-        Assert.That(unknown, Is.EqualTo(166));
+        Assert.That(unknown, Is.EqualTo(164));
     }
 
     // Mutator-class applicability is schema/engine-derived (payload type + writer + -- for
@@ -120,12 +127,19 @@ public sealed class DataflowObligationLedgerTests
         );
     }
 
-    // The two chains this generator has mechanically confirmed via a same-word PAIR witness (severing
+    // The four chains this generator has mechanically confirmed via a same-word PAIR witness (severing
     // writer AND reader both flip the SAME word from a failed to a successful parse -- see
     // DataflowObligationLedger.FindPairedWitness): the canonical mpr-gated-exception fixture
-    // (vokadan), and a second the mechanical scan found independently in
-    // languages/polysynthetic-stratal-derivation-chain (nunavuq). Every other exercised chain stays
-    // Unknown -- deliberately: "writer witnessed somewhere, reader witnessed somewhere" is not this bar.
+    // (vokadan), a second the mechanical scan found independently in
+    // languages/polysynthetic-stratal-derivation-chain (nunavuq), a third, authored via the
+    // author-coverage-cell skill, in languages/metathesis-phase-isolation (idil -- ADIL's own bare
+    // root already sits in prNonContig's raising environment, but prNonContig is gated to a
+    // different part of speech, posNonContig), and a fourth, also authored via author-coverage-cell,
+    // in languages/fusional-realizational-morphology (ygofz -- GOF's own lexically-preset mprPedA is
+    // destroyed by mrThemeY's ThemeGroup Overwrite write before mrEndZ's requiredMPRFeatures gate is
+    // checked; severing either mrThemeY's own write or mrEndZ's own gate unblocks it identically).
+    // Every other exercised chain stays Unknown -- deliberately: "writer witnessed somewhere, reader
+    // witnessed somewhere" is not this bar.
     [Test]
     public void SatisfiedCellsAreExactlyTheMechanicallyConfirmedPairWitnesses()
     {
@@ -133,7 +147,7 @@ public sealed class DataflowObligationLedgerTests
         IReadOnlyList<DataflowObligationLedger.Row> rows = DataflowObligationLedger.Compute(root);
         DataflowObligationLedger.Row[] satisfied = rows.Where(r => r.Status == ObligationStatus.Satisfied).ToArray();
 
-        Assert.That(satisfied, Has.Length.EqualTo(2));
+        Assert.That(satisfied, Has.Length.EqualTo(4));
         Assert.That(
             satisfied.Select(r => (r.WriterElement, r.WriterAttribute, r.ReaderElement, r.ReaderAttribute, r.Role)),
             Is.EquivalentTo(
@@ -141,6 +155,8 @@ public sealed class DataflowObligationLedgerTests
                 {
                     ("LexicalEntry", "ruleFeatures", "MorphologicalInput", "excludedMPRFeatures", "PresentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
+                    ("LexicalEntry", "partOfSpeech", "PhonologicalSubrule", "requiredPartsOfSpeech", "AbsentGatedForm"),
+                    ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput", "requiredMPRFeatures", "AbsentGatedForm"),
                 }
             )
         );

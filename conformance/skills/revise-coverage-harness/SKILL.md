@@ -37,6 +37,7 @@ it:
 | `wrong-grammar` | the host-selection phase — is the "both constructs present" test stated as a test, or as advice? |
 | `not-minimal-pair` | the MC/DC explanation — is "exactly one condition" prominent, or buried in prose? |
 | `no-witness` | the verification phase — is severance framed as *the* result, or as a final check? |
+| `false-impossibility` | the host-selection and design phases — is stopping offered as a respectable outcome with no test attached? |
 | `unrealistic-word` | the realism constraint — is "plausible for this grammar" defined, or assumed? |
 | `bad-cell-id` | the cell-id vocabulary — is the id's structure explained, or only exemplified? |
 | `evidence-mismatch` | the evidence-recording step — does it say values are copied from the ledger, never predicted? |

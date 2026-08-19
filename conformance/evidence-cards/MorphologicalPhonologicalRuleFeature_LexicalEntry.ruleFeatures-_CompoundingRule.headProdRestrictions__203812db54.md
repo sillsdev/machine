@@ -29,7 +29,7 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'katw': ok::KAT+ENDW|katw -> ok::-
+- Writer (`LexicalEntry.ruleFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed ruleFeatures from 6 <LexicalEntry> element(s)", example: 'gofz': ok::GOF+ENDZ|gofz -> ok::-
 - Reader (`CompoundingRule.headProdRestrictionsMprFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed headProdRestrictionsMprFeatures from 1 <CompoundingRule> element(s)", example: 'seclav': ok::- -> ok::SEC+LAV|sec+?lav
 
 ## Grammar citations

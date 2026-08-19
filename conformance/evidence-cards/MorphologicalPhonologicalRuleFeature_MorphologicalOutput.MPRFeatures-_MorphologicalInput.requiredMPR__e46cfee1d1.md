@@ -15,29 +15,44 @@ the payload is ABSENT and the gated form IS blocked.
 
 ## Machine status
 
-**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain exercised (conformance/interaction-chains.tsv) but no same-word paired severance witness (writer+reader both Evidenced on the same example word in conformance/interface-witness.tsv) was found for this arm
+Ledger evidence: paired witness: severing writer and reader both flip 'ygofz' from failed to successful parse in languages/fusional-realizational-morphology (conformance/interface-witness.tsv)
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- Claimed by word **'ygofz'** in `languages/fusional-realizational-morphology` (a `claimed_cells` entry in `words.yaml`).
 
 ## Exact mutation and before/after parse
 
-No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
+### Author's claim (languages/fusional-realizational-morphology / 'ygofz')
+
+- Severing: MPRFeatures across every MorphologicalOutput (the one that matters here is mrThemeY's own "mprPedB" write), as the writer, or mrEndZ's MorphologicalInput.requiredMPRFeatures="mprPedA" gate, as the reader -- severing either alone unblocks this word
+- Before: `ok::-`
+- After: `ok::THEMEY+GOF+ENDZ|ygofz`
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`MorphologicalOutput.MPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed MPRFeatures from 5 <MorphologicalOutput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
+- Reader (`MorphologicalInput.requiredMPRFeatures` in `languages/fusional-realizational-morphology`): verdict=Evidenced, mutation="removed requiredMPRFeatures from 3 <MorphologicalInput> element(s)", example: 'ygofz': ok::- -> ok::THEMEY+GOF+ENDZ|ygofz
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `languages/fusional-realizational-morphology/grammar.xml`
+
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:204` = "mprConjA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:425` = "mprCompReq"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:430` = "mprCompReq"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:595` = "mprPedA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:605` = "mprPedB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:614` = "mprPedA"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:625` = "mprConjA mprConjB"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:635` = "mprConjC mprConjD"
+
 ## Author's prose
 
-- No prose recorded: no claim, and no word is identified for this cell.
+- `proof:` (claimed_cells, 'ygofz' in languages/fusional-realizational-morphology): ygofz is GOF (lexically preset with mprPedA) run through mrThemeY then mrEndZ; with both constructs intact, mrThemeY's own write triggers ThemeGroup's overwrite semantics (MprFeatureSet.AddOutput) and drops GOF's preset mprPedA before mrEndZ's gate is ever checked, so this has zero parses (ok::-). Removing either the writer (mrThemeY's own MorphologicalOutput.MPRFeatures, so the overwrite-triggering write never happens) or the reader (mrEndZ's requiredMPRFeatures, so the gate no longer needs mprPedA) lets mrEndZ apply anyway, producing THEMEY+GOF+ENDZ|ygofz -- the AbsentGatedForm arm: the required feature is ABSENT (from the derivation's accumulated state, though never from GOF's own declaration) and the rule's requirement GATES on it. gofz (GOF+ENDZ with no mrThemeY at all) is the control that shows mrEndZ applies normally once mprPedA actually survives to the gate, so ygofz's block is attributable to mrThemeY's overwrite, not to mrEndZ never applying at all.
 
 ## `distinct_from` counterpart
 
-No claim exists for this cell, so no `distinct_from` counterpart is recorded.
+- 'ygofz' in languages/fusional-realizational-morphology: `distinct_from` **'gofz'** (expect_fail=False) vs. this word (expect_fail=True).

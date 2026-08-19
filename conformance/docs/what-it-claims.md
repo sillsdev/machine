@@ -12,6 +12,56 @@ construct changes a parse.**
 That last clause is the whole claim, and it is narrower than it sounds. Read the next section before
 relying on it.
 
+## The primary funnel: gate-keyed obligations (23 engine gates, 46 obligations)
+
+**This is the headline number now.** `gate-obligations.tsv` is keyed to
+`SIL.Machine.Morphology.HermitCrab.FailureReason` — HermitCrab's own 23-member enumeration
+(excluding `None`) of the decisions it makes when declining to apply or unapply something — rather
+than to a DTD attribute pair. Every gate contributes exactly two obligations, the two arms MC/DC
+demands: **Blocked** (a word fails, the engine's own trace names this exact gate as why, and severing
+the construct that feeds the gate flips that same word to a successful parse) and **Control** (the
+same grammar rule instance fires in a different, successful parse, proving the rule can apply at all
+and that the Blocked arm's failure is attributable to the gate, not to a rule that never runs).
+
+| | count |
+|---|---|
+| gates | 23 |
+| obligations (gates × 2 arms) | 46 |
+| worth covering (`xml_reachable`=Yes and `flex_producible`=Yes) | 42 |
+| arms evidenced | **9** (8 Blocked, 1 Control) |
+| gates with *both* arms evidenced | **1** (`HeadProdRestrictMprFeatures`) |
+
+**Why this ledger, not `dataflow-obligations.tsv`, is now the primary claim.** The older ledger
+enumerates four MC/DC arms per writer/reader chain but its generator can certify at most one of them
+per chain (see "342 gaps, but only 14 an author can pick up" below) — of 346 enumerated cells, 28 are
+even certifiable, and only 4 are satisfied. Worse, it has no row at all for six of the engine's 23
+gates, because its cells are DTD-attribute write/read pairs and those six gates are not that shape
+(`PartialParse`, `BoundRoot`, `MaxApplicationCount`, `DisjunctiveAllomorph`, `Environments`,
+`SurfaceFormMismatch` — see `how-it-is-computed.md`'s engine-gate-inventory section). Keying the
+denominator to the engine's own 23 gates instead fixes both problems at once: every gate gets a row
+regardless of whether the schema names it with an attribute, and the Blocked arm's evidence is
+stronger than the old chain pairing because the engine's own trace *names* the failure reason,
+rather than the old generator inferring an arm from an attribute's spelling.
+
+**Both ledgers are published; they measure different things.** `dataflow-obligations.tsv` still
+answers its own question honestly — whether a specific WRITER/READER PAYLOAD PAIR survives full MC/DC
+treatment for the 40 chains `interaction-chains.tsv` derives from the DTD — and neither its file nor
+its tests are going away. `gate-obligations.tsv` answers a different, now-primary question: whether
+each of the engine's 23 own decision points is independently shown to matter. Read
+`how-it-is-computed.md`'s gate-obligations section for the full mechanics, including exactly which
+9 obligations are evidenced today and why the rest are not (a corpus gap the current fixtures never
+trigger, a construct FieldWorks' HCLoader can never produce, an element-content gate with no
+severance primitive built yet, or a rule element `GrammarRuleIndex` cannot resolve to a fired-rule
+id for the Control arm) — every one of those reasons is named in the row's own evidence text, never
+collapsed to a bare "Unknown".
+
+## The DTD-attribute-pair layers (kept, no longer the headline)
+
+The four layers below were this suite's original, and until now only, coverage measurement. They are
+still computed, still tested, and still meaningful for the narrower question they ask (does a
+specific *schema-legal construct* do anything) — but see the section above for why the gate-keyed
+ledger, not this one, is the number to cite as the suite's primary claim.
+
 ## Coverage is measured in four layers
 
 | layer | denominator | demonstrated | source |
@@ -19,19 +69,19 @@ relying on it.
 | Unit surfaces | 264 grammar-observable | **110** | `semantic-coverage-counterfactuals.tsv` |
 | Interface edges | 60 declared, 42 present | **15** | `interface-inventory.tsv`, `interface-witness.tsv` |
 | Interaction chains | 40 | **11** | `interaction-chains.tsv` |
-| Obligation cells | 346 | **2** | `dataflow-obligations.tsv` |
+| Obligation cells | 346 enumerated, 18 worth covering | **4** | `dataflow-obligations.tsv`, `fieldworks-producibility.tsv` |
 
 Each layer is stricter than the one above, so the numbers fall as the demand rises. The unit layer
 asks "does this knob do anything." The cell layer asks "is there a named word whose parse flips when
 this exact payload is severed, with a control proving the rule was capable of firing." Two cells meet
 that bar today.
 
-**The suite does not claim 346/346.** It claims 2, and it publishes the other 344 as named gaps that
+**The suite does not claim 346/346.** It claims 4, and it publishes every other cell as a named gap that
 cannot be quietly absorbed.
 
-### 344 gaps, but only 26 an author can pick up
+### 342 gaps, but only 14 an author can pick up
 
-That 344 is honest as a count and misleading as a work list.
+That 342 is honest as a count and misleading as a work list.
 
 `DataflowObligationLedger` emits four MC/DC arms per chain, and `FindPairedWitness` can certify
 exactly one of them. It reads the arm's direction off the reader attribute's *name*: a `required*`
@@ -46,8 +96,21 @@ blocks on presence, so it is `PresentGatedForm`. Any other reader name returns n
 | Mutator cells | 182 | no -- the detectors prove a structural precondition, never a word's outcome |
 | ConditionExtension cells | 4 | no |
 
-So the certifiable denominator is **28, of which 2 are satisfied**. Of the remaining 26, ten sit on
-chains some fixture already exercises and sixteen on chains no fixture exercises yet.
+So 28 of the 346 are certifiable at all. Then the third constraint layer applies:
+`fieldworks-producibility.tsv` marks **10 of those 28 as constructs HCLoader cannot emit**, so no
+FieldWorks project could ever exercise them and a witness would prove nothing about real use --
+six through `CompoundingRule.outputProdRestrictionsMprFeatures` as writer, six through the
+`HeadMorphologicalInput` MPR readers.
+
+**That leaves 18 cells worth covering, of which 4 are satisfied and 14 are outstanding.** The funnel
+is the honest form of this number:
+
+| | cells |
+|---|---|
+| enumerated by the generator | 346 |
+| certifiable by it at all | 28 |
+| also producible by FieldWorks | 18 |
+| satisfied today | **4** |
 
 Do not read the other 318 as phantom. A control arm is a real obligation -- this suite's own rule is
 that a gated form proves nothing without one -- and the twelve `head*`/`nonHead*` chains gate real

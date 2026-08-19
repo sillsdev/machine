@@ -230,6 +230,8 @@ FusionalRealizationalMorphology,lexdom,LEX+DOMN|lex+?dom,CompoundingRule
 FusionalRealizationalMorphology,lexdom,LEX+DOMV|lex+?dom,CompoundingRule
 FusionalRealizationalMorphology,lexbedom,LEX+BEPFX2+DOMV|lex+?bedom,CompoundingRule
 FusionalRealizationalMorphology,lexbex,,CompoundingRule
+FusionalRealizationalMorphology,gofz,GOF+ENDZ|gofz,MPR features/groups
+FusionalRealizationalMorphology,ygofz,,MPR features/groups
 FusionalRealizationalMorphology,xped,THEMEX+PED|xped,MPR features/groups
 FusionalRealizationalMorphology,yxped,THEMEY+THEMEX+PED|yxped,MPR features/groups
 FusionalRealizationalMorphology,xpedz,THEMEX+PED+ENDZ|xpedz,MPR features/groups
@@ -251,6 +253,7 @@ FusionalRealizationalMorphology,seclav,,CompoundingRule constraints (MaxApplicat
 FusionalRealizationalMorphology,genlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 FusionalRealizationalMorphology,mitlavlav,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 FusionalRealizationalMorphology,corriv,BLOCKHEAD+BLOCKNON|cor+?riv,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+MetathesisPhaseIsolation,idil,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 MetathesisPhaseIsolation,nui,NIU|nui,MetathesisRule
 MetathesisPhaseIsolation,niu,,MetathesisRule
 MetathesisPhaseIsolation,mu+i,MI+3SGU|mu+?i,MetathesisRule

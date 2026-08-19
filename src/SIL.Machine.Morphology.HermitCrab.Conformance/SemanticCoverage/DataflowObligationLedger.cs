@@ -294,7 +294,9 @@ public static class DataflowObligationLedger
     // InterfaceWitnessLedger rows for the SAME fixture on the SAME example word.
     // ----------------------------------------------------------------------------------------
 
-    private static bool IsFailOutcome(string? outcome) =>
+    /// <summary>Shared with <see cref="GateObligationLedger"/>, which needs the same fail/pass
+    /// classification for its own severance-based Blocked arm.</summary>
+    internal static bool IsFailOutcome(string? outcome) =>
         outcome != null && outcome.EndsWith("::-", StringComparison.Ordinal);
 
     private readonly record struct PairedWitness(string FixtureId, string Word, string Role);

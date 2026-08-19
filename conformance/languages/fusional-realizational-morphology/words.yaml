@@ -412,6 +412,73 @@ words:
         rules: []
         exercises: []
 
+  - word: gofz
+    note: >-
+      GOF ("gof", introduced in full below with its ruleFeatures preset) + mrEndZ directly, with
+      NEITHER mrThemeX NOR mrThemeY intervening -- GOF's own lexically-preset mprPedA reaches
+      mrEndZ's requiredMPRFeatures="mprPedA" gate untouched, so this succeeds. The control for
+      "ygofz" below: same root, same final suffix, the only difference is whether a
+      ThemeGroup-overwriting rule sits in between. Placed here, ahead of GOF's own narrative
+      introduction, because the paired severance witness on "ygofz" requires it to be the FIRST
+      word in this file whose outcome differs under either of two specific severances -- see
+      "ygofz"'s own note.
+    parses:
+      - signature: "GOF+ENDZ|gofz"
+        gloss: gof-END
+        rules: [mrEndZ]
+        exercises:
+          - "MPR features/groups"
+
+  - word: ygofz
+    note: >-
+      GOF + mrThemeY + mrEndZ -- mrThemeY's own MorphologicalOutput MPRFeatures="mprPedB" write puts
+      mprPedB into ThemeGroup's newly-written set, and MprFeatureSet.AddOutput's overwrite step drops
+      every OTHER ThemeGroup member not in that set -- including GOF's own lexically-preset mprPedA,
+      even though GOF never lost it by declaration, only by a later rule's write. mrEndZ's
+      requiredMPRFeatures="mprPedA" then fails: zero parses, despite GOF genuinely carrying mprPedA
+      at the lexical entry. This is the AbsentGatedForm witness for BOTH MPR writers onto this same
+      reader: severing mrThemeY's own MorphologicalOutput.MPRFeatures (so the write, and the
+      overwrite it triggers, never happens at all) leaves GOF's preset mprPedA untouched and this
+      parses exactly as "gofz" does; severing mrEndZ's own requiredMPRFeatures (so the gate no longer
+      needs mprPedA at all) unblocks it independently, to the identical result -- the same word,
+      the same successful parse, from two unrelated severances. This word is placed immediately
+      after "gofz" and before "xped"/"yxpedz" (the mpr-groups section's own earlier, unrelated
+      Overwrite/required-MPR demonstrations) deliberately: FindPairedWitness's severance ledger
+      reports the FIRST word in file order whose outcome differs under a given mutation, and
+      "xpedz"/"yxpedz" already differ under these same two severances (in the OPPOSITE, non-paired
+      direction and the un-paired reader-only direction respectively) -- if "ygofz" sat after them,
+      its own paired flip would never surface as either interface's recorded example.
+    expect_fail: true
+    blocked_by: [mrEndZ]
+    exercises:
+      - "MPR features/groups"
+    # Claims the McDc:AbsentGatedForm cell of docs/dataflow-coverage-plan.md's obligation matrix.
+    # DataflowClaimGate checks this against conformance/dataflow-obligations.tsv, never trusts it,
+    # and recomputes severing/before/after by re-severing the writer and reader named in the ledger
+    # row -- the inline values below are what it recomputed against, not what it trusts blindly.
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::MorphologicalOutput.MPRFeatures->MorphologicalInput.requiredMPRFeatures::McDc:AbsentGatedForm"
+        severing: >-
+          MPRFeatures across every MorphologicalOutput (the one that matters here is mrThemeY's own
+          "mprPedB" write), as the writer, or mrEndZ's MorphologicalInput.requiredMPRFeatures="mprPedA"
+          gate, as the reader -- severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::THEMEY+GOF+ENDZ|ygofz"
+        distinct_from: gofz
+        proof: >-
+          ygofz is GOF (lexically preset with mprPedA) run through mrThemeY then mrEndZ; with both
+          constructs intact, mrThemeY's own write triggers ThemeGroup's overwrite semantics
+          (MprFeatureSet.AddOutput) and drops GOF's preset mprPedA before mrEndZ's gate is ever
+          checked, so this has zero parses (ok::-). Removing either the writer (mrThemeY's own
+          MorphologicalOutput.MPRFeatures, so the overwrite-triggering write never happens) or the
+          reader (mrEndZ's requiredMPRFeatures, so the gate no longer needs mprPedA) lets mrEndZ
+          apply anyway, producing THEMEY+GOF+ENDZ|ygofz -- the AbsentGatedForm arm: the required
+          feature is ABSENT (from the derivation's accumulated state, though never from GOF's own
+          declaration) and the rule's requirement GATES on it. gofz (GOF+ENDZ with no mrThemeY at
+          all) is the control that shows mrEndZ applies normally once mprPedA actually survives to
+          the gate, so ygofz's block is attributable to mrThemeY's overwrite, not to mrEndZ never
+          applying at all.
+
   - word: xped
     note: PED prefixed by mrThemeX ("x-", sets MPR feature mprPedA).
     provenance: "W3.1, MprFeatureGroupOutput.Overwrite in MPR output accumulation"
