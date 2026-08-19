@@ -34,11 +34,6 @@ public class MemoCorpusVerification
         var memoOn = new Morpher(new TraceManager(), language, maxDegreeOfParallelism: 1);
         int timeoutMs = int.TryParse(Environment.GetEnvironmentVariable("HC_MEMO_TIMEOUT_MS"), out int t) ? t : 5000;
 
-        long mruleHitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
-        long mruleNogoodsBefore = MemoizedCombinationRuleCascade.DiagNogoodHits;
-        long templateHitsBefore = AnalysisStratumRule.DiagTemplateMemoHits;
-        long templateNogoodsBefore = AnalysisStratumRule.DiagTemplateNogoodHits;
-
         var elapsedMsPerWord = new List<double>();
         var perWordTimes = new List<(string Word, double OnMs, double OffMs)>();
         var divergences = new List<string>();
@@ -124,13 +119,9 @@ public class MemoCorpusVerification
         TestContext.Out.WriteLine("heaviest words (by memo-off time), memo-on vs memo-off:");
         foreach ((string w, double onMs2, double offMs2) in perWordTimes.OrderByDescending(x => x.OffMs).Take(10))
             TestContext.Out.WriteLine($"  {w}: memo-on {onMs2:F1} ms, memo-off {offMs2:F1} ms");
+        TestContext.Out.WriteLine($"mrule memo -- positive hits: {memoOn.MemoHits}, nogood hits: {memoOn.NogoodHits}");
         TestContext.Out.WriteLine(
-            $"mrule memo -- positive hits: {MemoizedCombinationRuleCascade.DiagMemoHits - mruleHitsBefore}, "
-                + $"nogood hits: {MemoizedCombinationRuleCascade.DiagNogoodHits - mruleNogoodsBefore}"
-        );
-        TestContext.Out.WriteLine(
-            $"template memo -- positive hits: {AnalysisStratumRule.DiagTemplateMemoHits - templateHitsBefore}, "
-                + $"nogood hits: {AnalysisStratumRule.DiagTemplateNogoodHits - templateNogoodsBefore}"
+            $"template memo -- positive hits: {memoOn.TemplateMemoHits}, nogood hits: {memoOn.TemplateNogoodHits}"
         );
         if (timedOut.Count > 0)
         {
@@ -150,8 +141,8 @@ public class MemoCorpusVerification
                 + $"(showing up to 10): {string.Join(" | ", divergences.Take(10))}"
         );
         Assert.That(
-            MemoizedCombinationRuleCascade.DiagMemoHits + AnalysisStratumRule.DiagTemplateMemoHits,
-            Is.GreaterThan(mruleHitsBefore + templateHitsBefore),
+            memoOn.MemoHits + memoOn.TemplateMemoHits,
+            Is.GreaterThan(0),
             "the positive replay path must actually have fired somewhere in this corpus -- otherwise "
                 + "this run cannot distinguish a working memo from a no-op one"
         );

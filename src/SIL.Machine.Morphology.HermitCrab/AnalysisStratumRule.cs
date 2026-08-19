@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 using SIL.ObjectModel;
@@ -188,10 +187,6 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        // Counterparts to MemoizedCombinationRuleCascade's counters, for the template table.
-        internal static long DiagTemplateMemoHits;
-        internal static long DiagTemplateNogoodHits;
-
         // The affix-template battery, memoized by AnalysisStateKey against its own table. On
         // template-heavy grammars this dominates parse time, which is why it is memoized separately from
         // the mrule cascade. See AnalysisScope.InProgress for why no re-entry guard is needed here.
@@ -204,15 +199,15 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (scope == null || _stratum.MorphologicalRuleOrder != MorphologicalRuleOrder.Unordered)
                 return _templatesRule.Apply(input);
 
-            var key = new AnalysisStateKey(input);
+            AnalysisStateKey key = AnalysisStateKey.PinAndKey(input);
             if (scope.TryReplay(scope.TemplateMemo, key, input, out List<Word> replayed))
             {
                 if (replayed.Count == 0)
                 {
-                    Interlocked.Increment(ref DiagTemplateNogoodHits);
+                    scope.TemplateNogoodHits++;
                     return replayed;
                 }
-                Interlocked.Increment(ref DiagTemplateMemoHits);
+                scope.TemplateMemoHits++;
                 return replayed;
             }
 

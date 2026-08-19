@@ -19,9 +19,15 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     internal sealed class AnalysisScope
     {
-        // OOM guard, since a positive entry holds Word lists rather than just a flag. Past the cap
-        // subtrees simply go unmemoized: only the hit rate degrades, never correctness.
+        // OOM guards; past either cap subtrees simply go unmemoized, degrading hit rate but never
+        // correctness. The Word budget is the load-bearing one: entry size is unbounded (a node's list
+        // holds every descendant, undeduplicated) and storing them keeps every intermediate of the search
+        // alive for the whole parse. Both tables share it. It is a coarse backstop, not a figure derived
+        // from measured memory.
         private const int MaxMemoEntries = 100_000;
+        private const int MaxMemoWords = 1_000_000;
+
+        private int _storedWordCount;
 
         public Dictionary<AnalysisStateKey, MemoEntry> Memo { get; } = new Dictionary<AnalysisStateKey, MemoEntry>();
 
@@ -31,11 +37,18 @@ namespace SIL.Machine.Morphology.HermitCrab
         public Dictionary<AnalysisStateKey, MemoEntry> TemplateMemo { get; } =
             new Dictionary<AnalysisStateKey, MemoEntry>();
 
-        // Keys still under expansion somewhere on the call stack. A multiApp cascade can reach the same
-        // state again before its first expansion has finished (e.g. via a self-loop), which must fall
-        // through to unmemoized expansion rather than read a partial entry or deadlock. The template
-        // battery needs no equivalent: its call is eager, with no template/mrule mutual recursion inside.
+        // Keys still under expansion on the call stack; a re-arrival at one must fall through to
+        // unmemoized expansion rather than read a partial entry. Defensive only -- no path reaches it
+        // today, since every unapplication grows the multiset the key hashes, so a key cannot recur while
+        // still on the stack. The template battery needs no equivalent: its call is eager.
         public HashSet<AnalysisStateKey> InProgress { get; } = new HashSet<AnalysisStateKey>();
+
+        // Per-parse hit counts, folded into the owning Morpher when the parse ends. Equivalence tests
+        // assert on them: a memo that silently stopped firing looks exactly like a passing test.
+        public int MemoHits { get; set; }
+        public int NogoodHits { get; set; }
+        public int TemplateMemoHits { get; set; }
+        public int TemplateNogoodHits { get; set; }
 
         /// <summary>
         /// Replay shared by both memo consumers. False on a miss; on a hit
@@ -78,7 +91,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         }
 
         /// <summary>
-        /// Records a fully-expanded result list against <paramref name="key"/>, unless the table is full.
+        /// Records a fully-expanded result list against <paramref name="key"/>, unless either the table is
+        /// full or the parse's retained-Word budget cannot absorb it.
         /// </summary>
         public void Store(
             Dictionary<AnalysisStateKey, MemoEntry> table,
@@ -87,8 +101,10 @@ namespace SIL.Machine.Morphology.HermitCrab
             List<Word> results
         )
         {
-            if (table.Count < MaxMemoEntries)
-                table[key] = new MemoEntry(results, query.MorphologicalRuleTrailLength, query.NonHeadCount);
+            if (table.Count >= MaxMemoEntries || _storedWordCount > MaxMemoWords - results.Count)
+                return;
+            _storedWordCount += results.Count;
+            table[key] = new MemoEntry(results, query.MorphologicalRuleTrailLength, query.NonHeadCount);
         }
     }
 

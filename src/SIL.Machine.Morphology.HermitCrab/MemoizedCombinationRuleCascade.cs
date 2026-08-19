@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading;
 using SIL.Machine.Annotations;
 using SIL.Machine.Rules;
 
@@ -18,11 +17,6 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// </summary>
     internal class MemoizedCombinationRuleCascade : CombinationRuleCascade<Word, ShapeNode>
     {
-        // Read by the equivalence tests to prove the memo actually fired: one that silently stopped
-        // firing would otherwise look exactly like a passing test.
-        internal static long DiagMemoHits;
-        internal static long DiagNogoodHits;
-
         public MemoizedCombinationRuleCascade(
             IEnumerable<IRule<Word, ShapeNode>> rules,
             IEqualityComparer<Word> comparer
@@ -32,7 +26,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         public override IEnumerable<Word> Apply(Word input)
         {
             var output = new HashSet<Word>(Comparer);
-            ApplyRules(input, output);
+            // Word.Clone carries the scope, so a null scope at the root means a null scope throughout.
+            if (input.AnalysisScope == null)
+                ApplyRulesUnmemoized(input, output);
+            else
+                ApplyRules(input, output);
             return output;
         }
 
@@ -41,17 +39,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         private List<Word> ApplyRules(Word input, HashSet<Word> output)
         {
             AnalysisScope scope = input.AnalysisScope;
-            // See Word.AnalysisScope's doc for when this is null.
-            if (scope == null)
-                return ApplyRulesRaw(input, output);
-
-            var key = new AnalysisStateKey(input);
+            AnalysisStateKey key = AnalysisStateKey.PinAndKey(input);
 
             if (scope.TryReplay(scope.Memo, key, input, out List<Word> replayed))
             {
                 if (replayed.Count == 0)
                 {
-                    Interlocked.Increment(ref DiagNogoodHits);
+                    scope.NogoodHits++;
                     return replayed;
                 }
                 foreach (Word replay in replayed)
@@ -59,7 +53,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     output.Add(replay);
                     CheckMaxAlternatives(output.Count);
                 }
-                Interlocked.Increment(ref DiagMemoHits);
+                scope.MemoHits++;
                 return replayed;
             }
 
@@ -103,6 +97,24 @@ namespace SIL.Machine.Morphology.HermitCrab
                 }
             }
             return local;
+        }
+
+        // ApplyRulesRaw without the per-node result lists, which exist only to feed a memo write. With no
+        // scope there is nothing to write, and accumulating them anyway would cost allocations
+        // proportional to the sum of all subtree sizes.
+        private void ApplyRulesUnmemoized(Word input, HashSet<Word> output)
+        {
+            for (int i = 0; i < Rules.Count; i++)
+            {
+                foreach (Word result in ApplyRule(Rules[i], i, input))
+                {
+                    // avoid infinite loop -- same guard CombinationRuleCascade uses
+                    if (!Comparer.Equals(input, result))
+                        ApplyRulesUnmemoized(result, output);
+                    output.Add(result);
+                    CheckMaxAlternatives(output.Count);
+                }
+            }
         }
     }
 }

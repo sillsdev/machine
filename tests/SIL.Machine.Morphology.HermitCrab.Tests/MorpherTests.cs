@@ -605,8 +605,6 @@ public class MorpherTests : HermitCrabTestBase
         var memoOff = new Morpher(TraceManager, Language);
         var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
 
-        long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
-        long nogoodHitsBefore = MemoizedCombinationRuleCascade.DiagNogoodHits;
         foreach (string word in new[] { "pʰutdidat", "pʰutdat" })
         {
             List<Word> onResult = memoOn.ParseWord(word).ToList();
@@ -617,13 +615,10 @@ public class MorpherTests : HermitCrabTestBase
                 $"memo-on parse of '{word}' must be analysis-set identical to memo-off"
             );
         }
-        TestContext.Out.WriteLine(
-            $"positive hits: {MemoizedCombinationRuleCascade.DiagMemoHits - hitsBefore}, "
-                + $"nogood hits: {MemoizedCombinationRuleCascade.DiagNogoodHits - nogoodHitsBefore}"
-        );
+        TestContext.Out.WriteLine($"positive hits: {memoOn.MemoHits}, nogood hits: {memoOn.NogoodHits}");
         Assert.That(
-            MemoizedCombinationRuleCascade.DiagMemoHits + MemoizedCombinationRuleCascade.DiagNogoodHits,
-            Is.GreaterThan(hitsBefore + nogoodHitsBefore),
+            memoOn.MemoHits + memoOn.NogoodHits,
+            Is.GreaterThan(0),
             "the memo must actually have hit (positive or nogood) at least once on this grammar -- "
                 + "otherwise this test cannot distinguish a working memo from a no-op one"
         );
@@ -746,8 +741,6 @@ public class MorpherTests : HermitCrabTestBase
         var memoOff = new Morpher(TraceManager, Language);
         var memoOn = new Morpher(TraceManager, Language, maxDegreeOfParallelism: 1);
 
-        long templateHitsBefore = AnalysisStratumRule.DiagTemplateMemoHits;
-        long templateNogoodHitsBefore = AnalysisStratumRule.DiagTemplateNogoodHits;
         foreach (string word in new[] { "digusagd", "disagd", "gusagd", "sagd", "sag" })
         {
             List<Word> onResult = memoOn.ParseWord(word).ToList();
@@ -759,15 +752,15 @@ public class MorpherTests : HermitCrabTestBase
             );
         }
         TestContext.Out.WriteLine(
-            $"template positive hits: {AnalysisStratumRule.DiagTemplateMemoHits - templateHitsBefore}, "
-                + $"template nogood hits: {AnalysisStratumRule.DiagTemplateNogoodHits - templateNogoodHitsBefore}"
+            $"template positive hits: {memoOn.TemplateMemoHits}, "
+                + $"template nogood hits: {memoOn.TemplateNogoodHits}"
         );
         // The graft's effect on final signatures is invisible through synthesis, which re-derives rule
         // orderings anyway, so this counter -- not the equality assertions above -- is what proves the
         // memoized path was exercised at all.
         Assert.That(
-            AnalysisStratumRule.DiagTemplateMemoHits + AnalysisStratumRule.DiagTemplateNogoodHits,
-            Is.GreaterThan(templateHitsBefore + templateNogoodHitsBefore),
+            memoOn.TemplateMemoHits + memoOn.TemplateNogoodHits,
+            Is.GreaterThan(0),
             "the template memo must actually have hit (positive or nogood) at least once on this "
                 + "grammar -- otherwise this test cannot distinguish a working memo from a no-op one"
         );
@@ -870,6 +863,42 @@ public class MorpherTests : HermitCrabTestBase
                 $"a parallelism cap must not change the analysis set for '{word}'"
             );
         }
+    }
+
+    [Test]
+    public void CreateParallelOptions_MapsTheCapOntoEveryParallelCallSite()
+    {
+        // The test above shows the cap does not change results, not that it reaches the Parallel.ForEach
+        // call sites at all. Observing real thread counts would be flaky, so pin the mapping instead.
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                new Morpher(TraceManager, Language, maxDegreeOfParallelism: 2)
+                    .CreateParallelOptions()
+                    .MaxDegreeOfParallelism,
+                Is.EqualTo(2),
+                "a configured cap must reach the call sites, not just gate the sequential path"
+            );
+            Assert.That(
+                new Morpher(TraceManager, Language).CreateParallelOptions().MaxDegreeOfParallelism,
+                Is.EqualTo(-1),
+                "the default of 0 means unbounded, which is TPL's -1"
+            );
+            // Synthesize's loop had ProcessorCount as its default before the cap existed; keep it.
+            Assert.That(
+                new Morpher(TraceManager, Language)
+                    .CreateParallelOptions(Environment.ProcessorCount)
+                    .MaxDegreeOfParallelism,
+                Is.EqualTo(Environment.ProcessorCount)
+            );
+            Assert.That(
+                new Morpher(TraceManager, Language, maxDegreeOfParallelism: 2)
+                    .CreateParallelOptions(Environment.ProcessorCount)
+                    .MaxDegreeOfParallelism,
+                Is.EqualTo(2),
+                "a configured cap must win over a call site's own uncapped default"
+            );
+        });
     }
 
     // What the memo gates compare, instead of object equality: a replayed Word is not field-for-field

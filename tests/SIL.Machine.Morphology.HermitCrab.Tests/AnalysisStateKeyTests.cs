@@ -30,8 +30,8 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
         wordY.MorphologicalRuleUnapplied(ruleA);
         wordY.Freeze();
 
-        var keyX = new AnalysisStateKey(wordX);
-        var keyY = new AnalysisStateKey(wordY);
+        var keyX = AnalysisStateKey.PinAndKey(wordX);
+        var keyY = AnalysisStateKey.PinAndKey(wordY);
 
         Assert.That(keyX.GetHashCode(), Is.EqualTo(keyY.GetHashCode()));
         Assert.That(keyX.Equals(keyY), Is.True);
@@ -51,7 +51,7 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
         wordY.MorphologicalRuleUnapplied(ruleA);
         wordY.Freeze();
 
-        Assert.That(new AnalysisStateKey(wordX).Equals(new AnalysisStateKey(wordY)), Is.False);
+        Assert.That(AnalysisStateKey.PinAndKey(wordX).Equals(AnalysisStateKey.PinAndKey(wordY)), Is.False);
     }
 
     [Test]
@@ -66,7 +66,7 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
         wordY.NonHeadUnapplied(nonHead);
         wordY.Freeze();
 
-        Assert.That(new AnalysisStateKey(wordX).Equals(new AnalysisStateKey(wordY)), Is.False);
+        Assert.That(AnalysisStateKey.PinAndKey(wordX).Equals(AnalysisStateKey.PinAndKey(wordY)), Is.False);
     }
 
     [Test]
@@ -80,15 +80,15 @@ public class AnalysisStateKeyTests : HermitCrabTestBase
         wordY.SyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value;
         wordY.Freeze();
 
-        Assert.That(new AnalysisStateKey(wordX).Equals(new AnalysisStateKey(wordY)), Is.False);
+        Assert.That(AnalysisStateKey.PinAndKey(wordX).Equals(AnalysisStateKey.PinAndKey(wordY)), Is.False);
     }
 
     [Test]
-    public void Constructor_Throws_WhenWordIsNotFrozen()
+    public void PinAndKey_Throws_WhenWordIsNotFrozen()
     {
         Word unfrozen = NewTestWord();
 
-        Assert.That(() => new AnalysisStateKey(unfrozen), Throws.ArgumentException);
+        Assert.That(() => AnalysisStateKey.PinAndKey(unfrozen), Throws.ArgumentException);
     }
 
     [Test]
