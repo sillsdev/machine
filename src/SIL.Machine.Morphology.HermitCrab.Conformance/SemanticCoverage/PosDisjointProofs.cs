@@ -103,7 +103,11 @@ public static class PosDisjointProofs
         if (ruleA is null || ruleB is null)
         {
             string missing = ruleA is null ? item.MemberA : item.MemberB;
-            return new PosDisjointCheck(item.Id, PosRelation.Undetermined, $"'{missing}' was not found as an element with a matching id attribute");
+            return new PosDisjointCheck(
+                item.Id,
+                PosRelation.Undetermined,
+                $"'{missing}' was not found as an element with a matching id attribute"
+            );
         }
         if (ruleA.Name.LocalName != "MorphologicalRule" || ruleB.Name.LocalName != "MorphologicalRule")
         {
@@ -128,7 +132,9 @@ public static class PosDisjointProofs
             );
         }
 
-        string[] shared = reqA.Intersect(reqB, StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToArray();
+        string[] shared = reqA.Intersect(reqB, StringComparer.Ordinal)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
         if (shared.Length > 0)
         {
             return new PosDisjointCheck(
@@ -175,18 +181,30 @@ public static class PosDisjointProofs
 
     private static SubrulePosResolution SubruleRequiredPartsOfSpeech(XElement rule)
     {
-        List<XElement> subrules = (rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule") ?? Enumerable.Empty<XElement>())
+        List<XElement> subrules = (
+            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule") ?? Enumerable.Empty<XElement>()
+        )
             .Where(IsActiveElement)
             .ToList();
         if (subrules.Count == 0)
-            return new SubrulePosResolution(SubrulePosKind.NoActiveSubrules, new HashSet<string>(StringComparer.Ordinal));
+        {
+            return new SubrulePosResolution(
+                SubrulePosKind.NoActiveSubrules,
+                new HashSet<string>(StringComparer.Ordinal)
+            );
+        }
 
         var union = new HashSet<string>(StringComparer.Ordinal);
         foreach (XElement subrule in subrules)
         {
             HashSet<string>? pos = RequiredPartsOfSpeech(subrule);
             if (pos is null || pos.Count == 0)
-                return new SubrulePosResolution(SubrulePosKind.Unrestricted, new HashSet<string>(StringComparer.Ordinal));
+            {
+                return new SubrulePosResolution(
+                    SubrulePosKind.Unrestricted,
+                    new HashSet<string>(StringComparer.Ordinal)
+                );
+            }
             union.UnionWith(pos);
         }
         return new SubrulePosResolution(SubrulePosKind.Restricted, union);
@@ -199,7 +217,11 @@ public static class PosDisjointProofs
         if (ruleA is null || ruleB is null)
         {
             string missing = ruleA is null ? item.MemberA : item.MemberB;
-            return new PosDisjointCheck(item.Id, PosRelation.Undetermined, $"'{missing}' was not found as an element with a matching id attribute");
+            return new PosDisjointCheck(
+                item.Id,
+                PosRelation.Undetermined,
+                $"'{missing}' was not found as an element with a matching id attribute"
+            );
         }
         if (ruleA.Name.LocalName != "PhonologicalRule" || ruleB.Name.LocalName != "PhonologicalRule")
         {
@@ -216,7 +238,11 @@ public static class PosDisjointProofs
         if (resA.Kind == SubrulePosKind.NoActiveSubrules || resB.Kind == SubrulePosKind.NoActiveSubrules)
         {
             string missing = resA.Kind == SubrulePosKind.NoActiveSubrules ? item.MemberA : item.MemberB;
-            return new PosDisjointCheck(item.Id, PosRelation.Undetermined, $"'{missing}' has no active PhonologicalSubrule children");
+            return new PosDisjointCheck(
+                item.Id,
+                PosRelation.Undetermined,
+                $"'{missing}' has no active PhonologicalSubrule children"
+            );
         }
         if (resA.Kind == SubrulePosKind.Unrestricted || resB.Kind == SubrulePosKind.Unrestricted)
         {
@@ -241,13 +267,10 @@ public static class PosDisjointProofs
             );
         }
 
-        HashSet<string> union = resA.PartsOfSpeech.Union(resB.PartsOfSpeech, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
-        XElement? bridge = FindBridgingRule(
-            grammar,
-            union,
-            resA.PartsOfSpeech,
-            resB.PartsOfSpeech
-        );
+        HashSet<string> union = resA
+            .PartsOfSpeech.Union(resB.PartsOfSpeech, StringComparer.Ordinal)
+            .ToHashSet(StringComparer.Ordinal);
+        XElement? bridge = FindBridgingRule(grammar, union, resA.PartsOfSpeech, resB.PartsOfSpeech);
         if (bridge is not null)
         {
             return new PosDisjointCheck(
@@ -316,8 +339,7 @@ public static class PosDisjointProofs
 
         bool outputOnSideA = requiredA.Contains(outputPartOfSpeech);
         bool outputOnSideB = requiredB.Contains(outputPartOfSpeech);
-        return (outputOnSideA && required.IsSubsetOf(requiredA))
-            || (outputOnSideB && required.IsSubsetOf(requiredB));
+        return (outputOnSideA && required.IsSubsetOf(requiredA)) || (outputOnSideB && required.IsSubsetOf(requiredB));
     }
 
     private static bool IsActiveElement(XElement element) => (string?)element.Attribute("isActive") != "no";

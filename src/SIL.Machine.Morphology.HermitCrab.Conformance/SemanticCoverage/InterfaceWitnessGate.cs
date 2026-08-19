@@ -47,8 +47,8 @@ public static class InterfaceWitnessGate
     public static bool IsRequiredByDtd(SemanticInventory inventory, string element, string attribute)
     {
         ArgumentNullException.ThrowIfNull(inventory);
-        InventorySurface? surface = inventory.Surfaces.FirstOrDefault(
-            s => s.Kind == "attribute" && s.Parent == element && s.Name == attribute
+        InventorySurface? surface = inventory.Surfaces.FirstOrDefault(s =>
+            s.Kind == "attribute" && s.Parent == element && s.Name == attribute
         );
         if (surface?.Value is null)
             return false;

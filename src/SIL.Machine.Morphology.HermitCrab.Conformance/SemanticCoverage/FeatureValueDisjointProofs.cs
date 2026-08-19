@@ -82,7 +82,11 @@ public static class FeatureValueDisjointProofs
         if (ruleA is null || ruleB is null)
         {
             string missing = ruleA is null ? item.MemberA : item.MemberB;
-            return new Check(item.Id, Relation.Undetermined, $"'{missing}' was not found as an element with a matching id attribute");
+            return new Check(
+                item.Id,
+                Relation.Undetermined,
+                $"'{missing}' was not found as an element with a matching id attribute"
+            );
         }
         if (ruleA.Name.LocalName != "PhonologicalRule" || ruleB.Name.LocalName != "PhonologicalRule")
         {
@@ -118,10 +122,21 @@ public static class FeatureValueDisjointProofs
             .OrderBy(s => s, StringComparer.Ordinal)
             .ToArray();
         if (sharedEnvironment.Length > 0)
-            return new Check(item.Id, Relation.Overlaps, $"environment classes share segment(s) {{{string.Join(",", sharedEnvironment)}}}");
+        {
+            return new Check(
+                item.Id,
+                Relation.Overlaps,
+                $"environment classes share segment(s) {{{string.Join(",", sharedEnvironment)}}}"
+            );
+        }
 
-        HashSet<string> triggerB = profileB.Environment.Union(profileB.Input, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
-        string[] aFeedsB = profileA.Output.Intersect(triggerB, StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToArray();
+        HashSet<string> triggerB = profileB
+            .Environment.Union(profileB.Input, StringComparer.Ordinal)
+            .ToHashSet(StringComparer.Ordinal);
+        string[] aFeedsB = profileA
+            .Output.Intersect(triggerB, StringComparer.Ordinal)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
         if (aFeedsB.Length > 0)
         {
             return new Check(
@@ -131,8 +146,13 @@ public static class FeatureValueDisjointProofs
             );
         }
 
-        HashSet<string> triggerA = profileA.Environment.Union(profileA.Input, StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
-        string[] bFeedsA = profileB.Output.Intersect(triggerA, StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToArray();
+        HashSet<string> triggerA = profileA
+            .Environment.Union(profileA.Input, StringComparer.Ordinal)
+            .ToHashSet(StringComparer.Ordinal);
+        string[] bFeedsA = profileB
+            .Output.Intersect(triggerA, StringComparer.Ordinal)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
         if (bFeedsA.Length > 0)
         {
             return new Check(
@@ -158,12 +178,16 @@ public static class FeatureValueDisjointProofs
     // could not be fully resolved. Both fail closed to "not modeled" rather than guessing.
     private static RuleProfile? BuildProfile(XElement rule, XDocument grammar)
     {
-        SegmentResolution input = ResolveSequenceSegments(rule.Element("PhoneticInput")?.Element("PhoneticSequence"), grammar);
+        SegmentResolution input = ResolveSequenceSegments(
+            rule.Element("PhoneticInput")?.Element("PhoneticSequence"),
+            grammar
+        );
         if (!input.IsResolved)
             return null;
 
         List<XElement> subrules =
-            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").Where(IsActiveElement).ToList() ?? new List<XElement>();
+            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").Where(IsActiveElement).ToList()
+            ?? new List<XElement>();
         if (subrules.Count == 0)
             return null;
 
@@ -172,7 +196,10 @@ public static class FeatureValueDisjointProofs
         bool anyEnvironment = false;
         foreach (XElement subrule in subrules)
         {
-            output = Union(output, ResolveSequenceSegments(subrule.Element("PhoneticOutput")?.Element("PhoneticSequence"), grammar));
+            output = Union(
+                output,
+                ResolveSequenceSegments(subrule.Element("PhoneticOutput")?.Element("PhoneticSequence"), grammar)
+            );
             if (!output.IsResolved)
                 return null;
 
@@ -196,12 +223,17 @@ public static class FeatureValueDisjointProofs
         if (!anyEnvironment)
             return null;
 
-        return new RuleProfile(input.Segments.ToHashSet(StringComparer.Ordinal), output.Segments.ToHashSet(StringComparer.Ordinal), environment.Segments.ToHashSet(StringComparer.Ordinal));
+        return new RuleProfile(
+            input.Segments.ToHashSet(StringComparer.Ordinal),
+            output.Segments.ToHashSet(StringComparer.Ordinal),
+            environment.Segments.ToHashSet(StringComparer.Ordinal)
+        );
     }
 
     private readonly record struct SegmentResolution(bool IsResolved, IReadOnlySet<string> Segments)
     {
-        public static SegmentResolution Ok(IEnumerable<string> segments) => new(true, segments.ToHashSet(StringComparer.Ordinal));
+        public static SegmentResolution Ok(IEnumerable<string> segments) =>
+            new(true, segments.ToHashSet(StringComparer.Ordinal));
 
         public static SegmentResolution No() => new(false, new HashSet<string>());
     }
@@ -246,7 +278,9 @@ public static class FeatureValueDisjointProofs
                 XElement? segmentDef = FindSegmentDefinition(grammar, segmentId);
                 if (segmentDef is null)
                     return SegmentResolution.No();
-                return IsActiveElement(segmentDef) ? SegmentResolution.Ok(new[] { segmentId }) : SegmentResolution.Ok(Array.Empty<string>());
+                return IsActiveElement(segmentDef)
+                    ? SegmentResolution.Ok(new[] { segmentId })
+                    : SegmentResolution.Ok(Array.Empty<string>());
             }
             case "SimpleContext":
             {
@@ -273,11 +307,15 @@ public static class FeatureValueDisjointProofs
 
     private static SegmentResolution ResolveNaturalClass(string naturalClassId, XDocument grammar)
     {
-        XElement? segmentClass = grammar.Descendants("SegmentNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+        XElement? segmentClass = grammar
+            .Descendants("SegmentNaturalClass")
+            .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
         if (segmentClass is not null)
             return ResolveSegmentNaturalClass(segmentClass, grammar);
 
-        XElement? featureClass = grammar.Descendants("FeatureNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+        XElement? featureClass = grammar
+            .Descendants("FeatureNaturalClass")
+            .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
         return featureClass is not null ? ResolveFeatureNaturalClass(featureClass, grammar) : SegmentResolution.No();
     }
 
@@ -333,24 +371,31 @@ public static class FeatureValueDisjointProofs
         return SegmentResolution.Ok(members);
     }
 
-    private static bool? MatchesEveryConstraint(XElement segmentDef, List<(string Feature, HashSet<string> Symbols)> constraints)
+    private static bool? MatchesEveryConstraint(
+        XElement segmentDef,
+        List<(string Feature, HashSet<string> Symbols)> constraints
+    )
     {
         foreach ((string feature, HashSet<string> symbols) in constraints)
         {
-            XElement? declared = segmentDef.Elements("FeatureValue").FirstOrDefault(fv => IsActiveElement(fv) && (string?)fv.Attribute("feature") == feature);
+            XElement? declared = segmentDef
+                .Elements("FeatureValue")
+                .FirstOrDefault(fv => IsActiveElement(fv) && (string?)fv.Attribute("feature") == feature);
             if (declared is null)
                 return null;
 
             string? declaredSymbols = (string?)declared.Attribute("symbolValues");
-            HashSet<string> declaredSet =
-                declaredSymbols is null ? new HashSet<string>(StringComparer.Ordinal) : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
+            HashSet<string> declaredSet = declaredSymbols is null
+                ? new HashSet<string>(StringComparer.Ordinal)
+                : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
             if (!declaredSet.Overlaps(symbols))
                 return false;
         }
         return true;
     }
 
-    private static string[] SplitIdrefs(string value) => value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+    private static string[] SplitIdrefs(string value) =>
+        value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
     private static XElement? FindSegmentDefinition(XDocument grammar, string id) =>
         grammar.Descendants("SegmentDefinition").FirstOrDefault(e => (string?)e.Attribute("id") == id);

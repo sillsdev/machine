@@ -82,10 +82,7 @@ public sealed class EngineGateInventoryLedgerTests
     {
         string root = RepositoryRoot();
         IReadOnlyList<EngineGateInventoryLedger.Row> rows = EngineGateInventoryLedger.Read(root);
-        string[] unreached = rows
-            .Where(r => r.Status == EngineGateStatus.Unreached)
-            .Select(r => r.Gate)
-            .ToArray();
+        string[] unreached = rows.Where(r => r.Status == EngineGateStatus.Unreached).Select(r => r.Gate).ToArray();
 
         Assert.That(
             unreached,
@@ -93,7 +90,6 @@ public sealed class EngineGateInventoryLedgerTests
                 new[]
                 {
                     "HeadPattern",
-                    
                     "NonHeadPattern",
                     "NonHeadProdRestrictMprFeatures",
                     "NonHeadRequiredSyntacticFeatureStruct",

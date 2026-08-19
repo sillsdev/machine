@@ -22,29 +22,74 @@ public static class CatalogBootstrap
 
     private static readonly Dictionary<string, KindPolicy> KindPolicies = new(StringComparer.Ordinal)
     {
-        ["attribute"] = new("loader", "An attribute declaration itself; its enumerated values are the unit a grammar can choose, and those are classified separately."),
-        ["attribute-type"] = new("metadata", "The declared XML type of an attribute. Schema bookkeeping with no parse behaviour of its own."),
-        ["attribute-default"] = new("metadata", "The declared default of an attribute. Which value is in effect is observable; the declaration of the default is not."),
+        ["attribute"] = new(
+            "loader",
+            "An attribute declaration itself; its enumerated values are the unit a grammar can choose, and those are classified separately."
+        ),
+        ["attribute-type"] = new(
+            "metadata",
+            "The declared XML type of an attribute. Schema bookkeeping with no parse behaviour of its own."
+        ),
+        ["attribute-default"] = new(
+            "metadata",
+            "The declared default of an attribute. Which value is in effect is observable; the declaration of the default is not."
+        ),
         ["default"] = new("metadata", "A DTD default declaration. Schema bookkeeping."),
-        ["content-group"] = new("loader", "A content-model group. Constrains what a document may contain; the loader enforces it before any parse behaviour exists."),
-        ["placement"] = new("loader", "Child occurrence and cardinality within a content model. Genuinely semantic as occurrence multiplicity, but not writable as a value in a grammar, so it is out of reach of the coverage ledger."),
+        ["content-group"] = new(
+            "loader",
+            "A content-model group. Constrains what a document may contain; the loader enforces it before any parse behaviour exists."
+        ),
+        ["placement"] = new(
+            "loader",
+            "Child occurrence and cardinality within a content model. Genuinely semantic as occurrence multiplicity, but not writable as a value in a grammar, so it is out of reach of the coverage ledger."
+        ),
         ["special-content"] = new("metadata", "An EMPTY or ANY content declaration. Schema bookkeeping."),
-        ["xml-read"] = new("loader", "A loader read of a named element or attribute. Load-time structure, tracked by the C# census rather than by grammar coverage."),
+        ["xml-read"] = new(
+            "loader",
+            "A loader read of a named element or attribute. Load-time structure, tracked by the C# census rather than by grammar coverage."
+        ),
         ["xml-all-elements"] = new("loader", "A loader read of every child element. Load-time structure."),
         ["dynamic-xml-access"] = new("loader", "A loader read whose name is computed. Load-time structure."),
         ["callable"] = new("loader", "A loader method. Load-time structure."),
         ["enum-member"] = new("loader", "A C# enum member of the loader model."),
         ["rule-implementation"] = new("loader", "A concrete rule type in the engine model."),
         ["branch-marker"] = new("loader", "A runtime semantic marker."),
-        ["decision-if"] = new("unclassified", "A conditional branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-switch"] = new("unclassified", "A switch branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-switch-expression"] = new("unclassified", "A switch-expression arm in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-conditional"] = new("unclassified", "A conditional expression branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-conditional-access"] = new("unclassified", "A null-conditional access branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-coalesce"] = new("unclassified", "A null-coalescing branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-catch"] = new("unclassified", "A catch branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-catch-filter"] = new("unclassified", "A catch-filter branch in an audited C# scope; semantic phase effects require human classification."),
-        ["decision-loop"] = new("unclassified", "A loop branch in an audited C# scope; semantic phase effects require human classification."),
+        ["decision-if"] = new(
+            "unclassified",
+            "A conditional branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-switch"] = new(
+            "unclassified",
+            "A switch branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-switch-expression"] = new(
+            "unclassified",
+            "A switch-expression arm in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-conditional"] = new(
+            "unclassified",
+            "A conditional expression branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-conditional-access"] = new(
+            "unclassified",
+            "A null-conditional access branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-coalesce"] = new(
+            "unclassified",
+            "A null-coalescing branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-catch"] = new(
+            "unclassified",
+            "A catch branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-catch-filter"] = new(
+            "unclassified",
+            "A catch-filter branch in an audited C# scope; semantic phase effects require human classification."
+        ),
+        ["decision-loop"] = new(
+            "unclassified",
+            "A loop branch in an audited C# scope; semantic phase effects require human classification."
+        ),
     };
 
     public static string Generate(SemanticInventory inventory) => Generate(inventory, Array.Empty<string>());
@@ -87,16 +132,18 @@ public static class CatalogBootstrap
         var text = new StringBuilder();
         text.Append(Header(inventory, elementFeatures.Count, kindFeatures.Count, mappings.Count));
         text.Append("profile: ").Append(SemanticCatalogLoader.ExpectedProfile).Append('\n');
-        text.Append("auditedSourceScopes: [")
-            .Append(string.Join(", ", scopes.Select(QuoteYamlScalar)))
-            .Append("]\n");
+        text.Append("auditedSourceScopes: [").Append(string.Join(", ", scopes.Select(QuoteYamlScalar))).Append("]\n");
         text.Append("features:\n");
         foreach (string element in elementFeatures)
         {
             text.Append($"  - id: grammar/{element}\n");
             text.Append("    disposition: unclassified\n");
-            text.Append($"    reason: \"Grammar-observable surfaces of DTD element {element}. Generated by the bootstrap; no human has judged the phase effects yet. Per-surface coverage is tracked in the coverage ledger.\"\n");
-            text.Append("    citations: [\"src/SIL.Machine.Morphology.HermitCrab/HermitCrabInput.dtd\", \"conformance/semantic-coverage-baseline.txt\"]\n");
+            text.Append(
+                $"    reason: \"Grammar-observable surfaces of DTD element {element}. Generated by the bootstrap; no human has judged the phase effects yet. Per-surface coverage is tracked in the coverage ledger.\"\n"
+            );
+            text.Append(
+                "    citations: [\"src/SIL.Machine.Morphology.HermitCrab/HermitCrabInput.dtd\", \"conformance/semantic-coverage-baseline.txt\"]\n"
+            );
         }
 
         foreach (string kind in kindFeatures)
@@ -109,7 +156,9 @@ public static class CatalogBootstrap
         }
 
         text.Append("surfaceMappings:\n");
-        foreach ((string surfaceId, string featureId) in mappings.OrderBy(item => item.SurfaceId, StringComparer.Ordinal))
+        foreach (
+            (string surfaceId, string featureId) in mappings.OrderBy(item => item.SurfaceId, StringComparer.Ordinal)
+        )
         {
             text.Append($"  - surface: \"{surfaceId}\"\n");
             text.Append($"    feature: {featureId}\n");
@@ -128,7 +177,8 @@ public static class CatalogBootstrap
     public static void WriteProposal(
         TextWriter writer,
         SemanticInventory inventory,
-        IReadOnlyCollection<string> auditedSourceScopes)
+        IReadOnlyCollection<string> auditedSourceScopes
+    )
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(inventory);
@@ -136,7 +186,9 @@ public static class CatalogBootstrap
     }
 
     public static SemanticCatalog Load(string repositoryRoot) =>
-        SemanticCatalogLoader.Load(Path.Combine(repositoryRoot, CatalogRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        SemanticCatalogLoader.Load(
+            Path.Combine(repositoryRoot, CatalogRelativePath.Replace('/', Path.DirectorySeparatorChar))
+        );
 
     private static string[] NormalizeScopes(IReadOnlyCollection<string> scopes)
     {
@@ -145,7 +197,10 @@ public static class CatalogBootstrap
         {
             if (string.IsNullOrWhiteSpace(scope) || ScopeValidation.HasPattern(scope))
             {
-                throw new ArgumentException($"Audited source scope '{scope}' must be one exact canonical symbol ID.", nameof(scopes));
+                throw new ArgumentException(
+                    $"Audited source scope '{scope}' must be one exact canonical symbol ID.",
+                    nameof(scopes)
+                );
             }
         }
 
@@ -161,22 +216,22 @@ public static class CatalogBootstrap
 
     private static string Header(SemanticInventory inventory, int elementFeatures, int kindFeatures, int mappings) =>
         $"""
-        # HermitCrab semantic catalog
-        #
-        # PROPOSAL from hc-conformance --propose-semantic-catalog. Every one of the {inventory.Surfaces.Count} surfaces the
-        # inventory generates is named by exactly one surfaceMappings row, so a surface added to the DTD
-        # is unmapped and the audit fails until someone classifies it. That fail-closed property is the
-        # whole point; regenerating is a deliberate act, not something a build does for you.
-        #
-        # {elementFeatures} features group the grammar-observable surfaces by DTD element and are
-        # `unclassified`: the bootstrap records that no human has judged their phase effects, rather
-        # than fabricating effects to satisfy the audit. Promoting one to `semantic` means supplying all
-        # three phase effects, which the audit then requires.
-        #
-        # {kindFeatures} features classify the rest by surface kind. This is where the surfaces a grammar
-        # author cannot write are accounted for by name instead of vanishing into a filter.
-        #
-        # {mappings} mapping rows. Wildcards are rejected, not expanded.
+            # HermitCrab semantic catalog
+            #
+            # PROPOSAL from hc-conformance --propose-semantic-catalog. Every one of the {inventory.Surfaces.Count} surfaces the
+            # inventory generates is named by exactly one surfaceMappings row, so a surface added to the DTD
+            # is unmapped and the audit fails until someone classifies it. That fail-closed property is the
+            # whole point; regenerating is a deliberate act, not something a build does for you.
+            #
+            # {elementFeatures} features group the grammar-observable surfaces by DTD element and are
+            # `unclassified`: the bootstrap records that no human has judged their phase effects, rather
+            # than fabricating effects to satisfy the audit. Promoting one to `semantic` means supplying all
+            # three phase effects, which the audit then requires.
+            #
+            # {kindFeatures} features classify the rest by surface kind. This is where the surfaces a grammar
+            # author cannot write are accounted for by name instead of vanishing into a filter.
+            #
+            # {mappings} mapping rows. Wildcards are rejected, not expanded.
 
-        """;
+            """;
 }

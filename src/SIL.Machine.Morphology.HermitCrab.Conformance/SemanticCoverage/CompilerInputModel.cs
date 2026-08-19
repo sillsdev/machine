@@ -8,7 +8,8 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
 internal sealed class CompilerInputException : Exception
 {
-    internal CompilerInputException(string code, string message, Exception? inner = null) : base(message, inner) => Code = code;
+    internal CompilerInputException(string code, string message, Exception? inner = null)
+        : base(message, inner) => Code = code;
 
     internal string Code { get; }
 }
@@ -27,7 +28,8 @@ internal sealed record CompilerInputModel(
     IReadOnlyList<CompilerSourceClassification> Sources,
     IReadOnlyList<AnalyzerMetadataInspection> Analyzers,
     IReadOnlyList<CompilerAuxiliaryInput> AdditionalFiles,
-    IReadOnlyList<CompilerAuxiliaryInput> AnalyzerConfigs);
+    IReadOnlyList<CompilerAuxiliaryInput> AnalyzerConfigs
+);
 
 internal sealed record CompilerAuxiliaryInput(string Path, ImmutableArray<byte> Content);
 
@@ -37,7 +39,4 @@ internal enum CompilerSourceKind
     GeneratedSupport,
 }
 
-internal sealed record CompilerSourceClassification(
-    string Path,
-    CompilerSourceKind Kind,
-    ImmutableArray<byte> Content);
+internal sealed record CompilerSourceClassification(string Path, CompilerSourceKind Kind, ImmutableArray<byte> Content);

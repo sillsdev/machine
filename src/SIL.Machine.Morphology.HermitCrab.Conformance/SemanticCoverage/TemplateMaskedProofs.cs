@@ -68,7 +68,13 @@ public static class TemplateMaskedProofs
 
         XElement[] templates = grammar.Descendants("AffixTemplate").ToArray();
         if (item.OwnerOrdinal < 0 || item.OwnerOrdinal >= templates.Length)
-            return new TemplateMaskedCheck(item.Id, false, "owning AffixTemplate ordinal is out of range for the current document");
+        {
+            return new TemplateMaskedCheck(
+                item.Id,
+                false,
+                "owning AffixTemplate ordinal is out of range for the current document"
+            );
+        }
 
         XElement template = templates[item.OwnerOrdinal];
         XElement? stratum = template.Ancestors("Stratum").FirstOrDefault();
@@ -93,7 +99,8 @@ public static class TemplateMaskedProofs
             );
         }
 
-        var cascadeRules = SplitIdrefs((string?)stratum.Attribute("morphologicalRules")).ToHashSet(StringComparer.Ordinal);
+        var cascadeRules = SplitIdrefs((string?)stratum.Attribute("morphologicalRules"))
+            .ToHashSet(StringComparer.Ordinal);
 
         // Every Slot of the WHOLE template, not merely the two being swapped -- the template applies its
         // slots in sequence, so a rule reachable only through a slot outside the pair still makes this
@@ -147,5 +154,7 @@ public static class TemplateMaskedProofs
     }
 
     private static IEnumerable<string> SplitIdrefs(string? value) =>
-        string.IsNullOrEmpty(value) ? Enumerable.Empty<string>() : value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        string.IsNullOrEmpty(value)
+            ? Enumerable.Empty<string>()
+            : value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 }

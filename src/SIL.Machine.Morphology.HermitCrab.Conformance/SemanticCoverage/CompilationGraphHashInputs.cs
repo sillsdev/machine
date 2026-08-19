@@ -33,7 +33,6 @@ internal sealed record GraphHashFile
     internal string LogicalPath { get; }
     internal ImmutableArray<byte> Content { get; }
     internal GraphHashFileKind Kind { get; }
-
 }
 
 internal sealed record OrderedHashValue
@@ -104,7 +103,8 @@ internal sealed record ReferenceHashInput
         string identity,
         GraphHashFile file,
         IReadOnlyList<string> aliases,
-        bool embedInteropTypes)
+        bool embedInteropTypes
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identity);
         ArgumentNullException.ThrowIfNull(file);
@@ -131,8 +131,7 @@ internal sealed record ProjectReferenceHashInput
         ProjectId = projectId;
         if (metadata is not null && metadata.Any(pair => pair.Key is null || pair.Value is null))
             throw new ArgumentException("Project reference metadata cannot contain null elements.", nameof(metadata));
-        Metadata = (metadata ?? new Dictionary<string, string>())
-            .ToImmutableSortedDictionary(StringComparer.Ordinal);
+        Metadata = (metadata ?? new Dictionary<string, string>()).ToImmutableSortedDictionary(StringComparer.Ordinal);
     }
 
     internal string ProjectId { get; }
@@ -181,7 +180,8 @@ internal sealed record NodeHashInput
         IReadOnlyList<GraphHashFile> editorConfigFiles,
         IReadOnlyList<GraphHashFile> usings,
         IReadOnlyList<GraphHashFile> assets,
-        IReadOnlyList<GraphHashFile> imports)
+        IReadOnlyList<GraphHashFile> imports
+    )
     {
         ArgumentNullException.ThrowIfNull(key);
         ValidateKeySegment(key.ProjectId, nameof(key.ProjectId));
@@ -198,11 +198,16 @@ internal sealed record NodeHashInput
         ArgumentNullException.ThrowIfNull(usings);
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(imports);
-        RejectNull(arguments, nameof(arguments)); RejectNull(sources, nameof(sources));
-        RejectNull(references, nameof(references)); RejectNull(projectReferences, nameof(projectReferences));
-        RejectNull(analyzers, nameof(analyzers)); RejectNull(additionalFiles, nameof(additionalFiles));
-        RejectNull(editorConfigFiles, nameof(editorConfigFiles)); RejectNull(usings, nameof(usings));
-        RejectNull(assets, nameof(assets)); RejectNull(imports, nameof(imports));
+        RejectNull(arguments, nameof(arguments));
+        RejectNull(sources, nameof(sources));
+        RejectNull(references, nameof(references));
+        RejectNull(projectReferences, nameof(projectReferences));
+        RejectNull(analyzers, nameof(analyzers));
+        RejectNull(additionalFiles, nameof(additionalFiles));
+        RejectNull(editorConfigFiles, nameof(editorConfigFiles));
+        RejectNull(usings, nameof(usings));
+        RejectNull(assets, nameof(assets));
+        RejectNull(imports, nameof(imports));
         Key = key;
         Settings = settings.ToImmutableSortedDictionary(StringComparer.Ordinal);
         Arguments = ImmutableArray.CreateRange(arguments);
@@ -220,8 +225,11 @@ internal sealed record NodeHashInput
         RejectDuplicate(references.Select(reference => reference.Identity), nameof(references));
         RejectDuplicate(projectReferences.Select(reference => reference.ProjectId), nameof(projectReferences));
         RejectDuplicate(analyzers.Select(analyzer => analyzer.Identity), nameof(analyzers));
-        ValidateFiles(additionalFiles, nameof(additionalFiles)); ValidateFiles(editorConfigFiles, nameof(editorConfigFiles));
-        ValidateFiles(usings, nameof(usings)); ValidateFiles(assets, nameof(assets)); ValidateFiles(imports, nameof(imports));
+        ValidateFiles(additionalFiles, nameof(additionalFiles));
+        ValidateFiles(editorConfigFiles, nameof(editorConfigFiles));
+        ValidateFiles(usings, nameof(usings));
+        ValidateFiles(assets, nameof(assets));
+        ValidateFiles(imports, nameof(imports));
     }
 
     internal RepositoryGraphNodeKey Key { get; }
@@ -248,10 +256,16 @@ internal sealed record NodeHashInput
     private static void ValidateKeySegment(string value, string parameterName)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Contains('/') || value.Contains('\\'))
-            throw new ArgumentException("Node identity segments must be nonempty and contain no path separators.", parameterName);
+        {
+            throw new ArgumentException(
+                "Node identity segments must be nonempty and contain no path separators.",
+                parameterName
+            );
+        }
     }
 
-    private static void RejectNull<T>(IEnumerable<T> values, string parameterName) where T : class
+    private static void RejectNull<T>(IEnumerable<T> values, string parameterName)
+        where T : class
     {
         if (values.Any(value => value is null))
             throw new ArgumentException("Collections cannot contain null elements.", parameterName);
@@ -282,7 +296,8 @@ internal sealed record ToolchainHashInput
         string roslynIdentity,
         string compilerIdentity,
         string loaderIdentity,
-        IReadOnlyList<GraphHashFile> files)
+        IReadOnlyList<GraphHashFile> files
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sdkVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(msBuildVersion);
@@ -320,7 +335,8 @@ internal sealed record CompilationGraphHashInputs
         IReadOnlyList<RepositoryProjectEdge> edges,
         ToolchainHashInput toolchain,
         GraphHashFile captureTarget,
-        OptionalGraphHashFile lockFile)
+        OptionalGraphHashFile lockFile
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(schemaVersion);
         ArgumentNullException.ThrowIfNull(projects);
@@ -338,7 +354,9 @@ internal sealed record CompilationGraphHashInputs
         Toolchain = toolchain;
         CaptureTarget = captureTarget;
         LockFile = lockFile;
-        RejectNull(Projects, nameof(projects)); RejectNull(Profiles, nameof(profiles)); RejectNull(Nodes, nameof(nodes));
+        RejectNull(Projects, nameof(projects));
+        RejectNull(Profiles, nameof(profiles));
+        RejectNull(Nodes, nameof(nodes));
         RejectNull(Edges, nameof(edges));
         RejectDuplicate(Projects.Select(project => project.Id), "project IDs");
         RejectDuplicate(Projects.Select(project => project.LogicalPath), "project paths");
@@ -364,7 +382,11 @@ internal sealed record CompilationGraphHashInputs
         foreach (ProjectHashInput project in Projects)
         {
             if (!entries.TryAdd(project.LogicalPath, new LogicalPathEntry(project.LogicalPath)))
-                throw new InvalidDataException($"Logical project path '{project.LogicalPath}' collides with another logical path.");
+            {
+                throw new InvalidDataException(
+                    $"Logical project path '{project.LogicalPath}' collides with another logical path."
+                );
+            }
         }
 
         foreach (GraphHashFile file in EnumerateAllFiles())
@@ -380,10 +402,14 @@ internal sealed record CompilationGraphHashInputs
                 {
                     existing.File = file;
                 }
-                else if (existing.File.Kind != file.Kind
-                    || !existing.File.Content.AsSpan().SequenceEqual(file.Content.AsSpan()))
+                else if (
+                    existing.File.Kind != file.Kind
+                    || !existing.File.Content.AsSpan().SequenceEqual(file.Content.AsSpan())
+                )
                 {
-                    throw new InvalidDataException($"Logical path '{file.LogicalPath}' has conflicting content or kind.");
+                    throw new InvalidDataException(
+                        $"Logical path '{file.LogicalPath}' has conflicting content or kind."
+                    );
                 }
             }
             else
@@ -393,7 +419,8 @@ internal sealed record CompilationGraphHashInputs
         }
     }
 
-    private static void RejectNull<T>(IEnumerable<T> values, string parameterName) where T : class
+    private static void RejectNull<T>(IEnumerable<T> values, string parameterName)
+        where T : class
     {
         if (values.Any(value => value is null))
             throw new ArgumentException("Collections cannot contain null elements.", parameterName);
@@ -407,20 +434,30 @@ internal sealed record CompilationGraphHashInputs
 
     private static IEnumerable<GraphHashFile> EnumerateFiles(NodeHashInput node)
     {
-        foreach (OrderedGraphHashFile file in node.Sources) yield return file.File;
-        foreach (ReferenceHashInput reference in node.References) yield return reference.File;
-        foreach (AnalyzerHashInput analyzer in node.Analyzers) yield return analyzer.File;
-        foreach (GraphHashFile file in node.AdditionalFiles) yield return file;
-        foreach (GraphHashFile file in node.EditorConfigFiles) yield return file;
-        foreach (GraphHashFile file in node.Usings) yield return file;
-        foreach (GraphHashFile file in node.Assets) yield return file;
-        foreach (GraphHashFile file in node.Imports) yield return file;
+        foreach (OrderedGraphHashFile file in node.Sources)
+            yield return file.File;
+        foreach (ReferenceHashInput reference in node.References)
+            yield return reference.File;
+        foreach (AnalyzerHashInput analyzer in node.Analyzers)
+            yield return analyzer.File;
+        foreach (GraphHashFile file in node.AdditionalFiles)
+            yield return file;
+        foreach (GraphHashFile file in node.EditorConfigFiles)
+            yield return file;
+        foreach (GraphHashFile file in node.Usings)
+            yield return file;
+        foreach (GraphHashFile file in node.Assets)
+            yield return file;
+        foreach (GraphHashFile file in node.Imports)
+            yield return file;
     }
 
     private IEnumerable<GraphHashFile> EnumerateAllFiles()
     {
-        foreach (GraphHashFile file in Nodes.SelectMany(EnumerateFiles)) yield return file;
-        foreach (GraphHashFile file in Toolchain.Files) yield return file;
+        foreach (GraphHashFile file in Nodes.SelectMany(EnumerateFiles))
+            yield return file;
+        foreach (GraphHashFile file in Toolchain.Files)
+            yield return file;
         yield return CaptureTarget;
         if (LockFile.IsPresent)
             yield return LockFile.File!;

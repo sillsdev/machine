@@ -21,7 +21,8 @@ public sealed class CatalogBootstrapAuthorityTests
         {
             Assert.That(proposal.ToString(), Is.EqualTo(CatalogBootstrap.Generate(inventory)));
             Assert.That(
-                typeof(CatalogBootstrap).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                typeof(CatalogBootstrap)
+                    .GetMethods(BindingFlags.Public | BindingFlags.Static)
                     .Select(method => method.Name),
                 Does.Not.Contain("Write"),
                 "bootstrap code must have no API that can overwrite the canonical catalog"

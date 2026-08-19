@@ -28,7 +28,12 @@ internal sealed record OwnedSymbolKey
             throw new CompilerInputException("external-symbol", "The symbol has no containing assembly.");
 
         if (symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction or MethodKind.AnonymousFunction })
-            throw new CompilerInputException("owned-symbol-context-required", "Local functions and lambdas require compilation context.");
+        {
+            throw new CompilerInputException(
+                "owned-symbol-context-required",
+                "Local functions and lambdas require compilation context."
+            );
+        }
         ISymbol canonical = symbol is INamedTypeSymbol ? symbol : symbol.OriginalDefinition;
         return Create(projectId, assembly.Identity, CanonicalSymbolId(canonical));
     }
@@ -61,7 +66,8 @@ internal sealed record OwnedSymbolKey
             IEventSymbol @event => $"{TypeId(@event.ContainingType!)}.{@event.Name}",
             _ => throw new CompilerInputException(
                 "unsupported-symbol-shape",
-                $"Symbol kind '{symbol.Kind}' is not supported by the owned-symbol catalog."),
+                $"Symbol kind '{symbol.Kind}' is not supported by the owned-symbol catalog."
+            ),
         };
     }
 
@@ -75,11 +81,10 @@ internal sealed record OwnedSymbolKey
     {
         INamedTypeSymbol definition = type.OriginalDefinition;
         string name = definition.Name + (definition.Arity == 0 ? string.Empty : $"`{definition.Arity}");
-        string id = type.ContainingType is not null
-            ? $"{TypeId(type.ContainingType)}.{name}"
-            : definition.ContainingNamespace is { IsGlobalNamespace: false } ns
-                ? $"{NamespaceId(ns)}.{name}"
-                : name;
+        string id =
+            type.ContainingType is not null ? $"{TypeId(type.ContainingType)}.{name}"
+            : definition.ContainingNamespace is { IsGlobalNamespace: false } ns ? $"{NamespaceId(ns)}.{name}"
+            : name;
 
         if (SymbolEqualityComparer.Default.Equals(type, definition) || type.TypeArguments.Length == 0)
             return id;
@@ -89,13 +94,17 @@ internal sealed record OwnedSymbolKey
     private static string MethodId(IMethodSymbol method)
     {
         IMethodSymbol definition = method.OriginalDefinition;
-        if (definition.AssociatedSymbol is IPropertySymbol property &&
-            definition.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet)
+        if (
+            definition.AssociatedSymbol is IPropertySymbol property
+            && definition.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet
+        )
         {
             return $"{PropertyId(property)}/{(definition.MethodKind == MethodKind.PropertyGet ? "get" : "set")}";
         }
-        if (definition.AssociatedSymbol is IEventSymbol @event &&
-            definition.MethodKind is MethodKind.EventAdd or MethodKind.EventRemove)
+        if (
+            definition.AssociatedSymbol is IEventSymbol @event
+            && definition.MethodKind is MethodKind.EventAdd or MethodKind.EventRemove
+        )
         {
             return $"{TypeId(@event.ContainingType!)}.{@event.Name}/{(definition.MethodKind == MethodKind.EventAdd ? "add" : "remove")}";
         }
@@ -175,29 +184,35 @@ internal sealed record OwnedSymbolKey
             SpecialType.System_UInt64 => "System.UInt64",
             _ => null,
         };
-        return special ?? type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat).Replace("global::", string.Empty, StringComparison.Ordinal);
+        return special
+            ?? type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                .Replace("global::", string.Empty, StringComparison.Ordinal);
     }
 }
 
 /// <summary>Bridges profile-local Roslyn symbols to original owned definitions.</summary>
 internal sealed class OwnedSymbolBridge
 {
-    private static readonly IReadOnlyDictionary<string, string> ProjectByAssemblyName =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["SIL.Machine"] = "machine",
-            ["SIL.Machine.Morphology.HermitCrab"] = "hc",
-            ["hc"] = "hc-tool",
-            ["hc-conformance"] = "hc-conformance",
-        };
+    private static readonly IReadOnlyDictionary<string, string> ProjectByAssemblyName = new Dictionary<string, string>(
+        StringComparer.Ordinal
+    )
+    {
+        ["SIL.Machine"] = "machine",
+        ["SIL.Machine.Morphology.HermitCrab"] = "hc",
+        ["hc"] = "hc-tool",
+        ["hc-conformance"] = "hc-conformance",
+    };
 
     private readonly IReadOnlyDictionary<string, ProfileIndex> _profiles;
-    private readonly IReadOnlyDictionary<IAssemblySymbol, string> _assemblyProfiles =
-        new Dictionary<IAssemblySymbol, string>(ReferenceEqualityComparer.Instance);
+    private readonly IReadOnlyDictionary<IAssemblySymbol, string> _assemblyProfiles = new Dictionary<
+        IAssemblySymbol,
+        string
+    >(ReferenceEqualityComparer.Instance);
 
     private OwnedSymbolBridge(
         IReadOnlyDictionary<string, ProfileIndex> profiles,
-        IReadOnlyDictionary<IAssemblySymbol, string> assemblyProfiles)
+        IReadOnlyDictionary<IAssemblySymbol, string> assemblyProfiles
+    )
     {
         _profiles = profiles;
         _assemblyProfiles = assemblyProfiles;
@@ -209,8 +224,11 @@ internal sealed class OwnedSymbolBridge
         var profiles = new Dictionary<string, ProfileIndex>(StringComparer.Ordinal);
         var assemblyProfiles = new Dictionary<IAssemblySymbol, string>(ReferenceEqualityComparer.Instance);
 
-        foreach (RoslynCompilationNode node in graph.Nodes.Values.OrderBy(item => item.Key.ProfileId, StringComparer.Ordinal)
-            .ThenBy(item => item.Key.ProjectId, StringComparer.Ordinal))
+        foreach (
+            RoslynCompilationNode node in graph
+                .Nodes.Values.OrderBy(item => item.Key.ProfileId, StringComparer.Ordinal)
+                .ThenBy(item => item.Key.ProjectId, StringComparer.Ordinal)
+        )
         {
             if (!profiles.TryGetValue(node.Key.ProfileId, out ProfileIndex? profile))
             {
@@ -219,21 +237,37 @@ internal sealed class OwnedSymbolBridge
             }
 
             RegisterAssembly(node.Compilation.Assembly, node.Key.ProfileId, assemblyProfiles);
-            foreach (IAssemblySymbol assembly in node.Compilation.SourceModule.ReferencedAssemblySymbols
-                .Where(assembly => ProjectByAssemblyName.ContainsKey(assembly.Identity.Name)))
+            foreach (
+                IAssemblySymbol assembly in node.Compilation.SourceModule.ReferencedAssemblySymbols.Where(assembly =>
+                    ProjectByAssemblyName.ContainsKey(assembly.Identity.Name)
+                )
+            )
             {
                 RegisterAssembly(assembly, node.Key.ProfileId, assemblyProfiles);
             }
 
             string? expectedProject = ProjectByAssemblyName.GetValueOrDefault(node.Compilation.Assembly.Identity.Name);
-            if (expectedProject is null || !string.Equals(expectedProject, node.Key.ProjectId, StringComparison.Ordinal))
-                throw new CompilerInputException("unknown-owned-assembly", $"Project '{node.Key.ProjectId}' has unexpected assembly '{node.Compilation.Assembly.Identity.Name}'.");
+            if (
+                expectedProject is null
+                || !string.Equals(expectedProject, node.Key.ProjectId, StringComparison.Ordinal)
+            )
+            {
+                throw new CompilerInputException(
+                    "unknown-owned-assembly",
+                    $"Project '{node.Key.ProjectId}' has unexpected assembly '{node.Compilation.Assembly.Identity.Name}'."
+                );
+            }
 
             foreach (ISymbol symbol in Definitions(node.Compilation.Assembly.GlobalNamespace))
             {
                 OwnedSymbolKey key = OwnedSymbolKey.Create(node.Key.ProjectId, symbol);
                 if (!profile.Definitions.TryAdd(key.Value, symbol))
-                    throw new CompilerInputException("ambiguous-owned-key", $"Duplicate owned symbol key '{key.Value}'.");
+                {
+                    throw new CompilerInputException(
+                        "ambiguous-owned-key",
+                        $"Duplicate owned symbol key '{key.Value}'."
+                    );
+                }
                 profile.SymbolKeys.Add(symbol, key);
             }
             RegisterLocalExecutables(node, profile);
@@ -250,24 +284,43 @@ internal sealed class OwnedSymbolBridge
             throw new CompilerInputException("external-symbol", "The symbol has no containing assembly.");
         string? project = ProjectByAssemblyName.GetValueOrDefault(assembly.Identity.Name);
         if (project is null)
-            throw new CompilerInputException("external-symbol", $"Assembly '{assembly.Identity.Name}' is not an admitted owned project.");
+        {
+            throw new CompilerInputException(
+                "external-symbol",
+                $"Assembly '{assembly.Identity.Name}' is not an admitted owned project."
+            );
+        }
         if (!_assemblyProfiles.TryGetValue(assembly, out string? actualProfile))
-            throw new CompilerInputException("unknown-symbol-profile", "The symbol does not belong to a captured compilation profile.");
+        {
+            throw new CompilerInputException(
+                "unknown-symbol-profile",
+                "The symbol does not belong to a captured compilation profile."
+            );
+        }
         if (!string.Equals(profileId, actualProfile, StringComparison.Ordinal))
-            throw new CompilerInputException("cross-profile-symbol", $"The symbol belongs to profile '{actualProfile}', not '{profileId}'.");
+        {
+            throw new CompilerInputException(
+                "cross-profile-symbol",
+                $"The symbol belongs to profile '{actualProfile}', not '{profileId}'."
+            );
+        }
 
         if (profile.SymbolKeys.TryGetValue(symbol, out OwnedSymbolKey? contextualKey))
             return contextualKey;
-        if (symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction or MethodKind.AnonymousFunction } contextual &&
-            profile.ContextualKeys.TryGetValue(ContextLookupKey(contextual), out contextualKey))
+        if (
+            symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction or MethodKind.AnonymousFunction } contextual
+            && profile.ContextualKeys.TryGetValue(ContextLookupKey(contextual), out contextualKey)
+        )
         {
             return contextualKey;
         }
         OwnedSymbolKey key = OwnedSymbolKey.Create(project, symbol);
         if (!profile.Definitions.ContainsKey(key.Value))
         {
-            if (symbol is INamedTypeSymbol type &&
-                !SymbolEqualityComparer.Default.Equals(type, type.OriginalDefinition))
+            if (
+                symbol is INamedTypeSymbol type
+                && !SymbolEqualityComparer.Default.Equals(type, type.OriginalDefinition)
+            )
             {
                 INamedTypeSymbol ownedConstruction = ConstructOwnedType(profile, project, type);
                 lock (profile.Definitions)
@@ -279,7 +332,10 @@ internal sealed class OwnedSymbolBridge
                     }
                     else if (!SymbolEqualityComparer.Default.Equals(existing, ownedConstruction))
                     {
-                        throw new CompilerInputException("ambiguous-owned-key", $"Duplicate owned symbol key '{key.Value}'.");
+                        throw new CompilerInputException(
+                            "ambiguous-owned-key",
+                            $"Duplicate owned symbol key '{key.Value}'."
+                        );
                     }
                 }
                 profile.SymbolKeys[symbol] = key;
@@ -296,32 +352,44 @@ internal sealed class OwnedSymbolBridge
         ArgumentNullException.ThrowIfNull(key);
         ParsedKey parsed = Parse(key.Value);
         string assemblySimpleName = parsed.AssemblyIdentity.Split(',')[0];
-        if (!ProjectByAssemblyName.TryGetValue(assemblySimpleName, out string? expectedProject) ||
-            !string.Equals(expectedProject, parsed.ProjectId, StringComparison.Ordinal))
+        if (
+            !ProjectByAssemblyName.TryGetValue(assemblySimpleName, out string? expectedProject)
+            || !string.Equals(expectedProject, parsed.ProjectId, StringComparison.Ordinal)
+        )
         {
-            throw new CompilerInputException("external-symbol", $"Owned key '{key.Value}' names an unadmitted assembly.");
+            throw new CompilerInputException(
+                "external-symbol",
+                $"Owned key '{key.Value}' names an unadmitted assembly."
+            );
         }
         if (!profile.Definitions.TryGetValue(key.Value, out ISymbol? symbol))
         {
-            throw new CompilerInputException("missing-owned-key", $"Owned key '{key.Value}' is not present in profile '{profileId}'.");
+            throw new CompilerInputException(
+                "missing-owned-key",
+                $"Owned key '{key.Value}' is not present in profile '{profileId}'."
+            );
         }
         return symbol;
     }
 
-    private static INamedTypeSymbol ConstructOwnedType(
-        ProfileIndex profile,
-        string projectId,
-        INamedTypeSymbol type)
+    private static INamedTypeSymbol ConstructOwnedType(ProfileIndex profile, string projectId, INamedTypeSymbol type)
     {
         OwnedSymbolKey openKey = OwnedSymbolKey.Create(projectId, type.OriginalDefinition);
-        if (!profile.Definitions.TryGetValue(openKey.Value, out ISymbol? openSymbol) ||
-            openSymbol is not INamedTypeSymbol openType)
+        if (
+            !profile.Definitions.TryGetValue(openKey.Value, out ISymbol? openSymbol)
+            || openSymbol is not INamedTypeSymbol openType
+        )
         {
-            throw new CompilerInputException("missing-owned-key", $"No owned generic definition exists for '{openKey.Value}'.");
+            throw new CompilerInputException(
+                "missing-owned-key",
+                $"No owned generic definition exists for '{openKey.Value}'."
+            );
         }
 
-        if (type.ContainingType is not null &&
-            !SymbolEqualityComparer.Default.Equals(type.ContainingType, type.ContainingType.OriginalDefinition))
+        if (
+            type.ContainingType is not null
+            && !SymbolEqualityComparer.Default.Equals(type.ContainingType, type.ContainingType.OriginalDefinition)
+        )
         {
             INamedTypeSymbol ownedContaining = ConstructOwnedType(profile, projectId, type.ContainingType);
             INamedTypeSymbol[] matches = ownedContaining.GetTypeMembers(type.Name, type.Arity).ToArray();
@@ -329,7 +397,8 @@ internal sealed class OwnedSymbolBridge
             {
                 throw new CompilerInputException(
                     "ambiguous-owned-key",
-                    $"Constructed containing type has {matches.Length} nested matches for '{type.MetadataName}'.");
+                    $"Constructed containing type has {matches.Length} nested matches for '{type.MetadataName}'."
+                );
             }
             openType = matches[0];
         }
@@ -356,7 +425,9 @@ internal sealed class OwnedSymbolBridge
             foreach (ISymbol symbol in Definitions(child))
                 yield return symbol;
         }
-        foreach (INamedTypeSymbol type in ns.GetTypeMembers().OrderBy(item => item.MetadataName, StringComparer.Ordinal))
+        foreach (
+            INamedTypeSymbol type in ns.GetTypeMembers().OrderBy(item => item.MetadataName, StringComparer.Ordinal)
+        )
         {
             foreach (ISymbol symbol in Definitions(type))
                 yield return symbol;
@@ -366,13 +437,18 @@ internal sealed class OwnedSymbolBridge
     private static IEnumerable<ISymbol> Definitions(INamedTypeSymbol type)
     {
         yield return type;
-        foreach (INamedTypeSymbol nested in type.GetTypeMembers().OrderBy(item => item.MetadataName, StringComparer.Ordinal))
+        foreach (
+            INamedTypeSymbol nested in type.GetTypeMembers().OrderBy(item => item.MetadataName, StringComparer.Ordinal)
+        )
         {
             foreach (ISymbol symbol in Definitions(nested))
                 yield return symbol;
         }
-        foreach (ISymbol member in type.GetMembers().OrderBy(item => item.MetadataName, StringComparer.Ordinal)
-            .ThenBy(item => item.Kind))
+        foreach (
+            ISymbol member in type.GetMembers()
+                .OrderBy(item => item.MetadataName, StringComparer.Ordinal)
+                .ThenBy(item => item.Kind)
+        )
         {
             if (member is INamedTypeSymbol)
                 continue;
@@ -383,10 +459,19 @@ internal sealed class OwnedSymbolBridge
     private static void RegisterAssembly(
         IAssemblySymbol assembly,
         string profileId,
-        IDictionary<IAssemblySymbol, string> assemblyProfiles)
+        IDictionary<IAssemblySymbol, string> assemblyProfiles
+    )
     {
-        if (assemblyProfiles.TryGetValue(assembly, out string? existing) && !string.Equals(existing, profileId, StringComparison.Ordinal))
-            throw new CompilerInputException("ambiguous-symbol-profile", $"Assembly '{assembly.Identity.Name}' appears in multiple profiles.");
+        if (
+            assemblyProfiles.TryGetValue(assembly, out string? existing)
+            && !string.Equals(existing, profileId, StringComparison.Ordinal)
+        )
+        {
+            throw new CompilerInputException(
+                "ambiguous-symbol-profile",
+                $"Assembly '{assembly.Identity.Name}' appears in multiple profiles."
+            );
+        }
         assemblyProfiles[assembly] = profileId;
     }
 
@@ -397,12 +482,20 @@ internal sealed class OwnedSymbolBridge
         foreach (SyntaxTree tree in node.Compilation.SyntaxTrees.OrderBy(tree => tree.FilePath, StringComparer.Ordinal))
         {
             SemanticModel model = node.Compilation.GetSemanticModel(tree);
-            foreach (LocalFunctionStatementSyntax local in tree.GetRoot().DescendantNodes().OfType<LocalFunctionStatementSyntax>())
+            foreach (
+                LocalFunctionStatementSyntax local in tree.GetRoot()
+                    .DescendantNodes()
+                    .OfType<LocalFunctionStatementSyntax>()
+            )
             {
                 if (model.GetDeclaredSymbol(local) is IMethodSymbol symbol)
                     locals.Add(symbol);
             }
-            foreach (AnonymousFunctionExpressionSyntax lambda in tree.GetRoot().DescendantNodes().OfType<AnonymousFunctionExpressionSyntax>())
+            foreach (
+                AnonymousFunctionExpressionSyntax lambda in tree.GetRoot()
+                    .DescendantNodes()
+                    .OfType<AnonymousFunctionExpressionSyntax>()
+            )
             {
                 if (model.GetOperation(lambda) is IAnonymousFunctionOperation operation)
                     lambdas.Add(operation.Symbol);
@@ -410,17 +503,31 @@ internal sealed class OwnedSymbolBridge
         }
 
         var localIds = new Dictionary<IMethodSymbol, string>(SymbolEqualityComparer.Default);
-        IMethodSymbol[] uniqueLocals = locals.Cast<ISymbol>().Distinct(SymbolEqualityComparer.Default)
-            .Cast<IMethodSymbol>().ToArray();
-        IMethodSymbol[] uniqueLambdas = lambdas.Cast<ISymbol>().Distinct(SymbolEqualityComparer.Default)
-            .Cast<IMethodSymbol>().ToArray();
-        foreach (IGrouping<int, IMethodSymbol> level in uniqueLocals
-            .GroupBy(LocalNestingDepth).OrderBy(group => group.Key))
+        IMethodSymbol[] uniqueLocals = locals
+            .Cast<ISymbol>()
+            .Distinct(SymbolEqualityComparer.Default)
+            .Cast<IMethodSymbol>()
+            .ToArray();
+        IMethodSymbol[] uniqueLambdas = lambdas
+            .Cast<ISymbol>()
+            .Distinct(SymbolEqualityComparer.Default)
+            .Cast<IMethodSymbol>()
+            .ToArray();
+        foreach (
+            IGrouping<int, IMethodSymbol> level in uniqueLocals.GroupBy(LocalNestingDepth).OrderBy(group => group.Key)
+        )
         {
-            foreach (IGrouping<string, IMethodSymbol> collision in level.GroupBy(
-                method => LocalBaseId(method, localIds), StringComparer.Ordinal))
+            foreach (
+                IGrouping<string, IMethodSymbol> collision in level.GroupBy(
+                    method => LocalBaseId(method, localIds),
+                    StringComparer.Ordinal
+                )
+            )
             {
-                IMethodSymbol[] ordered = collision.OrderBy(SourcePath, StringComparer.Ordinal).ThenBy(SourceStart).ToArray();
+                IMethodSymbol[] ordered = collision
+                    .OrderBy(SourcePath, StringComparer.Ordinal)
+                    .ThenBy(SourceStart)
+                    .ToArray();
                 for (int index = 0; index < ordered.Length; index++)
                 {
                     string suffix = ordered.Length > 1 ? $"#{index}" : string.Empty;
@@ -439,27 +546,31 @@ internal sealed class OwnedSymbolBridge
         RoslynCompilationNode node,
         ProfileIndex profile,
         IMethodSymbol symbol,
-        string canonicalId)
+        string canonicalId
+    )
     {
         OwnedSymbolKey key = OwnedSymbolKey.Create(node.Key.ProjectId, node.Compilation.Assembly.Identity, canonicalId);
         if (!profile.Definitions.TryAdd(key.Value, symbol))
             throw new CompilerInputException("ambiguous-owned-key", $"Duplicate owned symbol key '{key.Value}'.");
         profile.SymbolKeys.Add(symbol, key);
         if (!profile.ContextualKeys.TryAdd(ContextLookupKey(symbol), key))
-            throw new CompilerInputException("ambiguous-owned-key", $"Duplicate contextual symbol location for '{key.Value}'.");
+        {
+            throw new CompilerInputException(
+                "ambiguous-owned-key",
+                $"Duplicate contextual symbol location for '{key.Value}'."
+            );
+        }
     }
 
-    private static string LocalBaseId(
-        IMethodSymbol method,
-        IReadOnlyDictionary<IMethodSymbol, string> localIds) =>
+    private static string LocalBaseId(IMethodSymbol method, IReadOnlyDictionary<IMethodSymbol, string> localIds) =>
         $"{ContextualId(method.ContainingSymbol!, localIds)}/local/{CallableSignature(method)}";
 
-    private static string ContextualId(
-        ISymbol symbol,
-        IReadOnlyDictionary<IMethodSymbol, string> localIds)
+    private static string ContextualId(ISymbol symbol, IReadOnlyDictionary<IMethodSymbol, string> localIds)
     {
-        if (symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction } local &&
-            localIds.TryGetValue(local, out string? localId))
+        if (
+            symbol is IMethodSymbol { MethodKind: MethodKind.LocalFunction } local
+            && localIds.TryGetValue(local, out string? localId)
+        )
         {
             return localId;
         }
@@ -480,25 +591,31 @@ internal sealed class OwnedSymbolBridge
     private static int LocalNestingDepth(IMethodSymbol method)
     {
         int depth = 0;
-        for (ISymbol? current = method.ContainingSymbol; current is IMethodSymbol containing &&
-            containing.MethodKind == MethodKind.LocalFunction; current = current.ContainingSymbol)
+        for (
+            ISymbol? current = method.ContainingSymbol;
+            current is IMethodSymbol containing && containing.MethodKind == MethodKind.LocalFunction;
+            current = current.ContainingSymbol
+        )
         {
             depth++;
         }
         return depth;
     }
 
-    private static string SourcePath(IMethodSymbol method) => method.Locations
-        .Where(location => location.IsInSource)
-        .Select(location => location.SourceTree?.FilePath ?? string.Empty)
-        .OrderBy(path => path, StringComparer.Ordinal)
-        .FirstOrDefault() ?? string.Empty;
+    private static string SourcePath(IMethodSymbol method) =>
+        method
+            .Locations.Where(location => location.IsInSource)
+            .Select(location => location.SourceTree?.FilePath ?? string.Empty)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .FirstOrDefault()
+        ?? string.Empty;
 
-    private static int SourceStart(IMethodSymbol method) => method.Locations
-        .Where(location => location.IsInSource)
-        .Select(location => location.SourceSpan.Start)
-        .DefaultIfEmpty(-1)
-        .Min();
+    private static int SourceStart(IMethodSymbol method) =>
+        method
+            .Locations.Where(location => location.IsInSource)
+            .Select(location => location.SourceSpan.Start)
+            .DefaultIfEmpty(-1)
+            .Min();
 
     private static string ContextLookupKey(IMethodSymbol method) =>
         $"{method.ContainingAssembly.Identity}\0{method.MethodKind}\0{SourcePath(method)}\0{SourceStart(method)}";

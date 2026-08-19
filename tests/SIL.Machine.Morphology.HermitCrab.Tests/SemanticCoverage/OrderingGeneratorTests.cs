@@ -74,11 +74,19 @@ public sealed class OrderingGeneratorTests
         Assert.That(items, Has.Count.EqualTo(5));
         Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Contain(("p1", "p2")));
         Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Contain(("p2", "p3")));
-        Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Not.Contain(("p1", "p3")), "non-adjacent pairs must never be emitted");
+        Assert.That(
+            items.Select(i => (i.MemberA, i.MemberB)),
+            Does.Not.Contain(("p1", "p3")),
+            "non-adjacent pairs must never be emitted"
+        );
         Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Contain(("m1", "m2")));
         Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Contain(("s1", "s2")));
         Assert.That(items.Select(i => (i.MemberA, i.MemberB)), Does.Contain(("s2", "s3")));
-        Assert.That(items.Select(i => i.Id).Distinct().ToArray(), Has.Length.EqualTo(5), "every item id must be unique");
+        Assert.That(
+            items.Select(i => i.Id).Distinct().ToArray(),
+            Has.Length.EqualTo(5),
+            "every item id must be unique"
+        );
     }
 
     [Test]
@@ -87,9 +95,16 @@ public sealed class OrderingGeneratorTests
         XDocument grammar = XDocument.Parse(SmallHandBuiltGrammar);
 
         IReadOnlyList<OrderingItem> first = OrderingGenerator.EnumerateAdjacentPairs(grammar, "fx");
-        IReadOnlyList<OrderingItem> second = OrderingGenerator.EnumerateAdjacentPairs(XDocument.Parse(SmallHandBuiltGrammar), "fx");
+        IReadOnlyList<OrderingItem> second = OrderingGenerator.EnumerateAdjacentPairs(
+            XDocument.Parse(SmallHandBuiltGrammar),
+            "fx"
+        );
 
-        Assert.That(first, Is.EqualTo(second), "re-parsing and re-enumerating the identical document must produce identical items");
+        Assert.That(
+            first,
+            Is.EqualTo(second),
+            "re-parsing and re-enumerating the identical document must produce identical items"
+        );
     }
 
     [Test]
@@ -145,7 +160,9 @@ public sealed class OrderingGeneratorTests
     public void SwapReturnsNullWhenTheItemNoLongerMatchesTheDocument()
     {
         XDocument grammar = XDocument.Parse(SmallHandBuiltGrammar);
-        OrderingItem stale = OrderingGenerator.EnumerateAdjacentPairs(grammar, "fx").Single(i => i.MemberA == "p1" && i.MemberB == "p2");
+        OrderingItem stale = OrderingGenerator
+            .EnumerateAdjacentPairs(grammar, "fx")
+            .Single(i => i.MemberA == "p1" && i.MemberB == "p2");
         XDocument changed = XDocument.Parse(SmallHandBuiltGrammar.Replace("p1 p2 p3", "p2 p1 p3"));
 
         Assert.That(OrderingGenerator.Swap(changed, stale), Is.Null);
@@ -400,7 +417,9 @@ public sealed class OrderingGeneratorTests
     [Test]
     public void RealFixtureFeatureSystemBreadthPrAlphaPrHighTriggerPairIsDisjointAndIdMatchesTheHandBuiltPilot()
     {
-        XDocument grammar = XDocument.Load(Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml"));
+        XDocument grammar = XDocument.Load(
+            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+        );
         OrderingItem item = OrderingGenerator
             .EnumerateAdjacentPairs(grammar, "edge-cases/feature-system-breadth")
             .Single(i => i.MemberA == "prAlpha" && i.MemberB == "prHighTrigger");
@@ -424,7 +443,9 @@ public sealed class OrderingGeneratorTests
     [Test]
     public void RealFixtureMprGatedExceptionNasalAssimAlveolarObstruentDeletionPairIsNotDisjoint()
     {
-        XDocument grammar = XDocument.Load(Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "mpr-gated-exception", "grammar.xml"));
+        XDocument grammar = XDocument.Load(
+            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "mpr-gated-exception", "grammar.xml")
+        );
         OrderingItem item = OrderingGenerator
             .EnumerateAdjacentPairs(grammar, "edge-cases/mpr-gated-exception")
             .Single(i => i.MemberA == "prNasalAssimAlveolar" && i.MemberB == "prObstruentDeletion");
@@ -433,7 +454,11 @@ public sealed class OrderingGeneratorTests
 
         Assert.That(result.Relation, Is.Not.EqualTo(DomainRelation.Disjoint), result.Reason);
         Assert.That(result.Relation, Is.EqualTo(DomainRelation.Overlaps), result.Reason);
-        Assert.That(result.Reason, Does.Contain("cNlv"), "the shared segment must be the nasal prNasalAssimAlveolar produces and prObstruentDeletion's environment requires");
+        Assert.That(
+            result.Reason,
+            Does.Contain("cNlv"),
+            "the shared segment must be the nasal prNasalAssimAlveolar produces and prObstruentDeletion's environment requires"
+        );
     }
 
     // Pins measured numbers across the real corpus: 32 lists with >= 2 members, 146 adjacent pairs
@@ -472,7 +497,9 @@ public sealed class OrderingGeneratorTests
             }
         }
 
-        TestContext.Out.WriteLine($"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}");
+        TestContext.Out.WriteLine(
+            $"lists={totalLists} pairs={totalPairs} disjoint={disjoint} overlaps={overlaps} undetermined={undetermined}"
+        );
         Assert.That(totalLists, Is.EqualTo(33));
         Assert.That(totalPairs, Is.EqualTo(154));
         Assert.That(disjoint + overlaps + undetermined, Is.EqualTo(154));
@@ -572,7 +599,11 @@ public sealed class OrderingGeneratorTests
         IReadOnlyList<StratumInteractionPair> pairs = OrderingGenerator.EnumerateStratumPairs(grammar, "fx");
 
         Assert.That(pairs, Has.Count.EqualTo(24));
-        Assert.That(pairs.Count(p => p.Kind == StratumPairKind.SameStage), Is.EqualTo(15), "9 morphology + 6 phonology");
+        Assert.That(
+            pairs.Count(p => p.Kind == StratumPairKind.SameStage),
+            Is.EqualTo(15),
+            "9 morphology + 6 phonology"
+        );
         Assert.That(pairs.Count(p => p.Kind == StratumPairKind.CrossStage), Is.EqualTo(9));
         Assert.That(pairs.Count(p => p.Kind == StratumPairKind.CrossStratum), Is.EqualTo(0), "only one Stratum exists");
 
@@ -624,7 +655,9 @@ public sealed class OrderingGeneratorTests
     [Test]
     public void CheckStratumPairDisjointDomainsFindsAPhonologicalRuleSelfPairOverlapping()
     {
-        XDocument grammar = XDocument.Load(Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml"));
+        XDocument grammar = XDocument.Load(
+            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+        );
         StratumInteractionPair selfPair = OrderingGenerator
             .EnumerateStratumPairs(grammar, "edge-cases/feature-system-breadth")
             .Single(p =>
@@ -644,13 +677,13 @@ public sealed class OrderingGeneratorTests
     [Test]
     public void CheckStratumPairDisjointDomainsAgreesWithAdjacentPairsOnTheSameRealFixturePair()
     {
-        XDocument grammar = XDocument.Load(Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml"));
+        XDocument grammar = XDocument.Load(
+            Path.Combine(RepositoryRoot(), "conformance", "edge-cases", "feature-system-breadth", "grammar.xml")
+        );
         StratumInteractionPair pair = OrderingGenerator
             .EnumerateStratumPairs(grammar, "edge-cases/feature-system-breadth")
             .Single(p =>
-                p.Kind == StratumPairKind.SameStage
-                && p.UnitA.Label == "prAlpha"
-                && p.UnitB.Label == "prHighTrigger"
+                p.Kind == StratumPairKind.SameStage && p.UnitA.Label == "prAlpha" && p.UnitB.Label == "prHighTrigger"
             );
 
         DisjointDomainsCheck result = OrderingGenerator.CheckStratumPairDisjointDomains(grammar, pair);
@@ -709,7 +742,9 @@ public sealed class OrderingGeneratorTests
             .ToList();
 
         string fresh = RuleInteractionLedger.ToText(rows);
-        string checkedIn = File.ReadAllText(Path.Combine(root, RuleInteractionLedger.RelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        string checkedIn = File.ReadAllText(
+            Path.Combine(root, RuleInteractionLedger.RelativePath.Replace('/', Path.DirectorySeparatorChar))
+        );
 
         Assert.That(
             fresh.ReplaceLineEndings("\n"),

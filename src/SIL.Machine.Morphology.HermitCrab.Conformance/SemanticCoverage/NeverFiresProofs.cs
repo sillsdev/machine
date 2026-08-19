@@ -93,10 +93,16 @@ public static class NeverFiresProofs
 
         XElement? inputSequence = rule.Element("PhoneticInput")?.Element("PhoneticSequence");
         if (TryFindEmptyDirectClass(inputSequence, grammar, out string? inputReason))
-            return (true, $"PhoneticInput requires {inputReason}, which resolves to zero active segments -- no site can ever match");
+        {
+            return (
+                true,
+                $"PhoneticInput requires {inputReason}, which resolves to zero active segments -- no site can ever match"
+            );
+        }
 
         List<XElement> subrules =
-            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").Where(IsActiveElement).ToList() ?? new List<XElement>();
+            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").Where(IsActiveElement).ToList()
+            ?? new List<XElement>();
         if (subrules.Count == 0)
             return (false, "has no active PhonologicalSubrule -- not modeled by this check");
 
@@ -105,23 +111,37 @@ public static class NeverFiresProofs
         {
             XElement? environment = subrule.Element("Environment");
             if (environment is null)
-                return (false, "an active subrule has no Environment at all, so it fires unconditionally wherever the input matches");
+            {
+                return (
+                    false,
+                    "an active subrule has no Environment at all, so it fires unconditionally wherever the input matches"
+                );
+            }
 
-            XElement? left = environment.Element("LeftEnvironment")?.Element("PhoneticTemplate")?.Element("PhoneticSequence");
+            XElement? left = environment
+                .Element("LeftEnvironment")
+                ?.Element("PhoneticTemplate")
+                ?.Element("PhoneticSequence");
             if (TryFindEmptyDirectClass(left, grammar, out string? leftReason))
             {
                 deadReasons.Add($"LeftEnvironment requires {leftReason}");
                 continue;
             }
 
-            XElement? right = environment.Element("RightEnvironment")?.Element("PhoneticTemplate")?.Element("PhoneticSequence");
+            XElement? right = environment
+                .Element("RightEnvironment")
+                ?.Element("PhoneticTemplate")
+                ?.Element("PhoneticSequence");
             if (TryFindEmptyDirectClass(right, grammar, out string? rightReason))
             {
                 deadReasons.Add($"RightEnvironment requires {rightReason}");
                 continue;
             }
 
-            return (false, "an active subrule's Environment does not name a natural class with zero active segments on either side");
+            return (
+                false,
+                "an active subrule's Environment does not name a natural class with zero active segments on either side"
+            );
         }
 
         return (true, string.Join("; ", deadReasons) + ", each of which resolves to zero active segments");
@@ -161,18 +181,23 @@ public static class NeverFiresProofs
 
     private readonly record struct ClassResolution(bool IsResolved, IReadOnlySet<string> Members)
     {
-        public static ClassResolution Ok(IEnumerable<string> members) => new(true, members.ToHashSet(StringComparer.Ordinal));
+        public static ClassResolution Ok(IEnumerable<string> members) =>
+            new(true, members.ToHashSet(StringComparer.Ordinal));
 
         public static ClassResolution No() => new(false, new HashSet<string>());
     }
 
     private static ClassResolution ResolveNaturalClass(string naturalClassId, XDocument grammar)
     {
-        XElement? segmentClass = grammar.Descendants("SegmentNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+        XElement? segmentClass = grammar
+            .Descendants("SegmentNaturalClass")
+            .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
         if (segmentClass is not null)
             return ResolveSegmentNaturalClass(segmentClass, grammar);
 
-        XElement? featureClass = grammar.Descendants("FeatureNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+        XElement? featureClass = grammar
+            .Descendants("FeatureNaturalClass")
+            .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
         return featureClass is not null ? ResolveFeatureNaturalClass(featureClass, grammar) : ClassResolution.No();
     }
 
@@ -231,24 +256,31 @@ public static class NeverFiresProofs
         return ClassResolution.Ok(members);
     }
 
-    private static bool? MatchesEveryConstraint(XElement segmentDef, List<(string Feature, HashSet<string> Symbols)> constraints)
+    private static bool? MatchesEveryConstraint(
+        XElement segmentDef,
+        List<(string Feature, HashSet<string> Symbols)> constraints
+    )
     {
         foreach ((string feature, HashSet<string> symbols) in constraints)
         {
-            XElement? declared = segmentDef.Elements("FeatureValue").FirstOrDefault(fv => IsActiveElement(fv) && (string?)fv.Attribute("feature") == feature);
+            XElement? declared = segmentDef
+                .Elements("FeatureValue")
+                .FirstOrDefault(fv => IsActiveElement(fv) && (string?)fv.Attribute("feature") == feature);
             if (declared is null)
                 return null;
 
             string? declaredSymbols = (string?)declared.Attribute("symbolValues");
-            HashSet<string> declaredSet =
-                declaredSymbols is null ? new HashSet<string>(StringComparer.Ordinal) : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
+            HashSet<string> declaredSet = declaredSymbols is null
+                ? new HashSet<string>(StringComparer.Ordinal)
+                : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
             if (!declaredSet.Overlaps(symbols))
                 return false;
         }
         return true;
     }
 
-    private static string[] SplitIdrefs(string value) => value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+    private static string[] SplitIdrefs(string value) =>
+        value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
     private static XElement? FindSegmentDefinition(XDocument grammar, string id) =>
         grammar.Descendants("SegmentDefinition").FirstOrDefault(e => (string?)e.Attribute("id") == id);

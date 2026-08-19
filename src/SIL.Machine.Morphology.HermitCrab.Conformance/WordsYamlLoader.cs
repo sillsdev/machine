@@ -243,7 +243,12 @@ public static class WordsYamlLoader
     {
         if (node is not YamlMappingNode mapNode)
             throw new WordsYamlException(path, $"word '{word}'.claimed_cells[]: each entry must be a mapping");
-        Dictionary<string, YamlNode> map = RequireMapping(mapNode, ClaimedCellKeys, path, $"word '{word}'.claimed_cells[]");
+        Dictionary<string, YamlNode> map = RequireMapping(
+            mapNode,
+            ClaimedCellKeys,
+            path,
+            $"word '{word}'.claimed_cells[]"
+        );
 
         var claim = new ClaimedCellEntry { Cell = RequireScalar(map, "cell", path, $"word '{word}'.claimed_cells[]") };
 
@@ -266,7 +271,13 @@ public static class WordsYamlLoader
         }
 
         if (map.TryGetValue("distinct_from", out YamlNode distinctFromNode))
-            claim.DistinctFrom = RequireScalarNode(distinctFromNode, path, $"word '{word}'.claimed_cells[].distinct_from");
+        {
+            claim.DistinctFrom = RequireScalarNode(
+                distinctFromNode,
+                path,
+                $"word '{word}'.claimed_cells[].distinct_from"
+            );
+        }
 
         return claim;
     }

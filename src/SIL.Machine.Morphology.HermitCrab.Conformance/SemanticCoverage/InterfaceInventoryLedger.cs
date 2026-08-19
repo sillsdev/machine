@@ -43,8 +43,10 @@ internal static class InterfaceDirectionClassifier
     {
         ArgumentNullException.ThrowIfNull(attributeName);
 
-        if (attributeName == "MPRFeatures" ||
-            WritePrefixes.Any(prefix => attributeName.StartsWith(prefix, StringComparison.Ordinal)))
+        if (
+            attributeName == "MPRFeatures"
+            || WritePrefixes.Any(prefix => attributeName.StartsWith(prefix, StringComparison.Ordinal))
+        )
         {
             return InterfaceDirection.Write;
         }
@@ -194,8 +196,7 @@ public static class InterfaceInventoryLedger
             );
         }
 
-        return rows
-            .OrderBy(r => r.Element, StringComparer.Ordinal)
+        return rows.OrderBy(r => r.Element, StringComparer.Ordinal)
             .ThenBy(r => r.Attribute, StringComparer.Ordinal)
             .ToArray();
     }
@@ -271,7 +272,8 @@ public static class InterfaceInventoryLedger
         return null;
     }
 
-    private static string[] SplitIdrefs(string value) => value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+    private static string[] SplitIdrefs(string value) =>
+        value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
     public static void Write(string repositoryRoot, IReadOnlyList<Row> rows)
     {
@@ -314,13 +316,12 @@ public static class InterfaceInventoryLedger
         writer.WriteLine(
             "# (comma-joined, sorted). It is NOT evidence the interface does anything: an attribute can be"
         );
-        writer.WriteLine(
-            "# present and inert. See conformance/interface-witness.tsv for the severance-tested claim."
-        );
-        writer.WriteLine(
-            "element\tattribute\tref_kind\tobserved_target_types\tpresent\tdirection\tfixtures"
-        );
-        foreach (Row row in rows.OrderBy(r => r.Element, StringComparer.Ordinal).ThenBy(r => r.Attribute, StringComparer.Ordinal))
+        writer.WriteLine("# present and inert. See conformance/interface-witness.tsv for the severance-tested claim.");
+        writer.WriteLine("element\tattribute\tref_kind\tobserved_target_types\tpresent\tdirection\tfixtures");
+        foreach (
+            Row row in rows.OrderBy(r => r.Element, StringComparer.Ordinal)
+                .ThenBy(r => r.Attribute, StringComparer.Ordinal)
+        )
         {
             writer.WriteLine(
                 string.Join(
@@ -369,9 +370,7 @@ public static class InterfaceInventoryLedger
             if (!Enum.TryParse(fields[5], out InterfaceDirection direction))
                 throw new FormatException($"{RelativePath}: unknown direction '{fields[5]}'");
 
-            IReadOnlyList<string> targets = fields[3].Length == 0
-                ? Array.Empty<string>()
-                : fields[3].Split(',');
+            IReadOnlyList<string> targets = fields[3].Length == 0 ? Array.Empty<string>() : fields[3].Split(',');
             IReadOnlyList<string> fixtures = fields[6] is "" or NullField
                 ? Array.Empty<string>()
                 : fields[6].Split(',');

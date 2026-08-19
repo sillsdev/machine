@@ -18,18 +18,20 @@ internal sealed record RoslynCompilationNode(
     RepositoryGraphNodeKey Key,
     CSharpCompilation Compilation,
     CompilationDiagnostics Diagnostics,
-    int ProbedSdkGeneratorCount);
+    int ProbedSdkGeneratorCount
+);
 
 internal sealed class RoslynCompilationGraph
 {
-    private static readonly IReadOnlyDictionary<string, string> OwnedAssemblyNames =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["machine"] = "SIL.Machine",
-            ["hc"] = "SIL.Machine.Morphology.HermitCrab",
-            ["hc-tool"] = "SIL.Machine.Morphology.HermitCrab.Tool",
-            ["hc-conformance"] = "hc-conformance",
-        };
+    private static readonly IReadOnlyDictionary<string, string> OwnedAssemblyNames = new Dictionary<string, string>(
+        StringComparer.OrdinalIgnoreCase
+    )
+    {
+        ["machine"] = "SIL.Machine",
+        ["hc"] = "SIL.Machine.Morphology.HermitCrab",
+        ["hc-tool"] = "SIL.Machine.Morphology.HermitCrab.Tool",
+        ["hc-conformance"] = "hc-conformance",
+    };
 
     private RoslynCompilationGraph(IReadOnlyDictionary<RepositoryGraphNodeKey, RoslynCompilationNode> nodes)
     {
@@ -53,30 +55,48 @@ internal sealed class RoslynCompilationGraph
             foreach (RepositoryGraphNode node in graph.Nodes.Where(item => item.ProjectId == project.Id))
             {
                 CompilerInputModel input = graph.CompilerInputs[node.Key];
-                var trees = input.Sources.Select(source =>
-                {
-                    using var stream = new MemoryStream(source.Content.ToArray(), writable: false);
-                    SourceText text = SourceText.From(stream, encoding: null);
-                    return CSharpSyntaxTree.ParseText(text, input.Arguments.ParseOptions as CSharpParseOptions, source.Path);
-                }).ToImmutableArray();
-                var diagnostics = CompilationDiagnostics.From(node.Key.ToString(), trees.SelectMany(tree => tree.GetDiagnostics()));
+                var trees = input
+                    .Sources.Select(source =>
+                    {
+                        using var stream = new MemoryStream(source.Content.ToArray(), writable: false);
+                        SourceText text = SourceText.From(stream, encoding: null);
+                        return CSharpSyntaxTree.ParseText(
+                            text,
+                            input.Arguments.ParseOptions as CSharpParseOptions,
+                            source.Path
+                        );
+                    })
+                    .ToImmutableArray();
+                var diagnostics = CompilationDiagnostics.From(
+                    node.Key.ToString(),
+                    trees.SelectMany(tree => tree.GetDiagnostics())
+                );
                 diagnostics.ThrowIfFatal();
 
-                IEnumerable<MetadataReference> references = CreateReferences(graph, node, input, built, externalReferences);
+                IEnumerable<MetadataReference> references = CreateReferences(
+                    graph,
+                    node,
+                    input,
+                    built,
+                    externalReferences
+                );
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     ProjectAssemblyName(project.Id, input),
                     trees,
                     references,
                     input.Arguments.CompilationOptions as CSharpCompilationOptions
-                        ?? new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-                CompilationDiagnostics compilerDiagnostics = CompilationDiagnostics.From(node.Key.ToString(), compilation.GetDiagnostics());
+                        ?? new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                );
+                CompilationDiagnostics compilerDiagnostics = CompilationDiagnostics.From(
+                    node.Key.ToString(),
+                    compilation.GetDiagnostics()
+                );
                 compilerDiagnostics.ThrowIfFatal();
                 int probedSdkGeneratorCount = RunPendingGeneratorProbe(input, compilation);
-                built.Add(node.Key, new RoslynCompilationNode(
+                built.Add(
                     node.Key,
-                    compilation,
-                    compilerDiagnostics,
-                    probedSdkGeneratorCount));
+                    new RoslynCompilationNode(node.Key, compilation, compilerDiagnostics, probedSdkGeneratorCount)
+                );
             }
         }
 
@@ -88,56 +108,91 @@ internal sealed class RoslynCompilationGraph
         RepositoryGraphNode node,
         CompilerInputModel input,
         IReadOnlyDictionary<RepositoryGraphNodeKey, RoslynCompilationNode> built,
-        IDictionary<string, PortableExecutableReference> externalReferences)
+        IDictionary<string, PortableExecutableReference> externalReferences
+    )
     {
-        var directOwned = graph.ProjectEdges
-            .Where(edge => edge.FromProjectId == node.ProjectId)
+        var directOwned = graph
+            .ProjectEdges.Where(edge => edge.FromProjectId == node.ProjectId)
             .Select(edge => edge.ToProjectId)
             .ToHashSet(StringComparer.Ordinal);
         var owned = TransitiveOwnedProjects(graph, node.ProjectId);
         var ownedAssemblyNames = owned.ToDictionary(
             project => project,
-            project => ProjectAssemblyName(project, graph.CompilerInputs[graph.Nodes.First(item => item.ProjectId == project && item.Profile.Id == node.Profile.Id).Key]),
-            StringComparer.Ordinal);
+            project =>
+                ProjectAssemblyName(
+                    project,
+                    graph.CompilerInputs[
+                        graph.Nodes.First(item => item.ProjectId == project && item.Profile.Id == node.Profile.Id).Key
+                    ]
+                ),
+            StringComparer.Ordinal
+        );
         var everyOwnedAssemblyName = graph.Projects.ToDictionary(
             project => project.Id,
-            project => ProjectAssemblyName(
-                project.Id,
-                graph.CompilerInputs[graph.Nodes.First(item => item.ProjectId == project.Id && item.Profile.Id == node.Profile.Id).Key]),
-            StringComparer.Ordinal);
+            project =>
+                ProjectAssemblyName(
+                    project.Id,
+                    graph.CompilerInputs[
+                        graph
+                            .Nodes.First(item => item.ProjectId == project.Id && item.Profile.Id == node.Profile.Id)
+                            .Key
+                    ]
+                ),
+            StringComparer.Ordinal
+        );
         var consumed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (CommandLineReference reference in input.Arguments.MetadataReferences)
         {
             string? path = reference.Reference;
             string fileName = path is null ? string.Empty : Path.GetFileNameWithoutExtension(path);
             string? ownedProject = owned.FirstOrDefault(project =>
-                ownedAssemblyNames.TryGetValue(project, out string? name) &&
-                string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase));
+                ownedAssemblyNames.TryGetValue(project, out string? name)
+                && string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)
+            );
             if (ownedProject is not null)
             {
                 RepositoryGraphNodeKey upstreamKey = new(
                     ownedProject,
                     graph.Nodes.First(item => item.ProjectId == ownedProject).TargetFramework,
-                    node.Profile.Id);
+                    node.Profile.Id
+                );
                 if (!built.TryGetValue(upstreamKey, out RoslynCompilationNode? upstream))
-                    throw new InvalidDataException($"Owned project '{ownedProject}' has not been compiled before '{node.ProjectId}'.");
+                {
+                    throw new InvalidDataException(
+                        $"Owned project '{ownedProject}' has not been compiled before '{node.ProjectId}'."
+                    );
+                }
                 consumed.Add(ownedProject);
-                yield return upstream.Compilation.ToMetadataReference(reference.Properties.Aliases, reference.Properties.EmbedInteropTypes);
+                yield return upstream.Compilation.ToMetadataReference(
+                    reference.Properties.Aliases,
+                    reference.Properties.EmbedInteropTypes
+                );
                 continue;
             }
 
-            if (everyOwnedAssemblyName.Values.Any(name => string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)))
+            if (
+                everyOwnedAssemblyName.Values.Any(name =>
+                    string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)
+                )
+            )
             {
                 throw new CompilerInputException(
                     "owned-binary-reference",
-                    $"Owned reference '{path}' was not matched to an admitted direct project edge.");
+                    $"Owned reference '{path}' was not matched to an admitted direct project edge."
+                );
             }
 
             if (path is null || string.IsNullOrWhiteSpace(path))
                 throw new CompilerInputException("reference-parser-diagnostic", "A metadata reference has no path.");
             if (!File.Exists(path))
-                throw new CompilerInputException("reference-parser-diagnostic", $"Metadata reference '{path}' does not exist.");
-            string externalKey = $"{Path.GetFullPath(path)}\0{reference.Properties.Kind}\0{reference.Properties.EmbedInteropTypes}\0{string.Join("\0", reference.Properties.Aliases)}";
+            {
+                throw new CompilerInputException(
+                    "reference-parser-diagnostic",
+                    $"Metadata reference '{path}' does not exist."
+                );
+            }
+            string externalKey =
+                $"{Path.GetFullPath(path)}\0{reference.Properties.Kind}\0{reference.Properties.EmbedInteropTypes}\0{string.Join("\0", reference.Properties.Aliases)}";
             if (!externalReferences.TryGetValue(externalKey, out PortableExecutableReference? externalReference))
             {
                 externalReference = LoadExternalReference(path, reference.Properties);
@@ -150,13 +205,15 @@ internal sealed class RoslynCompilationGraph
         {
             throw new CompilerInputException(
                 "missing-owned-project-reference",
-                $"Compiler inputs for '{node.ProjectId}' omit direct owned reference '{project}'.");
+                $"Compiler inputs for '{node.ProjectId}' omit direct owned reference '{project}'."
+            );
         }
     }
 
     internal static PortableExecutableReference LoadExternalReference(
         string path,
-        MetadataReferenceProperties properties)
+        MetadataReferenceProperties properties
+    )
     {
         try
         {
@@ -170,13 +227,19 @@ internal sealed class RoslynCompilationGraph
             PortableExecutableReference reference = MetadataReference.CreateFromFile(path, properties);
             return reference;
         }
-        catch (Exception exception) when (exception is
-            IOException or UnauthorizedAccessException or BadImageFormatException or ArgumentException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or BadImageFormatException
+                        or ArgumentException
+            )
         {
             throw new CompilerInputException(
                 "reference-parser-diagnostic",
                 $"Metadata reference '{path}' could not be loaded.",
-                exception);
+                exception
+            );
         }
     }
 
@@ -188,9 +251,11 @@ internal sealed class RoslynCompilationGraph
         while (pending.Count != 0)
         {
             string current = pending.Pop();
-            foreach (string dependency in graph.ProjectEdges
-                .Where(edge => edge.FromProjectId == current)
-                .Select(edge => edge.ToProjectId))
+            foreach (
+                string dependency in graph
+                    .ProjectEdges.Where(edge => edge.FromProjectId == current)
+                    .Select(edge => edge.ToProjectId)
+            )
             {
                 if (result.Add(dependency))
                     pending.Push(dependency);
@@ -201,8 +266,10 @@ internal sealed class RoslynCompilationGraph
 
     private static int RunPendingGeneratorProbe(CompilerInputModel input, CSharpCompilation compilation)
     {
-        AnalyzerMetadataInspection[] pending = input.Analyzers
-            .Where(analyzer => analyzer.Disposition == AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe)
+        AnalyzerMetadataInspection[] pending = input
+            .Analyzers.Where(analyzer =>
+                analyzer.Disposition == AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+            )
             .ToArray();
         if (pending.Length == 0)
             return 0;
@@ -218,25 +285,50 @@ internal sealed class RoslynCompilationGraph
                 {
                     throw new CompilerInputException(
                         "source-generator-probe",
-                        $"Admitted SDK generator assembly '{analyzer.Path}' exposed no C# generators.");
+                        $"Admitted SDK generator assembly '{analyzer.Path}' exposed no C# generators."
+                    );
                 }
                 generators.AddRange(loaded);
             }
             GeneratorDriver driver = CSharpGeneratorDriver.Create(
                 generators.ToImmutable(),
-                additionalTexts: input.AdditionalFiles
-                    .Select(file => (AdditionalText)new CapturedAdditionalText(file))
+                additionalTexts: input
+                    .AdditionalFiles.Select(file => (AdditionalText)new CapturedAdditionalText(file))
                     .ToImmutableArray(),
                 parseOptions: input.Arguments.ParseOptions as CSharpParseOptions,
-                optionsProvider: new CapturedAnalyzerConfigOptionsProvider(input.AnalyzerConfigs));
-            driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation updatedCompilation, out ImmutableArray<Diagnostic> diagnostics);
+                optionsProvider: new CapturedAnalyzerConfigOptionsProvider(input.AnalyzerConfigs)
+            );
+            driver = driver.RunGeneratorsAndUpdateCompilation(
+                compilation,
+                out Compilation updatedCompilation,
+                out ImmutableArray<Diagnostic> diagnostics
+            );
             if (updatedCompilation is not CSharpCompilation updated)
-                throw new CompilerInputException("source-generator-probe", "The source-generator probe returned a non-C# compilation.");
+            {
+                throw new CompilerInputException(
+                    "source-generator-probe",
+                    "The source-generator probe returned a non-C# compilation."
+                );
+            }
             GeneratorDriverRunResult runResult = driver.GetRunResult();
-            bool generatorFailure = runResult.Diagnostics.Length != 0 || runResult.Results.Any(result =>
-                result.Exception is not null || result.Diagnostics.Length != 0 || result.GeneratedSources.Length != 0);
-            if (updated.SyntaxTrees.Length != compilation.SyntaxTrees.Length || diagnostics.Length != 0 || generatorFailure)
-                throw new CompilerInputException("source-generator-probe", "An admitted SDK source generator produced output or diagnostics.");
+            bool generatorFailure =
+                runResult.Diagnostics.Length != 0
+                || runResult.Results.Any(result =>
+                    result.Exception is not null
+                    || result.Diagnostics.Length != 0
+                    || result.GeneratedSources.Length != 0
+                );
+            if (
+                updated.SyntaxTrees.Length != compilation.SyntaxTrees.Length
+                || diagnostics.Length != 0
+                || generatorFailure
+            )
+            {
+                throw new CompilerInputException(
+                    "source-generator-probe",
+                    "An admitted SDK source generator produced output or diagnostics."
+                );
+            }
             return generators.Count;
         }
         catch (CompilerInputException)
@@ -245,7 +337,11 @@ internal sealed class RoslynCompilationGraph
         }
         catch (Exception exception)
         {
-            throw new CompilerInputException("source-generator-probe", "An admitted SDK source generator failed during the zero-output probe.", exception);
+            throw new CompilerInputException(
+                "source-generator-probe",
+                "An admitted SDK source generator failed during the zero-output probe.",
+                exception
+            );
         }
     }
 
@@ -254,19 +350,22 @@ internal sealed class RoslynCompilationGraph
         if (input.Arguments.CompilationName is { Length: > 0 } commandLineName)
             return commandLineName;
         return input.Arguments.OutputFileName is { Length: > 0 } outputFile
-            ? Path.GetFileNameWithoutExtension(outputFile)
-            : OwnedAssemblyNames.TryGetValue(projectId, out string? name) ? name : projectId;
+                ? Path.GetFileNameWithoutExtension(outputFile)
+            : OwnedAssemblyNames.TryGetValue(projectId, out string? name) ? name
+            : projectId;
     }
 
     private sealed class GraphAnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
     {
         public void AddDependencyLocation(string fullPath) { }
+
         public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
     }
 
     private sealed class CapturedAdditionalText(CompilerAuxiliaryInput input) : AdditionalText
     {
         public override string Path { get; } = input.Path;
+
         public override SourceText? GetText(System.Threading.CancellationToken cancellationToken = default)
         {
             using var stream = new MemoryStream(input.Content.ToArray(), writable: false);
@@ -290,7 +389,9 @@ internal sealed class RoslynCompilationGraph
         }
 
         public override AnalyzerConfigOptions GlobalOptions => _global;
+
         public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => GetOptions(tree.FilePath);
+
         public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => GetOptions(textFile.Path);
 
         private AnalyzerConfigOptions GetOptions(string path)
@@ -312,13 +413,16 @@ internal sealed class RoslynCompilationGraph
                 return;
             throw new CompilerInputException(
                 "analyzer-config-diagnostic",
-                string.Join("; ", diagnostics.Select(diagnostic => diagnostic.ToString())));
+                string.Join("; ", diagnostics.Select(diagnostic => diagnostic.ToString()))
+            );
         }
     }
 
-    private sealed class CapturedAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values) : AnalyzerConfigOptions
+    private sealed class CapturedAnalyzerConfigOptions(IReadOnlyDictionary<string, string> values)
+        : AnalyzerConfigOptions
     {
         public override IEnumerable<string> Keys => values.Keys;
+
         public override bool TryGetValue(string key, out string value) => values.TryGetValue(key, out value!);
     }
 }

@@ -37,8 +37,7 @@ public sealed class InterfaceWitnessLedgerTests
         int requiredByLoader = rows.Count(r => r.Verdict == CounterfactualVerdict.RequiredByLoader);
         int timeout = rows.Count(r => r.Verdict == CounterfactualVerdict.Timeout);
         int unobservable = rows.Count(r => r.Verdict == CounterfactualVerdict.Unobservable);
-        int distinctInterfacesEverEvidenced = rows
-            .Where(r => r.Verdict == CounterfactualVerdict.Evidenced)
+        int distinctInterfacesEverEvidenced = rows.Where(r => r.Verdict == CounterfactualVerdict.Evidenced)
             .Select(r => (r.Element, r.Attribute))
             .Distinct()
             .Count();
@@ -69,8 +68,10 @@ public sealed class InterfaceWitnessLedgerTests
         string root = RepositoryRoot();
         IReadOnlyList<InterfaceWitnessResult> rows = InterfaceWitnessLedger.Read(root);
 
-        InterfaceWitnessResult row = rows.Single(
-            r => r.Element == "SymbolicFeature" && r.Attribute == "defaultSymbol" && r.FixtureId == "edge-cases/loader-default-symbol"
+        InterfaceWitnessResult row = rows.Single(r =>
+            r.Element == "SymbolicFeature"
+            && r.Attribute == "defaultSymbol"
+            && r.FixtureId == "edge-cases/loader-default-symbol"
         );
 
         Assert.That(row.Verdict, Is.EqualTo(CounterfactualVerdict.Unobservable));

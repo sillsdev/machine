@@ -86,7 +86,8 @@ public sealed class GrammarMutatorTests
         foreach (GrammarMutator.EnumSiblingCandidate candidate in candidates)
         {
             Assert.That(
-                (string?)candidate.Mutation.Mutated.Descendants("MorphologicalOutput").Single().Attribute("redupMorphType"),
+                (string?)
+                    candidate.Mutation.Mutated.Descendants("MorphologicalOutput").Single().Attribute("redupMorphType"),
                 Is.EqualTo(candidate.Sibling)
             );
         }

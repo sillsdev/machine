@@ -16,7 +16,8 @@ public sealed record ConformanceManifest(
     string DtdPath,
     string DtdSha256,
     string SourceHash,
-    IReadOnlyList<ManifestFixture> Fixtures)
+    IReadOnlyList<ManifestFixture> Fixtures
+)
 {
     public const string ManifestFormat = "hc-conformance-manifest/v1";
     public const string WordsFormat = "hc-conformance-words/v1";
@@ -34,7 +35,8 @@ public sealed record ManifestFixture(
     string WordsPath,
     string WordsSha256,
     int CaseCount,
-    bool ExpectedCrash);
+    bool ExpectedCrash
+);
 
 /// <summary>Canonical serialization of the manifest.</summary>
 public static class ManifestJson

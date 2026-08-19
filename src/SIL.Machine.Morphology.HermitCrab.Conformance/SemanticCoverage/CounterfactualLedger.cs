@@ -131,8 +131,13 @@ public static class CounterfactualLedger
         var bestVerdictBySurface = new Dictionary<string, CounterfactualVerdict>(StringComparer.Ordinal);
         foreach (CounterfactualResult result in results)
         {
-            if (!bestVerdictBySurface.TryGetValue(result.SurfaceId, out CounterfactualVerdict existing) || result.Verdict < existing)
+            if (
+                !bestVerdictBySurface.TryGetValue(result.SurfaceId, out CounterfactualVerdict existing)
+                || result.Verdict < existing
+            )
+            {
                 bestVerdictBySurface[result.SurfaceId] = result.Verdict;
+            }
         }
 
         var tiedFixturesBySurface = new Dictionary<string, SortedSet<string>>(StringComparer.Ordinal);
@@ -153,7 +158,10 @@ public static class CounterfactualLedger
         {
             if (result.Verdict != bestVerdictBySurface[result.SurfaceId] || best.ContainsKey(result.SurfaceId))
                 continue;
-            best[result.SurfaceId] = result with { WitnessingFixtures = tiedFixturesBySurface[result.SurfaceId].ToArray() };
+            best[result.SurfaceId] = result with
+            {
+                WitnessingFixtures = tiedFixturesBySurface[result.SurfaceId].ToArray(),
+            };
         }
 
         return best.Values.ToArray();
@@ -273,7 +281,11 @@ public static class CounterfactualLedger
             if (!Enum.TryParse(fields[1], out CounterfactualVerdict verdict))
                 throw new FormatException($"{RelativePath}: unknown verdict '{fields[1]}' for '{fields[0]}'");
             if (!Enum.TryParse(fields[7], out CounterexampleKind counterexampleKind))
-                throw new FormatException($"{RelativePath}: unknown counterexample kind '{fields[7]}' for '{fields[0]}'");
+            {
+                throw new FormatException(
+                    $"{RelativePath}: unknown counterexample kind '{fields[7]}' for '{fields[0]}'"
+                );
+            }
             entries.Add(
                 new CounterfactualResult(
                     fields[0],

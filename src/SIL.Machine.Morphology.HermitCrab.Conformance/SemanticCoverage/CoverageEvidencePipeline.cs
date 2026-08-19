@@ -27,9 +27,27 @@ public static class CoverageEvidencePipeline
         ArgumentNullException.ThrowIfNull(orderingResults);
         var items = new List<CoverageItem>(surfaceResults.Count + orderingResults.Count);
         foreach (CounterfactualResult result in surfaceResults)
-            items.Add(new CoverageItem(result.SurfaceId, CoverageItemKind.Surface, SurfaceOrigin(result.SurfaceId), result.FixtureId));
+        {
+            items.Add(
+                new CoverageItem(
+                    result.SurfaceId,
+                    CoverageItemKind.Surface,
+                    SurfaceOrigin(result.SurfaceId),
+                    result.FixtureId
+                )
+            );
+        }
         foreach (CounterfactualResult result in orderingResults)
-            items.Add(new CoverageItem(result.SurfaceId, CoverageItemKind.Ordering, "adjacent-transposition", result.FixtureId));
+        {
+            items.Add(
+                new CoverageItem(
+                    result.SurfaceId,
+                    CoverageItemKind.Ordering,
+                    "adjacent-transposition",
+                    result.FixtureId
+                )
+            );
+        }
         return items.OrderBy(item => item.Id, StringComparer.Ordinal).ToArray();
     }
 
@@ -71,7 +89,10 @@ public static class CoverageEvidencePipeline
     /// each kind's check only needs the checked-in grammar, so recomputing it here costs nothing worth
     /// caching and there is nothing that can go stale.
     /// </summary>
-    public static IReadOnlyList<Proof> BuildProofs(string repositoryRoot, IReadOnlyList<CoverageItem> nonEvidencedOrderingItems)
+    public static IReadOnlyList<Proof> BuildProofs(
+        string repositoryRoot,
+        IReadOnlyList<CoverageItem> nonEvidencedOrderingItems
+    )
     {
         ArgumentNullException.ThrowIfNull(repositoryRoot);
         ArgumentNullException.ThrowIfNull(nonEvidencedOrderingItems);
@@ -129,7 +150,10 @@ public static class CoverageEvidencePipeline
 
     /// <summary>Every row the combined inventory should write to <see cref="EvidenceLedger"/>: one per
     /// item with real evidence.</summary>
-    public static IReadOnlyList<EvidenceLedger.Row> BuildLedgerRows(IReadOnlyList<CoverageItem> items, IReadOnlyList<Evidence> evidence)
+    public static IReadOnlyList<EvidenceLedger.Row> BuildLedgerRows(
+        IReadOnlyList<CoverageItem> items,
+        IReadOnlyList<Evidence> evidence
+    )
     {
         Dictionary<string, CoverageItem> itemsById = items.ToDictionary(item => item.Id, StringComparer.Ordinal);
         return evidence.Select(e => EvidenceLedger.ToRow(itemsById[e.ItemId], e)).ToArray();

@@ -42,8 +42,14 @@ public static class DeadSchemaDetector
             // dead-schema, which permanently excuses it from ever needing a fixture.
             string quoted = $"\"{name}\"";
             string nameOf = $"nameof({name})";
-            if (!sources.Any(text => text.Contains(quoted, StringComparison.Ordinal) || text.Contains(nameOf, StringComparison.Ordinal)))
+            if (
+                !sources.Any(text =>
+                    text.Contains(quoted, StringComparison.Ordinal) || text.Contains(nameOf, StringComparison.Ordinal)
+                )
+            )
+            {
                 unreferenced.Add(name);
+            }
         }
 
         return unreferenced;

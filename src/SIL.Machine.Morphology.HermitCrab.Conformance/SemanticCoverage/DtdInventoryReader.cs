@@ -13,7 +13,14 @@ internal static class DtdInventoryReader
 
     private static readonly HashSet<string> AttributeTypes = new(StringComparer.Ordinal)
     {
-        "CDATA", "ID", "IDREF", "IDREFS", "NMTOKEN", "NMTOKENS", "ENTITY", "ENTITIES",
+        "CDATA",
+        "ID",
+        "IDREF",
+        "IDREFS",
+        "NMTOKEN",
+        "NMTOKENS",
+        "ENTITY",
+        "ENTITIES",
     };
 
     public static SemanticInventory Read(string dtdPath, string dtdText)
@@ -148,9 +155,15 @@ internal static class DtdInventoryReader
                 return;
             }
 
-            if (model.Kind != "choice" || model.MinOccurs != 0 || model.MaxOccurs != int.MaxValue ||
-                model.Children.Count < 2 || model.Children[0].Kind != "pcdata" ||
-                model.Children[0].MinOccurs != 1 || model.Children[0].MaxOccurs != 1)
+            if (
+                model.Kind != "choice"
+                || model.MinOccurs != 0
+                || model.MaxOccurs != int.MaxValue
+                || model.Children.Count < 2
+                || model.Children[0].Kind != "pcdata"
+                || model.Children[0].MinOccurs != 1
+                || model.Children[0].MaxOccurs != 1
+            )
             {
                 Fail(declarationStart, "invalid mixed content model; expected (#PCDATA) or (#PCDATA | Name ...)*");
             }
@@ -159,10 +172,18 @@ internal static class DtdInventoryReader
             for (int index = 1; index < model.Children.Count; index++)
             {
                 ContentNode child = model.Children[index];
-                if (child.Kind != "element" || child.Name is null || child.MinOccurs != 1 || child.MaxOccurs != 1 ||
-                    !names.Add(child.Name))
+                if (
+                    child.Kind != "element"
+                    || child.Name is null
+                    || child.MinOccurs != 1
+                    || child.MaxOccurs != 1
+                    || !names.Add(child.Name)
+                )
                 {
-                    Fail(declarationStart, "invalid mixed content model; expected unique unquantified element names after #PCDATA");
+                    Fail(
+                        declarationStart,
+                        "invalid mixed content model; expected unique unquantified element names after #PCDATA"
+                    );
                 }
             }
         }
@@ -249,13 +270,7 @@ internal static class DtdInventoryReader
             (int min, int max) = ReadOccurrenceSuffix();
             if (term.IsGroup)
             {
-                return term with
-                {
-                    MinOccurs = min,
-                    MaxOccurs = max,
-                    GroupMinOccurs = min,
-                    GroupMaxOccurs = max,
-                };
+                return term with { MinOccurs = min, MaxOccurs = max, GroupMinOccurs = min, GroupMaxOccurs = max };
             }
 
             return term with
@@ -278,8 +293,7 @@ internal static class DtdInventoryReader
             string cardinality = Cardinality(node.MinOccurs, node.MaxOccurs);
             if (node.IsGroup)
             {
-                string id =
-                    $"dtd:content/{CanonicalIdCodec.Encode(parent)}/{path}.{node.Kind}@{cardinality}";
+                string id = $"dtd:content/{CanonicalIdCodec.Encode(parent)}/{path}.{node.Kind}@{cardinality}";
                 AddSurface(
                     new InventorySurface(
                         id,
@@ -287,8 +301,8 @@ internal static class DtdInventoryReader
                         parent,
                         parent,
                         Location(declarationStart),
-                        $"kind={node.Kind};path={path};min={FormatMax(node.MinOccurs)};" +
-                        $"max={FormatMax(node.MaxOccurs)};parent={parent}"
+                        $"kind={node.Kind};path={path};min={FormatMax(node.MinOccurs)};"
+                            + $"max={FormatMax(node.MaxOccurs)};parent={parent}"
                     )
                 );
 
@@ -310,8 +324,7 @@ internal static class DtdInventoryReader
 
             if (node.Kind is "pcdata" or "empty" or "any")
             {
-                string id =
-                    $"dtd:content/{CanonicalIdCodec.Encode(parent)}/{path}.{node.Kind}@{cardinality}";
+                string id = $"dtd:content/{CanonicalIdCodec.Encode(parent)}/{path}.{node.Kind}@{cardinality}";
                 AddSurface(
                     new InventorySurface(
                         id,
@@ -319,16 +332,16 @@ internal static class DtdInventoryReader
                         node.Kind,
                         parent,
                         Location(declarationStart),
-                        $"kind={node.Kind};path={path};min={FormatMax(node.MinOccurs)};" +
-                        $"max={FormatMax(node.MaxOccurs)};parent={parent}"
+                        $"kind={node.Kind};path={path};min={FormatMax(node.MinOccurs)};"
+                            + $"max={FormatMax(node.MaxOccurs)};parent={parent}"
                     )
                 );
                 return;
             }
 
             string placementId =
-                $"dtd:placement/{CanonicalIdCodec.Encode(parent)}/{path}/" +
-                $"{CanonicalIdCodec.Encode(node.Name!)}/{cardinality}";
+                $"dtd:placement/{CanonicalIdCodec.Encode(parent)}/{path}/"
+                + $"{CanonicalIdCodec.Encode(node.Name!)}/{cardinality}";
             AddSurface(
                 new InventorySurface(
                     placementId,
@@ -336,9 +349,9 @@ internal static class DtdInventoryReader
                     node.Name!,
                     parent,
                     Location(declarationStart),
-                    $"group={groupId ?? "none"};path={path};min={FormatMax(node.MinOccurs)};" +
-                    $"max={FormatMax(node.MaxOccurs)};groupMin={FormatMax(containingGroupMin)};" +
-                    $"groupMax={FormatMax(containingGroupMax)}"
+                    $"group={groupId ?? "none"};path={path};min={FormatMax(node.MinOccurs)};"
+                        + $"max={FormatMax(node.MaxOccurs)};groupMin={FormatMax(containingGroupMin)};"
+                        + $"groupMax={FormatMax(containingGroupMax)}"
                 )
             );
         }
@@ -415,9 +428,11 @@ internal static class DtdInventoryReader
                     defaultValue = ReadQuoted(start, "attribute default");
                 }
 
-                if (type.EnumValues.Count > 0 &&
-                    defaultModeKind is AttributeDefaultMode.DefaultValue or AttributeDefaultMode.FixedValue &&
-                    !type.EnumValues.Contains(defaultValue, StringComparer.Ordinal))
+                if (
+                    type.EnumValues.Count > 0
+                    && defaultModeKind is AttributeDefaultMode.DefaultValue or AttributeDefaultMode.FixedValue
+                    && !type.EnumValues.Contains(defaultValue, StringComparer.Ordinal)
+                )
                 {
                     Fail(start, $"attribute default '{defaultValue}' is not an enumeration member");
                 }
@@ -456,10 +471,11 @@ internal static class DtdInventoryReader
                     )
                 );
 
-                string encodedDefaultValue =
-                    defaultModeKind is AttributeDefaultMode.Required or AttributeDefaultMode.Implied
-                        ? string.Empty
-                        : $"/{CanonicalIdCodec.Encode(defaultValue)}";
+                string encodedDefaultValue = defaultModeKind
+                    is AttributeDefaultMode.Required
+                        or AttributeDefaultMode.Implied
+                    ? string.Empty
+                    : $"/{CanonicalIdCodec.Encode(defaultValue)}";
                 AddSurface(
                     new InventorySurface(
                         $"dtd:attribute-default/{encodedElementName}/{encodedAttributeName}/{defaultMode}{encodedDefaultValue}",
@@ -551,7 +567,10 @@ internal static class DtdInventoryReader
 
         private void ParseDoctypeDeclaration(int start)
         {
-            Fail(start, "DOCTYPE declarations are unsupported at this seam because referenced declarations are not loaded");
+            Fail(
+                start,
+                "DOCTYPE declarations are unsupported at this seam because referenced declarations are not loaded"
+            );
         }
 
         private void RequireEndOfDeclaration(int declarationStart, string declarationKind)
@@ -713,8 +732,7 @@ internal static class DtdInventoryReader
 
         private bool Peek(char value) => !End && Current == value;
 
-        private bool StartsWith(string value) =>
-            _text.AsSpan(_index).StartsWith(value, StringComparison.Ordinal);
+        private bool StartsWith(string value) => _text.AsSpan(_index).StartsWith(value, StringComparison.Ordinal);
 
         private bool StartsWithDeclaration(string keyword)
         {

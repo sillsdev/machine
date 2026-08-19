@@ -18,34 +18,50 @@ internal static class CSharpCommandLineInputParser
         string projectDirectory,
         string intermediateDirectory,
         IReadOnlyList<string>? profileSymbols = null,
-        CompilerToolchainIdentity? queriedToolchain = null)
+        CompilerToolchainIdentity? queriedToolchain = null
+    )
     {
         ArgumentNullException.ThrowIfNull(captured);
-        if (captured.Items.TryGetValue("Using", out IReadOnlyList<CapturedCompilerItem>? usingItems) && usingItems.Count != 0)
-            throw new CompilerInputException("unsupported-implicit-global-using", "Implicit global using inputs are not supported.");
+        if (
+            captured.Items.TryGetValue("Using", out IReadOnlyList<CapturedCompilerItem>? usingItems)
+            && usingItems.Count != 0
+        )
+        {
+            throw new CompilerInputException(
+                "unsupported-implicit-global-using",
+                "Implicit global using inputs are not supported."
+            );
+        }
         CompilerInputModel model = Parse(
             captured.Items["CscCommandLineArgs"].Select(item => item.Identity).ToArray(),
             projectDirectory,
             profileSymbols,
             queriedToolchain,
-            AdmittedSdkAnalyzerDirectories(captured.Items["ReferencePathWithRefAssemblies"]));
+            AdmittedSdkAnalyzerDirectories(captured.Items["ReferencePathWithRefAssemblies"])
+        );
         var classifier = new CompilerSourceClassifier(
             repositoryRoot,
             projectDirectory,
             intermediateDirectory,
             captured.Properties["GeneratedAssemblyInfoFile"],
-            captured.Properties["TargetFrameworkMonikerAssemblyAttributesPath"]);
+            captured.Properties["TargetFrameworkMonikerAssemblyAttributesPath"]
+        );
         var compileItems = captured.Items["Compile"];
-        StringComparer pathComparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        StringComparer pathComparer = OperatingSystem.IsWindows()
+            ? StringComparer.OrdinalIgnoreCase
+            : StringComparer.Ordinal;
         var byIdentity = new Dictionary<string, CapturedCompilerItem>(pathComparer);
         foreach (CapturedCompilerItem item in compileItems)
         {
-            string itemPath = item.Metadata.TryGetValue("FullPath", out string? fullPath)
-                ? fullPath
-                : item.Identity;
+            string itemPath = item.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : item.Identity;
             itemPath = Path.GetFullPath(itemPath, projectDirectory);
             if (!byIdentity.TryAdd(itemPath, item))
-                throw new CompilerInputException("duplicate-compiler-source", $"Compiler source '{item.Identity}' occurs more than once.");
+            {
+                throw new CompilerInputException(
+                    "duplicate-compiler-source",
+                    $"Compiler source '{item.Identity}' occurs more than once."
+                );
+            }
         }
         var sources = new List<CompilerSourceClassification>();
         var parsedSourcePaths = new HashSet<string>(pathComparer);
@@ -54,16 +70,34 @@ internal static class CSharpCommandLineInputParser
             string source = model.Arguments.SourceFiles[sourceIndex].Path;
             string sourcePath = Path.GetFullPath(source, projectDirectory);
             if (!parsedSourcePaths.Add(sourcePath))
-                throw new CompilerInputException("duplicate-compiler-source", $"Compiler source '{source}' occurs more than once in compiler arguments.");
+            {
+                throw new CompilerInputException(
+                    "duplicate-compiler-source",
+                    $"Compiler source '{source}' occurs more than once in compiler arguments."
+                );
+            }
             if (!byIdentity.TryGetValue(sourcePath, out CapturedCompilerItem? item))
-                throw new CompilerInputException("unsupported-compiler-source", $"Compiler source '{source}' has no captured Compile item.");
-            sources.Add(new CompilerSourceClassification(
-                sourcePath,
-                classifier.Classify(sourcePath, item.Metadata),
-                model.Sources[sourceIndex].Content));
+            {
+                throw new CompilerInputException(
+                    "unsupported-compiler-source",
+                    $"Compiler source '{source}' has no captured Compile item."
+                );
+            }
+            sources.Add(
+                new CompilerSourceClassification(
+                    sourcePath,
+                    classifier.Classify(sourcePath, item.Metadata),
+                    model.Sources[sourceIndex].Content
+                )
+            );
         }
         if (sources.Count != compileItems.Count || !parsedSourcePaths.SetEquals(byIdentity.Keys))
-            throw new CompilerInputException("unsupported-compiler-source", "Captured Compile items and parsed source files differ.");
+        {
+            throw new CompilerInputException(
+                "unsupported-compiler-source",
+                "Captured Compile items and parsed source files differ."
+            );
+        }
         return model with { Sources = sources };
     }
 
@@ -72,7 +106,8 @@ internal static class CSharpCommandLineInputParser
         string baseDirectory,
         IReadOnlyList<string>? profileSymbols = null,
         CompilerToolchainIdentity? queriedToolchain = null,
-        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories = null)
+        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories = null
+    )
     {
         ArgumentNullException.ThrowIfNull(commandLine);
         ArgumentException.ThrowIfNullOrWhiteSpace(baseDirectory);
@@ -91,7 +126,12 @@ internal static class CSharpCommandLineInputParser
         }
 
         if (parsed.Errors.Length != 0)
-            throw new CompilerInputException(ClassifyParserError(parsed.Errors), string.Join("; ", parsed.Errors.Select(error => error.ToString())));
+        {
+            throw new CompilerInputException(
+                ClassifyParserError(parsed.Errors),
+                string.Join("; ", parsed.Errors.Select(error => error.ToString()))
+            );
+        }
 
         var symbols = new SortedSet<string>(StringComparer.Ordinal);
         AddSymbols(symbols, parsed.ParseOptions.PreprocessorSymbolNames);
@@ -102,37 +142,42 @@ internal static class CSharpCommandLineInputParser
             {
                 throw new CompilerInputException(
                     "compiler-profile-symbol-mismatch",
-                    $"Compiler arguments are missing profile symbols: {string.Join(", ", missingSymbols)}.");
+                    $"Compiler arguments are missing profile symbols: {string.Join(", ", missingSymbols)}."
+                );
             }
         }
 
-        var sources = parsed.SourceFiles
-            .Select(source => new CompilerSourceClassification(
+        var sources = parsed
+            .SourceFiles.Select(source => new CompilerSourceClassification(
                 source.Path,
                 CompilerSourceKind.Owned,
-                ReadSourceContent(source.Path)))
+                ReadSourceContent(source.Path)
+            ))
             .ToArray();
-        var analyzers = parsed.AnalyzerReferences
-            .Select(reference => AnalyzerMetadataInspector.Inspect(reference.FilePath, admittedSdkAnalyzerDirectories))
+        var analyzers = parsed
+            .AnalyzerReferences.Select(reference =>
+                AnalyzerMetadataInspector.Inspect(reference.FilePath, admittedSdkAnalyzerDirectories)
+            )
             .ToArray();
         string[] sourceGenerators = analyzers
-            .Where(analyzer => analyzer.IsSourceGenerator &&
-                analyzer.Disposition != AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe)
+            .Where(analyzer =>
+                analyzer.IsSourceGenerator
+                && analyzer.Disposition != AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+            )
             .Select(analyzer => analyzer.Path)
             .ToArray();
         if (sourceGenerators.Length != 0)
         {
             throw new CompilerInputException(
                 "unsupported-source-generator",
-                $"Source-generator analyzers are not supported: {string.Join(", ", sourceGenerators)}.");
+                $"Source-generator analyzers are not supported: {string.Join(", ", sourceGenerators)}."
+            );
         }
 
-        CompilerAuxiliaryInput[] additionalFiles = parsed.AdditionalFiles
-            .Select(file => ReadAuxiliaryInput(file.Path))
+        CompilerAuxiliaryInput[] additionalFiles = parsed
+            .AdditionalFiles.Select(file => ReadAuxiliaryInput(file.Path))
             .ToArray();
-        CompilerAuxiliaryInput[] analyzerConfigs = parsed.AnalyzerConfigPaths
-            .Select(ReadAuxiliaryInput)
-            .ToArray();
+        CompilerAuxiliaryInput[] analyzerConfigs = parsed.AnalyzerConfigPaths.Select(ReadAuxiliaryInput).ToArray();
         return new CompilerInputModel(parsed, symbols.ToArray(), sources, analyzers, additionalFiles, analyzerConfigs);
     }
 
@@ -141,8 +186,17 @@ internal static class CSharpCommandLineInputParser
         string csharpParserPath = typeof(CSharpCommandLineParser).Assembly.Location;
         string commonParserPath = typeof(CommandLineArguments).Assembly.Location;
         string directory = queried.CompilerDirectory;
-        if (string.IsNullOrWhiteSpace(directory) || !Path.IsPathFullyQualified(directory) || !Directory.Exists(directory))
-            throw new CompilerInputException("incompatible-compiler-toolchain", $"Queried compiler directory '{directory}' is not an existing absolute directory; parser is '{csharpParserPath}'.");
+        if (
+            string.IsNullOrWhiteSpace(directory)
+            || !Path.IsPathFullyQualified(directory)
+            || !Directory.Exists(directory)
+        )
+        {
+            throw new CompilerInputException(
+                "incompatible-compiler-toolchain",
+                $"Queried compiler directory '{directory}' is not an existing absolute directory; parser is '{csharpParserPath}'."
+            );
+        }
         VerifyCompilerAssembly(directory, "Microsoft.CodeAnalysis.CSharp.dll", csharpParserPath);
         VerifyCompilerAssembly(directory, "Microsoft.CodeAnalysis.dll", commonParserPath);
     }
@@ -151,7 +205,12 @@ internal static class CSharpCommandLineInputParser
     {
         string queriedPath = Path.Combine(directory, fileName);
         if (!File.Exists(queriedPath) || !SameAssemblyContent(parserPath, queriedPath))
-            throw new CompilerInputException("incompatible-compiler-toolchain", $"Queried compiler '{queriedPath}' does not match parser '{parserPath}'.");
+        {
+            throw new CompilerInputException(
+                "incompatible-compiler-toolchain",
+                $"Queried compiler '{queriedPath}' does not match parser '{parserPath}'."
+            );
+        }
     }
 
     private static bool SameAssemblyContent(string left, string right)
@@ -171,13 +230,18 @@ internal static class CSharpCommandLineInputParser
     }
 
     private static string ClassifyParserError(System.Collections.Immutable.ImmutableArray<Diagnostic> errors) =>
-        errors.Any(error => error.Id is "CS0006" or "CS0009" ||
-                error.GetMessage().Contains("reference", StringComparison.OrdinalIgnoreCase) ||
-                error.GetMessage().Contains("metadata file", StringComparison.OrdinalIgnoreCase))
+        errors.Any(error =>
+            error.Id is "CS0006" or "CS0009"
+            || error.GetMessage().Contains("reference", StringComparison.OrdinalIgnoreCase)
+            || error.GetMessage().Contains("metadata file", StringComparison.OrdinalIgnoreCase)
+        )
             ? "reference-parser-diagnostic"
-            : errors.Any(error => error.GetMessage().Contains("unrecognized", StringComparison.OrdinalIgnoreCase) || error.GetMessage().Contains("unknown", StringComparison.OrdinalIgnoreCase))
-                ? "unknown-compiler-switch"
-                : "compiler-parser-diagnostic";
+        : errors.Any(error =>
+            error.GetMessage().Contains("unrecognized", StringComparison.OrdinalIgnoreCase)
+            || error.GetMessage().Contains("unknown", StringComparison.OrdinalIgnoreCase)
+        )
+            ? "unknown-compiler-switch"
+        : "compiler-parser-diagnostic";
 
     private static void AddSymbols(ISet<string> destination, IEnumerable<string> symbols)
     {
@@ -193,7 +257,11 @@ internal static class CSharpCommandLineInputParser
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            throw new CompilerInputException("compiler-source-read-diagnostic", $"Cannot read compiler source '{path}'.", exception);
+            throw new CompilerInputException(
+                "compiler-source-read-diagnostic",
+                $"Cannot read compiler source '{path}'.",
+                exception
+            );
         }
     }
 
@@ -206,20 +274,33 @@ internal static class CSharpCommandLineInputParser
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            throw new CompilerInputException("compiler-auxiliary-read-diagnostic", $"Cannot read compiler auxiliary input '{path}'.", exception);
+            throw new CompilerInputException(
+                "compiler-auxiliary-read-diagnostic",
+                $"Cannot read compiler auxiliary input '{path}'.",
+                exception
+            );
         }
     }
 
     private static IReadOnlyCollection<string> AdmittedSdkAnalyzerDirectories(
-        IReadOnlyList<CapturedCompilerItem> references)
+        IReadOnlyList<CapturedCompilerItem> references
+    )
     {
-        var directories = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var directories = new HashSet<string>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
         foreach (CapturedCompilerItem reference in references)
         {
-            string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : reference.Identity;
+            string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath)
+                ? fullPath
+                : reference.Identity;
             string canonical = Path.GetFullPath(path);
-            string marker = $"{Path.DirectorySeparatorChar}packs{Path.DirectorySeparatorChar}Microsoft.NETCore.App.Ref{Path.DirectorySeparatorChar}";
-            int markerIndex = canonical.IndexOf(marker, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+            string marker =
+                $"{Path.DirectorySeparatorChar}packs{Path.DirectorySeparatorChar}Microsoft.NETCore.App.Ref{Path.DirectorySeparatorChar}";
+            int markerIndex = canonical.IndexOf(
+                marker,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+            );
             if (markerIndex < 0)
                 continue;
             string packRoot = canonical[..(markerIndex + marker.Length)];

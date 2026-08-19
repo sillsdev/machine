@@ -51,7 +51,11 @@ public sealed class ImpossibilityProofsTests
     [Test]
     public void AProofForASurfaceThatIsNowEvidencedIsStale()
     {
-        var verdicts = new[] { Result("a", CounterfactualVerdict.Evidenced), Result("b", CounterfactualVerdict.Unobservable) };
+        var verdicts = new[]
+        {
+            Result("a", CounterfactualVerdict.Evidenced),
+            Result("b", CounterfactualVerdict.Unobservable),
+        };
         var proofs = new[]
         {
             new ImpossibilityProof("a", ImpossibilityProofs.NoConsumer, "no reference in the engine"),

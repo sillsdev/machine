@@ -29,7 +29,13 @@ public sealed class FieldworksProducibilityLedgerTests
     private static readonly HashSet<string> AllowedProducible = new() { "Yes", "No", "Conditional" };
     private static readonly HashSet<string> AllowedKinds = new() { "failure-reason", "interface-attribute" };
 
-    private sealed record Row(string SubjectKind, string Subject, string Producible, string HcloaderSites, string Notes);
+    private sealed record Row(
+        string SubjectKind,
+        string Subject,
+        string Producible,
+        string HcloaderSites,
+        string Notes
+    );
 
     private static string RepositoryRoot()
     {
@@ -50,10 +56,7 @@ public sealed class FieldworksProducibilityLedgerTests
         string path = Path.Combine(root, RelativePath.Replace('/', Path.DirectorySeparatorChar));
         Assert.That(File.Exists(path), Is.True, $"{RelativePath} does not exist");
 
-        string[] dataLines = File
-            .ReadAllLines(path)
-            .Where(line => line.Length > 0 && !line.StartsWith("#"))
-            .ToArray();
+        string[] dataLines = File.ReadAllLines(path).Where(line => line.Length > 0 && !line.StartsWith("#")).ToArray();
 
         Assert.That(dataLines, Is.Not.Empty, $"{RelativePath} has no data");
         string[] header = dataLines[0].Split('\t');
@@ -101,8 +104,16 @@ public sealed class FieldworksProducibilityLedgerTests
         {
             foreach (Row row in rows)
             {
-                Assert.That(AllowedKinds, Does.Contain(row.SubjectKind), $"unrecognized subject_kind for {row.Subject}");
-                Assert.That(AllowedProducible, Does.Contain(row.Producible), $"unrecognized producible value for {row.Subject}");
+                Assert.That(
+                    AllowedKinds,
+                    Does.Contain(row.SubjectKind),
+                    $"unrecognized subject_kind for {row.Subject}"
+                );
+                Assert.That(
+                    AllowedProducible,
+                    Does.Contain(row.Producible),
+                    $"unrecognized producible value for {row.Subject}"
+                );
                 Assert.That(row.Subject, Is.Not.Empty, "subject must not be empty");
 
                 if (row.Producible == "Yes")
@@ -112,7 +123,11 @@ public sealed class FieldworksProducibilityLedgerTests
 
                 if (row.Producible == "No")
                 {
-                    Assert.That(row.Notes, Is.Not.Empty, $"{row.Subject} is No but has no notes explaining what was searched");
+                    Assert.That(
+                        row.Notes,
+                        Is.Not.Empty,
+                        $"{row.Subject} is No but has no notes explaining what was searched"
+                    );
                 }
             }
         });
@@ -147,8 +162,7 @@ public sealed class FieldworksProducibilityLedgerTests
         IReadOnlyList<string> expectedInterfaceAttributes = ExpectedInterfaceAttributes(root);
 
         var actualFailureReasons = rows.Where(r => r.SubjectKind == "failure-reason").Select(r => r.Subject).ToArray();
-        var actualInterfaceAttributes = rows
-            .Where(r => r.SubjectKind == "interface-attribute")
+        var actualInterfaceAttributes = rows.Where(r => r.SubjectKind == "interface-attribute")
             .Select(r => r.Subject)
             .ToArray();
 

@@ -622,9 +622,7 @@ public static class DataflowObligationLedger
         writer.WriteLine(
             "# gates (see DataflowObligationLedger's own doc comment for why the old required*/excluded*-name"
         );
-        writer.WriteLine(
-            "# heuristic was wrong), so cell_kind=McDc contributes the"
-        );
+        writer.WriteLine("# heuristic was wrong), so cell_kind=McDc contributes the");
         writer.WriteLine("# floor 4 cells per chain (PresentControl/PresentGatedForm/AbsentControl/AbsentGatedForm).");
         writer.WriteLine(
             "# cell_kind=ConditionExtension adds the extra MC/DC vectors an MPR-feature gate needs when a real"

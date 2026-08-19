@@ -83,7 +83,13 @@ public static class GrammarCoverageLedger
             if (item.Kind != CoverageItemKind.Surface)
                 continue;
             rows.Add(
-                new Row(item.Fixture, ObligationLayer.Surface, item.ItemId, SurfaceStatus(item.Verdict), $"{item.Verdict}")
+                new Row(
+                    item.Fixture,
+                    ObligationLayer.Surface,
+                    item.ItemId,
+                    SurfaceStatus(item.Verdict),
+                    $"{item.Verdict}"
+                )
             );
         }
 
@@ -97,10 +103,21 @@ public static class GrammarCoverageLedger
             foreach (string fixtureId in declared.Fixtures)
             {
                 string obligation = $"{declared.Element}.{declared.Attribute}";
-                if (witnessByKey.TryGetValue((declared.Element, declared.Attribute, fixtureId), out InterfaceWitnessResult? witness))
+                if (
+                    witnessByKey.TryGetValue(
+                        (declared.Element, declared.Attribute, fixtureId),
+                        out InterfaceWitnessResult? witness
+                    )
+                )
                 {
                     rows.Add(
-                        new Row(fixtureId, ObligationLayer.Interface, obligation, InterfaceStatus(witness.Verdict), $"{witness.Verdict}")
+                        new Row(
+                            fixtureId,
+                            ObligationLayer.Interface,
+                            obligation,
+                            InterfaceStatus(witness.Verdict),
+                            $"{witness.Verdict}"
+                        )
                     );
                 }
                 else
@@ -134,8 +151,7 @@ public static class GrammarCoverageLedger
             );
         }
 
-        return rows
-            .OrderBy(r => r.Fixture, StringComparer.Ordinal)
+        return rows.OrderBy(r => r.Fixture, StringComparer.Ordinal)
             .ThenBy(r => r.Layer)
             .ThenBy(r => r.Obligation, StringComparer.Ordinal)
             .ToArray();
@@ -164,8 +180,7 @@ public static class GrammarCoverageLedger
         writer.WriteLine("# mere presence. detail carries the underlying verdict/claim-count for that reason.");
         writer.WriteLine("fixture\tlayer\tobligation\tstatus\tdetail");
         foreach (
-            Row row in rows
-                .OrderBy(r => r.Fixture, StringComparer.Ordinal)
+            Row row in rows.OrderBy(r => r.Fixture, StringComparer.Ordinal)
                 .ThenBy(r => r.Layer)
                 .ThenBy(r => r.Obligation, StringComparer.Ordinal)
         )

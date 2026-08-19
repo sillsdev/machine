@@ -48,7 +48,8 @@ internal sealed record RepositoryProjectDefinition
         string id,
         string relativePath,
         string targetFramework,
-        IReadOnlyList<string> directOwnedReferences)
+        IReadOnlyList<string> directOwnedReferences
+    )
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("A project ID is required.", nameof(id));
@@ -92,7 +93,12 @@ internal sealed record RepositoryGraphNodeKey
     private static void Validate(string value, string name)
     {
         if (string.IsNullOrWhiteSpace(value) || value.Contains('/') || value.Contains('\\'))
-            throw new ArgumentException("Node identity segments must be nonempty and contain no path separators.", name);
+        {
+            throw new ArgumentException(
+                "Node identity segments must be nonempty and contain no path separators.",
+                name
+            );
+        }
     }
 }
 
@@ -142,7 +148,11 @@ internal static class RepositoryTargetFrameworkSelection
         if (configuredSelection is null)
         {
             if (distinct.Length != 1)
-                throw new InvalidDataException("Multi-target project selection is ambiguous without an explicit target framework.");
+            {
+                throw new InvalidDataException(
+                    "Multi-target project selection is ambiguous without an explicit target framework."
+                );
+            }
             return distinct[0];
         }
 
@@ -158,9 +168,24 @@ internal sealed class RepositoryCompilationGraph
     private static readonly RepositoryProjectDefinition[] FixedProjects =
     {
         new("machine", "src/SIL.Machine/SIL.Machine.csproj", "netstandard2.0", Array.Empty<string>()),
-        new("hc", "src/SIL.Machine.Morphology.HermitCrab/SIL.Machine.Morphology.HermitCrab.csproj", "netstandard2.0", new[] { "machine" }),
-        new("hc-tool", "src/SIL.Machine.Morphology.HermitCrab.Tool/SIL.Machine.Morphology.HermitCrab.Tool.csproj", "net10.0", new[] { "hc" }),
-        new("hc-conformance", "src/SIL.Machine.Morphology.HermitCrab.Conformance/SIL.Machine.Morphology.HermitCrab.Conformance.csproj", "net10.0", new[] { "hc", "hc-tool" }),
+        new(
+            "hc",
+            "src/SIL.Machine.Morphology.HermitCrab/SIL.Machine.Morphology.HermitCrab.csproj",
+            "netstandard2.0",
+            new[] { "machine" }
+        ),
+        new(
+            "hc-tool",
+            "src/SIL.Machine.Morphology.HermitCrab.Tool/SIL.Machine.Morphology.HermitCrab.Tool.csproj",
+            "net10.0",
+            new[] { "hc" }
+        ),
+        new(
+            "hc-conformance",
+            "src/SIL.Machine.Morphology.HermitCrab.Conformance/SIL.Machine.Morphology.HermitCrab.Conformance.csproj",
+            "net10.0",
+            new[] { "hc", "hc-tool" }
+        ),
     };
 
     private static readonly BuildProfile[] FixedProfiles =
@@ -179,7 +204,8 @@ internal sealed class RepositoryCompilationGraph
         IReadOnlyDictionary<RepositoryGraphNodeKey, CapturedCompilerInputs>? captures = null,
         IReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel>? compilerInputs = null,
         CompilationGraphHashInputs? hashInputs = null,
-        GraphHashes? hashes = null)
+        GraphHashes? hashes = null
+    )
     {
         Projects = new ReadOnlyCollection<RepositoryProjectDefinition>(projects.ToArray());
         Profiles = new ReadOnlyCollection<BuildProfile>(profiles.ToArray());
@@ -187,10 +213,14 @@ internal sealed class RepositoryCompilationGraph
         ProjectEdges = new ReadOnlyCollection<RepositoryProjectEdge>(projectEdges.ToArray());
         Captures = new ReadOnlyDictionary<RepositoryGraphNodeKey, CapturedCompilerInputs>(
             new Dictionary<RepositoryGraphNodeKey, CapturedCompilerInputs>(
-                captures ?? new Dictionary<RepositoryGraphNodeKey, CapturedCompilerInputs>()));
+                captures ?? new Dictionary<RepositoryGraphNodeKey, CapturedCompilerInputs>()
+            )
+        );
         CompilerInputs = new ReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel>(
             new Dictionary<RepositoryGraphNodeKey, CompilerInputModel>(
-                compilerInputs ?? new Dictionary<RepositoryGraphNodeKey, CompilerInputModel>()));
+                compilerInputs ?? new Dictionary<RepositoryGraphNodeKey, CompilerInputModel>()
+            )
+        );
         _hashInputs = hashInputs;
         _hashes = hashes;
     }
@@ -230,7 +260,8 @@ internal sealed class RepositoryCompilationGraph
 
     internal static RepositoryCompilationGraph Create(
         IEnumerable<RepositoryGraphNode> nodes,
-        IEnumerable<RepositoryProjectEdge> projectEdges)
+        IEnumerable<RepositoryProjectEdge> projectEdges
+    )
     {
         ArgumentNullException.ThrowIfNull(nodes);
         ArgumentNullException.ThrowIfNull(projectEdges);
@@ -242,21 +273,48 @@ internal sealed class RepositoryCompilationGraph
     }
 
     internal RepositoryCompilationGraph WithCaptures(
-        IReadOnlyDictionary<RepositoryGraphNodeKey, CapturedCompilerInputs> captures)
+        IReadOnlyDictionary<RepositoryGraphNodeKey, CapturedCompilerInputs> captures
+    )
     {
         ArgumentNullException.ThrowIfNull(captures);
         if (captures.Count != Nodes.Count || !captures.Keys.ToHashSet().SetEquals(Nodes.Select(node => node.Key)))
             throw new InvalidDataException("Compiler captures must cover every fixed graph node exactly once.");
-        return new RepositoryCompilationGraph(Projects, Profiles, Nodes, ProjectEdges, captures, CompilerInputs, _hashInputs, _hashes);
+        return new RepositoryCompilationGraph(
+            Projects,
+            Profiles,
+            Nodes,
+            ProjectEdges,
+            captures,
+            CompilerInputs,
+            _hashInputs,
+            _hashes
+        );
     }
 
     internal RepositoryCompilationGraph WithCompilerInputs(
-        IReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel> compilerInputs)
+        IReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel> compilerInputs
+    )
     {
         ArgumentNullException.ThrowIfNull(compilerInputs);
-        if (compilerInputs.Count != Nodes.Count || !compilerInputs.Keys.ToHashSet().SetEquals(Nodes.Select(node => node.Key)))
-            throw new InvalidDataException("Normalized compiler inputs must cover every fixed graph node exactly once.");
-        return new RepositoryCompilationGraph(Projects, Profiles, Nodes, ProjectEdges, Captures, compilerInputs, _hashInputs, _hashes);
+        if (
+            compilerInputs.Count != Nodes.Count
+            || !compilerInputs.Keys.ToHashSet().SetEquals(Nodes.Select(node => node.Key))
+        )
+        {
+            throw new InvalidDataException(
+                "Normalized compiler inputs must cover every fixed graph node exactly once."
+            );
+        }
+        return new RepositoryCompilationGraph(
+            Projects,
+            Profiles,
+            Nodes,
+            ProjectEdges,
+            Captures,
+            compilerInputs,
+            _hashInputs,
+            _hashes
+        );
     }
 
     internal RepositoryCompilationGraph WithHashInputs(CompilationGraphHashInputs hashInputs)
@@ -264,8 +322,10 @@ internal sealed class RepositoryCompilationGraph
         ArgumentNullException.ThrowIfNull(hashInputs);
         if (Captures.Count != Nodes.Count || CompilerInputs.Count != Nodes.Count)
             throw new InvalidDataException("Hash inputs require complete compiler captures and normalized inputs.");
-        if (hashInputs.Nodes.Length != Nodes.Count ||
-            !hashInputs.Nodes.Select(node => node.Key).ToHashSet().SetEquals(Nodes.Select(node => node.Key)))
+        if (
+            hashInputs.Nodes.Length != Nodes.Count
+            || !hashInputs.Nodes.Select(node => node.Key).ToHashSet().SetEquals(Nodes.Select(node => node.Key))
+        )
         {
             throw new InvalidDataException("Hash inputs must cover every fixed graph node exactly once.");
         }
@@ -277,7 +337,8 @@ internal sealed class RepositoryCompilationGraph
             Captures,
             CompilerInputs,
             hashInputs,
-            null);
+            null
+        );
     }
 
     internal RepositoryCompilationGraph WithHashes(GraphHashes hashes)
@@ -296,7 +357,8 @@ internal sealed class RepositoryCompilationGraph
             Captures,
             CompilerInputs,
             _hashInputs,
-            hashes);
+            hashes
+        );
     }
 
     private static IEnumerable<RepositoryProjectEdge> FixedEdges()
@@ -312,8 +374,8 @@ internal sealed class RepositoryCompilationGraph
         var expected = (
             from project in FixedProjects
             from profile in FixedProfiles
-            select new RepositoryGraphNodeKey(project.Id, project.TargetFramework, profile.Id))
-            .ToHashSet();
+            select new RepositoryGraphNodeKey(project.Id, project.TargetFramework, profile.Id)
+        ).ToHashSet();
         var actual = new HashSet<RepositoryGraphNodeKey>();
         foreach (RepositoryGraphNode node in nodes)
         {
@@ -323,20 +385,33 @@ internal sealed class RepositoryCompilationGraph
             }
 
             RepositoryProjectDefinition? project = FixedProjects.SingleOrDefault(item => item.Id == node.ProjectId);
-            if (project is null || !string.Equals(project.RelativePath, node.ProjectPath, StringComparison.Ordinal)
-                || !string.Equals(project.TargetFramework, node.TargetFramework, StringComparison.Ordinal))
+            if (
+                project is null
+                || !string.Equals(project.RelativePath, node.ProjectPath, StringComparison.Ordinal)
+                || !string.Equals(project.TargetFramework, node.TargetFramework, StringComparison.Ordinal)
+            )
             {
-                throw new InvalidDataException($"Compilation graph node '{node.Key}' is outside the fixed project table.");
+                throw new InvalidDataException(
+                    $"Compilation graph node '{node.Key}' is outside the fixed project table."
+                );
             }
-            if (!FixedProfiles.Any(profile => string.Equals(profile.Id, node.Profile.Id, StringComparison.Ordinal)
-                && profile.AdditionalSymbols.SequenceEqual(node.Profile.AdditionalSymbols, StringComparer.Ordinal)))
+            if (
+                !FixedProfiles.Any(profile =>
+                    string.Equals(profile.Id, node.Profile.Id, StringComparison.Ordinal)
+                    && profile.AdditionalSymbols.SequenceEqual(node.Profile.AdditionalSymbols, StringComparer.Ordinal)
+                )
+            )
             {
                 throw new InvalidDataException($"Compilation graph node '{node.Key}' uses an unknown profile.");
             }
         }
 
         if (!actual.SetEquals(expected))
-            throw new InvalidDataException("Compilation graph must contain exactly the sixteen fixed project/profile nodes.");
+        {
+            throw new InvalidDataException(
+                "Compilation graph must contain exactly the sixteen fixed project/profile nodes."
+            );
+        }
     }
 
     private static void ValidateEdges(IReadOnlyList<RepositoryProjectEdge> edges)
@@ -357,8 +432,13 @@ internal sealed class RepositoryCompilationGraph
         if (!edges.ToHashSet().SetEquals(expected))
             throw new InvalidDataException("Compilation graph edges do not match the fixed direct-reference table.");
 
-        var outgoing = edges.GroupBy(edge => edge.FromProjectId)
-            .ToDictionary(group => group.Key, group => group.Select(edge => edge.ToProjectId).ToArray(), StringComparer.Ordinal);
+        var outgoing = edges
+            .GroupBy(edge => edge.FromProjectId)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(edge => edge.ToProjectId).ToArray(),
+                StringComparer.Ordinal
+            );
         var visiting = new HashSet<string>(StringComparer.Ordinal);
         var visited = new HashSet<string>(StringComparer.Ordinal);
         foreach (string projectId in projectIds)
@@ -369,7 +449,8 @@ internal sealed class RepositoryCompilationGraph
         string projectId,
         IReadOnlyDictionary<string, string[]> outgoing,
         ISet<string> visiting,
-        ISet<string> visited)
+        ISet<string> visited
+    )
     {
         if (visited.Contains(projectId))
             return;

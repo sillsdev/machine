@@ -38,7 +38,10 @@ public sealed class EvidenceCardGeneratorTests
         IReadOnlyList<EvidenceCard> cards = EvidenceCardGenerator.Compute(root);
 
         Assert.That(cards, Has.Count.EqualTo(ledgerRows.Count));
-        Assert.That(cards.Select(c => c.CellId).ToHashSet(), Is.EquivalentTo(ledgerRows.Select(r => r.CellId).ToHashSet()));
+        Assert.That(
+            cards.Select(c => c.CellId).ToHashSet(),
+            Is.EquivalentTo(ledgerRows.Select(r => r.CellId).ToHashSet())
+        );
         Assert.That(cards.Select(c => c.FileName).Distinct().Count(), Is.EqualTo(cards.Count));
     }
 
@@ -56,8 +59,18 @@ public sealed class EvidenceCardGeneratorTests
         Assert.That(card.Markdown, Does.Contain("Claimed by word **'vokadan'** in `edge-cases/mpr-gated-exception`"));
         // Grammar citations: the writer's payload and the reader's gate, each at a real line number
         // (not merely "present somewhere").
-        Assert.That(card.Markdown, Does.Match(@"Writer \(payload declared here\) `LexicalEntry\.ruleFeatures`: `grammar\.xml:\d+` = ""mprException"""));
-        Assert.That(card.Markdown, Does.Match(@"Reader \(gate declared here\) `MorphologicalInput\.excludedMPRFeatures`: `grammar\.xml:\d+` = ""mprException"""));
+        Assert.That(
+            card.Markdown,
+            Does.Match(
+                @"Writer \(payload declared here\) `LexicalEntry\.ruleFeatures`: `grammar\.xml:\d+` = ""mprException"""
+            )
+        );
+        Assert.That(
+            card.Markdown,
+            Does.Match(
+                @"Reader \(gate declared here\) `MorphologicalInput\.excludedMPRFeatures`: `grammar\.xml:\d+` = ""mprException"""
+            )
+        );
         // Before/after, both from the author's own claim and independently from the machine witness
         // ledger -- two separate facts, never collapsed into one.
         Assert.That(card.Markdown, Does.Contain("Before: `ok::-`"));
@@ -68,7 +81,10 @@ public sealed class EvidenceCardGeneratorTests
         Assert.That(card.Markdown, Does.Contain("the PresentGatedForm arm: the feature is PRESENT on the root"));
         // distinct_from, with BOTH outcomes shown so a reviewer can see they differ without opening
         // words.yaml.
-        Assert.That(card.Markdown, Does.Contain("`distinct_from` **'sanitan'** (expect_fail=False) vs. this word (expect_fail=True)"));
+        Assert.That(
+            card.Markdown,
+            Does.Contain("`distinct_from` **'sanitan'** (expect_fail=False) vs. this word (expect_fail=True)")
+        );
     }
 
     [Test]
@@ -136,9 +152,18 @@ public sealed class EvidenceCardGeneratorTests
         EvidenceCard card = EvidenceCardGenerator.Compute(root).Single(c => c.CellId == unexercised.CellId);
 
         Assert.That(card.Markdown, Does.Contain("No fixture or word is identified for this cell"));
-        Assert.That(card.Markdown, Does.Contain("No `claimed_cells` entry recorded an author-reviewed severing/before/after"));
-        Assert.That(card.Markdown, Does.Contain("No prose recorded: no claim, and no word is identified for this cell."));
-        Assert.That(card.Markdown, Does.Contain("No claim exists for this cell, so no `distinct_from` counterpart is recorded."));
+        Assert.That(
+            card.Markdown,
+            Does.Contain("No `claimed_cells` entry recorded an author-reviewed severing/before/after")
+        );
+        Assert.That(
+            card.Markdown,
+            Does.Contain("No prose recorded: no claim, and no word is identified for this cell.")
+        );
+        Assert.That(
+            card.Markdown,
+            Does.Contain("No claim exists for this cell, so no `distinct_from` counterpart is recorded.")
+        );
     }
 
     // Falsification (task's own requirement): the drift gate must catch a hand-edit. Isolated from the
@@ -159,7 +184,11 @@ public sealed class EvidenceCardGeneratorTests
             };
 
             EvidenceCardGenerator.Write(tempRoot, cards);
-            Assert.That(EvidenceCardGenerator.Check(tempRoot, cards).IsCurrent, Is.True, "a freshly written set must check as current");
+            Assert.That(
+                EvidenceCardGenerator.Check(tempRoot, cards).IsCurrent,
+                Is.True,
+                "a freshly written set must check as current"
+            );
 
             string cardDir = Path.Combine(tempRoot, "conformance", "evidence-cards");
 
@@ -172,7 +201,11 @@ public sealed class EvidenceCardGeneratorTests
 
             // Restore, then delete a file outright.
             File.WriteAllText(editedPath, "# cell one\ncontent\n");
-            Assert.That(EvidenceCardGenerator.Check(tempRoot, cards).IsCurrent, Is.True, "restoring the hand-edit must check as current again");
+            Assert.That(
+                EvidenceCardGenerator.Check(tempRoot, cards).IsCurrent,
+                Is.True,
+                "restoring the hand-edit must check as current again"
+            );
 
             File.Delete(editedPath);
             EvidenceCardDiff missingDiff = EvidenceCardGenerator.Check(tempRoot, cards);

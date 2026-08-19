@@ -108,7 +108,9 @@ public sealed class GateObligationLedgerTests
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
 
-        GateObligationLedger.Row surfaceFormMismatch = rows.First(r => r.Gate == "SurfaceFormMismatch" && r.Arm == "Blocked");
+        GateObligationLedger.Row surfaceFormMismatch = rows.First(r =>
+            r.Gate == "SurfaceFormMismatch" && r.Arm == "Blocked"
+        );
         Assert.That(surfaceFormMismatch.XmlReachable, Is.EqualTo("No"));
         Assert.That(surfaceFormMismatch.FlexProducible, Is.EqualTo("Yes"));
         Assert.That(surfaceFormMismatch.WorthCovering, Is.EqualTo("No"));
@@ -196,8 +198,7 @@ public sealed class GateObligationLedgerTests
         string root = RepositoryRoot();
         IReadOnlyList<GateObligationLedger.Row> rows = GateObligationLedger.Read(root);
 
-        string[] gatesWithBothArmsEvidenced = rows
-            .Where(r => r.Status == GateArmStatus.Evidenced)
+        string[] gatesWithBothArmsEvidenced = rows.Where(r => r.Status == GateArmStatus.Evidenced)
             .GroupBy(r => r.Gate)
             .Where(g => g.Count() == 2)
             .Select(g => g.Key)

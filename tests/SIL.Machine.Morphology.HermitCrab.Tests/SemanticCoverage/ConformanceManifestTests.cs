@@ -67,9 +67,10 @@ public sealed class ConformanceManifestTests
                 Assert.That(fixture.CaseCount, Is.GreaterThan(0), fixture.FixtureId);
                 Assert.That(
                     fixture.Category,
-                    Is.EqualTo(fixture.FixtureId.StartsWith("languages/", StringComparison.Ordinal)
-                        ? "language"
-                        : "edge-case"));
+                    Is.EqualTo(
+                        fixture.FixtureId.StartsWith("languages/", StringComparison.Ordinal) ? "language" : "edge-case"
+                    )
+                );
             }
         });
     }
@@ -82,7 +83,8 @@ public sealed class ConformanceManifestTests
         Assert.That(
             File.ReadAllText(Absolute(GrammarCoverageGate.DtdRelativePath)).ReplaceLineEndings("\n"),
             Is.EqualTo(File.ReadAllText(Absolute(GrammarCoverageGate.LibraryDtdRelativePath)).ReplaceLineEndings("\n")),
-            $"copy {GrammarCoverageGate.LibraryDtdRelativePath} over {GrammarCoverageGate.DtdRelativePath}");
+            $"copy {GrammarCoverageGate.LibraryDtdRelativePath} over {GrammarCoverageGate.DtdRelativePath}"
+        );
     }
 
     [Test]
@@ -115,19 +117,22 @@ public sealed class ConformanceManifestTests
         Assert.That(
             File.ReadAllText(path).ReplaceLineEndings("\n"),
             Is.EqualTo(ManifestJson.Serialize(Manifest()) + "\n"),
-            "regenerate with: hc-conformance --generate-manifest");
+            "regenerate with: hc-conformance --generate-manifest"
+        );
     }
 
     [Test]
     public void TheManifestValidatesAgainstItsPublishedSchema()
     {
         Json.Schema.JsonSchema schema = Json.Schema.JsonSchema.FromFile(
-            Absolute("conformance/schema/conformance-manifest.schema.json"));
+            Absolute("conformance/schema/conformance-manifest.schema.json")
+        );
         using JsonDocument document = JsonDocument.Parse(ManifestJson.Serialize(Manifest()));
 
         Json.Schema.EvaluationResults results = schema.Evaluate(
             document.RootElement,
-            new Json.Schema.EvaluationOptions { OutputFormat = Json.Schema.OutputFormat.List });
+            new Json.Schema.EvaluationOptions { OutputFormat = Json.Schema.OutputFormat.List }
+        );
 
         IEnumerable<string> failures = (results.Details ?? new List<Json.Schema.EvaluationResults>())
             .Where(detail => detail.Errors is { Count: > 0 })
@@ -211,10 +216,15 @@ public sealed class ConformanceManifestTests
             string target = Path.Combine(
                 root,
                 string.Format(CultureInfo.InvariantCulture, relativeTemplate, FixtureId)
-                    .Replace('/', Path.DirectorySeparatorChar));
+                    .Replace('/', Path.DirectorySeparatorChar)
+            );
             File.AppendAllText(target, "\n# drift\n");
 
-            Assert.That(ConformanceManifestGenerator.Generate(root).SourceHash, Is.Not.EqualTo(before), relativeTemplate);
+            Assert.That(
+                ConformanceManifestGenerator.Generate(root).SourceHash,
+                Is.Not.EqualTo(before),
+                relativeTemplate
+            );
         }
         finally
         {
@@ -237,12 +247,14 @@ public sealed class ConformanceManifestTests
             {
                 File.Copy(
                     Path.Combine(root, "conformance", "edge-cases", "strrep-identity", name),
-                    Path.Combine(legacy, name));
+                    Path.Combine(legacy, name)
+                );
             }
 
             Assert.That(
                 ConformanceManifestGenerator.Generate(root).Fixtures.Select(fixture => fixture.FixtureId),
-                Is.EqualTo(new[] { FixtureId }));
+                Is.EqualTo(new[] { FixtureId })
+            );
         }
         finally
         {
@@ -262,7 +274,8 @@ public sealed class ConformanceManifestTests
                 Assert.That(
                     GrammarValidation.Validate(Absolute(fixture.GrammarPath), dtd),
                     Is.Empty,
-                    $"{fixture.FixtureId}: grammar must validate against the published DTD");
+                    $"{fixture.FixtureId}: grammar must validate against the published DTD"
+                );
             }
         });
     }
@@ -280,7 +293,8 @@ public sealed class ConformanceManifestTests
                 hostile,
                 "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                     + "<!DOCTYPE HermitCrabInput SYSTEM \"../../../etc/passwd\">\n"
-                    + "<HermitCrabInput/>\n");
+                    + "<HermitCrabInput/>\n"
+            );
 
             Assert.That(() => GrammarValidation.Validate(hostile, dtd), Throws.TypeOf<System.Xml.XmlException>());
         }

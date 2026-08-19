@@ -42,7 +42,8 @@ public static class ConformanceManifestGenerator
             dtdRelative,
             dtdHash,
             SourceHash(root, mapped, dtdRelative, dtdHash),
-            mapped);
+            mapped
+        );
     }
 
     private static ManifestFixture MapFixture(Fixture fixture, string root)
@@ -52,20 +53,25 @@ public static class ConformanceManifestGenerator
         string wordsPath = "conformance/" + fixtureId + "/words.yaml";
         WordsYaml words = fixture.Words;
 
-        string[] duplicates = words.Words.Select(word => word.Word)
+        string[] duplicates = words
+            .Words.Select(word => word.Word)
             .GroupBy(input => input, StringComparer.Ordinal)
-            .Where(group => group.Count() > 1).Select(group => group.Key)
-            .OrderBy(input => input, StringComparer.Ordinal).ToArray();
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .OrderBy(input => input, StringComparer.Ordinal)
+            .ToArray();
         if (duplicates.Length != 0)
         {
             throw new InvalidDataException(
-                $"Fixture '{fixtureId}' repeats input(s): {string.Join(", ", duplicates)}. Inputs must be unique within a fixture.");
+                $"Fixture '{fixtureId}' repeats input(s): {string.Join(", ", duplicates)}. Inputs must be unique within a fixture."
+            );
         }
 
         if (words.ExpectCrash && words.Words.Count != 1)
         {
             throw new InvalidDataException(
-                $"Fixture '{fixtureId}' declares expect_crash and must contain exactly one case, but has {words.Words.Count}.");
+                $"Fixture '{fixtureId}' declares expect_crash and must contain exactly one case, but has {words.Words.Count}."
+            );
         }
 
         return new ManifestFixture(
@@ -77,7 +83,8 @@ public static class ConformanceManifestGenerator
             wordsPath,
             HashFile(Path.Combine(root, wordsPath.Replace('/', Path.DirectorySeparatorChar))),
             words.Words.Count,
-            words.ExpectCrash);
+            words.ExpectCrash
+        );
     }
 
     private static string RelativePath(string path, string basePath) =>
@@ -90,23 +97,29 @@ public static class ConformanceManifestGenerator
         string root,
         IReadOnlyList<ManifestFixture> fixtures,
         string dtdRelative,
-        string dtdHash)
+        string dtdHash
+    )
     {
         var text = new StringBuilder();
         text.Append(ConformanceManifest.ManifestFormat).Append('\n');
         text.Append(dtdRelative).Append('\0').Append(dtdHash).Append('\n');
         foreach (ManifestFixture fixture in fixtures)
         {
-            text.Append(fixture.FixtureId).Append('\0')
-                .Append(fixture.GrammarSha256).Append('\0')
-                .Append(fixture.WordsSha256).Append('\n');
+            text.Append(fixture.FixtureId)
+                .Append('\0')
+                .Append(fixture.GrammarSha256)
+                .Append('\0')
+                .Append(fixture.WordsSha256)
+                .Append('\n');
         }
 
         foreach (string relative in AdditionalSourceFiles.OrderBy(path => path, StringComparer.Ordinal))
         {
             string absolute = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
-            text.Append(relative).Append('\0')
-                .Append(File.Exists(absolute) ? HashFile(absolute) : "<absent>").Append('\n');
+            text.Append(relative)
+                .Append('\0')
+                .Append(File.Exists(absolute) ? HashFile(absolute) : "<absent>")
+                .Append('\n');
         }
 
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString()))).ToLowerInvariant();

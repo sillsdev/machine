@@ -41,14 +41,18 @@ public sealed class DtdInventoryReaderTests
                     "dtd:element/Root",
                     "dtd:enum/Root/mode/one",
                     "dtd:enum/Root/mode/two",
-                    "dtd:placement/Root/r.0/Child/optional"
+                    "dtd:placement/Root/r.0/Child/optional",
                 }
             )
         );
-        Assert.That(inventory.Surfaces.Single(surface => surface.Id == "dtd:attribute/Root/target").Value,
-            Does.Contain("type=IDREF").And.Contain("default=#IMPLIED"));
-        Assert.That(inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.0/Child/optional").Value,
-            Does.Contain("group=dtd:content/Root/r.sequence@one"));
+        Assert.That(
+            inventory.Surfaces.Single(surface => surface.Id == "dtd:attribute/Root/target").Value,
+            Does.Contain("type=IDREF").And.Contain("default=#IMPLIED")
+        );
+        Assert.That(
+            inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.0/Child/optional").Value,
+            Does.Contain("group=dtd:content/Root/r.sequence@one")
+        );
         Assert.That(inventory.SourceHash, Does.Match("^[0-9a-f]{64}$"));
     }
 
@@ -87,10 +91,14 @@ public sealed class DtdInventoryReaderTests
                 }
             )
         );
-        Assert.That(inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.1.0/B/one").Value,
-            Does.Contain("group=dtd:content/Root/r.1.choice@one-or-more").And.Contain("groupMax=unbounded"));
-        Assert.That(inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.2/B/optional").Value,
-            Does.Contain("group=dtd:content/Root/r.sequence@one"));
+        Assert.That(
+            inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.1.0/B/one").Value,
+            Does.Contain("group=dtd:content/Root/r.1.choice@one-or-more").And.Contain("groupMax=unbounded")
+        );
+        Assert.That(
+            inventory.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.2/B/optional").Value,
+            Does.Contain("group=dtd:content/Root/r.sequence@one")
+        );
     }
 
     [Test]
@@ -117,8 +125,10 @@ public sealed class DtdInventoryReaderTests
         Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:enum/Root/status/ready"));
         Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:enum/Root/status/done"));
         Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:default/Root/status/ready"));
-        Assert.That(inventory.Surfaces.Single(surface => surface.Id == "dtd:attribute/Root/status").Value,
-            Does.Contain("fixed=true").And.Contain("type=enumeration"));
+        Assert.That(
+            inventory.Surfaces.Single(surface => surface.Id == "dtd:attribute/Root/status").Value,
+            Does.Contain("fixed=true").And.Contain("type=enumeration")
+        );
     }
 
     [Test]
@@ -144,7 +154,10 @@ public sealed class DtdInventoryReaderTests
             SemanticCoverageSourceSet.FromDtd("right.dtd", RightNested)
         );
 
-        Assert.That(left.Surfaces.Select(surface => surface.Id), Is.Not.EqualTo(right.Surfaces.Select(surface => surface.Id)));
+        Assert.That(
+            left.Surfaces.Select(surface => surface.Id),
+            Is.Not.EqualTo(right.Surfaces.Select(surface => surface.Id))
+        );
         Assert.That(left.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:content/Root/r.1.sequence@one"));
         Assert.That(right.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:content/Root/r.0.sequence@one"));
         Assert.That(left.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:placement/Root/r.1.0/B/one"));
@@ -172,9 +185,18 @@ public sealed class DtdInventoryReaderTests
             SemanticCoverageSourceSet.FromDtd("zero-or-more.dtd", ZeroOrMore)
         );
 
-        Assert.That(oneOrMore.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:content/Root/r.sequence@one-or-more"));
-        Assert.That(zeroOrMore.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:content/Root/r.sequence@zero-or-more"));
-        Assert.That(oneOrMore.Surfaces.Select(surface => surface.Id), Is.Not.EqualTo(zeroOrMore.Surfaces.Select(surface => surface.Id)));
+        Assert.That(
+            oneOrMore.Surfaces.Select(surface => surface.Id),
+            Does.Contain("dtd:content/Root/r.sequence@one-or-more")
+        );
+        Assert.That(
+            zeroOrMore.Surfaces.Select(surface => surface.Id),
+            Does.Contain("dtd:content/Root/r.sequence@zero-or-more")
+        );
+        Assert.That(
+            oneOrMore.Surfaces.Select(surface => surface.Id),
+            Is.Not.EqualTo(zeroOrMore.Surfaces.Select(surface => surface.Id))
+        );
     }
 
     [Test]
@@ -259,7 +281,10 @@ public sealed class DtdInventoryReaderTests
             SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("doctype.dtd", dtd))
         );
 
-        Assert.That(error!.Message, Does.Contain("DOCTYPE declarations are unsupported").And.Contain("not loaded").And.Contain("doctype.dtd:1:"));
+        Assert.That(
+            error!.Message,
+            Does.Contain("DOCTYPE declarations are unsupported").And.Contain("not loaded").And.Contain("doctype.dtd:1:")
+        );
     }
 
     [TestCase("(#PCDATA | Child)")]
@@ -343,7 +368,10 @@ public sealed class DtdInventoryReaderTests
             SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("attribute-separator.dtd", dtd))
         );
 
-        Assert.That(error!.Message, Does.Contain("expected XML DTD whitespace").And.Contain("attribute-separator.dtd:1:"));
+        Assert.That(
+            error!.Message,
+            Does.Contain("expected XML DTD whitespace").And.Contain("attribute-separator.dtd:1:")
+        );
     }
 
     [TestCase("<!-- bad -- <!ELEMENT Hidden EMPTY> --><!ELEMENT Root EMPTY>")]
@@ -416,17 +444,27 @@ public sealed class DtdInventoryReaderTests
     [Test]
     public void AuthoritativeHermitCrabDtdCanBeEnumerated()
     {
-        string dtdPath = Path.GetFullPath(Path.Combine(
-            TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..",
-            "src", "SIL.Machine.Morphology.HermitCrab", "HermitCrabInput.dtd"
-        ));
+        string dtdPath = Path.GetFullPath(
+            Path.Combine(
+                TestContext.CurrentContext.TestDirectory,
+                "..",
+                "..",
+                "..",
+                "..",
+                "..",
+                "src",
+                "SIL.Machine.Morphology.HermitCrab",
+                "HermitCrabInput.dtd"
+            )
+        );
         string dtd = File.ReadAllText(dtdPath);
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
             SemanticCoverageSourceSet.FromDtd("HermitCrabInput.dtd", dtd)
         );
 
-        var kindCounts = inventory.Surfaces.GroupBy(surface => surface.Kind).ToDictionary(group => group.Key, group => group.Count());
+        var kindCounts = inventory
+            .Surfaces.GroupBy(surface => surface.Kind)
+            .ToDictionary(group => group.Key, group => group.Count());
         Assert.That(inventory.Surfaces.Count, Is.EqualTo(1059));
         Assert.That(kindCounts["element"], Is.EqualTo(108));
         Assert.That(kindCounts["attribute"], Is.EqualTo(149));
@@ -467,16 +505,34 @@ public sealed class DtdInventoryReaderTests
             """;
 
         var baseline = SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("base.dtd", BaseDtd));
-        var carrier = SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("carrier.dtd", CarrierMutation));
-        var cardinality = SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("cardinality.dtd", CardinalityMutation));
+        var carrier = SemanticCoverageInventory.Generate(
+            SemanticCoverageSourceSet.FromDtd("carrier.dtd", CarrierMutation)
+        );
+        var cardinality = SemanticCoverageInventory.Generate(
+            SemanticCoverageSourceSet.FromDtd("cardinality.dtd", CardinalityMutation)
+        );
         var @enum = SemanticCoverageInventory.Generate(SemanticCoverageSourceSet.FromDtd("enum.dtd", EnumMutation));
 
-        Assert.That(carrier.Surfaces.Select(surface => surface.Id), Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id)));
-        Assert.That(cardinality.Surfaces.Select(surface => surface.Id), Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id)));
-        Assert.That(@enum.Surfaces.Select(surface => surface.Id), Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id)));
+        Assert.That(
+            carrier.Surfaces.Select(surface => surface.Id),
+            Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id))
+        );
+        Assert.That(
+            cardinality.Surfaces.Select(surface => surface.Id),
+            Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id))
+        );
+        Assert.That(
+            @enum.Surfaces.Select(surface => surface.Id),
+            Is.Not.EqualTo(baseline.Surfaces.Select(surface => surface.Id))
+        );
         Assert.That(@enum.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:enum/Root/mode/three"));
-        Assert.That(cardinality.Surfaces.Select(surface => surface.Id), Does.Contain("dtd:placement/Root/r.0/Child/one-or-more"));
-        Assert.That(cardinality.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.0/Child/one-or-more").Value,
-            Does.Contain("min=1").And.Contain("max=unbounded"));
+        Assert.That(
+            cardinality.Surfaces.Select(surface => surface.Id),
+            Does.Contain("dtd:placement/Root/r.0/Child/one-or-more")
+        );
+        Assert.That(
+            cardinality.Surfaces.Single(surface => surface.Id == "dtd:placement/Root/r.0/Child/one-or-more").Value,
+            Does.Contain("min=1").And.Contain("max=unbounded")
+        );
     }
 }

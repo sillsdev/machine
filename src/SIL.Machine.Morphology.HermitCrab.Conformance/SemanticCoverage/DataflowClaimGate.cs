@@ -169,7 +169,12 @@ public static class DataflowClaimGate
             if (severedElement is not null && severedAttribute is not null)
             {
                 XDocument grammar = XDocument.Load(fixture.GrammarPath);
-                XDocument? severed = InterfaceWitnessGate.Sever(grammar, severedElement, severedAttribute, out int removedCount);
+                XDocument? severed = InterfaceWitnessGate.Sever(
+                    grammar,
+                    severedElement,
+                    severedAttribute,
+                    out int removedCount
+                );
                 if (severed is null)
                 {
                     return new SeveranceRecomputation(
@@ -240,7 +245,10 @@ public static class DataflowClaimGate
 
         foreach (Fixture fixture in fixtures)
         {
-            Dictionary<string, WordEntry> wordsByName = fixture.Words.Words.ToDictionary(w => w.Word, StringComparer.Ordinal);
+            Dictionary<string, WordEntry> wordsByName = fixture.Words.Words.ToDictionary(
+                w => w.Word,
+                StringComparer.Ordinal
+            );
 
             foreach (WordEntry word in fixture.Words.Words)
             {
@@ -291,7 +299,11 @@ public static class DataflowClaimGate
                         word.Word,
                         evaluate
                     );
-                    (bool? distinctFromVerified, string distinctFromDetail) = EvaluateDistinctFrom(claim, word, wordsByName);
+                    (bool? distinctFromVerified, string distinctFromDetail) = EvaluateDistinctFrom(
+                        claim,
+                        word,
+                        wordsByName
+                    );
 
                     claims.Add(
                         new DataflowClaimResult(
@@ -315,7 +327,13 @@ public static class DataflowClaimGate
         {
             if (claimedCellIds.Contains(row.CellId))
                 continue;
-            unclaimed.Add(new UnclaimedSatisfiedCell(row.CellId, ExtractWitnessFixture(row.Evidence), ExtractWitnessWord(row.Evidence)));
+            unclaimed.Add(
+                new UnclaimedSatisfiedCell(
+                    row.CellId,
+                    ExtractWitnessFixture(row.Evidence),
+                    ExtractWitnessWord(row.Evidence)
+                )
+            );
         }
 
         return new DataflowClaimReport(claims, unclaimed);
@@ -334,7 +352,12 @@ public static class DataflowClaimGate
 
         SeveranceRecomputation baseline = evaluate(fixture, null, null, word);
         if (baseline.Outcome is null)
-            return (DataflowClaimReviewStatus.Stale, $"could not recompute the unsevered baseline for '{word}': {baseline.Error}");
+        {
+            return (
+                DataflowClaimReviewStatus.Stale,
+                $"could not recompute the unsevered baseline for '{word}': {baseline.Error}"
+            );
+        }
         if (baseline.Outcome != claim.Before)
         {
             return (
@@ -343,11 +366,13 @@ public static class DataflowClaimGate
             );
         }
 
-        foreach ((string element, string attribute, string role) in new[]
-        {
-            (row.WriterElement, row.WriterAttribute, "writer"),
-            (row.ReaderElement, row.ReaderAttribute, "reader"),
-        })
+        foreach (
+            (string element, string attribute, string role) in new[]
+            {
+                (row.WriterElement, row.WriterAttribute, "writer"),
+                (row.ReaderElement, row.ReaderAttribute, "reader"),
+            }
+        )
         {
             SeveranceRecomputation severed = evaluate(fixture, element, attribute, word);
             if (severed.Outcome is null)

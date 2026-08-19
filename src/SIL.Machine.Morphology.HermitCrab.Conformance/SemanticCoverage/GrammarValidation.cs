@@ -32,7 +32,11 @@ public static class GrammarValidation
         // The document is opened here so the resolver is consulted only for the DTD, never for the
         // grammar's own URI.
         using var grammar = new FileStream(grammarPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        using XmlReader reader = XmlReader.Create(grammar, settings, new Uri(Path.GetFullPath(grammarPath)).AbsoluteUri);
+        using XmlReader reader = XmlReader.Create(
+            grammar,
+            settings,
+            new Uri(Path.GetFullPath(grammarPath)).AbsoluteUri
+        );
         while (reader.Read())
         {
             // Validation is reported through the event handler; the read loop only drives it.
@@ -55,11 +59,14 @@ public static class GrammarValidation
         public override object GetEntity(Uri absoluteUri, string? role, Type? typeOfObjectToReturn)
         {
             ArgumentNullException.ThrowIfNull(absoluteUri);
-            if (!absoluteUri.IsFile || !string.Equals(
-                    Path.GetFullPath(absoluteUri.LocalPath), _dtdPath, StringComparison.OrdinalIgnoreCase))
+            if (
+                !absoluteUri.IsFile
+                || !string.Equals(Path.GetFullPath(absoluteUri.LocalPath), _dtdPath, StringComparison.OrdinalIgnoreCase)
+            )
             {
                 throw new XmlException(
-                    $"External entity '{absoluteUri}' is not admitted; only '{AdmittedSystemId}' may be referenced.");
+                    $"External entity '{absoluteUri}' is not admitted; only '{AdmittedSystemId}' may be referenced."
+                );
             }
 
             return new FileStream(_dtdPath, FileMode.Open, FileAccess.Read, FileShare.Read);

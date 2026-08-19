@@ -84,7 +84,12 @@ public sealed class NotInSignatureCheckTests
         Assert.That(proof.Kind, Is.EqualTo(ImpossibilityProofs.NotInSignature));
         Assert.That(NotInSignatureCheck.SignatureSourceNeverReads(root, "Properties"), Is.True);
         Assert.That(
-            NotInSignatureCheck.MutationChangesNoWordInAnyContainingFixture(root, proof.SurfaceId, "Properties", _scratchDirectory),
+            NotInSignatureCheck.MutationChangesNoWordInAnyContainingFixture(
+                root,
+                proof.SurfaceId,
+                "Properties",
+                _scratchDirectory
+            ),
             Is.True
         );
     }

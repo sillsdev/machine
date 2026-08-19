@@ -19,17 +19,23 @@ internal sealed class CompilerSourceClassifier
         string projectDirectory,
         string intermediateDirectory,
         string assemblyInfoPath,
-        string targetFrameworkAttributesPath)
+        string targetFrameworkAttributesPath
+    )
     {
         _repositoryRoot = Canonical(repositoryRoot);
         _projectDirectory = Canonical(projectDirectory);
         _intermediateDirectory = Canonical(intermediateDirectory);
         _assemblyInfoPath = Canonical(assemblyInfoPath);
         _targetFrameworkAttributesPath = Canonical(targetFrameworkAttributesPath);
-        if (!IsWithin(_assemblyInfoPath, _intermediateDirectory) ||
-            !IsWithin(_targetFrameworkAttributesPath, _intermediateDirectory))
+        if (
+            !IsWithin(_assemblyInfoPath, _intermediateDirectory)
+            || !IsWithin(_targetFrameworkAttributesPath, _intermediateDirectory)
+        )
         {
-            throw new CompilerInputException("unsupported-compiler-source", "MSBuild generated-source paths must remain within the private intermediate directory.");
+            throw new CompilerInputException(
+                "unsupported-compiler-source",
+                "MSBuild generated-source paths must remain within the private intermediate directory."
+            );
         }
     }
 
@@ -40,37 +46,66 @@ internal sealed class CompilerSourceClassifier
         {
             if (IsAdmittedGeneratedPath(canonical))
                 return CompilerSourceKind.GeneratedSupport;
-            throw new CompilerInputException("unsupported-compiler-source", $"Generated source '{path}' is not an admitted SDK support input.");
+            throw new CompilerInputException(
+                "unsupported-compiler-source",
+                $"Generated source '{path}' is not an admitted SDK support input."
+            );
         }
 
         if (Path.GetFileName(canonical).Equals("GlobalUsings.g.cs", StringComparison.OrdinalIgnoreCase))
-            throw new CompilerInputException("unsupported-implicit-global-using", "Implicit global using source is not supported.");
+        {
+            throw new CompilerInputException(
+                "unsupported-implicit-global-using",
+                "Implicit global using source is not supported."
+            );
+        }
 
-        if (IsWithin(canonical, _projectDirectory) && IsWithin(canonical, _repositoryRoot) &&
-            !HasGeneratedMetadata(metadata) && !ContainsBuildDirectory(canonical))
+        if (
+            IsWithin(canonical, _projectDirectory)
+            && IsWithin(canonical, _repositoryRoot)
+            && !HasGeneratedMetadata(metadata)
+            && !ContainsBuildDirectory(canonical)
+        )
         {
             return CompilerSourceKind.Owned;
         }
 
-        throw new CompilerInputException("unsupported-compiler-source", $"Compiler source '{path}' is outside the admitted source set.");
+        throw new CompilerInputException(
+            "unsupported-compiler-source",
+            $"Compiler source '{path}' is outside the admitted source set."
+        );
     }
 
     private bool IsAdmittedGeneratedPath(string path)
     {
-        StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
         return path.Equals(_assemblyInfoPath, comparison) || path.Equals(_targetFrameworkAttributesPath, comparison);
     }
 
     private static bool HasGeneratedMetadata(IReadOnlyDictionary<string, string>? metadata) =>
-        metadata is not null &&
-        ((metadata.TryGetValue("Generated", out string? generated) && generated.Equals("true", StringComparison.OrdinalIgnoreCase)) ||
-         (metadata.TryGetValue("AutoGen", out string? autoGen) && autoGen.Equals("true", StringComparison.OrdinalIgnoreCase)));
+        metadata is not null
+        && (
+            (
+                metadata.TryGetValue("Generated", out string? generated)
+                && generated.Equals("true", StringComparison.OrdinalIgnoreCase)
+            )
+            || (
+                metadata.TryGetValue("AutoGen", out string? autoGen)
+                && autoGen.Equals("true", StringComparison.OrdinalIgnoreCase)
+            )
+        );
 
     private bool ContainsBuildDirectory(string path)
     {
         string relative = Path.GetRelativePath(_projectDirectory, path);
-        return relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            .Any(segment => segment.Equals("bin", StringComparison.OrdinalIgnoreCase) || segment.Equals("obj", StringComparison.OrdinalIgnoreCase));
+        return relative
+            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Any(segment =>
+                segment.Equals("bin", StringComparison.OrdinalIgnoreCase)
+                || segment.Equals("obj", StringComparison.OrdinalIgnoreCase)
+            );
     }
 
     private static string Canonical(string path) => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
@@ -80,6 +115,7 @@ internal sealed class CompilerSourceClassifier
         StringComparison comparison = OperatingSystem.IsWindows()
             ? StringComparison.OrdinalIgnoreCase
             : StringComparison.Ordinal;
-        return path.Equals(directory, comparison) || path.StartsWith(directory + Path.DirectorySeparatorChar, comparison);
+        return path.Equals(directory, comparison)
+            || path.StartsWith(directory + Path.DirectorySeparatorChar, comparison);
     }
 }

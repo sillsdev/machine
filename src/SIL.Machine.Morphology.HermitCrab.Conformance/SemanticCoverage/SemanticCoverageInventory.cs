@@ -19,11 +19,14 @@ public static class SemanticCoverageInventory
             SemanticInventory dtdOnly = DtdInventoryReader.Read(sources.DtdPath, sources.DtdText);
             return string.IsNullOrEmpty(sources.ToolchainFingerprint)
                 ? dtdOnly
-                : dtdOnly with { SourceHash = CompositeHash(dtdOnly.SourceHash, "", sources.ToolchainFingerprint) };
+                : dtdOnly with
+                {
+                    SourceHash = CompositeHash(dtdOnly.SourceHash, "", sources.ToolchainFingerprint),
+                };
         }
 
-        var duplicatePaths = sources.CSharpSources
-            .GroupBy(source => NormalizePath(source.RelativePath), StringComparer.Ordinal)
+        var duplicatePaths = sources
+            .CSharpSources.GroupBy(source => NormalizePath(source.RelativePath), StringComparer.Ordinal)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key)
             .OrderBy(path => path, StringComparer.Ordinal)
@@ -38,7 +41,8 @@ public static class SemanticCoverageInventory
 
         SemanticInventory csharp = CSharpInventoryReader.Read(
             sources.CSharpSources,
-            sources.CompleteProjects ?? Array.Empty<string>());
+            sources.CompleteProjects ?? Array.Empty<string>()
+        );
         return Compose(sources.DtdPath, sources.DtdText, csharp, sources.ToolchainFingerprint);
     }
 
@@ -46,7 +50,8 @@ public static class SemanticCoverageInventory
         string dtdPath,
         string dtdText,
         SemanticInventory csharp,
-        string toolchainFingerprint)
+        string toolchainFingerprint
+    )
     {
         SemanticInventory dtd = DtdInventoryReader.Read(dtdPath, dtdText);
         return new SemanticInventory(

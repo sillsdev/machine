@@ -147,7 +147,10 @@ public static class TraceEvidence
             // deactivated subtree instead; either way it has targeted that subtree.
             string? named = NeutralizedName(element, neutralized);
             return named is not null
-                ? (EvidenceStrength.NegativeControl, $"deactivated at '{deactivated}'; a verified failing word neutralizes '{named}'")
+                ? (
+                    EvidenceStrength.NegativeControl,
+                    $"deactivated at '{deactivated}'; a verified failing word neutralizes '{named}'"
+                )
                 : (EvidenceStrength.Presence, $"deactivated at '{deactivated}', which no word names in neutralizes:");
         }
 
@@ -161,7 +164,10 @@ public static class TraceEvidence
             // applications. Its evidence is the same shape as a deactivated decoy's, a word that fails
             // because the rule did not apply, so it is credited the same way and only when named.
             return neutralized.Contains(owningRule)
-                ? (EvidenceStrength.NegativeControl, $"rule '{owningRule}' never fires and a verified failing word neutralizes it")
+                ? (
+                    EvidenceStrength.NegativeControl,
+                    $"rule '{owningRule}' never fires and a verified failing word neutralizes it"
+                )
                 : (EvidenceStrength.Presence, $"declared under rule '{owningRule}', which no verified parse fired");
         }
 

@@ -34,7 +34,8 @@ public sealed class PhaseTraceRecorderTests
             RepositoryRoot(),
             "conformance",
             Fixture.Replace('/', Path.DirectorySeparatorChar),
-            "grammar.xml");
+            "grammar.xml"
+        );
         Language language = XmlLanguageLoader.Load(grammar);
         var recorder = new PhaseTraceRecorder();
         var morpher = new Morpher(recorder, language);
@@ -52,15 +53,14 @@ public sealed class PhaseTraceRecorderTests
             Assert.That(
                 recorder.Events(ParsePhase.AnalysisCandidate),
                 Is.Not.Empty,
-                "unapplication must be observable");
+                "unapplication must be observable"
+            );
             Assert.That(
                 recorder.Events(ParsePhase.SynthesisConfirmation),
                 Is.Not.Empty,
-                "application must be observable");
-            Assert.That(
-                recorder.Events(ParsePhase.FinalParse),
-                Is.Not.Empty,
-                "a parsed word must reach a verdict");
+                "application must be observable"
+            );
+            Assert.That(recorder.Events(ParsePhase.FinalParse), Is.Not.Empty, "a parsed word must reach a verdict");
         });
     }
 
@@ -123,13 +123,18 @@ public sealed class PhaseTraceRecorderTests
     {
         Assert.That(
             Parse("katabit").Digest(ParsePhase.AnalysisCandidate),
-            Is.Not.EqualTo(Parse(Word).Digest(ParsePhase.AnalysisCandidate)));
+            Is.Not.EqualTo(Parse(Word).Digest(ParsePhase.AnalysisCandidate))
+        );
     }
 
     private static string[] Kinds(PhaseTraceRecorder recorder, ParsePhase phase) =>
         recorder
             .Events(phase)
-            .Select(item => item.Contains('(', StringComparison.Ordinal) ? item[..item.IndexOf('(', StringComparison.Ordinal)] : item)
+            .Select(item =>
+                item.Contains('(', StringComparison.Ordinal)
+                    ? item[..item.IndexOf('(', StringComparison.Ordinal)]
+                    : item
+            )
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 }

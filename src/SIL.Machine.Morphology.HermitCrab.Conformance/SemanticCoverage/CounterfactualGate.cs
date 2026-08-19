@@ -307,7 +307,15 @@ public static class CounterfactualGate
         }
 
         var mutation = new GrammarMutation(item.Id, "adjacent-transposition", swap.Detail, swap.Mutated);
-        return RunMutation(fixture, item.Id, mutation, baseline, scratchDirectory, timeout ?? DefaultTimeout, onWordTimed);
+        return RunMutation(
+            fixture,
+            item.Id,
+            mutation,
+            baseline,
+            scratchDirectory,
+            timeout ?? DefaultTimeout,
+            onWordTimed
+        );
     }
 
     /// <summary>

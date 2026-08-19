@@ -86,18 +86,18 @@ public sealed class CoverageGapRatchetTests
     // is a shared, concurrently-owned artifact this fix does not touch. Recorded here by name, not
     // merely by count, so lowering this pin later means finding these two exact ids evidenced, not
     // just watching the total drop.
-        // Raised 14 -> 18. The four added gaps are all NEW ordering pairs, created by adding two rules
-        // to existing grammars while covering obligation cells -- each new rule forms pairs with the
-        // rules already present, and an ordering pair is evidenced only by the [Explicit] ordering
-        // measurement, not by the sweep that witnesses the cell:
-        //   ordering:edge-cases/morphotactic-attribute-breadth/morphologicalRules/mrConferExcl~mrExclReader
-        //   ordering:edge-cases/morphotactic-attribute-breadth/morphologicalRules/mrRep2~mrConferExcl
-        //   ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrPhonoDestroy~mrPhXSource
-        //   ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/rrRRealTest~mrPhonoDestroy
-        // Named rather than absorbed, so lowering this pin means evidencing these four, not watching a
-        // total drift down. The inventory grew with them (332 -> 348 items), so this is the cost of new
-        // constructs rather than lost coverage -- but it IS a cost, and it is recorded as one.
-        private const int PinnedGapCount = 18;
+    // Raised 14 -> 18. The four added gaps are all NEW ordering pairs, created by adding two rules
+    // to existing grammars while covering obligation cells -- each new rule forms pairs with the
+    // rules already present, and an ordering pair is evidenced only by the [Explicit] ordering
+    // measurement, not by the sweep that witnesses the cell:
+    //   ordering:edge-cases/morphotactic-attribute-breadth/morphologicalRules/mrConferExcl~mrExclReader
+    //   ordering:edge-cases/morphotactic-attribute-breadth/morphologicalRules/mrRep2~mrConferExcl
+    //   ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/mrPhonoDestroy~mrPhXSource
+    //   ordering:languages/suffixing-extension-slot-ordering/morphologicalRules/rrRRealTest~mrPhonoDestroy
+    // Named rather than absorbed, so lowering this pin means evidencing these four, not watching a
+    // total drift down. The inventory grew with them (332 -> 348 items), so this is the cost of new
+    // constructs rather than lost coverage -- but it IS a cost, and it is recorded as one.
+    private const int PinnedGapCount = 18;
 
     [Test]
     public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()
@@ -117,7 +117,8 @@ public sealed class CoverageGapRatchetTests
         Assert.That(surfaceResults, Is.Not.Empty, "run --write-counterfactual first to populate the Surface ledger");
         Assert.That(orderingItems, Is.Not.Empty, "the corpus must declare at least one Ordering item");
 
-        IReadOnlyList<CoverageItem> items = CoverageEvidencePipeline.BuildItems(surfaceResults, Array.Empty<CounterfactualResult>())
+        IReadOnlyList<CoverageItem> items = CoverageEvidencePipeline
+            .BuildItems(surfaceResults, Array.Empty<CounterfactualResult>())
             .Concat(orderingItems)
             .OrderBy(item => item.Id, StringComparer.Ordinal)
             .ToArray();
@@ -128,7 +129,11 @@ public sealed class CoverageGapRatchetTests
             .Distinct(StringComparer.Ordinal)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
-        Assert.That(orphanedEvidenceRows, Is.Empty, "evidence rows outside the generated inventory must fail independently of the gap pin");
+        Assert.That(
+            orphanedEvidenceRows,
+            Is.Empty,
+            "evidence rows outside the generated inventory must fail independently of the gap pin"
+        );
         IReadOnlyList<Evidence> evidence = evidenceLedger
             .Select(row => EvidenceLedger.ToEvidence(row, itemsById[row.ItemId]))
             .ToArray();
@@ -170,11 +175,24 @@ public sealed class CoverageGapRatchetTests
             $"total items: {surfaceResults.Count + orderingItems.Count} "
                 + $"(Surface {surfaceResults.Count}, Ordering {orderingItems.Count})"
         );
-        TestContext.Out.WriteLine($"gaps: {totalGaps} (Surface {surfaceGaps}, Ordering {orderingGaps}); pinned at {PinnedGapCount}");
-        foreach (var group in completeness.Items.Where(result => result.Resolution == CoverageResolution.Proven).GroupBy(result => result.Detail.Split(':')[0]).OrderByDescending(group => group.Count()))
+        TestContext.Out.WriteLine(
+            $"gaps: {totalGaps} (Surface {surfaceGaps}, Ordering {orderingGaps}); pinned at {PinnedGapCount}"
+        );
+        foreach (
+            var group in completeness
+                .Items.Where(result => result.Resolution == CoverageResolution.Proven)
+                .GroupBy(result => result.Detail.Split(':')[0])
+                .OrderByDescending(group => group.Count())
+        )
+        {
             TestContext.Out.WriteLine($"  proven ({group.Key}): {group.Count()}");
-        TestContext.Out.WriteLine($"  rejected: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Rejected)}");
-        TestContext.Out.WriteLine($"  unresolved: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Unresolved)}");
+        }
+        TestContext.Out.WriteLine(
+            $"  rejected: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Rejected)}"
+        );
+        TestContext.Out.WriteLine(
+            $"  unresolved: {completeness.Items.Count(result => result.Resolution == CoverageResolution.Unresolved)}"
+        );
 
         Assert.That(
             totalGaps,

@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -72,9 +72,23 @@ internal static class CanonicalJson
                 writer.WriteStringValue(NormalizeString(element.GetString()!));
                 break;
             case JsonValueKind.Number:
-                if (!decimal.TryParse(element.GetRawText(), NumberStyles.Float, CultureInfo.InvariantCulture, out decimal decimalValue))
-                    throw new InvalidDataException($"JSON number '{element.GetRawText()}' is outside the supported canonical range.");
-                writer.WriteRawValue(decimalValue.ToString("G29", CultureInfo.InvariantCulture), skipInputValidation: true);
+                if (
+                    !decimal.TryParse(
+                        element.GetRawText(),
+                        NumberStyles.Float,
+                        CultureInfo.InvariantCulture,
+                        out decimal decimalValue
+                    )
+                )
+                {
+                    throw new InvalidDataException(
+                        $"JSON number '{element.GetRawText()}' is outside the supported canonical range."
+                    );
+                }
+                writer.WriteRawValue(
+                    decimalValue.ToString("G29", CultureInfo.InvariantCulture),
+                    skipInputValidation: true
+                );
                 break;
             case JsonValueKind.True:
                 writer.WriteBooleanValue(true);

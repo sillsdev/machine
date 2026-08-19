@@ -29,12 +29,14 @@ internal static class ChildProcessHarness
     internal static Result Run(
         ProcessStartInfo startInfo,
         CancellationToken cancellationToken,
-        TimeSpan? backstop = null) => RunAsync(startInfo, cancellationToken, backstop).GetAwaiter().GetResult();
+        TimeSpan? backstop = null
+    ) => RunAsync(startInfo, cancellationToken, backstop).GetAwaiter().GetResult();
 
     internal static async Task<Result> RunAsync(
         ProcessStartInfo startInfo,
         CancellationToken cancellationToken,
-        TimeSpan? backstop = null)
+        TimeSpan? backstop = null
+    )
     {
         ArgumentNullException.ThrowIfNull(startInfo);
         startInfo.UseShellExecute = false;
@@ -44,19 +46,18 @@ internal static class ChildProcessHarness
         using var backstopSource = new CancellationTokenSource(backstop ?? DefaultBackstop);
         using CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken,
-            backstopSource.Token);
+            backstopSource.Token
+        );
 
-        using Process process = Process.Start(startInfo)
+        using Process process =
+            Process.Start(startInfo)
             ?? throw new InvalidOperationException($"Could not start child process '{startInfo.FileName}'.");
         try
         {
             Task<string> stdout = process.StandardOutput.ReadToEndAsync(linked.Token);
             Task<string> stderr = process.StandardError.ReadToEndAsync(linked.Token);
             await process.WaitForExitAsync(linked.Token).ConfigureAwait(false);
-            return new Result(
-                process.ExitCode,
-                await stdout.ConfigureAwait(false),
-                await stderr.ConfigureAwait(false));
+            return new Result(process.ExitCode, await stdout.ConfigureAwait(false), await stderr.ConfigureAwait(false));
         }
         catch (OperationCanceledException exception)
             when (backstopSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
@@ -64,7 +65,8 @@ internal static class ChildProcessHarness
             throw new TimeoutException(
                 $"'{startInfo.FileName} {string.Join(' ', startInfo.ArgumentList)}' exceeded its "
                     + $"{(backstop ?? DefaultBackstop).TotalSeconds:0}-second backstop.",
-                exception);
+                exception
+            );
         }
         finally
         {
@@ -88,7 +90,8 @@ internal static class ChildProcessHarness
             if (!process.WaitForExit(5_000) || !process.HasExited)
             {
                 throw new InvalidOperationException(
-                    $"Child process {process.Id} did not exit within 5s of Process.Kill(entireProcessTree: true).");
+                    $"Child process {process.Id} did not exit within 5s of Process.Kill(entireProcessTree: true)."
+                );
             }
         }
         catch (InvalidOperationException) when (process.HasExited)

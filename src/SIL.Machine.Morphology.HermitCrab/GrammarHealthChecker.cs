@@ -56,8 +56,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                 foreach (CharacterDefinition cd in segmentDefs)
                 {
                     FeatureStruct bundle = PhonologicalBundle(cd);
-                    List<CharacterDefinition> group = groups.FirstOrDefault(
-                        g => PhonologicalBundle(g[0]).ValueEquals(bundle)
+                    List<CharacterDefinition> group = groups.FirstOrDefault(g =>
+                        PhonologicalBundle(g[0]).ValueEquals(bundle)
                     );
                     if (group == null)
                     {

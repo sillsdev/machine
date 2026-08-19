@@ -42,7 +42,9 @@ public sealed class ConstructClaimCorroborationTests
         int contradicted = rows.Count(r => r.Status == ConstructClaimStatus.Contradicted);
         int unmapped = rows.Count(r => r.Status == ConstructClaimStatus.Unmapped);
 
-        TestContext.Out.WriteLine($"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}");
+        TestContext.Out.WriteLine(
+            $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
+        );
 
         Assert.That(rows, Has.Count.EqualTo(452));
         Assert.That(confirmed, Is.EqualTo(187));
@@ -64,13 +66,19 @@ public sealed class ConstructClaimCorroborationTests
     {
         string root = RepositoryRoot();
         IReadOnlyList<ConstructClaimCorroboration.Row> rows = ConstructClaimCorroboration.Read(root);
-        ConstructClaimCorroboration.Row[] contradicted = rows.Where(r => r.Status == ConstructClaimStatus.Contradicted).ToArray();
+        ConstructClaimCorroboration.Row[] contradicted = rows.Where(r => r.Status == ConstructClaimStatus.Contradicted)
+            .ToArray();
 
         Assert.That(contradicted, Has.Length.EqualTo(15));
-        Assert.That(contradicted.Select(r => r.Fixture).Distinct(), Is.EquivalentTo(new[] { "edge-cases/morphotactic-attribute-breadth" }));
+        Assert.That(
+            contradicted.Select(r => r.Fixture).Distinct(),
+            Is.EquivalentTo(new[] { "edge-cases/morphotactic-attribute-breadth" })
+        );
         Assert.That(
             contradicted.Select(r => r.Construct).Distinct(),
-            Is.EquivalentTo(new[] { "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)" })
+            Is.EquivalentTo(
+                new[] { "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)" }
+            )
         );
         Assert.That(contradicted.Select(r => r.MatchedTokens.Count), Is.All.EqualTo(1));
     }
@@ -82,7 +90,10 @@ public sealed class ConstructClaimCorroborationTests
     {
         string root = RepositoryRoot();
         string constructsPath = Path.Combine(root, "conformance", "constructs.txt");
-        IReadOnlyList<ConstructClaimCorroboration.Row> fresh = ConstructClaimCorroboration.Compute(root, constructsPath);
+        IReadOnlyList<ConstructClaimCorroboration.Row> fresh = ConstructClaimCorroboration.Compute(
+            root,
+            constructsPath
+        );
         string freshText = ConstructClaimCorroboration.ToText(fresh);
         string checkedIn = File.ReadAllText(
             Path.Combine(root, ConstructClaimCorroboration.RelativePath.Replace('/', Path.DirectorySeparatorChar))

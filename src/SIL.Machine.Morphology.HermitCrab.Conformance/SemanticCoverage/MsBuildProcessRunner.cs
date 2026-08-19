@@ -16,7 +16,8 @@ internal interface IMsBuildProcessRunner
         ProcessStartInfo startInfo,
         TimeSpan timeout,
         int maxStandardOutputBytes,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
 }
 
 internal sealed class MsBuildProcessRunner : IMsBuildProcessRunner
@@ -25,7 +26,8 @@ internal sealed class MsBuildProcessRunner : IMsBuildProcessRunner
         ProcessStartInfo startInfo,
         TimeSpan timeout,
         int maxStandardOutputBytes,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(startInfo);
         if (startInfo.UseShellExecute || !startInfo.RedirectStandardOutput || !startInfo.RedirectStandardError)
@@ -47,7 +49,8 @@ internal sealed class MsBuildProcessRunner : IMsBuildProcessRunner
         Task<byte[]> stdout = ReadBoundedAsync(
             process.StandardOutput.BaseStream,
             maxStandardOutputBytes,
-            cancellationToken);
+            cancellationToken
+        );
         Task<string> stderr = process.StandardError.ReadToEndAsync(cancellationToken);
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutSource.CancelAfter(timeout);
@@ -92,13 +95,16 @@ internal sealed class MsBuildProcessRunner : IMsBuildProcessRunner
     private static async Task<byte[]> ReadBoundedAsync(
         Stream stream,
         int maximumBytes,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         using var output = new MemoryStream();
         byte[] buffer = new byte[81920];
         while (true)
         {
-            int read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
+            int read = await stream
+                .ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)
+                .ConfigureAwait(false);
             if (read == 0)
                 return output.ToArray();
             if (output.Length + read > maximumBytes)

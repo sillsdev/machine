@@ -23,6 +23,7 @@ public sealed record GrammarCoverageResult(
 public static class GrammarCoverageGate
 {
     public const string BaselineRelativePath = "conformance/semantic-coverage-baseline.txt";
+
     /// <summary>The published copy of the grammar DTD, under <c>conformance/</c>.</summary>
     /// <remarks>A consumer can receive <c>conformance/</c> alone, sparse-checked-out with no other
     /// part of this repository present, so the authority a published product names has to live inside
@@ -40,7 +41,9 @@ public static class GrammarCoverageGate
         SemanticCoverageInventory.Generate(
             SemanticCoverageSourceSet.FromDtd(
                 "HermitCrabInput.dtd",
-                File.ReadAllText(Path.Combine(repositoryRoot, DtdRelativePath.Replace('/', Path.DirectorySeparatorChar)))
+                File.ReadAllText(
+                    Path.Combine(repositoryRoot, DtdRelativePath.Replace('/', Path.DirectorySeparatorChar))
+                )
             )
         );
 
@@ -79,7 +82,9 @@ public static class GrammarCoverageGate
             // presence gate instead of failing it.
             bool validated = fixture.Words.BudgetMs is null && !fixture.Words.ExpectCrash;
 
-            foreach (WordEntry word in validated ? (IEnumerable<WordEntry>)fixture.Words.Words : Array.Empty<WordEntry>())
+            foreach (
+                WordEntry word in validated ? (IEnumerable<WordEntry>)fixture.Words.Words : Array.Empty<WordEntry>()
+            )
             {
                 foreach (string declarationId in word.Neutralizes)
                     neutralized.Add(declarationId);
@@ -95,17 +100,24 @@ public static class GrammarCoverageGate
                 }
             }
 
-            foreach (SurfaceEvidence evidence in TraceEvidence.Grade(
-                fixture.Id,
-                XDocument.Load(fixture.GrammarPath),
-                inventory,
-                fired,
-                hasVerifiedParse,
-                neutralized
-            ))
+            foreach (
+                SurfaceEvidence evidence in TraceEvidence.Grade(
+                    fixture.Id,
+                    XDocument.Load(fixture.GrammarPath),
+                    inventory,
+                    fired,
+                    hasVerifiedParse,
+                    neutralized
+                )
+            )
             {
-                if (best.TryGetValue(evidence.SurfaceId, out SurfaceEvidence? existing) && existing.Strength >= evidence.Strength)
+                if (
+                    best.TryGetValue(evidence.SurfaceId, out SurfaceEvidence? existing)
+                    && existing.Strength >= evidence.Strength
+                )
+                {
                     continue;
+                }
                 best[evidence.SurfaceId] = evidence;
             }
         }
@@ -142,8 +154,14 @@ public static class GrammarCoverageGate
             }
         }
 
-        string[] covered = fixturesBySurface.Keys.Where(observable.Contains).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-        string[] uncovered = observable.Except(covered, StringComparer.Ordinal).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        string[] covered = fixturesBySurface
+            .Keys.Where(observable.Contains)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
+        string[] uncovered = observable
+            .Except(covered, StringComparer.Ordinal)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
         return new GrammarCoverageResult(
             observable.OrderBy(id => id, StringComparer.Ordinal).ToArray(),
             covered,
@@ -238,11 +256,12 @@ public static class GrammarCoverageGate
     /// test suite gate on the same list rather than each carrying its own copy.
     /// </summary>
     public static IReadOnlyList<string> ReadPresenceWaivers(string repositoryRoot) =>
-        ReadListFile(Path.Combine(repositoryRoot, PresenceWaiverRelativePath.Replace('/', Path.DirectorySeparatorChar)));
+        ReadListFile(
+            Path.Combine(repositoryRoot, PresenceWaiverRelativePath.Replace('/', Path.DirectorySeparatorChar))
+        );
 
     private static IReadOnlyList<string> ReadListFile(string path) =>
-        File
-            .ReadAllLines(path)
+        File.ReadAllLines(path)
             .Select(line => line.Trim())
             .Where(line => line.Length != 0 && !line.StartsWith("#", StringComparison.Ordinal))
             .OrderBy(line => line, StringComparer.Ordinal)
@@ -259,10 +278,18 @@ public static class GrammarCoverageGate
                 continue;
             string[] fields = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
             if (fields.Length < 2)
-                throw new FormatException($"{BaselineRelativePath}: '{line}' must be '<surfaceId><TAB><classification>'");
+            {
+                throw new FormatException(
+                    $"{BaselineRelativePath}: '{line}' must be '<surfaceId><TAB><classification>'"
+                );
+            }
             string classification = fields[1].Trim();
             if (classification is not (DeadSchema or Todo or AlphabetQuotient or DtdDefault))
-                throw new FormatException($"{BaselineRelativePath}: unknown classification '{classification}' for '{fields[0]}'");
+            {
+                throw new FormatException(
+                    $"{BaselineRelativePath}: unknown classification '{classification}' for '{fields[0]}'"
+                );
+            }
             entries.Add(new LedgerEntry(fields[0].Trim(), classification));
         }
 
@@ -292,7 +319,10 @@ public static class GrammarCoverageGate
         return Classify(repositoryRoot, uncovered)
             .Select(entry =>
                 entry.Classification == Todo && quotiented.Contains(entry.SurfaceId)
-                    ? entry with { Classification = AlphabetQuotient }
+                    ? entry with
+                    {
+                        Classification = AlphabetQuotient,
+                    }
                     : entry
             )
             .ToArray();
@@ -325,8 +355,7 @@ public static class GrammarCoverageGate
     public static void WriteBaseline(string repositoryRoot, IReadOnlyList<LedgerEntry> entries)
     {
         string path = Path.Combine(repositoryRoot, BaselineRelativePath.Replace('/', Path.DirectorySeparatorChar));
-        string[] header = File
-            .ReadAllLines(path)
+        string[] header = File.ReadAllLines(path)
             .TakeWhile(line => line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal))
             .ToArray();
         var text = new StringBuilder();

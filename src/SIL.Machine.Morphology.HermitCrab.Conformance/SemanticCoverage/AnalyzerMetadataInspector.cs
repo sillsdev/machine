@@ -2,11 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
-using System.Linq;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
@@ -17,18 +17,21 @@ internal sealed record AnalyzerMetadataInspection(
     string AssemblyIdentity,
     string Sha256,
     AnalyzerDisposition Disposition,
-    string? ReferencePackVersion);
+    string? ReferencePackVersion
+);
 
 internal static class AnalyzerMetadataInspector
 {
     internal static AnalyzerMetadataInspection Inspect(
         string path,
-        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories = null)
+        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories = null
+    )
     {
         try
         {
             string fullPath = Path.GetFullPath(path);
-            string assemblyIdentity = AssemblyName.GetAssemblyName(fullPath).FullName
+            string assemblyIdentity =
+                AssemblyName.GetAssemblyName(fullPath).FullName
                 ?? throw new BadImageFormatException("Analyzer has no assembly identity.");
             string sha256;
             using (FileStream hashStream = File.OpenRead(fullPath))
@@ -47,25 +50,49 @@ internal static class AnalyzerMetadataInspector
                 {
                     string? interfaceName = TryGetTypeName(
                         metadata,
-                        metadata.GetInterfaceImplementation(implementationHandle).Interface);
+                        metadata.GetInterfaceImplementation(implementationHandle).Interface
+                    );
                     if (interfaceName is not null)
                         interfaces.Add(interfaceName);
                 }
 
                 foreach (CustomAttributeHandle attributeHandle in type.GetCustomAttributes())
                 {
-                    string? attributeName = TryGetAttributeTypeName(metadata, metadata.GetCustomAttribute(attributeHandle));
+                    string? attributeName = TryGetAttributeTypeName(
+                        metadata,
+                        metadata.GetCustomAttribute(attributeHandle)
+                    );
                     if (attributeName == "Microsoft.CodeAnalysis.GeneratorAttribute")
-                        return CreateInspection(fullPath, true, assemblyIdentity, sha256, admittedSdkAnalyzerDirectories);
+                    {
+                        return CreateInspection(
+                            fullPath,
+                            true,
+                            assemblyIdentity,
+                            sha256,
+                            admittedSdkAnalyzerDirectories
+                        );
+                    }
                 }
             }
 
-            bool generator = interfaces.Contains("Microsoft.CodeAnalysis.ISourceGenerator") || interfaces.Contains("Microsoft.CodeAnalysis.IIncrementalGenerator");
+            bool generator =
+                interfaces.Contains("Microsoft.CodeAnalysis.ISourceGenerator")
+                || interfaces.Contains("Microsoft.CodeAnalysis.IIncrementalGenerator");
             return CreateInspection(fullPath, generator, assemblyIdentity, sha256, admittedSdkAnalyzerDirectories);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or BadImageFormatException or InvalidOperationException)
+        catch (Exception exception)
+            when (exception
+                    is IOException
+                        or UnauthorizedAccessException
+                        or BadImageFormatException
+                        or InvalidOperationException
+            )
         {
-            throw new CompilerInputException("analyzer-metadata-diagnostic", $"Cannot inspect analyzer metadata '{path}'.", exception);
+            throw new CompilerInputException(
+                "analyzer-metadata-diagnostic",
+                $"Cannot inspect analyzer metadata '{path}'.",
+                exception
+            );
         }
     }
 
@@ -74,15 +101,18 @@ internal static class AnalyzerMetadataInspector
         bool isSourceGenerator,
         string assemblyIdentity,
         string sha256,
-        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories)
+        IReadOnlyCollection<string>? admittedSdkAnalyzerDirectories
+    )
     {
         string? referencePackVersion = TryGetReferencePackVersion(path);
         string? simpleAssemblyName = new AssemblyName(assemblyIdentity).Name;
-        AnalyzerDisposition disposition = isSourceGenerator && referencePackVersion is not null &&
-            IsKnownSdkGenerator(Path.GetFileName(path), simpleAssemblyName) &&
-            IsAdmittedDirectory(path, admittedSdkAnalyzerDirectories)
-            ? AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
-            : AnalyzerDisposition.Ordinary;
+        AnalyzerDisposition disposition =
+            isSourceGenerator
+            && referencePackVersion is not null
+            && IsKnownSdkGenerator(Path.GetFileName(path), simpleAssemblyName)
+            && IsAdmittedDirectory(path, admittedSdkAnalyzerDirectories)
+                ? AnalyzerDisposition.SdkOwnedSourceGeneratorPendingProbe
+                : AnalyzerDisposition.Ordinary;
         return new AnalyzerMetadataInspection(
             path,
             isSourceGenerator,
@@ -90,7 +120,8 @@ internal static class AnalyzerMetadataInspector
             assemblyIdentity,
             sha256,
             disposition,
-            referencePackVersion);
+            referencePackVersion
+        );
     }
 
     private static bool IsAdmittedDirectory(string path, IReadOnlyCollection<string>? admittedDirectories)
@@ -98,8 +129,12 @@ internal static class AnalyzerMetadataInspector
         if (admittedDirectories is null)
             return false;
         string directory = Path.TrimEndingDirectorySeparator(Path.GetDirectoryName(path)!);
-        StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        return admittedDirectories.Any(candidate => directory.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(candidate)), comparison));
+        StringComparison comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return admittedDirectories.Any(candidate =>
+            directory.Equals(Path.TrimEndingDirectorySeparator(Path.GetFullPath(candidate)), comparison)
+        );
     }
 
     private static string? TryGetReferencePackVersion(string path)
@@ -114,8 +149,11 @@ internal static class AnalyzerMetadataInspector
         if (directory is null || !string.Equals(directory.Name, "analyzers", StringComparison.OrdinalIgnoreCase))
             return null;
         directory = directory.Parent;
-        if (directory is null || !string.Equals(directory.Parent?.Name, "Microsoft.NETCore.App.Ref", StringComparison.OrdinalIgnoreCase) ||
-            !string.Equals(directory.Parent?.Parent?.Name, "packs", StringComparison.OrdinalIgnoreCase))
+        if (
+            directory is null
+            || !string.Equals(directory.Parent?.Name, "Microsoft.NETCore.App.Ref", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(directory.Parent?.Parent?.Name, "packs", StringComparison.OrdinalIgnoreCase)
+        )
         {
             return null;
         }
@@ -142,8 +180,14 @@ internal static class AnalyzerMetadataInspector
     {
         return handle.Kind switch
         {
-            HandleKind.TypeReference => GetTypeReferenceName(metadata, metadata.GetTypeReference((TypeReferenceHandle)handle)),
-            HandleKind.TypeDefinition => GetTypeDefinitionName(metadata, metadata.GetTypeDefinition((TypeDefinitionHandle)handle)),
+            HandleKind.TypeReference => GetTypeReferenceName(
+                metadata,
+                metadata.GetTypeReference((TypeReferenceHandle)handle)
+            ),
+            HandleKind.TypeDefinition => GetTypeDefinitionName(
+                metadata,
+                metadata.GetTypeDefinition((TypeDefinitionHandle)handle)
+            ),
             HandleKind.TypeSpecification => null,
             _ => throw new BadImageFormatException("Analyzer interface metadata is not a type."),
         };
@@ -153,9 +197,12 @@ internal static class AnalyzerMetadataInspector
     {
         EntityHandle declaringType = attribute.Constructor.Kind switch
         {
-            HandleKind.MemberReference => metadata.GetMemberReference((MemberReferenceHandle)attribute.Constructor).Parent,
-            HandleKind.MethodDefinition => metadata.GetMethodDefinition(
-                (MethodDefinitionHandle)attribute.Constructor).GetDeclaringType(),
+            HandleKind.MemberReference => metadata
+                .GetMemberReference((MemberReferenceHandle)attribute.Constructor)
+                .Parent,
+            HandleKind.MethodDefinition => metadata
+                .GetMethodDefinition((MethodDefinitionHandle)attribute.Constructor)
+                .GetDeclaringType(),
             _ => throw new BadImageFormatException("Analyzer custom-attribute constructor is invalid."),
         };
         return TryGetTypeName(metadata, declaringType);

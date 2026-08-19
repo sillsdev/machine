@@ -63,8 +63,7 @@ public sealed record SemanticCatalog(
     IReadOnlyList<SurfaceMapping> SurfaceMappings
 );
 
-public sealed class SemanticCatalogException(string path, string detail)
-    : FormatException($"{path}: {detail}");
+public sealed class SemanticCatalogException(string path, string detail) : FormatException($"{path}: {detail}");
 
 public static class SemanticCatalogLoader
 {
@@ -115,7 +114,8 @@ public static class SemanticCatalogLoader
             stream.Load(reader);
             if (stream.Documents.Count != 1)
                 throw new SemanticCatalogException(path, "expected exactly one YAML document");
-            root = stream.Documents[0].RootNode as YamlMappingNode
+            root =
+                stream.Documents[0].RootNode as YamlMappingNode
                 ?? throw new SemanticCatalogException(path, "top-level YAML node must be a mapping");
         }
         catch (YamlException ex)
@@ -126,7 +126,12 @@ public static class SemanticCatalogLoader
         RejectUnknownKeys(root, RootKeys, path, "catalog");
         string profile = RequireScalar(root, "profile", path);
         if (profile != ExpectedProfile)
-            throw new SemanticCatalogException(path, $"unsupported catalog profile '{profile}'; expected '{ExpectedProfile}'");
+        {
+            throw new SemanticCatalogException(
+                path,
+                $"unsupported catalog profile '{profile}'; expected '{ExpectedProfile}'"
+            );
+        }
 
         var features = new List<SemanticFeature>();
         var featureIds = new HashSet<string>(StringComparer.Ordinal);
@@ -142,14 +147,18 @@ public static class SemanticCatalogLoader
         foreach (YamlMappingNode node in Sequence(root, "surfaceMappings", path))
         {
             RejectUnknownKeys(node, MappingKeys, path, "surfaceMappings entry");
-            mappings.Add(new SurfaceMapping(RequireScalar(node, "surface", path), RequireScalar(node, "feature", path)));
+            mappings.Add(
+                new SurfaceMapping(RequireScalar(node, "surface", path), RequireScalar(node, "feature", path))
+            );
         }
 
         return new SemanticCatalog(
             profile,
             Strings(root, "auditedSourceScopes", path),
             new ReadOnlyCollection<SemanticFeature>(features.OrderBy(item => item.Id, StringComparer.Ordinal).ToList()),
-            new ReadOnlyCollection<SurfaceMapping>(mappings.OrderBy(item => item.SurfaceId, StringComparer.Ordinal).ToList())
+            new ReadOnlyCollection<SurfaceMapping>(
+                mappings.OrderBy(item => item.SurfaceId, StringComparer.Ordinal).ToList()
+            )
         );
     }
 
@@ -180,7 +189,11 @@ public static class SemanticCatalogLoader
         if (value is not YamlMappingNode mapping)
             throw new SemanticCatalogException(path, $"feature '{featureId}' key '{key}' must be a mapping");
         RejectUnknownKeys(mapping, EffectKeys, path, $"{key} of feature '{featureId}'");
-        return new PhaseEffect(RequireScalar(mapping, "behavior", path), Strings(mapping, "reads", path), Strings(mapping, "writes", path));
+        return new PhaseEffect(
+            RequireScalar(mapping, "behavior", path),
+            Strings(mapping, "reads", path),
+            Strings(mapping, "writes", path)
+        );
     }
 
     private static IEnumerable<YamlMappingNode> Sequence(YamlMappingNode root, string key, string path)
@@ -189,8 +202,10 @@ public static class SemanticCatalogLoader
             return Array.Empty<YamlMappingNode>();
         if (value is not YamlSequenceNode sequence)
             throw new SemanticCatalogException(path, $"'{key}' must be a sequence");
-        return sequence.Select(item => item as YamlMappingNode
-            ?? throw new SemanticCatalogException(path, $"every '{key}' entry must be a mapping"));
+        return sequence.Select(item =>
+            item as YamlMappingNode
+            ?? throw new SemanticCatalogException(path, $"every '{key}' entry must be a mapping")
+        );
     }
 
     private static IReadOnlyList<string> Strings(YamlMappingNode node, string key, string path)

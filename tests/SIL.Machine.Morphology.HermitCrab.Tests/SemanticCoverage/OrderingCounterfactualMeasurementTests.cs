@@ -82,7 +82,11 @@ public sealed class OrderingCounterfactualMeasurementTests
             "net10.0",
             "hc-conformance.dll"
         );
-        Assert.That(File.Exists(dllPath), Is.True, $"build the Conformance project first (dotnet build): {dllPath} not found");
+        Assert.That(
+            File.Exists(dllPath),
+            Is.True,
+            $"build the Conformance project first (dotnet build): {dllPath} not found"
+        );
 
         string scratchRoot =
             Environment.GetEnvironmentVariable("ORDERING_MEASUREMENT_SCRATCH")
@@ -162,7 +166,12 @@ public sealed class OrderingCounterfactualMeasurementTests
                 var swapTimer = Stopwatch.StartNew();
                 try
                 {
-                    IReadOnlyList<string> mutated = RunEvaluateMutant(dllPath, mutatedPath, wordsPath, EvaluationTimeout);
+                    IReadOnlyList<string> mutated = RunEvaluateMutant(
+                        dllPath,
+                        mutatedPath,
+                        wordsPath,
+                        EvaluationTimeout
+                    );
                     evaluationCount++;
                     swapTimer.Stop();
 
@@ -280,7 +289,11 @@ public sealed class OrderingCounterfactualMeasurementTests
         }
 
         wallClock.Stop();
-        Assert.That(totalPairsSeen, Is.EqualTo(138), "the corpus-wide pair count must match the design doc's measured figure");
+        Assert.That(
+            totalPairsSeen,
+            Is.EqualTo(138),
+            "the corpus-wide pair count must match the design doc's measured figure"
+        );
         Assert.That(results, Has.Count.EqualTo(138));
 
         WriteReport(reportPath, results, perFixtureBaselineMs, wallClock.Elapsed, evaluationCount);
@@ -311,7 +324,12 @@ public sealed class OrderingCounterfactualMeasurementTests
     /// work) but the same shape: drain both pipes before waiting so a full one never deadlocks the wait,
     /// kill the whole tree on timeout, and never let stderr's TIME lines leak into the outcome list.
     /// </summary>
-    private static IReadOnlyList<string> RunEvaluateMutant(string dllPath, string grammarPath, string wordsPath, TimeSpan timeout)
+    private static IReadOnlyList<string> RunEvaluateMutant(
+        string dllPath,
+        string grammarPath,
+        string wordsPath,
+        TimeSpan timeout
+    )
     {
         var start = new ProcessStartInfo
         {
@@ -342,7 +360,10 @@ public sealed class OrderingCounterfactualMeasurementTests
             throw new InvalidOperationException(error.Length != 0 ? error : $"exit code {result.ExitCode}");
         }
 
-        return result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line => line.TrimEnd('\r')).ToArray();
+        return result
+            .StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.TrimEnd('\r'))
+            .ToArray();
     }
 
     private static string Cause(ItemResult result)
@@ -411,20 +432,28 @@ public sealed class OrderingCounterfactualMeasurementTests
         WL("----");
         WL($"total wall clock: {wallClock.TotalSeconds:0.0}s");
         WL($"evaluations run (baselines + swaps): {evaluationCount}");
-        WL($"average per evaluation: {(evaluationCount == 0 ? 0 : wallClock.TotalMilliseconds / evaluationCount):0.0}ms");
+        WL(
+            $"average per evaluation: {(evaluationCount == 0 ? 0 : wallClock.TotalMilliseconds / evaluationCount):0.0}ms"
+        );
         long totalSwapMs = results.Sum(r => r.EvaluationMs);
-        WL($"total swap-evaluation time (excludes baselines): {totalSwapMs}ms across {results.Count} swap(s), average {(results.Count == 0 ? 0 : (double)totalSwapMs / results.Count):0.0}ms/swap");
+        WL(
+            $"total swap-evaluation time (excludes baselines): {totalSwapMs}ms across {results.Count} swap(s), average {(results.Count == 0 ? 0 : (double)totalSwapMs / results.Count):0.0}ms/swap"
+        );
         long totalBaselineMs = baselines.Sum(b => b.BaselineMs);
-        WL($"total baseline time: {totalBaselineMs}ms across {baselines.Count} fixture(s), average {(baselines.Count == 0 ? 0 : (double)totalBaselineMs / baselines.Count):0.0}ms/fixture");
+        WL(
+            $"total baseline time: {totalBaselineMs}ms across {baselines.Count} fixture(s), average {(baselines.Count == 0 ? 0 : (double)totalBaselineMs / baselines.Count):0.0}ms/fixture"
+        );
         WL();
         WL("per-fixture baseline cost:");
         foreach (var b in baselines.OrderByDescending(b => b.BaselineMs))
-            WL($"  {b.FixtureId,-55} {b.Items,3} item(s) {b.Words,4} word(s) {b.BaselineMs,6}ms");
+            WL($"  {b.FixtureId, -55} {b.Items, 3} item(s) {b.Words, 4} word(s) {b.BaselineMs, 6}ms");
         WL();
 
         WL("FIRST-DIFFERING-WORD ANALYSIS (evidenced items only)");
         WL("-----------------------------------------------------");
-        ItemResult[] evidencedItems = results.Where(r => r.Class == ItemClass.Evidenced && r.DiffIndex.HasValue).ToArray();
+        ItemResult[] evidencedItems = results
+            .Where(r => r.Class == ItemClass.Evidenced && r.DiffIndex.HasValue)
+            .ToArray();
         if (evidencedItems.Length == 0)
         {
             WL("no evidenced items carried a word-level diff index (all deltas were outcome-count mismatches).");
@@ -433,19 +462,22 @@ public sealed class OrderingCounterfactualMeasurementTests
         {
             int totalWordsAcrossEvidenced = evidencedItems.Sum(r => r.TotalWords);
             int wordsThatWouldHaveBeenSkipped = evidencedItems.Sum(r => r.TotalWords - (r.DiffIndex!.Value + 1));
-            double fractionSkippable = totalWordsAcrossEvidenced == 0
-                ? 0
-                : (double)wordsThatWouldHaveBeenSkipped / totalWordsAcrossEvidenced;
+            double fractionSkippable =
+                totalWordsAcrossEvidenced == 0 ? 0 : (double)wordsThatWouldHaveBeenSkipped / totalWordsAcrossEvidenced;
             WL($"evidenced items with a word-level diff index: {evidencedItems.Length}");
-            WL($"total words parsed across those items (baseline+mutant each parse every word): {totalWordsAcrossEvidenced}");
-            WL($"words that a stop-at-first-difference optimization would have skipped (mutant side only): {wordsThatWouldHaveBeenSkipped}");
+            WL(
+                $"total words parsed across those items (baseline+mutant each parse every word): {totalWordsAcrossEvidenced}"
+            );
+            WL(
+                $"words that a stop-at-first-difference optimization would have skipped (mutant side only): {wordsThatWouldHaveBeenSkipped}"
+            );
             WL($"fraction of words skippable across evidenced items: {fractionSkippable:P1}");
             WL();
             WL("per-item detail (diff index / total words):");
             foreach (ItemResult r in evidencedItems.OrderBy(r => r.Item.Id, StringComparer.Ordinal))
             {
                 WL(
-                    $"  {r.Item.Id,-90} diffIndex={r.DiffIndex} of {r.TotalWords} word(s) "
+                    $"  {r.Item.Id, -90} diffIndex={r.DiffIndex} of {r.TotalWords} word(s) "
                         + $"(skippable={r.TotalWords - (r.DiffIndex!.Value + 1)})"
                 );
             }
@@ -454,7 +486,11 @@ public sealed class OrderingCounterfactualMeasurementTests
 
         WL("EVIDENCED ITEMS (full list)");
         WL("---------------------------");
-        foreach (ItemResult r in results.Where(r => r.Class == ItemClass.Evidenced).OrderBy(r => r.Item.Id, StringComparer.Ordinal))
+        foreach (
+            ItemResult r in results
+                .Where(r => r.Class == ItemClass.Evidenced)
+                .OrderBy(r => r.Item.Id, StringComparer.Ordinal)
+        )
         {
             WL($"  {r.Item.Id}");
             WL($"    fixture: {r.Item.FixtureId}  kind: {r.Item.Kind}  pair: {r.Item.MemberA} <-> {r.Item.MemberB}");
@@ -465,7 +501,11 @@ public sealed class OrderingCounterfactualMeasurementTests
 
         WL("LOAD_FAILURE ITEMS");
         WL("-------------------");
-        foreach (ItemResult r in results.Where(r => r.Class == ItemClass.LoadFailure).OrderBy(r => r.Item.Id, StringComparer.Ordinal))
+        foreach (
+            ItemResult r in results
+                .Where(r => r.Class == ItemClass.LoadFailure)
+                .OrderBy(r => r.Item.Id, StringComparer.Ordinal)
+        )
         {
             WL($"  {r.Item.Id}");
             WL($"    fixture: {r.Item.FixtureId}  pair: {r.Item.MemberA} <-> {r.Item.MemberB}");
@@ -475,7 +515,11 @@ public sealed class OrderingCounterfactualMeasurementTests
 
         WL("TIMEOUT ITEMS");
         WL("-------------");
-        foreach (ItemResult r in results.Where(r => r.Class == ItemClass.Timeout).OrderBy(r => r.Item.Id, StringComparer.Ordinal))
+        foreach (
+            ItemResult r in results
+                .Where(r => r.Class == ItemClass.Timeout)
+                .OrderBy(r => r.Item.Id, StringComparer.Ordinal)
+        )
         {
             WL($"  {r.Item.Id}  fixture: {r.Item.FixtureId}  pair: {r.Item.MemberA} <-> {r.Item.MemberB}");
             WL($"    {r.Reason}");
@@ -484,10 +528,7 @@ public sealed class OrderingCounterfactualMeasurementTests
 
         WL("GAP LIST -- grouped by cause (the backlog for finishing ordering coverage)");
         WL("===========================================================================");
-        var byCause = results
-            .Where(r => r.Class == ItemClass.Gap)
-            .GroupBy(Cause)
-            .OrderByDescending(g => g.Count());
+        var byCause = results.Where(r => r.Class == ItemClass.Gap).GroupBy(Cause).OrderByDescending(g => g.Count());
         foreach (var group in byCause)
         {
             WL();
@@ -495,7 +536,9 @@ public sealed class OrderingCounterfactualMeasurementTests
             foreach (ItemResult r in group.OrderBy(r => r.Item.Id, StringComparer.Ordinal))
             {
                 WL($"  {r.Item.Id}");
-                WL($"    fixture: {r.Item.FixtureId}  kind: {r.Item.Kind}  pair: {r.Item.MemberA} <-> {r.Item.MemberB}");
+                WL(
+                    $"    fixture: {r.Item.FixtureId}  kind: {r.Item.Kind}  pair: {r.Item.MemberA} <-> {r.Item.MemberB}"
+                );
                 WL($"    static-check relation: {r.Relation}  reason: {r.Reason}");
             }
         }
@@ -503,7 +546,11 @@ public sealed class OrderingCounterfactualMeasurementTests
 
         WL("PROVEN ITEMS (disjoint-domains, full list)");
         WL("-------------------------------------------");
-        foreach (ItemResult r in results.Where(r => r.Class == ItemClass.Proven).OrderBy(r => r.Item.Id, StringComparer.Ordinal))
+        foreach (
+            ItemResult r in results
+                .Where(r => r.Class == ItemClass.Proven)
+                .OrderBy(r => r.Item.Id, StringComparer.Ordinal)
+        )
         {
             WL($"  {r.Item.Id}");
             WL($"    pair: {r.Item.MemberA} <-> {r.Item.MemberB}  reason: {r.Reason}");

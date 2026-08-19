@@ -462,7 +462,11 @@ public sealed class CounterfactualGateTests
         var fixture = new Fixture("languages/suffixing-extension-slot-ordering", fixtureDirectory, words);
 
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-        Assert.That(baseline, Is.EqualTo(new[] { "ok::KIMB+RED|kimbiakimbia" }), "pins the baseline this test reasons from");
+        Assert.That(
+            baseline,
+            Is.EqualTo(new[] { "ok::KIMB+RED|kimbiakimbia" }),
+            "pins the baseline this test reasons from"
+        );
 
         CounterfactualResult result = CounterfactualGate.Evaluate(
             fixture,

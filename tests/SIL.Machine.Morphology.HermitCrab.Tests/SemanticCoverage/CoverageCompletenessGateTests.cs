@@ -26,7 +26,16 @@ public sealed class CoverageCompletenessGateTests
         new(id, kind, "dtd-element", "fx");
 
     private static Evidence WordEvidence(string itemId) =>
-        new(itemId, "fx", "w", "ok::before", CounterexampleKind.Word, "ok::after", "removed 1 element", CounterfactualVerdict.Evidenced);
+        new(
+            itemId,
+            "fx",
+            "w",
+            "ok::before",
+            CounterexampleKind.Word,
+            "ok::after",
+            "removed 1 element",
+            CounterfactualVerdict.Evidenced
+        );
 
     [Test]
     public void AnItemWithNoEvidenceAndNoProofIsUnresolvedAndFailsCompleteness()
@@ -88,7 +97,12 @@ public sealed class CoverageCompletenessGateTests
 
     [TestCase("languages/suffixing-evidential-adjacency-chain", "person", "number", TemplateMaskedProofs.Kind)]
     [TestCase("edge-cases/feature-system-breadth", "prHighTrigger", "mtSwap", NeverFiresProofs.Kind)]
-    [TestCase("edge-cases/mpr-gated-exception", "prNasalAssimBilabial", "prNasalAssimAlveolar", FeatureValueDisjointProofs.Kind)]
+    [TestCase(
+        "edge-cases/mpr-gated-exception",
+        "prNasalAssimBilabial",
+        "prNasalAssimAlveolar",
+        FeatureValueDisjointProofs.Kind
+    )]
     public void ARecomputedStructuralProofKindIsAdmittedByTheGate(
         string fixtureId,
         string memberA,
@@ -106,8 +120,11 @@ public sealed class CoverageCompletenessGateTests
         {
             var kind when kind == TemplateMaskedProofs.Kind => TemplateMaskedProofs.TryBuild(grammar, orderingItem),
             var kind when kind == NeverFiresProofs.Kind => NeverFiresProofs.TryBuild(grammar, orderingItem),
-            var kind when kind == FeatureValueDisjointProofs.Kind => FeatureValueDisjointProofs.TryBuild(grammar, orderingItem),
-            _ => throw new ArgumentOutOfRangeException(nameof(expectedKind), expectedKind, "test proof kind")
+            var kind when kind == FeatureValueDisjointProofs.Kind => FeatureValueDisjointProofs.TryBuild(
+                grammar,
+                orderingItem
+            ),
+            _ => throw new ArgumentOutOfRangeException(nameof(expectedKind), expectedKind, "test proof kind"),
         };
         Assert.That(proof, Is.Not.Null, $"{expectedKind} proof should build for the checked-in fixture");
         Assert.That(proof!.Kind, Is.EqualTo(expectedKind));
@@ -127,7 +144,16 @@ public sealed class CoverageCompletenessGateTests
     [Test]
     public void CountsAreReportedPerCounterexampleKindNeverBlended()
     {
-        Evidence loadFailure = new("b", "fx", "w", "ok", CounterexampleKind.LoadFailure, "threw", "removed root", CounterfactualVerdict.RequiredByDtd);
+        Evidence loadFailure = new(
+            "b",
+            "fx",
+            "w",
+            "ok",
+            CounterexampleKind.LoadFailure,
+            "threw",
+            "removed root",
+            CounterfactualVerdict.RequiredByDtd
+        );
 
         CompletenessReport report = CoverageCompletenessGate.Evaluate(
             new[] { Item("a"), Item("b") },
@@ -186,9 +212,22 @@ public sealed class CoverageCompletenessGateTests
     {
         // Unobservable/Timeout results carry CounterexampleKind.None: not a counter-example, and
         // must not silently resolve the item without a proof.
-        Evidence unobservable = new("a", "fx", null, null, CounterexampleKind.None, null, "none", CounterfactualVerdict.Unobservable);
+        Evidence unobservable = new(
+            "a",
+            "fx",
+            null,
+            null,
+            CounterexampleKind.None,
+            null,
+            "none",
+            CounterfactualVerdict.Unobservable
+        );
 
-        CompletenessReport report = CoverageCompletenessGate.Evaluate(new[] { Item("a") }, new[] { unobservable }, Array.Empty<Proof>());
+        CompletenessReport report = CoverageCompletenessGate.Evaluate(
+            new[] { Item("a") },
+            new[] { unobservable },
+            Array.Empty<Proof>()
+        );
 
         Assert.That(report.IsComplete, Is.False);
         Assert.That(report.Items.Single().Resolution, Is.EqualTo(CoverageResolution.Unresolved));
@@ -300,7 +339,9 @@ public sealed class CoverageCompletenessGateTests
             missing == "word" ? null : "w",
             missing == "example" ? null : "same",
             CounterexampleKind.Word,
-            missing == "counterexample" ? null : missing == "unchanged" ? "same" : "different",
+            missing == "counterexample" ? null
+                : missing == "unchanged" ? "same"
+                : "different",
             "mutation",
             CounterfactualVerdict.Evidenced
         );
@@ -444,7 +485,11 @@ public sealed class CoverageCompletenessGateTests
         var item = new CoverageItem(orderingItem.Id, CoverageItemKind.Ordering, "adjacent-transposition", "fx");
         var proof = new Proof(orderingItem.Id, OrderingProofs.Kind, "unverifiable without a grammar");
 
-        CompletenessReport report = CoverageCompletenessGate.Evaluate(new[] { item }, Array.Empty<Evidence>(), new[] { proof });
+        CompletenessReport report = CoverageCompletenessGate.Evaluate(
+            new[] { item },
+            Array.Empty<Evidence>(),
+            new[] { proof }
+        );
 
         Assert.That(report.IsComplete, Is.False);
         Assert.That(report.Items.Single().Resolution, Is.EqualTo(CoverageResolution.Rejected));
@@ -527,10 +572,18 @@ public sealed class CoverageCompletenessGateTests
     {
         XDocument grammar = XDocument.Parse(UnorderedStratumGrammar.Replace("unordered", "linear"));
         OrderingItem orderingItem = OrderingGenerator.EnumerateAdjacentPairs(grammar, "fx").Single();
-        Assert.That(UnorderedInvariantProofs.TryBuild(grammar, orderingItem), Is.Null, "sanity: linear cannot license this kind");
+        Assert.That(
+            UnorderedInvariantProofs.TryBuild(grammar, orderingItem),
+            Is.Null,
+            "sanity: linear cannot license this kind"
+        );
 
         var item = new CoverageItem(orderingItem.Id, CoverageItemKind.Ordering, "adjacent-transposition", "fx");
-        var falseProof = new Proof(orderingItem.Id, UnorderedInvariantProofs.Kind, "hand-waved claim of unordered invariance");
+        var falseProof = new Proof(
+            orderingItem.Id,
+            UnorderedInvariantProofs.Kind,
+            "hand-waved claim of unordered invariance"
+        );
 
         CompletenessReport report = CoverageCompletenessGate.Evaluate(
             new[] { item },

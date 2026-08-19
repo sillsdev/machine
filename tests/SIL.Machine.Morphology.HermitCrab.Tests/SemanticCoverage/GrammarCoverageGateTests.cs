@@ -28,8 +28,14 @@ public sealed class GrammarCoverageGateTests
         GrammarCoverageResult result = GrammarCoverageGate.Compute(root, GrammarCoverageGate.ReadInventory(root));
         string[] baseline = GrammarCoverageGate.ReadBaseline(root).Select(entry => entry.SurfaceId).ToArray();
 
-        string[] newGaps = result.Uncovered.Except(baseline, StringComparer.Ordinal).OrderBy(id => id, StringComparer.Ordinal).ToArray();
-        string[] stale = baseline.Except(result.Uncovered, StringComparer.Ordinal).OrderBy(id => id, StringComparer.Ordinal).ToArray();
+        string[] newGaps = result
+            .Uncovered.Except(baseline, StringComparer.Ordinal)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
+        string[] stale = baseline
+            .Except(result.Uncovered, StringComparer.Ordinal)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -58,7 +64,11 @@ public sealed class GrammarCoverageGateTests
                 empty.Add(fixtureId);
         }
 
-        Assert.That(empty, Is.Empty, "a fixture whose grammar exercises no declared surface cannot contribute coverage");
+        Assert.That(
+            empty,
+            Is.Empty,
+            "a fixture whose grammar exercises no declared surface cannot contribute coverage"
+        );
     }
 
     // Compute only creates a fixture list while appending to it, so asserting the list is non-empty
@@ -93,10 +103,18 @@ public sealed class GrammarCoverageGateTests
     {
         string root = RepositoryRoot();
         SemanticInventory inventory = GrammarCoverageGate.ReadInventory(root);
-        var byId = inventory.Surfaces.ToDictionary(surface => surface.Id, surface => surface.Kind, StringComparer.Ordinal);
+        var byId = inventory.Surfaces.ToDictionary(
+            surface => surface.Id,
+            surface => surface.Kind,
+            StringComparer.Ordinal
+        );
 
         Assert.That(
-            GrammarFeatureUsage.Observable(inventory).Select(id => byId[id]).Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal),
+            GrammarFeatureUsage
+                .Observable(inventory)
+                .Select(id => byId[id])
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(k => k, StringComparer.Ordinal),
             Is.EqualTo(new[] { "element", "enum" })
         );
     }
@@ -105,7 +123,10 @@ public sealed class GrammarCoverageGateTests
     public void NoCoveredSurfaceRestsOnPresenceAloneOutsideTheWaiverFile()
     {
         string root = RepositoryRoot();
-        IReadOnlyList<SurfaceEvidence> evidence = GrammarCoverageGate.GradeEvidence(root, GrammarCoverageGate.ReadInventory(root));
+        IReadOnlyList<SurfaceEvidence> evidence = GrammarCoverageGate.GradeEvidence(
+            root,
+            GrammarCoverageGate.ReadInventory(root)
+        );
 
         string[] presenceOnly = evidence
             .Where(item => item.Strength == EvidenceStrength.Presence)
@@ -145,7 +166,11 @@ public sealed class GrammarCoverageGateTests
         Assert.Multiple(() =>
         {
             Assert.That(inventory.Surfaces, Has.Count.EqualTo(GeneratedSurfaces), "generated surface count changed");
-            Assert.That(GrammarFeatureUsage.Observable(inventory), Has.Count.EqualTo(ObservableSurfaces), "observable surface count changed");
+            Assert.That(
+                GrammarFeatureUsage.Observable(inventory),
+                Has.Count.EqualTo(ObservableSurfaces),
+                "observable surface count changed"
+            );
         });
     }
 
@@ -153,7 +178,10 @@ public sealed class GrammarCoverageGateTests
     public void TraceEvidenceIsAchievedAndDoesNotRegress()
     {
         string root = RepositoryRoot();
-        IReadOnlyList<SurfaceEvidence> evidence = GrammarCoverageGate.GradeEvidence(root, GrammarCoverageGate.ReadInventory(root));
+        IReadOnlyList<SurfaceEvidence> evidence = GrammarCoverageGate.GradeEvidence(
+            root,
+            GrammarCoverageGate.ReadInventory(root)
+        );
 
         Assert.That(evidence, Is.Not.Empty, "an empty evidence set would make every evidence gate vacuous");
         Assert.That(
@@ -177,7 +205,10 @@ public sealed class GrammarCoverageGateTests
     public void DtdDefaultValuesAreDetectedFromTheInventoryNotTheLedger()
     {
         string root = RepositoryRoot();
-        var declared = GrammarCoverageGate.ReadInventory(root).Surfaces.Select(s => s.Id).ToHashSet(StringComparer.Ordinal);
+        var declared = GrammarCoverageGate
+            .ReadInventory(root)
+            .Surfaces.Select(s => s.Id)
+            .ToHashSet(StringComparer.Ordinal);
 
         Assert.Multiple(() =>
         {
@@ -185,7 +216,11 @@ public sealed class GrammarCoverageGateTests
             Assert.That(GrammarCoverageGate.IsDtdDefault("dtd:enum/AffixTemplate/isActive/no", declared), Is.False);
             Assert.That(GrammarCoverageGate.IsDtdDefault("dtd:enum/Stratum/cyclicity/noncyclic", declared), Is.True);
             Assert.That(GrammarCoverageGate.IsDtdDefault("dtd:enum/Stratum/cyclicity/cyclic", declared), Is.False);
-            Assert.That(GrammarCoverageGate.IsDtdDefault("dtd:element/AffixTemplate", declared), Is.False, "only enumerated values have defaults");
+            Assert.That(
+                GrammarCoverageGate.IsDtdDefault("dtd:element/AffixTemplate", declared),
+                Is.False,
+                "only enumerated values have defaults"
+            );
         });
     }
 
@@ -193,7 +228,10 @@ public sealed class GrammarCoverageGateTests
     public void EveryDtdDefaultLedgerLineIsGenuinelyTheDefault()
     {
         string root = RepositoryRoot();
-        var declared = GrammarCoverageGate.ReadInventory(root).Surfaces.Select(s => s.Id).ToHashSet(StringComparer.Ordinal);
+        var declared = GrammarCoverageGate
+            .ReadInventory(root)
+            .Surfaces.Select(s => s.Id)
+            .ToHashSet(StringComparer.Ordinal);
 
         string[] wrong = GrammarCoverageGate
             .ReadBaseline(root)
@@ -254,28 +292,40 @@ public sealed class GrammarCoverageGateTests
         Assert.That(audit.IsComplete, Is.False, "the checked-in catalog is intentionally still a proposal backlog");
         Assert.That(
             audit.Diagnostics.Select(item => item.Code).Distinct(StringComparer.Ordinal),
-            Is.EquivalentTo(new[]
-            {
-                SemanticCoverageAudit.UnclassifiedMapping,
-            }));
-        Assert.That(audit.Diagnostics, Has.None.Matches<AuditDiagnostic>(item =>
-                item.Code is SemanticCoverageAudit.UnmappedSurface or
-                SemanticCoverageAudit.DuplicateSurfaceMapping or
-                SemanticCoverageAudit.StaleSurfaceMapping or
-                SemanticCoverageAudit.UnknownFeature));
+            Is.EquivalentTo(new[] { SemanticCoverageAudit.UnclassifiedMapping })
+        );
+        Assert.That(
+            audit.Diagnostics,
+            Has.None.Matches<AuditDiagnostic>(item =>
+                item.Code
+                    is SemanticCoverageAudit.UnmappedSurface
+                        or SemanticCoverageAudit.DuplicateSurfaceMapping
+                        or SemanticCoverageAudit.StaleSurfaceMapping
+                        or SemanticCoverageAudit.UnknownFeature
+            )
+        );
         Assert.That(catalog.SurfaceMappings, Has.Count.EqualTo(inventory.Surfaces.Count));
         Assert.That(
             catalog.SurfaceMappings.Select(mapping => mapping.SurfaceId).Distinct(StringComparer.Ordinal).ToArray(),
             Has.Length.EqualTo(inventory.Surfaces.Count),
-            "the checked-in catalog must retain exact-once surface mapping rows");
-        Assert.That(inventory.Surfaces, Has.Count.GreaterThan(1000), "the audit must cover the whole inventory, not a slice");
+            "the checked-in catalog must retain exact-once surface mapping rows"
+        );
+        Assert.That(
+            inventory.Surfaces,
+            Has.Count.GreaterThan(1000),
+            "the audit must cover the whole inventory, not a slice"
+        );
 
         SemanticInventory live = GraphSemanticCensus.Read(
             root,
             new[] { "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader" },
-            CancellationToken.None);
-        Assert.That(live.Surfaces.Count, Is.GreaterThan(inventory.Surfaces.Count),
-            "the live snapshot must add C# census surfaces beyond the legacy DTD inventory");
+            CancellationToken.None
+        );
+        Assert.That(
+            live.Surfaces.Count,
+            Is.GreaterThan(inventory.Surfaces.Count),
+            "the live snapshot must add C# census surfaces beyond the legacy DTD inventory"
+        );
     }
 
     [Test]
@@ -301,9 +351,11 @@ public sealed class GrammarCoverageGateTests
         string root = RepositoryRoot();
         GrammarCoverageResult result = GrammarCoverageGate.Compute(root, GrammarCoverageGate.ReadInventory(root));
 
-        var recorded = GrammarCoverageGate.ReadBaseline(root)
+        var recorded = GrammarCoverageGate
+            .ReadBaseline(root)
             .ToDictionary(entry => entry.SurfaceId, entry => entry.Classification, StringComparer.Ordinal);
-        var recomputed = GrammarCoverageGate.Classify(root, result.Uncovered, GrammarCoverageGate.ReadBaseline(root))
+        var recomputed = GrammarCoverageGate
+            .Classify(root, result.Uncovered, GrammarCoverageGate.ReadBaseline(root))
             .ToDictionary(entry => entry.SurfaceId, entry => entry.Classification, StringComparer.Ordinal);
 
         string[] wrong = recomputed
@@ -323,7 +375,8 @@ public sealed class GrammarCoverageGateTests
     public void DeadSchemaElementsAreGenuinelyAbsentFromTheEngine()
     {
         string root = RepositoryRoot();
-        string[] claimed = GrammarCoverageGate.ReadBaseline(root)
+        string[] claimed = GrammarCoverageGate
+            .ReadBaseline(root)
             .Where(entry => entry.Classification == GrammarCoverageGate.DeadSchema)
             .Select(entry => DeadSchemaDetector.OwningElement(entry.SurfaceId)!)
             .Distinct(StringComparer.Ordinal)
@@ -369,10 +422,7 @@ public sealed class GrammarCoverageGateTests
             "<VariableFeatures><VariableFeature id=\"v\" name=\"α\" phonologicalFeature=\"f\" /></VariableFeatures>"
         );
 
-        Assert.That(
-            GrammarFeatureUsage.Read(grammar, inventory),
-            Does.Contain("dtd:enum/VariableFeature/name/%CE%B1")
-        );
+        Assert.That(GrammarFeatureUsage.Read(grammar, inventory), Does.Contain("dtd:enum/VariableFeature/name/%CE%B1"));
     }
 
     [Test]

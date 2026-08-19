@@ -63,7 +63,13 @@ public static class UnorderedInvariantProofs
 
         XElement[] strata = grammar.Descendants("Stratum").ToArray();
         if (item.OwnerOrdinal < 0 || item.OwnerOrdinal >= strata.Length)
-            return new UnorderedInvariantCheck(item.Id, false, "owning Stratum ordinal is out of range for the current document");
+        {
+            return new UnorderedInvariantCheck(
+                item.Id,
+                false,
+                "owning Stratum ordinal is out of range for the current document"
+            );
+        }
 
         string order = (string?)strata[item.OwnerOrdinal].Attribute("morphologicalRuleOrder") ?? "linear";
         return order == "unordered"

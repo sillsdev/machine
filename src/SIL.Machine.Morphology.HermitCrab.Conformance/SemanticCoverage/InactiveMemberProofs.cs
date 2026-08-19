@@ -72,13 +72,29 @@ public static class InactiveMemberProofs
         if (elementA is null || elementB is null)
         {
             string missing = elementA is null ? item.MemberA : item.MemberB;
-            return new InactiveMemberCheck(item.Id, false, $"'{missing}' was not found as an element with a matching id attribute");
+            return new InactiveMemberCheck(
+                item.Id,
+                false,
+                $"'{missing}' was not found as an element with a matching id attribute"
+            );
         }
 
         if (!IsActiveElement(elementA))
-            return new InactiveMemberCheck(item.Id, true, $"'{item.MemberA}' (<{elementA.Name.LocalName}>) has isActive=\"no\"");
+        {
+            return new InactiveMemberCheck(
+                item.Id,
+                true,
+                $"'{item.MemberA}' (<{elementA.Name.LocalName}>) has isActive=\"no\""
+            );
+        }
         if (!IsActiveElement(elementB))
-            return new InactiveMemberCheck(item.Id, true, $"'{item.MemberB}' (<{elementB.Name.LocalName}>) has isActive=\"no\"");
+        {
+            return new InactiveMemberCheck(
+                item.Id,
+                true,
+                $"'{item.MemberB}' (<{elementB.Name.LocalName}>) has isActive=\"no\""
+            );
+        }
         return new InactiveMemberCheck(item.Id, false, "both members are active");
     }
 
@@ -89,7 +105,13 @@ public static class InactiveMemberProofs
     {
         XElement[] templates = grammar.Descendants("AffixTemplate").ToArray();
         if (item.OwnerOrdinal < 0 || item.OwnerOrdinal >= templates.Length)
-            return new InactiveMemberCheck(item.Id, false, "owning AffixTemplate ordinal is out of range for the current document");
+        {
+            return new InactiveMemberCheck(
+                item.Id,
+                false,
+                "owning AffixTemplate ordinal is out of range for the current document"
+            );
+        }
 
         var slots = templates[item.OwnerOrdinal].Elements("Slot").ToList();
         if (item.PairIndex < 0 || item.PairIndex + 1 >= slots.Count)
@@ -98,7 +120,13 @@ public static class InactiveMemberProofs
         XElement slotA = slots[item.PairIndex];
         XElement slotB = slots[item.PairIndex + 1];
         if (SlotLabel(slotA, item.PairIndex) != item.MemberA || SlotLabel(slotB, item.PairIndex + 1) != item.MemberB)
-            return new InactiveMemberCheck(item.Id, false, "the Slot pair no longer matches the document at this position");
+        {
+            return new InactiveMemberCheck(
+                item.Id,
+                false,
+                "the Slot pair no longer matches the document at this position"
+            );
+        }
 
         if (!IsActiveElement(slotA))
             return new InactiveMemberCheck(item.Id, true, $"Slot '{item.MemberA}' has isActive=\"no\"");
@@ -112,7 +140,11 @@ public static class InactiveMemberProofs
         if (emptyB is not null)
             return new InactiveMemberCheck(item.Id, true, emptyB);
 
-        return new InactiveMemberCheck(item.Id, false, "both Slot members are active and resolve to at least one active rule");
+        return new InactiveMemberCheck(
+            item.Id,
+            false,
+            "both Slot members are active and resolve to at least one active rule"
+        );
     }
 
     // Mirrors LoadAffixTemplate's own resolution exactly: split the Slot's morphologicalRules IDREFS

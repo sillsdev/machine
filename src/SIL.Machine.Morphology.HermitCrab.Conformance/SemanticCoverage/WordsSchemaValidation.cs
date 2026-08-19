@@ -117,8 +117,13 @@ public static class WordsSchemaValidation
         string? value = scalar.Value;
         if (value is null)
             return null;
-        if (scalar.Style is YamlDotNet.Core.ScalarStyle.SingleQuoted or YamlDotNet.Core.ScalarStyle.DoubleQuoted
-            or YamlDotNet.Core.ScalarStyle.Literal or YamlDotNet.Core.ScalarStyle.Folded)
+        if (
+            scalar.Style
+            is YamlDotNet.Core.ScalarStyle.SingleQuoted
+                or YamlDotNet.Core.ScalarStyle.DoubleQuoted
+                or YamlDotNet.Core.ScalarStyle.Literal
+                or YamlDotNet.Core.ScalarStyle.Folded
+        )
         {
             return JsonValue.Create(value);
         }

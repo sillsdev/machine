@@ -39,7 +39,13 @@ public sealed class ConformanceFixtureGateTests
         Assert.That(fixtures, Has.Count.GreaterThanOrEqualTo(MinimumFixtures));
 
         var engine = new SelfCheckEngine(null);
-        RunReport report = Runner.RunSelfCheck(fixtures, includePathological: false, engine.Capabilities, propose: false, TextWriter.Null);
+        RunReport report = Runner.RunSelfCheck(
+            fixtures,
+            includePathological: false,
+            engine.Capabilities,
+            propose: false,
+            TextWriter.Null
+        );
 
         string[] failures = report
             .Results.Where(result => result.Outcome == FixtureOutcome.Failed)
@@ -48,7 +54,11 @@ public sealed class ConformanceFixtureGateTests
             .ToArray();
 
         Assert.That(failures, Is.Empty, $"conformance fixtures failed:\n  {string.Join("\n  ", failures)}");
-        Assert.That(report.Passed, Is.GreaterThanOrEqualTo(MinimumFixtures), "the run must actually execute fixtures, not skip them all");
+        Assert.That(
+            report.Passed,
+            Is.GreaterThanOrEqualTo(MinimumFixtures),
+            "the run must actually execute fixtures, not skip them all"
+        );
     }
 
     // A fixture whose grammar the coverage gate reads but which never runs would let the ledger
@@ -57,7 +67,9 @@ public sealed class ConformanceFixtureGateTests
     public void EveryGrammarTheCoverageGateReadsBelongsToADiscoveredFixture()
     {
         string root = RepositoryRoot();
-        var discovered = Discover().Select(fixture => Path.GetFullPath(fixture.GrammarPath)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var discovered = Discover()
+            .Select(fixture => Path.GetFullPath(fixture.GrammarPath))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         string[] unrun = GrammarCoverageGate
             .DiscoverGrammars(root)
@@ -88,12 +100,16 @@ public sealed class ConformanceFixtureGateTests
             {
                 Assert.That(
                     File.ReadAllText(coverage).ReplaceLineEndings("\n"),
-                    Is.EqualTo(File.ReadAllText(Path.Combine(root, "conformance", "coverage.csv")).ReplaceLineEndings("\n")),
+                    Is.EqualTo(
+                        File.ReadAllText(Path.Combine(root, "conformance", "coverage.csv")).ReplaceLineEndings("\n")
+                    ),
                     "regenerate with: hc-conformance --fixtures conformance --coverage-report"
                 );
                 Assert.That(
                     File.ReadAllText(rules).ReplaceLineEndings("\n"),
-                    Is.EqualTo(File.ReadAllText(Path.Combine(root, "conformance", "rules.csv")).ReplaceLineEndings("\n")),
+                    Is.EqualTo(
+                        File.ReadAllText(Path.Combine(root, "conformance", "rules.csv")).ReplaceLineEndings("\n")
+                    ),
                     "regenerate with: hc-conformance --fixtures conformance --coverage-report"
                 );
             });
@@ -122,7 +138,11 @@ public sealed class ConformanceFixtureGateTests
             .OrderBy(construct => construct, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.That(unknown, Is.Empty, $"add these to constructs.txt or fix the tag:\n  {string.Join("\n  ", unknown)}");
+        Assert.That(
+            unknown,
+            Is.Empty,
+            $"add these to constructs.txt or fix the tag:\n  {string.Join("\n  ", unknown)}"
+        );
     }
 
     // WordsYamlLoader already requires at least one word and a parse unless the word is
@@ -134,7 +154,8 @@ public sealed class ConformanceFixtureGateTests
         var silent = new List<string>();
         foreach (Fixture fixture in Discover())
         {
-            bool declaresRules = File.ReadAllText(fixture.GrammarPath).Contains("MorphologicalRule id=", StringComparison.Ordinal);
+            bool declaresRules = File.ReadAllText(fixture.GrammarPath)
+                .Contains("MorphologicalRule id=", StringComparison.Ordinal);
             bool attributesAny = fixture.Words.Words.Any(word => word.Parses.Any(parse => parse.Rules.Count > 0));
             if (declaresRules && !attributesAny)
                 silent.Add(fixture.Id);

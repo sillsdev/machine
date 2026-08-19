@@ -43,7 +43,13 @@ public sealed class DataflowClaimGateTests
     private static DataflowObligationLedger.Row UnknownStatusRow(string cellId) =>
         new(cellId, "A", "a", "P", "B", "b", "McDc", "AbsentControl", "-", ObligationStatus.Unknown, "no witness yet");
 
-    private static WordEntry PlainWord(string word, bool expectFail = false) => new() { Word = word, Note = "test fixture", ExpectFail = expectFail };
+    private static WordEntry PlainWord(string word, bool expectFail = false) =>
+        new()
+        {
+            Word = word,
+            Note = "test fixture",
+            ExpectFail = expectFail,
+        };
 
     private static WordEntry WordWithClaims(string word, params ClaimedCellEntry[] claims)
     {
@@ -54,7 +60,12 @@ public sealed class DataflowClaimGateTests
 
     private static WordEntry WordWithClaims(string word, bool expectFail, params ClaimedCellEntry[] claims)
     {
-        var entry = new WordEntry { Word = word, Note = "test fixture", ExpectFail = expectFail };
+        var entry = new WordEntry
+        {
+            Word = word,
+            Note = "test fixture",
+            ExpectFail = expectFail,
+        };
         entry.ClaimedCells.AddRange(claims);
         return entry;
     }
@@ -82,7 +93,10 @@ public sealed class DataflowClaimGateTests
     public void ClaimOnNonexistentCellIdFails()
     {
         var ledger = new[] { SatisfiedRow() };
-        var fixture = FixtureWith("edge-cases/fake", WordWithClaims("w1", new ClaimedCellEntry { Cell = "totally-fake-cell-id" }));
+        var fixture = FixtureWith(
+            "edge-cases/fake",
+            WordWithClaims("w1", new ClaimedCellEntry { Cell = "totally-fake-cell-id" })
+        );
 
         DataflowClaimReport report = DataflowClaimGate.Evaluate(new[] { fixture }, ledger, ThrowingRecompute);
 
@@ -112,7 +126,10 @@ public sealed class DataflowClaimGateTests
     public void ClaimOnSatisfiedCellPassesUnreviewedWithNoReviewBundle()
     {
         var ledger = new[] { SatisfiedRow("cell-ok") };
-        var fixture = FixtureWith("edge-cases/mpr-gated-exception", WordWithClaims("vokadan", new ClaimedCellEntry { Cell = "cell-ok" }));
+        var fixture = FixtureWith(
+            "edge-cases/mpr-gated-exception",
+            WordWithClaims("vokadan", new ClaimedCellEntry { Cell = "cell-ok" })
+        );
 
         DataflowClaimReport report = DataflowClaimGate.Evaluate(new[] { fixture }, ledger, ThrowingRecompute);
 
@@ -248,8 +265,12 @@ public sealed class DataflowClaimGateTests
         Assert.That(report.UnclaimedSatisfiedCells.Single().WitnessWord, Is.EqualTo("vokadan"));
     }
 
-    private static SeveranceRecomputation ThrowingRecompute(Fixture fixture, string? element, string? attribute, string word) =>
-        throw new InvalidOperationException("recompute should not be invoked when there is no review bundle to check");
+    private static SeveranceRecomputation ThrowingRecompute(
+        Fixture fixture,
+        string? element,
+        string? attribute,
+        string word
+    ) => throw new InvalidOperationException("recompute should not be invoked when there is no review bundle to check");
 
     // Falsification #3, on the real corpus, with the REAL severance recomputation (DefaultRecompute):
     // the two seeded claims (edge-cases/mpr-gated-exception's 'vokadan' and
@@ -272,7 +293,8 @@ public sealed class DataflowClaimGateTests
             Is.True,
             string.Join(
                 "\n",
-                report.Claims.Where(c => c.Validity != DataflowClaimValidity.Valid)
+                report
+                    .Claims.Where(c => c.Validity != DataflowClaimValidity.Valid)
                     .Select(c => $"{c.FixtureId}/{c.Word}: {c.CellId}: {c.Detail}")
             )
         );
@@ -292,12 +314,22 @@ public sealed class DataflowClaimGateTests
                 c.FixtureId == fixtureId && c.Word == word && c.CellId == cellId
             );
             Assert.That(match.Validity, Is.EqualTo(DataflowClaimValidity.Valid), $"{fixtureId}/{word}");
-            Assert.That(match.Review, Is.EqualTo(DataflowClaimReviewStatus.Reviewed), $"{fixtureId}/{word}: {match.ReviewDetail}");
+            Assert.That(
+                match.Review,
+                Is.EqualTo(DataflowClaimReviewStatus.Reviewed),
+                $"{fixtureId}/{word}: {match.ReviewDetail}"
+            );
             Assert.That(match.DistinctFromVerified, Is.True, $"{fixtureId}/{word}: {match.DistinctFromDetail}");
         }
 
-        TestContext.Out.WriteLine($"total claims={report.Claims.Count} unclaimed satisfied cells={report.UnclaimedSatisfiedCells.Count}");
+        TestContext.Out.WriteLine(
+            $"total claims={report.Claims.Count} unclaimed satisfied cells={report.UnclaimedSatisfiedCells.Count}"
+        );
         foreach (UnclaimedSatisfiedCell cell in report.UnclaimedSatisfiedCells)
-            TestContext.Out.WriteLine($"  unclaimed: {cell.CellId} (witness: '{cell.WitnessWord}' in {cell.FixtureId})");
+        {
+            TestContext.Out.WriteLine(
+                $"  unclaimed: {cell.CellId} (witness: '{cell.WitnessWord}' in {cell.FixtureId})"
+            );
+        }
     }
 }

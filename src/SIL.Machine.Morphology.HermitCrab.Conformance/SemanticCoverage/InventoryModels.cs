@@ -19,35 +19,29 @@ public sealed record InventorySurface(
     string Configurations = ""
 );
 
-public sealed record InventoryDiagnostic(
-    string Code,
-    string SubjectId,
-    string Message,
-    string Configurations = ""
-)
+public sealed record InventoryDiagnostic(string Code, string SubjectId, string Message, string Configurations = "")
 {
-    public InventoryDiagnostic(string code, string subjectId, string message, IReadOnlyCollection<string>? configurations)
-        : this(code, subjectId, message, JoinConfigurations(configurations))
-    {
-    }
+    public InventoryDiagnostic(
+        string code,
+        string subjectId,
+        string message,
+        IReadOnlyCollection<string>? configurations
+    )
+        : this(code, subjectId, message, JoinConfigurations(configurations)) { }
 
     public InventoryDiagnostic(
         string code,
         string subjectId,
         string message,
         IReadOnlyCollection<string>? configurations,
-        string location)
+        string location
+    )
         : this(code, subjectId, message, JoinConfigurations(configurations))
     {
         Location = location;
     }
 
-    public InventoryDiagnostic(
-        string code,
-        string subjectId,
-        string message,
-        string configurations,
-        string location)
+    public InventoryDiagnostic(string code, string subjectId, string message, string configurations, string location)
         : this(code, subjectId, message, configurations)
     {
         Location = location;
@@ -58,7 +52,13 @@ public sealed record InventoryDiagnostic(
     private static string JoinConfigurations(IReadOnlyCollection<string>? configurations) =>
         configurations is null
             ? string.Empty
-            : string.Join(",", configurations.Where(value => !string.IsNullOrEmpty(value)).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal));
+            : string.Join(
+                ",",
+                configurations
+                    .Where(value => !string.IsNullOrEmpty(value))
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(value => value, StringComparer.Ordinal)
+            );
 }
 
 public sealed record SemanticInventory
@@ -67,13 +67,15 @@ public sealed record SemanticInventory
         string profile,
         string sourceHash,
         IReadOnlyList<InventorySurface> surfaces,
-        IReadOnlyList<InventoryDiagnostic>? diagnostics = null)
+        IReadOnlyList<InventoryDiagnostic>? diagnostics = null
+    )
     {
         Profile = profile;
         SourceHash = sourceHash;
         Surfaces = surfaces;
         Diagnostics = new ReadOnlyCollection<InventoryDiagnostic>(
-            (diagnostics ?? Array.Empty<InventoryDiagnostic>()).ToList());
+            (diagnostics ?? Array.Empty<InventoryDiagnostic>()).ToList()
+        );
     }
 
     public string Profile { get; init; }
@@ -113,10 +115,12 @@ public sealed record CSharpInventoryInput
 
     private static void ValidateRelativePath(string path)
     {
-        if (Uri.TryCreate(path, UriKind.Absolute, out _) ||
-            path.StartsWith("/", StringComparison.Ordinal) ||
-            path.StartsWith("\\", StringComparison.Ordinal) ||
-            (path.Length >= 2 && path[1] == ':'))
+        if (
+            Uri.TryCreate(path, UriKind.Absolute, out _)
+            || path.StartsWith("/", StringComparison.Ordinal)
+            || path.StartsWith("\\", StringComparison.Ordinal)
+            || (path.Length >= 2 && path[1] == ':')
+        )
         {
             throw new ArgumentException("C# source paths must be canonical relative paths.", nameof(path));
         }
@@ -162,8 +166,12 @@ internal static class CanonicalIdCodec
         var builder = new StringBuilder();
         foreach (byte value in Encoding.UTF8.GetBytes(authoredValue))
         {
-            if ((value >= 'A' && value <= 'Z') || (value >= 'a' && value <= 'z') ||
-                (value >= '0' && value <= '9') || value is (byte)'-' or (byte)'.' or (byte)'_' or (byte)'~')
+            if (
+                (value >= 'A' && value <= 'Z')
+                || (value >= 'a' && value <= 'z')
+                || (value >= '0' && value <= '9')
+                || value is (byte)'-' or (byte)'.' or (byte)'_' or (byte)'~'
+            )
             {
                 builder.Append((char)value);
             }

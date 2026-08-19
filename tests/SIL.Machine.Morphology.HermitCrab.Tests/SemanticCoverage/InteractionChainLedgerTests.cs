@@ -45,9 +45,15 @@ public sealed class InteractionChainLedgerTests
         int exercised = rows.Count(r => r.Exercised);
         int hazardous = rows.Count(r => r.Hazardous);
 
-        TestContext.Out.WriteLine($"junctions={junctions.Count} chains={rows.Count} exercised={exercised} hazardous={hazardous}");
+        TestContext.Out.WriteLine(
+            $"junctions={junctions.Count} chains={rows.Count} exercised={exercised} hazardous={hazardous}"
+        );
         foreach (ChainJunction junction in junctions)
-            TestContext.Out.WriteLine($"  {junction.PayloadType}: {junction.Writers.Count} writer(s), {junction.Readers.Count} reader(s)");
+        {
+            TestContext.Out.WriteLine(
+                $"  {junction.PayloadType}: {junction.Writers.Count} writer(s), {junction.Readers.Count} reader(s)"
+            );
+        }
         foreach (InteractionChainLedger.Row row in rows.Where(r => r.Hazardous))
         {
             TestContext.Out.WriteLine(
@@ -57,12 +63,10 @@ public sealed class InteractionChainLedgerTests
         }
 
         Assert.That(junctions, Has.Count.EqualTo(3));
-        Assert.That(junctions.Select(j => j.PayloadType), Is.EquivalentTo(new[]
-        {
-            "MorphologicalPhonologicalRuleFeature",
-            "PartOfSpeech",
-            "StemName",
-        }));
+        Assert.That(
+            junctions.Select(j => j.PayloadType),
+            Is.EquivalentTo(new[] { "MorphologicalPhonologicalRuleFeature", "PartOfSpeech", "StemName" })
+        );
 
         ChainJunction mprFeature = junctions.Single(j => j.PayloadType == "MorphologicalPhonologicalRuleFeature");
         Assert.That(mprFeature.Writers, Has.Count.EqualTo(3));
@@ -132,8 +136,14 @@ public sealed class InteractionChainLedgerTests
     [Test]
     public void LexiconSeedingAttributesAreClassifiedAsWritesNotRefs()
     {
-        Assert.That(SemanticInterfaceDirection.Classify("LexicalEntry", "ruleFeatures"), Is.EqualTo(InterfaceDirection.Write));
-        Assert.That(SemanticInterfaceDirection.Classify("LexicalEntry", "partOfSpeech"), Is.EqualTo(InterfaceDirection.Write));
+        Assert.That(
+            SemanticInterfaceDirection.Classify("LexicalEntry", "ruleFeatures"),
+            Is.EqualTo(InterfaceDirection.Write)
+        );
+        Assert.That(
+            SemanticInterfaceDirection.Classify("LexicalEntry", "partOfSpeech"),
+            Is.EqualTo(InterfaceDirection.Write)
+        );
         Assert.That(SemanticInterfaceDirection.Classify("Allomorph", "stemName"), Is.EqualTo(InterfaceDirection.Write));
     }
 
@@ -157,14 +167,16 @@ public sealed class InteractionChainLedgerTests
         };
         foreach ((string element, string attribute) in mustAppearAsReaders)
         {
-            InteractionChainLedger.Row[] matches = rows
-                .Where(r => r.ReaderElement == element && r.ReaderAttribute == attribute)
+            InteractionChainLedger.Row[] matches = rows.Where(r =>
+                    r.ReaderElement == element && r.ReaderAttribute == attribute
+                )
                 .ToArray();
             Assert.That(matches, Is.Not.Empty, $"{element}.{attribute} should appear as a reader");
         }
 
-        InteractionChainLedger.Row[] nonHead = rows
-            .Where(r => r.ReaderElement == "CompoundingRule" && r.ReaderAttribute == "nonHeadProdRestrictionsMprFeatures")
+        InteractionChainLedger.Row[] nonHead = rows.Where(r =>
+                r.ReaderElement == "CompoundingRule" && r.ReaderAttribute == "nonHeadProdRestrictionsMprFeatures"
+            )
             .ToArray();
         Assert.That(
             nonHead.All(r => !r.Exercised),
@@ -172,8 +184,9 @@ public sealed class InteractionChainLedgerTests
             "no grammar declares nonHeadProdRestrictionsMprFeatures, so it must still be unexercised"
         );
 
-        InteractionChainLedger.Row[] writerMatches = rows
-            .Where(r => r.WriterElement == "CompoundingRule" && r.WriterAttribute == "outputProdRestrictionsMprFeatures")
+        InteractionChainLedger.Row[] writerMatches = rows.Where(r =>
+                r.WriterElement == "CompoundingRule" && r.WriterAttribute == "outputProdRestrictionsMprFeatures"
+            )
             .ToArray();
         Assert.That(writerMatches, Is.Not.Empty);
         Assert.That(writerMatches.All(r => !r.Exercised), Is.True);

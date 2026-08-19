@@ -62,11 +62,26 @@ public static class EvidenceLedger
         ArgumentNullException.ThrowIfNull(row);
         ArgumentNullException.ThrowIfNull(item);
         if (!string.Equals(row.ItemId, item.Id, StringComparison.Ordinal))
-            throw new ArgumentException($"evidence row item '{row.ItemId}' does not match generated item '{item.Id}'", nameof(row));
+        {
+            throw new ArgumentException(
+                $"evidence row item '{row.ItemId}' does not match generated item '{item.Id}'",
+                nameof(row)
+            );
+        }
         if (row.Kind != item.Kind)
-            throw new ArgumentException($"evidence row '{row.ItemId}' kind '{row.Kind}' does not match generated kind '{item.Kind}'", nameof(row));
+        {
+            throw new ArgumentException(
+                $"evidence row '{row.ItemId}' kind '{row.Kind}' does not match generated kind '{item.Kind}'",
+                nameof(row)
+            );
+        }
         if (!string.Equals(row.Fixture, item.Fixture, StringComparison.Ordinal))
-            throw new ArgumentException($"evidence row '{row.ItemId}' fixture '{row.Fixture}' does not match generated fixture '{item.Fixture}'", nameof(row));
+        {
+            throw new ArgumentException(
+                $"evidence row '{row.ItemId}' fixture '{row.Fixture}' does not match generated fixture '{item.Fixture}'",
+                nameof(row)
+            );
+        }
 
         return new Evidence(
             row.ItemId,
@@ -140,7 +155,11 @@ public static class EvidenceLedger
             if (!Enum.TryParse(fields[1], out CoverageItemKind kind))
                 throw new FormatException($"{RelativePath}: unknown kind '{fields[1]}' for '{fields[0]}'");
             if (!Enum.TryParse(fields[5], out CounterexampleKind counterexampleKind))
-                throw new FormatException($"{RelativePath}: unknown counterexample kind '{fields[5]}' for '{fields[0]}'");
+            {
+                throw new FormatException(
+                    $"{RelativePath}: unknown counterexample kind '{fields[5]}' for '{fields[0]}'"
+                );
+            }
             if (!Enum.TryParse(fields[8], out CounterfactualVerdict verdict))
                 throw new FormatException($"{RelativePath}: unknown verdict '{fields[8]}' for '{fields[0]}'");
 

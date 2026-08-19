@@ -154,11 +154,41 @@ public sealed class DataflowObligationLedgerTests
                     ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule", "excludedMPRFeatures", "PresentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "PhonologicalSubrule", "requiredPartsOfSpeech", "AbsentGatedForm"),
-                    ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput", "excludedMPRFeatures", "PresentGatedForm"),
-                    ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput", "requiredMPRFeatures", "AbsentGatedForm"),
-                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule", "excludedMPRFeatures", "PresentGatedForm"),
-                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule", "requiredMPRFeatures", "AbsentGatedForm"),
-                    ("CompoundingRule", "outputPartOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
+                    (
+                        "MorphologicalOutput",
+                        "MPRFeatures",
+                        "MorphologicalInput",
+                        "excludedMPRFeatures",
+                        "PresentGatedForm"
+                    ),
+                    (
+                        "MorphologicalOutput",
+                        "MPRFeatures",
+                        "MorphologicalInput",
+                        "requiredMPRFeatures",
+                        "AbsentGatedForm"
+                    ),
+                    (
+                        "MorphologicalOutput",
+                        "MPRFeatures",
+                        "PhonologicalSubrule",
+                        "excludedMPRFeatures",
+                        "PresentGatedForm"
+                    ),
+                    (
+                        "MorphologicalOutput",
+                        "MPRFeatures",
+                        "PhonologicalSubrule",
+                        "requiredMPRFeatures",
+                        "AbsentGatedForm"
+                    ),
+                    (
+                        "CompoundingRule",
+                        "outputPartOfSpeech",
+                        "MorphologicalRule",
+                        "requiredPartsOfSpeech",
+                        "AbsentGatedForm"
+                    ),
                 }
             )
         );
@@ -301,8 +331,14 @@ public sealed class DataflowObligationLedgerTests
     [Test]
     public void CountPosWritingRuleElementsCountsOnlyNonEmptyOutputPartOfSpeech()
     {
-        Assert.That(MutatorClassDetectors.CountPosWritingRuleElements(XDocument.Parse(NoPosWritingRuleGrammar)), Is.EqualTo(0));
-        Assert.That(MutatorClassDetectors.CountPosWritingRuleElements(XDocument.Parse(TwoPosWritingRulesGrammar)), Is.EqualTo(2));
+        Assert.That(
+            MutatorClassDetectors.CountPosWritingRuleElements(XDocument.Parse(NoPosWritingRuleGrammar)),
+            Is.EqualTo(0)
+        );
+        Assert.That(
+            MutatorClassDetectors.CountPosWritingRuleElements(XDocument.Parse(TwoPosWritingRulesGrammar)),
+            Is.EqualTo(2)
+        );
     }
 
     private const string NoCompoundingRuleGrammar = """

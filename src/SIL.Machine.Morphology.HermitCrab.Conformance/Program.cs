@@ -262,11 +262,22 @@ internal class Program
 
                 return counterfactual || writeCounterfactual
                     ? RunCounterfactual(repositoryRoot, writeCounterfactual)
-                    : RunSemanticCoverage(repositoryRoot, writeCoverageBaseline, proposeSemanticCatalog, proposedAuditedScopes);
+                    : RunSemanticCoverage(
+                        repositoryRoot,
+                        writeCoverageBaseline,
+                        proposeSemanticCatalog,
+                        proposedAuditedScopes
+                    );
             }
-            catch (Exception ex) when (
-                ex is IOException or UnauthorizedAccessException or FormatException or InvalidOperationException or
-                    System.Xml.XmlException or WordsYamlException)
+            catch (Exception ex)
+                when (ex
+                        is IOException
+                            or UnauthorizedAccessException
+                            or FormatException
+                            or InvalidOperationException
+                            or System.Xml.XmlException
+                            or WordsYamlException
+                )
             {
                 Console.Error.WriteLine($"semantic coverage authority unavailable: {ex.Message}");
                 return 2;
@@ -431,7 +442,9 @@ internal class Program
             ))
             .OrderBy(item => item.Id, StringComparer.Ordinal)
             .ToArray();
-        IReadOnlyList<SemanticCoverage.Evidence> evidence = SemanticCoverage.CoverageEvidencePipeline.BuildEvidence(fresh);
+        IReadOnlyList<SemanticCoverage.Evidence> evidence = SemanticCoverage.CoverageEvidencePipeline.BuildEvidence(
+            fresh
+        );
         IReadOnlyList<SemanticCoverage.Proof> coverageProofs = proofs
             .Select(proof => new SemanticCoverage.Proof(proof.SurfaceId, proof.Kind, proof.Evidence))
             .ToArray();
@@ -441,36 +454,48 @@ internal class Program
             coverageProofs
         );
         IReadOnlyList<string> staleProofs = SemanticCoverage.ImpossibilityProofs.Stale(fresh, proofs);
-        foreach (SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(
-            result => result.Resolution == SemanticCoverage.CoverageResolution.Unresolved
-        ))
+        foreach (
+            SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(result =>
+                result.Resolution == SemanticCoverage.CoverageResolution.Unresolved
+            )
+        )
         {
             Console.Error.WriteLine($"UNACCOUNTED   {item.ItemId}: {item.Detail}");
         }
-        foreach (SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(
-            result => result.Resolution == SemanticCoverage.CoverageResolution.Rejected
-        ))
+        foreach (
+            SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(result =>
+                result.Resolution == SemanticCoverage.CoverageResolution.Rejected
+            )
+        )
         {
             Console.Error.WriteLine($"REJECTED PROOF {item.ItemId}: {item.Detail}");
         }
-        foreach (SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(
-            result => result.Resolution == SemanticCoverage.CoverageResolution.Conflicting
-        ))
+        foreach (
+            SemanticCoverage.CoverageResolutionResult item in completeness.Items.Where(result =>
+                result.Resolution == SemanticCoverage.CoverageResolution.Conflicting
+            )
+        )
         {
             Console.Error.WriteLine($"CONFLICT      {item.ItemId}: {item.Detail}");
         }
         foreach (string id in completeness.OrphanedProofItemIds)
         {
-            Console.Error.WriteLine($"ORPHAN PROOF  {id} (delete from {SemanticCoverage.ImpossibilityProofs.RelativePath})");
+            Console.Error.WriteLine(
+                $"ORPHAN PROOF  {id} (delete from {SemanticCoverage.ImpossibilityProofs.RelativePath})"
+            );
         }
         foreach (string id in completeness.OrphanedEvidenceItemIds)
         {
-            Console.Error.WriteLine($"ORPHAN EVIDENCE {id} (delete from {SemanticCoverage.EvidenceLedger.RelativePath})");
+            Console.Error.WriteLine(
+                $"ORPHAN EVIDENCE {id} (delete from {SemanticCoverage.EvidenceLedger.RelativePath})"
+            );
         }
 
         foreach (string id in staleProofs)
         {
-            Console.Error.WriteLine($"STALE PROOF   {id} (delete from {SemanticCoverage.ImpossibilityProofs.RelativePath})");
+            Console.Error.WriteLine(
+                $"STALE PROOF   {id} (delete from {SemanticCoverage.ImpossibilityProofs.RelativePath})"
+            );
         }
 
         Console.WriteLine(
@@ -508,20 +533,25 @@ internal class Program
         string relative = "conformance/generated/hc-conformance-manifest.v1.json";
         string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
 
-        SemanticCoverage.ConformanceManifest corpus = SemanticCoverage.ConformanceManifestGenerator.Generate(repositoryRoot);
+        SemanticCoverage.ConformanceManifest corpus = SemanticCoverage.ConformanceManifestGenerator.Generate(
+            repositoryRoot
+        );
         string dtd = Path.Combine(
             repositoryRoot,
-            SemanticCoverage.GrammarCoverageGate.DtdRelativePath.Replace('/', Path.DirectorySeparatorChar));
+            SemanticCoverage.GrammarCoverageGate.DtdRelativePath.Replace('/', Path.DirectorySeparatorChar)
+        );
         string wordsSchema = Path.Combine(
             repositoryRoot,
-            SemanticCoverage.WordsSchemaValidation.SchemaRelativePath.Replace('/', Path.DirectorySeparatorChar));
+            SemanticCoverage.WordsSchemaValidation.SchemaRelativePath.Replace('/', Path.DirectorySeparatorChar)
+        );
         // Validate every fixture before anything is written, so a rejected one cannot leave a
         // half-updated product behind.
         foreach (SemanticCoverage.ManifestFixture fixture in corpus.Fixtures)
         {
             IReadOnlyList<string> messages = SemanticCoverage.GrammarValidation.Validate(
                 Path.Combine(repositoryRoot, fixture.GrammarPath.Replace('/', Path.DirectorySeparatorChar)),
-                dtd);
+                dtd
+            );
             if (messages.Count != 0)
             {
                 Console.Error.WriteLine($"{fixture.FixtureId}: grammar does not validate against {corpus.DtdPath}");
@@ -532,11 +562,13 @@ internal class Program
 
             messages = SemanticCoverage.WordsSchemaValidation.Validate(
                 Path.Combine(repositoryRoot, fixture.WordsPath.Replace('/', Path.DirectorySeparatorChar)),
-                wordsSchema);
+                wordsSchema
+            );
             if (messages.Count == 0)
                 continue;
             Console.Error.WriteLine(
-                $"{fixture.FixtureId}: words.yaml does not conform to {SemanticCoverage.WordsSchemaValidation.SchemaRelativePath}");
+                $"{fixture.FixtureId}: words.yaml does not conform to {SemanticCoverage.WordsSchemaValidation.SchemaRelativePath}"
+            );
             foreach (string message in messages)
                 Console.Error.WriteLine($"  {message}");
             return 2;
@@ -603,7 +635,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-rule-interaction-pairs");
             return 1;
@@ -617,12 +655,10 @@ internal class Program
     /// the checked-in ledger, or rewrites it.</summary>
     private static int RunInterfaceInventory(string repositoryRoot, bool writeLedger)
     {
-        IReadOnlyList<SemanticCoverage.InterfaceInventoryLedger.Row> rows = SemanticCoverage.InterfaceInventoryLedger.Compute(
-            repositoryRoot
-        );
-        IReadOnlyList<SemanticCoverage.InterfaceJunction> junctions = SemanticCoverage.InterfaceInventoryLedger.ComputeJunctions(
-            rows
-        );
+        IReadOnlyList<SemanticCoverage.InterfaceInventoryLedger.Row> rows =
+            SemanticCoverage.InterfaceInventoryLedger.Compute(repositoryRoot);
+        IReadOnlyList<SemanticCoverage.InterfaceJunction> junctions =
+            SemanticCoverage.InterfaceInventoryLedger.ComputeJunctions(rows);
         int presentCount = rows.Count(r => r.Present);
         int typedEdgeCount = rows.Sum(r => r.ObservedTargetTypes.Count);
 
@@ -632,7 +668,11 @@ internal class Program
         Console.WriteLine($"typed edges: {typedEdgeCount}");
         Console.WriteLine($"junctions: {junctions.Count}");
         foreach (SemanticCoverage.InterfaceJunction junction in junctions)
-            Console.WriteLine($"  {junction.TargetType} ({junction.WriterCount} writer(s), {junction.ReaderCount} reader(s))");
+        {
+            Console.WriteLine(
+                $"  {junction.TargetType} ({junction.WriterCount} writer(s), {junction.ReaderCount} reader(s))"
+            );
+        }
 
         string relative = SemanticCoverage.InterfaceInventoryLedger.RelativePath;
         string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
@@ -651,7 +691,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-interface-inventory");
             return 1;
@@ -665,18 +711,20 @@ internal class Program
     /// checked-in ledger, or rewrites it.</summary>
     private static int RunInteractionChains(string repositoryRoot, bool writeLedger)
     {
-        IReadOnlyList<SemanticCoverage.InteractionChainLedger.Row> rows = SemanticCoverage.InteractionChainLedger.Compute(
-            repositoryRoot
-        );
-        IReadOnlyList<SemanticCoverage.ChainJunction> junctions = SemanticCoverage.InteractionChainLedger.ComputeJunctions(
-            repositoryRoot
-        );
+        IReadOnlyList<SemanticCoverage.InteractionChainLedger.Row> rows =
+            SemanticCoverage.InteractionChainLedger.Compute(repositoryRoot);
+        IReadOnlyList<SemanticCoverage.ChainJunction> junctions =
+            SemanticCoverage.InteractionChainLedger.ComputeJunctions(repositoryRoot);
         int exercisedCount = rows.Count(r => r.Exercised);
         int hazardousCount = rows.Count(r => r.Hazardous);
 
         Console.WriteLine($"junctions: {junctions.Count}");
         foreach (SemanticCoverage.ChainJunction junction in junctions)
-            Console.WriteLine($"  {junction.PayloadType} ({junction.Writers.Count} writer(s), {junction.Readers.Count} reader(s))");
+        {
+            Console.WriteLine(
+                $"  {junction.PayloadType} ({junction.Writers.Count} writer(s), {junction.Readers.Count} reader(s))"
+            );
+        }
         Console.WriteLine($"interaction chains: {rows.Count}");
         Console.WriteLine($"  exercised   {exercisedCount}");
         Console.WriteLine($"  unexercised {rows.Count - exercisedCount}");
@@ -699,7 +747,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-interaction-chains");
             return 1;
@@ -713,9 +767,8 @@ internal class Program
     /// checked-in ledger, or rewrites it.</summary>
     private static int RunDataflowObligations(string repositoryRoot, bool writeLedger)
     {
-        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> rows = SemanticCoverage.DataflowObligationLedger.Compute(
-            repositoryRoot
-        );
+        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> rows =
+            SemanticCoverage.DataflowObligationLedger.Compute(repositoryRoot);
         int satisfied = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.Satisfied);
         int notSatisfied = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.NotSatisfied);
         int unknown = rows.Count(r => r.Status == SemanticCoverage.ObligationStatus.Unknown);
@@ -742,7 +795,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-dataflow-obligations");
             return 1;
@@ -759,9 +818,8 @@ internal class Program
     private static int RunEngineGateInventory(string repositoryRoot, bool writeLedger)
     {
         Console.WriteLine("tracing every non-pathological, non-crash fixture's words for engine-gate evidence...");
-        IReadOnlyList<SemanticCoverage.EngineGateInventoryLedger.Row> rows = SemanticCoverage.EngineGateInventoryLedger.Compute(
-            repositoryRoot
-        );
+        IReadOnlyList<SemanticCoverage.EngineGateInventoryLedger.Row> rows =
+            SemanticCoverage.EngineGateInventoryLedger.Compute(repositoryRoot);
         int witnessed = rows.Count(r => r.Status == SemanticCoverage.EngineGateStatus.Witnessed);
         int unreached = rows.Count(r => r.Status == SemanticCoverage.EngineGateStatus.Unreached);
         int noDtdAttribute = rows.Count(r => r.DtdAttributes == "-");
@@ -770,8 +828,14 @@ internal class Program
         Console.WriteLine($"  witnessed        {witnessed}");
         Console.WriteLine($"  unreached        {unreached}");
         Console.WriteLine($"  no DTD attribute {noDtdAttribute}");
-        foreach (SemanticCoverage.EngineGateInventoryLedger.Row row in rows.Where(r => r.Status == SemanticCoverage.EngineGateStatus.Unreached))
+        foreach (
+            SemanticCoverage.EngineGateInventoryLedger.Row row in rows.Where(r =>
+                r.Status == SemanticCoverage.EngineGateStatus.Unreached
+            )
+        )
+        {
             Console.Error.WriteLine($"UNREACHED  {row.Gate}  (raise sites: {row.RaiseSites})");
+        }
 
         string relative = SemanticCoverage.EngineGateInventoryLedger.RelativePath;
         string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
@@ -790,7 +854,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-engine-gate-inventory");
             return 1;
@@ -807,7 +877,9 @@ internal class Program
     /// checks it against the checked-in ledger, or rewrites it.</summary>
     private static int RunGateObligations(string repositoryRoot, bool writeLedger)
     {
-        Console.WriteLine("evaluating gate-keyed obligations (engine-gate-inventory + interface-witness, with a severance fallback)...");
+        Console.WriteLine(
+            "evaluating gate-keyed obligations (engine-gate-inventory + interface-witness, with a severance fallback)..."
+        );
         IReadOnlyList<SemanticCoverage.GateObligationLedger.Row> rows = SemanticCoverage.GateObligationLedger.Compute(
             repositoryRoot
         );
@@ -816,10 +888,13 @@ internal class Program
         int worthCovering = rows.Count(r => r.WorthCovering == "Yes") / 2;
         int evidenced = rows.Count(r => r.Status == SemanticCoverage.GateArmStatus.Evidenced);
         int notEvidenced = rows.Count(r => r.Status == SemanticCoverage.GateArmStatus.NotEvidenced);
-        int blockedEvidenced = rows.Count(r => r.Arm == "Blocked" && r.Status == SemanticCoverage.GateArmStatus.Evidenced);
-        int controlEvidenced = rows.Count(r => r.Arm == "Control" && r.Status == SemanticCoverage.GateArmStatus.Evidenced);
-        int bothEvidenced = rows
-            .Where(r => r.Status == SemanticCoverage.GateArmStatus.Evidenced)
+        int blockedEvidenced = rows.Count(r =>
+            r.Arm == "Blocked" && r.Status == SemanticCoverage.GateArmStatus.Evidenced
+        );
+        int controlEvidenced = rows.Count(r =>
+            r.Arm == "Control" && r.Status == SemanticCoverage.GateArmStatus.Evidenced
+        );
+        int bothEvidenced = rows.Where(r => r.Status == SemanticCoverage.GateArmStatus.Evidenced)
             .GroupBy(r => r.Gate)
             .Count(g => g.Count() == 2);
 
@@ -848,7 +923,13 @@ internal class Program
             return 1;
         }
 
-        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        if (
+            !string.Equals(
+                File.ReadAllText(path).ReplaceLineEndings("\n"),
+                fresh.ReplaceLineEndings("\n"),
+                StringComparison.Ordinal
+            )
+        )
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-gate-obligations");
             return 1;
@@ -863,10 +944,11 @@ internal class Program
     /// already-checked-in facts for a human or reviewing agent to read; the only failure mode is staleness.</summary>
     private static int RunEvidenceCards(string repositoryRoot, bool writeCards)
     {
-        IReadOnlyList<SemanticCoverage.EvidenceCard> cards = SemanticCoverage.EvidenceCardGenerator.Compute(repositoryRoot);
-        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> ledgerRows = SemanticCoverage.DataflowObligationLedger.Read(
+        IReadOnlyList<SemanticCoverage.EvidenceCard> cards = SemanticCoverage.EvidenceCardGenerator.Compute(
             repositoryRoot
         );
+        IReadOnlyList<SemanticCoverage.DataflowObligationLedger.Row> ledgerRows =
+            SemanticCoverage.DataflowObligationLedger.Read(repositoryRoot);
 
         Console.WriteLine($"evidence cards: {cards.Count}");
         foreach (SemanticCoverage.ObligationStatus status in Enum.GetValues<SemanticCoverage.ObligationStatus>())
@@ -894,7 +976,9 @@ internal class Program
             return 1;
         }
 
-        Console.WriteLine($"{SemanticCoverage.EvidenceCardGenerator.RelativeDirectory} is current ({cards.Count} card(s))");
+        Console.WriteLine(
+            $"{SemanticCoverage.EvidenceCardGenerator.RelativeDirectory} is current ({cards.Count} card(s))"
+        );
         return 0;
     }
 
@@ -938,11 +1022,14 @@ internal class Program
             return 0;
         }
 
-        Console.WriteLine("sweeping interface severance witnesses (this re-parses every present interface x fixture)...");
-        IReadOnlyList<SemanticCoverage.InterfaceWitnessResult> witnessRows = SemanticCoverage.InterfaceWitnessLedger.Sweep(
-            repositoryRoot,
-            onFixtureStarted: (fixtureId, count) => Console.Error.WriteLine($"  {fixtureId} ({count} interface(s))")
+        Console.WriteLine(
+            "sweeping interface severance witnesses (this re-parses every present interface x fixture)..."
         );
+        IReadOnlyList<SemanticCoverage.InterfaceWitnessResult> witnessRows =
+            SemanticCoverage.InterfaceWitnessLedger.Sweep(
+                repositoryRoot,
+                onFixtureStarted: (fixtureId, count) => Console.Error.WriteLine($"  {fixtureId} ({count} interface(s))")
+            );
         int failed = WriteOrCheck(
             SemanticCoverage.InterfaceWitnessLedger.RelativePath,
             SemanticCoverage.InterfaceWitnessLedger.ToText(witnessRows),
@@ -989,9 +1076,8 @@ internal class Program
     /// </summary>
     private static int RunCoverageEvidence(string repositoryRoot, bool writeLedger)
     {
-        IReadOnlyList<SemanticCoverage.CounterfactualResult> surfaceResults = SemanticCoverage.CounterfactualLedger.Read(
-            repositoryRoot
-        );
+        IReadOnlyList<SemanticCoverage.CounterfactualResult> surfaceResults =
+            SemanticCoverage.CounterfactualLedger.Read(repositoryRoot);
         if (surfaceResults.Count == 0)
         {
             Console.Error.WriteLine(
@@ -1002,10 +1088,11 @@ internal class Program
 
         Console.WriteLine("combined Surface+Ordering inventory");
         Console.WriteLine("------------------------------------");
-        IReadOnlyList<SemanticCoverage.CounterfactualResult> orderingResults = SemanticCoverage.CounterfactualLedger.SweepOrdering(
-            repositoryRoot,
-            (fixtureId, itemCount) => Console.Error.WriteLine($"  ordering: {fixtureId} ({itemCount} item(s))")
-        );
+        IReadOnlyList<SemanticCoverage.CounterfactualResult> orderingResults =
+            SemanticCoverage.CounterfactualLedger.SweepOrdering(
+                repositoryRoot,
+                (fixtureId, itemCount) => Console.Error.WriteLine($"  ordering: {fixtureId} ({itemCount} item(s))")
+            );
 
         IReadOnlyList<SemanticCoverage.CoverageItem> items = SemanticCoverage.CoverageEvidencePipeline.BuildItems(
             surfaceResults,
@@ -1046,10 +1133,18 @@ internal class Program
             Console.WriteLine(
                 $"    evidenced (LoadFailure):  {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Evidenced && r.CounterexampleKind == SemanticCoverage.CounterexampleKind.LoadFailure)}"
             );
-            Console.WriteLine($"    proven:                   {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Proven)}");
-            Console.WriteLine($"    unresolved (gap):         {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Unresolved)}");
-            Console.WriteLine($"    conflicting:              {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Conflicting)}");
-            Console.WriteLine($"    rejected proof:           {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Rejected)}");
+            Console.WriteLine(
+                $"    proven:                   {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Proven)}"
+            );
+            Console.WriteLine(
+                $"    unresolved (gap):         {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Unresolved)}"
+            );
+            Console.WriteLine(
+                $"    conflicting:              {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Conflicting)}"
+            );
+            Console.WriteLine(
+                $"    rejected proof:           {ofKind.Count(r => r.Resolution == SemanticCoverage.CoverageResolution.Rejected)}"
+            );
         }
 
         Console.WriteLine($"  total: {items.Count} item(s), complete: {report.IsComplete}");
@@ -1060,7 +1155,8 @@ internal class Program
 
         if (writeLedger)
         {
-            IReadOnlyList<SemanticCoverage.EvidenceLedger.Row> rows = SemanticCoverage.CoverageEvidencePipeline.BuildLedgerRows(items, evidence);
+            IReadOnlyList<SemanticCoverage.EvidenceLedger.Row> rows =
+                SemanticCoverage.CoverageEvidencePipeline.BuildLedgerRows(items, evidence);
             SemanticCoverage.EvidenceLedger.Write(repositoryRoot, rows);
             Console.WriteLine($"wrote {SemanticCoverage.EvidenceLedger.RelativePath} ({rows.Count} row(s))");
         }
@@ -1108,7 +1204,8 @@ internal class Program
         string repositoryRoot,
         bool writeBaseline,
         bool proposeCatalog,
-        IReadOnlyCollection<string> proposedAuditedScopes)
+        IReadOnlyCollection<string> proposedAuditedScopes
+    )
     {
         // A proposal is review material, not an authority verdict. If the curated catalog already
         // names scopes, use that live source snapshot; an empty catalog remains on the explicit
@@ -1119,28 +1216,47 @@ internal class Program
             IReadOnlyList<string> proposalScopes;
             try
             {
-                SemanticCoverage.SemanticCatalog existingCatalog = SemanticCoverage.CatalogBootstrap.Load(repositoryRoot);
-                proposalScopes = proposedAuditedScopes.Count != 0
-                    ? proposedAuditedScopes.Distinct(StringComparer.Ordinal).OrderBy(scope => scope, StringComparer.Ordinal).ToArray()
-                    : existingCatalog.AuditedSourceScopes;
+                SemanticCoverage.SemanticCatalog existingCatalog = SemanticCoverage.CatalogBootstrap.Load(
+                    repositoryRoot
+                );
+                proposalScopes =
+                    proposedAuditedScopes.Count != 0
+                        ? proposedAuditedScopes
+                            .Distinct(StringComparer.Ordinal)
+                            .OrderBy(scope => scope, StringComparer.Ordinal)
+                            .ToArray()
+                        : existingCatalog.AuditedSourceScopes;
                 if (proposalScopes.Count == 0)
                 {
                     Console.Error.WriteLine(
                         "semantic catalog proposal requires one or more --audited-source-scope <canonical-id> arguments "
-                            + "when the checked-in catalog has no audited scopes");
+                            + "when the checked-in catalog has no audited scopes"
+                    );
                     return 2;
                 }
 
                 proposal = SemanticCoverage.GraphSemanticCensus.Read(
-                    repositoryRoot, proposalScopes, System.Threading.CancellationToken.None);
+                    repositoryRoot,
+                    proposalScopes,
+                    System.Threading.CancellationToken.None
+                );
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or ArgumentException or InvalidOperationException)
+            catch (Exception ex)
+                when (ex
+                        is IOException
+                            or UnauthorizedAccessException
+                            or FormatException
+                            or ArgumentException
+                            or InvalidOperationException
+                )
             {
                 Console.Error.WriteLine($"semantic catalog proposal unavailable: {ex.Message}");
                 return 2;
             }
             SemanticCoverage.CatalogBootstrap.WriteProposal(Console.Out, proposal, proposalScopes);
-            Console.Error.WriteLine("semantic catalog proposal only; canonical catalog was not changed and no authority verdict was produced");
+            Console.Error.WriteLine(
+                "semantic catalog proposal only; canonical catalog was not changed and no authority verdict was produced"
+            );
             return 1;
         }
 
@@ -1153,7 +1269,9 @@ internal class Program
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException)
         {
-            Console.Error.WriteLine($"semantic coverage authority unavailable: malformed or missing catalog ({ex.Message})");
+            Console.Error.WriteLine(
+                $"semantic coverage authority unavailable: malformed or missing catalog ({ex.Message})"
+            );
             return 2;
         }
 
@@ -1163,11 +1281,21 @@ internal class Program
             inventory = SemanticCoverage.GraphSemanticCensus.Read(
                 repositoryRoot,
                 catalog.AuditedSourceScopes,
-                System.Threading.CancellationToken.None);
+                System.Threading.CancellationToken.None
+            );
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or FormatException)
+        catch (Exception ex)
+            when (ex
+                    is IOException
+                        or UnauthorizedAccessException
+                        or ArgumentException
+                        or InvalidOperationException
+                        or FormatException
+            )
         {
-            Console.Error.WriteLine($"semantic coverage authority unavailable: source snapshot could not be read ({ex.Message})");
+            Console.Error.WriteLine(
+                $"semantic coverage authority unavailable: source snapshot could not be read ({ex.Message})"
+            );
             return 2;
         }
 
@@ -1233,10 +1361,7 @@ internal class Program
         foreach (string id in staleWaivers)
             Console.Error.WriteLine($"STALE PRESENCE WAIVER (delete it)  {id}");
 
-        SemanticCoverage.AuditResult audit = SemanticCoverage.SemanticCoverageAudit.Run(
-            inventory,
-            catalog
-        );
+        SemanticCoverage.AuditResult audit = SemanticCoverage.SemanticCoverageAudit.Run(inventory, catalog);
         Console.WriteLine(
             $"catalog audit: {(audit.IsComplete ? "complete" : $"{audit.Diagnostics.Count} diagnostic(s)")}"
         );

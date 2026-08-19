@@ -2,31 +2,32 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Collections.Immutable;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
 internal sealed record LogicalPathRoots
 {
     internal LogicalPathRoots(string repositoryRoot, string sdkRoot, string nugetRoot, string generatedRoot)
-        : this(repositoryRoot, sdkRoot, new[] { nugetRoot }, generatedRoot)
-    {
-    }
+        : this(repositoryRoot, sdkRoot, new[] { nugetRoot }, generatedRoot) { }
 
     internal LogicalPathRoots(
         string repositoryRoot,
         string sdkRoot,
         IReadOnlyList<string> nugetRoots,
-        string generatedRoot)
+        string generatedRoot
+    )
     {
         RepositoryRoot = RequireAbsolute(repositoryRoot, nameof(repositoryRoot));
         SdkRoot = RequireAbsolute(sdkRoot, nameof(sdkRoot));
         ArgumentNullException.ThrowIfNull(nugetRoots);
         if (nugetRoots.Count == 0)
             throw new ArgumentException("At least one NuGet root is required.", nameof(nugetRoots));
-        NuGetRoots = nugetRoots.Select((root, index) => RequireAbsolute(root, $"{nameof(nugetRoots)}[{index}]")).ToImmutableArray();
+        NuGetRoots = nugetRoots
+            .Select((root, index) => RequireAbsolute(root, $"{nameof(nugetRoots)}[{index}]"))
+            .ToImmutableArray();
         GeneratedRoot = RequireAbsolute(generatedRoot, nameof(generatedRoot));
 
         var roots = new[] { RepositoryRoot, SdkRoot, GeneratedRoot }.Concat(NuGetRoots).ToArray();
@@ -63,8 +64,7 @@ internal static class LogicalPathTokens
     private const string AncestorEditorConfigToken = "ancestor-editorconfig";
     private const string EditorConfigFileName = ".editorconfig";
 
-    internal static bool IsLogicalPath(string path) =>
-        IsLogicalPathCore(path, out _);
+    internal static bool IsLogicalPath(string path) => IsLogicalPathCore(path, out _);
 
     private static bool IsLogicalPathCore(string path, out string? token)
     {
@@ -73,15 +73,18 @@ internal static class LogicalPathTokens
             token = null;
             return false;
         }
-        token = new[] { "repo:/", "sdk:/", "nuget:/", "generated:/", AncestorEditorConfigToken + ":/" }
-            .FirstOrDefault(candidate => path.StartsWith(candidate, StringComparison.Ordinal));
+        token = new[] { "repo:/", "sdk:/", "nuget:/", "generated:/", AncestorEditorConfigToken + ":/" }.FirstOrDefault(
+            candidate => path.StartsWith(candidate, StringComparison.Ordinal)
+        );
         if (token is null || path.Contains('\\'))
             return false;
         string remainder = path[token.Length..];
         return remainder.Length == 0
-            || (!remainder.StartsWith("/", StringComparison.Ordinal)
+            || (
+                !remainder.StartsWith("/", StringComparison.Ordinal)
                 && !remainder.EndsWith("/", StringComparison.Ordinal)
-                && !remainder.Split('/').Any(segment => segment is "" or "." or ".."));
+                && !remainder.Split('/').Any(segment => segment is "" or "." or "..")
+            );
     }
 
     internal static string FromAbsolute(string absolutePath, LogicalPathRoots roots)
@@ -98,18 +101,22 @@ internal static class LogicalPathTokens
         {
             if (!IsUnder(normalized, nugetRoot))
                 continue;
-            string relativeToRoot = normalized.Length == nugetRoot.Length
-                ? string.Empty
-                : normalized[(nugetRoot.Length + 1)..];
+            string relativeToRoot =
+                normalized.Length == nugetRoot.Length ? string.Empty : normalized[(nugetRoot.Length + 1)..];
             string[] segments = relativeToRoot.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length < 2 || !IsPackageId(segments[0]) || !IsPackageVersion(segments[1]))
-                throw new InvalidDataException($"NuGet path '{absolutePath}' is not decomposable into package ID and version.");
+            {
+                throw new InvalidDataException(
+                    $"NuGet path '{absolutePath}' is not decomposable into package ID and version."
+                );
+            }
             candidates.Add(("nuget", nugetRoot, segments[0], segments[1]));
         }
 
         (string Name, string Root)[] matches = candidates
-            .Where(candidate => candidate.Name != "nuget" && IsUnder(normalized, candidate.Root)
-                || candidate.Name == "nuget")
+            .Where(candidate =>
+                candidate.Name != "nuget" && IsUnder(normalized, candidate.Root) || candidate.Name == "nuget"
+            )
             .OrderByDescending(candidate => candidate.Root.Length)
             .Select(candidate => (candidate.Name, candidate.Root))
             .ToArray();
@@ -118,17 +125,16 @@ internal static class LogicalPathTokens
         (string Name, string Root) match = matches[0];
 
         bool rootIsSeparator = match.Root.EndsWith("/", StringComparison.Ordinal);
-        string relative = normalized.Length == match.Root.Length
-            ? string.Empty
-            : normalized[(match.Root.Length + (rootIsSeparator ? 0 : 1))..];
+        string relative =
+            normalized.Length == match.Root.Length
+                ? string.Empty
+                : normalized[(match.Root.Length + (rootIsSeparator ? 0 : 1))..];
         if (match.Name == "nuget")
         {
             string[] segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
             relative = string.Join('/', segments);
         }
-        return relative.Length == 0
-            ? match.Name + ":/"
-            : match.Name + ":/" + relative;
+        return relative.Length == 0 ? match.Name + ":/" : match.Name + ":/" + relative;
     }
 
     /// <summary>
@@ -146,13 +152,18 @@ internal static class LogicalPathTokens
         {
             return FromAbsolute(absolutePath, roots);
         }
-        catch (InvalidDataException) when (TryAncestorEditorConfigToken(absolutePath, roots.RepositoryRoot, out string? token))
+        catch (InvalidDataException)
+            when (TryAncestorEditorConfigToken(absolutePath, roots.RepositoryRoot, out string? token))
         {
             return token!;
         }
     }
 
-    private static bool TryAncestorEditorConfigToken(string absolutePath, string repositoryRoot, out string? logicalPath)
+    private static bool TryAncestorEditorConfigToken(
+        string absolutePath,
+        string repositoryRoot,
+        out string? logicalPath
+    )
     {
         logicalPath = null;
         if (!string.Equals(Path.GetFileName(absolutePath), EditorConfigFileName, StringComparison.OrdinalIgnoreCase))
@@ -163,10 +174,12 @@ internal static class LogicalPathTokens
             return false;
         string[] parentSegments = fileSegments[..^1];
         string[] repositorySegments = repositoryRoot.Split('/');
-        if (parentSegments.Length >= repositorySegments.Length
-            || !parentSegments.AsSpan().SequenceEqual(
-                repositorySegments.AsSpan(0, parentSegments.Length),
-                StringComparer.OrdinalIgnoreCase))
+        if (
+            parentSegments.Length >= repositorySegments.Length
+            || !parentSegments
+                .AsSpan()
+                .SequenceEqual(repositorySegments.AsSpan(0, parentSegments.Length), StringComparer.OrdinalIgnoreCase)
+        )
         {
             return false;
         }
@@ -176,7 +189,8 @@ internal static class LogicalPathTokens
     }
 
     private static bool IsPackageId(string value) =>
-        !string.IsNullOrWhiteSpace(value) && value.IndexOfAny(new[] { '/', '\\', ':', '*', '?', '"', '<', '>', '|' }) < 0;
+        !string.IsNullOrWhiteSpace(value)
+        && value.IndexOfAny(new[] { '/', '\\', ':', '*', '?', '"', '<', '>', '|' }) < 0;
 
     private static bool IsPackageVersion(string value) =>
         IsPackageId(value) && char.IsDigit(value[0]) && value.Any(char.IsLetterOrDigit);
@@ -216,19 +230,18 @@ internal static class LogicalPathTokens
         if (string.IsNullOrWhiteSpace(path))
             return false;
         return path.StartsWith("/", StringComparison.Ordinal)
-            || (path.Length >= 3
-                && char.IsLetter(path[0])
-                && path[1] == ':'
-                && (path[2] == '/' || path[2] == '\\'))
+            || (path.Length >= 3 && char.IsLetter(path[0]) && path[1] == ':' && (path[2] == '/' || path[2] == '\\'))
             || path.StartsWith("//", StringComparison.Ordinal)
             || path.StartsWith("\\\\", StringComparison.Ordinal);
     }
 
     internal static bool IsUnder(string path, string root) =>
         path.Equals(root, StringComparison.OrdinalIgnoreCase)
-        || (path.Length > root.Length
+        || (
+            path.Length > root.Length
             && path.StartsWith(root, StringComparison.OrdinalIgnoreCase)
-            && (root.EndsWith("/", StringComparison.Ordinal) || path[root.Length] == '/'));
+            && (root.EndsWith("/", StringComparison.Ordinal) || path[root.Length] == '/')
+        );
 
     internal static bool IsFilesystemRoot(string path) =>
         path == "/" || (path.Length == 3 && path[1] == ':' && path[2] == '/');

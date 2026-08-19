@@ -32,8 +32,14 @@ public static class RaiseSiteScanner
         foreach (string path in Directory.EnumerateFiles(engineRoot, "*.cs", SearchOption.AllDirectories))
         {
             if (
-                path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-                || path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+                path.Contains(
+                    $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+                    StringComparison.Ordinal
+                )
+                || path.Contains(
+                    $"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+                    StringComparison.Ordinal
+                )
             )
             {
                 continue;
@@ -54,8 +60,13 @@ public static class RaiseSiteScanner
                         continue;
 
                     string before = line[..match.Index].TrimEnd();
-                    if (before.EndsWith("==", StringComparison.Ordinal) || before.EndsWith("!=", StringComparison.Ordinal))
+                    if (
+                        before.EndsWith("==", StringComparison.Ordinal)
+                        || before.EndsWith("!=", StringComparison.Ordinal)
+                    )
+                    {
                         continue;
+                    }
 
                     if (!sites.TryGetValue(member, out List<(string File, int Line)>? list))
                         sites[member] = list = new List<(string, int)>();
@@ -67,11 +78,12 @@ public static class RaiseSiteScanner
         return sites.ToDictionary(
             kv => kv.Key,
             kv =>
-                (IReadOnlyList<string>)kv
-                    .Value.OrderBy(s => s.File, StringComparer.Ordinal)
-                    .ThenBy(s => s.Line)
-                    .Select(s => $"{s.File}:{s.Line}")
-                    .ToArray(),
+                (IReadOnlyList<string>)
+                    kv
+                        .Value.OrderBy(s => s.File, StringComparer.Ordinal)
+                        .ThenBy(s => s.Line)
+                        .Select(s => $"{s.File}:{s.Line}")
+                        .ToArray(),
             StringComparer.Ordinal
         );
     }

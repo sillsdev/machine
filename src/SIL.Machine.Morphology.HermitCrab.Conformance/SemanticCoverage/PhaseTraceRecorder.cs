@@ -47,13 +47,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
             _events[phase]
                 .GroupBy(item => item, StringComparer.Ordinal)
                 .OrderBy(group => group.Key, StringComparer.Ordinal)
-                .Select(group => $"{group.Count().ToString(CultureInfo.InvariantCulture)}x {group.Key}"));
+                .Select(group => $"{group.Count().ToString(CultureInfo.InvariantCulture)}x {group.Key}")
+        );
 
     private void Record(ParsePhase phase, string kind, params string?[] parts) =>
-        _events[phase].Add(
-            parts.Length == 0
-                ? kind
-                : kind + "(" + string.Join(",", parts.Select(part => part ?? "<null>")) + ")");
+        _events[phase]
+            .Add(
+                parts.Length == 0 ? kind : kind + "(" + string.Join(",", parts.Select(part => part ?? "<null>")) + ")"
+            );
 
     private static string RuleName(IHCRule? rule) => rule?.Name ?? "<unnamed>";
 
@@ -94,7 +95,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
         Word input,
         FailureReason reason,
         object failureObj
-    ) => Record(ParsePhase.AnalysisCandidate, "CompoundingRuleNotUnapplied", RuleName(rule), Index(subruleIndex), reason.ToString());
+    ) =>
+        Record(
+            ParsePhase.AnalysisCandidate,
+            "CompoundingRuleNotUnapplied",
+            RuleName(rule),
+            Index(subruleIndex),
+            reason.ToString()
+        );
 
     // The hinge, and the engine puts it on the synthesis side: Morpher.Synthesize calls it per
     // analysis to find the entries a rebuild can start from.
@@ -125,7 +133,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
         Word input,
         FailureReason reason,
         object failureObj
-    ) => Record(ParsePhase.SynthesisConfirmation, "PhonologicalRuleNotApplied", RuleName(rule), Index(subruleIndex), reason.ToString());
+    ) =>
+        Record(
+            ParsePhase.SynthesisConfirmation,
+            "PhonologicalRuleNotApplied",
+            RuleName(rule),
+            Index(subruleIndex),
+            reason.ToString()
+        );
 
     public void BeginApplyTemplate(AffixTemplate template, Word input) =>
         Record(ParsePhase.SynthesisConfirmation, "BeginApplyTemplate", template?.Name);
@@ -142,7 +157,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
         Word input,
         FailureReason reason,
         object failureObj
-    ) => Record(ParsePhase.SynthesisConfirmation, "MorphologicalRuleNotApplied", RuleName(rule), Index(subruleIndex), reason.ToString());
+    ) =>
+        Record(
+            ParsePhase.SynthesisConfirmation,
+            "MorphologicalRuleNotApplied",
+            RuleName(rule),
+            Index(subruleIndex),
+            reason.ToString()
+        );
 
     public void CompoundingRuleNotApplied(
         IMorphologicalRule rule,
@@ -150,7 +172,14 @@ public sealed class PhaseTraceRecorder : ITraceManager
         Word input,
         FailureReason reason,
         object failureObj
-    ) => Record(ParsePhase.SynthesisConfirmation, "CompoundingRuleNotApplied", RuleName(rule), Index(subruleIndex), reason.ToString());
+    ) =>
+        Record(
+            ParsePhase.SynthesisConfirmation,
+            "CompoundingRuleNotApplied",
+            RuleName(rule),
+            Index(subruleIndex),
+            reason.ToString()
+        );
 
     // Final parse: the verdict on a completed word.
     public void Blocked(IHCRule rule, Word output) => Record(ParsePhase.FinalParse, "Blocked", RuleName(rule));

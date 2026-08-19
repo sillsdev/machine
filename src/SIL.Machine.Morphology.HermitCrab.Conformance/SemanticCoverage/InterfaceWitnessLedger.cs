@@ -155,9 +155,7 @@ public static class InterfaceWitnessLedger
         writer.WriteLine(
             "# fixture) triple InterfaceInventoryLedger marks present -- i.e. one severance run per place the"
         );
-        writer.WriteLine(
-            "# interface actually shows up. Presence (interface-inventory.tsv) only means the attribute"
-        );
+        writer.WriteLine("# interface actually shows up. Presence (interface-inventory.tsv) only means the attribute");
         writer.WriteLine(
             "# resolves to a real IDREF somewhere; it says nothing about whether the interface DOES anything."
         );
@@ -177,8 +175,7 @@ public static class InterfaceWitnessLedger
             "element\tattribute\tfixture\tverdict\tmutation\tdelta\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome"
         );
         foreach (
-            InterfaceWitnessResult row in rows
-                .OrderBy(r => r.Element, StringComparer.Ordinal)
+            InterfaceWitnessResult row in rows.OrderBy(r => r.Element, StringComparer.Ordinal)
                 .ThenBy(r => r.Attribute, StringComparer.Ordinal)
                 .ThenBy(r => r.FixtureId, StringComparer.Ordinal)
         )

@@ -43,11 +43,17 @@ public sealed class FoldInCandidateLedgerTests
         string root = RepositoryRoot();
         IReadOnlyList<FoldInCandidateLedger.Row> rows = FoldInCandidateLedger.Read(root);
 
-        int interfaceEdgeCaseOnly = rows.Count(r => r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.EdgeCaseOnly);
-        int interfaceNeverWitnessed = rows.Count(r => r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.NeverWitnessed);
-        int surfaceEdgeCaseOnly = rows.Count(r => r.Layer == ObligationLayer.Surface && r.Category == FoldInCategory.EdgeCaseOnly);
-        int surfacePresentElsewhere = rows.Count(
-            r => r.Layer == ObligationLayer.Surface && r.Category == FoldInCategory.PresentInLanguageGrammarAlready
+        int interfaceEdgeCaseOnly = rows.Count(r =>
+            r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.EdgeCaseOnly
+        );
+        int interfaceNeverWitnessed = rows.Count(r =>
+            r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.NeverWitnessed
+        );
+        int surfaceEdgeCaseOnly = rows.Count(r =>
+            r.Layer == ObligationLayer.Surface && r.Category == FoldInCategory.EdgeCaseOnly
+        );
+        int surfacePresentElsewhere = rows.Count(r =>
+            r.Layer == ObligationLayer.Surface && r.Category == FoldInCategory.PresentInLanguageGrammarAlready
         );
 
         TestContext.Out.WriteLine(
@@ -69,12 +75,16 @@ public sealed class FoldInCandidateLedgerTests
         string root = RepositoryRoot();
         IReadOnlyList<FoldInCandidateLedger.Row> rows = FoldInCandidateLedger.Read(root);
 
-        FoldInCandidateLedger.Row[] candidates = rows
-            .Where(r => r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.EdgeCaseOnly)
+        FoldInCandidateLedger.Row[] candidates = rows.Where(r =>
+                r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.EdgeCaseOnly
+            )
             .ToArray();
 
         Assert.That(candidates, Has.Length.EqualTo(2));
-        Assert.That(candidates.Select(r => r.Obligation), Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech", "MorphologicalInput.excludedMPRFeatures" }));
+        Assert.That(
+            candidates.Select(r => r.Obligation),
+            Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech", "MorphologicalInput.excludedMPRFeatures" })
+        );
     }
 
     // Cheap: reads InterfaceInventoryLedger/InterfaceWitnessLedger/EvidenceLedger back off disk plus a

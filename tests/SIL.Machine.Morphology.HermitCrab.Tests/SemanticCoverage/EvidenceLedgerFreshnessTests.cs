@@ -41,7 +41,9 @@ public sealed class EvidenceLedgerFreshnessTests
         IReadOnlyList<CounterfactualResult> freshSurface = CounterfactualLedger.Sweep(root, inventory);
         IReadOnlyList<CounterfactualResult> freshOrdering = CounterfactualLedger.SweepOrdering(root);
         IReadOnlyList<CoverageItem> items = CoverageEvidencePipeline.BuildItems(freshSurface, freshOrdering);
-        IReadOnlyList<Evidence> evidence = CoverageEvidencePipeline.BuildEvidence(freshSurface.Concat(freshOrdering).ToArray());
+        IReadOnlyList<Evidence> evidence = CoverageEvidencePipeline.BuildEvidence(
+            freshSurface.Concat(freshOrdering).ToArray()
+        );
         IReadOnlyList<EvidenceLedger.Row> fresh = CoverageEvidencePipeline.BuildLedgerRows(items, evidence);
 
         IReadOnlyList<EvidenceLedger.Row> checkedIn = EvidenceLedger.Read(root);

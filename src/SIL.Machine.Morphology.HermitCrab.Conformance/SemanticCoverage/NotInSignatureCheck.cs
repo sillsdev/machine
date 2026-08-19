@@ -33,7 +33,10 @@ public static class NotInSignatureCheck
     {
         ArgumentNullException.ThrowIfNull(repositoryRoot);
         ArgumentNullException.ThrowIfNull(propertyName);
-        string path = Path.Combine(repositoryRoot, SignatureSourceRelativePath.Replace('/', Path.DirectorySeparatorChar));
+        string path = Path.Combine(
+            repositoryRoot,
+            SignatureSourceRelativePath.Replace('/', Path.DirectorySeparatorChar)
+        );
         string source = File.ReadAllText(path);
         return !source.Contains($".{propertyName}", StringComparison.Ordinal);
     }
@@ -80,7 +83,13 @@ public static class NotInSignatureCheck
         {
             Fixture fixture = allFixtures.Single(f => f.Id == fixtureId);
             IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-            CounterfactualResult result = CounterfactualGate.Evaluate(fixture, surfaceId, inventory, baseline, scratchDirectory);
+            CounterfactualResult result = CounterfactualGate.Evaluate(
+                fixture,
+                surfaceId,
+                inventory,
+                baseline,
+                scratchDirectory
+            );
 
             // "none" means nothing was actually removed, so this fixture would test nothing.
             if (result.Mutation == "none")

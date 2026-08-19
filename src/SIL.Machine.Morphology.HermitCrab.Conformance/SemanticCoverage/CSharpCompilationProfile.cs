@@ -39,14 +39,16 @@ internal sealed class CSharpCompilationProfile
         var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var assemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var unresolved = new SortedSet<string>(StringComparer.Ordinal);
-        var queue = new Queue<Assembly>(new[]
-        {
-            typeof(object).Assembly,
-            typeof(System.Xml.Linq.XElement).Assembly,
-            typeof(XmlLanguageLoader).Assembly,
-            typeof(SIL.Machine.Rules.IRule<,>).Assembly,
-            typeof(CSharpInventoryReader).Assembly,
-        });
+        var queue = new Queue<Assembly>(
+            new[]
+            {
+                typeof(object).Assembly,
+                typeof(System.Xml.Linq.XElement).Assembly,
+                typeof(XmlLanguageLoader).Assembly,
+                typeof(SIL.Machine.Rules.IRule<,>).Assembly,
+                typeof(CSharpInventoryReader).Assembly,
+            }
+        );
 
         while (queue.Count != 0)
         {
@@ -55,8 +57,11 @@ internal sealed class CSharpCompilationProfile
             if (!assemblies.Add(identity))
                 continue;
 
-            if (!string.IsNullOrEmpty(assembly.Location) && File.Exists(assembly.Location)
-                && !censusedAssemblies.Contains(assembly.GetName().Name ?? string.Empty))
+            if (
+                !string.IsNullOrEmpty(assembly.Location)
+                && File.Exists(assembly.Location)
+                && !censusedAssemblies.Contains(assembly.GetName().Name ?? string.Empty)
+            )
             {
                 paths.Add(Path.GetFullPath(assembly.Location));
             }
@@ -67,9 +72,18 @@ internal sealed class CSharpCompilationProfile
                 {
                     queue.Enqueue(Assembly.Load(name));
                 }
-                catch (FileNotFoundException) { unresolved.Add(name.FullName ?? name.Name ?? "<unknown>"); }
-                catch (FileLoadException) { unresolved.Add(name.FullName ?? name.Name ?? "<unknown>"); }
-                catch (BadImageFormatException) { unresolved.Add(name.FullName ?? name.Name ?? "<unknown>"); }
+                catch (FileNotFoundException)
+                {
+                    unresolved.Add(name.FullName ?? name.Name ?? "<unknown>");
+                }
+                catch (FileLoadException)
+                {
+                    unresolved.Add(name.FullName ?? name.Name ?? "<unknown>");
+                }
+                catch (BadImageFormatException)
+                {
+                    unresolved.Add(name.FullName ?? name.Name ?? "<unknown>");
+                }
             }
         }
 
@@ -100,22 +114,37 @@ internal sealed class CSharpCompilationProfile
     public string Fingerprint()
     {
         var text = new StringBuilder()
-            .Append("runtime=").Append(RuntimeInformation.FrameworkDescription).Append('\n')
-            .Append("runtime-version=").Append(Environment.Version).Append('\n')
-            .Append("compiler=").Append(typeof(Microsoft.CodeAnalysis.CSharp.CSharpCompilation).Assembly.FullName).Append('\n')
-            .Append("analyzer-implementation=").Append(typeof(CSharpInventoryReader).Assembly.FullName)
-            .Append("|mvid=").Append(ModuleVersionId(typeof(CSharpInventoryReader).Assembly)).Append('\n');
+            .Append("runtime=")
+            .Append(RuntimeInformation.FrameworkDescription)
+            .Append('\n')
+            .Append("runtime-version=")
+            .Append(Environment.Version)
+            .Append('\n')
+            .Append("compiler=")
+            .Append(typeof(Microsoft.CodeAnalysis.CSharp.CSharpCompilation).Assembly.FullName)
+            .Append('\n')
+            .Append("analyzer-implementation=")
+            .Append(typeof(CSharpInventoryReader).Assembly.FullName)
+            .Append("|mvid=")
+            .Append(ModuleVersionId(typeof(CSharpInventoryReader).Assembly))
+            .Append('\n');
         foreach (ReferenceIdentity reference in _references)
-            text.Append("metadata-reference=").Append(reference.Identity).Append("|mvid=").Append(reference.Mvid).Append('\n');
+        {
+            text.Append("metadata-reference=")
+                .Append(reference.Identity)
+                .Append("|mvid=")
+                .Append(reference.Mvid)
+                .Append('\n');
+        }
         foreach (string unresolved in _unresolvedReferences)
             text.Append("unresolved-reference=").Append(unresolved).Append('\n');
         return text.ToString();
     }
 
     private static bool IsFrameworkReference(string name) =>
-        name is "mscorlib" or "netstandard" or "System.Private.CoreLib" ||
-        name.StartsWith("System.", StringComparison.Ordinal) ||
-        name.StartsWith("Microsoft.", StringComparison.Ordinal);
+        name is "mscorlib" or "netstandard" or "System.Private.CoreLib"
+        || name.StartsWith("System.", StringComparison.Ordinal)
+        || name.StartsWith("Microsoft.", StringComparison.Ordinal);
 
     private static Guid ModuleVersionId(Assembly assembly) => assembly.ManifestModule.ModuleVersionId;
 
@@ -135,10 +164,17 @@ internal sealed class CSharpCompilationProfile
             }
             catch (Exception ex) when (ex is IOException or BadImageFormatException or UnauthorizedAccessException)
             {
-                throw new InvalidOperationException($"Cannot inspect C# metadata reference '{System.IO.Path.GetFileName(path)}'.", ex);
+                throw new InvalidOperationException(
+                    $"Cannot inspect C# metadata reference '{System.IO.Path.GetFileName(path)}'.",
+                    ex
+                );
             }
 
-            return new ReferenceIdentity(path, assemblyName.FullName ?? assemblyName.Name ?? System.IO.Path.GetFileName(path), mvid);
+            return new ReferenceIdentity(
+                path,
+                assemblyName.FullName ?? assemblyName.Name ?? System.IO.Path.GetFileName(path),
+                mvid
+            );
         }
     }
 }

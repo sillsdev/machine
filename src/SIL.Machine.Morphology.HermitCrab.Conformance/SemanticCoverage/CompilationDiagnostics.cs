@@ -13,7 +13,8 @@ internal sealed record CompilationDiagnostic(
     bool IsWarningAsError,
     string Code,
     string Message,
-    string Location)
+    string Location
+)
 {
     internal bool IsFatal => Severity == DiagnosticSeverity.Error || IsWarningAsError;
 
@@ -29,7 +30,8 @@ internal sealed record CompilationDiagnostic(
             diagnostic.IsWarningAsError,
             diagnostic.Id,
             diagnostic.GetMessage(),
-            location);
+            location
+        );
     }
 }
 
@@ -39,9 +41,9 @@ internal sealed class CompilationDiagnostics
     {
         All = new ReadOnlyCollection<CompilationDiagnostic>(all.ToArray());
         Errors = new ReadOnlyCollection<CompilationDiagnostic>(all.Where(item => item.IsFatal).ToArray());
-        Warnings = new ReadOnlyCollection<CompilationDiagnostic>(all
-            .Where(item => item.Severity == DiagnosticSeverity.Warning && !item.IsFatal)
-            .ToArray());
+        Warnings = new ReadOnlyCollection<CompilationDiagnostic>(
+            all.Where(item => item.Severity == DiagnosticSeverity.Warning && !item.IsFatal).ToArray()
+        );
     }
 
     internal IReadOnlyList<CompilationDiagnostic> All { get; }
@@ -52,10 +54,14 @@ internal sealed class CompilationDiagnostics
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(origin);
         ArgumentNullException.ThrowIfNull(diagnostics);
-        return new CompilationDiagnostics(diagnostics
-            .Where(diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden && diagnostic.Severity != DiagnosticSeverity.Info)
-            .Select(diagnostic => CompilationDiagnostic.From(origin, diagnostic))
-            .ToArray());
+        return new CompilationDiagnostics(
+            diagnostics
+                .Where(diagnostic =>
+                    diagnostic.Severity != DiagnosticSeverity.Hidden && diagnostic.Severity != DiagnosticSeverity.Info
+                )
+                .Select(diagnostic => CompilationDiagnostic.From(origin, diagnostic))
+                .ToArray()
+        );
     }
 
     internal void ThrowIfFatal()
@@ -64,6 +70,7 @@ internal sealed class CompilationDiagnostics
             return;
         throw new CompilerInputException(
             "compiler-error",
-            $"Compilation contains {Errors.Count} error(s): {string.Join("; ", Errors.Take(10).Select(error => $"{error.Code} at {error.Location}: {error.Message}"))}");
+            $"Compilation contains {Errors.Count} error(s): {string.Join("; ", Errors.Take(10).Select(error => $"{error.Code} at {error.Location}: {error.Message}"))}"
+        );
     }
 }

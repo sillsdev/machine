@@ -28,7 +28,12 @@ internal static class MutatorClassDetectors
 {
     private static XDocument? TryLoadGrammar(string repositoryRoot, string fixtureId)
     {
-        string path = Path.Combine(repositoryRoot, "conformance", fixtureId.Replace('/', Path.DirectorySeparatorChar), "grammar.xml");
+        string path = Path.Combine(
+            repositoryRoot,
+            "conformance",
+            fixtureId.Replace('/', Path.DirectorySeparatorChar),
+            "grammar.xml"
+        );
         return File.Exists(path) ? XDocument.Load(path) : null;
     }
 

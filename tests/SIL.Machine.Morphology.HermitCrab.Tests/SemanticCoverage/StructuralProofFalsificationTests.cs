@@ -85,7 +85,11 @@ public sealed class StructuralProofFalsificationTests
             "net10.0",
             "hc-conformance.dll"
         );
-        Assert.That(File.Exists(dllPath), Is.True, $"build the Conformance project first (dotnet build): {dllPath} not found");
+        Assert.That(
+            File.Exists(dllPath),
+            Is.True,
+            $"build the Conformance project first (dotnet build): {dllPath} not found"
+        );
 
         string scratchRoot =
             Environment.GetEnvironmentVariable("FALSIFICATION_SCRATCH")
@@ -144,7 +148,12 @@ public sealed class StructuralProofFalsificationTests
 
                 try
                 {
-                    IReadOnlyList<string> mutated = RunEvaluateMutant(dllPath, mutatedPath, wordsPath, EvaluationTimeout);
+                    IReadOnlyList<string> mutated = RunEvaluateMutant(
+                        dllPath,
+                        mutatedPath,
+                        wordsPath,
+                        EvaluationTimeout
+                    );
 
                     int diffIndex = -1;
                     for (int i = 0; i < words.Length && i < baseline.Count && i < mutated.Count; i++)
@@ -183,29 +192,43 @@ public sealed class StructuralProofFalsificationTests
                     // as CounterfactualVerdict.RequiredByDtd/RequiredByLoader do for a Surface item.
                     TestContext.Out.WriteLine($"  *** LOAD FAILURE *** {item.Id}: {ex.GetType().Name}: {ex.Message}");
                     outcomes.Add(
-                        new ItemOutcome(item, certification, proofReason, true, "<load-failure>", null, $"{ex.GetType().Name}: {ex.Message}")
+                        new ItemOutcome(
+                            item,
+                            certification,
+                            proofReason,
+                            true,
+                            "<load-failure>",
+                            null,
+                            $"{ex.GetType().Name}: {ex.Message}"
+                        )
                     );
                 }
             }
         }
 
         wallClock.Stop();
-        Assert.That(totalPairsSeen, Is.EqualTo(138), "the corpus-wide pair count must match the design doc's measured figure");
+        Assert.That(
+            totalPairsSeen,
+            Is.EqualTo(138),
+            "the corpus-wide pair count must match the design doc's measured figure"
+        );
         Assert.That(outcomes, Has.Count.EqualTo(138));
 
         WriteTally(outcomes, wallClock.Elapsed);
 
         // The headline check. A structural proof claims an item can NEVER show a delta; empirical
         // evidence that it just did is a contradiction in the proof kind, not a tie to break.
-        ItemOutcome[] contradictions = outcomes.Where(o => o.Certification != Certification.None && o.Evidenced).ToArray();
+        ItemOutcome[] contradictions = outcomes
+            .Where(o => o.Certification != Certification.None && o.Evidenced)
+            .ToArray();
         if (contradictions.Length != 0)
         {
             string detail = string.Join(
                 "\n",
                 contradictions.Select(o =>
                     $"  {o.Item.Id}\n"
-                        + $"    certified by: {o.Certification} ({o.ProofReason})\n"
-                        + $"    differing word: '{o.DiffWord}': {o.Before} -> {o.After}"
+                    + $"    certified by: {o.Certification} ({o.ProofReason})\n"
+                    + $"    differing word: '{o.DiffWord}': {o.Before} -> {o.After}"
                 )
             );
             Assert.Fail(
@@ -293,7 +316,12 @@ public sealed class StructuralProofFalsificationTests
     /// <c>OutcomesWithTimeout</c> (that file is owned by concurrent work) but the same shape: drain both
     /// pipes before waiting so a full one never deadlocks the wait, kill the whole tree on timeout.
     /// </summary>
-    private static IReadOnlyList<string> RunEvaluateMutant(string dllPath, string grammarPath, string wordsPath, TimeSpan timeout)
+    private static IReadOnlyList<string> RunEvaluateMutant(
+        string dllPath,
+        string grammarPath,
+        string wordsPath,
+        TimeSpan timeout
+    )
     {
         var start = new ProcessStartInfo
         {
@@ -324,7 +352,10 @@ public sealed class StructuralProofFalsificationTests
             throw new InvalidOperationException(error.Length != 0 ? error : $"exit code {result.ExitCode}");
         }
 
-        return result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line => line.TrimEnd('\r')).ToArray();
+        return result
+            .StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(line => line.TrimEnd('\r'))
+            .ToArray();
     }
 
     private static void WriteTally(List<ItemOutcome> outcomes, TimeSpan wallClock)

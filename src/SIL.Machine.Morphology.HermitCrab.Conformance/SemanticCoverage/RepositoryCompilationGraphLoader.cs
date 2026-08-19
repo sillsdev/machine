@@ -19,7 +19,8 @@ internal sealed record CompilationGraphHashEnvironment(
     IReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel> CompilerInputs,
     string RepositoryRoot,
     string PrivateRoot,
-    string CaptureTarget);
+    string CaptureTarget
+);
 
 internal sealed class RepositoryCompilationGraphLoader
 {
@@ -27,9 +28,9 @@ internal sealed class RepositoryCompilationGraphLoader
     internal const int MaximumStandardOutputBytes = 64 * 1024 * 1024;
 
     private const string CaptureProperties =
-        "PanGlossCompilerInputProtocol,MSBuildAllProjects,AssemblyName,TargetFramework,LangVersion,Nullable," +
-        "DefineConstants,AllowUnsafeBlocks,CheckForOverflowUnderflow,OutputType,NETCoreSdkVersion,MSBuildVersion,CscToolPath,RoslynAssembliesPath," +
-        "GeneratedAssemblyInfoFile,TargetFrameworkMonikerAssemblyAttributesPath";
+        "PanGlossCompilerInputProtocol,MSBuildAllProjects,AssemblyName,TargetFramework,LangVersion,Nullable,"
+        + "DefineConstants,AllowUnsafeBlocks,CheckForOverflowUnderflow,OutputType,NETCoreSdkVersion,MSBuildVersion,CscToolPath,RoslynAssembliesPath,"
+        + "GeneratedAssemblyInfoFile,TargetFrameworkMonikerAssemblyAttributesPath";
     private const string CaptureItems =
         "CscCommandLineArgs,Compile,ProjectReference,ReferencePathWithRefAssemblies,Analyzer,AdditionalFiles,EditorConfigFiles,Using";
 
@@ -40,19 +41,20 @@ internal sealed class RepositoryCompilationGraphLoader
     internal RepositoryCompilationGraphLoader(
         IMsBuildProcessRunner runner,
         Func<string>? privateDirectoryFactory = null,
-        Func<CompilationGraphHashEnvironment, CompilationGraphHashInputs>? hashInputBuilder = null)
+        Func<CompilationGraphHashEnvironment, CompilationGraphHashInputs>? hashInputBuilder = null
+    )
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _hashInputBuilder = hashInputBuilder;
-        _privateDirectoryFactory = privateDirectoryFactory ?? (() => Path.Combine(
-            Path.GetTempPath(),
-            "hc-semantic-msbuild",
-            Guid.NewGuid().ToString("N")));
+        _privateDirectoryFactory =
+            privateDirectoryFactory
+            ?? (() => Path.Combine(Path.GetTempPath(), "hc-semantic-msbuild", Guid.NewGuid().ToString("N")));
     }
 
     public async ValueTask<RepositoryCompilationGraph> LoadAsync(
         RepositoryRoot root,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ArgumentNullException.ThrowIfNull(root);
         ValidateRepositoryRoot(root.FullPath);
@@ -70,8 +72,10 @@ internal sealed class RepositoryCompilationGraphLoader
             {
                 ProjectPaths paths = ValidateProjectInputs(root.FullPath, project);
                 ProcessCapture capture = await RunCheckedAsync(
-                    CreateBasePropertyQuery(root.FullPath, project, paths),
-                    cancellationToken).ConfigureAwait(false);
+                        CreateBasePropertyQuery(root.FullPath, project, paths),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
                 baseDefines.Add(project.Id, ParseBaseDefines(capture.StandardOutput, project.TargetFramework));
             }
 
@@ -81,36 +85,40 @@ internal sealed class RepositoryCompilationGraphLoader
             {
                 RepositoryProjectDefinition project = graph.Projects.Single(item => item.Id == node.ProjectId);
                 ProjectPaths paths = ValidateProjectInputs(root.FullPath, project);
-                string nodeIntermediate = Path.Combine(privateRoot, SafeSegment(node.ProjectId), SafeSegment(node.Profile.Id));
+                string nodeIntermediate = Path.Combine(
+                    privateRoot,
+                    SafeSegment(node.ProjectId),
+                    SafeSegment(node.Profile.Id)
+                );
                 Directory.CreateDirectory(nodeIntermediate);
                 ValidateNoReparsePoints(privateRoot, nodeIntermediate);
                 string defines = CanonicalDefineUnion(baseDefines[node.ProjectId], node.Profile.AdditionalSymbols);
                 ProcessCapture capture = await RunCheckedAsync(
-                    CreateCaptureQuery(
-                        root.FullPath,
-                        project,
-                        paths,
-                        captureTarget,
-                        nodeIntermediate,
-                        defines),
-                    cancellationToken).ConfigureAwait(false);
+                        CreateCaptureQuery(root.FullPath, project, paths, captureTarget, nodeIntermediate, defines),
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
                 CapturedCompilerInputs parsed = MsBuildCaptureProtocol.Parse(capture.StandardOutput);
                 string capturedTargetFramework = parsed.Properties["TargetFramework"];
                 if (!string.Equals(capturedTargetFramework, node.TargetFramework, StringComparison.Ordinal))
                 {
                     throw new InvalidDataException(
-                        $"MSBuild returned target framework '{capturedTargetFramework}' for '{node.Key}', expected '{node.TargetFramework}'.");
+                        $"MSBuild returned target framework '{capturedTargetFramework}' for '{node.Key}', expected '{node.TargetFramework}'."
+                    );
                 }
                 ValidatePrivateGeneratedFile(
                     privateRoot,
                     nodeIntermediate,
-                    parsed.Properties["GeneratedAssemblyInfoFile"]);
+                    parsed.Properties["GeneratedAssemblyInfoFile"]
+                );
                 ValidatePrivateGeneratedFile(
                     privateRoot,
                     nodeIntermediate,
-                    parsed.Properties["TargetFrameworkMonikerAssemblyAttributesPath"]);
+                    parsed.Properties["TargetFrameworkMonikerAssemblyAttributesPath"]
+                );
                 captures.Add(node.Key, parsed);
-                string projectDirectory = Path.GetDirectoryName(paths.ProjectFile)
+                string projectDirectory =
+                    Path.GetDirectoryName(paths.ProjectFile)
                     ?? throw new InvalidDataException("Project path has no directory.");
                 CompilerInputModel normalized = CSharpCommandLineInputParser.Parse(
                     parsed,
@@ -118,7 +126,8 @@ internal sealed class RepositoryCompilationGraphLoader
                     projectDirectory,
                     nodeIntermediate,
                     node.Profile.AdditionalSymbols,
-                    new CompilerToolchainIdentity(parsed.Properties["RoslynAssembliesPath"]));
+                    new CompilerToolchainIdentity(parsed.Properties["RoslynAssembliesPath"])
+                );
                 compilerInputs.Add(node.Key, normalized);
             }
 
@@ -128,10 +137,12 @@ internal sealed class RepositoryCompilationGraphLoader
                 compilerInputs,
                 root.FullPath,
                 privateRoot,
-                captureTarget);
+                captureTarget
+            );
             CompilationGraphHashInputs hashInputs = _hashInputBuilder is null
                 ? BuildHashInputs(environment)
-                : _hashInputBuilder(environment) ?? throw new InvalidDataException("The hash-input builder returned null.");
+                : _hashInputBuilder(environment)
+                    ?? throw new InvalidDataException("The hash-input builder returned null.");
             RepositoryCompilationGraph capturedGraph = graph.WithCaptures(captures).WithCompilerInputs(compilerInputs);
             return capturedGraph.WithHashInputs(hashInputs).WithHashes(CompilationGraphHashing.Compute(hashInputs));
         }
@@ -143,18 +154,18 @@ internal sealed class RepositoryCompilationGraphLoader
 
     private async ValueTask<ProcessCapture> RunCheckedAsync(
         ProcessStartInfo startInfo,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        ProcessCapture capture = await _runner.RunAsync(
-            startInfo,
-            QueryTimeout,
-            MaximumStandardOutputBytes,
-            cancellationToken).ConfigureAwait(false);
+        ProcessCapture capture = await _runner
+            .RunAsync(startInfo, QueryTimeout, MaximumStandardOutputBytes, cancellationToken)
+            .ConfigureAwait(false);
         if (capture.ExitCode != 0)
         {
             string output = Encoding.UTF8.GetString(capture.StandardOutput);
             throw new InvalidDataException(
-                $"MSBuild exited with code {capture.ExitCode}. stderr: {capture.StandardError.Trim()} stdout: {output.Trim()}");
+                $"MSBuild exited with code {capture.ExitCode}. stderr: {capture.StandardError.Trim()} stdout: {output.Trim()}"
+            );
         }
         if (!string.IsNullOrWhiteSpace(capture.StandardError))
             throw new InvalidDataException($"MSBuild wrote to standard error: {capture.StandardError.Trim()}");
@@ -166,7 +177,8 @@ internal sealed class RepositoryCompilationGraphLoader
     private static ProcessStartInfo CreateBasePropertyQuery(
         string repositoryRoot,
         RepositoryProjectDefinition project,
-        ProjectPaths paths)
+        ProjectPaths paths
+    )
     {
         ProcessStartInfo start = CreateStartInfo(repositoryRoot, paths.ProjectFile);
         AddCommonEvaluationArguments(start, project, paths);
@@ -180,7 +192,8 @@ internal sealed class RepositoryCompilationGraphLoader
         ProjectPaths paths,
         string captureTarget,
         string intermediateDirectory,
-        string defineConstants)
+        string defineConstants
+    )
     {
         ProcessStartInfo start = CreateStartInfo(repositoryRoot, paths.ProjectFile);
         AddCommonEvaluationArguments(start, project, paths);
@@ -188,7 +201,9 @@ internal sealed class RepositoryCompilationGraphLoader
         start.ArgumentList.Add("/p:SkipCompilerExecution=true");
         start.ArgumentList.Add("/p:ProvideCommandLineArgs=true");
         start.ArgumentList.Add($"/p:CustomAfterMicrosoftCommonTargets={captureTarget}");
-        start.ArgumentList.Add($"/p:IntermediateOutputPath={Path.TrimEndingDirectorySeparator(intermediateDirectory)}{Path.DirectorySeparatorChar}");
+        start.ArgumentList.Add(
+            $"/p:IntermediateOutputPath={Path.TrimEndingDirectorySeparator(intermediateDirectory)}{Path.DirectorySeparatorChar}"
+        );
         start.ArgumentList.Add($"/p:DefineConstants={defineConstants.Replace(";", "%3B", StringComparison.Ordinal)}");
         start.ArgumentList.Add($"-getProperty:{CaptureProperties}");
         start.ArgumentList.Add($"-getItem:{CaptureItems}");
@@ -218,13 +233,16 @@ internal sealed class RepositoryCompilationGraphLoader
     private static void AddCommonEvaluationArguments(
         ProcessStartInfo start,
         RepositoryProjectDefinition project,
-        ProjectPaths paths)
+        ProjectPaths paths
+    )
     {
         start.ArgumentList.Add("/p:Configuration=Release");
         start.ArgumentList.Add($"/p:TargetFramework={project.TargetFramework}");
         start.ArgumentList.Add("/p:BuildProjectReferences=false");
         start.ArgumentList.Add("/p:RestoreIgnoreFailedSources=false");
-        start.ArgumentList.Add($"/p:MSBuildProjectExtensionsPath={Path.TrimEndingDirectorySeparator(paths.ObjDirectory)}{Path.DirectorySeparatorChar}");
+        start.ArgumentList.Add(
+            $"/p:MSBuildProjectExtensionsPath={Path.TrimEndingDirectorySeparator(paths.ObjDirectory)}{Path.DirectorySeparatorChar}"
+        );
         start.ArgumentList.Add($"/p:ProjectAssetsFile={paths.AssetsFile}");
     }
 
@@ -241,11 +259,13 @@ internal sealed class RepositoryCompilationGraphLoader
             if (!string.Equals(targetFramework, expectedTargetFramework, StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
-                    $"MSBuild base evaluation returned target framework '{targetFramework}', expected '{expectedTargetFramework}'.");
+                    $"MSBuild base evaluation returned target framework '{targetFramework}', expected '{expectedTargetFramework}'."
+                );
             }
             return value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         }
-        catch (Exception exception) when (exception is JsonException or KeyNotFoundException or InvalidOperationException)
+        catch (Exception exception)
+            when (exception is JsonException or KeyNotFoundException or InvalidOperationException)
         {
             throw new InvalidDataException("MSBuild base-property output is invalid.", exception);
         }
@@ -253,13 +273,16 @@ internal sealed class RepositoryCompilationGraphLoader
 
     private static string CanonicalDefineUnion(
         IReadOnlyCollection<string> baseDefines,
-        IReadOnlyCollection<string> additionalDefines) =>
+        IReadOnlyCollection<string> additionalDefines
+    ) =>
         string.Join(
             ";",
-            baseDefines.Concat(additionalDefines)
+            baseDefines
+                .Concat(additionalDefines)
                 .Where(value => !string.IsNullOrWhiteSpace(value))
                 .Distinct(StringComparer.Ordinal)
-                .OrderBy(value => value, StringComparer.Ordinal));
+                .OrderBy(value => value, StringComparer.Ordinal)
+        );
 
     private static CompilationGraphHashInputs BuildHashInputs(CompilationGraphHashEnvironment environment)
     {
@@ -269,28 +292,48 @@ internal sealed class RepositoryCompilationGraphLoader
         string repositoryRoot = environment.RepositoryRoot;
         string privateRoot = environment.PrivateRoot;
         string captureTarget = environment.CaptureTarget;
-        ProjectPaths[] projectPaths = graph.Projects
-            .Select(project => ValidateProjectInputs(repositoryRoot, project))
+        ProjectPaths[] projectPaths = graph
+            .Projects.Select(project => ValidateProjectInputs(repositoryRoot, project))
             .ToArray();
         LogicalPathRoots roots = InferLogicalRoots(repositoryRoot, privateRoot, captures.Values, projectPaths);
         GraphHashFile targetFile = ReadHashFile(captureTarget, roots, GraphHashFileKind.Text);
 
-        var projects = graph.Projects.Select(project => new ProjectHashInput(
-            project.Id,
-            LogicalPathTokens.FromAbsolute(Path.Combine(repositoryRoot, project.RelativePath), roots),
-            project.TargetFramework)).ToArray();
-        var profiles = graph.Profiles.Select(profile => new ProfileHashInput(profile.Id, profile.AdditionalSymbols)).ToArray();
+        var projects = graph
+            .Projects.Select(project => new ProjectHashInput(
+                project.Id,
+                LogicalPathTokens.FromAbsolute(Path.Combine(repositoryRoot, project.RelativePath), roots),
+                project.TargetFramework
+            ))
+            .ToArray();
+        var profiles = graph
+            .Profiles.Select(profile => new ProfileHashInput(profile.Id, profile.AdditionalSymbols))
+            .ToArray();
         var nodes = new List<NodeHashInput>(graph.Nodes.Count);
         foreach (RepositoryGraphNode node in graph.Nodes)
         {
             CapturedCompilerInputs capture = captures[node.Key];
             CompilerInputModel input = compilerInputs[node.Key];
             RepositoryProjectDefinition project = graph.Projects.Single(item => item.Id == node.ProjectId);
-            ProjectPaths paths = projectPaths.Single(item => string.Equals(
-                item.ProjectFile,
-                Path.GetFullPath(project.RelativePath, repositoryRoot),
-                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
-            nodes.Add(BuildNodeHashInput(graph, node, capture, input, compilerInputs, paths, roots, repositoryRoot, privateRoot));
+            ProjectPaths paths = projectPaths.Single(item =>
+                string.Equals(
+                    item.ProjectFile,
+                    Path.GetFullPath(project.RelativePath, repositoryRoot),
+                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                )
+            );
+            nodes.Add(
+                BuildNodeHashInput(
+                    graph,
+                    node,
+                    capture,
+                    input,
+                    compilerInputs,
+                    paths,
+                    roots,
+                    repositoryRoot,
+                    privateRoot
+                )
+            );
         }
 
         OptionalGraphHashFile lockFile = ReadLockFile(projectPaths, roots);
@@ -303,7 +346,8 @@ internal sealed class RepositoryCompilationGraphLoader
             graph.ProjectEdges,
             toolchain,
             targetFile,
-            lockFile);
+            lockFile
+        );
     }
 
     private static NodeHashInput BuildNodeHashInput(
@@ -315,55 +359,92 @@ internal sealed class RepositoryCompilationGraphLoader
         ProjectPaths paths,
         LogicalPathRoots roots,
         string repositoryRoot,
-        string privateRoot)
+        string privateRoot
+    )
     {
         var settings = capture.Properties.ToDictionary(
             pair => pair.Key,
             pair => NormalizeStableValue(pair.Key, pair.Value, roots),
-            StringComparer.Ordinal);
-        settings["ProfileSymbols"] = string.Join(";", node.Profile.AdditionalSymbols.OrderBy(symbol => symbol, StringComparer.Ordinal));
+            StringComparer.Ordinal
+        );
+        settings["ProfileSymbols"] = string.Join(
+            ";",
+            node.Profile.AdditionalSymbols.OrderBy(symbol => symbol, StringComparer.Ordinal)
+        );
 
-        var arguments = capture.Items["CscCommandLineArgs"]
+        var arguments = capture
+            .Items["CscCommandLineArgs"]
             .Select((item, ordinal) => new OrderedHashValue(ordinal, NormalizeArgument(item.Identity, roots)))
             .ToArray();
-        var sources = input.Sources.Select((source, ordinal) => new OrderedGraphHashFile(
-            ordinal,
-            new GraphHashFile(
-                LogicalPathTokens.FromAbsolute(source.Path, roots),
-                source.Content,
-                GraphHashFileKind.Text))).ToArray();
+        var sources = input
+            .Sources.Select(
+                (source, ordinal) =>
+                    new OrderedGraphHashFile(
+                        ordinal,
+                        new GraphHashFile(
+                            LogicalPathTokens.FromAbsolute(source.Path, roots),
+                            source.Content,
+                            GraphHashFileKind.Text
+                        )
+                    )
+            )
+            .ToArray();
 
         var references = BuildReferenceInputs(graph, node, compilerInputs, capture, roots, repositoryRoot);
         var projectReferences = BuildProjectReferences(graph, node, capture, repositoryRoot);
         var analyzers = BuildAnalyzerInputs(input, roots, repositoryRoot, node.TargetFramework);
-        var additionalFiles = BuildAuxiliaryFiles(input.AdditionalFiles, capture.Items["AdditionalFiles"], roots, repositoryRoot, GraphHashFileKind.Text);
+        var additionalFiles = BuildAuxiliaryFiles(
+            input.AdditionalFiles,
+            capture.Items["AdditionalFiles"],
+            roots,
+            repositoryRoot,
+            GraphHashFileKind.Text
+        );
         var editorConfigFiles = BuildAuxiliaryFiles(
             input.AnalyzerConfigs,
             capture.Items["EditorConfigFiles"],
             roots,
             repositoryRoot,
             GraphHashFileKind.Text,
-            admitAncestorEditorConfig: true);
+            admitAncestorEditorConfig: true
+        );
         if (editorConfigFiles.Count == 0)
         {
-            string generatedConfig = Path.Combine(privateRoot, SafeSegment(node.ProjectId), SafeSegment(node.Profile.Id), ".editorconfig");
+            string generatedConfig = Path.Combine(
+                privateRoot,
+                SafeSegment(node.ProjectId),
+                SafeSegment(node.Profile.Id),
+                ".editorconfig"
+            );
             string repositoryConfig = Path.Combine(repositoryRoot, ".editorconfig");
             if (!File.Exists(repositoryConfig))
                 throw new FileNotFoundException("Fallback analyzer configuration is missing.", repositoryConfig);
-            editorConfigFiles.Add(new GraphHashFile(
-                LogicalPathTokens.FromAbsolute(generatedConfig, roots),
-                ImmutableArray.CreateRange(File.ReadAllBytes(repositoryConfig)),
-                GraphHashFileKind.Text));
+            editorConfigFiles.Add(
+                new GraphHashFile(
+                    LogicalPathTokens.FromAbsolute(generatedConfig, roots),
+                    ImmutableArray.CreateRange(File.ReadAllBytes(repositoryConfig)),
+                    GraphHashFileKind.Text
+                )
+            );
         }
 
         ProjectPaths projectPath = paths;
-        var assets = new List<GraphHashFile>
-        {
-            ReadHashFile(projectPath.AssetsFile, roots, GraphHashFileKind.Json),
-        };
+        var assets = new List<GraphHashFile> { ReadHashFile(projectPath.AssetsFile, roots, GraphHashFileKind.Json) };
         string projectName = Path.GetFileNameWithoutExtension(projectPath.ProjectFile);
-        assets.Add(ReadHashFile(Path.Combine(projectPath.ObjDirectory, $"{projectName}.csproj.nuget.g.props"), roots, GraphHashFileKind.Text));
-        assets.Add(ReadHashFile(Path.Combine(projectPath.ObjDirectory, $"{projectName}.csproj.nuget.g.targets"), roots, GraphHashFileKind.Text));
+        assets.Add(
+            ReadHashFile(
+                Path.Combine(projectPath.ObjDirectory, $"{projectName}.csproj.nuget.g.props"),
+                roots,
+                GraphHashFileKind.Text
+            )
+        );
+        assets.Add(
+            ReadHashFile(
+                Path.Combine(projectPath.ObjDirectory, $"{projectName}.csproj.nuget.g.targets"),
+                roots,
+                GraphHashFileKind.Text
+            )
+        );
 
         var imports = new List<GraphHashFile>();
         foreach (string import in SplitMsBuildPaths(capture.Properties["MSBuildAllProjects"]))
@@ -386,7 +467,8 @@ internal sealed class RepositoryCompilationGraphLoader
             editorConfigFiles,
             Array.Empty<GraphHashFile>(),
             assets,
-            imports);
+            imports
+        );
     }
 
     private static List<ReferenceHashInput> BuildReferenceInputs(
@@ -395,16 +477,25 @@ internal sealed class RepositoryCompilationGraphLoader
         IReadOnlyDictionary<RepositoryGraphNodeKey, CompilerInputModel> compilerInputs,
         CapturedCompilerInputs capture,
         LogicalPathRoots roots,
-        string repositoryRoot)
+        string repositoryRoot
+    )
     {
         var result = new List<ReferenceHashInput>();
         IReadOnlyList<CapturedCompilerItem> captured = capture.Items["ReferencePathWithRefAssemblies"];
         var owned = TransitiveOwnedProjects(graph, node.ProjectId).ToHashSet(StringComparer.Ordinal);
         var everyOwnedAssemblyName = graph.Projects.ToDictionary(
             project => project.Id,
-            project => ProjectAssemblyName(project.Id, compilerInputs[graph.Nodes.First(item =>
-                item.ProjectId == project.Id && item.Profile.Id == node.Profile.Id).Key]),
-            StringComparer.Ordinal);
+            project =>
+                ProjectAssemblyName(
+                    project.Id,
+                    compilerInputs[
+                        graph
+                            .Nodes.First(item => item.ProjectId == project.Id && item.Profile.Id == node.Profile.Id)
+                            .Key
+                    ]
+                ),
+            StringComparer.Ordinal
+        );
         var admittedOwnedAssemblyNames = everyOwnedAssemblyName
             .Where(pair => owned.Contains(pair.Key))
             .ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.OrdinalIgnoreCase);
@@ -417,39 +508,58 @@ internal sealed class RepositoryCompilationGraphLoader
             string fileName = Path.GetFileNameWithoutExtension(path);
             if (admittedOwnedAssemblyNames.ContainsKey(fileName))
                 continue;
-            if (everyOwnedAssemblyName.Values.Any(name => string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)))
-                throw new InvalidDataException($"Owned binary reference '{capturedPath}' was not matched to an admitted project edge.");
-            string assemblyIdentity = metadata.TryGetValue("FusionName", out string? fusionName) && !string.IsNullOrWhiteSpace(fusionName)
-                ? fusionName
-                : metadata.TryGetValue("Name", out string? name) && !string.IsNullOrWhiteSpace(name)
-                    ? name
-                    : identity is not null && !Path.IsPathFullyQualified(identity)
-                        ? identity
-                        : Path.GetFileNameWithoutExtension(path);
+            if (
+                everyOwnedAssemblyName.Values.Any(name =>
+                    string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase)
+                )
+            )
+            {
+                throw new InvalidDataException(
+                    $"Owned binary reference '{capturedPath}' was not matched to an admitted project edge."
+                );
+            }
+            string assemblyIdentity =
+                metadata.TryGetValue("FusionName", out string? fusionName) && !string.IsNullOrWhiteSpace(fusionName)
+                    ? fusionName
+                : metadata.TryGetValue("Name", out string? name) && !string.IsNullOrWhiteSpace(name) ? name
+                : identity is not null && !Path.IsPathFullyQualified(identity) ? identity
+                : Path.GetFileNameWithoutExtension(path);
             string logical = LogicalPathTokens.FromAbsolute(path, roots);
             var aliases = metadata.TryGetValue("Aliases", out string? aliasesText)
-                ? aliasesText.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                ? aliasesText.Split(
+                    new[] { ';', ',' },
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
+                )
                 : Array.Empty<string>();
-            bool embedInterop = metadata.TryGetValue("EmbedInteropTypes", out string? embed)
-                && bool.TryParse(embed, out bool parsedEmbed) && parsedEmbed;
-            result.Add(new ReferenceHashInput(
-                assemblyIdentity,
-                new GraphHashFile(logical, ImmutableArray.CreateRange(File.ReadAllBytes(path)), GraphHashFileKind.Binary),
-                aliases,
-                embedInterop));
+            bool embedInterop =
+                metadata.TryGetValue("EmbedInteropTypes", out string? embed)
+                && bool.TryParse(embed, out bool parsedEmbed)
+                && parsedEmbed;
+            result.Add(
+                new ReferenceHashInput(
+                    assemblyIdentity,
+                    new GraphHashFile(
+                        logical,
+                        ImmutableArray.CreateRange(File.ReadAllBytes(path)),
+                        GraphHashFileKind.Binary
+                    ),
+                    aliases,
+                    embedInterop
+                )
+            );
         }
         return result;
     }
 
     private static IEnumerable<string> TransitiveOwnedProjects(RepositoryCompilationGraph graph, string projectId)
     {
-        var outgoing = graph.ProjectEdges
-            .GroupBy(edge => edge.FromProjectId)
+        var outgoing = graph
+            .ProjectEdges.GroupBy(edge => edge.FromProjectId)
             .ToDictionary(group => group.Key, group => group.Select(edge => edge.ToProjectId), StringComparer.Ordinal);
         var visited = new HashSet<string>(StringComparer.Ordinal);
-        var pending = new Stack<string>(outgoing.TryGetValue(projectId, out IEnumerable<string>? direct)
-            ? direct
-            : Array.Empty<string>());
+        var pending = new Stack<string>(
+            outgoing.TryGetValue(projectId, out IEnumerable<string>? direct) ? direct : Array.Empty<string>()
+        );
         while (pending.Count != 0)
         {
             string project = pending.Pop();
@@ -484,17 +594,21 @@ internal sealed class RepositoryCompilationGraphLoader
         RepositoryCompilationGraph graph,
         RepositoryGraphNode node,
         CapturedCompilerInputs capture,
-        string repositoryRoot)
+        string repositoryRoot
+    )
     {
         var result = new List<ProjectReferenceHashInput>();
         foreach (CapturedCompilerItem item in capture.Items["ProjectReference"])
         {
             string path = item.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : item.Identity;
-            string? projectId = graph.Projects
-                .Where(project => string.Equals(
-                Path.GetFullPath(path, repositoryRoot),
-                    Path.GetFullPath(project.RelativePath, repositoryRoot),
-                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            string? projectId = graph
+                .Projects.Where(project =>
+                    string.Equals(
+                        Path.GetFullPath(path, repositoryRoot),
+                        Path.GetFullPath(project.RelativePath, repositoryRoot),
+                        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+                    )
+                )
                 .Select(project => project.Id)
                 .SingleOrDefault();
             if (projectId is null)
@@ -504,7 +618,9 @@ internal sealed class RepositoryCompilationGraphLoader
         if (result.Count == 0)
         {
             RepositoryProjectDefinition project = graph.Projects.Single(item => item.Id == node.ProjectId);
-            result.AddRange(project.DirectOwnedReferences.Select(reference => new ProjectReferenceHashInput(reference)));
+            result.AddRange(
+                project.DirectOwnedReferences.Select(reference => new ProjectReferenceHashInput(reference))
+            );
         }
         return result;
     }
@@ -513,7 +629,8 @@ internal sealed class RepositoryCompilationGraphLoader
         CompilerInputModel input,
         LogicalPathRoots roots,
         string repositoryRoot,
-        string targetFramework)
+        string targetFramework
+    )
     {
         var inspections = input.Analyzers.ToList();
         if (inspections.Count == 0 && targetFramework == "net10.0")
@@ -533,12 +650,16 @@ internal sealed class RepositoryCompilationGraphLoader
         foreach (AnalyzerMetadataInspection inspection in inspections)
         {
             string path = ResolveCapturePath(inspection.Path, roots, repositoryRoot);
-            result.Add(new AnalyzerHashInput(
-                inspection.AssemblyIdentity,
-                new GraphHashFile(
-                    LogicalPathTokens.FromAbsolute(path, roots),
-                    ImmutableArray.CreateRange(File.ReadAllBytes(path)),
-                    GraphHashFileKind.Binary)));
+            result.Add(
+                new AnalyzerHashInput(
+                    inspection.AssemblyIdentity,
+                    new GraphHashFile(
+                        LogicalPathTokens.FromAbsolute(path, roots),
+                        ImmutableArray.CreateRange(File.ReadAllBytes(path)),
+                        GraphHashFileKind.Binary
+                    )
+                )
+            );
         }
         return result;
     }
@@ -549,17 +670,25 @@ internal sealed class RepositoryCompilationGraphLoader
         LogicalPathRoots roots,
         string repositoryRoot,
         GraphHashFileKind kind,
-        bool admitAncestorEditorConfig = false)
+        bool admitAncestorEditorConfig = false
+    )
     {
         var result = new List<GraphHashFile>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach ((string path, ImmutableArray<byte> content) in inputs.Select(item => (item.Path, item.Content)).Concat(
-            captured.Select(item =>
-            {
-                string path = item.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : item.Identity;
-                path = ResolveCapturePath(path, roots, repositoryRoot);
-                return (path, ImmutableArray.CreateRange(File.ReadAllBytes(path)));
-            })))
+        foreach (
+            (string path, ImmutableArray<byte> content) in inputs
+                .Select(item => (item.Path, item.Content))
+                .Concat(
+                    captured.Select(item =>
+                    {
+                        string path = item.Metadata.TryGetValue("FullPath", out string? fullPath)
+                            ? fullPath
+                            : item.Identity;
+                        path = ResolveCapturePath(path, roots, repositoryRoot);
+                        return (path, ImmutableArray.CreateRange(File.ReadAllBytes(path)));
+                    })
+                )
+        )
         {
             // Only EditorConfigFiles admits an ancestor .editorconfig; every other auxiliary kind still fails closed.
             string logical = admitAncestorEditorConfig
@@ -582,7 +711,8 @@ internal sealed class RepositoryCompilationGraphLoader
 
     private static ToolchainHashInput BuildToolchainHashInput(
         IEnumerable<CapturedCompilerInputs> captures,
-        LogicalPathRoots roots)
+        LogicalPathRoots roots
+    )
     {
         CapturedCompilerInputs first = captures.First();
         string roslynPath = first.Properties["RoslynAssembliesPath"];
@@ -602,15 +732,21 @@ internal sealed class RepositoryCompilationGraphLoader
             files.Add(ReadHashFile(path, roots, GraphHashFileKind.Binary));
         }
         if (files.Count == 0)
-            throw new FileNotFoundException("The captured Roslyn toolchain contains no compiler assemblies.", actualRoslynPath);
+        {
+            throw new FileNotFoundException(
+                "The captured Roslyn toolchain contains no compiler assemblies.",
+                actualRoslynPath
+            );
+        }
 
         string compilerPath = first.Properties["CscToolPath"];
         string compilerIdentity = string.IsNullOrWhiteSpace(compilerPath)
             ? "csc:dotnet"
             : "csc:" + NormalizeStableValue("CscToolPath", compilerPath, roots);
         string loaderAssembly = typeof(RepositoryCompilationGraphLoader).Assembly.Location;
-        string loaderIdentity = typeof(RepositoryCompilationGraphLoader).Assembly.GetName().FullName ??
-            typeof(RepositoryCompilationGraphLoader).FullName!;
+        string loaderIdentity =
+            typeof(RepositoryCompilationGraphLoader).Assembly.GetName().FullName
+            ?? typeof(RepositoryCompilationGraphLoader).FullName!;
         if (File.Exists(loaderAssembly))
         {
             loaderIdentity += "|mvid:" + typeof(RepositoryCompilationGraphLoader).Module.ModuleVersionId.ToString("D");
@@ -622,12 +758,11 @@ internal sealed class RepositoryCompilationGraphLoader
             "roslyn:" + roslynLogical,
             compilerIdentity,
             loaderIdentity,
-            files);
+            files
+        );
     }
 
-    private static OptionalGraphHashFile ReadLockFile(
-        IReadOnlyList<ProjectPaths> paths,
-        LogicalPathRoots roots)
+    private static OptionalGraphHashFile ReadLockFile(IReadOnlyList<ProjectPaths> paths, LogicalPathRoots roots)
     {
         foreach (ProjectPaths project in paths)
         {
@@ -642,7 +777,8 @@ internal sealed class RepositoryCompilationGraphLoader
         string repositoryRoot,
         string privateRoot,
         IEnumerable<CapturedCompilerInputs> captures,
-        IReadOnlyList<ProjectPaths> projectPaths)
+        IReadOnlyList<ProjectPaths> projectPaths
+    )
     {
         var sdkCandidates = new List<string>();
         foreach (CapturedCompilerInputs capture in captures)
@@ -652,7 +788,9 @@ internal sealed class RepositoryCompilationGraphLoader
                 sdkCandidates.Add(roslyn);
             foreach (CapturedCompilerItem reference in capture.Items["ReferencePathWithRefAssemblies"])
             {
-                string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : reference.Identity;
+                string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath)
+                    ? fullPath
+                    : reference.Identity;
                 if (Path.IsPathFullyQualified(path))
                     sdkCandidates.Add(path);
             }
@@ -660,9 +798,7 @@ internal sealed class RepositoryCompilationGraphLoader
         string parserPath = typeof(CSharpCommandLineInputParser).Assembly.Location;
         if (Path.IsPathFullyQualified(parserPath))
             sdkCandidates.Add(parserPath);
-        string? sdkRoot = sdkCandidates
-            .Select(FindDotnetRoot)
-            .FirstOrDefault(path => path is not null);
+        string? sdkRoot = sdkCandidates.Select(FindDotnetRoot).FirstOrDefault(path => path is not null);
         if (sdkRoot is null)
             throw new InvalidDataException("Unable to infer a unique SDK root from captured compiler inputs.");
 
@@ -670,7 +806,10 @@ internal sealed class RepositoryCompilationGraphLoader
         foreach (ProjectPaths project in projectPaths)
         {
             using JsonDocument assets = JsonDocument.Parse(File.ReadAllBytes(project.AssetsFile));
-            if (assets.RootElement.TryGetProperty("packageFolders", out JsonElement folders) && folders.ValueKind == JsonValueKind.Object)
+            if (
+                assets.RootElement.TryGetProperty("packageFolders", out JsonElement folders)
+                && folders.ValueKind == JsonValueKind.Object
+            )
             {
                 foreach (JsonProperty folder in folders.EnumerateObject())
                 {
@@ -687,7 +826,9 @@ internal sealed class RepositoryCompilationGraphLoader
         {
             foreach (CapturedCompilerItem reference in capture.Items["ReferencePathWithRefAssemblies"])
             {
-                string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath) ? fullPath : reference.Identity;
+                string path = reference.Metadata.TryGetValue("FullPath", out string? fullPath)
+                    ? fullPath
+                    : reference.Identity;
                 if (!Path.IsPathFullyQualified(path))
                     continue;
                 string? root = FindPackageRoot(path);
@@ -710,12 +851,15 @@ internal sealed class RepositoryCompilationGraphLoader
     private static string? FindPackageRoot(string path)
     {
         string fullPath = Path.GetFullPath(path);
-        string[] segments = LogicalPathTokens.NormalizeAbsolute(fullPath)
+        string[] segments = LogicalPathTokens
+            .NormalizeAbsolute(fullPath)
             .Split('/', StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < segments.Length; i++)
         {
-            if (!string.Equals(segments[i], "packages", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(segments[i], "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
+            if (
+                !string.Equals(segments[i], "packages", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(segments[i], "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase)
+            )
             {
                 continue;
             }
@@ -727,15 +871,23 @@ internal sealed class RepositoryCompilationGraphLoader
             root = LogicalPathTokens.NormalizeAbsolute(root);
             string relative = fullPath.Length == root.Length ? string.Empty : fullPath[(root.Length + 1)..];
             string[] package = relative.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
-            if (package.Length >= 2 && IsPackageSegment(package[0]) && IsPackageSegment(package[1]) && Directory.Exists(root))
+            if (
+                package.Length >= 2
+                && IsPackageSegment(package[0])
+                && IsPackageSegment(package[1])
+                && Directory.Exists(root)
+            )
+            {
                 return root;
+            }
         }
         return null;
     }
 
     private static bool IsPackageSegment(string value) =>
-        !string.IsNullOrWhiteSpace(value) && value is not "." and not ".." &&
-        value.IndexOfAny(new[] { '/', '\\', ':', '*', '?', '"', '<', '>', '|' }) < 0;
+        !string.IsNullOrWhiteSpace(value)
+        && value is not "." and not ".."
+        && value.IndexOfAny(new[] { '/', '\\', ':', '*', '?', '"', '<', '>', '|' }) < 0;
 
     private static string? FindDotnetRoot(string path)
     {
@@ -754,7 +906,10 @@ internal sealed class RepositoryCompilationGraphLoader
             return null;
         string normalized = LogicalPathTokens.NormalizeAbsolute(fullPath);
         string[] segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        int sdkIndex = Array.FindIndex(segments, segment => string.Equals(segment, "sdk", StringComparison.OrdinalIgnoreCase));
+        int sdkIndex = Array.FindIndex(
+            segments,
+            segment => string.Equals(segment, "sdk", StringComparison.OrdinalIgnoreCase)
+        );
         if (sdkIndex < 0)
             return null;
         string root = normalized.StartsWith("/", StringComparison.Ordinal)
@@ -767,7 +922,8 @@ internal sealed class RepositoryCompilationGraphLoader
         {
             ValidateNoReparsePoints(normalizedRoot, fullPath);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
+        catch (Exception exception)
+            when (exception is IOException or UnauthorizedAccessException or InvalidDataException)
         {
             return null;
         }
@@ -779,16 +935,14 @@ internal sealed class RepositoryCompilationGraphLoader
         string packs = Path.Combine(sdkRoot, "packs", "Microsoft.NETCore.App.Ref");
         if (!Directory.Exists(packs))
             return null;
-        return Directory.EnumerateDirectories(packs)
+        return Directory
+            .EnumerateDirectories(packs)
             .OrderByDescending(path => Path.GetFileName(path), StringComparer.Ordinal)
             .Select(path => Path.Combine(path, "analyzers", "dotnet", "cs"))
             .FirstOrDefault(Directory.Exists);
     }
 
-    private static GraphHashFile ReadHashFile(
-        string path,
-        LogicalPathRoots roots,
-        GraphHashFileKind kind)
+    private static GraphHashFile ReadHashFile(string path, LogicalPathRoots roots, GraphHashFileKind kind)
     {
         string fullPath = Path.GetFullPath(path);
         if (!File.Exists(fullPath))
@@ -798,7 +952,8 @@ internal sealed class RepositoryCompilationGraphLoader
         return new GraphHashFile(
             LogicalPathTokens.FromAbsolute(fullPath, roots),
             ImmutableArray.CreateRange(File.ReadAllBytes(fullPath)),
-            kind);
+            kind
+        );
     }
 
     private static string FindAdmittedRoot(string fullPath, LogicalPathRoots roots)
@@ -814,8 +969,13 @@ internal sealed class RepositoryCompilationGraphLoader
             throw new InvalidDataException($"Hash input '{fullPath}' is outside all admitted roots.");
         if (candidates.Count == 1)
             return candidates[0].Root;
-        if (!candidates.All(candidate => candidate.IsNuGet) ||
-            candidates.Select(candidate => candidate.PackageIdentity).Distinct(StringComparer.OrdinalIgnoreCase).Count() != 1)
+        if (
+            !candidates.All(candidate => candidate.IsNuGet)
+            || candidates
+                .Select(candidate => candidate.PackageIdentity)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count() != 1
+        )
         {
             throw new InvalidDataException($"Hash input '{fullPath}' has ambiguous admitted roots.");
         }
@@ -828,10 +988,15 @@ internal sealed class RepositoryCompilationGraphLoader
             string? identity = null;
             if (isNuGet)
             {
-                string relative = normalizedPath.Length == root.Length ? string.Empty : normalizedPath[(root.Length + 1)..];
+                string relative =
+                    normalizedPath.Length == root.Length ? string.Empty : normalizedPath[(root.Length + 1)..];
                 string[] segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
                 if (segments.Length < 2)
-                    throw new InvalidDataException($"NuGet hash input '{fullPath}' is not decomposable into package ID and version.");
+                {
+                    throw new InvalidDataException(
+                        $"NuGet hash input '{fullPath}' is not decomposable into package ID and version."
+                    );
+                }
                 identity = segments[0] + "/" + segments[1];
             }
             candidates.Add((root, isNuGet, identity));
@@ -864,7 +1029,11 @@ internal sealed class RepositoryCompilationGraphLoader
     {
         string[] segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
         if (segments.Length < 2)
-            throw new InvalidDataException($"NuGet logical path '{relative}' is not decomposable into package ID and version.");
+        {
+            throw new InvalidDataException(
+                $"NuGet logical path '{relative}' is not decomposable into package ID and version."
+            );
+        }
         foreach (string root in roots.NuGetRoots)
         {
             string candidate = Path.Combine(root, segments[0], segments[1]);
@@ -895,7 +1064,10 @@ internal sealed class RepositoryCompilationGraphLoader
             string[] parts = tail.Split('=', 2);
             if (Path.IsPathFullyQualified(parts[^1]))
             {
-                parts[^1] = LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(Path.GetFullPath(parts[^1]), roots);
+                parts[^1] = LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(
+                    Path.GetFullPath(parts[^1]),
+                    roots
+                );
                 return prefix + string.Join('=', parts);
             }
         }
@@ -913,32 +1085,33 @@ internal sealed class RepositoryCompilationGraphLoader
         return value;
     }
 
-    private static string NormalizeLogicalPath(string value) =>
-        value.Replace('\\', '/');
+    private static string NormalizeLogicalPath(string value) => value.Replace('\\', '/');
 
     private static IEnumerable<string> SplitMsBuildPaths(string value) =>
         value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-    private static ProjectPaths ValidateProjectInputs(
-        string repositoryRoot,
-        RepositoryProjectDefinition project)
+    private static ProjectPaths ValidateProjectInputs(string repositoryRoot, RepositoryProjectDefinition project)
     {
         string projectFile = ResolveRepositoryFile(repositoryRoot, project.RelativePath);
-        string projectDirectory = Path.GetDirectoryName(projectFile)
-            ?? throw new InvalidDataException("Project path has no directory.");
-        string objDirectory = ResolveRepositoryDirectory(repositoryRoot, Path.Combine(
-            Path.GetRelativePath(repositoryRoot, projectDirectory),
-            "obj"));
-        string assetsFile = ResolveRepositoryFile(repositoryRoot, Path.Combine(
-            Path.GetRelativePath(repositoryRoot, objDirectory),
-            "project.assets.json"));
+        string projectDirectory =
+            Path.GetDirectoryName(projectFile) ?? throw new InvalidDataException("Project path has no directory.");
+        string objDirectory = ResolveRepositoryDirectory(
+            repositoryRoot,
+            Path.Combine(Path.GetRelativePath(repositoryRoot, projectDirectory), "obj")
+        );
+        string assetsFile = ResolveRepositoryFile(
+            repositoryRoot,
+            Path.Combine(Path.GetRelativePath(repositoryRoot, objDirectory), "project.assets.json")
+        );
         string projectName = Path.GetFileNameWithoutExtension(projectFile);
-        ResolveRepositoryFile(repositoryRoot, Path.Combine(
-            Path.GetRelativePath(repositoryRoot, objDirectory),
-            $"{projectName}.csproj.nuget.g.props"));
-        ResolveRepositoryFile(repositoryRoot, Path.Combine(
-            Path.GetRelativePath(repositoryRoot, objDirectory),
-            $"{projectName}.csproj.nuget.g.targets"));
+        ResolveRepositoryFile(
+            repositoryRoot,
+            Path.Combine(Path.GetRelativePath(repositoryRoot, objDirectory), $"{projectName}.csproj.nuget.g.props")
+        );
+        ResolveRepositoryFile(
+            repositoryRoot,
+            Path.Combine(Path.GetRelativePath(repositoryRoot, objDirectory), $"{projectName}.csproj.nuget.g.targets")
+        );
         ValidateAssetsTarget(assetsFile, project.TargetFramework);
         return new ProjectPaths(projectFile, objDirectory, assetsFile);
     }
@@ -1005,9 +1178,12 @@ internal sealed class RepositoryCompilationGraphLoader
         if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathFullyQualified(relative))
             throw new InvalidDataException("Path escapes its validated root.");
         string current = root;
-        foreach (string segment in relative.Split(
-            new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
-            StringSplitOptions.RemoveEmptyEntries))
+        foreach (
+            string segment in relative.Split(
+                new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
+                StringSplitOptions.RemoveEmptyEntries
+            )
+        )
         {
             current = Path.Combine(current, segment);
             if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)

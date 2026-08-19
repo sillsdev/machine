@@ -113,7 +113,10 @@ public sealed class EvidenceLedgerTests
     public void AMalformedLineIsRefused()
     {
         string path = Path.Combine(_repositoryRoot, "conformance", "semantic-coverage-evidence.tsv");
-        File.WriteAllText(path, "item_id\tkind\tfixture\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome\tmutation\tverdict\ntoo-few-fields\tSurface\n");
+        File.WriteAllText(
+            path,
+            "item_id\tkind\tfixture\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome\tmutation\tverdict\ntoo-few-fields\tSurface\n"
+        );
 
         Assert.Throws<FormatException>(() => EvidenceLedger.Read(_repositoryRoot));
     }

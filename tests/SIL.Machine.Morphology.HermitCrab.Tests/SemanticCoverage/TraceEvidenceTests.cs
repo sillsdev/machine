@@ -68,13 +68,17 @@ public sealed class TraceEvidenceTests
         XDocument grammar = Grammar("isActive=\"no\"");
 
         Assert.That(
-            TraceEvidence.Grade("fx", grammar, inventory, Array.Empty<string>(), true, new[] { "mrLive" })
-                .Single().Strength,
+            TraceEvidence
+                .Grade("fx", grammar, inventory, Array.Empty<string>(), true, new[] { "mrLive" })
+                .Single()
+                .Strength,
             Is.EqualTo(EvidenceStrength.NegativeControl)
         );
         Assert.That(
-            TraceEvidence.Grade("fx", grammar, inventory, Array.Empty<string>(), true, Array.Empty<string>())
-                .Single().Strength,
+            TraceEvidence
+                .Grade("fx", grammar, inventory, Array.Empty<string>(), true, Array.Empty<string>())
+                .Single()
+                .Strength,
             Is.EqualTo(EvidenceStrength.Presence),
             "a decoy no word names is not evidence"
         );
@@ -87,13 +91,17 @@ public sealed class TraceEvidenceTests
         var grammar = XDocument.Parse("<Strata><Stratum cyclicity=\"cyclic\"><Name>n</Name></Stratum></Strata>");
 
         Assert.That(
-            TraceEvidence.Grade("fx", grammar, inventory, Array.Empty<string>(), hasVerifiedParse: false, Array.Empty<string>())
-                .Single().Strength,
+            TraceEvidence
+                .Grade("fx", grammar, inventory, Array.Empty<string>(), hasVerifiedParse: false, Array.Empty<string>())
+                .Single()
+                .Strength,
             Is.EqualTo(EvidenceStrength.Presence)
         );
         Assert.That(
-            TraceEvidence.Grade("fx", grammar, inventory, Array.Empty<string>(), hasVerifiedParse: true, Array.Empty<string>())
-                .Single().Strength,
+            TraceEvidence
+                .Grade("fx", grammar, inventory, Array.Empty<string>(), hasVerifiedParse: true, Array.Empty<string>())
+                .Single()
+                .Strength,
             Is.EqualTo(EvidenceStrength.Structural)
         );
     }

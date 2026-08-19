@@ -18,7 +18,8 @@ public static class GraphSemanticCensus
     public static SemanticInventory Read(
         string repositoryRoot,
         IReadOnlyList<string> auditedScopes,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
         ArgumentNullException.ThrowIfNull(auditedScopes);
@@ -29,7 +30,8 @@ public static class GraphSemanticCensus
             {
                 throw new ArgumentException(
                     $"Audited source scope '{scope}' must be exact; patterns are not allowed.",
-                    nameof(auditedScopes));
+                    nameof(auditedScopes)
+                );
             }
         }
 
@@ -43,13 +45,15 @@ public static class GraphSemanticCensus
         // internals; an empty scope list names nothing to census rather than "census
         // everything", so the C# reader (which requires at least one exact scope) is skipped
         // and the composed inventory is the DTD's surfaces alone.
-        SemanticInventory csharp = auditedScopes.Count == 0
-            ? new SemanticInventory(string.Empty, string.Empty, Array.Empty<InventorySurface>())
-            : CSharpInventoryReader.ReadFromGraph(graph, captured, repositoryRoot, CensusedProjects, auditedScopes);
+        SemanticInventory csharp =
+            auditedScopes.Count == 0
+                ? new SemanticInventory(string.Empty, string.Empty, Array.Empty<InventorySurface>())
+                : CSharpInventoryReader.ReadFromGraph(graph, captured, repositoryRoot, CensusedProjects, auditedScopes);
 
         string dtdPath = GrammarCoverageGate.DtdRelativePath;
         string dtdText = File.ReadAllText(
-            Path.Combine(repositoryRoot, dtdPath.Replace('/', Path.DirectorySeparatorChar)));
+            Path.Combine(repositoryRoot, dtdPath.Replace('/', Path.DirectorySeparatorChar))
+        );
         return SemanticCoverageInventory.Compose(dtdPath, dtdText, csharp, captured.Hashes.GraphHash);
     }
 }

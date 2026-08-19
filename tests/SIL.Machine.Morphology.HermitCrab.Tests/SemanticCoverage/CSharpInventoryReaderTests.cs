@@ -7,6 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab;
 public sealed class CSharpInventoryReaderTests
 {
     private const string Dtd = "<!ELEMENT Root EMPTY>";
+
     [Test]
     public void SemanticCompilationUsesCanonicalOverloadAndDistinguishesLiteralAndDynamicElementNames()
     {
@@ -31,16 +32,27 @@ public sealed class CSharpInventoryReaderTests
             new SemanticCoverageSourceSet(
                 "fixture.dtd",
                 Dtd,
-                new[] { new CSharpInventoryInput("loader.cs", Source, new[] { "Fixture.Loader.Load(System.String)", "Fixture.Loader.Load(System.Int32)" }) }
+                new[]
+                {
+                    new CSharpInventoryInput(
+                        "loader.cs",
+                        Source,
+                        new[] { "Fixture.Loader.Load(System.String)", "Fixture.Loader.Load(System.Int32)" }
+                    ),
+                }
             )
         );
 
-        Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain(
-            "source:dynamic-xml-access/Fixture.Loader.Load(System.String)/Element#0"));
-        Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain(
-            "loader:Fixture.Loader.Load(System.Int32)/Element/name#0"));
-        var xmlParents = inventory.Surfaces
-            .Where(surface => surface.Kind is "xml-read" or "dynamic-xml-access")
+        Assert.That(
+            inventory.Surfaces.Select(surface => surface.Id),
+            Does.Contain("source:dynamic-xml-access/Fixture.Loader.Load(System.String)/Element#0")
+        );
+        Assert.That(
+            inventory.Surfaces.Select(surface => surface.Id),
+            Does.Contain("loader:Fixture.Loader.Load(System.Int32)/Element/name#0")
+        );
+        var xmlParents = inventory
+            .Surfaces.Where(surface => surface.Kind is "xml-read" or "dynamic-xml-access")
             .Select(surface => surface.Parent)
             .Where(parent => parent is not null)
             .ToArray();
@@ -81,8 +93,8 @@ public sealed class CSharpInventoryReaderTests
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
             new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source) })
         );
-        var loaderSurfaces = inventory.Surfaces
-            .Where(surface => surface.Parent == "Fixture.Loader.Read(System.Xml.Linq.XElement,System.String)")
+        var loaderSurfaces = inventory
+            .Surfaces.Where(surface => surface.Parent == "Fixture.Loader.Read(System.Xml.Linq.XElement,System.String)")
             .ToArray();
         Assert.That(
             loaderSurfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
@@ -90,28 +102,49 @@ public sealed class CSharpInventoryReaderTests
         );
         Assert.That(loaderSurfaces.Count(surface => surface.Kind == "dynamic-xml-access"), Is.EqualTo(1));
         Assert.That(loaderSurfaces.Count(surface => surface.Kind == "xml-all-elements"), Is.EqualTo(1));
-        Assert.That(loaderSurfaces.Any(surface => surface.Parent?.StartsWith("Fixture.Unrelated", StringComparison.Ordinal) == true), Is.False);
+        Assert.That(
+            loaderSurfaces.Any(surface =>
+                surface.Parent?.StartsWith("Fixture.Unrelated", StringComparison.Ordinal) == true
+            ),
+            Is.False
+        );
         Assert.That(inventory.Surfaces.Any(surface => surface.Id.Contains("fake", StringComparison.Ordinal)), Is.False);
 
-        const string Unresolved = "namespace Fixture; public sealed class Loader { public void Read(XElement xml) { xml.Element(\"x\"); } }";
+        const string Unresolved =
+            "namespace Fixture; public sealed class Loader { public void Read(XElement xml) { xml.Element(\"x\"); } }";
         SemanticInventory unresolved = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("unresolved.cs", Unresolved) })
+            new SemanticCoverageSourceSet(
+                "fixture.dtd",
+                Dtd,
+                new[] { new CSharpInventoryInput("unresolved.cs", Unresolved) }
+            )
         );
         Assert.That(unresolved.Surfaces.Count(surface => surface.Kind == "unresolved-xml-access"), Is.EqualTo(1));
 
         const string UnresolvedAlias =
             "using X = Missing.XElement; namespace Fixture; public sealed class Loader { public void Read(X xml) { xml.Element(\"x\"); } }";
         SemanticInventory unresolvedAlias = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("unresolved-alias.cs", UnresolvedAlias) })
+            new SemanticCoverageSourceSet(
+                "fixture.dtd",
+                Dtd,
+                new[] { new CSharpInventoryInput("unresolved-alias.cs", UnresolvedAlias) }
+            )
         );
         Assert.That(unresolvedAlias.Surfaces.Count(surface => surface.Kind == "unresolved-xml-access"), Is.EqualTo(1));
 
         const string UnresolvedAliasChain =
             "using A = Missing.XElement; using B = A; namespace Fixture; public sealed class Loader { public void Read(B xml) { xml.Element(\"x\"); } }";
         SemanticInventory unresolvedAliasChain = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("unresolved-chain.cs", UnresolvedAliasChain) })
+            new SemanticCoverageSourceSet(
+                "fixture.dtd",
+                Dtd,
+                new[] { new CSharpInventoryInput("unresolved-chain.cs", UnresolvedAliasChain) }
+            )
         );
-        Assert.That(unresolvedAliasChain.Surfaces.Count(surface => surface.Kind == "unresolved-xml-access"), Is.EqualTo(1));
+        Assert.That(
+            unresolvedAliasChain.Surfaces.Count(surface => surface.Kind == "unresolved-xml-access"),
+            Is.EqualTo(1)
+        );
     }
 
     [Test]
@@ -140,8 +173,8 @@ public sealed class CSharpInventoryReaderTests
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
             new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source) })
         );
-        var markers = inventory.Surfaces
-            .Where(surface => surface.Kind == "branch-marker")
+        var markers = inventory
+            .Surfaces.Where(surface => surface.Kind == "branch-marker")
             .Select(surface => surface.Name)
             .ToArray();
         Assert.That(markers, Is.EquivalentTo(new[] { "alias", "global", "static" }));
@@ -161,7 +194,11 @@ public sealed class CSharpInventoryReaderTests
 
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("fixture.cs", Source) }
+                )
             )
         );
 
@@ -179,7 +216,11 @@ public sealed class CSharpInventoryReaderTests
             """;
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("dynamic.cs", DynamicTarget) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("dynamic.cs", DynamicTarget) }
+                )
             )
         );
 
@@ -187,7 +228,11 @@ public sealed class CSharpInventoryReaderTests
             "namespace Fixture; public sealed class Loader { public void Run() { SemanticBranch.Hit(\"missing\"); } }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("unresolved.cs", UnresolvedTarget) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("unresolved.cs", UnresolvedTarget) }
+                )
             )
         );
 
@@ -195,7 +240,11 @@ public sealed class CSharpInventoryReaderTests
             "using SB = Missing.SemanticBranch; namespace Fixture; public sealed class Loader { public void Run() { SB.Hit(\"missing\"); } }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("alias.cs", UnresolvedAlias) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("alias.cs", UnresolvedAlias) }
+                )
             )
         );
 
@@ -203,7 +252,11 @@ public sealed class CSharpInventoryReaderTests
             "using static Missing.SemanticBranch; namespace Fixture; public sealed class Loader { public void Run() { Hit(\"missing\"); } }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("static.cs", UnresolvedStatic) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("static.cs", UnresolvedStatic) }
+                )
             )
         );
 
@@ -211,7 +264,11 @@ public sealed class CSharpInventoryReaderTests
             "using A = Missing.SemanticBranch; using B = A; namespace Fixture; public sealed class Loader { public void Run() { B.Hit(\"missing\"); } }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("alias-chain.cs", UnresolvedAliasChain) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("alias-chain.cs", UnresolvedAliasChain) }
+                )
             )
         );
     }
@@ -233,21 +290,34 @@ public sealed class CSharpInventoryReaderTests
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
             new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source) })
         );
-        Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("model:rule/Fixture.Concrete/IHCRule"));
-        Assert.That(inventory.Surfaces.Any(surface => surface.Id.Contains("Fixture.Unrelated", StringComparison.Ordinal)), Is.False);
+        Assert.That(
+            inventory.Surfaces.Select(surface => surface.Id),
+            Does.Contain("model:rule/Fixture.Concrete/IHCRule")
+        );
+        Assert.That(
+            inventory.Surfaces.Any(surface => surface.Id.Contains("Fixture.Unrelated", StringComparison.Ordinal)),
+            Is.False
+        );
 
         const string Broken = "namespace Fixture; public sealed class Broken : IHCRule { }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("broken.cs", Broken) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("broken.cs", Broken) }
+                )
             )
         );
 
-        const string BrokenAlias =
-            "using R = Missing.IHCRule; namespace Fixture; public sealed class Broken : R { }";
+        const string BrokenAlias = "using R = Missing.IHCRule; namespace Fixture; public sealed class Broken : R { }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("broken-alias.cs", BrokenAlias) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("broken-alias.cs", BrokenAlias) }
+                )
             )
         );
 
@@ -255,7 +325,11 @@ public sealed class CSharpInventoryReaderTests
             "namespace Fixture; public interface Local : Missing.IHCRule { } public sealed class Broken : Local { }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("broken-transitive.cs", BrokenTransitive) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("broken-transitive.cs", BrokenTransitive) }
+                )
             )
         );
 
@@ -263,7 +337,11 @@ public sealed class CSharpInventoryReaderTests
             "using A = Missing.IHCRule; using B = A; namespace Fixture; public sealed class Broken : B { }";
         Assert.Throws<FormatException>(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("broken-alias-chain.cs", BrokenAliasChain) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("broken-alias-chain.cs", BrokenAliasChain) }
+                )
             )
         );
 
@@ -281,7 +359,11 @@ public sealed class CSharpInventoryReaderTests
             """;
         Assert.DoesNotThrow(() =>
             SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("scoped-alias.cs", ScopedUnrelatedAlias) })
+                new SemanticCoverageSourceSet(
+                    "fixture.dtd",
+                    Dtd,
+                    new[] { new CSharpInventoryInput("scoped-alias.cs", ScopedUnrelatedAlias) }
+                )
             )
         );
     }
@@ -310,19 +392,32 @@ public sealed class CSharpInventoryReaderTests
             """;
 
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source, new[]
-            {
-                "Fixture.Loader",
-                "Fixture.Loader.Run(System.Boolean)/local/Local()#0",
-                "Fixture.Loader.Run(System.Boolean)/local/Local()#1",
-            }) })
+            new SemanticCoverageSourceSet(
+                "fixture.dtd",
+                Dtd,
+                new[]
+                {
+                    new CSharpInventoryInput(
+                        "fixture.cs",
+                        Source,
+                        new[]
+                        {
+                            "Fixture.Loader",
+                            "Fixture.Loader.Run(System.Boolean)/local/Local()#0",
+                            "Fixture.Loader.Run(System.Boolean)/local/Local()#1",
+                        }
+                    ),
+                }
+            )
         );
         Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface => surface.Kind == "callable"));
         Assert.That(
-            inventory.Surfaces.Count(surface => surface.Kind == "decision-if" &&
-                surface.Parent == "Fixture.Loader.Run(System.Boolean)"),
+            inventory.Surfaces.Count(surface =>
+                surface.Kind == "decision-if" && surface.Parent == "Fixture.Loader.Run(System.Boolean)"
+            ),
             Is.EqualTo(2),
-            "the internal local-function graph still gives decisions a canonical containing method");
+            "the internal local-function graph still gives decisions a canonical containing method"
+        );
     }
 
     [Test]
@@ -347,8 +442,8 @@ public sealed class CSharpInventoryReaderTests
             )
         );
 
-        var parents = inventory.Surfaces
-            .Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+        var parents = inventory
+            .Surfaces.Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
             .Select(surface => surface.Parent)
             .ToArray();
         Assert.That(parents, Does.Contain("Fixture.Loader.First(System.Boolean)"));
@@ -379,8 +474,9 @@ public sealed class CSharpInventoryReaderTests
 
         Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface => surface.Kind == "callable"));
         Assert.That(
-            inventory.Surfaces.Any(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal) &&
-                surface.Parent == "Fixture.C.Visit()"),
+            inventory.Surfaces.Any(surface =>
+                surface.Kind.StartsWith("decision-", StringComparison.Ordinal) && surface.Parent == "Fixture.C.Visit()"
+            ),
             Is.True
         );
     }
@@ -422,8 +518,8 @@ public sealed class CSharpInventoryReaderTests
             )
         );
 
-        var parents = inventory.Surfaces
-            .Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+        var parents = inventory
+            .Surfaces.Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
             .Select(surface => surface.Parent)
             .Where(parent => parent is not null)
             .ToArray();
@@ -453,8 +549,8 @@ public sealed class CSharpInventoryReaderTests
             )
         );
 
-        var parents = inventory.Surfaces
-            .Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+        var parents = inventory
+            .Surfaces.Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
             .Select(surface => surface.Parent)
             .Where(parent => parent is not null)
             .Distinct(StringComparer.Ordinal)
@@ -479,15 +575,26 @@ public sealed class CSharpInventoryReaderTests
             """;
 
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source, new[]
-            {
-                "Fixture.Signatures",
-                "Fixture.Signatures.Generic`1(System.Collections.Generic.List`1<!!0>)",
-                "Fixture.Signatures.Ref(ref System.Int32)",
-                "Fixture.Signatures.Out(out System.Int32)",
-                "Fixture.Signatures.In(in System.Int32)",
-                "Fixture.Signatures.Params(params System.Int32[])",
-            }) })
+            new SemanticCoverageSourceSet(
+                "fixture.dtd",
+                Dtd,
+                new[]
+                {
+                    new CSharpInventoryInput(
+                        "fixture.cs",
+                        Source,
+                        new[]
+                        {
+                            "Fixture.Signatures",
+                            "Fixture.Signatures.Generic`1(System.Collections.Generic.List`1<!!0>)",
+                            "Fixture.Signatures.Ref(ref System.Int32)",
+                            "Fixture.Signatures.Out(out System.Int32)",
+                            "Fixture.Signatures.In(in System.Int32)",
+                            "Fixture.Signatures.Params(params System.Int32[])",
+                        }
+                    ),
+                }
+            )
         );
         Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface => surface.Kind == "callable"));
     }
@@ -527,7 +634,8 @@ public sealed class CSharpInventoryReaderTests
         while (directory is not null)
         {
             string candidate = Path.Combine(directory, relativePath.Replace('/', Path.DirectorySeparatorChar));
-            if (File.Exists(candidate)) return candidate;
+            if (File.Exists(candidate))
+                return candidate;
             directory = Directory.GetParent(directory)?.FullName;
         }
 
@@ -605,29 +713,99 @@ public sealed class CSharpInventoryReaderTests
                             "Fixture.ConcreteRule",
                             "Fixture.GenericRule",
                             "Fixture.Outer.NestedRule",
-                        }),
+                        }
+                    ),
                 }
             )
         );
 
         var ids = inventory.Surfaces.Select(surface => surface.Id).ToArray();
-        Assert.That(ids, Does.Contain("loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Element/one#0"));
-        Assert.That(ids, Does.Contain("loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Elements/many#0"));
-        Assert.That(ids, Does.Contain("loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Attribute/isActive#0"));
-        Assert.That(ids, Does.Contain("source:dynamic-xml-access/Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Element#1"));
+        Assert.That(
+            ids,
+            Does.Contain(
+                "loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Element/one#0"
+            )
+        );
+        Assert.That(
+            ids,
+            Does.Contain(
+                "loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Elements/many#0"
+            )
+        );
+        Assert.That(
+            ids,
+            Does.Contain(
+                "loader:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Attribute/isActive#0"
+            )
+        );
+        Assert.That(
+            ids,
+            Does.Contain(
+                "source:dynamic-xml-access/Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/Element#1"
+            )
+        );
         Assert.That(ids, Does.Contain("model:enum/Fixture.Mode/First"));
         Assert.That(ids, Does.Contain("model:enum/Fixture.Mode/Second"));
         Assert.That(ids, Does.Contain("model:rule/Fixture.ConcreteRule/IHCRule"));
         Assert.That(ids, Does.Contain("model:rule/Fixture.GenericRule/IRule"));
         Assert.That(ids, Does.Contain("model:rule/Fixture.Outer.NestedRule/IHCRule"));
         Assert.That(ids, Does.Contain("branch:fixture/if"));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/if/true#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/if/false#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/switch/default#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/conditional/true#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/catch-filter/false#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/loop/natural-exit#", StringComparison.Ordinal)));
-        Assert.That(ids.Any(id => id.StartsWith("decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/loop/continue#", StringComparison.Ordinal)));
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/if/true#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/if/false#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/switch/default#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/conditional/true#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/catch-filter/false#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/loop/natural-exit#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
+        Assert.That(
+            ids.Any(id =>
+                id.StartsWith(
+                    "decision:Fixture.Loader.Load(System.Xml.Linq.XElement,System.Boolean,System.Int32)/loop/continue#",
+                    StringComparison.Ordinal
+                )
+            )
+        );
     }
 
     [Test]
@@ -645,20 +823,26 @@ public sealed class CSharpInventoryReaderTests
             """;
 
         SemanticInventory none = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet(
-                "fixture.dtd",
-                Dtd,
-                new[] { new CSharpInventoryInput("loader.cs", Source) }
-            )
+            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("loader.cs", Source) })
         );
-        Assert.That(none.Surfaces.Any(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal)), Is.False);
+        Assert.That(
+            none.Surfaces.Any(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal)),
+            Is.False
+        );
 
         Assert.Throws<ArgumentException>(() =>
             SemanticCoverageInventory.Generate(
                 new SemanticCoverageSourceSet(
                     "fixture.dtd",
                     Dtd,
-                    new[] { new CSharpInventoryInput("loader.cs", Source, new[] { "Fixture.Loader.Missing(System.Boolean)" }) }
+                    new[]
+                    {
+                        new CSharpInventoryInput(
+                            "loader.cs",
+                            Source,
+                            new[] { "Fixture.Loader.Missing(System.Boolean)" }
+                        ),
+                    }
                 )
             )
         );
@@ -671,16 +855,21 @@ public sealed class CSharpInventoryReaderTests
                 )
             )
         );
-        foreach (string malformed in new[] { "Fixture.Loader.Foo[][", "Fixture.Loader.Foo]", "Fixture.Loader.Foo[abc]" })
+        foreach (
+            string malformed in new[] { "Fixture.Loader.Foo[][", "Fixture.Loader.Foo]", "Fixture.Loader.Foo[abc]" }
+        )
         {
-            Assert.Throws<ArgumentException>(() =>
-                SemanticCoverageInventory.Generate(
-                    new SemanticCoverageSourceSet(
-                        "fixture.dtd",
-                        Dtd,
-                        new[] { new CSharpInventoryInput("loader.cs", Source, new[] { malformed }) }
-                    )
-                ), malformed);
+            Assert.Throws<ArgumentException>(
+                () =>
+                    SemanticCoverageInventory.Generate(
+                        new SemanticCoverageSourceSet(
+                            "fixture.dtd",
+                            Dtd,
+                            new[] { new CSharpInventoryInput("loader.cs", Source, new[] { malformed }) }
+                        )
+                    ),
+                malformed
+            );
         }
     }
 
@@ -704,16 +893,15 @@ public sealed class CSharpInventoryReaderTests
             new SemanticCoverageSourceSet(
                 "fixture.dtd",
                 Dtd,
-                new[]
-                {
-                    new CSharpInventoryInput("a.cs", First),
-                    new CSharpInventoryInput("z.cs", Second),
-                }
+                new[] { new CSharpInventoryInput("a.cs", First), new CSharpInventoryInput("z.cs", Second) }
             )
         );
 
         Assert.That(left.SourceHash, Is.EqualTo(right.SourceHash));
-        Assert.That(left.Surfaces.Select(surface => surface.Id), Is.EqualTo(right.Surfaces.Select(surface => surface.Id)));
+        Assert.That(
+            left.Surfaces.Select(surface => surface.Id),
+            Is.EqualTo(right.Surfaces.Select(surface => surface.Id))
+        );
     }
 
     [Test]
@@ -754,10 +942,7 @@ public sealed class CSharpInventoryReaderTests
                 new SemanticCoverageSourceSet(
                     "fixture.dtd",
                     Dtd,
-                    new[]
-                    {
-                        new CSharpInventoryInput("bad.cs", "class A { void M( { }"),
-                    }
+                    new[] { new CSharpInventoryInput("bad.cs", "class A { void M( { }") }
                 )
             )
         );
@@ -916,7 +1101,10 @@ public sealed class CSharpInventoryReaderTests
 
         Assert.That(taken, Has.Length.EqualTo(2), "each source decision must yield exactly one surface");
         Assert.That(
-            taken.Select(surface => surface.Id.Substring(surface.Id.LastIndexOf('-') + 1)).Distinct(StringComparer.Ordinal).Count(),
+            taken
+                .Select(surface => surface.Id.Substring(surface.Id.LastIndexOf('-') + 1))
+                .Distinct(StringComparer.Ordinal)
+                .Count(),
             Is.EqualTo(2),
             "the two decisions must keep distinct fingerprints"
         );
@@ -950,7 +1138,8 @@ public sealed class CSharpInventoryReaderTests
         Assert.That(availability, Is.EqualTo(new[] { SingleThreadedOnly, Everywhere }));
 
         InventorySurface dtdSurface = inventory.Surfaces.First(surface =>
-            surface.Source.StartsWith("fixture.dtd", StringComparison.Ordinal));
+            surface.Source.StartsWith("fixture.dtd", StringComparison.Ordinal)
+        );
         Assert.That(dtdSurface.Configurations, Is.Empty, "DTD surfaces are not configuration-scoped");
     }
 
@@ -958,20 +1147,26 @@ public sealed class CSharpInventoryReaderTests
     public void RealMorpherExposesSingleThreadedOnlySynthesizeAndItsDecisions()
     {
         const string Relative = "src/SIL.Machine.Morphology.HermitCrab/Morpher.cs";
-        const string Scope = "SIL.Machine.Morphology.HermitCrab.Morpher.Synthesize(System.String,"
+        const string Scope =
+            "SIL.Machine.Morphology.HermitCrab.Morpher.Synthesize(System.String,"
             + "System.Collections.Generic.IEnumerable`1<SIL.Machine.Morphology.HermitCrab.Word>)";
         SemanticInventory inventory = SemanticCoverageInventory.Generate(
             new SemanticCoverageSourceSet(
                 "fixture.dtd",
                 Dtd,
-                new[] { new CSharpInventoryInput(Relative, File.ReadAllText(FindRepositoryFile(Relative)), new[] { Scope }) }
+                new[]
+                {
+                    new CSharpInventoryInput(Relative, File.ReadAllText(FindRepositoryFile(Relative)), new[] { Scope }),
+                }
             )
         );
 
         Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface => surface.Kind == "callable"));
 
         InventorySurface[] decisions = inventory
-            .Surfaces.Where(surface => surface.Parent == Scope && surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+            .Surfaces.Where(surface =>
+                surface.Parent == Scope && surface.Kind.StartsWith("decision-", StringComparison.Ordinal)
+            )
             .ToArray();
         Assert.That(decisions, Is.Not.Empty, "a configuration-only method's decisions must still be censused");
         Assert.That(
@@ -1008,7 +1203,9 @@ public sealed class CSharpInventoryReaderTests
         {
             Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface => surface.Kind == "callable"));
             Assert.That(
-                inventory.Surfaces.Count(surface => surface.Kind == "decision-if" && surface.Parent == "Fixture.Loader.Run(System.Boolean)"),
+                inventory.Surfaces.Count(surface =>
+                    surface.Kind == "decision-if" && surface.Parent == "Fixture.Loader.Run(System.Boolean)"
+                ),
                 Is.EqualTo(2),
                 "the internal callable graph must still provide canonical parents and audited decision discovery"
             );

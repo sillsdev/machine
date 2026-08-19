@@ -65,7 +65,13 @@ public sealed class CoveragePilotCandidatesTests
         );
         Fixture fixture = FindFixture(item.Fixture);
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-        CounterfactualResult result = CounterfactualGate.Evaluate(fixture, item.Id, Inventory(), baseline, _scratchDirectory);
+        CounterfactualResult result = CounterfactualGate.Evaluate(
+            fixture,
+            item.Id,
+            Inventory(),
+            baseline,
+            _scratchDirectory
+        );
 
         Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.Evidenced));
         Assert.That(result.CounterexampleKind, Is.EqualTo(CounterexampleKind.Word));
@@ -94,7 +100,13 @@ public sealed class CoveragePilotCandidatesTests
         );
         Fixture fixture = FindFixture(item.Fixture);
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-        CounterfactualResult result = CounterfactualGate.Evaluate(fixture, item.Id, Inventory(), baseline, _scratchDirectory);
+        CounterfactualResult result = CounterfactualGate.Evaluate(
+            fixture,
+            item.Id,
+            Inventory(),
+            baseline,
+            _scratchDirectory
+        );
 
         Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.Evidenced));
         Assert.That(result.CounterexampleKind, Is.EqualTo(CounterexampleKind.Word));
@@ -125,7 +137,13 @@ public sealed class CoveragePilotCandidatesTests
         );
         Fixture fixture = FindFixture(item.Fixture);
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
-        CounterfactualResult result = CounterfactualGate.Evaluate(fixture, item.Id, Inventory(), baseline, _scratchDirectory);
+        CounterfactualResult result = CounterfactualGate.Evaluate(
+            fixture,
+            item.Id,
+            Inventory(),
+            baseline,
+            _scratchDirectory
+        );
 
         Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredByDtd));
         Assert.That(result.CounterexampleKind, Is.EqualTo(CounterexampleKind.LoadFailure));
@@ -157,10 +175,16 @@ public sealed class CoveragePilotCandidatesTests
         Fixture fixture = FindFixture("edge-cases/feature-system-breadth");
         string[] words = fixture.Words.Words.Select(w => w.Word).ToArray();
         Directory.CreateDirectory(_scratchDirectory);
-        IReadOnlyList<string> baseline = CounterfactualGate.EvaluateOneGrammar(fixture.GrammarPath, WriteWordsFile(words));
+        IReadOnlyList<string> baseline = CounterfactualGate.EvaluateOneGrammar(
+            fixture.GrammarPath,
+            WriteWordsFile(words)
+        );
 
         XDocument mutant = XDocument.Load(fixture.GrammarPath);
-        XAttribute? rules = mutant.Descendants("Stratum").Select(e => e.Attribute("phonologicalRules")).FirstOrDefault(a => a is not null);
+        XAttribute? rules = mutant
+            .Descendants("Stratum")
+            .Select(e => e.Attribute("phonologicalRules"))
+            .FirstOrDefault(a => a is not null);
         Assert.That(rules, Is.Not.Null);
         string original = rules!.Value;
         Assert.That(original, Does.Contain("prAlpha prHighTrigger"), "pins the adjacency this item swaps");
@@ -216,7 +240,9 @@ public sealed class CoveragePilotCandidatesTests
             );
         }
 
-        TestContext.Out.WriteLine($"candidate 4 resolved as: {gate.Items.Single().Resolution} ({gate.Items.Single().Detail})");
+        TestContext.Out.WriteLine(
+            $"candidate 4 resolved as: {gate.Items.Single().Resolution} ({gate.Items.Single().Detail})"
+        );
         Assert.That(gate.IsComplete, Is.True);
     }
 
@@ -240,7 +266,11 @@ public sealed class CoveragePilotCandidatesTests
             Array.Empty<Evidence>(),
             new[] { proof }
         );
-        Assert.That(gate.IsComplete, Is.False, "the no-consumer claim remains pending until a mechanical verifier exists");
+        Assert.That(
+            gate.IsComplete,
+            Is.False,
+            "the no-consumer claim remains pending until a mechanical verifier exists"
+        );
         Assert.That(gate.Items.Single().Resolution, Is.EqualTo(CoverageResolution.Rejected));
 
         // The checked-in sweep already recorded this item Unobservable, never Evidenced: the proof is

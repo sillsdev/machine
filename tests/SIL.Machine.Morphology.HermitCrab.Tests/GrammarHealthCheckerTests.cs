@@ -85,7 +85,9 @@ public class GrammarHealthCheckerTests
         FeatureStruct undeclaredFs = FeatureStruct.NewMutable(featSys).Symbol("voc-").Value;
         undeclaredFs.AddValue(HCFeatureSystem.Type, HCFeatureSystem.Segment);
         undeclaredFs.Freeze();
-        var shape = new Shape(begin => new ShapeNode(begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor));
+        var shape = new Shape(begin => new ShapeNode(
+            begin ? HCFeatureSystem.LeftSideAnchor : HCFeatureSystem.RightSideAnchor
+        ));
         shape.Add(undeclaredFs);
         var segments = new Segments(table, "z", shape);
 
@@ -159,7 +161,11 @@ public class GrammarHealthCheckerTests
     {
         string conformanceRoot = Path.Combine(FindRepositoryRoot(), "conformance");
         List<Fixture> fixtures = Fixture.DiscoverAll(conformanceRoot);
-        Assert.That(fixtures, Is.Not.Empty, "expected to discover conformance/languages and conformance/edge-cases fixtures");
+        Assert.That(
+            fixtures,
+            Is.Not.Empty,
+            "expected to discover conformance/languages and conformance/edge-cases fixtures"
+        );
 
         var report = new StringBuilder();
         report.AppendLine($"{fixtures.Count} fixtures checked.");

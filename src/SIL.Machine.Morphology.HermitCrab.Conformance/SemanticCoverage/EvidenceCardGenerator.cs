@@ -71,7 +71,8 @@ public static class EvidenceCardGenerator
         IReadOnlyList<InterfaceWitnessResult> witnesses = InterfaceWitnessLedger.Read(repositoryRoot);
         IReadOnlyList<Fixture> fixtures = Fixture.DiscoverAll(Path.Combine(repositoryRoot, "conformance"));
 
-        var witnessByKey = new Dictionary<(string Element, string Attribute, string FixtureId), InterfaceWitnessResult>();
+        var witnessByKey =
+            new Dictionary<(string Element, string Attribute, string FixtureId), InterfaceWitnessResult>();
         foreach (InterfaceWitnessResult w in witnesses)
             witnessByKey[(w.Element, w.Attribute, w.FixtureId)] = w;
 
@@ -98,12 +99,10 @@ public static class EvidenceCardGenerator
         var seenFileNames = new HashSet<string>(StringComparer.Ordinal);
         foreach (DataflowObligationLedger.Row row in cells)
         {
-            IReadOnlyList<(string FixtureId, WordEntry Word, ClaimedCellEntry Claim)> claims = claimsByCellId.TryGetValue(
-                row.CellId,
-                out List<(string, WordEntry, ClaimedCellEntry)>? found
-            )
-                ? found
-                : Array.Empty<(string, WordEntry, ClaimedCellEntry)>();
+            IReadOnlyList<(string FixtureId, WordEntry Word, ClaimedCellEntry Claim)> claims =
+                claimsByCellId.TryGetValue(row.CellId, out List<(string, WordEntry, ClaimedCellEntry)>? found)
+                    ? found
+                    : Array.Empty<(string, WordEntry, ClaimedCellEntry)>();
 
             (string? FixtureId, string? Word, string Source) primary = ResolvePrimaryWitness(row, claims);
             string markdown = BuildMarkdown(row, claims, primary, witnessByKey, fixtures, repositoryRoot);
@@ -177,7 +176,14 @@ public static class EvidenceCardGenerator
 
         string indexPath = Path.Combine(dir, IndexFileName);
         string freshIndex = ToIndexText(cards).ReplaceLineEndings("\n");
-        if (!File.Exists(indexPath) || !string.Equals(File.ReadAllText(indexPath).ReplaceLineEndings("\n"), freshIndex, StringComparison.Ordinal))
+        if (
+            !File.Exists(indexPath)
+            || !string.Equals(
+                File.ReadAllText(indexPath).ReplaceLineEndings("\n"),
+                freshIndex,
+                StringComparison.Ordinal
+            )
+        )
         {
             staleOrMissing++;
             details.Add($"STALE {IndexFileName}");
@@ -193,7 +199,9 @@ public static class EvidenceCardGenerator
                 if (expected.Contains(name))
                     continue;
                 extra++;
-                details.Add($"EXTRA FILE {name} (not produced by any current cell -- regenerate with --write-evidence-cards)");
+                details.Add(
+                    $"EXTRA FILE {name} (not produced by any current cell -- regenerate with --write-evidence-cards)"
+                );
             }
         }
 
@@ -268,12 +276,10 @@ public static class EvidenceCardGenerator
     private static string MutatorClassPlainEnglish(string mutatorClass) =>
         mutatorClass switch
         {
-            "Overwrite" =>
-                "an MPR-feature overwrite group (a MorphologicalPhonologicalRuleFeatureGroup with "
-                    + "outputType=\"overwrite\" drops the accumulated feature set before the read)",
-            "Blocking" =>
-                "blocking (Word.CheckBlocking rebuilds the derivation from a sibling LexicalEntry, clearing "
-                    + "and reseeding MPR features, part of speech, and stem name)",
+            "Overwrite" => "an MPR-feature overwrite group (a MorphologicalPhonologicalRuleFeatureGroup with "
+                + "outputType=\"overwrite\" drops the accumulated feature set before the read)",
+            "Blocking" => "blocking (Word.CheckBlocking rebuilds the derivation from a sibling LexicalEntry, clearing "
+                + "and reseeding MPR features, part of speech, and stem name)",
             "PosPriorityUnion" =>
                 "a part-of-speech priority-union clobber (an intervening rule's own outputPartOfSpeech "
                     + "overwrites an earlier part-of-speech write via PriorityUnion)",
@@ -290,13 +296,11 @@ public static class EvidenceCardGenerator
             case "McDc":
                 return row.Role switch
                 {
-                    "PresentControl" =>
-                        "the payload IS present, and the reader does NOT block (control case: normal "
-                            + "operation with the payload present).",
+                    "PresentControl" => "the payload IS present, and the reader does NOT block (control case: normal "
+                        + "operation with the payload present).",
                     "PresentGatedForm" => "the payload IS present and the gated form IS blocked.",
-                    "AbsentControl" =>
-                        "the payload is ABSENT, and the reader does NOT block (control case: normal "
-                            + "operation without the payload).",
+                    "AbsentControl" => "the payload is ABSENT, and the reader does NOT block (control case: normal "
+                        + "operation without the payload).",
                     "AbsentGatedForm" => "the payload is ABSENT and the gated form IS blocked.",
                     _ => $"(unrecognized McDc role '{row.Role}' -- this generator does not know how to describe it)",
                 };
@@ -307,12 +311,12 @@ public static class EvidenceCardGenerator
                 if (!m.Success)
                     return $"(unrecognized ConditionExtension role '{row.Role}' -- this generator does not know how to describe it)";
 
-                string half = m.Groups["half"].Value == "GatedForm"
-                    ? "the gated form IS blocked"
-                    : "the reader does NOT block (control)";
-                return
-                    $"Extra MC/DC vector #{m.Groups["n"].Value}, required because the reader's gate has more than "
-                        + $"one condition -- see the chain kind below. This arm is where {half}.";
+                string half =
+                    m.Groups["half"].Value == "GatedForm"
+                        ? "the gated form IS blocked"
+                        : "the reader does NOT block (control)";
+                return $"Extra MC/DC vector #{m.Groups["n"].Value}, required because the reader's gate has more than "
+                    + $"one condition -- see the chain kind below. This arm is where {half}.";
             }
 
             case "Mutator":
@@ -384,7 +388,11 @@ public static class EvidenceCardGenerator
         if (claims.Count > 0)
         {
             foreach ((string fixtureId, WordEntry word, ClaimedCellEntry _) in claims)
-                sb.AppendLine($"- Claimed by word **'{word.Word}'** in `{fixtureId}` (a `claimed_cells` entry in `words.yaml`).");
+            {
+                sb.AppendLine(
+                    $"- Claimed by word **'{word.Word}'** in `{fixtureId}` (a `claimed_cells` entry in `words.yaml`)."
+                );
+            }
         }
         else if (primary.FixtureId is not null)
         {
@@ -398,15 +406,16 @@ public static class EvidenceCardGenerator
         }
         else
         {
-            sb.AppendLine("- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.");
+            sb.AppendLine(
+                "- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none."
+            );
         }
         sb.AppendLine();
 
-        string[] fixtureIdsInScope = claims.Count > 0
-            ? claims.Select(c => c.FixtureId).Distinct(StringComparer.Ordinal).ToArray()
-            : primary.FixtureId is not null
-                ? new[] { primary.FixtureId }
-                : Array.Empty<string>();
+        string[] fixtureIdsInScope =
+            claims.Count > 0 ? claims.Select(c => c.FixtureId).Distinct(StringComparer.Ordinal).ToArray()
+            : primary.FixtureId is not null ? new[] { primary.FixtureId }
+            : Array.Empty<string>();
 
         sb.AppendLine("## Exact mutation and before/after parse");
         sb.AppendLine();
@@ -469,7 +478,13 @@ public static class EvidenceCardGenerator
                 );
                 sb.AppendLine($"### `{fixtureId}/grammar.xml`");
                 sb.AppendLine();
-                AppendCitations(sb, grammarPath, row.WriterElement, row.WriterAttribute, "Writer (payload declared here)");
+                AppendCitations(
+                    sb,
+                    grammarPath,
+                    row.WriterElement,
+                    row.WriterAttribute,
+                    "Writer (payload declared here)"
+                );
                 AppendCitations(sb, grammarPath, row.ReaderElement, row.ReaderAttribute, "Reader (gate declared here)");
                 sb.AppendLine();
             }
@@ -494,7 +509,9 @@ public static class EvidenceCardGenerator
                 }
                 else
                 {
-                    sb.AppendLine($"- No prose recorded: '{word.Word}' in {fixtureId} has neither a claim `proof:` nor a word `note:`.");
+                    sb.AppendLine(
+                        $"- No prose recorded: '{word.Word}' in {fixtureId} has neither a claim `proof:` nor a word `note:`."
+                    );
                 }
             }
         }
@@ -579,7 +596,13 @@ public static class EvidenceCardGenerator
         }
     }
 
-    private static void AppendCitations(StringBuilder sb, string grammarPath, string element, string attribute, string role)
+    private static void AppendCitations(
+        StringBuilder sb,
+        string grammarPath,
+        string element,
+        string attribute,
+        string role
+    )
     {
         if (!File.Exists(grammarPath))
         {
@@ -623,7 +646,10 @@ public static class EvidenceCardGenerator
         if (safe.Length > MaxSlugLength)
             safe = safe.Substring(0, MaxSlugLength);
 
-        string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cellId))).Substring(0, 10).ToLowerInvariant();
+        string hash = Convert
+            .ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cellId)))
+            .Substring(0, 10)
+            .ToLowerInvariant();
         return $"{safe}__{hash}.md";
     }
 }

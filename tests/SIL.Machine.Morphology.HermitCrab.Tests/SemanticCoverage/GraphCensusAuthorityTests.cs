@@ -29,8 +29,9 @@ public sealed class GraphCensusAuthorityTests
 
     private static async Task<(RepositoryCompilationGraph Captured, RoslynCompilationGraph Graph)> LoadAsync()
     {
-        RepositoryCompilationGraph captured = await new RepositoryCompilationGraphLoader(new MsBuildProcessRunner())
-            .LoadAsync(new RepositoryRoot(RepositoryRoot()), CancellationToken.None);
+        RepositoryCompilationGraph captured = await new RepositoryCompilationGraphLoader(
+            new MsBuildProcessRunner()
+        ).LoadAsync(new RepositoryRoot(RepositoryRoot()), CancellationToken.None);
         return (captured, RoslynCompilationGraph.Build(captured));
     }
 
@@ -41,7 +42,12 @@ public sealed class GraphCensusAuthorityTests
         (RepositoryCompilationGraph captured, RoslynCompilationGraph graph) = await LoadAsync();
 
         SemanticInventory inventory = CSharpInventoryReader.ReadFromGraph(
-            graph, captured, RepositoryRoot(), CensusedProjects, AuditedScopes);
+            graph,
+            captured,
+            RepositoryRoot(),
+            CensusedProjects,
+            AuditedScopes
+        );
 
         Assert.Multiple(() =>
         {
@@ -51,8 +57,11 @@ public sealed class GraphCensusAuthorityTests
                 Has.None.EqualTo("compilation-error"),
                 string.Join(
                     Environment.NewLine,
-                    inventory.Diagnostics.Where(item => item.Code == "compilation-error")
-                        .Select(item => $"{item.Location}: {item.Message}")));
+                    inventory
+                        .Diagnostics.Where(item => item.Code == "compilation-error")
+                        .Select(item => $"{item.Location}: {item.Message}")
+                )
+            );
             Assert.That(inventory.SourceHash, Is.Not.Empty);
         });
     }
@@ -65,9 +74,19 @@ public sealed class GraphCensusAuthorityTests
         (RepositoryCompilationGraph captured, RoslynCompilationGraph graph) = await LoadAsync();
 
         SemanticInventory first = CSharpInventoryReader.ReadFromGraph(
-            graph, captured, RepositoryRoot(), CensusedProjects, AuditedScopes);
+            graph,
+            captured,
+            RepositoryRoot(),
+            CensusedProjects,
+            AuditedScopes
+        );
         SemanticInventory second = CSharpInventoryReader.ReadFromGraph(
-            graph, captured, RepositoryRoot(), CensusedProjects, AuditedScopes);
+            graph,
+            captured,
+            RepositoryRoot(),
+            CensusedProjects,
+            AuditedScopes
+        );
 
         Assert.That(second.SourceHash, Is.EqualTo(first.SourceHash));
     }
@@ -81,13 +100,27 @@ public sealed class GraphCensusAuthorityTests
         Assert.Multiple(() =>
         {
             Assert.That(
-                () => CSharpInventoryReader.ReadFromGraph(
-                    graph, captured, RepositoryRoot(), new[] { "not-a-project" }, AuditedScopes),
-                Throws.TypeOf<ArgumentException>());
+                () =>
+                    CSharpInventoryReader.ReadFromGraph(
+                        graph,
+                        captured,
+                        RepositoryRoot(),
+                        new[] { "not-a-project" },
+                        AuditedScopes
+                    ),
+                Throws.TypeOf<ArgumentException>()
+            );
             Assert.That(
-                () => CSharpInventoryReader.ReadFromGraph(
-                    graph, captured, RepositoryRoot(), CensusedProjects, Array.Empty<string>()),
-                Throws.TypeOf<ArgumentException>());
+                () =>
+                    CSharpInventoryReader.ReadFromGraph(
+                        graph,
+                        captured,
+                        RepositoryRoot(),
+                        CensusedProjects,
+                        Array.Empty<string>()
+                    ),
+                Throws.TypeOf<ArgumentException>()
+            );
         });
     }
 }

@@ -14,40 +14,40 @@ public sealed class SemanticCoverageAuditTests
 
     private static string Catalog(string features, string mappings) =>
         $"""
-        profile: sil.machine.hc-semantic-catalog/v1
-        auditedSourceScopes: [Fixture.Root]
-        features:
-        {features}
-        surfaceMappings:
-        {mappings}
-        """;
+            profile: sil.machine.hc-semantic-catalog/v1
+            auditedSourceScopes: [Fixture.Root]
+            features:
+            {features}
+            surfaceMappings:
+            {mappings}
+            """;
 
     private static string SemanticFeatureYaml(string id) =>
         $"""
-          - id: {id}
-            disposition: semantic
-            analysisCandidateEffect:
-              behavior: proposes
-              reads: [shape]
-              writes: [candidate]
-            synthesisConfirmationEffect:
-              behavior: confirms
-              reads: [candidate]
-              writes: [word]
-            finalParseEffect:
-              behavior: reports
-              reads: [word]
-              writes: [analysis]
-            carriers: [element]
-        """;
+              - id: {id}
+                disposition: semantic
+                analysisCandidateEffect:
+                  behavior: proposes
+                  reads: [shape]
+                  writes: [candidate]
+                synthesisConfirmationEffect:
+                  behavior: confirms
+                  reads: [candidate]
+                  writes: [word]
+                finalParseEffect:
+                  behavior: reports
+                  reads: [word]
+                  writes: [analysis]
+                carriers: [element]
+            """;
 
     private static string MetadataFeatureYaml(string id, string reason, string citations) =>
         $"""
-          - id: {id}
-            disposition: metadata
-            reason: {reason}
-            citations: {citations}
-        """;
+              - id: {id}
+                disposition: metadata
+                reason: {reason}
+                citations: {citations}
+            """;
 
     private static string MappingsFor(SemanticInventory inventory, string featureId) =>
         string.Join(
@@ -108,8 +108,8 @@ public sealed class SemanticCoverageAuditTests
 
         Assert.That(result.IsComplete, Is.False);
         Assert.That(
-            result.Diagnostics
-                .Where(item => item.Code == SemanticCoverageAudit.UnclassifiedMapping)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.UnclassifiedMapping)
                 .Select(item => item.SubjectId),
             Is.EqualTo(inventory.Surfaces.Select(surface => surface.Id).OrderBy(id => id, StringComparer.Ordinal))
         );
@@ -128,8 +128,9 @@ public sealed class SemanticCoverageAuditTests
                     "Fixture.Root.Run(System.Boolean)",
                     "mutable delegate target cannot be closed statically",
                     "base,SINGLE_THREADED",
-                    "fixture.cs:4:9-4:24")
-            }
+                    "fixture.cs:4:9-4:24"
+                ),
+            },
         };
         SemanticCatalog catalog = SemanticCatalogLoader.Parse(
             Catalog(SemanticFeatureYaml("root-element"), MappingsFor(inventory, "root-element")),
@@ -153,17 +154,17 @@ public sealed class SemanticCoverageAuditTests
     {
         SemanticInventory inventory = Inventory();
         SemanticCatalog catalog = SemanticCatalogLoader.Parse(
-            Catalog(SemanticFeatureYaml("root-element"), $"  - surface: \"{inventory.Surfaces[0].Id}\"\n    feature: root-element"),
+            Catalog(
+                SemanticFeatureYaml("root-element"),
+                $"  - surface: \"{inventory.Surfaces[0].Id}\"\n    feature: root-element"
+            ),
             Path
         );
 
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(result.IsComplete, Is.False);
-        Assert.That(
-            result.Diagnostics.Select(item => item.Code),
-            Does.Contain(SemanticCoverageAudit.UnmappedSurface)
-        );
+        Assert.That(result.Diagnostics.Select(item => item.Code), Does.Contain(SemanticCoverageAudit.UnmappedSurface));
     }
 
     [Test]
@@ -179,7 +180,8 @@ public sealed class SemanticCoverageAuditTests
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(
-            result.Diagnostics.Where(item => item.Code == SemanticCoverageAudit.DuplicateSurfaceMapping)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.DuplicateSurfaceMapping)
                 .Select(item => item.SubjectId),
             Is.EqualTo(new[] { inventory.Surfaces[0].Id })
         );
@@ -196,10 +198,7 @@ public sealed class SemanticCoverageAuditTests
 
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
-        Assert.That(
-            result.Diagnostics.Select(item => item.Code),
-            Does.Contain(SemanticCoverageAudit.UnknownFeature)
-        );
+        Assert.That(result.Diagnostics.Select(item => item.Code), Does.Contain(SemanticCoverageAudit.UnknownFeature));
     }
 
     [Test]
@@ -214,7 +213,8 @@ public sealed class SemanticCoverageAuditTests
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(
-            result.Diagnostics.Where(item => item.Code == SemanticCoverageAudit.PatternMapping)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.PatternMapping)
                 .Select(item => item.SubjectId),
             Is.EqualTo(new[] { "dtd:element/*" })
         );
@@ -240,7 +240,8 @@ public sealed class SemanticCoverageAuditTests
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(
-            result.Diagnostics.Where(item => item.Code == SemanticCoverageAudit.StaleSurfaceMapping)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.StaleSurfaceMapping)
                 .Select(item => item.SubjectId),
             Is.EqualTo(new[] { "dtd:element/Retired" })
         );
@@ -267,7 +268,8 @@ public sealed class SemanticCoverageAuditTests
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(
-            result.Diagnostics.Where(item => item.Code == SemanticCoverageAudit.MissingPhaseEffect)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.MissingPhaseEffect)
                 .Select(item => item.Message),
             Has.Exactly(2).Items,
             "the two absent phase effects must each be named"
@@ -288,7 +290,10 @@ public sealed class SemanticCoverageAuditTests
         );
 
         SemanticCatalog missingCitation = SemanticCatalogLoader.Parse(
-            Catalog(MetadataFeatureYaml("schema-noise", "\"declared type only\"", "[]"), MappingsFor(inventory, "schema-noise")),
+            Catalog(
+                MetadataFeatureYaml("schema-noise", "\"declared type only\"", "[]"),
+                MappingsFor(inventory, "schema-noise")
+            ),
             Path
         );
         Assert.That(
@@ -321,7 +326,8 @@ public sealed class SemanticCoverageAuditTests
         AuditResult result = SemanticCoverageAudit.Run(inventory, catalog);
 
         Assert.That(
-            result.Diagnostics.Where(item => item.Code == SemanticCoverageAudit.UnusedFeature)
+            result
+                .Diagnostics.Where(item => item.Code == SemanticCoverageAudit.UnusedFeature)
                 .Select(item => item.SubjectId),
             Is.EqualTo(new[] { "never-used" })
         );
@@ -331,26 +337,49 @@ public sealed class SemanticCoverageAuditTests
     public void CatalogLoadingIsStrict()
     {
         SemanticInventory inventory = Inventory();
-        Assert.Throws<SemanticCatalogException>(() => SemanticCatalogLoader.Parse(
-            Catalog(SemanticFeatureYaml("root-element"), MappingsFor(inventory, "root-element"))
-                .Replace("auditedSourceScopes:", "auditedScopes:", StringComparison.Ordinal),
-            Path
-        ), "unknown root keys are errors");
+        Assert.Throws<SemanticCatalogException>(
+            () =>
+                SemanticCatalogLoader.Parse(
+                    Catalog(SemanticFeatureYaml("root-element"), MappingsFor(inventory, "root-element"))
+                        .Replace("auditedSourceScopes:", "auditedScopes:", StringComparison.Ordinal),
+                    Path
+                ),
+            "unknown root keys are errors"
+        );
 
-        Assert.Throws<SemanticCatalogException>(() => SemanticCatalogLoader.Parse(
-            Catalog("  - id: x\n    disposition: not-a-disposition", "  - surface: \"a\"\n    feature: x"),
-            Path
-        ), "unknown dispositions are errors");
+        Assert.Throws<SemanticCatalogException>(
+            () =>
+                SemanticCatalogLoader.Parse(
+                    Catalog("  - id: x\n    disposition: not-a-disposition", "  - surface: \"a\"\n    feature: x"),
+                    Path
+                ),
+            "unknown dispositions are errors"
+        );
 
-        Assert.Throws<SemanticCatalogException>(() => SemanticCatalogLoader.Parse(
-            Catalog(SemanticFeatureYaml("dup"), "  - surface: \"a\"\n    feature: dup")
-                .Replace("profile: sil.machine.hc-semantic-catalog/v1", "profile: other/v9", StringComparison.Ordinal),
-            Path
-        ), "an unexpected profile is an error");
+        Assert.Throws<SemanticCatalogException>(
+            () =>
+                SemanticCatalogLoader.Parse(
+                    Catalog(SemanticFeatureYaml("dup"), "  - surface: \"a\"\n    feature: dup")
+                        .Replace(
+                            "profile: sil.machine.hc-semantic-catalog/v1",
+                            "profile: other/v9",
+                            StringComparison.Ordinal
+                        ),
+                    Path
+                ),
+            "an unexpected profile is an error"
+        );
 
-        Assert.Throws<SemanticCatalogException>(() => SemanticCatalogLoader.Parse(
-            Catalog($"{SemanticFeatureYaml("same")}\n{SemanticFeatureYaml("same")}", "  - surface: \"a\"\n    feature: same"),
-            Path
-        ), "duplicate feature ids are errors");
+        Assert.Throws<SemanticCatalogException>(
+            () =>
+                SemanticCatalogLoader.Parse(
+                    Catalog(
+                        $"{SemanticFeatureYaml("same")}\n{SemanticFeatureYaml("same")}",
+                        "  - surface: \"a\"\n    feature: same"
+                    ),
+                    Path
+                ),
+            "duplicate feature ids are errors"
+        );
     }
 }

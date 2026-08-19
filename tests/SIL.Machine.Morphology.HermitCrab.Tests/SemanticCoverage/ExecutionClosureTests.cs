@@ -57,8 +57,8 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(System.Boolean)");
-        string[] parents = inventory.Surfaces
-            .Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
             .Select(surface => surface.Parent!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(parent => parent, StringComparer.Ordinal)
@@ -73,10 +73,14 @@ public sealed class ExecutionClosureTests
             Assert.That(parents, Does.Not.Contain("Fixture.Root.Dead(System.Boolean)"));
             Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("branch:reachable-marker"));
             Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Not.Contain("branch:dead-marker"));
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
-                Does.Contain("reachable"));
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
-                Does.Not.Contain("dead"));
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
+                Does.Contain("reachable")
+            );
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
+                Does.Not.Contain("dead")
+            );
         });
     }
 
@@ -95,18 +99,17 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.IWorker,System.Boolean)");
-        string[] parents = inventory.Surfaces
-            .Where(surface => surface.Kind == "decision-if")
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
             .Select(surface => surface.Parent!)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(parent => parent, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.That(parents, Is.EqualTo(new[]
-        {
-            "Fixture.First.Work(System.Boolean)",
-            "Fixture.Second.Work(System.Boolean)",
-        }));
+        Assert.That(
+            parents,
+            Is.EqualTo(new[] { "Fixture.First.Work(System.Boolean)", "Fixture.Second.Work(System.Boolean)" })
+        );
         Assert.That(inventory.Diagnostics, Is.Empty);
     }
 
@@ -126,15 +129,11 @@ public sealed class ExecutionClosureTests
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.First(System.Boolean)");
 
         Assert.That(
-            inventory.Surfaces
-                .Where(surface => surface.Kind == "decision-if")
+            inventory
+                .Surfaces.Where(surface => surface.Kind == "decision-if")
                 .Select(surface => surface.Parent)
                 .Distinct(StringComparer.Ordinal),
-            Is.EquivalentTo(new[]
-            {
-                "Fixture.Root.First(System.Boolean)",
-                "Fixture.Root.Second(System.Boolean)",
-            })
+            Is.EquivalentTo(new[] { "Fixture.Root.First(System.Boolean)", "Fixture.Root.Second(System.Boolean)" })
         );
     }
 
@@ -180,18 +179,23 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(dynamic,System.IO.Stream,System.Byte[])");
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(dynamic,System.IO.Stream,System.Byte[])");
 
         Assert.Multiple(() =>
         {
             Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("unresolved-call-dispatch"));
             Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("external-virtual-dispatch"));
-            Assert.That(inventory.Diagnostics, Has.None.Matches<InventoryDiagnostic>(item =>
-                item.Message.Contains("System.Math.Abs", StringComparison.Ordinal)));
+            Assert.That(
+                inventory.Diagnostics,
+                Has.None.Matches<InventoryDiagnostic>(item =>
+                    item.Message.Contains("System.Math.Abs", StringComparison.Ordinal)
+                )
+            );
             Assert.That(inventory.Diagnostics.All(item => item.Location.Length != 0), Is.True);
-            Assert.That(inventory.Diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(),
-                Is.EqualTo(inventory.Diagnostics.Count));
+            Assert.That(
+                inventory.Diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(),
+                Is.EqualTo(inventory.Diagnostics.Count)
+            );
         });
     }
 
@@ -207,8 +211,7 @@ public sealed class ExecutionClosureTests
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.IWorker)");
 
-        Assert.That(inventory.Diagnostics.Select(item => item.Code),
-            Does.Contain("unresolved-interface-dispatch"));
+        Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("unresolved-interface-dispatch"));
     }
 
     [Test]
@@ -232,8 +235,8 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(System.Boolean)");
-        string[] parents = inventory.Surfaces
-            .Where(surface => surface.Kind == "decision-if")
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
             .Select(surface => surface.Parent!)
             .Distinct(StringComparer.Ordinal)
             .ToArray();
@@ -268,15 +271,18 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(System.Collections.Generic.IEnumerable`1<System.Int32>)");
+        SemanticInventory inventory = Inventory(
+            Source,
+            "Fixture.Root.Run(System.Collections.Generic.IEnumerable`1<System.Int32>)"
+        );
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-                .Select(surface => surface.Parent), Does.Contain("Fixture.Root.IsPositive(System.Int32)"));
-            Assert.That(inventory.Diagnostics.Select(item => item.Code),
-                Does.Contain("unresolved-delegate-dispatch"));
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "decision-if").Select(surface => surface.Parent),
+                Does.Contain("Fixture.Root.IsPositive(System.Int32)")
+            );
+            Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("unresolved-delegate-dispatch"));
         });
     }
 
@@ -298,8 +304,10 @@ public sealed class ExecutionClosureTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-                .Select(surface => surface.Parent), Does.Not.Contain("Fixture.Dead.Body(System.Boolean)"));
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "decision-if").Select(surface => surface.Parent),
+                Does.Not.Contain("Fixture.Dead.Body(System.Boolean)")
+            );
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
     }
@@ -320,8 +328,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.IWorker)");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -351,13 +362,17 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(System.Boolean)");
-        InventoryDiagnostic[] diagnostics = inventory.Diagnostics
-            .Where(item => item.Code == "unresolved-delegate-dispatch").ToArray();
+        InventoryDiagnostic[] diagnostics = inventory
+            .Diagnostics.Where(item => item.Code == "unresolved-delegate-dispatch")
+            .ToArray();
 
         Assert.Multiple(() =>
         {
             Assert.That(diagnostics, Has.Length.EqualTo(2));
-            Assert.That(diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(), Is.EqualTo(2));
+            Assert.That(
+                diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(),
+                Is.EqualTo(2)
+            );
         });
     }
 
@@ -418,10 +433,12 @@ public sealed class ExecutionClosureTests
             public sealed class Root { public Built Run() => new Built(); }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run()", "Fixture.Built.Run(System.Boolean)");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()", "Fixture.Built.Run(System.Boolean)");
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -444,10 +461,12 @@ public sealed class ExecutionClosureTests
             public sealed class Root { public void Run(Middle worker, bool value) { worker.Work(value); } }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(Fixture.Middle,System.Boolean)");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.Middle,System.Boolean)");
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -487,8 +506,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -496,8 +518,12 @@ public sealed class ExecutionClosureTests
             Assert.That(parents, Does.Contain("Fixture.Built.Choose()"));
             Assert.That(parents, Does.Contain("Fixture.Built.Initialize()"));
             Assert.That(parents, Does.Contain("Fixture.Implicit.Initialize()"));
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-conditional")
-                .Select(surface => surface.Parent), Does.Contain("Fixture.Implicit._direct"));
+            Assert.That(
+                inventory
+                    .Surfaces.Where(surface => surface.Kind == "decision-conditional")
+                    .Select(surface => surface.Parent),
+                Does.Contain("Fixture.Implicit._direct")
+            );
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
     }
@@ -528,8 +554,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Derived.Run()");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -566,11 +595,12 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(Fixture.Number,Fixture.Number)");
-        string[] parents = inventory.Surfaces
-            .Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.Number,Fixture.Number)");
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind.StartsWith("decision-", StringComparison.Ordinal))
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -606,10 +636,11 @@ public sealed class ExecutionClosureTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-                .Select(surface => surface.Parent), Does.Contain("Fixture.Root.Make(System.Boolean)"));
-            Assert.That(inventory.Diagnostics.Select(item => item.Code),
-                Does.Contain("unresolved-delegate-dispatch"));
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "decision-if").Select(surface => surface.Parent),
+                Does.Contain("Fixture.Root.Make(System.Boolean)")
+            );
+            Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("unresolved-delegate-dispatch"));
         });
     }
 
@@ -627,8 +658,10 @@ public sealed class ExecutionClosureTests
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()");
 
-        Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent), Does.Not.Contain("Fixture.Root.Dead()"));
+        Assert.That(
+            inventory.Surfaces.Where(surface => surface.Kind == "decision-if").Select(surface => surface.Parent),
+            Does.Not.Contain("Fixture.Root.Dead()")
+        );
     }
 
     [Test]
@@ -638,8 +671,10 @@ public sealed class ExecutionClosureTests
 
         (string code, string subject, string message, string configurations) = diagnostic;
 
-        Assert.That(new[] { code, subject, message, configurations },
-            Is.EqualTo(new[] { "code", "subject", "message", "configuration" }));
+        Assert.That(
+            new[] { code, subject, message, configurations },
+            Is.EqualTo(new[] { "code", "subject", "message", "configuration" })
+        );
         Assert.That(diagnostic.Location, Is.EqualTo("location"));
     }
 
@@ -668,9 +703,14 @@ public sealed class ExecutionClosureTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(shared.Select(surface => surface.Parent).Distinct(StringComparer.Ordinal).Count(), Is.EqualTo(1));
-            Assert.That(shared.Select(surface => surface.Configurations).Distinct(StringComparer.Ordinal),
-                Is.EqualTo(new[] { "OUTPUT_ANALYSES,OUTPUT_ANALYSES+SINGLE_THREADED,SINGLE_THREADED,base" }));
+            Assert.That(
+                shared.Select(surface => surface.Parent).Distinct(StringComparer.Ordinal).Count(),
+                Is.EqualTo(1)
+            );
+            Assert.That(
+                shared.Select(surface => surface.Configurations).Distinct(StringComparer.Ordinal),
+                Is.EqualTo(new[] { "OUTPUT_ANALYSES,OUTPUT_ANALYSES+SINGLE_THREADED,SINGLE_THREADED,base" })
+            );
         });
     }
 
@@ -690,8 +730,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -719,8 +762,10 @@ public sealed class ExecutionClosureTests
         {
             Assert.That(inventory.Diagnostics.Count(item => item.Code == "unresolved-dynamic-member"), Is.EqualTo(2));
             Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("open-construction-dispatch"));
-            Assert.That(inventory.Diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(),
-                Is.EqualTo(inventory.Diagnostics.Count));
+            Assert.That(
+                inventory.Diagnostics.Select(item => item.Location).Distinct(StringComparer.Ordinal).Count(),
+                Is.EqualTo(inventory.Diagnostics.Count)
+            );
         });
     }
 
@@ -736,12 +781,14 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(Fixture.Item,System.String)");
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.Item,System.String)");
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Count(surface => surface.Kind == "decision-conditional-access"), Is.EqualTo(2));
+            Assert.That(
+                inventory.Surfaces.Count(surface => surface.Kind == "decision-conditional-access"),
+                Is.EqualTo(2)
+            );
             Assert.That(inventory.Surfaces.Count(surface => surface.Kind == "decision-coalesce"), Is.EqualTo(2));
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
@@ -767,8 +814,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(System.Boolean)");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -803,16 +853,21 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(SIL.Machine.Morphology.HermitCrab.IHCRule,SIL.Machine.Morphology.HermitCrab.Morpher)");
+        SemanticInventory inventory = Inventory(
+            Source,
+            "Fixture.Root.Run(SIL.Machine.Morphology.HermitCrab.IHCRule,SIL.Machine.Morphology.HermitCrab.Morpher)"
+        );
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Select(surface => surface.Id),
-                Does.Contain("model:rule/Fixture.ConcreteRule/IHCRule"));
-            Assert.That(inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-                .Select(surface => surface.Parent),
-                Does.Contain("Fixture.BaseRule.CompileAnalysisRule(SIL.Machine.Morphology.HermitCrab.Morpher)"));
+            Assert.That(
+                inventory.Surfaces.Select(surface => surface.Id),
+                Does.Contain("model:rule/Fixture.ConcreteRule/IHCRule")
+            );
+            Assert.That(
+                inventory.Surfaces.Where(surface => surface.Kind == "decision-if").Select(surface => surface.Parent),
+                Does.Contain("Fixture.BaseRule.CompileAnalysisRule(SIL.Machine.Morphology.HermitCrab.Morpher)")
+            );
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
     }
@@ -838,8 +893,10 @@ public sealed class ExecutionClosureTests
         Assert.Multiple(() =>
         {
             Assert.That(inventory.Diagnostics.Select(item => item.Code), Does.Contain("compilation-error"));
-            Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface =>
-                surface.Parent == "Fixture.Root.Helper()"));
+            Assert.That(
+                inventory.Surfaces,
+                Has.None.Matches<InventorySurface>(surface => surface.Parent == "Fixture.Root.Helper()")
+            );
         });
     }
 
@@ -892,8 +949,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -924,13 +984,16 @@ public sealed class ExecutionClosureTests
             }
             """;
 
-        SemanticInventory inventory = Inventory(Source,
-            "Fixture.Root.Run(Fixture.IConsumer,System.Boolean)");
+        SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run(Fixture.IConsumer,System.Boolean)");
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces.Count(surface => surface.Kind == "decision-if" &&
-                surface.Parent!.Contains("/lambda@", StringComparison.Ordinal)), Is.EqualTo(2));
+            Assert.That(
+                inventory.Surfaces.Count(surface =>
+                    surface.Kind == "decision-if" && surface.Parent!.Contains("/lambda@", StringComparison.Ordinal)
+                ),
+                Is.EqualTo(2)
+            );
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
     }
@@ -954,8 +1017,11 @@ public sealed class ExecutionClosureTests
             """;
 
         SemanticInventory inventory = Inventory(Source, "Fixture.Root.Run()");
-        string[] parents = inventory.Surfaces.Where(surface => surface.Kind == "decision-if")
-            .Select(surface => surface.Parent!).Distinct(StringComparer.Ordinal).ToArray();
+        string[] parents = inventory
+            .Surfaces.Where(surface => surface.Kind == "decision-if")
+            .Select(surface => surface.Parent!)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
         Assert.Multiple(() =>
         {
@@ -988,8 +1054,12 @@ public sealed class ExecutionClosureTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(inventory.Surfaces, Has.None.Matches<InventorySurface>(surface =>
-                surface.Parent?.Contains("/lambda@", StringComparison.Ordinal) == true));
+            Assert.That(
+                inventory.Surfaces,
+                Has.None.Matches<InventorySurface>(surface =>
+                    surface.Parent?.Contains("/lambda@", StringComparison.Ordinal) == true
+                )
+            );
             Assert.That(inventory.Diagnostics, Is.Empty);
         });
     }

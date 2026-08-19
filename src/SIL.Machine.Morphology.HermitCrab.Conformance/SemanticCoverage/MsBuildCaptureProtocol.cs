@@ -5,13 +5,12 @@ using System.Text.Json;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
-internal sealed record CapturedCompilerItem(
-    string Identity,
-    IReadOnlyDictionary<string, string> Metadata);
+internal sealed record CapturedCompilerItem(string Identity, IReadOnlyDictionary<string, string> Metadata);
 
 internal sealed record CapturedCompilerInputs(
     IReadOnlyDictionary<string, string> Properties,
-    IReadOnlyDictionary<string, IReadOnlyList<CapturedCompilerItem>> Items);
+    IReadOnlyDictionary<string, IReadOnlyList<CapturedCompilerItem>> Items
+);
 
 internal static class MsBuildCaptureProtocol
 {
@@ -19,16 +18,34 @@ internal static class MsBuildCaptureProtocol
 
     private static readonly string[] RequiredProperties =
     {
-        "PanGlossCompilerInputProtocol", "MSBuildAllProjects", "AssemblyName", "TargetFramework",
-        "LangVersion", "Nullable", "DefineConstants", "AllowUnsafeBlocks", "CheckForOverflowUnderflow",
-        "OutputType", "NETCoreSdkVersion", "MSBuildVersion", "CscToolPath", "RoslynAssembliesPath",
-        "GeneratedAssemblyInfoFile", "TargetFrameworkMonikerAssemblyAttributesPath",
+        "PanGlossCompilerInputProtocol",
+        "MSBuildAllProjects",
+        "AssemblyName",
+        "TargetFramework",
+        "LangVersion",
+        "Nullable",
+        "DefineConstants",
+        "AllowUnsafeBlocks",
+        "CheckForOverflowUnderflow",
+        "OutputType",
+        "NETCoreSdkVersion",
+        "MSBuildVersion",
+        "CscToolPath",
+        "RoslynAssembliesPath",
+        "GeneratedAssemblyInfoFile",
+        "TargetFrameworkMonikerAssemblyAttributesPath",
     };
 
     private static readonly string[] RequiredItemFamilies =
     {
-        "CscCommandLineArgs", "Compile", "ProjectReference", "ReferencePathWithRefAssemblies",
-        "Analyzer", "AdditionalFiles", "EditorConfigFiles", "Using",
+        "CscCommandLineArgs",
+        "Compile",
+        "ProjectReference",
+        "ReferencePathWithRefAssemblies",
+        "Analyzer",
+        "AdditionalFiles",
+        "EditorConfigFiles",
+        "Using",
     };
 
     internal static CapturedCompilerInputs Parse(ReadOnlySpan<byte> utf8Json)
@@ -49,16 +66,30 @@ internal static class MsBuildCaptureProtocol
             JsonElement value = RequiredProperty(properties, name);
             if (value.ValueKind != JsonValueKind.String)
                 throw new InvalidDataException($"MSBuild property '{name}' must be a string.");
-            propertyValues.Add(name, value.GetString() ?? throw new InvalidDataException($"MSBuild property '{name}' is null."));
+            propertyValues.Add(
+                name,
+                value.GetString() ?? throw new InvalidDataException($"MSBuild property '{name}' is null.")
+            );
         }
 
         if (!string.Equals(propertyValues["PanGlossCompilerInputProtocol"], Version, StringComparison.Ordinal))
-            throw new InvalidDataException($"Unexpected MSBuild capture protocol '{propertyValues["PanGlossCompilerInputProtocol"]}'.");
+        {
+            throw new InvalidDataException(
+                $"Unexpected MSBuild capture protocol '{propertyValues["PanGlossCompilerInputProtocol"]}'."
+            );
+        }
 
         foreach (JsonProperty property in items.EnumerateObject())
         {
-            if (!Array.Exists(RequiredItemFamilies, family => string.Equals(family, property.Name, StringComparison.Ordinal)))
+            if (
+                !Array.Exists(
+                    RequiredItemFamilies,
+                    family => string.Equals(family, property.Name, StringComparison.Ordinal)
+                )
+            )
+            {
                 throw new InvalidDataException($"Unknown MSBuild item family '{property.Name}'.");
+            }
         }
 
         var itemValues = new Dictionary<string, IReadOnlyList<CapturedCompilerItem>>(StringComparer.Ordinal);
@@ -75,7 +106,11 @@ internal static class MsBuildCaptureProtocol
                     throw new InvalidDataException($"MSBuild item family '{family}' contains a non-object item.");
                 JsonElement identity = RequiredProperty(item, "Identity");
                 if (identity.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(identity.GetString()))
-                    throw new InvalidDataException($"MSBuild item family '{family}' contains a null or empty Identity.");
+                {
+                    throw new InvalidDataException(
+                        $"MSBuild item family '{family}' contains a null or empty Identity."
+                    );
+                }
 
                 var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (JsonProperty property in item.EnumerateObject())
@@ -83,8 +118,16 @@ internal static class MsBuildCaptureProtocol
                     if (property.NameEquals("Identity"))
                         continue;
                     if (property.Value.ValueKind != JsonValueKind.String)
-                        throw new InvalidDataException($"Metadata '{property.Name}' on item family '{family}' must be a string.");
-                    metadata.Add(property.Name, property.Value.GetString() ?? throw new InvalidDataException($"Metadata '{property.Name}' is null."));
+                    {
+                        throw new InvalidDataException(
+                            $"Metadata '{property.Name}' on item family '{family}' must be a string."
+                        );
+                    }
+                    metadata.Add(
+                        property.Name,
+                        property.Value.GetString()
+                            ?? throw new InvalidDataException($"Metadata '{property.Name}' is null.")
+                    );
                 }
 
                 parsed.Add(new CapturedCompilerItem(identity.GetString()!, metadata));

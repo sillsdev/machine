@@ -121,7 +121,11 @@ public static class FoldInCandidateLedger
         // exactly the defect that made 21 of 30 recorded fold-in candidates wrong.
         var witnessesBySurface = CounterfactualLedger
             .Read(repositoryRoot)
-            .ToDictionary(r => r.SurfaceId, r => (IReadOnlyList<string>)(r.WitnessingFixtures ?? new[] { r.FixtureId }), StringComparer.Ordinal);
+            .ToDictionary(
+                r => r.SurfaceId,
+                r => (IReadOnlyList<string>)(r.WitnessingFixtures ?? new[] { r.FixtureId }),
+                StringComparer.Ordinal
+            );
 
         var rows = new List<Row>();
         foreach (EvidenceLedger.Row item in EvidenceLedger.Read(repositoryRoot))
@@ -131,7 +135,10 @@ public static class FoldInCandidateLedger
             if (item.Verdict is not (CounterfactualVerdict.Evidenced or CounterfactualVerdict.EvidencedJointly))
                 continue;
 
-            IReadOnlyList<string> witnesses = witnessesBySurface.TryGetValue(item.ItemId, out IReadOnlyList<string>? recorded)
+            IReadOnlyList<string> witnesses = witnessesBySurface.TryGetValue(
+                item.ItemId,
+                out IReadOnlyList<string>? recorded
+            )
                 ? recorded
                 : new[] { item.Fixture };
             if (witnesses.Any(fixtureId => fixtureId.StartsWith(LanguagesPrefix, StringComparison.Ordinal)))

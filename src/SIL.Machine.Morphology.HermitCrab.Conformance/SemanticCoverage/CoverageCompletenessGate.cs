@@ -90,13 +90,18 @@ public static class CoverageCompletenessGate
             .GroupBy(evidenceRow => evidenceRow.ItemId, StringComparer.Ordinal)
             .ToDictionary(
                 group => group.Key,
-                group => group
-                    .Where(evidenceRow =>
-                        !IsCompletenessEvidence(evidenceRow)
-                        || !string.Equals(evidenceRow.Fixture, itemById[group.Key].Fixture, StringComparison.Ordinal)
-                    )
-                    .Select(evidenceRow => EvidenceDiagnostic(evidenceRow, itemById[group.Key]))
-                    .FirstOrDefault(),
+                group =>
+                    group
+                        .Where(evidenceRow =>
+                            !IsCompletenessEvidence(evidenceRow)
+                            || !string.Equals(
+                                evidenceRow.Fixture,
+                                itemById[group.Key].Fixture,
+                                StringComparison.Ordinal
+                            )
+                        )
+                        .Select(evidenceRow => EvidenceDiagnostic(evidenceRow, itemById[group.Key]))
+                        .FirstOrDefault(),
                 StringComparer.Ordinal
             );
         var proofByItem = proofs.ToDictionary(p => p.ItemId, StringComparer.Ordinal);
@@ -112,7 +117,8 @@ public static class CoverageCompletenessGate
         foreach (CoverageItem item in items.OrderBy(item => item.Id, StringComparer.Ordinal))
         {
             bool hasEvidence = evidenceByItem.TryGetValue(item.Id, out Evidence? matchedEvidence);
-            bool hasInvalidEvidence = invalidEvidenceDetails.TryGetValue(item.Id, out string? invalidEvidenceDetail)
+            bool hasInvalidEvidence =
+                invalidEvidenceDetails.TryGetValue(item.Id, out string? invalidEvidenceDetail)
                 && invalidEvidenceDetail is not null;
             bool hasProof = proofByItem.TryGetValue(item.Id, out Proof? matchedProof);
 
@@ -162,7 +168,14 @@ public static class CoverageCompletenessGate
                 string? rejection = RejectRecomputedOrderingProof(item, matchedProof!, loadGrammar);
                 if (rejection is not null)
                 {
-                    results.Add(new CoverageResolutionResult(item.Id, CoverageResolution.Rejected, CounterexampleKind.None, rejection));
+                    results.Add(
+                        new CoverageResolutionResult(
+                            item.Id,
+                            CoverageResolution.Rejected,
+                            CounterexampleKind.None,
+                            rejection
+                        )
+                    );
                     continue;
                 }
 
@@ -202,8 +215,7 @@ public static class CoverageCompletenessGate
 
         bool complete =
             orphanedEvidence.Length == 0
-            &&
-            orphanedProofs.Length == 0
+            && orphanedProofs.Length == 0
             && results.All(result => result.Resolution is CoverageResolution.Evidenced or CoverageResolution.Proven);
 
         return new CompletenessReport(results, counts, orphanedEvidence, orphanedProofs, complete);
@@ -229,12 +241,17 @@ public static class CoverageCompletenessGate
     /// are not completeness evidence.
     /// </summary>
     private static bool IsCompletenessEvidence(Evidence evidence) =>
-        (evidence.Verdict, evidence.CounterexampleKind) is
+        (evidence.Verdict, evidence.CounterexampleKind)
+            is
                 (CounterfactualVerdict.Evidenced, CounterexampleKind.Word)
-                or (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.Word)
-                or (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.LoadFailure)
-                or (CounterfactualVerdict.RequiredByDtd, CounterexampleKind.LoadFailure)
-                or (CounterfactualVerdict.RequiredByLoader, CounterexampleKind.LoadFailure)
+                or
+                (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.Word)
+                or
+                (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.LoadFailure)
+                or
+                (CounterfactualVerdict.RequiredByDtd, CounterexampleKind.LoadFailure)
+                or
+                (CounterfactualVerdict.RequiredByLoader, CounterexampleKind.LoadFailure)
         && !string.IsNullOrWhiteSpace(evidence.ExampleWord)
         && evidence.ExampleOutcome is not null
         && evidence.CounterexampleOutcome is not null
@@ -246,7 +263,11 @@ public static class CoverageCompletenessGate
     /// (<see cref="ImpossibilityProofs.DtdDefault"/> and siblings) fail closed until a mechanical verifier
     /// exists; checked-in prose never resolves completeness.
     /// </summary>
-    private static string? RejectRecomputedOrderingProof(CoverageItem item, Proof proof, Func<string, XDocument>? loadGrammar)
+    private static string? RejectRecomputedOrderingProof(
+        CoverageItem item,
+        Proof proof,
+        Func<string, XDocument>? loadGrammar
+    )
     {
         bool isRecomputed =
             proof.Kind == OrderingProofs.Kind
@@ -276,7 +297,8 @@ public static class CoverageCompletenessGate
         XDocument grammar = loadGrammar(item.Fixture);
         bool verified =
             proof.Kind == OrderingProofs.Kind ? OrderingProofs.Verify(grammar, item.Fixture, proof)
-            : proof.Kind == UnorderedInvariantProofs.Kind ? UnorderedInvariantProofs.Verify(grammar, item.Fixture, proof)
+            : proof.Kind == UnorderedInvariantProofs.Kind
+                ? UnorderedInvariantProofs.Verify(grammar, item.Fixture, proof)
             : proof.Kind == InactiveMemberProofs.Kind ? InactiveMemberProofs.Verify(grammar, item.Fixture, proof)
             : proof.Kind == PosDisjointProofs.Kind ? PosDisjointProofs.Verify(grammar, item.Fixture, proof)
             : proof.Kind == TemplateMaskedProofs.Kind ? TemplateMaskedProofs.Verify(grammar, item.Fixture, proof)

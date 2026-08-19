@@ -11,7 +11,8 @@ public sealed record AuditDiagnostic(
     string SubjectId,
     string Message,
     string Configurations = "",
-    string Location = "");
+    string Location = ""
+);
 
 public sealed record AuditResult(bool IsComplete, IReadOnlyList<AuditDiagnostic> Diagnostics);
 
@@ -43,9 +44,15 @@ public static class SemanticCoverageAudit
         var diagnostics = new List<AuditDiagnostic>();
         foreach (InventoryDiagnostic diagnostic in inventory.Diagnostics)
         {
-            diagnostics.Add(new AuditDiagnostic(
-                diagnostic.Code, diagnostic.SubjectId, diagnostic.Message,
-                diagnostic.Configurations, diagnostic.Location));
+            diagnostics.Add(
+                new AuditDiagnostic(
+                    diagnostic.Code,
+                    diagnostic.SubjectId,
+                    diagnostic.Message,
+                    diagnostic.Configurations,
+                    diagnostic.Location
+                )
+            );
         }
         var featuresById = new Dictionary<string, SemanticFeature>(StringComparer.Ordinal);
         foreach (SemanticFeature feature in catalog.Features)
@@ -59,63 +66,93 @@ public static class SemanticCoverageAudit
                 {
                     if (effect is null)
                     {
-                        diagnostics.Add(new AuditDiagnostic(
-                            MissingPhaseEffect, feature.Id,
-                            $"semantic feature '{feature.Id}' declares no {name}"));
+                        diagnostics.Add(
+                            new AuditDiagnostic(
+                                MissingPhaseEffect,
+                                feature.Id,
+                                $"semantic feature '{feature.Id}' declares no {name}"
+                            )
+                        );
                     }
                 }
             }
             else if (string.IsNullOrWhiteSpace(feature.Reason) || feature.Citations.Count == 0)
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    RetirementWithoutReason, feature.Id,
-                    $"feature '{feature.Id}' is {Name(feature.Disposition)} and needs a reason and at least one citation"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        RetirementWithoutReason,
+                        feature.Id,
+                        $"feature '{feature.Id}' is {Name(feature.Disposition)} and needs a reason and at least one citation"
+                    )
+                );
             }
         }
 
         var mappedSurfaces = new HashSet<string>(StringComparer.Ordinal);
         var usedFeatures = new HashSet<string>(StringComparer.Ordinal);
-        var inventoryIds = new HashSet<string>(inventory.Surfaces.Select(surface => surface.Id), StringComparer.Ordinal);
+        var inventoryIds = new HashSet<string>(
+            inventory.Surfaces.Select(surface => surface.Id),
+            StringComparer.Ordinal
+        );
         foreach (SurfaceMapping mapping in catalog.SurfaceMappings)
         {
             if (mapping.SurfaceId.IndexOfAny(PatternCharacters) >= 0)
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    PatternMapping, mapping.SurfaceId,
-                    $"mapping '{mapping.SurfaceId}' must name one exact surface; patterns are not allowed"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        PatternMapping,
+                        mapping.SurfaceId,
+                        $"mapping '{mapping.SurfaceId}' must name one exact surface; patterns are not allowed"
+                    )
+                );
                 continue;
             }
 
             if (!mappedSurfaces.Add(mapping.SurfaceId))
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    DuplicateSurfaceMapping, mapping.SurfaceId,
-                    $"surface '{mapping.SurfaceId}' is mapped more than once"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        DuplicateSurfaceMapping,
+                        mapping.SurfaceId,
+                        $"surface '{mapping.SurfaceId}' is mapped more than once"
+                    )
+                );
             }
 
             if (!featuresById.ContainsKey(mapping.FeatureId))
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    UnknownFeature, mapping.SurfaceId,
-                    $"surface '{mapping.SurfaceId}' maps to undeclared feature '{mapping.FeatureId}'"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        UnknownFeature,
+                        mapping.SurfaceId,
+                        $"surface '{mapping.SurfaceId}' maps to undeclared feature '{mapping.FeatureId}'"
+                    )
+                );
             }
             else
             {
                 usedFeatures.Add(mapping.FeatureId);
                 if (featuresById[mapping.FeatureId].Disposition == FeatureDisposition.Unclassified)
                 {
-                    diagnostics.Add(new AuditDiagnostic(
-                        UnclassifiedMapping,
-                        mapping.SurfaceId,
-                        $"surface '{mapping.SurfaceId}' maps to unclassified feature '{mapping.FeatureId}'"));
+                    diagnostics.Add(
+                        new AuditDiagnostic(
+                            UnclassifiedMapping,
+                            mapping.SurfaceId,
+                            $"surface '{mapping.SurfaceId}' maps to unclassified feature '{mapping.FeatureId}'"
+                        )
+                    );
                 }
             }
 
             if (!inventoryIds.Contains(mapping.SurfaceId))
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    StaleSurfaceMapping, mapping.SurfaceId,
-                    $"mapping names '{mapping.SurfaceId}', which the generated inventory no longer contains"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        StaleSurfaceMapping,
+                        mapping.SurfaceId,
+                        $"mapping names '{mapping.SurfaceId}', which the generated inventory no longer contains"
+                    )
+                );
             }
         }
 
@@ -123,9 +160,13 @@ public static class SemanticCoverageAudit
         {
             if (!mappedSurfaces.Contains(surface.Id))
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    UnmappedSurface, surface.Id,
-                    $"generated surface '{surface.Id}' ({surface.Kind}) has no catalog mapping"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        UnmappedSurface,
+                        surface.Id,
+                        $"generated surface '{surface.Id}' ({surface.Kind}) has no catalog mapping"
+                    )
+                );
             }
         }
 
@@ -133,9 +174,13 @@ public static class SemanticCoverageAudit
         {
             if (!usedFeatures.Contains(feature.Id))
             {
-                diagnostics.Add(new AuditDiagnostic(
-                    UnusedFeature, feature.Id,
-                    $"feature '{feature.Id}' is declared but no surface maps to it"));
+                diagnostics.Add(
+                    new AuditDiagnostic(
+                        UnusedFeature,
+                        feature.Id,
+                        $"feature '{feature.Id}' is declared but no surface maps to it"
+                    )
+                );
             }
         }
 

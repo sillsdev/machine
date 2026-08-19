@@ -45,7 +45,11 @@ public sealed class InterfaceInventoryLedgerTests
         TestContext.Out.WriteLine($"declared={rows.Count} present={present} notPresent={rows.Count - present}");
         TestContext.Out.WriteLine($"typedEdges={typedEdges}");
         foreach (InterfaceJunction junction in junctions)
-            TestContext.Out.WriteLine($"junction: {junction.TargetType} writers={junction.WriterCount} readers={junction.ReaderCount}");
+        {
+            TestContext.Out.WriteLine(
+                $"junction: {junction.TargetType} writers={junction.WriterCount} readers={junction.ReaderCount}"
+            );
+        }
 
         Assert.That(rows, Has.Count.EqualTo(60));
         Assert.That(present, Is.EqualTo(44));
@@ -83,9 +87,21 @@ public sealed class InterfaceInventoryLedgerTests
             foreach (InterfaceInventoryLedger.Row row in rows)
             {
                 if (row.Present)
-                    Assert.That(row.Fixtures, Is.Not.Empty, $"{row.Element}.{row.Attribute} is present but names no fixture");
+                {
+                    Assert.That(
+                        row.Fixtures,
+                        Is.Not.Empty,
+                        $"{row.Element}.{row.Attribute} is present but names no fixture"
+                    );
+                }
                 else
-                    Assert.That(row.Fixtures, Is.Empty, $"{row.Element}.{row.Attribute} is not present but names a fixture");
+                {
+                    Assert.That(
+                        row.Fixtures,
+                        Is.Empty,
+                        $"{row.Element}.{row.Attribute} is not present but names a fixture"
+                    );
+                }
             }
         });
     }

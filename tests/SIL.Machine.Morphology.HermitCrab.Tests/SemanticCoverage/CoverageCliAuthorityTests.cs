@@ -81,11 +81,15 @@ public sealed class CoverageCliAuthorityTests
             CancellationToken.None,
             root,
             "--audited-source-scope",
-            "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader");
+            "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader"
+        );
 
         Assert.That(result.ExitCode, Is.EqualTo(1), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("proposal only"));
-        Assert.That(result.CombinedOutput, Does.Contain("auditedSourceScopes: [\"SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader\"]"));
+        Assert.That(
+            result.CombinedOutput,
+            Does.Contain("auditedSourceScopes: [\"SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader\"]")
+        );
         Assert.That(File.ReadAllBytes(catalogPath), Is.EqualTo(before));
     }
 
@@ -117,7 +121,8 @@ public sealed class CoverageCliAuthorityTests
             cancellationToken,
             root,
             "--audited-source-scope",
-            "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader.Load(System.String)");
+            "SIL.Machine.Morphology.HermitCrab.XmlLanguageLoader.Load(System.String)"
+        );
 
         Assert.That(result.ExitCode, Is.EqualTo(1), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("schema/decision-if"), result.CombinedOutput);
@@ -134,7 +139,8 @@ public sealed class CoverageCliAuthorityTests
             CancellationToken.None,
             root,
             "--audited-source-scope",
-            "Fixture.*");
+            "Fixture.*"
+        );
 
         Assert.That(result.ExitCode, Is.EqualTo(2), result.CombinedOutput);
         Assert.That(result.CombinedOutput, Does.Contain("patterns are not allowed"));
@@ -174,7 +180,8 @@ public sealed class CoverageCliAuthorityTests
         string mode,
         CancellationToken cancellationToken,
         string? repositoryRoot = null,
-        params string[] extraArgs)
+        params string[] extraArgs
+    )
     {
         string tool = Path.Combine(TestContext.CurrentContext.TestDirectory, "hc-conformance.dll");
         Assert.That(File.Exists(tool), Is.True, $"missing test-side CLI at {tool}");
@@ -218,16 +225,20 @@ public sealed class CoverageCliAuthorityTests
         Directory.CreateDirectory(tool);
         File.WriteAllText(Path.Combine(_repositoryRoot, "conformance", "constructs.txt"), "synthetic\n");
         File.WriteAllText(Path.Combine(engine, "HermitCrabInput.dtd"), "<!ELEMENT Root EMPTY>\n");
-        File.WriteAllText(Path.Combine(engine, "Engine.cs"),
-            "namespace Fixture { public sealed class Root { public void Run(bool value) { if (value) { } } } }");
+        File.WriteAllText(
+            Path.Combine(engine, "Engine.cs"),
+            "namespace Fixture { public sealed class Root { public void Run(bool value) { if (value) { } } } }"
+        );
         File.WriteAllText(Path.Combine(tool, "Tool.cs"), "namespace Fixture { public sealed class Tool { } }");
         File.WriteAllText(Path.Combine(_repositoryRoot, "conformance", "semantic-coverage-baseline.txt"), "");
         File.WriteAllText(Path.Combine(_repositoryRoot, "conformance", "semantic-coverage-presence-waivers.txt"), "");
-        File.WriteAllText(Path.Combine(_repositoryRoot, "conformance", "semantic-catalog.yaml"),
+        File.WriteAllText(
+            Path.Combine(_repositoryRoot, "conformance", "semantic-catalog.yaml"),
             "profile: sil.machine.hc-semantic-catalog/v1\n"
-            + "auditedSourceScopes: [Fixture.Root]\n"
-            + "features: []\n"
-            + "surfaceMappings: []\n");
+                + "auditedSourceScopes: [Fixture.Root]\n"
+                + "features: []\n"
+                + "surfaceMappings: []\n"
+        );
         return _repositoryRoot;
     }
 

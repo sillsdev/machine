@@ -171,8 +171,22 @@ public static class OrderingGenerator
         for (int i = 0; i < strata.Length; i++)
         {
             string ownerLabel = OwnerLabel(strata[i], "Stratum", i);
-            AddIdrefsList(lists, fixtureId, OrderingListKind.StratumPhonologicalRules, ownerLabel, i, strata[i].Attribute("phonologicalRules"));
-            AddIdrefsList(lists, fixtureId, OrderingListKind.StratumMorphologicalRules, ownerLabel, i, strata[i].Attribute("morphologicalRules"));
+            AddIdrefsList(
+                lists,
+                fixtureId,
+                OrderingListKind.StratumPhonologicalRules,
+                ownerLabel,
+                i,
+                strata[i].Attribute("phonologicalRules")
+            );
+            AddIdrefsList(
+                lists,
+                fixtureId,
+                OrderingListKind.StratumMorphologicalRules,
+                ownerLabel,
+                i,
+                strata[i].Attribute("morphologicalRules")
+            );
         }
 
         XElement[] templates = grammar.Descendants("AffixTemplate").ToArray();
@@ -253,7 +267,11 @@ public static class OrderingGenerator
             for (int t = 0; t < allTemplates.Length; t++)
             {
                 if (allTemplates[t].Ancestors("Stratum").FirstOrDefault() == strata[i])
-                    morphology.Add(new StratumUnit(StratumUnitKind.AffixTemplate, OwnerLabel(allTemplates[t], "AffixTemplate", t)));
+                {
+                    morphology.Add(
+                        new StratumUnit(StratumUnitKind.AffixTemplate, OwnerLabel(allTemplates[t], "AffixTemplate", t))
+                    );
+                }
             }
             var phonology = SplitIdrefs(strata[i].Attribute("phonologicalRules")?.Value ?? "")
                 .Select(id => new StratumUnit(StratumUnitKind.PhonologicalRule, id))
@@ -275,7 +293,20 @@ public static class OrderingGenerator
             for (int a = 0; a < phonology.Count; a++)
             {
                 for (int b = a; b < phonology.Count; b++)
-                    pairs.Add(BuildStratumPair(fixtureId, StratumPairKind.SameStage, label, i, phonology[a], label, i, phonology[b]));
+                {
+                    pairs.Add(
+                        BuildStratumPair(
+                            fixtureId,
+                            StratumPairKind.SameStage,
+                            label,
+                            i,
+                            phonology[a],
+                            label,
+                            i,
+                            phonology[b]
+                        )
+                    );
+                }
             }
 
             foreach (StratumUnit m in morphology)
@@ -290,7 +321,11 @@ public static class OrderingGenerator
                 foreach (StratumUnit p in phonology)
                 {
                     foreach (StratumUnit m in nextMorphology)
-                        pairs.Add(BuildStratumPair(fixtureId, StratumPairKind.CrossStratum, label, i, p, nextLabel, i + 1, m));
+                    {
+                        pairs.Add(
+                            BuildStratumPair(fixtureId, StratumPairKind.CrossStratum, label, i, p, nextLabel, i + 1, m)
+                        );
+                    }
                 }
             }
         }
@@ -337,8 +372,18 @@ public static class OrderingGenerator
     {
         string id =
             $"{StratumPairIdPrefix}{fixtureId}/{stratumAOrdinal}:{StratumUnitTag(unitA.Kind)}:{Encode(unitA.Label)}"
-                + $"~{stratumBOrdinal}:{StratumUnitTag(unitB.Kind)}:{Encode(unitB.Label)}";
-        return new StratumInteractionPair(id, fixtureId, kind, stratumALabel, stratumAOrdinal, unitA, stratumBLabel, stratumBOrdinal, unitB);
+            + $"~{stratumBOrdinal}:{StratumUnitTag(unitB.Kind)}:{Encode(unitB.Label)}";
+        return new StratumInteractionPair(
+            id,
+            fixtureId,
+            kind,
+            stratumALabel,
+            stratumAOrdinal,
+            unitA,
+            stratumBLabel,
+            stratumBOrdinal,
+            unitB
+        );
     }
 
     private static string StratumUnitTag(StratumUnitKind kind) =>
@@ -445,7 +490,10 @@ public static class OrderingGenerator
             );
         }
 
-        string[] shared = effect.Segments.Intersect(sensitive.Segments, StringComparer.Ordinal).OrderBy(s => s, StringComparer.Ordinal).ToArray();
+        string[] shared = effect
+            .Segments.Intersect(sensitive.Segments, StringComparer.Ordinal)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToArray();
         return shared.Length == 0
             ? new DisjointDomainsCheck(
                 item.Id,
@@ -453,7 +501,11 @@ public static class OrderingGenerator
                 $"'{item.MemberA}' effect (output+input) {{{string.Join(",", effect.Segments.OrderBy(s => s, StringComparer.Ordinal))}}} and "
                     + $"'{item.MemberB}' sensitivity (input+environment) {{{string.Join(",", sensitive.Segments.OrderBy(s => s, StringComparer.Ordinal))}}} do not intersect"
             )
-            : new DisjointDomainsCheck(item.Id, DomainRelation.Overlaps, $"shared segment(s): {string.Join(",", shared)}");
+            : new DisjointDomainsCheck(
+                item.Id,
+                DomainRelation.Overlaps,
+                $"shared segment(s): {string.Join(",", shared)}"
+            );
     }
 
     private static void AddIdrefsList(
@@ -472,7 +524,8 @@ public static class OrderingGenerator
             lists.Add(new OrderedList(fixtureId, kind, ownerLabel, ownerOrdinal, members));
     }
 
-    private static string[] SplitIdrefs(string value) => value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+    private static string[] SplitIdrefs(string value) =>
+        value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
     private static string OwnerLabel(XElement element, string tag, int ordinal)
     {
@@ -577,7 +630,8 @@ public static class OrderingGenerator
     /// </summary>
     private readonly record struct SegmentResolution(bool IsResolved, IReadOnlySet<string> Segments, string Reason)
     {
-        public static SegmentResolution Ok(IEnumerable<string> segments) => new(true, segments.ToHashSet(StringComparer.Ordinal), "");
+        public static SegmentResolution Ok(IEnumerable<string> segments) =>
+            new(true, segments.ToHashSet(StringComparer.Ordinal), "");
 
         public static SegmentResolution No(string reason) => new(false, ImmutableHashSet<string>.Empty, reason);
     }
@@ -596,9 +650,14 @@ public static class OrderingGenerator
     // over-approximating a rule's output can only turn a real Disjoint into a false Undetermined,
     // never the reverse, which is the safe direction for a check whose only forbidden mistake is a
     // false Disjoint.
-    private static SegmentResolution ResolveRuleOutputSegments(XElement rule, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveRuleOutputSegments(
+        XElement rule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
-        List<XElement> subrules = rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").ToList() ?? new List<XElement>();
+        List<XElement> subrules =
+            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").ToList() ?? new List<XElement>();
         if (subrules.Count == 0)
             return SegmentResolution.No("no PhonologicalSubrule children found");
 
@@ -615,13 +674,20 @@ public static class OrderingGenerator
 
     // A rule's PhoneticInput is shared across every one of its subrules (the DTD gives PhonologicalRule
     // exactly one PhoneticInput), so this is a single resolution, not a union.
-    private static SegmentResolution ResolveRuleInputSegments(XElement rule, XDocument grammar, Dictionary<string, SegmentResolution> cache) =>
-        ResolveSequenceSegments(rule.Element("PhoneticInput")?.Element("PhoneticSequence"), grammar, cache);
+    private static SegmentResolution ResolveRuleInputSegments(
+        XElement rule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    ) => ResolveSequenceSegments(rule.Element("PhoneticInput")?.Element("PhoneticSequence"), grammar, cache);
 
     // What an earlier rule can change: what it produces AND what it consumes/alters. Consuming or
     // altering a segment can destroy an environment a later rule needs (bleeding), so input belongs in
     // EFFECT exactly as much as output does.
-    private static SegmentResolution ResolveRuleEffectSegments(XElement rule, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveRuleEffectSegments(
+        XElement rule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         SegmentResolution output = ResolveRuleOutputSegments(rule, grammar, cache);
         return Union(output, ResolveRuleInputSegments(rule, grammar, cache));
@@ -630,7 +696,11 @@ public static class OrderingGenerator
     // What a later rule can be affected by: what it matches AND every segment its Environment templates
     // are conditioned on. A rule that only fires in some environment is sensitive to whatever can create
     // or destroy that environment, not only to its own PhoneticInput.
-    private static SegmentResolution ResolveRuleSensitiveSegments(XElement rule, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveRuleSensitiveSegments(
+        XElement rule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         SegmentResolution input = ResolveRuleInputSegments(rule, grammar, cache);
         return Union(input, ResolveRuleEnvironmentSegments(rule, grammar, cache));
@@ -639,9 +709,14 @@ public static class OrderingGenerator
     // Union across every PhonologicalSubrule's Environment, mirroring ResolveRuleOutputSegments: any one
     // subrule's environment can be the one that fires, so all are possible sensitivities. isActive="no"
     // subrules are included too, for the same over-approximation reason output does.
-    private static SegmentResolution ResolveRuleEnvironmentSegments(XElement rule, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveRuleEnvironmentSegments(
+        XElement rule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
-        List<XElement> subrules = rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").ToList() ?? new List<XElement>();
+        List<XElement> subrules =
+            rule.Element("PhonologicalSubrules")?.Elements("PhonologicalSubrule").ToList() ?? new List<XElement>();
         if (subrules.Count == 0)
             return SegmentResolution.No("no PhonologicalSubrule children found");
 
@@ -657,7 +732,11 @@ public static class OrderingGenerator
 
     // A subrule's Environment (LeftEnvironment?, RightEnvironment?) is optional per the DTD; absent
     // means this subrule fires unconditionally, i.e. contributes no extra environment segments.
-    private static SegmentResolution ResolveSubruleEnvironmentSegments(XElement subrule, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveSubruleEnvironmentSegments(
+        XElement subrule,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         XElement? environment = subrule.Element("Environment");
         if (environment is null)
@@ -669,12 +748,20 @@ public static class OrderingGenerator
         return Union(left, ResolveEnvironmentSideSegments(environment.Element("RightEnvironment"), grammar, cache));
     }
 
-    private static SegmentResolution ResolveEnvironmentSideSegments(XElement? side, XDocument grammar, Dictionary<string, SegmentResolution> cache) =>
+    private static SegmentResolution ResolveEnvironmentSideSegments(
+        XElement? side,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    ) =>
         side is null
             ? SegmentResolution.Ok(Array.Empty<string>())
             : ResolveSequenceSegments(side.Element("PhoneticTemplate")?.Element("PhoneticSequence"), grammar, cache);
 
-    private static SegmentResolution ResolveSequenceSegments(XElement? sequence, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveSequenceSegments(
+        XElement? sequence,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         // PhoneticInput/PhoneticOutput's PhoneticSequence child is itself optional (an epenthesis rule
         // matches/produces no pre-existing segment), and that is a fully resolved empty set, not a
@@ -692,7 +779,11 @@ public static class OrderingGenerator
         return acc;
     }
 
-    private static SegmentResolution ResolveElementSegments(XElement element, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveElementSegments(
+        XElement element,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         switch (element.Name.LocalName)
         {
@@ -736,12 +827,18 @@ public static class OrderingGenerator
         }
     }
 
-    private static SegmentResolution ResolveNaturalClass(string naturalClassId, XDocument grammar, Dictionary<string, SegmentResolution> cache)
+    private static SegmentResolution ResolveNaturalClass(
+        string naturalClassId,
+        XDocument grammar,
+        Dictionary<string, SegmentResolution> cache
+    )
     {
         if (cache.TryGetValue(naturalClassId, out SegmentResolution cached))
             return cached;
 
-        XElement? segmentClass = grammar.Descendants("SegmentNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+        XElement? segmentClass = grammar
+            .Descendants("SegmentNaturalClass")
+            .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
         SegmentResolution result;
         if (segmentClass is not null)
         {
@@ -749,11 +846,12 @@ public static class OrderingGenerator
         }
         else
         {
-            XElement? featureClass = grammar.Descendants("FeatureNaturalClass").FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
-            result =
-                featureClass is not null
-                    ? ResolveFeatureNaturalClass(featureClass, grammar)
-                    : SegmentResolution.No($"natural class '{naturalClassId}' is not declared in this document");
+            XElement? featureClass = grammar
+                .Descendants("FeatureNaturalClass")
+                .FirstOrDefault(e => (string?)e.Attribute("id") == naturalClassId);
+            result = featureClass is not null
+                ? ResolveFeatureNaturalClass(featureClass, grammar)
+                : SegmentResolution.No($"natural class '{naturalClassId}' is not declared in this document");
         }
 
         cache[naturalClassId] = result;
@@ -790,12 +888,20 @@ public static class OrderingGenerator
             if ((string?)featureValue.Attribute("isActive") == "no")
                 continue;
             if (featureValue.Elements("FeatureValue").Any())
-                return SegmentResolution.No($"FeatureNaturalClass '{classId}' has a nested FeatureValue (complex-feature matching is not modeled)");
+            {
+                return SegmentResolution.No(
+                    $"FeatureNaturalClass '{classId}' has a nested FeatureValue (complex-feature matching is not modeled)"
+                );
+            }
 
             string? feature = (string?)featureValue.Attribute("feature");
             string? symbolValues = (string?)featureValue.Attribute("symbolValues");
             if (feature is null || symbolValues is null)
-                return SegmentResolution.No($"FeatureNaturalClass '{classId}' has a FeatureValue missing feature or symbolValues");
+            {
+                return SegmentResolution.No(
+                    $"FeatureNaturalClass '{classId}' has a FeatureValue missing feature or symbolValues"
+                );
+            }
             constraints.Add((feature, SplitIdrefs(symbolValues).ToHashSet(StringComparer.Ordinal)));
         }
 
@@ -810,7 +916,11 @@ public static class OrderingGenerator
 
             bool? matches = MatchesEveryConstraint(segmentDef, constraints);
             if (matches is null)
-                return SegmentResolution.No($"SegmentDefinition '{segmentId}' does not declare every feature FeatureNaturalClass '{classId}' constrains");
+            {
+                return SegmentResolution.No(
+                    $"SegmentDefinition '{segmentId}' does not declare every feature FeatureNaturalClass '{classId}' constrains"
+                );
+            }
             if (matches.Value)
                 members.Add(segmentId);
         }
@@ -821,21 +931,25 @@ public static class OrderingGenerator
     /// Null means at least one constrained feature is not declared (actively) on this segment at all --
     /// undetermined, never a silent non-match.
     /// </summary>
-    private static bool? MatchesEveryConstraint(XElement segmentDef, List<(string Feature, HashSet<string> Symbols)> constraints)
+    private static bool? MatchesEveryConstraint(
+        XElement segmentDef,
+        List<(string Feature, HashSet<string> Symbols)> constraints
+    )
     {
         foreach ((string feature, HashSet<string> symbols) in constraints)
         {
             XElement? declared = segmentDef
                 .Elements("FeatureValue")
-                .FirstOrDefault(fv => (string?)fv.Attribute("isActive") != "no" && (string?)fv.Attribute("feature") == feature);
+                .FirstOrDefault(fv =>
+                    (string?)fv.Attribute("isActive") != "no" && (string?)fv.Attribute("feature") == feature
+                );
             if (declared is null)
                 return null;
 
             string? declaredSymbols = (string?)declared.Attribute("symbolValues");
-            HashSet<string> declaredSet =
-                declaredSymbols is null
-                    ? new HashSet<string>(StringComparer.Ordinal)
-                    : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
+            HashSet<string> declaredSet = declaredSymbols is null
+                ? new HashSet<string>(StringComparer.Ordinal)
+                : SplitIdrefs(declaredSymbols).ToHashSet(StringComparer.Ordinal);
             if (!declaredSet.Overlaps(symbols))
                 return false;
         }

@@ -40,7 +40,11 @@ public sealed class ExceptionListTests
         int start = text.IndexOf(StartMarker, StringComparison.Ordinal);
         int end = text.IndexOf(EndMarker, StringComparison.Ordinal);
         Assert.That(start, Is.GreaterThanOrEqualTo(0), $"{StartMarker} not found in conformance/README.md");
-        Assert.That(end, Is.GreaterThan(start), $"{EndMarker} not found after the start marker in conformance/README.md");
+        Assert.That(
+            end,
+            Is.GreaterThan(start),
+            $"{EndMarker} not found after the start marker in conformance/README.md"
+        );
         return text[start..end];
     }
 
@@ -75,7 +79,9 @@ public sealed class ExceptionListTests
         Assert.That(noConsumerProofs, Is.Not.Empty, "the no-consumer ledger should not be empty");
 
         string[] missing = noConsumerProofs
-            .Where(proof => SurfaceKeywords(proof.SurfaceId).Any(keyword => !section.Contains(keyword, StringComparison.Ordinal)))
+            .Where(proof =>
+                SurfaceKeywords(proof.SurfaceId).Any(keyword => !section.Contains(keyword, StringComparison.Ordinal))
+            )
             .Select(proof => proof.SurfaceId)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
@@ -122,7 +128,9 @@ public sealed class ExceptionListTests
     public void TheReadmeClaimsExactlyAsManySurfacesAsBothLedgersRecord()
     {
         string root = RepositoryRoot();
-        int noConsumerCount = ImpossibilityProofs.Read(root).Count(proof => proof.Kind == ImpossibilityProofs.NoConsumer);
+        int noConsumerCount = ImpossibilityProofs
+            .Read(root)
+            .Count(proof => proof.Kind == ImpossibilityProofs.NoConsumer);
         int deadSchemaCount = GrammarCoverageGate
             .ReadBaseline(root)
             .Count(entry => entry.Classification == GrammarCoverageGate.DeadSchema);
@@ -131,7 +139,9 @@ public sealed class ExceptionListTests
         string readmePath = Path.Combine(root, "conformance", "README.md");
         string readme = File.ReadAllText(readmePath);
 
-        Assert.That(readme, Does.Contain($"{ToWords(total)} surfaces across three feature areas"),
+        Assert.That(
+            readme,
+            Does.Contain($"{ToWords(total)} surfaces across three feature areas"),
             $"conformance/README.md must claim exactly {total} surfaces ({noConsumerCount} no-consumer + {deadSchemaCount} dead-schema); update its wording if this count changed"
         );
     }
