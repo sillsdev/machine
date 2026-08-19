@@ -77,6 +77,7 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private void ParallelApplySlots(Word inWord, HashSet<Word> output)
         {
+            ParallelOptions parallelOptions = _morpher.CreateParallelOptions();
             var outStack = new ConcurrentStack<Word>();
             var from = new ConcurrentStack<Tuple<Word, int>>();
             from.Push(Tuple.Create(inWord, _rules.Count - 1));
@@ -86,6 +87,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 to.Clear();
                 Parallel.ForEach(
                     from,
+                    parallelOptions,
                     work =>
                     {
                         bool add = true;

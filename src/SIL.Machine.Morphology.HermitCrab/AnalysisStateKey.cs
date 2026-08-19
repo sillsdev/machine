@@ -33,7 +33,19 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
         private readonly int _hashCode;
 
-        public AnalysisStateKey(Word word)
+        /// <summary>
+        /// Keys <paramref name="word"/>, freezing the fields the key reads. A named factory because that
+        /// freeze mutates <paramref name="word"/>: <c>Word.FreezeImpl</c> leaves
+        /// <c>SyntacticFeatureStruct</c> unfrozen and <c>AnalysisAffixTemplateRule.Apply</c> mutates it on
+        /// already-frozen Words, so pinning it here turns a later mutation into a throw rather than a
+        /// corrupted table -- at the cost of freezing it earlier than the unmemoized engine does.
+        /// </summary>
+        public static AnalysisStateKey PinAndKey(Word word)
+        {
+            return new AnalysisStateKey(word);
+        }
+
+        private AnalysisStateKey(Word word)
         {
             // The cached hash covers live references -- notably Word.UnappliedRuleCounts, the word's own
             // mutable dictionary. Keying an unfrozen word would let a later mutation invalidate a stored
@@ -51,11 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadCount = word.NonHeadCount;
             _ruleCounts = word.UnappliedRuleCounts;
 
-            // Word.FreezeImpl deliberately leaves SyntacticFeatureStruct unfrozen, and
-            // AnalysisAffixTemplateRule.Apply mutates it in place on already-frozen Words -- no
-            // Word-level CheckFrozen guards that path. Freezing here pins the key's view of it, so a
-            // future rule mutating an already-keyed word throws instead of silently corrupting the table.
-            // Freeze is idempotent.
+            // See PinAndKey for why the key pins these rather than just reading them.
             _shape.Freeze();
             _syntacticFS.Freeze();
             _realizationalFS.Freeze();

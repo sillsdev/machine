@@ -34,10 +34,10 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         );
 
         Word initial = NewTestWord();
-        initial.AnalysisScope = new AnalysisScope();
+        var scope = new AnalysisScope();
+        initial.AnalysisScope = scope;
         initial.Freeze();
 
-        long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
         List<Word> results = new List<Word>(cascade.Apply(initial));
 
         Assert.That(
@@ -49,8 +49,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
             )
         );
         Assert.That(
-            MemoizedCombinationRuleCascade.DiagMemoHits,
-            Is.GreaterThan(hitsBefore),
+            scope.MemoHits,
+            Is.GreaterThan(0),
             "this test's whole point is to force a positive replay -- it must not go vacuous"
         );
     }
@@ -72,7 +72,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         };
 
         Word memoized = NewTestWord();
-        memoized.AnalysisScope = new AnalysisScope();
+        var scope = new AnalysisScope();
+        memoized.AnalysisScope = scope;
         memoized.Freeze();
 
         // No AnalysisScope: takes the unmemoized fallback, the same path a tracing parse takes.
@@ -82,7 +83,6 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         var memoizedCascade = new MemoizedCombinationRuleCascade(rules, FreezableEqualityComparer<Word>.Default);
         var unmemoizedCascade = new MemoizedCombinationRuleCascade(rules, FreezableEqualityComparer<Word>.Default);
 
-        long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
         List<string> memoizedSignatures = memoizedCascade
             .Apply(memoized)
             .Select(TrailSignature)
@@ -100,8 +100,8 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
             "a positive replay must reproduce exactly the unmemoized result set, INCLUDING trail order"
         );
         Assert.That(
-            MemoizedCombinationRuleCascade.DiagMemoHits,
-            Is.GreaterThan(hitsBefore),
+            scope.MemoHits,
+            Is.GreaterThan(0),
             "this test's whole point is to compare a real replay against the unmemoized result -- it "
                 + "must not go vacuous"
         );
@@ -123,16 +123,15 @@ public class MemoizedCombinationRuleCascadeTests : HermitCrabTestBase
         initial.AnalysisScope = scope;
         initial.Freeze();
 
-        var key = new AnalysisStateKey(initial);
+        var key = AnalysisStateKey.PinAndKey(initial);
         scope.InProgress.Add(key);
 
-        long hitsBefore = MemoizedCombinationRuleCascade.DiagMemoHits;
         List<Word> results = new List<Word>(cascade.Apply(initial));
 
         Assert.That(results, Has.Some.Matches<Word>(w => w.GetUnapplicationCount(ruleA) == 1));
         Assert.That(
-            MemoizedCombinationRuleCascade.DiagMemoHits,
-            Is.EqualTo(hitsBefore),
+            scope.MemoHits,
+            Is.Zero,
             "the in-flight fallback must not read/count a memo hit -- it never consults Memo at all"
         );
         Assert.That(

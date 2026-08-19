@@ -25,6 +25,10 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly ITraceManager _traceManager;
         private readonly ReadOnlyObservableCollection<Morpheme> _morphemes;
         private readonly IList<RootAllomorph> _lexicalPatterns = new List<RootAllomorph>();
+        private long _memoHits;
+        private long _nogoodHits;
+        private long _templateMemoHits;
+        private long _templateNogoodHits;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
@@ -85,9 +89,9 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
-        /// Caps the concurrency used within a single parse. A value of 1 runs the parse fully
-        /// sequentially -- analysis cascade, affix-template unapplication and synthesis alike -- and is the
-        /// only configuration eligible for the analysis-cascade memo (see
+        /// Caps the concurrency used within a single parse or generation -- analysis cascade,
+        /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
+        /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see
         /// <see cref="MemoizedCombinationRuleCascade"/>). The default of 0, like any value below 1, leaves
         /// concurrency unbounded. Constructor-only, because it determines how the analysis rules compile.
         /// <para>
@@ -96,6 +100,39 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// </para>
         /// </summary>
         public int MaxDegreeOfParallelism { get; }
+
+        /// <summary>
+        /// <see cref="MaxDegreeOfParallelism"/> in <see cref="ParallelOptions"/> form.
+        /// </summary>
+        /// <param name="uncappedDegree">
+        /// What to use when no cap is configured, so that a call site which already had a narrower
+        /// default than TPL's -1 keeps it.
+        /// </param>
+        internal ParallelOptions CreateParallelOptions(int uncappedDegree = -1)
+        {
+            return new ParallelOptions
+            {
+                MaxDegreeOfParallelism = MaxDegreeOfParallelism >= 1 ? MaxDegreeOfParallelism : uncappedDegree,
+            };
+        }
+
+        /// <summary>
+        /// Memo-hit totals over the parses this Morpher has completed; a parse that throws discards its
+        /// counts. Per-Morpher rather than per-process so one test's counts cannot leak into another's.
+        /// </summary>
+        internal long MemoHits => Interlocked.Read(ref _memoHits);
+        internal long NogoodHits => Interlocked.Read(ref _nogoodHits);
+        internal long TemplateMemoHits => Interlocked.Read(ref _templateMemoHits);
+        internal long TemplateNogoodHits => Interlocked.Read(ref _templateNogoodHits);
+
+        // Interlocked because one Morpher may be parsing on several threads at once.
+        private void AccumulateMemoDiagnostics(AnalysisScope scope)
+        {
+            Interlocked.Add(ref _memoHits, scope.MemoHits);
+            Interlocked.Add(ref _nogoodHits, scope.NogoodHits);
+            Interlocked.Add(ref _templateMemoHits, scope.TemplateMemoHits);
+            Interlocked.Add(ref _templateNogoodHits, scope.TemplateNogoodHits);
+        }
 
         public Func<LexEntry, bool> LexEntrySelector { get; set; }
         public Func<IHCRule, bool> RuleSelector { get; set; }
@@ -130,8 +167,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             var input = new Word(_lang.SurfaceStratum, shape);
             // Installing a scope is what enables the memo. Never while tracing: traces must stay
             // byte-identical to the unmemoized engine.
-            if (!_traceManager.IsTracing && MaxDegreeOfParallelism == 1)
-                input.AnalysisScope = new AnalysisScope();
+            AnalysisScope scope = !_traceManager.IsTracing && MaxDegreeOfParallelism == 1 ? new AnalysisScope() : null;
+            input.AnalysisScope = scope;
             input.Freeze();
             if (_traceManager.IsTracing)
                 _traceManager.AnalyzeWord(_lang, input);
@@ -139,6 +176,8 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             // Unapply rules
             var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
+            if (scope != null)
+                AccumulateMemoDiagnostics(scope);
 
 #if OUTPUT_ANALYSES
             var lines = new List<string>();
@@ -213,6 +252,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     a => rulePermutations,
                     (a, p) => new { Allomorph = a, RulePermutation = p }
                 ),
+                CreateParallelOptions(),
                 (synthesisInfo, state) =>
                 {
                     try
@@ -334,7 +374,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Exception exception = null;
             Parallel.ForEach(
                 Partitioner.Create(0, analyses.Count),
-                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                CreateParallelOptions(Environment.ProcessorCount),
                 (range, state) =>
                 {
                     try
