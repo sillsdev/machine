@@ -1,0 +1,36 @@
+# Impossibility proofs
+#
+# The two-verdict standard: every grammar-observable surface must end as either `evidenced` (a
+# counterfactual delta in semantic-coverage-counterfactuals.tsv) or an explicit claim that evidence is
+# IMPOSSIBLE, recorded here with a proof kind the gate recomputes.
+#
+# A surface whose counterfactual verdict is Unobservable or Timeout fails the gate unless it appears
+# below. Prose is not a proof: each kind names a mechanical check.
+#
+#   dtd-default       The value equals its attribute's DTD default, so the validating parser supplies it
+#                     for every document and writing it is indistinguishable from omitting it.
+#                     Recomputed from the inventory's own attribute-default surface.
+#   no-consumer       The engine contains no reference to the owning element, so no grammar can make it
+#                     influence a parse. Recomputed by scanning the engine source.
+#   not-in-signature  The surface's data is carried by the model (loaded, copied, round-tripped) but
+#                     never reaches a control-flow decision or the parse-comparison signature, so no word
+#                     could ever discriminate it. Recomputed two ways: SignatureFormat.BuildSignature's
+#                     own source is scanned for a reference to the property, and every fixture whose
+#                     grammar contains the owning element is mutated and re-parsed, requiring the
+#                     mutation to be genuinely applied and every word's outcome unchanged. Neither check
+#                     alone is a full proof of unreachability -- see NotInSignatureCheck's own doc
+#                     comment for exactly what remains a human-reviewed reading of the engine source.
+#   blocked-by-defect An engine defect prevents any word from exercising it. Must name a reproducing
+#                     expect_crash fixture AND the upstream issue. Valid only while that issue is open.
+#
+# `label-symmetry` was removed. Its only use claimed 24 Greek VariableFeature names were
+# interchangeable labels; that was FALSE, because alpha variables unify across every VariableFeature a
+# rule declares rather than being scoped per declaration, so renaming one to collide with another
+# reverses which words parse (see edge-cases/alpha-variable-name-collision). The check was weak because
+# it never required the two values to CO-OCCUR in a grammar before believing they were interchangeable.
+#
+# Format: <surfaceId><TAB><kind><TAB><evidence>. Blank lines and lines starting with "#" are ignored.
+surface	kind	evidence
+dtd:enum/Stratum/cyclicity/cyclic	no-consumer	No Cyclicity property exists on Stratum.cs and the identifier appears nowhere in the engine; SynthesisStratumRule and AnalysisStratumRule build the pipeline as an unconditional LinearRuleCascade with no branch point that could consult a stratum ordering mode
+dtd:enum/Stratum/phonologicalRuleOrder/simultaneous	no-consumer	Same as cyclicity: the identifier appears nowhere in the engine, and setting both attributes on edge-cases/simultaneous-epenthesis-cascade (engineered to be maximally ordering-sensitive) produced a byte-identical InfiniteLoopException with an identical stack trace
+dtd:element/Properties	not-in-signature	Loaded via LoadProperties at XmlLanguageLoader.cs:469,517,912,981,1048 and copied through by value via AddRange at Morpher.cs:403,423 (lexicon-guessed roots); SignatureFormat.BuildSignature, the sole builder of the string two parses are diffed by, reads only Morpheme.Id and Shape and contains no reference to Properties (NotInSignatureCheck.SignatureSourceNeverReads). Neutralizing the element is genuinely applied and changes no word's outcome in either fixture that declares one: edge-cases/feature-gating-breadth (11 words) and edge-cases/loader-isactive-breadth, per NotInSignatureCheck.MutationChangesNoWordInAnyContainingFixture. Not mechanically checked: that no OTHER engine code path branches on a Properties VALUE; XmlLanguageWriter's isActive round-trip and the loader/Morpher call sites above were read by hand and are copy-throughs, not decisions.

@@ -1,0 +1,235 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from).
+#
+#   1. nui -> NIU ("coconut", posSimpleMeta) underlying "niu": mrSimpleMeta (adjacent i-then-u ->
+#      u-then-i swap) fires obligatorily -> "nui". The underlying "niu" can never itself surface.
+#        -> NIU|nui, rules: [mrSimpleMeta]
+#   2. niu -> the raw, un-metathesized underlying shape -- mrSimpleMeta is obligatory wherever an
+#      i-then-u adjacency holds, so "niu" can never be a valid surface (mirrors v1 simple_rule row 1).
+#        -> expect_fail, blocked_by: [mrSimpleMeta]
+#   3. mu+i -> MI ("come", posComplexMeta) + 3SGU ("+u"): underlying "mi"+"+u" = "mi+u", then
+#      mrComplexMeta (i +BND u -> u +BND i, final-anchored) swaps across the boundary -> "mu+i",
+#      rendered with the visible boundary as "mu+?i".
+#        -> MI+3SGU|mu+?i, rules: [mrUSuffix, mrComplexMeta]
+#   4. pui -> PU ("fire", posNotUnapplied) + 3SGI ("i"): underlying "pu"+"i" = "pui". The surface is
+#      u-then-i, NOT the i-then-u adjacency mrSimpleMeta requires, so metathesis correctly never fires
+#      (the non-unapplication pin) -- rules lists only the suffix.
+#        -> PU+3SGI|pui, rules: [mrISuffix]
+#   5. sumulat -> SULAT ("write", posInfix) + AV (-um- infixed after the first consonant): "s"+"um"+
+#      "ulat" = "sumulat".
+#        -> SULAT+AV|sumulat, rules: [mrInfixUm]
+#
+# The remaining words reuse these mechanisms on independent lexical material -- circumfix ke-...-an,
+# CV- and full reduplication (ReduplicationHint), literal-final truncation, the isolated
+# CopyFromInput/InsertSegments linker, and the noncontiguous perf + allophonic a->i raising -- or are
+# expect_fail words whose signature is the empty set. See PROTOCOL.md section 3 for the `-`/empty-
+# signature convention and the multi-character-segment rendering note.
+#
+# Reconciliation against the oracle (self-check): documented per word where the oracle disagreed with
+# the hand derivation; the trace is authoritative per the task discipline.
+
+language: MetathesisPhaseIsolation
+inspired_by: ["infix/circumfix/reduplication/metathesis/subtractive-truncation typology (typological pattern, not any specific language)"]
+sources:
+  - "WALS - infixation, reduplication, and metathesis typology chapters"
+  - "WALS - infix, circumfix, and CV-reduplication morphological typology"
+  - "typological literature on consonant metathesis and the phase distinction; subtractive perfective typology"
+requires: [phonology]
+words:
+  - word: nui
+    note: >-
+      NIU ("coconut", posSimpleMeta) underlying "niu" -- mrSimpleMeta swaps the adjacent i-then-u to
+      u-then-i (leftSwitch=u, rightSwitch=i), the metathesis/simple_rule mechanism. Obligatory, so
+      the underlying "niu" never itself surfaces (see next word).
+    provenance: "MetathesisRuleTests.SimpleRule"
+    parses:
+      - signature: "NIU|nui"
+        gloss: coconut
+        rules: [mrSimpleMeta]
+        exercises:
+          - "MetathesisRule"
+
+  - word: niu
+    note: The raw, un-metathesized underlying shape -- mrSimpleMeta is obligatory wherever an i-then-u adjacency holds, so this surface form can never be a valid analysis (mirrors v1 simple_rule's own negative row).
+    expect_fail: true
+    blocked_by: [mrSimpleMeta]
+    exercises:
+      - "MetathesisRule"
+
+  - word: mu+i
+    note: >-
+      MI ("come", posComplexMeta) + 3SGU ("+u") -- underlying "mi"+"+u" = "mi+u", then mrComplexMeta
+      (i +BND u -> u +BND i, final-anchored, with a non-switch BoundaryMarker between the switch
+      roles) swaps across the boundary. The visible "+" boundary renders as "+?" in the signature
+      shape (metathesis/complex_rule mechanism).
+    provenance: "MetathesisRuleTests.ComplexRule"
+    parses:
+      - signature: "MI+3SGU|mu+?i"
+        gloss: come-3SG
+        rules: [mrUSuffix, mrComplexMeta]
+        exercises:
+          - "MetathesisRule"
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: mi
+    note: MI ("come", posComplexMeta) bare root, no suffix -- mrComplexMeta has no i +BND u site, so nothing fires.
+    parses:
+      - signature: "MI|mi"
+        gloss: come
+        rules: []
+        exercises: []
+
+  - word: pui
+    note: >-
+      PU ("fire", posNotUnapplied) + 3SGI ("i") -- underlying "pu"+"i" = "pui". The surface is
+      u-then-i, NOT the i-then-u adjacency mrSimpleMeta requires, so the shared metathesis rule
+      correctly never fires (metathesis/not_unapplied's non-unapplication pin); rules names only the
+      suffix.
+    provenance: "MetathesisRuleTests.SimpleRuleNotUnapplied"
+    parses:
+      - signature: "PU+3SGI|pui"
+        gloss: fire-3SG
+        rules: [mrISuffix]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: sumulat
+    note: SULAT ("write", posInfix) + AV -- actor-voice -um- infixed after the first consonant, "s"+"um"+"ulat" = "sumulat".
+    provenance: "W9.1 probe, AffixProcessRuleTests.InfixRules"
+    parses:
+      - signature: "SULAT+AV|sumulat"
+        gloss: write-AV
+        rules: [mrInfixUm]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+
+  - word: sulat
+    note: SULAT bare root, no infix -- a plain control.
+    parses:
+      - signature: "SULAT|sulat"
+        gloss: write
+        rules: []
+        exercises: []
+
+  - word: keadilan
+    note: ADIL ("just", posCircum) + NMLZ -- ke-...-an nominalizer wraps the stem, "ke"+"adil"+"an" = "keadilan".
+    provenance: "W9.1 probe, AffixProcessRuleTests.CircumfixRules"
+    parses:
+      - signature: "NMLZ+ADIL|keadilan"
+        gloss: NMLZ-just
+        rules: [mrCircum]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+
+  - word: adil
+    note: ADIL bare root, no circumfix -- a plain control.
+    parses:
+      - signature: "ADIL|adil"
+        gloss: just
+        rules: []
+        exercises: []
+
+  - word: tutula
+    note: >-
+      TULA ("help", posRedup) with CV- reduplication (ReduplicationHint prefix): the first C-V ("tu")
+      is copied as the reduplicant prefix, then the whole stem -- "tu"+"tula" = "tutula".
+    parses:
+      - signature: "RDP+TULA|tutula"
+        gloss: RED-help
+        rules: [mrRedupCV]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+
+  - word: tulatula
+    note: >-
+      TULA with full reduplication (ReduplicationHint prefix): the whole stem is copied twice,
+      "tula"+"tula" = "tulatula".
+    parses:
+      - signature: "RDPL+TULA|tulatula"
+        gloss: RED.FULL-help
+        rules: [mrRedupFull]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+
+  - word: tula
+    note: TULA bare root, no reduplication -- a plain control.
+    parses:
+      - signature: "TULA|tula"
+        gloss: help
+        rules: []
+        exercises: []
+
+  - word: pur
+    note: >-
+      PURE ("finish", posTrunc) + INCP -- subtractive truncation deletes the literal final "e"
+      (a subtractive incomplete-phase / subtractive-perfective typological pattern, cited in
+      provenance), "pure" -> "pur".
+    provenance: "W9.1 probe, AffixProcessRuleTests.TruncateRules"
+    parses:
+      - signature: "PURE+INCP|pur"
+        gloss: finish-INCP
+        rules: [mrTrunc]
+        exercises:
+          - "AffixProcessRule: subtraction/truncation"
+
+  - word: pure
+    note: PURE bare root, no truncation -- a plain control.
+    parses:
+      - signature: "PURE|pure"
+        gloss: finish
+        rules: []
+        exercises: []
+
+  - word: bahain
+    note: >-
+      BAHA ("flood", posLnk) + LNK -- the isolated CopyFromInput/InsertSegments demo: a plain linker
+      suffix "-in" with no phonology and no infixation, so the two output actions are exercised on
+      their own, "baha"+"in" = "bahain".
+    parses:
+      - signature: "BAHA+LNK|bahain"
+        gloss: flood-LNK
+        rules: [mrLnk]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+
+  - word: baha
+    note: BAHA bare root, no linker -- a plain control.
+    parses:
+      - signature: "BAHA|baha"
+        gloss: flood
+        rules: []
+        exercises: []
+
+  - word: katibɯd
+    note: >-
+      KTB ("arrange", posNonContig) + PERF -- the triconsonantal root gets an "a" inserted after C1
+      and C2 plus a trailing "ɯd" (k+a+t+a+b+ɯd = katabɯd), then prNonContig raises the "a" before the
+      voiced "b" to "i" -> "katibɯd" (the first "a", before voiceless "t", is left unchanged). The
+      noncontiguous affix + allophonic-rewrite interplay.
+    provenance: "W9.1 probe, AffixProcessRuleTests.NonContiguousRules"
+    parses:
+      - signature: "KTB+PERF|katibɯd"
+        gloss: arrange-PERF
+        rules: [mrPerf, prNonContig]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: katabɯd
+    note: The raw, un-raised underlying shape of the perf form -- prNonContig obligatorily raises the "a" before a voiced consonant, so this surface form can never itself be a valid analysis (see katibɯd).
+    expect_fail: true
+    blocked_by: [prNonContig]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: ktb
+    note: KTB bare triconsonantal root, no perf affix -- a plain control.
+    parses:
+      - signature: "KTB|ktb"
+        gloss: arrange
+        rules: []
+        exercises: []

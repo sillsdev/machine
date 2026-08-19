@@ -1,0 +1,219 @@
+# isActive breadth probe. See grammar.xml's own header for the design: an inactive decoy alongside
+# the live declaration for every loader collection XmlLanguageLoader filters through IsActive and
+# that is reachable without a phonological feature system.
+#
+# Oracle: the C# founding oracle
+# (conformance/adapters/hc-dotnet-wrapper.sh batch, over a Debug build of
+# src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature below is transcribed verbatim from
+# that run, not hand-derived. Each negative control below was confirmed to produce no parse against
+# that same run, so the fixture pins observed loader behavior rather than an assumption about it.
+#
+# SCOPE, stated plainly: eleven of the grammar's decoys are discriminated by a word here, and four
+# (tableDecoy, ncDecoy, famDecoy, mprDecoy) are NOT and cannot be without breaking every other word's
+# baseline; see grammar.xml's header for why (XmlLanguageLoader.cs resolves those four collections'
+# IDREFs through a fail-fast Dictionary indexer, so the only way to make one of them matter is a live
+# reference that would make the UNMUTATED grammar fail to load). "pekul" is a conjunction over mrDecoy
+# and slotDecoy and does not separate those two call sites on its own; qokul/qekul do that
+# independently via mrRuleOnly/mrSlotOnly. An explicit isActive="yes" writes the DTD's own default,
+# which the loader supplies anyway, so it exercises the value appearing in a document, not a
+# behavioural difference.
+#
+# Why this exists when edge-cases/loader-isactive already covers isActive: that fixture pins
+# PhonologicalFeatureSystem only, and the loader has 25 separate .Where(IsActive) call sites. Covering
+# one says nothing about the others, and a coarse "isActive is honored" claim would let 24 untested
+# call sites inherit credit from the one that is tested.
+
+language: IsActiveBreadth
+inspired_by: ["synthetic loader-semantics probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/XmlLanguageLoader.cs IsActive call sites"
+requires: []
+words:
+  - word: kul
+    note: >-
+      Bare live root. Proves the grammar loaded at all, which is itself the strongest single control
+      here: the document declares a second, inactive Language, and the loader selects the single
+      ACTIVE one, so a loader that ignored isActive would find two and fail to load anything.
+    provenance: "XmlLanguageLoader.cs Elements(\"Language\").Single(IsActive)"
+    neutralizes:
+      - DecoyLanguage
+    parses:
+      - signature: "KUL|kul"
+        rules: []
+        exercises:
+          - "Element deactivation (isActive) across loader collections"
+
+  - word: takul
+    note: >-
+      Live prefix rule mrPfx through the live template's live, optional slot. The only affixed form
+      this grammar admits.
+    parses:
+      - signature: "TA+KUL|takul"
+        rules: [mrPfx]
+        exercises:
+          - "Element deactivation (isActive) across loader collections"
+
+  - word: tatakul
+    note: >-
+      Control for the template slot applying once: a doubled prefix is not a word. Verified against
+      the oracle with multipleApplication="2" set on the rule as well, where this word STILL does not
+      parse, because a rule reached through an AffixTemplate slot applies once per slot regardless.
+      That result is why the grammar writes NEITHER multipleApplication nor blockable: this fixture
+      cannot observe either, so both stay uncovered in the ledger instead of being claimed here.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: tatatakul
+    note: Tripled prefix, the same bound from the other side.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: mukul
+    note: >-
+      Negative control for MorphologicalSubrule@isActive. subPfxDecoy sits inside the LIVE rule mrPfx
+      and would prefix "mu", giving every stem a second analysis.
+    expect_fail: true
+    neutralizes:
+      - subPfxDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: pekul
+    note: >-
+      Negative control for MorphologicalRule@isActive and Slot@isActive together. mrDecoy would
+      prefix "pe" and is reachable only through the equally inactive decoySlot, so this word tests
+      both call sites at once and cannot leave a dangling IDREF either way.
+    expect_fail: true
+    blocked_by: [mrDecoy]
+    neutralizes:
+      - mrDecoy
+      - decoySlot
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: kol
+    note: >-
+      Negative control for Allomorph@isActive. aKolDecoy is an inactive allomorph of the LIVE entry
+      eKul, so the entry itself still loads and only this surface form should be rejected.
+    expect_fail: true
+    neutralizes:
+      - aKolDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: mep
+    note: Negative control for LexicalEntry@isActive. eMepDecoy would make "mep" an accepted root.
+    expect_fail: true
+    neutralizes:
+      - eMepDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: qot
+    note: >-
+      Negative control for Stratum@isActive. The inactive second stratum carries the root "qot",
+      which would be accepted if the stratum were loaded.
+    expect_fail: true
+    neutralizes:
+      - eQotDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: zal
+    note: >-
+      Negative control for SegmentDefinition@isActive. "z" is declared only by the inactive cZ, so
+      this word has no valid shape at all and is SKIPPED rather than merely unparsable, which is a
+      different and stronger outcome than the other controls.
+    expect_skip: true
+    neutralizes:
+      - cZ
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: qokul
+    note: >-
+      Negative control for MorphologicalRule@isActive, independent of Slot@isActive. mrRuleOnly would
+      prefix "qo" and is reachable only through ruleOnlySlot, which is itself ACTIVE (unlike
+      decoySlot), so this word isolates the rule's own isActive from the slot's.
+    expect_fail: true
+    blocked_by: [mrRuleOnly]
+    neutralizes:
+      - mrRuleOnly
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: qekul
+    note: >-
+      Negative control for Slot@isActive, independent of MorphologicalRule@isActive. mrSlotOnly is
+      itself ACTIVE (unlike mrDecoy) and would prefix "qe", but slotOnlySlot is the only route to it
+      and stays inactive here.
+    expect_fail: true
+    blocked_by: [mrSlotOnly]
+    neutralizes:
+      - slotOnlySlot
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: qukul
+    note: >-
+      Negative control for AffixTemplate@isActive. mrTemplateOnly is reachable ONLY through
+      decoyTemplate (never through liveTemplate, and never stratum-listed), so this discriminates the
+      template's own isActive rather than reusing mrPfx, whose duplicate result across two templates
+      collapses to one identical Word and would leave this surface Unobservable.
+    expect_fail: true
+    blocked_by: [mrTemplateOnly]
+    neutralizes:
+      - decoyTemplate
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: mo+kul
+    note: >-
+      Positive control for BoundaryDefinition@isActive="yes". mrBoundaryPfx's own output inserts the
+      live boundary character "+" itself, so deactivating bLive does not just fail to parse this
+      word: it fails to LOAD the grammar at all, because the rule's own PhoneticShape then names an
+      undefined phoneme. That is equally conclusive evidence (CounterfactualVerdict.RequiredToLoad).
+    parses:
+      - signature: "MO+KUL|mo+?kul"
+        rules: [mrBoundaryPfx]
+        exercises:
+          - "Element deactivation (isActive) across loader collections"
+
+  - word: kul=
+    note: >-
+      Negative control for BoundaryDefinition@isActive="no". "=" is declared only by the inactive
+      bDecoy, so this word has no valid shape and is SKIPPED; activating bDecoy makes "=" a
+      recognized (if useless) character, changing the outcome to a tokenizable non-parse.
+    expect_skip: true
+    neutralizes:
+      - bDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: tup
+    note: >-
+      Joint control for Family@isActive="no". eTupDecoy is an inactive entry whose family names the
+      inactive famDecoy, so neither alone is observable: activating the family leaves nothing referencing
+      it, and activating the entry alone dangles its family reference and refuses to load. Only both
+      together admit this word.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: put
+    note: >-
+      Joint control for MorphologicalPhonologicalRuleFeature@isActive="no", the same shape as tup:
+      ePutDecoy's ruleFeatures names the inactive mprDecoy.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: otkul
+    note: >-
+      Joint control for FeatureNaturalClass@isActive="no". subNcDecoy is an inactive subrule whose
+      pattern names the inactive ncDecoy.
+    expect_fail: true
+    exercises:
+      - "Element deactivation (isActive) across loader collections"

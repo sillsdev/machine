@@ -1,0 +1,39 @@
+# Converted from conformance/rewrite/simultaneous-epenthesis-cascade (v1; kept in place, untouched,
+# until phase G4 -- see docs/conformance-language-suite-plan.md section 5). grammar.xml is the same
+# file, unmodified. expect_crash semantics (front matter, below) must match v1's exactly: the engine
+# under test is expected to ALSO crash (loading the grammar or parsing the word) for this fixture to
+# PASS; a harness-level problem (bad adapter, process fails to start, timeout) is never treated as a
+# crash match and always FAILs regardless of expect_crash -- see conformance/PROTOCOL.md's
+# "expectCrash" section, unchanged by this conversion.
+#
+# What this pins (from the v1 fixture's README.md/manifest.json provenance, carried forward
+# verbatim): P13 synthetic oracle -- a hand-designed probe (not derived from a C# unit test) of the
+# OTHER direction of the Simultaneous-vs-Iterative divergence for epenthesis (LHS-empty) subrules:
+# the rule inserts an HFU vowel ("i") after any HighVowel, no RightEnvironment, tagged Iterative (the
+# grammar carries no multipleApplicationOrder="simultaneous" attribute). Because C#'s epenthesis
+# substitute LHS pattern never adds a Modified=Clean filter, IterativePhonologicalPatternRule.Apply's
+# freshly-inserted "i" node is itself a HighVowel and gets revisited by the very next iteration of
+# the same outer loop, satisfying its own LeftEnvironment and re-triggering insertion -- a runaway
+# self-feeding cascade that only stops when EpenthesisSynthesisRewriteSubruleSpec.ApplyRhs's own hard
+# cap (Shape.Count == 256) throws InfiniteLoopException. BatchCommand.ParseOneWord only catches
+# InvalidShapeException, so this kills the whole batch run rather than recording a per-word result --
+# expected.tsv's v1 ground truth was only the STARTED sentinel for word 0, never a completed row;
+# this fixture's materialized expected.tsv (built by FixtureMaterializer for adapter mode) reproduces
+# that same STARTED-only shape. Keep words.txt/this file to a single word: a crash aborts the whole
+# word loop, so anything after the crashing word would never actually be exercised (same reasoning
+# as v1 -- see PROTOCOL.md's "Because a crash aborts a fixture's whole word loop..." note).
+
+language: IterativeEpenthesisCascadeProbe
+inspired_by: ["synthetic RewriteRule Iterative-vs-Simultaneous stress probe (not modeling any real language)"]
+sources:
+  - "rust/docs/p13-simultaneous-design.md section 5"
+requires: [phonology]
+expect_crash: true
+words:
+  - word: bubu
+    note: >-
+      Lexical root "bubu" alone (no affixes needed -- this only needs to exercise synthesis, i.e.
+      the forward phonological-rule direction). Parsing this word crashes the oracle with an
+      uncaught InfiniteLoopException partway through, per the fixture's front-matter expect_crash.
+    provenance: "P13 synthetic oracle: Iterative self-feeding epenthesis crashes; Simultaneous cannot"
+    expect_fail: true

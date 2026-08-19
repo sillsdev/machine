@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- isActive breadth probe. edge-cases/loader-isactive already pins isActive on
+     PhonologicalFeatureSystem, but the C# loader filters 25 DIFFERENT element collections through
+     XmlLanguageLoader.IsActive, and covering one of them says nothing about the other 24: each
+     .Where(IsActive) call site is its own opportunity to have been omitted. This grammar declares an
+     INACTIVE decoy alongside the live declaration for every such collection reachable without a
+     phonological feature system.
+
+     Words that discriminate a decoy, named in words.yaml: Language (kul, which only parses because
+     exactly one Language is active), SegmentDefinition (zal), MorphologicalSubrule (mukul),
+     Allomorph (kol), LexicalEntry (mep), Stratum (qot), MorphologicalRule (qokul, via mrRuleOnly),
+     Slot (qekul, via mrSlotOnly), AffixTemplate (qukul, via mrTemplateOnly/decoyTemplate), and
+     BoundaryDefinition (kul= for bDecoy; mo+kul for bLive, which fails to LOAD rather than merely
+     failing to parse once bLive is gone, since mrBoundaryPfx's own PhoneticShape "+" then names an
+     undefined phoneme, equally conclusive evidence, per CounterfactualVerdict.RequiredToLoad).
+     pekul is a conjunction over mrDecoy and slotDecoy alone (both stay jointly inactive on purpose,
+     as the ORIGINAL, un-separable control) and does not itself separate those two call sites; mrDecoy
+     and slotDecoy are why qokul/qekul had to be added as INDEPENDENTLY-reachable rule-only and
+     slot-only controls instead of trying to split pekul apart.
+
+     Four decoys (tableDecoy, ncDecoy, famDecoy, mprDecoy) are NOT discriminated by any SINGLE-flip
+     counterfactual, and cannot be: XmlLanguageLoader.cs resolves CharacterDefinitionTable,
+     FeatureNaturalClass, Family, and MorphologicalPhonologicalRuleFeature IDREFS through a direct
+     Dictionary indexer (_tables[id], _natClasses[id], _families[id], _mprFeatures[id]), which throws
+     when the id names an inactive (never-loaded) declaration. Flipping one of these four alone changes
+     no result (nothing active references it); flipping a live reference to one alone throws at load
+     (the target is still inactive). Each therefore carries its own dedicated, independently-inactive
+     referencing partner (subNcDecoy, eTupDecoy, ePutDecoy, the TableDecoyStratum/eZDecoy pair) for
+     CounterfactualGate.EvaluateJointly's three-run protocol: target alone, partner alone, both
+     together. Slot and Stratum-level morphologicalRules IDREFS are the sole tolerant-lookup exception
+     (Dictionary.TryGetValue), which is what let MorphologicalRule/Slot/AffixTemplate above be
+     evidenced by an ordinary single flip instead. Do not read these four's own isActive="no" as
+     evidenced by any word above; only the joint mutation with their dedicated partner can show it.
+
+     Live declarations carry an explicit isActive="yes". That writes the DTD's own default, which the
+     loader supplies anyway, so it exercises the value's presence in a document and NOT a behavioural
+     difference.
+
+     Decoys are deliberately never referenced by ID from an active declaration, so dropping one can
+     never leave a dangling IDREF; the exceptions are slotDecoy (references mrDecoy, both inactive
+     together) and mrBoundaryPfx (references the live bLive, by design; see above).
+
+     Pure morphotactics: no PhonologicalFeatureSystem, bare SegmentDefinitions, one empty ncAny
+     class used only inside MorphologicalInput stem patterns. -->
+<HermitCrabInput>
+  <Language isActive="yes">
+    <Name>IsActiveBreadth</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprLive" isActive="yes">Live</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprDecoy" isActive="no">Decoy</MorphologicalPhonologicalRuleFeature>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="tableLive" isActive="yes">
+      <Name>Live</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA" isActive="yes"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE" isActive="yes"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO" isActive="yes"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU" isActive="yes"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK" isActive="yes"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL" isActive="yes"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM" isActive="yes"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP" isActive="yes"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cQ" isActive="yes"><Representations><Representation>q</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT" isActive="yes"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <!-- Decoy: "z" is not a segment of this language, so any word containing it has no valid
+             shape. A loader that ignored isActive here would let "zal" tokenize. -->
+        <SegmentDefinition id="cZ" isActive="no"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <BoundaryDefinition id="bLive" isActive="yes"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+        <BoundaryDefinition id="bDecoy" isActive="no"><Representations><Representation>=</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <!-- Decoy table: never named by a Stratum's characterDefinitionTable, so an ignored isActive
+         cannot change any parse. Present for the enumerated value on this element, not as a
+         discriminating control. -->
+    <CharacterDefinitionTable id="tableDecoy" isActive="no">
+      <Name>Decoy</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="dZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny" isActive="yes"><Name>Any</Name></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncDecoy" isActive="no"><Name>Decoy</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Families>
+      <Family id="famLive" isActive="yes">Live</Family>
+      <Family id="famDecoy" isActive="no">Decoy</Family>
+    </Families>
+    <Strata>
+      <Stratum characterDefinitionTable="tableLive" morphologicalRuleOrder="unordered" isActive="yes">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- Neither blockable nor multipleApplication is written here. Confirmed against the C#
+               oracle that multipleApplication has NO observable effect on a rule reached through an
+               AffixTemplate slot, which applies each slot once: with "2" set, "tatakul" still does
+               not parse. Writing "1" would therefore have been the DTD default on an attribute this
+               grammar cannot observe, which is coverage with nothing behind it. Both attributes stay
+               in the coverage ledger as todo, for a fixture that applies a rule at stratum level
+               where repetition is observable. "tatakul"/"tatatakul" remain as controls on the slot
+               applying once. -->
+          <MorphologicalRule id="mrPfx" isActive="yes" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>livePrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPfx" isActive="yes">
+                <MorphologicalInput><PhoneticSequence id="stemPfx"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ta</PhoneticShape></InsertSegments><CopyFromInput index="stemPfx" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- Decoy subrule of a LIVE rule: would prefix "mu" and give every stem a second
+                   analysis. -->
+              <MorphologicalSubrule id="subPfxDecoy" isActive="no">
+                <MorphologicalInput><PhoneticSequence id="stemPfxD"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>mu</PhoneticShape></InsertSegments><CopyFromInput index="stemPfxD" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+              <!-- Joint-mutation partner for FeatureNaturalClass/isActive/no: an inactive subrule of
+                   the already-wired mrPfx, referencing the equally inactive ncDecoy. MorphologicalSubrule
+                   is itself filtered by IsActive (XmlLanguageLoader.cs), so it never dereferences
+                   ncDecoy while either stays inactive; activating both together is what a joint
+                   counterfactual needs to test, without disturbing subPfx's own live analysis. -->
+              <MorphologicalSubrule id="subNcDecoy" isActive="no">
+                <MorphologicalInput><PhoneticSequence id="stemNcDecoy"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncDecoy" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>ot</PhoneticShape></InsertSegments><CopyFromInput index="stemNcDecoy" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TA</MorphemeId>
+            <Gloss>TA</Gloss>
+          </MorphologicalRule>
+          <!-- Decoy rule, reachable only from the equally inactive slotDecoy. Jointly inactive with
+               its slot, so this pair alone cannot separate MorphologicalRule@isActive from
+               Slot@isActive; see mrRuleOnly/mrSlotOnly below for the independently-reachable
+               controls that do. -->
+          <MorphologicalRule id="mrDecoy" isActive="no" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>decoyPrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDecoy">
+                <MorphologicalInput><PhoneticSequence id="stemDecoy"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>pe</PhoneticShape></InsertSegments><CopyFromInput index="stemDecoy" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PE</MorphemeId>
+            <Gloss>PE</Gloss>
+          </MorphologicalRule>
+          <!-- Inactive rule reachable ONLY from an ACTIVE slot (ruleOnlySlot below). A Slot's own
+               morphologicalRules IDREFS are resolved through a tolerant Dictionary.TryGetValue
+               (XmlLanguageLoader.cs's LoadAffixTemplate), not the fail-fast indexer several other
+               collections use, so an active slot naming an inactive rule loads fine with that rule
+               simply absent from the slot; this is what makes MorphologicalRule@isActive
+               separable from Slot@isActive at all. -->
+          <MorphologicalRule id="mrRuleOnly" isActive="no" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>ruleOnlyPrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRuleOnly">
+                <MorphologicalInput><PhoneticSequence id="stemRuleOnly"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>qo</PhoneticShape></InsertSegments><CopyFromInput index="stemRuleOnly" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>QO</MorphemeId>
+            <Gloss>QO</Gloss>
+          </MorphologicalRule>
+          <!-- Active rule reachable ONLY from an INACTIVE slot (slotOnlySlot below). -->
+          <MorphologicalRule id="mrSlotOnly" isActive="yes" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>slotOnlyPrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSlotOnly">
+                <MorphologicalInput><PhoneticSequence id="stemSlotOnly"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>qe</PhoneticShape></InsertSegments><CopyFromInput index="stemSlotOnly" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>QE</MorphemeId>
+            <Gloss>QE</Gloss>
+          </MorphologicalRule>
+          <!-- Active rule reachable ONLY from decoyTemplate below (never from liveTemplate, and
+               never stratum-listed), so activating that inactive TEMPLATE is what makes this rule
+               reachable; unlike reusing mrPfx, which duplicates a result liveTemplate already
+               produces and so is deduplicated away (Word implements value equality on its morphs and
+               shape, so two derivations landing on the identical surface analysis collapse to one). -->
+          <MorphologicalRule id="mrTemplateOnly" isActive="yes" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>templateOnlyPrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTemplateOnly">
+                <MorphologicalInput><PhoneticSequence id="stemTemplateOnly"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>qu</PhoneticShape></InsertSegments><CopyFromInput index="stemTemplateOnly" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>QU</MorphemeId>
+            <Gloss>QU</Gloss>
+          </MorphologicalRule>
+          <!-- Live control for BoundaryDefinition@isActive: inserts the live boundary character "+"
+               itself, not just segments adjacent to one, so deactivating bLive makes this rule's own
+               output character unrecognized rather than merely affecting an unrelated word. -->
+          <MorphologicalRule id="mrBoundaryPfx" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>boundaryPrefix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subBoundaryPfx">
+                <MorphologicalInput><PhoneticSequence id="stemBoundaryPfx"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>mo</PhoneticShape></InsertSegments><InsertSegments><PhoneticShape>+</PhoneticShape></InsertSegments><CopyFromInput index="stemBoundaryPfx" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>MO</MorphemeId>
+            <Gloss>MO</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posN" isActive="yes" final="true">
+            <Name>liveTemplate</Name>
+            <Slot isActive="yes" optional="true" morphologicalRules="mrPfx"><Name>prefix</Name></Slot>
+            <!-- Decoy slot: inactive, and the only route to the equally inactive mrDecoy. -->
+            <Slot isActive="no" morphologicalRules="mrDecoy"><Name>decoySlot</Name></Slot>
+            <!-- Independent control for MorphologicalRule@isActive: this slot is itself ACTIVE, so
+                 whether it ever contributes anything depends solely on mrRuleOnly's own isActive. -->
+            <Slot isActive="yes" optional="true" morphologicalRules="mrRuleOnly"><Name>ruleOnlySlot</Name></Slot>
+            <!-- Independent control for Slot@isActive: mrSlotOnly is itself ACTIVE, so whether it is
+                 ever reachable depends solely on this slot's own isActive. -->
+            <Slot isActive="no" optional="true" morphologicalRules="mrSlotOnly"><Name>slotOnlySlot</Name></Slot>
+            <Slot isActive="yes" optional="true" morphologicalRules="mrBoundaryPfx"><Name>boundarySlot</Name></Slot>
+          </AffixTemplate>
+          <!-- Decoy template: inactive, and its only slot reaches mrTemplateOnly, a rule with no
+               other route (not stratum-listed, not in any other template's slot). A loader that
+               ignored isActive here would newly admit "kulqu". -->
+          <AffixTemplate requiredPartsOfSpeech="posN" isActive="no">
+            <Name>decoyTemplate</Name>
+            <Slot optional="true" morphologicalRules="mrTemplateOnly"><Name>decoyTemplateSlot</Name></Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <LexicalEntry id="eKul" isActive="yes" partOfSpeech="posN" family="famLive" ruleFeatures="mprLive" partial="false">
+            <Allomorphs>
+              <Allomorph id="aKul" isActive="yes" isBound="false"><PhoneticShape>kul</PhoneticShape></Allomorph>
+              <!-- Decoy allomorph of a LIVE entry: "kol" would be an accepted surface form. -->
+              <Allomorph id="aKolDecoy" isActive="no"><PhoneticShape>kol</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>KUL</MorphemeId>
+            <Gloss>vessel</Gloss>
+            <Properties>
+              <Property name="provenance">isActive breadth probe</Property>
+              <Property name="note">Properties and Property are loaded but never exercised elsewhere</Property>
+            </Properties>
+          </LexicalEntry>
+          <!-- Decoy entry: "mep" would be an accepted root. -->
+          <LexicalEntry id="eMepDecoy" isActive="no" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aMepDecoy"><PhoneticShape>mep</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>MEP</MorphemeId>
+            <Gloss>decoy</Gloss>
+          </LexicalEntry>
+          <!-- Joint-mutation partner for Family/isActive/no: an inactive entry naming the equally
+               inactive famDecoy. LexicalEntry is filtered by IsActive before its own "family" IDREF is
+               ever read, so this never dereferences famDecoy while either stays inactive. -->
+          <LexicalEntry id="eTupDecoy" isActive="no" partOfSpeech="posN" family="famDecoy">
+            <Allomorphs>
+              <Allomorph id="aTupDecoy"><PhoneticShape>tup</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>TUP</MorphemeId>
+            <Gloss>tupdecoy</Gloss>
+          </LexicalEntry>
+          <!-- Joint-mutation partner for MorphologicalPhonologicalRuleFeature/isActive/no: an inactive
+               entry naming the equally inactive mprDecoy via "ruleFeatures", same reasoning as
+               eTupDecoy above. -->
+          <LexicalEntry id="ePutDecoy" isActive="no" partOfSpeech="posN" ruleFeatures="mprDecoy">
+            <Allomorphs>
+              <Allomorph id="aPutDecoy"><PhoneticShape>put</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>PUT</MorphemeId>
+            <Gloss>putdecoy</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Decoy stratum: its root "qot" would be an accepted word. -->
+      <Stratum characterDefinitionTable="tableLive" morphologicalRuleOrder="unordered" isActive="no">
+        <Name>DecoyStratum</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eQotDecoy" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aQotDecoy"><PhoneticShape>qot</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>QOT</MorphemeId>
+            <Gloss>decoy</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Joint-mutation partner for CharacterDefinitionTable/isActive/no: an inactive Stratum whose
+           own characterDefinitionTable IDREF names the equally inactive tableDecoy. Stratum is itself
+           filtered by IsActive before that IDREF is ever read (XmlLanguageLoader.LoadStratum), so this
+           never dereferences tableDecoy while either stays inactive; activating both together is what
+           a joint counterfactual needs. The entry's root "z" reuses tableDecoy's own (always-active)
+           segment, so nothing new needs declaring there.
+           Must stay the LAST Stratum: Language.SurfaceStratum (Language.cs) is the last entry in
+           Strata, and Morpher.cs tokenizes every input word through ONLY that stratum's
+           CharacterDefinitionTable; there is no other way for tableDecoy to ever tokenize anything.
+           A confirmed, unavoidable consequence, not a bug: the joint mutant that activates this pair
+           therefore also reassigns which table tokenizes "kul"/"takul"/etc, so their status changes
+           too, in addition to "z" gaining a real parse. That collateral change is still honest
+           evidence (a delta is a delta); it just is not scoped to "z" alone the way the other three
+           joint pairs in this fixture are. -->
+      <Stratum characterDefinitionTable="tableDecoy" morphologicalRuleOrder="unordered" isActive="no">
+        <Name>TableDecoyStratum</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eZDecoy" partOfSpeech="posN">
+            <Allomorphs>
+              <Allomorph id="aZDecoy"><PhoneticShape>z</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <MorphemeId>ZD</MorphemeId>
+            <Gloss>zdecoy</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+  <!-- Decoy Language. The loader selects the single ACTIVE Language
+       (XmlLanguageLoader.cs, Elements("Language").Single(IsActive)), so ignoring isActive here makes
+       Single throw and the whole grammar fail to load. The strongest control in this fixture. -->
+  <Language isActive="no">
+    <Name>DecoyLanguage</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posDecoy"><Name>x</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="tableDecoyLang">
+      <Name>DecoyLang</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="dqZ"><Representations><Representation>z</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <Strata>
+      <Stratum characterDefinitionTable="tableDecoyLang">
+        <Name>DecoyLangStratum</Name>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

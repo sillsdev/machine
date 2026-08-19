@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<!-- Compounding breadth. Closes the last coverage-ledger entries: the head and non-head required
+     head/foot feature elements, CompoundingRule's repetition cap and deactivation, and
+     CompoundingSubrule deactivation.
+
+     BOUNDED PATTERNS ARE THE WHOLE TRICK. An earlier attempt put compounding in
+     edge-cases/morphotactic-attribute-breadth with OptionalSegmentSequence min="1" max="-1" on both
+     head and non-head, and the analyser did not terminate: the C# oracle ran past ten minutes on
+     three words, because every split of every word is a candidate head/non-head boundary. Here the
+     non-head is exactly two segments and the head is bounded at min="2" max="6", so the search is
+     finite and the fixture runs in milliseconds.
+
+     Head and foot features are declared and required so the four Head*/NonHead*RequiredFeatures
+     elements have somewhere real to attach: the rule admits a compound only when the head carries
+     number=sg and the non-head number=pl, with matching foot features. The two head-side elements
+     also need a word with a non-matching HEAD, not just a satisfied one, so eKu and ePa exist to
+     violate HeadRequiredHeadFeatures and HeadRequiredFootFeatures respectively.
+
+     CompoundingSubrule@isActive="no" cannot be pinned by a second, decoy subrule inside crJoin
+     itself: hand-mutating a copy showed that when a CompoundingRule has two active subrules,
+     analysis only ever finds an unapplication through the FIRST one declared, so activating a
+     second subrule in place changed nothing regardless of which literal it inserted. crJoinInsert
+     exists so that decoy subrule can sit alone as the only subrule of its own rule instead. -->
+<HermitCrabInput>
+  <Language>
+    <Name>CompoundingBreadth</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <HeadFeatures>
+      <SymbolicFeature id="hfNum">
+        <Name>number</Name>
+        <Symbols>
+          <Symbol id="numSg">sg</Symbol>
+          <Symbol id="numPl">pl</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </HeadFeatures>
+    <FootFeatures>
+      <SymbolicFeature id="ffCls">
+        <Name>class</Name>
+        <Symbols>
+          <Symbol id="clsA">a</Symbol>
+          <Symbol id="clsB">b</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </FootFeatures>
+    <CharacterDefinitionTable id="tbl">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crJoinInsert crNever crDecoy">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- multipleApplication is deliberately NOT written here. Verified against the C# oracle
+               that a second join does not occur in this grammar even with "2" set: "katutu" has no
+               analysis either way, so a cap of two is indistinguishable from the default of one and
+               claiming it would be coverage with nothing behind it. The zero cap on crNever below IS
+               discriminated, by "kamtu", and the ledger quotients the rest of the range against it. -->
+          <CompoundingRule id="crJoin" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>joinTwice</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="hd">
+                    <OptionalSegmentSequence min="2" max="6"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="nh">
+                    <SimpleContext naturalClass="ncAny" />
+                    <SimpleContext naturalClass="ncAny" />
+                  </PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="hd" /><CopyFromInput index="nh" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+            <HeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></HeadRequiredHeadFeatures>
+            <NonHeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></NonHeadRequiredHeadFeatures>
+            <HeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></HeadRequiredFootFeatures>
+            <NonHeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></NonHeadRequiredFootFeatures>
+          </CompoundingRule>
+          <!-- The isolated CompoundingSubrule@isActive="no" decoy: see grammar.xml's header for why it
+               needs to be the only subrule of its own rule rather than a second subrule inside crJoin. -->
+          <CompoundingRule id="crJoinInsert" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>joinInsert</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule isActive="no">
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="hdD">
+                    <OptionalSegmentSequence min="2" max="6"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="nhD">
+                    <SimpleContext naturalClass="ncAny" />
+                    <SimpleContext naturalClass="ncAny" />
+                  </PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="hdD" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments><CopyFromInput index="nhD" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+            <HeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></HeadRequiredHeadFeatures>
+            <NonHeadRequiredHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></NonHeadRequiredHeadFeatures>
+            <HeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></HeadRequiredFootFeatures>
+            <NonHeadRequiredFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></NonHeadRequiredFootFeatures>
+          </CompoundingRule>
+          <!-- multipleApplication="0": this rule can never join anything. -->
+          <CompoundingRule id="crNever" multipleApplication="0" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>joinNever</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="hdN">
+                    <OptionalSegmentSequence min="2" max="6"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="nhN">
+                    <SimpleContext naturalClass="ncAny" />
+                    <SimpleContext naturalClass="ncAny" />
+                  </PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="hdN" /><InsertSegments><PhoneticShape>m</PhoneticShape></InsertSegments><CopyFromInput index="nhN" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+          <!-- Decoy rule: would join with a "p" at the junction. -->
+          <CompoundingRule id="crDecoy" isActive="no" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>joinDecoy</Name>
+            <CompoundingSubrules>
+              <CompoundingSubrule>
+                <HeadMorphologicalInput>
+                  <PhoneticSequence id="hdX">
+                    <OptionalSegmentSequence min="2" max="6"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </HeadMorphologicalInput>
+                <NonHeadMorphologicalInput>
+                  <PhoneticSequence id="nhX">
+                    <SimpleContext naturalClass="ncAny" />
+                    <SimpleContext naturalClass="ncAny" />
+                  </PhoneticSequence>
+                </NonHeadMorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="hdX" /><InsertSegments><PhoneticShape>p</PhoneticShape></InsertSegments><CopyFromInput index="nhX" /></MorphologicalOutput>
+              </CompoundingSubrule>
+            </CompoundingSubrules>
+          </CompoundingRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eKa" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKa"><PhoneticShape>ka</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></AssignedFootFeatures>
+            <MorphemeId>KA</MorphemeId>
+            <Gloss>ka</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTu" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTu"><PhoneticShape>tu</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></AssignedFootFeatures>
+            <MorphemeId>TU</MorphemeId>
+            <Gloss>tu</Gloss>
+          </LexicalEntry>
+          <!-- Wrong non-head number, so the rule's NonHeadRequiredHeadFeatures refuses it. -->
+          <LexicalEntry id="eKi" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKi"><PhoneticShape>ki</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></AssignedFootFeatures>
+            <MorphemeId>KI</MorphemeId>
+            <Gloss>ki</Gloss>
+          </LexicalEntry>
+          <!-- Wrong non-head foot class, so NonHeadRequiredFootFeatures refuses it. -->
+          <LexicalEntry id="eTi" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aTi"><PhoneticShape>ti</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsB" /></AssignedFootFeatures>
+            <MorphemeId>TI</MorphemeId>
+            <Gloss>ti</Gloss>
+          </LexicalEntry>
+          <!-- Wrong HEAD number: plural where the rule's HeadRequiredHeadFeatures requires singular. -->
+          <LexicalEntry id="eKu" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aKu"><PhoneticShape>ku</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numPl" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsA" /></AssignedFootFeatures>
+            <MorphemeId>KU</MorphemeId>
+            <Gloss>ku</Gloss>
+          </LexicalEntry>
+          <!-- Wrong HEAD foot class: class b where the rule's HeadRequiredFootFeatures requires class a. -->
+          <LexicalEntry id="ePa" partOfSpeech="posN">
+            <Allomorphs><Allomorph id="aPa"><PhoneticShape>pa</PhoneticShape></Allomorph></Allomorphs>
+            <AssignedHeadFeatures><FeatureValue feature="hfNum" symbolValues="numSg" /></AssignedHeadFeatures>
+            <AssignedFootFeatures><FeatureValue feature="ffCls" symbolValues="clsB" /></AssignedFootFeatures>
+            <MorphemeId>PA</MorphemeId>
+            <Gloss>pa</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

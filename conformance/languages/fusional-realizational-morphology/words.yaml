@@ -1,0 +1,688 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from). This grammar has no phonological rules and no
+# AffixTemplate at all (every MorphologicalRule/RealizationalRule/CompoundingRule applies freely,
+# unordered) -- so a bare root is a valid word whenever nothing else (a StemName region, a Family
+# collision, an IsBlocked check) specifically forbids it.
+#
+#   1. mun -> STEM's default (unrestricted) allomorph, bare, no person feature assigned at all. The
+#      default allomorph carries no stemName, so it has no region to fail to satisfy.
+#        -> STEM|mun, rules: []
+#   2. muno -> STEM's default allomorph + P1 ("-o"). Once a person feature IS assigned, snP1P2 and
+#      snP1P3's regions jointly exhaust the whole person space {1,2,3} -- so the default allomorph,
+#      valid only in the absence of any person-governed region, can never combine with ANY person
+#      suffix. Zero parses.
+#        -> expect_fail
+#   3. mano -> STEM's snP1P2-restricted allomorph "man" + P1. P1 is in snP1P2's region {1,2} -> valid.
+#        -> STEM+P1|mano, rules: [mrPers1]
+#   4. mant -> STEM's snP1P2-restricted allomorph "man" + P3 ("-t"). P3 is NOT in snP1P2's region
+#      {1,2} -> zero parses.
+#        -> expect_fail
+#   5. fer -> FER, bare, no lexical head features at all, no rule touches it -> trivially valid.
+#        -> FER|fer, rules: []
+#
+# The remaining words either reuse these same mechanisms on independent lexical material (the
+# realizational-rule/family-blocking/circumfix/infix/compounding/MPR-group/ablaut sections) or are
+# expect_fail words whose signature is the empty set.
+#
+# Reconciliation against the oracle (self-check): the 5 words above matched on the first run with no
+# disagreement. The remaining 44 words needed several real fixes before matching -- none were hand-
+# derivation errors in the sense of "wrong linguistic reasoning"; all were genuine grammar-authoring/
+# engine-interaction discoveries, reported here in full rather than silently smoothed over:
+#
+#   1. Morph-chain order for a PREFIX is LEFT-TO-RIGHT SURFACE POSITION (prefix morpheme first), not
+#      "root first, affixes after" the way every suffix-only example in this suite (and suffixing-
+#      quechua) reads -- none of the ledger's source v1 fixtures used a real MorphemeId on a
+#      prefixing rule (they tested the mechanism only, MorphemeId left unset), so there was no
+#      precedent to crib from. Resolved empirically via --propose: confirmed on gelobt (GET+LOB, not
+#      LOB+GET) and xped (THEMEX+PED).
+#   2. The compounding seam's boundary marker "+" must be declared as a BoundaryDefinition (DTD
+#      element under CharacterDefinitionTable), not a plain SegmentDefinition -- declaring it as a
+#      segment made every compound word find ZERO parses (confirmed by isolated probing against v1
+#      compounding/nonhead-not-root's own grammar.xml, which uses BoundaryDefinition). It renders as
+#      "+?" in the signature (matching v1's own "(pʰ)ut+?dat"), never as a literal character in the
+#      surface word text.
+#   3. mrSuffixS3's literal suffix was originally "-s", identical to mrPers1's own "-s" ending on
+#      any posV root sharing no AffixTemplate -- every "-s"-suffixed word (muns, lobs) spuriously
+#      double-analyzed as both. Renamed S3's suffix to "-h" (mrSuffixS3 requiredPartsOfSpeech=posV;
+#      mrEndH is a DIFFERENT rule, gated posN, so the two "-h" suffixes never collide).
+#   4. mrAblaut, gated on the shared "posV", let ANY posV word containing "a" get a spurious extra
+#      analysis where the "a" was hypothesized as an ablaut-changed "i" reverting to some OTHER posV
+#      root -- concretely, "mano" (STEM+P1) ALSO analyzed as STEM(reverting "man"'s "a" back to "i",
+#      landing on the real "min" allomorph)+ABLAUT+P1, a genuine cross-construct collision between
+#      two unrelated grammar sections that happened to share both a POS gate and a coincidental
+#      vowel-alternation pattern. Fixed by giving SING (mrAblaut's only intended target) its own POS,
+#      posAblautV, confining the reversal search to exactly the one root it describes.
+#   5. The two CompoundingRules (mrCompoundHN, mrCompoundNH) both had unrestricted wildcard head/
+#      nonhead patterns and no POS gating, so mrCompoundNH ALSO matched "pannox" (reading it as
+#      nonhead="pan"+head="nox", producing the identical signature mrCompoundHN already derives) --
+#      every compound word double-counted. Fixed by giving each CompoundingRule's Set its own disjoint
+#      POS pair (posN1/posV1 for Set 1, posN2/posV2 for Set 2) via headPartsOfSpeech/
+#      nonHeadPartsOfSpeech, confining each rule to its own lexical material.
+#   6. Set 2 (prefix-commute) originally put the homophone-ambiguity pair on the NON-head (mirroring
+#      Set 1) with mrPrefixBe2 (posV-gated) attaching to the HEAD (a plain noun, "dom") -- but a
+#      posV-gated rule can never apply to a noun, so lexbedom always found zero parses. Fixed by
+#      moving the homophone pair (DOMN/DOMV) onto the HEAD instead, so mrPrefixBe2 has a posV2
+#      reading to attach to; the non-head (LEX) is a plain, unambiguous noun in this set instead.
+#   7. Even after fix 6, lexbedom still found zero parses: mpr-groups/output-overwrite and
+#      compounding/prefix-commute have genuinely CONFLICTING requirements on morphologicalRuleOrder
+#      within one stratum. output-overwrite needs "linear" order to be observable at all (a v1
+#      fixture requirement); prefix-commute's head-recursion (the prefix unapplying from the
+#      compounding HEAD span before the compound itself unapplies) only succeeds under "unordered" --
+#      confirmed by toggling the setting and watching lexbedom and yxpedz trade places. Resolved by
+#      splitting the grammar into two Strata sharing the same CharacterDefinitionTable: "Main"
+#      (unordered, everything else) and "MprGroups" (linear, only the two mpr-groups constructs).
+#
+# Findings 2-7 are documented at their point of relevance in grammar.xml as well. None required a
+# harness change; all were resolved within the grammar itself once understood.
+
+language: FusionalRealizationalMorphology
+inspired_by: ["fusional inflectional-class morphology with stem suppletion, realizational rules, and ablaut-as-sole-exponent (typological pattern, not any specific language)"]
+sources:
+  - "WALS - Fusion, Exponence, Inflectional Synthesis in Inflectional Morphology chapters"
+  - "typological literature on suppletion - inflectional classes, syncretism, principal parts"
+requires: []
+words:
+  - word: mun
+    note: STEM's default (unrestricted) allomorph, bare -- no person feature assigned, so there is no StemName region to fail.
+    parses:
+      - signature: "STEM|mun"
+        gloss: bring
+        rules: []
+        exercises:
+          - "Stem names"
+
+  - word: muno
+    note: STEM default allomorph + P1 -- once ANY person feature is assigned, snP1P2/snP1P3's regions jointly exhaust {1,2,3}, so the region-less default allomorph can never combine with a person suffix at all.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: muns
+    note: STEM default allomorph + P2 -- same reasoning as muno.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: munt
+    note: STEM default allomorph + P3 -- same reasoning as muno.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: mano
+    note: STEM's snP1P2-restricted allomorph "man" + P1 ("-o") -- P1 is in snP1P2's region {1,2}.
+    parses:
+      - signature: "STEM+P1|mano"
+        gloss: bring-1SG
+        rules: [mrPers1]
+        exercises:
+          - "Stem names"
+
+  - word: mans
+    note: STEM's snP1P2-restricted allomorph "man" + P2 ("-s") -- P2 is in snP1P2's region {1,2}.
+    parses:
+      - signature: "STEM+P2|mans"
+        gloss: bring-2SG
+        rules: [mrPers2]
+        exercises:
+          - "Stem names"
+
+  - word: mant
+    note: STEM's snP1P2-restricted allomorph "man" + P3 -- P3 is NOT in snP1P2's region {1,2} -- zero parses.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: man
+    note: STEM's snP1P2-restricted allomorph, bare -- no person feature assigned means no region is satisfied, so this stemName-governed allomorph fails standalone (unlike the default allomorph's "mun").
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: mino
+    note: >-
+      STEM's snP1P3-restricted allomorph "min" + P1 -- P1 is in snP1P3's region {1,3}, AND also in
+      snP1P2's region {1,2}: the shared-region row, proving 1st-person overlap between the two stem
+      names doesn't spuriously block either one.
+    provenance: "W5, StemName selection + default-stem fallback"
+    parses:
+      - signature: "STEM+P1|mino"
+        gloss: bring-1SG
+        rules: [mrPers1]
+        exercises:
+          - "Stem names"
+
+  - word: mins
+    note: STEM's snP1P3-restricted allomorph "min" + P2 -- P2 is NOT in snP1P3's region {1,3} -- zero parses.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: mint
+    note: STEM's snP1P3-restricted allomorph "min" + P3 -- P3 is in snP1P3's region {1,3}.
+    parses:
+      - signature: "STEM+P3|mint"
+        gloss: bring-3SG
+        rules: [mrPers3]
+        exercises:
+          - "Stem names"
+
+  - word: min
+    note: STEM's snP1P3-restricted allomorph, bare -- fails standalone for the same reason "man" does.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: fer
+    note: FER ("carry"), bare, no lexical head features at all -- trivially valid, no rule touches it.
+    parses:
+      - signature: "FER|fer"
+        gloss: carry
+        rules: []
+        exercises: []
+
+  - word: ferid
+    note: FER + RPAST (a RealizationalRule, no AffixTemplate/Slot wrapper needed) -- the root's own FS has no tense value at all, so RPAST's IsBlocked presence check finds nothing to collide with.
+    provenance: "W5, RealizationalAffixProcessRule core mechanics + IsBlocked"
+    parses:
+      - signature: "FER+RPAST|ferid"
+        gloss: carry-PST.REALIZ
+        rules: [rrPast]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: feres
+    note: FER + TENSE ("-es", ordinary affix, sets tense=pres) -- pre-loads a tense value so the realizational rule's blocking check below has something to trip on.
+    parses:
+      - signature: "FER+TENSE|feres"
+        gloss: carry-PRES
+        rules: [mrTense]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: feresid
+    note: >-
+      FER + TENSE + RPAST attempted together -- mrTense sets tense=pres first, then RPAST's IsBlocked
+      check sees tense is ALREADY present (even though it's pres, not past) and blocks -- a
+      value-equality mis-implementation would wrongly accept this; presence alone is what matters.
+    expect_fail: true
+    blocked_by: [rrPast]
+    exercises:
+      - "RealizationalAffixProcessRule"
+
+  - word: duc
+    note: DUC ("lead"), bare, regular member of famCarry -- no collision, trivially valid.
+    parses:
+      - signature: "DUC|duc"
+        gloss: lead
+        rules: []
+        exercises: []
+
+  - word: tul
+    note: TUL ("carry.PST.SUPPL"), bare, irregular suppletive member of famCarry with tense lexically fixed to past -- direct lexical lookup never reaches CheckBlocking.
+    parses:
+      - signature: "TUL|tul"
+        gloss: carry.PST.SUPPL
+        rules: []
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: ducit
+    note: >-
+      DUC + PAST2 ("-it", sets tense=past) attempted -- the synthesized candidate's tense=past FS
+      subsumes TUL's own lexically-fixed FS (family collision), so Word.CheckBlocking fires and
+      substitutes in TUL's own shape; since that substituted shape ("tul") does not match the surface
+      "ducit", the candidate is discarded. Zero parses.
+    expect_fail: true
+    blocked_by: [mrPast2]
+    provenance: "W5, LexFamily blocks a more-general family member (Word.CheckBlocking)"
+    exercises:
+      - "RealizationalAffixProcessRule"
+
+  - word: ducunt
+    note: DUC + PL2 ("-unt", sets num=pl only, never touches tense) -- never collides with TUL's tense-only lexical fixing, so not blocked.
+    parses:
+      - signature: "DUC+PL2|ducunt"
+        gloss: lead-PL
+        rules: [mrPl2]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: lob
+    note: LOB ("praise"), bare.
+    parses:
+      - signature: "LOB|lob"
+        gloss: praise
+        rules: []
+        exercises: []
+
+  - word: gelobt
+    note: LOB circumfixed "ge-...-t" (ge-...-t past-participle-plausible) -- simultaneous prefix+suffix wrapped around one copied stem span, both pieces contributed by the SAME rule/morpheme id.
+    provenance: "W9.1 probe, AffixProcessRuleTests.CircumfixRules"
+    parses:
+      - signature: "GET+LOB|gelobt"
+        gloss: PTCP-praise
+        rules: [mrCircumfixGeT]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: lobh
+    note: >-
+      LOB + S3 ("-h", ordinary suffix, independent of the circumfix rule). S3's suffix is "-h", not
+      "-s": isolated probing found that "-s" collided with mrPers2's own literal "-s" suffix (both
+      apply freely to any posV root), spuriously double-analyzing every "-s"-suffixed posV word as
+      both S3 and P2 -- see grammar.xml's mrSuffixS3 comment.
+    parses:
+      - signature: "LOB+S3|lobh"
+        gloss: praise-3SG
+        rules: [mrSuffixS3]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: gelobth
+    note: LOB circumfixed AND suffixed with S3 in the same word -- proves the circumfix composes with an independent ordinary suffix rule.
+    parses:
+      - signature: "GET+LOB+S3|gelobth"
+        gloss: PTCP-praise-3SG
+        rules: [mrCircumfixGeT, mrSuffixS3]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: gelobthh
+    note: A doubled S3 suffix -- no rule combination produces two trailing "h"s. Negative control, mirroring v1 affix-shapes/circumfix's own doubled-suffix negative row.
+    expect_fail: true
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: vic
+    note: VIC ("conquer"), bare -- the perfect-stem shape (vici-plausible), no infix.
+    parses:
+      - signature: "VIC|vic"
+        gloss: conquer
+        rules: []
+        exercises: []
+
+  - word: vinc
+    note: VIC's present stem, nasal-infixed ("vi" + "n" + "c") -- vincere-plausible; two MorphologicalInput parts (first 2 segments, then the remainder), "n" inserted between them.
+    provenance: "W9.1 probe, AffixProcessRuleTests.InfixRules"
+    parses:
+      - signature: "VIC+PRESSTEM|vinc"
+        gloss: conquer-PRES.STEM
+        rules: [mrNasalInfix]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: pannox
+    note: >-
+      PAN (head, "bread") + NOX (nonhead, bare root) compounded head+nonhead -- NOX is homophonous
+      across posN ("night") and posV ("harm"), so both are independently valid non-head roots for the
+      same surface string: two genuinely distinct analyses. The compounding seam's boundary marker
+      "+" is a BoundaryDefinition (not a plain segment, see grammar.xml's CharacterDefinitionTable
+      comment); it renders as "+?" in the signature's shape half, matching v1 compounding's own
+      "(pʰ)ut+?dat"-style rendering -- it is never part of the literal surface word text itself.
+    parses:
+      - signature: "PAN+NOXN|pan+?nox"
+        gloss: bread-night
+        rules: [mrCompoundHN]
+        exercises:
+          - "CompoundingRule"
+      - signature: "PAN+NOXV|pan+?nox"
+        gloss: bread-harm
+        rules: [mrCompoundHN]
+        exercises:
+          - "CompoundingRule"
+
+  - word: benox
+    note: >-
+      NOXV, be-prefixed, standalone (no compounding involved) -- proves mrPrefixBe1 itself works
+      correctly in isolation, so panbenox's rejection below is specifically about the compounding
+      non-head-must-be-a-root constraint, not some defect in the prefix rule itself.
+    parses:
+      - signature: "BEPFX1+NOXV|benox"
+        gloss: PST-harm
+        rules: [mrPrefixBe1]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: panbenox
+    note: >-
+      PAN + be-prefixed NOX compounded head+nonhead -- the non-head span "benox" is prefix+root, NOT
+      a bare root, and CompoundingRule's analysis-side search requires the non-head to be a bare root
+      (computational-complexity reasons, per AnalysisCompoundingRule.cs) -- the prefix is discarded as
+      an invalid analysis rather than recursively re-applied. Zero parses.
+    expect_fail: true
+    blocked_by: [mrCompoundHN]
+    provenance: "P3, CompoundingRuleTests.SimpleRules reconfiguration 3 (non-head-not-root variant)"
+    exercises:
+      - "CompoundingRule"
+
+  - word: pandex
+    note: PAN + "dex" -- "dex" is neither a root nor any rule's output, so no compound analysis exists at all.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule"
+
+  - word: lexdom
+    note: >-
+      LEX (nonhead, "law", posN2 only) + DOM (head, bare) compounded nonhead+head -- DOM is
+      homophonous across posN2 ("house") and posV2 ("tame"), so both are independently valid head
+      roots for the same surface string (the mirror image of Set 1's ambiguity, which sat on the
+      non-head instead).
+    parses:
+      - signature: "LEX+DOMN|lex+?dom"
+        gloss: law-house
+        rules: [mrCompoundNH]
+        exercises:
+          - "CompoundingRule"
+      - signature: "LEX+DOMV|lex+?dom"
+        gloss: law-tame
+        rules: [mrCompoundNH]
+        exercises:
+          - "CompoundingRule"
+
+  - word: lexbedom
+    note: >-
+      LEX (nonhead) + be-prefixed DOM (head) compounded nonhead+head -- here the PREFIX attaches to
+      the HEAD, not the non-head, and CompoundingRule's non-head-must-be-a-root requirement never
+      constrains the head span at all, so this succeeds where panbenox failed: the prefix unapplies
+      cleanly from the head span "bedom" -- but mrPrefixBe2 requires posV2, so only DOM's VERB reading
+      (DOMV, "tame") is prefix-eligible; the noun reading (DOMN) can never combine with the prefix at
+      all, so unlike lexdom's bare-head ambiguity, this word has exactly one analysis, not two. The
+      prefix commutes with compounding rule ordering exactly as v1's own prefix-commute fixture pins.
+    provenance: "P3, CompoundingRuleTests.SimpleRules reconfiguration 3 (prefix-commute variant)"
+    parses:
+      - signature: "LEX+BEPFX2+DOMV|lex+?bedom"
+        gloss: law-PST-tame
+        rules: [mrCompoundNH, mrPrefixBe2]
+        exercises:
+          - "CompoundingRule"
+
+  - word: lexbex
+    note: LEX + "bex" -- "bex" is neither DOM nor any valid prefixed-head shape, so no compound analysis exists.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule"
+
+  - word: ped
+    note: PED ("foot"), bare -- no MPR feature preset on this lexical entry, trivially valid.
+    parses:
+      - signature: "PED|ped"
+        gloss: foot
+        rules: []
+        exercises: []
+
+  - word: xped
+    note: PED prefixed by mrThemeX ("x-", sets MPR feature mprPedA).
+    provenance: "W3.1, MprFeatureGroupOutput.Overwrite in MPR output accumulation"
+    parses:
+      - signature: "THEMEX+PED|xped"
+        gloss: THEME.A-foot
+        rules: [mrThemeX]
+        exercises:
+          - "MPR features/groups"
+
+  - word: yxped
+    note: PED prefixed by mrThemeX then mrThemeY ("y-", sets mprPedB) -- ThemeGroup's outputType="overwrite" means mrThemeY's own output DROPS mprPedA rather than accumulating it alongside mprPedB.
+    parses:
+      - signature: "THEMEY+THEMEX+PED|yxped"
+        gloss: THEME.B-THEME.A-foot
+        rules: [mrThemeX, mrThemeY]
+        exercises:
+          - "MPR features/groups"
+
+  - word: xpedz
+    note: PED prefixed by mrThemeX then suffixed by mrEndZ (requiredMPRFeatures="mprPedA") -- mprPedA is still present (only mrThemeX applied), so mrEndZ's requirement is satisfied.
+    parses:
+      - signature: "THEMEX+PED+ENDZ|xpedz"
+        gloss: THEME.A-foot-END
+        rules: [mrThemeX, mrEndZ]
+        exercises:
+          - "MPR features/groups"
+
+  - word: yxpedz
+    note: >-
+      PED prefixed by mrThemeX then mrThemeY then suffixed by mrEndZ -- the DISTINGUISHING row: after
+      mrThemeY, ThemeGroup's Overwrite semantics have already dropped mprPedA, so mrEndZ's
+      requiredMPRFeatures="mprPedA" fails. Zero parses. A pre-fix "flat union" mis-implementation
+      would wrongly accept this.
+    expect_fail: true
+    blocked_by: [mrEndZ]
+    exercises:
+      - "MPR features/groups"
+
+  - word: kat
+    note: KAT ("cat"), bare -- ruleFeatures preset both AllGroup members (mprConjA, mprConjB) directly on the lexical entry.
+    parses:
+      - signature: "KAT|kat"
+        gloss: cat
+        rules: []
+        exercises: []
+
+  - word: sod
+    note: SOD ("salt"), bare -- ruleFeatures preset mprConjA (half of AllGroup) and mprConjC (half of AnyGroup).
+    parses:
+      - signature: "SOD|sod"
+        gloss: salt
+        rules: []
+        exercises: []
+
+  - word: lim
+    note: LIM ("threshold"), bare -- no ruleFeatures preset at all.
+    parses:
+      - signature: "LIM|lim"
+        gloss: threshold
+        rules: []
+        exercises: []
+
+  - word: katw
+    note: KAT + mrEndW (requiredMPRFeatures="mprConjA mprConjB", matchType="all") -- KAT has both AllGroup members, so the ALL requirement is satisfied.
+    provenance: "W3.1, MprFeatureGroupMatchType.All/Any in required-MPR gating"
+    parses:
+      - signature: "KAT+ENDW|katw"
+        gloss: cat-ALL.END
+        rules: [mrEndW]
+        exercises:
+          - "MPR features/groups"
+
+  - word: sodw
+    note: SOD + mrEndW -- SOD has only mprConjA, not mprConjB, so the ALL requirement (both members) is NOT satisfied. Zero parses -- the pre-fix flat-overlap bug would have wrongly accepted this.
+    expect_fail: true
+    blocked_by: [mrEndW]
+    exercises:
+      - "MPR features/groups"
+
+  - word: limw
+    note: LIM + mrEndW -- LIM has neither AllGroup member, so the ALL requirement fails outright.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: kath
+    note: KAT + mrEndH (requiredMPRFeatures="mprConjC mprConjD", matchType="any") -- KAT has NEITHER AnyGroup member, so the ANY requirement fails.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: sodh
+    note: SOD + mrEndH -- SOD has mprConjC (one AnyGroup member), so the ANY requirement (at least one) is satisfied.
+    parses:
+      - signature: "SOD+ENDH|sodh"
+        gloss: salt-ANY.END
+        rules: [mrEndH]
+        exercises:
+          - "MPR features/groups"
+
+  - word: limh
+    note: LIM + mrEndH -- LIM has neither AnyGroup member, so the ANY requirement fails.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: gof
+    note: >-
+      GOF, bare -- ruleFeatures preset every group member mrEndZ/mrEndW/mrEndH gate on (mprPedA plus
+      both AllGroup and one AnyGroup member), so this one root can chain all three suffixes and expose
+      the Stratum "MprGroups" list-order dependency between them (none of the three produces an MPR
+      feature the others consume, so without a shared root no word could ever request more than one).
+    parses:
+      - signature: "GOF|gof"
+        gloss: gof
+        rules: []
+        exercises: []
+
+  - word: gofzw
+    note: >-
+      GOF + mrEndZ + mrEndW, in that list order (mrEndZ before mrEndW on Stratum "MprGroups"). The
+      ordering discriminator for the mrEndZ~mrEndW adjacent pair: "gofwz" below is the same two
+      suffixes reversed, which only parses when the list order is swapped.
+    parses:
+      - signature: "GOF+ENDZ+ENDW|gofzw"
+        gloss: gof-END-ALL.END
+        rules: [mrEndZ, mrEndW]
+        exercises:
+          - "MPR features/groups"
+
+  - word: gofwz
+    note: >-
+      GOF + mrEndW + mrEndZ, the reverse of "gofzw". Zero parses under the shipped list order
+      (mrEndZ mrEndW): this exact surface is only reachable when mrEndW is transposed ahead of
+      mrEndZ, which is the mrEndZ~mrEndW ordering item's own counterfactual.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: gofwh
+    note: >-
+      GOF + mrEndW + mrEndH, in that list order (mrEndW before mrEndH). The ordering discriminator
+      for the mrEndW~mrEndH adjacent pair: "gofhw" below is the same two suffixes reversed, which
+      only parses when the list order is swapped.
+    parses:
+      - signature: "GOF+ENDW+ENDH|gofwh"
+        gloss: gof-ALL.END-ANY.END
+        rules: [mrEndW, mrEndH]
+        exercises:
+          - "MPR features/groups"
+
+  - word: gofhw
+    note: >-
+      GOF + mrEndH + mrEndW, the reverse of "gofwh". Zero parses under the shipped list order
+      (mrEndW mrEndH): this exact surface is only reachable when mrEndH is transposed ahead of
+      mrEndW, which is the mrEndW~mrEndH ordering item's own counterfactual.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: sing
+    note: SING ("sing", singen-plausible), bare -- no lexical head features, present-stem citation form.
+    parses:
+      - signature: "SING|sing"
+        gloss: sing
+        rules: []
+        exercises: []
+
+  - word: sang
+    note: >-
+      SING's past-tense form, realized ENTIRELY by changing the root's own vowel ("i"->"a") via
+      ModifyFromInput -- no affix at all. Ablaut as the sole exponent of the tense category
+      (singen/sang-plausible).
+    parses:
+      - signature: "SING+ABLAUT|sang"
+        gloss: sing-PST.ABLAUT
+        rules: [mrAblaut]
+        exercises:
+          - "MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext"
+
+  - word: mitlav
+    note: >-
+      MIT (head, mprCompReq+mprSubA) + LAV (nonhead) -- mrCompoundConstrained's subrule 0
+      (requiredMPRFeatures="mprSubA" on HeadMorphologicalInput) matches since MIT carries mprSubA.
+      G5 (code-coverage-driven): previously zero coverage for a CompoundingSubrule's own per-subrule
+      requiredMPRFeatures/excludedMPRFeatures gating (distinct from the ordinary-MorphologicalRule
+      MPR-groups material elsewhere in this file).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule requiredMPRFeatures/excludedMPRFeatures"
+    parses:
+      - signature: "MIT+LAV|mit+?lav"
+        gloss: send-wash
+        rules: [mrCompoundConstrained]
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: ficlav
+    note: >-
+      FIC (head, mprCompReq only, no mprSubA) + LAV (nonhead) -- subrule 0 fails (FIC lacks
+      mprSubA), so subrule 1 (excludedMPRFeatures="mprSubA") is tried instead and matches, since FIC
+      genuinely excludes mprSubA. Proves the per-subrule MPR gate actually discriminates between the
+      two subrules, not just falls through by pattern order.
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule requiredMPRFeatures/excludedMPRFeatures"
+    parses:
+      - signature: "FIC+LAV|fic+?lav"
+        gloss: make-wash
+        rules: [mrCompoundConstrained]
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: seclav
+    note: >-
+      SEC (head, no ruleFeatures at all) + LAV (nonhead) -- mrCompoundConstrained's own
+      headProdRestrictionsMprFeatures="mprCompReq" requires the head to carry mprCompReq, which SEC
+      does not, so the rule never applies at all (both subrules unreachable). G5 (code-coverage-
+      driven): previously zero coverage for CompoundingRule.headProdRestrictionsMprFeatures.
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule.headProdRestrictionsMprFeatures"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: genlav
+    note: >-
+      GEN (head, mprCompReq, family famCompBlock) + LAV (nonhead) -- the compounding rule itself
+      applies successfully, but GEN's family also contains the suppletive NOV, and CheckBlocking
+      substitutes NOV's own entry in wherever GEN's compound output would surface; the resulting
+      resynthesis ("nov") no longer matches this word's own input shape ("gen+lav"), so the overall
+      analysis has zero parses. G5 (code-coverage-driven): previously zero coverage for
+      CompoundingRule's own Blockable/CheckBlocking path (only ever exercised through an ordinary
+      MorphologicalRule elsewhere in this file, via famCarry).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule Blockable/CheckBlocking"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: mitlavlav
+    note: >-
+      MIT+LAV (mitlav, above) attempted as the HEAD of a further application of the same
+      compounding rule, with LAV again as the nonhead. Hand-derived to hit MaxApplicationCount (the
+      DTD's own default multipleApplication="1" caps one application per derivation), but a
+      dotnet-coverage check after this word was added showed SynthesisCompoundingRule's
+      MaxApplicationCount lines still unreached -- the zero-parse result is real (confirmed by
+      self-check) but its cause is not confirmed to be MaxApplicationCount specifically; most likely
+      analysis-direction compound-splitting does not recurse into a derived (non-lexical) head span
+      at all, rejecting this candidate before MaxApplicationCount is ever checked. Left in as a
+      correct expect_fail pin, but MaxApplicationCount itself remains a documented residual gap (see
+      docs/conformance-language-suite-plan.md G5).
+    provenance: "G5 coverage sweep, SynthesisCompoundingRule (MaxApplicationCount attempt, gap remains)"
+    expect_fail: true
+    blocked_by: [mrCompoundConstrained]
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: corriv
+    note: >-
+      CompoundingRule@blockable="false" probe for mrCompoundHN (mrCompoundConstrained's own
+      blockable="true" is already pinned by genlav above, but neither of the OTHER two
+      CompoundingRules -- mrCompoundHN, mrCompoundNH -- had a family sibling to make their own
+      declared "false" value observable; rewriting it to "true" changed nothing until now).
+      BLOCKHEAD (head, family famHNBlock) + BLOCKNON (nonhead) compound normally. BLOCKHEAD's family
+      also contains the sibling BLOCKSIB, which declares no AssignedHeadFeatures at all -- an empty
+      SyntacticFeatureStruct trivially subsumes an empty one, so were mrCompoundHN blockable,
+      CheckBlocking would fire on family membership alone and substitute BLOCKSIB's own bare entry
+      wherever this compound's output would surface, and the resulting resynthesis ("zon") would not
+      match this word's own input shape ("cor+riv"). Because mrCompoundHN declares blockable="false",
+      that substitution never happens and the ordinary compound analysis stands.
+    parses:
+      - signature: "BLOCKHEAD+BLOCKNON|cor+?riv"
+        gloss: heart-river
+        rules: [mrCompoundHN]
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"

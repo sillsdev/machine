@@ -55,3 +55,9 @@ tests/SIL.Machine.Tests/Corpora/TestData/usfm/target/*
 tests/SIL.Machine.Tests/Corpora/TestData/project/*
 tests/SIL.Machine.Tests/Corpora/TestData/pretranslations.json
 .idea
+
+# Claude Code conversation exports
+20??-??-??-*.txt
+
+# Agent scratch: test result dumps, captured logs, throwaway SDK/CLI state
+.tmp/

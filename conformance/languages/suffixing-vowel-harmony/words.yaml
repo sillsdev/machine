@@ -1,0 +1,382 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from). Phonological rules apply, in this order, ONCE to
+# the fully-concatenated underlying word (root+every suffix already joined) per the stratum's
+# `phonologicalRules="prBacknessHarmony prVowelMerge prVowelMultiMerge prGradation prEpenthesis"`
+# order -- NOT incrementally per suffix. That ordering is itself load-bearing: prBacknessHarmony
+# must see the pre-epenthesis consonant cluster, or the transparency span would be broken by an
+# epenthetic vowel the harmony rule can't see past (its span only elides consonants, not vowels).
+#
+#   1. semit+PAST -> underlying "semit"+"de" = "semitde". Harmony: target "e" (final); scanning
+#      left, the nearest vowel within <=2 intervening consonants is "i" (position 4) -- FRONT, not
+#      back -- so the environment does not match; rule does not fire. Epenthesis: consonant seam
+#      t-d (positions 5-6) gets a linking "i" -> "semitide".
+#        -> SEMIT+PAST|semitide, rules: [mrPast, prEpenthesis]
+#   2. semit+PRES -> underlying "semit"+"le" = "semitle". Same reasoning (nearest vowel to target
+#      "e" is front "i"): harmony doesn't fire. Epenthesis at seam t-l -> "semitile".
+#        -> SEMIT+PRES|semitile, rules: [mrPres, prEpenthesis]
+#   3. kutak+PAST -> underlying "kutak"+"de" = "kutakde". Harmony: target "e" (final); scanning
+#      left past 2 consonants (d, k) reaches "a" (position 4) -- BACK -- environment matches, rule
+#      fires: e->a, giving "kutakda". Gradation: the word-initial "k" (position 1) is caught by the
+#      anchored subrule (initialBoundaryCondition) and stays "k"; the second "k" (position 5) is NOT
+#      word-initial, so the catch-all subrule weakens it to "g" -> "kutagda". Epenthesis: consonant
+#      seam g-d (positions 5-6) gets a linking "i" -> "kutagida".
+#        -> KUTAK+PAST|kutagida, rules: [mrPast, prBacknessHarmony, prGradation, prEpenthesis]
+#   4. kutak+PRES -> underlying "kutak"+"le" = "kutakle". Same harmony/gradation reasoning as #3
+#      (target "e" backed by root-internal "a" across k+l; second "k" lenites) -> "kutagla" ->
+#      epenthesis at the g-l seam -> "kutagila".
+#        -> KUTAK+PRES|kutagila, rules: [mrPres, prBacknessHarmony, prGradation, prEpenthesis]
+#   5. unt+PAST -> underlying "unt"+"de" = "untde". Harmony: target "e" (final); scanning left, the
+#      first 2 consonants are d, t -- that already exhausts the max=2 transparency span before any
+#      vowel is reached, so the back vowel "u" (position 1) is OUT OF REACH -- environment does not
+#      match, rule does not fire (the quantifier's upper bound is the whole point of this word).
+#      Epenthesis (simultaneous, so every C_C seam in the 3-consonant run n-t-d gets its own "i" in
+#      one pass): n-t seam and t-d seam both qualify -> "u-n-i-t-i-d-e" = "unitide".
+#        -> UNT+PAST|unitide, rules: [mrPast, prEpenthesis]  (prBacknessHarmony correctly absent)
+#
+# The remaining words either reuse these same five rules on independent lexical material (the
+# discontinuous-circumfix/infix pair, and the two vowel-coalescence pins) or are expect_fail words
+# whose signature is simply the empty set -- see PROTOCOL.md section 3 for the `-`/empty-signature
+# convention, unchanged here.
+#
+# Reconciliation against the oracle (self-check): the SURFACE signatures above (5/5 hand-derived
+# words) matched the oracle exactly once two authoring bugs were found and fixed -- see below; every
+# other word's signature (14 more) also matched on the first run after those two fixes, with no
+# further disagreement.
+#   - Bug 1 (grammar-authoring, not a hand-derivation error): a phonological subrule that CHANGES a
+#     segment's identity (prBacknessHarmony's e->a, prGradation's k->g, prVowelMerge/
+#     prVowelMultiMerge's literal outputs) is analysis-unreachable in self-check unless its target
+#     (Lhs) AND output (Rhs) are both expressed as a FeatureNaturalClass over a real, FULLY-SPECIFIED
+#     PhonologicalFeatureSystem (every segment given an explicit value for every feature, and every
+#     segment's feature bundle unique in the table -- confirmed by isolated probing: a bare
+#     SegmentNaturalClass/literal-Segment target or output for a CHANGING subrule always finds ZERO
+#     parses, regardless of anchoring or an explicit Environment). The grammar originally had no
+#     PhonologicalFeatureSystem at all (mirroring suffixing-evidential-adjacency-chain's phonology-free precedent, which
+#     doesn't need one); this grammar's 4 changing phonological rules needed one added. This is a
+#     genuine, previously-undocumented-outside-this-fixture engine/authoring constraint, not a hand
+#     derivation mistake -- the hand-derived SURFACE FORMS above were all correct from the first
+#     draft; only the grammar's own feature-system scaffolding needed fixing for the oracle to find
+#     them at all.
+#   - Bug 2 (a genuine hand-derivation miss, the LT-22613-style lesson this discipline exists to
+#     catch): prBacknessHarmony's transparency span was first authored as `min="0" max="2"`
+#     (0-2 intervening consonants). With min="0", the rule also fires on a back vowel IMMEDIATELY
+#     adjacent to a front "e" (zero consonants between) -- which spuriously matched inside the SUEEB
+#     lexical entry's own "u-e-e" trigger pattern (the "u" is directly followed by "e"), backing the
+#     first "e" to "a" BEFORE prVowelMultiMerge ever got a chance to see the intact "u-e-e" pattern,
+#     permanently losing the word's only valid analysis. Fixed by matching v1 rewrite/quantifier's own
+#     bound exactly (`min="1" max="2"`), which does not change any of the derivations above (every
+#     harmony-eligible word here has >=1 intervening consonant already) but removes the false-positive
+#     zero-consonant case. The oracle was right to reject "sueb" under the min="0" version; the
+#     hand-derivation's IMPLICIT assumption (that harmony only interacts with the words it was
+#     designed for) was naive, exactly as suffixing-evidential-adjacency-chain's own header warns.
+#   - Bug/finding 3 (a harness-tracing bug, found while authoring this grammar and fixed in the same
+#     stage): self-check's traced "rules:" verification (TraceRuleAttributor.cs) originally counted a
+#     phonological rule as "applied" to a word whenever its synthesis pass RAN, regardless of whether
+#     it matched anything -- with >=2 phonological rules sharing a stratum (this grammar's five),
+#     every declared phonological rule id showed up in every word's traced set unconditionally
+#     (confirmed by an isolated 2-rule probe grammar where a word containing NEITHER rule's target
+#     segment traced both as applied). Root cause: the engine's TraceManager records both
+#     PhonologicalRuleApplied (FailureReason.None) and PhonologicalRuleNotApplied (FailureReason set)
+#     as PhonologicalRuleSynthesis trace nodes, and the attributor counted both kinds. Fixed by
+#     filtering to FailureReason.None nodes, after which every traced set below matched this header's
+#     hand derivations exactly (semitide traces [mrPast, prEpenthesis]; unitide correctly lacks
+#     prBacknessHarmony; bare roots trace []). Per-word phonological-rule attribution is therefore
+#     real: a parse's `rules:` list names exactly the rules that fired with effect on that word.
+
+language: SuffixingVowelHarmony
+inspired_by: ["suffixing agglutinative morphology with long-distance vowel harmony and consonant gradation (typological pattern, not any specific language)"]
+sources:
+  - "WALS ch. 20/21 - Suffixing vs. Prefixing in Inflectional Morphology"
+  - "WALS - Vowel Harmony chapters (backness harmony typology)"
+  - "WALS - consonant gradation / alternation typology"
+requires: [phonology]
+words:
+  - word: semitide
+    note: >-
+      SEMIT (front-voweled root, "carry") + PAST. Harmony never fires (root/suffix material is all
+      front), so this word isolates simultaneous epenthesis breaking up the t-d seam from the
+      obligatory disjunctive tense slot -- the same pairing as the F3 cross-cutting worked example.
+    provenance: "F3 worked example (cross-cutting category): a disjunctive/obligatory affix-template slot combined with Simultaneous-mode epenthesis, chosen per docs/conformance-framework-implementation-notes.md's recommendation (both halves already have a proven single-feature fixture to crib from: negative/obligatory-tense-slot and rewrite/simultaneous-epenthesis)"
+    parses:
+      - signature: "SEMIT+PAST|semitide"
+        gloss: carry-PAST
+        rules: [mrPast, prEpenthesis]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "RewriteRule Simultaneous"
+
+  - word: semitile
+    note: SEMIT + PRES, the disjunctive slot-1 sibling of semitide -- same epenthesis reasoning, present tense suffix instead.
+    parses:
+      - signature: "SEMIT+PRES|semitile"
+        gloss: carry-PRES
+        rules: [mrPres, prEpenthesis]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "RewriteRule Simultaneous"
+
+  - word: semitideler
+    note: SEMIT + PAST(slot 1, obligatory) + PL(slot 2, optional) -- proves the optional number slot composes once the obligatory tense slot is filled, same mechanism as suffixing-evidential-adjacency-chain's walaknichik.
+    parses:
+      - signature: "SEMIT+PAST+PL|semitideler"
+        gloss: carry-PAST-PL
+        rules: [mrPast, mrPlural, prEpenthesis]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kutagida
+    note: >-
+      KUTAK ("arrive", back-voweled root containing "k" both word-initially and again word-medially)
+      + PAST: the flagship word exercising the obligatory/disjunctive tense slot, iterative
+      long-distance backness harmony (reaching past the k+d consonant seam), consonant-gradation
+      allomorphy (initial k resists, medial k lenites to g), and simultaneous epenthesis all at once.
+    provenance: "W9.2 probe, RewriteRuleTests.LongDistanceRules"
+    parses:
+      - signature: "KUTAK+PAST|kutagida"
+        gloss: arrive-PAST
+        rules: [mrPast, prBacknessHarmony, prGradation, prEpenthesis]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "RewriteRule Simultaneous"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: kutagila
+    note: KUTAK + PRES, the disjunctive slot-1 sibling of kutagida -- same harmony/gradation/epenthesis reasoning, present tense suffix instead. Also the rewrite/disjunctive pin (consonant-gradation's two ordered, word-initial-anchored subrules).
+    provenance: "W9.2 probe, RewriteRuleTests.DisjunctiveRules"
+    parses:
+      - signature: "KUTAK+PRES|kutagila"
+        gloss: arrive-PRES
+        rules: [mrPres, prBacknessHarmony, prGradation, prEpenthesis]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "RewriteRule Simultaneous"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+          - "Boundary markers (CharacterDefinitionTable)"
+
+  - word: kutak
+    note: KUTAK bare, no tense suffix at all -- slot 1 (tense) is obligatory and unfilled, so the AffixTemplate can never produce this output at all (mirrors suffixing-evidential-adjacency-chain's walakchik / negative/obligatory-tense-slot's "tun") -- zero parses.
+    expect_fail: true
+    provenance: "F3 worked example (negative category), hand-authored to close the zero-coverage 'Affix template slots' construct flagged in docs/conformance-framework-plan.md section 6"
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kutakler
+    note: KUTAK + PL only, no tense -- slot 2 is unreachable without slot 1 being filled first, so this fails for the same structural reason as bare "kutak" (proving the failure is specifically about the missing obligatory tense slot, not merely "no suffix at all").
+    expect_fail: true
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: unitide
+    note: >-
+      UNT ("fall") + PAST: the root's back vowel "u" sits 3 consonants away from the suffix's target
+      "e" (n, t, then the suffix's own "d") -- one past the harmony rule's max=2 transparency span,
+      so harmony correctly does NOT fire (the quantified-environment upper bound holding, the mirror
+      image of kutagida's in-bound case). Simultaneous epenthesis still fires at both C_C seams in
+      the resulting 3-consonant run in one pass.
+    provenance: "W9.2 probe, RewriteRuleTests.QuantifierRules"
+    parses:
+      - signature: "UNT+PAST|unitide"
+        gloss: fall-PAST
+        rules: [mrPast, prEpenthesis]
+        exercises:
+          - "RewriteRule Simultaneous"
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: untda
+    note: The hypothetical "harmony reached 3 consonants" surface form -- never producible, since prBacknessHarmony's correct (bounded) behavior is exactly what forbids it; see unitide's note for the in-bound/out-of-bound contrast.
+    expect_fail: true
+    blocked_by: [prBacknessHarmony]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: gan
+    note: GAN ("roam") bare root, posN -- no obligatory template applies to posN, so (unlike kutak) a bare root is a complete, valid word on its own.
+    parses:
+      - signature: "GAN|gan"
+        gloss: roam
+        rules: []
+        exercises: []
+
+  - word: guan
+    note: GAN infixed with the intensive marker "-u-" after the first segment -- the discontinuous-morph positive/success control (no RequiredEnvironments at all, always succeeds), paired with etemik/esalik's negative circumfix demonstration below.
+    parses:
+      - signature: "GAN+INTS|guan"
+        gloss: roam-INTS
+        rules: [ruleInfixDemo]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: tem
+    note: TEM ("rest") bare root, posN -- one of the two roots used in the circumfix per-occurrence-environment demonstration below (its initial "t" matches the circumfix's required right-context class).
+    parses:
+      - signature: "TEM|tem"
+        gloss: rest
+        rules: []
+        exercises: []
+
+  - word: sal
+    note: SAL ("wait") bare root, posN -- the other circumfix-demonstration root; its initial "s" does NOT match the circumfix's required right-context class.
+    parses:
+      - signature: "SAL|sal"
+        gloss: wait
+        rules: []
+        exercises: []
+
+  - word: etemik
+    note: >-
+      TEM circumfixed ("e-tem-ik"): the PREFIX piece's own local right-context is "t" (TEM's own
+      initial segment), which matches the required class -- but the SUFFIX piece is word-final, so
+      its own local right-context can never match "followed by t". Because HC checks the SAME
+      required environment independently at EACH contiguous piece of a discontinuous morph (see
+      grammar.xml's ruleCollective comment), the word is rejected even though one piece's local check
+      passed -- both must pass, not just one.
+    expect_fail: true
+    blocked_by: [ruleCollective]
+    provenance: "W3.3, history row 51 (987be2fd) per-occurrence environment checking half"
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: esalik
+    note: SAL circumfixed ("e-sal-ik") -- the minimal-pair partner of etemik, but here the PREFIX piece's own local right-context ("s") already fails to match the required class, so this word fails even more directly (both pieces fail, rather than just one) -- same overall rejection, different reason, proving the per-piece check isn't merely "satisfied somewhere in the word".
+    expect_fail: true
+    blocked_by: [ruleCollective]
+    exercises:
+      - "AffixProcessRule: prefix/suffix/circumfix/infix"
+
+  - word: duii
+    note: The DUII lexical entry's own underlying shape, fed back in as a literal surface string -- it can never surface as itself, since prVowelMerge obligatorily collapses "u"+"i"+"i" to "u"+"y" (see duy below) whenever the environment matches, which it always does here.
+    expect_fail: true
+    blocked_by: [prVowelMerge]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: duy
+    note: DUII's actual surface realization -- two adjacent "i" segments preceded by "u" coalesce to the glide "y" (vowel coalescence at an agglutination-plausible seam; history row 1 provenance).
+    provenance: "W9.2 probe, RewriteRuleTests.MergeRules; history row 1 (812aa48e/#403)"
+    parses:
+      - signature: "DUII|duy"
+        gloss: weave
+        rules: [prVowelMerge]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: sueeb
+    note: The SUEEB lexical entry's own underlying shape, fed back in as a literal surface string -- like duii, it can never surface as itself, since prVowelMultiMerge obligatorily reduces "u"+"e"+"e" to "u"+"e" (see sueb below).
+    expect_fail: true
+    blocked_by: [prVowelMultiMerge]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: sueb
+    note: SUEEB's actual surface realization -- a three-segment pattern (u+e+e, trigger folded directly into the Lhs, no separate Environment element, unlike duy's prVowelMerge) reduces to two segments (u+e); the structural counterpart to duy's explicit-environment merge.
+    provenance: "W9.2 probe, RewriteRuleTests.MultipleMergeRules; history row 1 (812aa48e/#403)"
+    parses:
+      - signature: "SUEEB|sueb"
+        gloss: grind
+        rules: [prVowelMultiMerge]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: sat
+    note: SAT ("sit", posVAlpha) bare root, no suffix -- control for satun below.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SAT|sat"
+        gloss: sit
+        rules: []
+        exercises: []
+
+  - word: set
+    note: SET ("stand", posVAlpha) bare root, no suffix -- control for setin below.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SET|set"
+        gloss: stand
+        rules: []
+        exercises: []
+
+  - word: satun
+    note: >-
+      SAT + mrAlphaSuf ("-in" underlyingly) -- the root's own last vowel "a" is back, so
+      prAlphaHighHarmony's alpha variable captures back+ from the LeftEnvironment and imposes it on
+      the suffix's high vowel, turning "i" into "u". Previously zero coverage in the whole suite:
+      no other grammar declares a PhonologicalRule's own VariableFeatures/AlphaVariables at all.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SAT+ALPHA|satun"
+        gloss: sit-ALPHA
+        rules: [mrAlphaSuf, prAlphaHighHarmony]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: setin
+    note: >-
+      SET + mrAlphaSuf -- the root's own last vowel "e" is front, so the captured alpha value is
+      back-, leaving the suffix's high vowel "i" unchanged (an identity case, output == input, the
+      same house style as prGradation's own anchored subrule) -- proves the rule is a genuine
+      agreement, not a one-way rewrite that always backs the vowel.
+    provenance: "G5 coverage sweep, VariableFeature/AlphaVariables (prAlphaHighHarmony)"
+    parses:
+      - signature: "SET+ALPHA|setin"
+        gloss: stand-ALPHA
+        rules: [mrAlphaSuf, prAlphaHighHarmony]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: kalut
+    note: >-
+      KALT ("probe", posVAlpha, back-voweled with an internal "lt" cluster) bare, no suffix.
+      prEpenthesis inserts "i" at the l-t seam ("kalt" -> "kalit"); that NEW vowel is itself a
+      legal prAlphaHighHarmony target one consonant from the root's back vowel "a", so harmony
+      then backs it to "u" -- "kalit" -> "kalut". This only happens because prEpenthesis is
+      declared BEFORE prAlphaHighHarmony in the stratum's phonologicalRules order: swapping them
+      makes harmony run first, when no high vowel yet exists to harmonize, and epenthesis then
+      inserts the un-harmonized "i" too late for anything to touch it (see kalit below).
+    parses:
+      - signature: "KALT|kalut"
+        rules: [prAlphaHighHarmony, prEpenthesis, prGradation]
+        exercises:
+          - "RewriteRule Simultaneous"
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: kalit
+    note: >-
+      KALT bare with the epenthetic vowel left un-harmonized -- this is exactly what prEpenthesis
+      alone (without prAlphaHighHarmony reaching the new vowel) would produce, and exactly what
+      the SWAPPED rule order produces instead of kalut. Not a valid surface form under this
+      fixture's declared order, so it stays expect_fail; kept as the ordering pair's negative
+      control.
+    expect_fail: true
+    blocked_by: [prAlphaHighHarmony]
+    exercises:
+      - "RewriteRule Simultaneous"
+      - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: kalutun
+    note: >-
+      KALT + mrAlphaSuf ("-in" underlyingly): both the epenthetic vowel (from the root's own l-t
+      seam) and the suffix's own high vowel end up harmonized to "u", since prEpenthesis creates
+      the epenthetic vowel before prAlphaHighHarmony's iterative left-to-right scan ever runs, and
+      that scan then propagates the root's back+ value across both. The suffixed sibling of kalut.
+    parses:
+      - signature: "KALT+ALPHA|kalutun"
+        gloss: probe-ALPHA
+        rules: [mrAlphaSuf, prAlphaHighHarmony, prEpenthesis, prGradation]
+        exercises:
+          - "RewriteRule Simultaneous"
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: kalitin
+    note: >-
+      KALT + mrAlphaSuf with neither vowel harmonized -- what the SWAPPED rule order produces
+      instead of kalutun (harmony runs first, finds the suffix's "i" two consonants from the root
+      vowel and out of its 0-1-consonant reach, then epenthesis inserts its own un-harmonized "i"
+      too late for anything to touch). Not a valid surface form under this fixture's declared
+      order; the suffixed sibling of kalit.
+    expect_fail: true
+    blocked_by: [prAlphaHighHarmony]
+    exercises:
+      - "RewriteRule Simultaneous"
+      - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"

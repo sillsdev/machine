@@ -1,0 +1,32 @@
+# Defect pin, not a coverage fixture. See grammar.xml's header.
+#
+# The C# engine throws System.InvalidOperationException "Failed to compare two elements in the array",
+# inner System.ArgumentException "Only nodes from the same list can be compared", while analysing a word
+# against a MetathesisRule whose leftSwitch names the EARLIER of its two pattern groups. It is an internal
+# invariant violation, so the fixture is expect_crash until the engine is fixed; at that point this file
+# gains the real signature and the crash expectation comes out.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build of
+# src/SIL.Machine.Morphology.HermitCrab.Tool). Reduced from edge-cases/feature-system-breadth, where
+# adding a root containing the swap pair turned a passing fixture into this crash.
+#
+# Because expect_crash fixtures pass on ANY exception and produce no word results, this fixture earns no
+# trace credit by design. It claims no coverage of its own; everything it declares is covered with real
+# evidence in edge-cases/feature-system-breadth.
+#
+# Fixed upstream by sillsdev/machine#471.
+
+language: MetathesisComparisonCrash
+inspired_by: ["synthetic metathesis-ordering crash reduction (not modeling any real language)"]
+sources:
+  - "reduced from conformance/edge-cases/feature-system-breadth while covering MetathesisRule@multipleApplicationOrder"
+requires: [phonology]
+expect_crash: true
+words:
+  - word: ti
+    note: >-
+      The root's own shape. Analysing it against the rightToLeftIterative swap is what trips the
+      comparison invariant; the swapped form "it" does not.
+    expect_fail: true
+    exercises:
+      - "MetathesisRule"

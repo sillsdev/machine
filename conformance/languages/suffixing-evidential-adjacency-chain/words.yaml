@@ -1,0 +1,399 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G1's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from):
+#
+#   1. tupay = TUPA-or-TUPA2 (root, homophonous pair) + 1SG. Root ends in vowel "a" -> mrPerson1's
+#      post-vowel allomorph "-y" fires -> "tupa"+"y" = "tupay". Both eTupa and eTupa2 share the exact
+#      shape "tupa", so BOTH are valid roots for this surface word: two distinct analyses.
+#        -> TUPA+1SG|tupay ; TUPA2+1SG|tupay  (ambiguous, 2 parses)
+#   2. walakni = WALAK + 1SG. Root ends in consonant "k" -> post-consonant allomorph "-ni" fires.
+#        -> WALAK+1SG|walakni
+#   3. walaknichik = WALAK + 1SG("-ni") + PL("-chik"): obligatory slot 1 + optional slot 2.
+#        -> WALAK+1SG+PL|walaknichik   [see reconciliation note below: the oracle disagreed here]
+#   4. walaknkicha = WALAK + 2SG("-nki") + CONJ("-cha"): the MorphemeCoOccurrenceRule excludes
+#      mrEvidConjectural from co-occurring with mrPerson2 (anywhere) -> zero parses.
+#        -> expect_fail, blocked_by: [mrEvidConjectural]
+#   5. walakchik = WALAK + PL("-chik") only, no person suffix at all: slot 1 (person) is obligatory
+#      and unfilled, so the AffixTemplate can never produce this output (same mechanism as
+#      conformance/negative/obligatory-tense-slot's "tunz") -> zero parses.
+#        -> expect_fail
+#
+# Reconciliation against the oracle (self-check): 4 of 5 matched on the first run. #3
+# (walaknichik) did NOT: the oracle produced "walakni(ch)ik", not the plain-concatenation
+# "walaknichik" this hand derivation assumed. The oracle is right and the hand derivation was
+# naive: HermitCrabExtensions.ToRegexString unconditionally wraps any character-definition segment
+# whose string representation is more than one character (here, the "ch"/"sh" digraph segments this
+# grammar defines for the plural/reportative suffixes) in its own parentheses, regardless of
+# ambiguity -- see conformance/PROTOCOL.md section 3's addendum. This affected every word in the
+# fixture containing a "ch" or "sh" digraph (walaknichik, walaknkishi, sipuncha, walaknkichikmi),
+# corrected below to match the oracle once this was understood; every other signature in this file
+# matched the hand derivation (or the same pattern, once recognized) with no further disagreement.
+#
+# G2e ADDENDUM (coverage-parity fix, W6): this grammar was authored in the G1 pilot before the
+# provenance-carrying discipline was enforced, and its one MorphemeCoOccurrenceRule (mrEvidConjectural
+# excludes mrPerson2) did not faithfully embed 3 v1 cooccurrence/* fixtures the ledger assigns to it.
+# grammar.xml gained: (1) a new eTaki/SING morpheme with two free-variation allomorphs (aTaki/aKanta),
+# one (aKanta) carrying an AllomorphCoOccurrenceRule excluding CONJ -- cooccurrence/allomorph-basic;
+# (2) 4 new slot-1/slot-3 members (mrPerson1PlIncl/mrPerson2Pl/mrEvidAssum/mrEvidMir) each carrying one
+# of the remaining 4 MorphemeCoOccurrenceRule adjacency kinds (mrEvidConjectural's rule already
+# exercised "anywhere") -- cooccurrence/morpheme-adjacency; (3) a second exclude rule on
+# mrEvidConjectural (excludes eTupa2, a root that never co-occurs with CONJ here, so trivially
+# satisfied) -- cooccurrence/and-semantics-pin (LT-22156 AND-not-OR semantics). Hand derivations for
+# the new words below, BEFORE the oracle:
+#   6. takiy = SING(aTaki, "taki")+1SG. Root ends vowel "i" -> mrPerson1 post-vowel "-y".
+#        -> SING+1SG|takiy
+#   7. kantay = SING(aKanta, "kanta")+1SG, same allomorph-selection rule, CONJ absent so aKanta's
+#      AllomorphCoOccurrenceRule (excludes subEvidConj) is vacuously satisfied.
+#        -> SING+1SG|kantay
+#   8. takincha = SING(aTaki)+3SG("-n")+CONJ("-cha"): aTaki carries NO co-occurrence rule, so it
+#      combines with CONJ freely -- the distinguishing row proving the rule is scoped to aKanta only,
+#      not to the whole SING morpheme. "ch" digraph -> paren-wrapped, same as sipun(ch)a.
+#        -> SING+3SG+CONJ|takin(ch)a
+#   9. kantancha = SING(aKanta)+3SG+CONJ: aKanta's AllomorphCoOccurrenceRule fires (subEvidConj
+#      present) -> zero parses.
+#        -> expect_fail, blocked_by: [aKanta]
+#   10. walaknitan = WALAK+1SG("-ni")+ASSUM("-tan"), adjacent -> mrEvidAssum's "somewhereToLeft"
+#       requirement on mrPerson1 is satisfied (trivially, since adjacent is also "somewhere").
+#         -> WALAK+1SG+ASSUM|walaknitan
+#   11. walaknichiktan = WALAK+1SG+PL("-chik")+ASSUM: PL intervenes between PERSON and ASSUM, but
+#       "somewhereToLeft" only needs mrPerson1 present somewhere left, so it STILL passes.
+#         -> WALAK+1SG+PL+ASSUM|walakni(ch)iktan
+#   12. walakniwas = WALAK+1SG+MIR("-was"), adjacent -> mrEvidMir's "adjacentToLeft" requirement on
+#       mrPerson1 is satisfied (immediately adjacent).
+#         -> WALAK+1SG+MIR|walakniwas
+#   13. walaknichikwas = WALAK+1SG+PL+MIR: PL now sits directly between PERSON and MIR, so
+#       "adjacentToLeft" FAILS (the somewhereToLeft/adjacentToLeft distinguishing pair, vs #11) ->
+#       zero parses.
+#         -> expect_fail, blocked_by: [mrEvidMir]
+#   13b. walakntan = WALAK+3SG("-n")+ASSUM: mrPerson1 (not just any person) is required, and 3SG is
+#        not mrPerson1, so "somewhereToLeft" fails even with no PL involved at all -- guards against
+#        a no-op "somewhereToLeft" that #10/#11 alone would not catch (both keep mrPerson1 present).
+#          -> expect_fail, blocked_by: [mrEvidAssum]
+#   14. siputukumi = SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent -> mrPerson1PlIncl's
+#       "somewhereToRight" requirement on mrEvidDirect is satisfied.
+#         -> SIPU+1PL.INCL+DIR|siputukumi
+#   15. siputukuchikmi = SIPU+1PL.INCL+PL+DIR: PL intervenes between the person suffix and DIR, but
+#       "somewhereToRight" only needs mrEvidDirect present somewhere right, so it STILL passes.
+#         -> SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi
+#   15b. siputuku = SIPU+1PL.INCL alone, no evidential at all: mrEvidDirect is absent entirely, so
+#        "somewhereToRight" fails even with no PL involved -- guards against a no-op
+#        "somewhereToRight" that #14/#15 alone would not catch (both keep mrEvidDirect present).
+#          -> expect_fail, blocked_by: [mrPerson1PlIncl]
+#   16. sipulupami = SIPU+2PL("-lupa")+DIR, adjacent -> mrPerson2Pl's "adjacentToRight" requirement
+#       on mrEvidDirect is satisfied (immediately adjacent).
+#         -> SIPU+2PL+DIR|sipulupami
+#   17. sipulupachikmi = SIPU+2PL+PL+DIR: PL now sits directly between the person suffix and DIR, so
+#       "adjacentToRight" FAILS (distinguishing pair vs #15) -> zero parses.
+#         -> expect_fail, blocked_by: [mrPerson2Pl]
+
+language: SuffixingEvidentialAdjacencyChain
+inspired_by: ["suffixing evidential-marking verbal morphology with morpheme-adjacency co-occurrence constraints (typological pattern, not any specific language)"]
+sources:
+  - "WALS - Suffixing vs. Prefixing in Inflectional Morphology"
+  - "typological literature on verbal morphology and evidentiality"
+  - "Aikhenvald, Evidentiality (2004)"
+requires: []
+words:
+  - word: tupay
+    note: >-
+      Homophonous-root ambiguity: eTupa and eTupa2 share the identical shape "tupa", so this
+      surface word has two genuinely distinct analyses. Root-final vowel "a" selects mrPerson1's
+      post-vowel allomorph "-y".
+    parses:
+      - signature: "TUPA+1SG|tupay"
+        gloss: gather-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+      - signature: "TUPA2+1SG|tupay"
+        gloss: arrive-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sipuy
+    note: Root SIPU ends in vowel "u"; mrPerson1's post-vowel allomorph "-y" fires, same as tupay but with a non-homophonous root (single unambiguous parse).
+    parses:
+      - signature: "SIPU+1SG|sipuy"
+        gloss: weave-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walakni
+    note: Root WALAK ends in consonant "k"; mrPerson1's post-consonant allomorph "-ni" fires -- the environment-conditioned allomorph selection pair with sipuy/tupay, done lexically (RequiredEnvironments), not via a phonological rule.
+    parses:
+      - signature: "WALAK+1SG|walakni"
+        gloss: carry.about-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walaknki
+    note: Root WALAK + 2SG ("-nki"), the unconstrained disjunctive-slot-1 sibling of mrPerson1/mrPerson3.
+    parses:
+      - signature: "WALAK+2SG|walaknki"
+        gloss: carry.about-2SG
+        rules: [mrPerson2]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sipun
+    note: Root SIPU + 3SG ("-n"), the third disjunctive slot-1 choice.
+    parses:
+      - signature: "SIPU+3SG|sipun"
+        gloss: weave-3SG
+        rules: [mrPerson3]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walaknichik
+    note: Root WALAK + 1SG("-ni", obligatory slot 1) + PL("-chik", optional slot 2) -- proves an optional slot composes once the obligatory slot is satisfied.
+    parses:
+      - signature: "WALAK+1SG+PL|walakni(ch)ik"
+        gloss: carry.about-1SG-PL
+        rules: [mrPerson1, mrPlural]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: sipuymi
+    note: Root SIPU + 1SG("-y") + DIR evidential ("-mi", optional slot 3) -- the evidential chain's direct-evidence member, skipping the optional number slot entirely.
+    parses:
+      - signature: "SIPU+1SG+DIR|sipuymi"
+        gloss: weave-1SG-DIR
+        rules: [mrPerson1, mrEvidDirect]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walaknkisi
+    note: Root WALAK + 2SG + REP evidential, allomorph A ("-si"). Pairs with walaknkishi to demonstrate free-fluctuation -- neither allomorph is rejected in favor of the other (Allomorph.FreeFluctuatesWith), they are simply two independently valid surface realizations of REP.
+    parses:
+      - signature: "WALAK+2SG+REP|walaknkisi"
+        gloss: carry.about-2SG-REP
+        rules: [mrPerson2, mrEvidReportative]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: walaknkishi
+    note: Root WALAK + 2SG + REP evidential, allomorph B ("-shi") -- the free-fluctuation partner of walaknkisi (see that word's note).
+    parses:
+      - signature: "WALAK+2SG+REP|walaknki(sh)i"
+        gloss: carry.about-2SG-REP
+        rules: [mrPerson2, mrEvidReportative]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: sipuncha
+    note: >-
+      Root SIPU + 3SG + CONJ evidential ("-cha") -- a positive exercise of mrEvidConjectural,
+      unblocked because BOTH of its MorphemeCoOccurrenceRules pass: rule1 (excludes mrPerson2) is
+      satisfied since person is 3SG, not 2SG; rule2 (excludes eTupa2, see walaknkicha's note) is
+      satisfied since the root here is SIPU, not eTupa2.
+    parses:
+      - signature: "SIPU+3SG+CONJ|sipun(ch)a"
+        gloss: weave-3SG-CONJ
+        rules: [mrPerson3, mrEvidConjectural]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: takiy
+    note: >-
+      SING(aTaki, "taki")+1SG: root-final vowel "i" selects mrPerson1's post-vowel allomorph "-y",
+      same mechanism as sipuy/tupay. eTaki is a new morpheme with two free-variation allomorphs
+      (aTaki/aKanta, a native/Spanish-contact-loan doublet); this word uses the allomorph that
+      carries NO AllomorphCoOccurrenceRule at all.
+    parses:
+      - signature: "SING+1SG|takiy"
+        gloss: sing-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kantay
+    note: >-
+      SING(aKanta, "kanta")+1SG, the free-variation partner of takiy: aKanta carries an
+      AllomorphCoOccurrenceRule excluding co-occurrence with CONJ's subrule (subEvidConj), but CONJ
+      is absent here, so the rule is vacuously satisfied and the word is valid.
+    parses:
+      - signature: "SING+1SG|kantay"
+        gloss: sing-1SG
+        rules: [mrPerson1]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: takincha
+    note: >-
+      SING(aTaki)+3SG("-n")+CONJ("-cha"): aTaki carries no co-occurrence rule at all, so it combines
+      with CONJ freely -- the distinguishing row proving aKanta's AllomorphCoOccurrenceRule (see
+      kantancha below) is scoped to that one allomorph, not to the whole SING morpheme (C#'s
+      Allomorph.AllomorphCoOccurrenceRules lives on RootAllomorph, not Morpheme).
+    parses:
+      - signature: "SING+3SG+CONJ|takin(ch)a"
+        gloss: sing-3SG-CONJ
+        rules: [mrPerson3, mrEvidConjectural]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: kantancha
+    note: >-
+      SING(aKanta)+3SG+CONJ: aKanta's AllomorphCoOccurrenceRule (excludes subEvidConj, anywhere)
+      fires because CONJ is present -- zero parses. Contrast with takincha above, which uses the
+      SAME morpheme's sibling allomorph and succeeds: the rule is allomorph-scoped, not
+      morpheme-scoped.
+    provenance: "W6, AllomorphCoOccurrenceRule granularity"
+    expect_fail: true
+    blocked_by: [aKanta]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walaknitan
+    note: >-
+      WALAK+1SG("-ni")+ASSUM("-tan"), adjacent: mrEvidAssum (a new evidential slot-3 member) carries
+      a MorphemeCoOccurrenceRule requiring mrPerson1 "somewhereToLeft" -- satisfied here since
+      mrPerson1 is immediately to its left.
+    provenance: "W6, MorphemeCoOccurrenceRule + all 5 adjacency kinds"
+    parses:
+      - signature: "WALAK+1SG+ASSUM|walaknitan"
+        gloss: carry.about-1SG-ASSUM
+        rules: [mrPerson1, mrEvidAssum]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walaknichiktan
+    note: >-
+      WALAK+1SG+PL("-chik")+ASSUM: PL now intervenes between mrPerson1 and mrEvidAssum, but
+      "somewhereToLeft" only requires mrPerson1 to be present somewhere to the left, not adjacent --
+      still satisfied, unlike walaknichikwas below.
+    parses:
+      - signature: "WALAK+1SG+PL+ASSUM|walakni(ch)iktan"
+        gloss: carry.about-1SG-PL-ASSUM
+        rules: [mrPerson1, mrPlural, mrEvidAssum]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walakntan
+    note: >-
+      WALAK+3SG("-n")+ASSUM("-tan"): mrEvidAssum's MorphemeCoOccurrenceRule requires mrPerson1
+      SPECIFICALLY (not just any person) somewhereToLeft. Person here is 3SG, so mrPerson1 is
+      absent entirely, and the "somewhereToLeft" require fails regardless of adjacency -- unlike
+      walaknitan/walaknichiktan above, which both keep mrPerson1 present and only vary whether PL
+      intervenes. Without this word, a no-op "somewhereToLeft" implementation (always satisfied)
+      would go undetected, since every other word exercising mrEvidAssum already has mrPerson1
+      present. Zero parses.
+    expect_fail: true
+    blocked_by: [mrEvidAssum]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walakniwas
+    note: >-
+      WALAK+1SG+MIR("-was"), adjacent: mrEvidMir (the somewhereToLeft/adjacentToLeft distinguishing
+      partner of mrEvidAssum) carries a MorphemeCoOccurrenceRule requiring mrPerson1
+      "adjacentToLeft" -- satisfied here since mrPerson1 is immediately adjacent.
+    parses:
+      - signature: "WALAK+1SG+MIR|walakniwas"
+        gloss: carry.about-1SG-MIR
+        rules: [mrPerson1, mrEvidMir]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walaknichikwas
+    note: >-
+      WALAK+1SG+PL+MIR: PL now sits directly between mrPerson1 and mrEvidMir, so "adjacentToLeft"
+      fails even though mrPerson1 is present somewhere to the left -- the distinguishing row against
+      walaknichiktan above (same PL-intervening configuration, but "somewhereToLeft" tolerates it
+      and "adjacentToLeft" does not) -- zero parses.
+    expect_fail: true
+    blocked_by: [mrEvidMir]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: siputukumi
+    note: >-
+      SIPU+1PL.INCL("-tuku")+DIR("-mi"), adjacent: mrPerson1PlIncl (a new 4th disjunctive slot-1
+      person member) carries a MorphemeCoOccurrenceRule requiring mrEvidDirect "somewhereToRight" --
+      satisfied here since mrEvidDirect is immediately to its right.
+    parses:
+      - signature: "SIPU+1PL.INCL+DIR|siputukumi"
+        gloss: weave-1PL.INCL-DIR
+        rules: [mrPerson1PlIncl, mrEvidDirect]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: siputukuchikmi
+    note: >-
+      SIPU+1PL.INCL+PL("-chik")+DIR: PL now intervenes between mrPerson1PlIncl and mrEvidDirect, but
+      "somewhereToRight" only requires mrEvidDirect to be present somewhere to the right, not
+      adjacent -- still satisfied, unlike sipulupachikmi below.
+    parses:
+      - signature: "SIPU+1PL.INCL+PL+DIR|siputuku(ch)ikmi"
+        gloss: weave-1PL.INCL-PL-DIR
+        rules: [mrPerson1PlIncl, mrPlural, mrEvidDirect]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: siputuku
+    note: >-
+      SIPU+1PL.INCL("-tuku") alone, no evidential at all: mrPerson1PlIncl's
+      MorphemeCoOccurrenceRule requires mrEvidDirect somewhereToRight, but no evidential slot is
+      filled here, so mrEvidDirect is absent entirely and the "somewhereToRight" require fails
+      regardless of adjacency -- unlike siputukumi/siputukuchikmi above, which both keep
+      mrEvidDirect present and only vary whether PL intervenes. Without this word, a no-op
+      "somewhereToRight" implementation (always satisfied) would go undetected, since every other
+      word exercising mrPerson1PlIncl already has mrEvidDirect present. Zero parses.
+    expect_fail: true
+    blocked_by: [mrPerson1PlIncl]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: sipulupami
+    note: >-
+      SIPU+2PL("-lupa")+DIR, adjacent: mrPerson2Pl (the somewhereToRight/adjacentToRight
+      distinguishing partner of mrPerson1PlIncl) carries a MorphemeCoOccurrenceRule requiring
+      mrEvidDirect "adjacentToRight" -- satisfied here since mrEvidDirect is immediately adjacent.
+    parses:
+      - signature: "SIPU+2PL+DIR|sipulupami"
+        gloss: weave-2PL-DIR
+        rules: [mrPerson2Pl, mrEvidDirect]
+        exercises:
+          - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: sipulupachikmi
+    note: >-
+      SIPU+2PL+PL+DIR: PL now sits directly between mrPerson2Pl and mrEvidDirect, so
+      "adjacentToRight" fails even though mrEvidDirect is present somewhere to the right -- the
+      distinguishing row against siputukuchikmi above (same PL-intervening configuration, but
+      "somewhereToRight" tolerates it and "adjacentToRight" does not) -- zero parses.
+    expect_fail: true
+    blocked_by: [mrPerson2Pl]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"
+
+  - word: walaknkichikmi
+    note: Root WALAK + 2SG(slot1, obligatory) + PL(slot2, optional) + DIR(slot3, optional) -- the full 3-slot evidential chain filled at once, showing all three slots compose together in one word.
+    parses:
+      - signature: "WALAK+2SG+PL+DIR|walaknki(ch)ikmi"
+        gloss: carry.about-2SG-PL-DIR
+        rules: [mrPerson2, mrPlural, mrEvidDirect]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walakchik
+    note: Root WALAK + PL only, no person suffix at all. Slot 1 (person) is obligatory and unfilled, so the AffixTemplate can never produce this output at all (mirrors conformance/negative/obligatory-tense-slot's "tunz" case) -- zero parses.
+    expect_fail: true
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: walaknkicha
+    note: >-
+      Root WALAK + 2SG + CONJ evidential. mrEvidConjectural carries TWO MorphemeCoOccurrenceRules:
+      rule1 excludes mrPerson2 (fails here, 2SG is present); rule2 excludes eTupa2 (trivially
+      satisfied, the root here is WALAK, not eTupa2). AND-not-OR semantics (history row 5, 90dcee64,
+      #311/LT-22156): the word is rejected because rule1 alone fails, regardless of rule2 passing --
+      pre-90dcee64 C# used `.Any(IsWordValid)`, under which rule2's trivial pass would have wrongly
+      rescued this word. Zero parses under the correct post-fix semantics.
+    provenance: "history row 5 (90dcee64, #311/LT-22156): AND-not-OR co-occurrence semantics"
+    expect_fail: true
+    blocked_by: [mrEvidConjectural]
+    exercises:
+      - "MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule"

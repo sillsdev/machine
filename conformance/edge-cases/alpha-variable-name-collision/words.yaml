@@ -1,0 +1,38 @@
+# Two co-occurring VariableFeature declarations in one rule. See grammar.xml's header for the full
+# argument: this fixture exists to challenge semantic-coverage-proofs.tsv's label-symmetry claim for
+# dtd:enum/VariableFeature/name/%CE%B1, not to close a gap in the ordinary sense. Checked in here is
+# the CORRECT baseline (distinct names, "α" and "β"); the collision variant (renaming one to match
+# the other, exactly the counterfactual mutation) is not part of this checked-in grammar -- it was
+# hand-applied to a scratch copy and re-run against the same oracle, and produced the OPPOSITE
+# result for both words below. That is the finding: the label-symmetry proof does not hold in
+# general, only for every fixture the automated sweep happens to have measured so far (each of which
+# has at most one VariableFeature reachable per rule application).
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build
+# of src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run.
+
+language: AlphaVariableNameCollision
+inspired_by: ["synthetic two-variable alpha-agreement probe (not modeling any real language)"]
+sources:
+  - "docs/counterfactual-rationale-features.md, dtd:enum/VariableFeature/name/%CE%B1 challenge"
+requires: [phonology]
+words:
+  - word: au
+    note: >-
+      The raw underlying shape. prDoubleAlpha fires obligatorily on any two adjacent vowels, so this
+      exact string is not a valid surface form: "a" (back) must flip to front and "u" (round) must
+      flip to unrounded.
+    expect_fail: true
+    exercises:
+      - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"
+
+  - word: ia
+    note: >-
+      AU's correctly-rewritten surface form: "a" (back, round-) flips backness only, becoming "i"
+      (front, round-); "u" (back, round+) flips roundness only, becoming "a" (back, round-). The two
+      flips are independent under the DECLARED (non-colliding) variable names.
+    parses:
+      - signature: "AU|ia"
+        rules: [prDoubleAlpha]
+        exercises:
+          - "Alpha-variable phonological environments (VariableFeature/AlphaVariables)"

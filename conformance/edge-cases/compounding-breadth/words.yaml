@@ -1,0 +1,110 @@
+# Compounding breadth. See grammar.xml's header, especially on why the patterns are bounded.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build
+# of src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run.
+#
+# Seven discriminating negative controls, each isolating one declaration:
+#   kaki   NonHeadRequiredHeadFeatures: "ki" is number=sg where the rule requires a plural non-head.
+#   kati   NonHeadRequiredFootFeatures: "ti" is class=b where the rule requires class=a.
+#   kamtu  CompoundingRule@multipleApplication="0" on crNever, which would join with an "m".
+#   kaptu  CompoundingRule@isActive="no" on crDecoy, which would join with a "p".
+#   kaitu  CompoundingSubrule@isActive="no" on crJoinInsert's own subrule, which would join with an "i".
+#   kutu   HeadRequiredHeadFeatures: "ku" is number=pl where the rule requires a singular head.
+#   patu   HeadRequiredFootFeatures: "pa" is class=b where the rule requires a class=a head.
+#
+# kaitu is deliberately NOT a second subrule inside crJoin. An earlier draft put the "i"-inserting
+# decoy there, and hand-mutating a copy showed it can never be evidenced that way: a CompoundingRule
+# with two active subrules only ever finds an unapplication through the FIRST one declared, regardless
+# of which one the counterfactual activates. crJoinInsert gives the decoy its own rule instead, with no
+# second subrule to be shadowed by.
+
+language: CompoundingBreadth
+inspired_by: ["synthetic compounding-constraint probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-baseline.txt compounding todo entries"
+requires: []
+words:
+  - word: ka
+    note: Bare head root, number=sg, class=a.
+    parses:
+      - signature: "KA|ka"
+        rules: []
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: tu
+    note: Bare non-head root, number=pl, class=a.
+    parses:
+      - signature: "TU|tu"
+        rules: []
+        exercises:
+          - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: katu
+    note: >-
+      The compound crJoin admits: singular class-a head, plural class-a non-head. All four
+      head/non-head required-feature elements are satisfied here.
+    parses:
+      - signature: "KA+TU|katu"
+        rules: [crJoin]
+        exercises:
+          - "CompoundingRule"
+
+  - word: kaki
+    note: Negative control for NonHeadRequiredHeadFeatures. "ki" is singular, not plural.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kati
+    note: Negative control for NonHeadRequiredFootFeatures. "ti" is class=b, not class=a.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kamtu
+    note: >-
+      Negative control for CompoundingRule@multipleApplication="0". crNever would join with an "m" at
+      the junction, and a rule capped at zero applications can never appear in a traced rule list, so
+      this failing word is its only possible evidence.
+    expect_fail: true
+    blocked_by: [crNever]
+    neutralizes:
+      - crNever
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: kaptu
+    note: Negative control for CompoundingRule@isActive="no". crDecoy would join with a "p".
+    expect_fail: true
+    blocked_by: [crDecoy]
+    neutralizes:
+      - crDecoy
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: kaitu
+    note: >-
+      Negative control for CompoundingSubrule@isActive="no". crJoinInsert's own (sole) subrule would
+      join with an "i"; inactive, it never contributes an analysis, so this surface form is refused.
+    expect_fail: true
+    neutralizes:
+      - CompoundingSubrule
+    exercises:
+      - "Element deactivation (isActive) across loader collections"
+
+  - word: kutu
+    note: >-
+      Negative control for HeadRequiredHeadFeatures. "ku" is number=pl, but crJoin (and crJoinInsert)
+      require a singular head, so no rule can use it as a head.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"
+
+  - word: patu
+    note: >-
+      Negative control for HeadRequiredFootFeatures. "pa" is class=b, but crJoin (and crJoinInsert)
+      require a class=a head, so no rule can use it as a head.
+    expect_fail: true
+    exercises:
+      - "CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)"

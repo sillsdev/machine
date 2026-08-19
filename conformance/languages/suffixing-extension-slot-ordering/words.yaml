@@ -1,0 +1,533 @@
+# HAND DERIVATION (authored BEFORE running the oracle, per
+# docs/conformance-language-suite-plan.md phase G2's authoring discipline -- see grammar.xml for the
+# rule definitions these derivations reason from).
+#
+#   1. mba -> PAV ("hit", posV) bare root, underlying "mpa": prNasalMutation (posV-scoped subrule)
+#      obligatorily voices the "p" to "b" following the nasal "m" -> "mba". The raw "mpa" itself can
+#      never surface for this candidate (see mpa below).
+#        -> PAV|mba, rules: [prNasalMutation]
+#   2. mpa -> the SAME underlying shape "mpa", but analyzed as the (nonexistent) posN-equivalent --
+#      no such rule ever gates a posV-only subrule off, so instead this is eMpaV's own OWN candidate,
+#      analyzed as unmutated: impossible, since prNasalMutation is obligatory for posV. Zero parses
+#      would follow IF eMpaV were the only lexical entry sharing shape "mpa" -- but there is no
+#      second (posV-immune) lexical entry sharing "mpa" in this word list, so "mpa" is simply
+#      expect_fail on its own terms (prNasalMutation's obligatory synthesis-confirm never lets the
+#      raw "mpa" survive as PAV's own surface).
+#        -> expect_fail, blocked_by: [prNasalMutation]
+#   3. lima -> LIM ("cultivate", posV2) bare root, no rule applied.
+#        -> LIM|lima, rules: []
+#   4. limaile -> LIM + RPAST (a RealizationalRule, no AffixTemplate needed): the root's own FS has
+#      no tense value at all, so IsBlocked's presence check finds nothing to collide with.
+#        -> LIM+RPAST|limaile, rules: [rrPast]
+#   5. limapeile -> LIM + TENSE ("-pe", sets tense=pres) attempted together with RPAST: IsBlocked
+#      sees tense is ALREADY present (pres, not past) and blocks anyway (presence-only, not
+#      value-equality) -> zero parses.
+#        -> expect_fail, blocked_by: [rrPast]
+#
+# The remaining words reuse these same mechanisms on independent lexical/rule material -- MPR
+# features/groups (Overwrite + All/Any gating, mirroring fusional-realizational-morphology's own proof exactly),
+# verbal reduplication (ReduplicationHint, zero coverage today -- this grammar's home), and
+# extension-slot ordering via AffixTemplate (Causative before Applicative, both before the
+# obligatory Final Vowel) -- or are expect_fail words whose signature is the empty set.
+#
+# Reconciliation against the oracle (self-check): all 5 words above matched the hand derivation on
+# the first self-check run. Two genuine reconciliations were needed elsewhere in the file:
+#   1. Reduplication (mrRedup's redupMorphType="suffix"): the hand derivation assumed morph order
+#      ROOT+RED (the "existing"/first copy keeping the root's own morpheme identity, the "new"/
+#      second copy carrying RED), verified correct by an isolated probe before this word was added
+#      to the file (see grammar.xml's mrRedup comment) -- no --propose correction was needed once
+#      that probe's finding was applied. redupMorphType does set this order: "suffix" (here) and
+#      "implicit" both give ROOT+RED (KIMB+RED|kimbiakimbia); "prefix" gives RED+ROOT
+#      (RED+KIMB|kimbiakimbia).
+#   2. Extension-slot ordering ("andikilisha", the intended wrong-order negative control): hand-
+#      derived as expect_fail on the assumption that the AffixTemplate's declared slot sequence
+#      (causative before applicative) forbids the reverse surface order -- the oracle instead
+#      ACCEPTS it (AND+APPL+CAUS+FV). Confirmed by an isolated 2-slot probe (see that word's own
+#      note for the full mechanism): the template's slot order is a hard SYNTHESIS constraint and
+#      constrains a single analysis-side unwind the same way, but with two OPTIONAL, generically-
+#      shaped slots, the overall stratum analysis retries the rule set (including the template) to a
+#      fixpoint, so the two affixes can be peeled off across separate template applications in
+#      either order. Corrected in place rather than discarded, since it is a genuine and useful
+#      engine finding for any future template-heavy grammar (prefixal-discontinuous-slot-dependency especially).
+# Every other word in the file matched on the first run.
+
+language: SuffixingExtensionSlotOrdering
+inspired_by: ["noun-class-agreement and CARP-style verbal-extension-ordering typology, with post-nasal-mutation allomorphy (typological pattern, not any specific language)"]
+sources:
+  - "WALS - Reduplication chapters; noun-class and verbal-template surveys"
+  - "typological literature on suffix ordering (CARP hierarchy: Causative-Applicative-Reciprocal-Passive)"
+  - "typological literature on post-nasal mutation / post-nasal hardening-voicing"
+requires: [phonology]
+words:
+  - word: mba
+    note: >-
+      PAV ("hit", posV) bare root, underlying "mpa" -- prNasalMutation obligatorily voices the "p"
+      to "b" following the nasal "m", a genuine post-nasal-voicing effect (modeled here as
+      already fused into the root's own stored shape, mirroring v1 rewrite/required-pos-subrule's
+      own bare-shape minimalism).
+    parses:
+      - signature: "PAV|mba"
+        gloss: hit
+        rules: [prNasalMutation]
+        exercises:
+          - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: mpa
+    note: The raw, un-mutated underlying shape -- prNasalMutation is obligatory for posV wherever its nasal-left-environment holds, so this surface form can never itself be a valid analysis of PAV.
+    expect_fail: true
+    blocked_by: [prNasalMutation]
+    exercises:
+      - "RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)"
+
+  - word: lima
+    note: LIM ("cultivate", posV2), bare root, no lexical head features at all -- trivially valid, no rule touches it.
+    parses:
+      - signature: "LIM|lima"
+        gloss: cultivate
+        rules: []
+        exercises: []
+
+  - word: limaile
+    note: LIM + RPAST (a RealizationalRule, no AffixTemplate/Slot wrapper needed) -- the root's own FS has no tense value at all, so RPAST's IsBlocked presence check finds nothing to collide with.
+    provenance: "W5, RealizationalAffixProcessRule core mechanics + IsBlocked"
+    parses:
+      - signature: "LIM+RPAST|limaile"
+        gloss: cultivate-PST.REALIZ
+        rules: [rrPast]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: limape
+    note: LIM + TENSE ("-pe", ordinary affix, sets tense=pres) -- pre-loads a tense value so the realizational rule's blocking check below has something to trip on.
+    parses:
+      - signature: "LIM+TENSE|limape"
+        gloss: cultivate-PRES
+        rules: [mrTense]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: limapeile
+    note: >-
+      LIM + TENSE + RPAST attempted together -- mrTense sets tense=pres first, then RPAST's
+      IsBlocked check sees tense is ALREADY present (even though it's pres, not past) and blocks --
+      a value-equality mis-implementation would wrongly accept this; presence alone is what matters.
+    expect_fail: true
+    blocked_by: [rrPast]
+    exercises:
+      - "RealizationalAffixProcessRule"
+
+  - word: kib
+    note: KIB ("root.kib", posV3), bare -- ruleFeatures preset both AllConc members (mprConcA, mprConcB) directly on the lexical entry.
+    parses:
+      - signature: "KIB|kib"
+        gloss: root.kib
+        rules: []
+        exercises: []
+
+  - word: bel
+    note: BEL ("root.bel", posV3), bare -- ruleFeatures preset mprConcA (half of AllConc) and mprConcC (half of AnyConc).
+    parses:
+      - signature: "BEL|bel"
+        gloss: root.bel
+        rules: []
+        exercises: []
+
+  - word: nal
+    note: NAL ("root.nal", posV3), bare -- no ruleFeatures preset at all.
+    parses:
+      - signature: "NAL|nal"
+        gloss: root.nal
+        rules: []
+        exercises: []
+
+  - word: xkib
+    note: KIB prefixed by mrExtX ("x-", sets MPR feature mprExtA).
+    provenance: "W3.1, MprFeatureGroupOutput.Overwrite in MPR output accumulation"
+    parses:
+      - signature: "EXTX+KIB|xkib"
+        gloss: EXT.A-root.kib
+        rules: [mrExtX]
+        exercises:
+          - "MPR features/groups"
+
+  - word: yxkib
+    note: KIB prefixed by mrExtX then mrExtY ("y-", sets mprExtB) -- ExtGroup's outputType="overwrite" means mrExtY's own output DROPS mprExtA rather than accumulating it alongside mprExtB.
+    parses:
+      - signature: "EXTY+EXTX+KIB|yxkib"
+        gloss: EXT.B-EXT.A-root.kib
+        rules: [mrExtX, mrExtY]
+        exercises:
+          - "MPR features/groups"
+
+  - word: xkibz
+    note: KIB prefixed by mrExtX then suffixed by mrEndZ (requiredMPRFeatures="mprExtA") -- mprExtA is still present (only mrExtX applied), so mrEndZ's requirement is satisfied.
+    parses:
+      - signature: "EXTX+KIB+ENDZ|xkibz"
+        gloss: EXT.A-root.kib-END
+        rules: [mrExtX, mrEndZ]
+        exercises:
+          - "MPR features/groups"
+
+  - word: yxkibz
+    note: >-
+      KIB prefixed by mrExtX then mrExtY then suffixed by mrEndZ -- the DISTINGUISHING row: after
+      mrExtY, ExtGroup's Overwrite semantics have already dropped mprExtA, so mrEndZ's
+      requiredMPRFeatures="mprExtA" fails. Zero parses. A pre-fix "flat union" mis-implementation
+      would wrongly accept this.
+    expect_fail: true
+    blocked_by: [mrEndZ]
+    exercises:
+      - "MPR features/groups"
+
+  - word: kibw
+    note: KIB + mrEndW (requiredMPRFeatures="mprConcA mprConcB", matchType="all") -- KIB has both AllConc members, so the ALL requirement is satisfied.
+    provenance: "W3.1, MprFeatureGroupMatchType.All/Any in required-MPR gating"
+    parses:
+      - signature: "KIB+ENDW|kibw"
+        gloss: root.kib-ALL.END
+        rules: [mrEndW]
+        exercises:
+          - "MPR features/groups"
+
+  - word: belw
+    note: BEL + mrEndW -- BEL has only mprConcA, not mprConcB, so the ALL requirement is NOT satisfied. Zero parses -- the pre-fix flat-overlap bug would have wrongly accepted this.
+    expect_fail: true
+    blocked_by: [mrEndW]
+    exercises:
+      - "MPR features/groups"
+
+  - word: nalw
+    note: NAL + mrEndW -- NAL has neither AllConc member, so the ALL requirement fails outright.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: kibh
+    note: KIB + mrEndH (requiredMPRFeatures="mprConcC mprConcD", matchType="any") -- KIB has NEITHER AnyConc member, so the ANY requirement fails.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: belh
+    note: BEL + mrEndH -- BEL has mprConcC (one AnyConc member), so the ANY requirement (at least one) is satisfied.
+    parses:
+      - signature: "BEL+ENDH|belh"
+        gloss: root.bel-ANY.END
+        rules: [mrEndH]
+        exercises:
+          - "MPR features/groups"
+
+  - word: nalh
+    note: NAL + mrEndH -- NAL has neither AnyConc member, so the ANY requirement fails.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: sek
+    note: >-
+      SEK ("root.sek", posV3), bare -- ruleFeatures preset every group member mrEndZ/mrEndW/mrEndH
+      gate on (mprExtA, both AllConc members, one AnyConc member), so this one root can chain all
+      three suffixes and expose the Stratum "Main" list-order dependency between them.
+    parses:
+      - signature: "SEK|sek"
+        gloss: root.sek
+        rules: []
+        exercises: []
+
+  - word: sekzw
+    note: >-
+      SEK + mrEndZ + mrEndW, in that list order. The ordering discriminator for the mrEndZ~mrEndW
+      adjacent pair: "sekwz" below is the same two suffixes reversed, which only parses when the
+      list order is swapped.
+    parses:
+      - signature: "SEK+ENDZ+ENDW|sekzw"
+        gloss: root.sek-END-ALL.END
+        rules: [mrEndZ, mrEndW]
+        exercises:
+          - "MPR features/groups"
+
+  - word: sekwz
+    note: >-
+      SEK + mrEndW + mrEndZ, the reverse of "sekzw". Zero parses under the shipped list order
+      (mrEndZ mrEndW): only reachable when mrEndW is transposed ahead of mrEndZ.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: sekwh
+    note: >-
+      SEK + mrEndW + mrEndH, in that list order. The ordering discriminator for the mrEndW~mrEndH
+      adjacent pair: "sekhw" below is the same two suffixes reversed, which only parses when the
+      list order is swapped.
+    parses:
+      - signature: "SEK+ENDW+ENDH|sekwh"
+        gloss: root.sek-ALL.END-ANY.END
+        rules: [mrEndW, mrEndH]
+        exercises:
+          - "MPR features/groups"
+
+  - word: sekhw
+    note: >-
+      SEK + mrEndH + mrEndW, the reverse of "sekwh". Zero parses under the shipped list order
+      (mrEndW mrEndH): only reachable when mrEndH is transposed ahead of mrEndW.
+    expect_fail: true
+    exercises:
+      - "MPR features/groups"
+
+  - word: kimbia
+    note: KIMB ("run/flee", posV5), bare root, no reduplication applied -- a plain, unrestricted control.
+    parses:
+      - signature: "KIMB|kimbia"
+        gloss: run
+        rules: []
+        exercises: []
+
+  - word: kimbiakimbia
+    note: >-
+      KIMB fully reduplicated (intensive/repetitive aspect, "run"/"run about repeatedly"-
+      plausible): mrRedup copies the whole stem twice.
+      redupMorphType="suffix" treats the FIRST copy as the root's own continuing morph and the
+      SECOND as the rule's own new morph, so the morph chain reads root-then-RED (confirmed by an
+      isolated probe before this word was authored -- see grammar.xml's mrRedup comment). This is
+      the zero-coverage-today construct's home: no other v2 grammar carries ReduplicationHint.
+    parses:
+      - signature: "KIMB+RED|kimbiakimbia"
+        gloss: run-RED
+        rules: [mrRedup]
+        exercises:
+          - "AffixProcessRule: reduplication (ReduplicationHint)"
+
+  - word: andika
+    note: AND ("write", posV4) + FV only ("-a") -- the obligatory Final Vowel slot filled, both optional extension slots (causative, applicative) skipped entirely.
+    parses:
+      - signature: "AND+FV|andika"
+        gloss: write-FV
+        rules: [mrFV]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: andik
+    note: AND bare, no Final Vowel at all -- slot 3 (finalVowel) is obligatory and unfilled, so the AffixTemplate can never produce this output (mirrors suffixing-vowel-harmony's kutak / suffixing-evidential-adjacency-chain's walakchik).
+    expect_fail: true
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: andikisha
+    note: AND + CAUS (slot 1, "-ish") + FV (slot 3, "-a") -- the optional applicative slot (slot 2) skipped, proving slot 1 and slot 3 compose independently of slot 2.
+    provenance: "plan item 2 (wave-3), requiredPartsOfSpeech on a phonological subrule"
+    parses:
+      - signature: "AND+CAUS+FV|andikisha"
+        gloss: write-CAUS-FV
+        rules: [mrCaus, mrFV]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: andikila
+    note: AND + APPL (slot 2, "-il") + FV (slot 3, "-a") -- causative (slot 1) skipped, the mirror-image partial fill of andikisha.
+    parses:
+      - signature: "AND+APPL+FV|andikila"
+        gloss: write-APPL-FV
+        rules: [mrAppl, mrFV]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: andikishila
+    note: >-
+      AND + CAUS (slot 1) + APPL (slot 2) + FV (slot 3), ALL THREE slots filled in the template's
+      own fixed order -- the extension-slot-ordering construct's flagship word, CARP-style
+      (Causative before Applicative, both before the obligatory Final Vowel).
+    parses:
+      - signature: "AND+CAUS+APPL+FV|andikishila"
+        gloss: write-CAUS-APPL-FV
+        rules: [mrCaus, mrAppl, mrFV]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: andikilisha
+    note: >-
+      The textual mirror-image of andikishila (applicative-then-causative instead of causative-
+      then-applicative) -- hand-derived as expect_fail (assumed the template's declared slot
+      sequence would forbid this order structurally), but the ORACLE ACCEPTS it. Reconciliation
+      finding, confirmed by an isolated 2-slot probe before correcting this word: AffixTemplate's
+      own slot sequence governs SYNTHESIS strictly (generation always produces causative-then-
+      applicative) and constrains a SINGLE analysis-side unwind of the template the same way, but
+      Slot 1/2 are both optional and their MorphologicalInput stems are both unconstrained
+      ("any segment, 1+"), so the overall stratum analysis (which retries its rule set, including
+      this template, to a fixpoint) can peel the affixes off across TWO separate template
+      applications: first CAUS strips from the outside ("andikilish" -> "andikil", since
+      applicative's own "-il" pattern doesn't match at that point), then the template is retried on
+      the result and APPL strips from ITS outside ("andikil" -> "andik"). Neither slot's rule ever
+      violated its own pattern; the "wrong order" is simply a different, also-valid decomposition of
+      the same string once repeated application is accounted for. A grammar wanting true analysis-
+      side order enforcement would need an MPR-feature gate between the two slots (this grammar's
+      own mpr-groups section demonstrates that mechanism); this template alone does not provide it.
+    parses:
+      - signature: "AND+APPL+CAUS+FV|andikilisha"
+        gloss: write-APPL-CAUS-FV
+        rules: [mrAppl, mrCaus, mrFV]
+        exercises:
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: dabep
+    note: >-
+      DAB ("cook", posV6) + mrNumPl ("-op") -- assigns featNum=pl (OutputHeadFeatures) and
+      featStress=stressed (OutputFootFeatures) to the resulting word. G5 (code-coverage-driven):
+      no other grammar in the suite exercises RequiredHeadFeatures/OutputHeadFeatures/
+      RequiredFootFeatures/OutputFootFeatures at all before this pair of words.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+NUMPL|dabep"
+        gloss: cook-PL
+        rules: [mrNumPl]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dabepez
+    note: >-
+      DAB + mrNumPl + mrAgr ("-ez") -- mrAgr's RequiredHeadFeatures (featNum=pl) and
+      RequiredFootFeatures (featStress=stressed) are both satisfied because mrNumPl already
+      assigned them, so the agreement suffix can attach on top.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+NUMPL+AGR|dabepez"
+        gloss: cook-PL-AGR
+        rules: [mrNumPl, mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: dabez
+    note: >-
+      DAB + mrAgr directly, WITHOUT the intervening mrNumPl -- reconciliation finding: a bare root
+      carries no featNum/featStress value at all, and an UNSET feature unifies freely against
+      mrAgr's RequiredHeadFeatures/RequiredFootFeatures (unification, not presence-checking), so
+      this analysis succeeds vacuously rather than failing. Contrast with kesez below, whose root
+      carries an explicit CONFLICTING value via AssignedHeadFeatures/AssignedFootFeatures -- that
+      is what actually trips the requirement.
+    provenance: "G5 coverage sweep, SyntacticFeatureSystem/XmlLanguageLoader head+foot feature paths"
+    parses:
+      - signature: "DAB+AGR|dabez"
+        gloss: cook-AGR
+        rules: [mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kes
+    note: >-
+      KES ("sing", posV6) bare root -- carries AssignedHeadFeatures featNum=sg and
+      AssignedFootFeatures featStress=unstressed directly on the lexical entry (both previously at
+      zero coverage: AssignedFootFeatures had no user anywhere in the suite). A bare-root parse is
+      unaffected by either assignment.
+    provenance: "G5 coverage sweep, LexicalEntry.AssignedHeadFeatures/AssignedFootFeatures"
+    parses:
+      - signature: "KES|kes"
+        gloss: sing
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kesez
+    note: >-
+      KES + mrAgr ("-ez") -- KES's own AssignedHeadFeatures (featNum=sg) genuinely CONFLICTS with
+      mrAgr's RequiredHeadFeatures (featNum=pl), and likewise AssignedFootFeatures (unstressed)
+      conflicts with RequiredFootFeatures (stressed): unification fails on both, so this analysis
+      has zero parses -- the real rejection dabez (above) does NOT demonstrate.
+    provenance: "G5 coverage sweep, LexicalEntry.AssignedHeadFeatures/AssignedFootFeatures"
+    expect_fail: true
+    blocked_by: [mrAgr]
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: siliz
+    note: >-
+      SIL ("plant", posV7) + mrRecurSuf ("-iz"), one application -- a plain control establishing
+      the suffix works at all before silizizi (below) attempts a second application.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.MaxApplicationCount"
+    parses:
+      - signature: "SIL+RECURSUF|siliz"
+        gloss: plant-RECURSUF
+        rules: [mrRecurSuf]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: siliziz
+    note: >-
+      SIL+RECURSUF (siliz, above) with "-iz" attached a SECOND time -- the DTD's own default
+      multipleApplication="1" caps mrRecurSuf to exactly one application per derivation, so this
+      has zero parses.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.MaxApplicationCount"
+    expect_fail: true
+    blocked_by: [mrRecurSuf]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: daleh
+    note: >-
+      DAL ("dig", posV7) + mrStemReq ("-eh") -- DAL's own allomorph carries stemName="snG5", which
+      mrStemReq's requiredStemName="snG5" requires, so it applies.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.RequiredStemName"
+    parses:
+      - signature: "DAL+STEMREQ|daleh"
+        gloss: dig-STEMREQ
+        rules: [mrStemReq]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: daheh
+    note: >-
+      DAH ("climb", posV7) + mrStemReq -- DAH's own allomorph carries no stem name at all, so
+      mrStemReq's requiredStemName="snG5" is never satisfied and this has zero parses.
+    provenance: "G5 coverage sweep (second sweep), SynthesisAffixProcessRule.RequiredStemName"
+    expect_fail: true
+    blocked_by: [mrStemReq]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: dalizeh
+    note: >-
+      DAL + mrRecurSuf ("-iz") + mrStemReq ("-eh"), in that list order (mrRecurSuf before mrStemReq
+      on Stratum "Main"). The ordering discriminator for the mrRecurSuf~mrStemReq adjacent pair:
+      "dalehiz" below is the same two suffixes reversed, which only parses when the list order is
+      swapped. DAL qualifies for both -- mrRecurSuf has no extra gate beyond posV7, and DAL's own
+      allomorph carries stemName="snG5" for mrStemReq.
+    parses:
+      - signature: "DAL+RECURSUF+STEMREQ|dalizeh"
+        gloss: dig-RECURSUF-STEMREQ
+        rules: [mrRecurSuf, mrStemReq]
+        exercises:
+          - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: dalehiz
+    note: >-
+      DAL + mrStemReq + mrRecurSuf, the reverse of "dalizeh". Zero parses under the shipped list
+      order (mrRecurSuf mrStemReq): only reachable when mrStemReq is transposed ahead of mrRecurSuf.
+    expect_fail: true
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: zimed
+    note: >-
+      ZIM ("fly", posV7, mprRRealTest) + rrRRealTest ("-ed") -- ZIM's own AssignedHeadFeatures
+      (featG5=symG5A) genuinely conflicts with the rule's own RequiredHeadFeatures (featG5=symG5B),
+      so RequiredSyntacticFeatureStruct.Unify fails and this has zero parses. mprRRealTest is a
+      hard set-membership gate (see grammar.xml), so this rule can never spuriously apply to any
+      other word in the grammar regardless of this outcome.
+    provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.RequiredSyntacticFeatureStruct"
+    expect_fail: true
+    blocked_by: [rrRRealTest]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"
+
+  - word: zamed
+    note: >-
+      ZAM ("swim", posV7, mprRRealTest, family famRRealBlock) + rrRRealTest -- ZAM's featG5=symG5B
+      matches the rule's RequiredHeadFeatures, so the rule applies; but ZAM's family also contains
+      the suppletive WEP (also featG5=symG5B), and CheckBlocking substitutes WEP's own entry in
+      wherever ZAM's own output would surface, so the resynthesis ("wep") no longer matches this
+      word's own input shape ("zamed"), and this has zero parses. First time this suite exercises
+      Blockable/CheckBlocking through a RealizationalRule rather than an ordinary MorphologicalRule
+      or a CompoundingRule.
+    provenance: "G5 coverage sweep (second sweep), SynthesisRealizationalAffixProcessRule.Blockable"
+    expect_fail: true
+    blocked_by: [rrRRealTest]
+    exercises:
+      - "Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)"

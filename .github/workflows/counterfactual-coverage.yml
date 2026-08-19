@@ -1,0 +1,35 @@
+# The counterfactual sweep re-parses every conformance fixture once per grammar-observable surface with
+# that surface neutralized, so it costs minutes rather than seconds. It runs on demand and weekly rather
+# than per push; the cheap coverage ledger and fixture gates stay in the main CI job.
+name: Counterfactual coverage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  counterfactual:
+    name: Recompute counterfactual evidence
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Recompute and compare the evidence ledger
+        run: dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --counterfactual --repository-root .
+
+      - name: Run the explicit counterfactual tests
+        run: dotnet test tests/SIL.Machine.Morphology.HermitCrab.Tests/SIL.Machine.Morphology.HermitCrab.Tests.csproj -c Release --filter "TestCategory=Counterfactual"

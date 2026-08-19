@@ -64,6 +64,15 @@ jobs:
         run: dotnet build --no-restore -c Release
       - name: Test
         run: dotnet test --verbosity normal --collect:"Xplat Code Coverage"
+      # The gate assertions also run under dotnet test; this step recomputes the same ledger through
+      # the shipped CLI, so a break is reported as a coverage failure rather than a test failure and
+      # stays runnable by hand with the identical command.
+      - name: Check semantic coverage ledger
+        run: dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --semantic-coverage --repository-root .
+      - name: Run conformance fixtures
+        run: dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixtures conformance
+      - name: Check coarse construct parity
+        run: python conformance/parity-check.py
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         env:

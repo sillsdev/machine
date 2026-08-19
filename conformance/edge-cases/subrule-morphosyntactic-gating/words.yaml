@@ -1,0 +1,46 @@
+# Synthetic construct-shaped mimic -- see STAGING.md and grammar.xml's own header comment. Oracle:
+# pangloss (`pg_parse::Morpher`, driven directly -- see STAGING.md's "Verification" section), NOT the
+# C# founding oracle -- authored and verified against this repo's own Rust engine only. Signatures
+# below are transcribed verbatim from that run, not hand-derived.
+#
+# Authoring note: an early all-featureless draft (SegmentNaturalClass only, no
+# PhonologicalFeatureSystem at all) made every segment share an identical (empty) feature bundle,
+# and pg_parse's own shape rendering collapsed the analysis into a bracketed alternates class (e.g.
+# "[apbt][apbt][apbt]") instead of the literal input string, on TOP of masking a real correctness
+# problem (see grammar.xml's own G2a-discipline comment). Fixed by giving every segment a fully
+# unique feature bundle, mirroring `conformance-staging/edge-cases/mpr-gated-exception`'s own fix for
+# the identical symptom.
+
+language: SubruleMorphosyntacticGating
+inspired_by: ["synthetic subrule-level phonological gating probe (not modeling any real language)"]
+sources:
+  - "docs/conformance/representative-typology-basis.md S1.2.7 (Subrule-level phonological gating -- its own tagged phenomenon)"
+requires: [phonology]
+words:
+  - word: pat
+    note: >-
+      ROOT1 bare, with NO mrDerive applied -- the word's part of speech is never "posDerived", so
+      prGate's own subrule (requiredPartsOfSpeech="posDerived") is not licensed and the "p" before
+      "a" environment is left untouched. The SAME phonological environment ("p" before "a") is
+      present here as in "bat" below; only the morphosyntactic derivation state differs.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.7"
+    parses:
+      - signature: "ROOT1|pat"
+        rules: [prGate]
+        exercises:
+          - "RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level"
+
+  - word: bat
+    note: >-
+      ROOT1 + mrDerive (a "zero-derivation" MorphologicalRule: CopyFromInput only, no segment
+      change, but outputPartOfSpeech="posDerived") -- once the word's own part of speech becomes
+      "posDerived", prGate's subrule IS licensed and rewrites "p" -> "b" in the identical "before a"
+      environment "pat" already presented. This is the load-bearing positive witness: the same
+      phonological trigger, reached via a different morphosyntactic derivation state, is now
+      licensed to fire.
+    provenance: "docs/conformance/representative-typology-basis.md S1.2.7"
+    parses:
+      - signature: "ROOT1+DERIVE|bat"
+        rules: [mrDerive, prGate]
+        exercises:
+          - "RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level"
