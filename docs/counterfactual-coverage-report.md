@@ -1,5 +1,16 @@
 # Counterfactual coverage: what is evidenced, and what is not
 
+**A point-in-time report, since superseded on headline numbers.** This records the sweep and the bugs
+it caught (mismeasured `RequiredToLoad`, `Unobservable`, and `disjoint-domains` verdicts, each fixed
+below) at 194 surfaces / 27 fixtures and 138 ordering items / 29 lists. The fixture set and verdict
+split have both grown since: `docs/pangloss-handoff.md`'s "Current numbers" section and
+`conformance/semantic-coverage-counterfactuals.tsv` hold the current 194-surface breakdown (106
+`Evidenced` + 7 `EvidencedJointly` = 113, plus 65 `RequiredByDtd`, 13 `RequiredByLoader`, 3
+`Unobservable` — `RequiredToLoad` below is that later-split 65+13 bucket under its old, merged name),
+and `tests/.../OrderingGeneratorTests.cs` pins the current ordering count at 32 lists / 146 pairs. The
+bug narrative and proof-kind reasoning below are unaffected by either change and are the reason this
+report is kept rather than replaced.
+
 ## The standard
 
 Every grammar-observable DTD surface must end in one of two states. There is no third.

@@ -35,7 +35,9 @@ A conforming engine adapter is a single executable command:
 
 This is exactly what `hc-rs batch <grammar.xml> <words.txt> <output.tsv>` already does, so the Rust
 port is adapter-conformant today with zero wrapper code. See section 7 for the one C#-specific
-wrinkle.
+wrinkle, and **section 8 before implementing an engine from scratch**: `grammar.xml` alone
+under-specifies the ground truth, because several `Morpher` host-configuration values that are not
+part of the grammar file were baked into every fixture's `expected.tsv`.
 
 ## 2. The output format: a 5-column TSV
 
@@ -104,6 +106,23 @@ The harness's contract for an `expect_crash` fixture:
 Because a crash aborts a fixture's whole word loop, crash fixtures should keep `words.txt` to a
 single word: there is nothing after the crash for the harness to compare, so additional words would
 never actually be exercised.
+
+**What `expect_crash` actually pins, and the hazard that follows from it.** For
+`edge-cases/simultaneous-epenthesis-cascade`, the crash is `InfiniteLoopException`, thrown by
+`EpenthesisSynthesisRewriteSubruleSpec.ApplyRhs`
+(`src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/EpenthesisSynthesisRewriteSubruleSpec.cs`,
+around lines 32-33) the instant a shape being built during synthesis reaches exactly 256 nodes. This
+is **not** one of the host-configuration knobs in section 8 — it is a hardcoded constant, not
+exposed on `Morpher` or anywhere else, so there is no value a reimplementing engine can set to opt
+out of it. Conformance on this fixture therefore requires the engine under test to independently hit
+some runaway condition on the same input and fail rather than complete — not because failing is
+correct, but because the founding oracle failed here and the fixture's ground truth is that failure.
+An engine that instead detects and terminates the same unbounded epenthesis expansion cleanly (e.g.
+by finding a correct, bounded analysis, or by cycle detection that recovers rather than crashing) is,
+on its own merits, the more correct engine — and is **non-conformant** on this fixture per section
+4's comparison rules, because "engine returns normally" is scored as a FAIL regardless of whether the
+output would have been right. Treat this fixture as pinning an implementation limitation of the
+founding oracle, not a linguistic fact about the grammar it exercises.
 
 ## 3. The signature algorithm
 
@@ -261,3 +280,84 @@ Two consequences:
   `batch <words.txt> <output.tsv>` with the two paths substituted in, then (2) invokes
   `hc.dll -i <grammar> -s <that temp script>`. Not required by any current acceptance criteria
   (self-check plus `--adapter` against `hc-rs` suffices), but straightforward if ever needed.
+
+## 8. Host configuration every fixture was generated under
+
+`grammar.xml` fully determines a grammar's rules, but it does not determine every input to the
+parse. `Morpher` (`src/SIL.Machine.Morphology.HermitCrab/Morpher.cs`) has several settable
+properties that change which analyses are found for the **same** grammar and word, and every one of
+this suite's `expected.tsv` files was generated with `Morpher` left at its plain constructor
+defaults: both `BatchCommand`'s host (`HCContext.Compile`,
+`src/SIL.Machine.Morphology.HermitCrab.Tool/HCContext.cs`) and the harness's self-check runner
+construct `new Morpher(traceManager, language)` and never assign any of the properties below. A
+formalism-correct reimplementation that happens to pick different values for these will diverge from
+`expected.tsv` on fixtures that exercise them, with nothing in `grammar.xml` to explain why. These
+defaults are pinned executably against the constructor in
+`tests/SIL.Machine.Morphology.HermitCrab.Tests/MorpherTests.cs`
+(`Constructor_DefaultsMatchDocumentedProtocolDefaults`).
+
+- **`MaxStemCount` — default `2`.** Consumed in `AnalysisCompoundingRule.Apply`
+  (`src/SIL.Machine.Morphology.HermitCrab/MorphologicalRules/AnalysisCompoundingRule.cs`, around
+  line 45): once an in-progress analysis's non-head count would reach `MaxStemCount`, the compounding
+  rule refuses to unapply further, so no candidate with more stems is ever produced. **Observable
+  difference:** a grammar whose compounding rule can in principle chain three or more stems will only
+  ever be analyzed as a compound of at most `MaxStemCount` stems under the reference oracle; a
+  reimplementation using a higher value will find compound analyses of words this suite's
+  `expected.tsv` shows as unparsed or as parsed with fewer stems, and a lower value will miss
+  compound analyses this suite's `expected.tsv` shows as found.
+- **`DeletionReapplications` — default `0`.** Consumed in `AnalysisRewriteRule.Apply`'s
+  `ReapplyType.Deletion` case
+  (`src/SIL.Machine.Morphology.HermitCrab/PhonologicalRules/AnalysisRewriteRule.cs`, around line
+  159): a deletion phonological rule always unapplies (recovers a deleted segment) once; it is then
+  permitted to reapply and recover an additional consecutive deletion up to `DeletionReapplications`
+  more times before the loop stops. At the default `0`, exactly one deletion is ever recovered per
+  rule invocation — a surface form that resulted from **two or more** consecutive applications of the
+  same deletion rule cannot have all of them undone, so the fully-restored underlying form is never
+  reached and that analysis is absent from `expected.tsv`. **Observable difference:** raising this
+  value changes the analysis *candidate set itself* (not just performance) — it can surface additional
+  valid analyses for words with multiple consecutive deletion sites that the default value's
+  `expected.tsv` shows as not found, or as found via a different (shorter-recovery) analysis path.
+- **`MaxAlternatives` — default `0`, meaning unlimited.** Every guard on this value
+  (`AnalysisStratumRule.Apply`, `RuleCascade`, `RuleBatch`) is written as `value > 0 && count >
+  value`, so `0` disables the check entirely rather than meaning "zero alternatives." When set to a
+  positive number and exceeded, the analyzer throws `MaxAlternativesExceededException`
+  (`src/SIL.Machine/Rules/MaxAlternativesExceededException.cs`) — and nothing between there and
+  `Morpher.ParseWord`/`AnalyzeWord` catches it, so it propagates out of the call entirely; there is no
+  code path that turns an exceeded limit into a truncated-but-usable result. **Observable
+  difference:** since every fixture was generated with this disabled, `expected.tsv` never reflects a
+  truncated search — a reimplementation must not impose an undocumented alternative cap of its own
+  (even one intended purely as a runaway guard) without expecting to diverge on any fixture whose
+  search happens to exceed it, and must not silently truncate where the reference oracle would have
+  thrown or continued.
+- **`MergeEquivalentAnalyses` — default `true`.** Consumed in `AnalysisStratumRule.Apply`
+  (around line 133): while unapplying rules within one stratum, intermediate analyses that end up
+  with identical shapes are merged into one canonical `Word`, with the others recorded on its
+  `Alternatives` list instead of being carried forward independently into the next stratum's search.
+  Every merged alternative is expanded back out (`Word.ExpandAlternatives`) immediately before
+  lexical lookup and synthesis (see the doc comment at `Morpher.cs` lines 86-89), so this is designed
+  to prune redundant search state rather than to change which analyses are ultimately found. No
+  fixture in this suite is known to depend on `MergeEquivalentAnalyses: false` producing a different
+  result than `true`, but the default is documented here because it is still host configuration this
+  suite's `expected.tsv` was generated under, and a reimplementation that skips the equivalent-shape
+  merge (most will — it is a C#-side performance optimization, not part of the formalism) must still
+  ensure it explores the same eventual analysis set that expansion restores.
+- **`guessRoot` — see section 3's "Guess-stem rendering" discussion above.** Already documented
+  there: `BatchCommand`/`SignatureFormat.ParseOneWord` hardcode `guessRoot: false`, so no adapter-mode
+  fixture output ever reflects root-guessing, and `guess: true` words are self-check-only. Restated
+  here because it is host configuration in exactly the same sense as the four properties above — it
+  just already had its own writeup.
+- **`LexEntrySelector` / `RuleSelector` — default `entry => true` / `rule => true`.** These are
+  host-installed predicates that can exclude specific lexical entries or specific rules from
+  participating in analysis/synthesis at all (checked in, e.g., `Morpher.LexicalLookup` and in each
+  compiled rule's `Apply`, such as `AnalysisCompoundingRule.Apply` and `AnalysisRewriteRule.Apply`
+  above). Neither `BatchCommand`/`HCContext` nor the harness's self-check runner ever installs a
+  narrower predicate, so every fixture's `expected.tsv` was generated with **every** lexical entry and
+  **every** rule in `grammar.xml` eligible to participate — a reimplementation must not implement any
+  equivalent of a partial-grammar or partial-lexicon mode (even for performance or scoping reasons)
+  without expecting to diverge, since there is no signal in `grammar.xml` itself that any entry or
+  rule was excluded.
+
+These are the only settable, parse-affecting properties found on `Morpher`; `XmlLanguageLoader`
+(which builds the `Language` object from `grammar.xml`) does not read, set, or expose any of them —
+every one of the above is host-side configuration layered on top of the grammar, never something a
+grammar file itself can express or override.

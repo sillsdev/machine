@@ -1,5 +1,14 @@
 # Coverage levels, and what the suite does not measure
 
+`docs/coverage-strategy.md` is the governing statement for how this suite's coverage claim is built
+and apportioned; where anything below disagrees with it, this document is stale. Its "level 1"/"level
+2" below are that document's **unit** layer; its "level 3" discussion is the reasoning that led to
+splitting what was one open question here into two mechanical layers there — **integration/edge**
+(`conformance/interface-inventory.tsv`, landed) and **integration/chain** (in progress) — plus a
+capped hand-crafted set. The analysis below (why pairs are not enough, the MPR worked example,
+preconditions vs. gaps, cost vs. correctness) is unaffected by that split and is why it is kept in
+full rather than folded away.
+
 The coverage numbers in this repository describe **individual grammar surfaces**. They do not
 describe interactions between surfaces, and nothing here currently measures those. This document
 states the levels precisely so a green suite cannot be read as a stronger claim than it supports.
@@ -14,14 +23,61 @@ states the levels precisely so a green suite cannot be read as a stronger claim 
 
 Level 2's numbers reconcile exactly, which is worth keeping true: 264 grammar-observable surfaces
 minus the 70 in `conformance/semantic-coverage-baseline.txt` leaves 194, and
-`conformance/semantic-coverage-counterfactuals.tsv` holds exactly 194 rows — 106 `Evidenced`, 78
-`RequiredToLoad`, 7 `EvidencedJointly`, 3 `Unobservable`. Every covered surface has a verdict.
+`conformance/semantic-coverage-counterfactuals.tsv` holds exactly 194 rows — 106 `Evidenced`, 7
+`EvidencedJointly`, 65 `RequiredByDtd`, 13 `RequiredByLoader`, 3 `Unobservable`. Every covered
+surface has a verdict.
 
-"Complete" at level 2 cannot mean "every surface evidenced". 78 surfaces are `RequiredToLoad`:
-deleting them stops the grammar loading, so no word can demonstrate their behaviour, and 3 are
-`Unobservable`. Completeness means every surface is either evidenced or explicitly classified as
-impossible to evidence, with the reason recorded — the standard the counterfactual ledger already
-applies.
+**`RequiredByDtd` and `RequiredByLoader` are not the same strength of evidence, and treating them
+as one bucket ("`RequiredToLoad`", 78 surfaces) used to overstate this level's headline.** Both are
+verdicts reached when neutralizing a surface stops the grammar from loading at all -- but *why* it
+fails to load differs, and the difference is checkable mechanically from which kind of
+neutralization produced it (`CounterfactualGate.LoadFailureVerdict`):
+
+- `RequiredByDtd` (65 surfaces, all whole-element removals): the mutant fails **generic XML DTD
+  content-model validation** (`XmlLanguageLoader`'s `ValidationType.DTD`) before a single line of
+  HermitCrab's own loader runs. This re-derives what Level 1's static DTD enumeration already
+  knows -- a Rust engine that loads every such grammar and then silently ignores the construct at
+  parse time is indistinguishable from a correct one on this verdict alone. There is **no
+  parse-time witness of any kind** for these 65 surfaces.
+- `RequiredByLoader` (13 surfaces, all enum-value rewrites to a DTD-legal sibling): the document
+  passes DTD validation and then HermitCrab's own loader throws -- an IDREF lookup, a
+  feature/coercion failure, or similar. This is a genuine engine-semantic witness: the failure
+  could only happen because the loader actually consulted the surface, even though (like
+  `RequiredByDtd`) no word ever parses to show a word-level delta.
+
+So the honest headline for level 2's strongest evidence is **106 `Evidenced` + 7
+`EvidencedJointly` = 113 surfaces out of 264** carry a real parse-time delta. The other 78
+`RequiredByDtd`/`RequiredByLoader` surfaces are resolved (not gaps) but split unevenly in strength:
+13 are a genuine, if word-free, engine-semantic witness, and 65 have no parse-time witness of any
+kind and only restate Level 1.
+
+"Complete" at level 2 cannot mean "every surface evidenced". 78 surfaces are `RequiredByDtd` or
+`RequiredByLoader`: deleting or rewriting them stops the grammar loading, so no word can
+demonstrate their behaviour, and 3 are `Unobservable`. Completeness means every surface is either
+evidenced or explicitly classified as impossible to evidence, with the reason recorded — the
+standard the counterfactual ledger already applies.
+
+## Interfaces: a DTD-fixed denominator, not a corpus statistic
+
+Level 1 counts surfaces; level 3 wants interactions between them. Between the two sits a narrower
+question that does not need a grammar to answer: which surfaces are *declared to point at another
+surface at all*? `conformance/interface-inventory.tsv` answers it from the DTD alone — every
+`IDREF`/`IDREFS` attribute in `HermitCrabInput.dtd` is one declared interface, 60 of them across 28
+elements, resolved against the corpus only to learn which element types each one actually targets
+and whether any fixture exercises it (42 of 60; 18 are declared but never used, `conformance/
+interface-inventory.tsv`'s exercised column names them). That resolution yields 51 distinct
+(element, attribute, target-type) edges, and exactly two target types —
+`MorphologicalPhonologicalRuleFeature` and `PartOfSpeech` — are reached by both a write-direction
+and a read-direction edge, which is where a chained interaction (something writes a payload another
+construct later reads) is structurally possible at all.
+
+This is deliberately not `conformance/rule-interaction-pairs.tsv`'s role. That ledger enumerates
+rule *instances* within whatever fixtures exist, so its row count grows every time a fixture is
+added and 93% of its rows are `Undetermined` by construction — useful for per-grammar pruning of
+which adjacent swaps need a counterfactual, but not a fixed denominator. The interface inventory's
+"60 declared" cannot move by adding a fixture; only "exercised" and "typed edges" can, which is what
+makes it the right denominator for "how much of the schema's declared cross-referencing has the
+corpus ever touched."
 
 ## Level 3 is not a level, and pairs are not enough
 
@@ -130,6 +186,12 @@ which is an observable outcome and is pinned by `expect_crash`.
 
 ## What is not built
 
-The enumerator, the reachability analysis, and the interaction ledger. Until they exist the honest
-statement is: **no uncovered surface is known; uncovered interactions have not been looked for, and
-one would not have been noticed.**
+**Updated by `docs/coverage-strategy.md`'s split.** The reachability analysis and the general
+interaction ledger described above are still not built. The interface-declaration half of this
+question is: `conformance/interface-inventory.tsv` now enumerates every DTD-declared
+`IDREF`/`IDREFS` handoff (60, 42 exercised, 18 named gaps), so "which surfaces are declared to point
+at another at all" is answered mechanically. What remains not built is reachability/witness proof for
+those 18 gaps and the chain layer (does a written payload survive to its reader) — in progress as
+`conformance/interaction-chains.tsv`. The honest statement is narrower than it was: uncovered
+*edges* are named; uncovered *chains* have not been looked for yet, and one would not have been
+noticed.

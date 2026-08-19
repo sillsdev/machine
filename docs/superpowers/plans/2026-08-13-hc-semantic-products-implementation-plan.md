@@ -67,7 +67,8 @@ Removing `RepositorySourceSnapshot` (dead after this cutover) also removed
 3. **Task 11** — cross-platform identity for the manifest product.
 4. **Task 12 is deferred** — the data-only NuGet package; PanGloss consumes via the sparse submodule
    today, and a package may follow later.
-5. **Task 13** — the handoff record itself.
+5. **Task 13 is done, by a different document than specified** — `docs/pangloss-handoff.md` is the
+   handoff record; see Task 13's own note for why it did not update the plan named there.
 
 **Where the closure still stops, and why deliberately.** Owned projects are now bound as
 `CompilationReference`s, so a symbol reached from another owned project carries real syntax rather
@@ -760,7 +761,20 @@ feat(conformance): publish data-only conformance package
 
 ---
 
-### Task 13: Hand the product milestone back to the complete-coverage program
+### Task 13: Hand the product milestone back to the complete-coverage program — DONE, by a different document than specified
+
+**Superseded as specified, 2026-08-14.** This task named
+`docs/superpowers/plans/2026-08-11-generated-hc-semantic-coverage-plan.md` as "the governing
+complete-coverage plan" and said the original objective completes only when that plan's
+obligation/pair/triple ledger passes its own completion audit. `docs/coverage-strategy.md` is now the
+actual governing statement for the coverage claim, and it replaces that ledger design outright (see
+the 2026-08-11 plan's own status update for why pairwise/triple enumeration was the wrong axis, not
+merely unfinished). The handoff this task called for happened, just not through Steps 1-3 below:
+`docs/pangloss-handoff.md` records the delivered product baseline in the honest form
+`docs/coverage-strategy.md` requires — unit-layer surfaces (113 of 264 carry a real parse-time delta,
+11 more are named exceptions), integration/edge (`conformance/interface-inventory.tsv`, 60 interfaces,
+42 exercised/18 not), and integration/chain (in progress, not yet landed) — rather than as an
+obligation-ledger status update.
 
 **Files:**
 - Modify: `docs/superpowers/plans/2026-08-11-generated-hc-semantic-coverage-plan.md`
@@ -783,3 +797,11 @@ docs(conformance): hand off semantic product baseline
 ```
 
 The remaining carrier classification, obligation, evidence, and proof-registry work continues under `docs/superpowers/plans/2026-08-11-generated-hc-semantic-coverage-plan.md`. The original objective is complete only when that governing plan's completion audit passes; the earlier PanGloss milestone is a deliberately honest, useful intermediate release.
+
+**The paragraph immediately above, and Steps 1-3, are kept as the record of the originally planned
+handoff mechanism.** Do not execute them as written: the "governing complete-coverage plan" they name
+no longer owns the obligation/pair/triple ledger they describe, because that ledger was rejected, not
+merely relocated. Remaining coverage work is now tracked against `docs/coverage-strategy.md`'s four
+layers directly — most concretely, closing the 18 named gaps in
+`conformance/interface-inventory.tsv` and landing the integration/chain ledger — not against this
+task's completion criteria.

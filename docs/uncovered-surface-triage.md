@@ -1,5 +1,12 @@
 # Triage of the 70 uncovered semantic-coverage surfaces
 
+**Counts below (70 total: 9 `dead-schema`, 24 `dtd-default`, 37 `alphabet-quotient`, 0 `todo`) were
+re-checked against the current `conformance/semantic-coverage-baseline.txt` and still match exactly —
+this triage is current.** One terminology note: `RequiredToLoad`, cited throughout as a verdict name,
+was later split into `RequiredByDtd`/`RequiredByLoader` (`docs/coverage-levels.md`); every
+`RequiredToLoad` reference below predates that split and refers to the merged bucket, not a verdict
+name that still exists in `conformance/semantic-coverage-counterfactuals.tsv` or in code.
+
 Source: `conformance/semantic-coverage-baseline.txt`. Every line was read, every classification
 claim was independently re-derived from `src/SIL.Machine.Morphology.HermitCrab/` and
 `conformance/HermitCrabInput.dtd`, and cross-checked against

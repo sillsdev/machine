@@ -9,7 +9,7 @@ time; none is estimated.
 
 ## What is handed over
 
-Two files per fixture, 29 fixtures total (8 under `conformance/languages/*`, 21 under
+Two files per fixture, 33 fixtures total (8 under `conformance/languages/*`, 25 under
 `conformance/edge-cases/*`):
 
 - `grammar.xml` — a `HermitCrabInput` document, format `sil-machine-hermit-crab-input-xml/v1`.
@@ -34,8 +34,8 @@ Alongside the fixtures:
 - `conformance/generated/hc-conformance-manifest.v1.json` — format `hc-conformance-manifest/v1`,
   13KB, one entry per fixture (`fixtureId`, `category`, `displayLanguage`, `grammarPath`,
   `grammarSha256`, `wordsPath`, `wordsSha256`, `caseCount`, `expectedCrash`) plus top-level `dtdPath`,
-  `dtdSha256`, `sourceHash`, and the three format-version identifiers below. Currently 29 fixture
-  entries, 424 cases total.
+  `dtdSha256`, `sourceHash`, and the three format-version identifiers below. Currently 33 fixture
+  entries, 444 cases total.
 - `conformance/coverage.csv` (language x word x construct) and `conformance/rules.csv` (language x
   grammar rule id x exercising words) — both generated, both derived from the fixtures, never hand
   maintained.
@@ -82,16 +82,28 @@ unproven.
 The inventory this suite counts against is **formalism surfaces — DTD elements and enumerated
 attribute values — never languages.** Nothing here quantifies over languages, and nothing should be
 read as if it did. "Complete" is correspondingly an accounting claim: every inventoried surface
-carries an explicit status (evidenced, required-to-load, evidenced-jointly, unobservable, or named as
-not yet resolved), never a claim that every grammar an implementer might write is covered.
+carries an explicit status (evidenced, evidenced-jointly, required-by-dtd, required-by-loader,
+unobservable, or named as not yet resolved), never a claim that every grammar an implementer might
+write is covered.
 
-Coverage is also, deliberately, per-surface rather than per-interaction. A surface counts as covered
-when a fixture exercises it and neutralizing it changes a real word's parse. That says nothing about
-two or more surfaces interacting: `docs/coverage-levels.md` documents a real defect (an MPR
-`overwrite` group evicted by unordered-stratum rule order) whose four ingredients are each,
-individually, fully covered, and would still be invisible to a pairwise-or-lower coverage claim.
-Enumerating interactions (level 3) is explicitly not built — see that document for why arity is not
-the right axis and what would be needed instead.
+Coverage is also, deliberately, per-surface at its strongest layer, not per-interaction.
+`docs/coverage-strategy.md` is the governing statement for how this whole claim is built and
+apportioned across layers, and where anything below disagrees with it, it is stale. A surface counts
+as covered (the **unit** layer) when a fixture exercises it and neutralizing it changes a real word's
+parse. That says nothing, by itself, about two or more surfaces interacting: `docs/coverage-levels.md`
+documents a real defect (an MPR `overwrite` group evicted by unordered-stratum rule order) whose
+ingredients are each, individually, fully covered, and would still be invisible to a pairwise-or-lower
+coverage claim — see that document for why arity is not the right axis.
+
+Above the unit layer, `docs/coverage-strategy.md` names two further mechanical layers plus a
+deliberately capped hand-crafted one. **Integration/edge** — does data cross a declared handoff at
+all — is landed: `conformance/interface-inventory.tsv` derives 60 `IDREF`/`IDREFS` interfaces from
+the DTD alone, of which 42 are exercised and 18 are not (see "Current numbers" below). **Integration/
+chain** — does a payload survive from the construct that writes it to the one that reads it, at the
+two junctions where a type is both written and read — is still being built; no chain count is landed
+yet. **Hand-crafted** fixtures for what neither mechanical layer can derive are deliberately capped at
+5-20. Do not read the absence of a chain-layer number as "unstarted"; it is in progress, just not yet
+checked in.
 
 ## What is explicitly NOT handed over, and why
 
@@ -117,27 +129,50 @@ build one. Do not treat its absence as an open task.
 
 ## Current numbers, as verified against the files listed
 
-- **Level 1 (DTD surfaces):** 1059, enumerated. Verified: `docs/coverage-levels.md`, and the plan's
+- **Unit layer, DTD surfaces:** 1059, enumerated. Verified: `docs/coverage-levels.md`, and the plan's
   Task 7 note giving the same figure as the `dtd:` half of the 1059/592 split.
-- **Level 2 (grammar-observable surfaces):** 264 total. Of those, 194 are resolved: 106
-  `Evidenced`, 78 `RequiredToLoad`, 7 `EvidencedJointly`, 3 `Unobservable` — counted directly from
-  `conformance/semantic-coverage-counterfactuals.tsv` (194 data rows, one verdict column). The
-  remaining 70 are listed, unresolved, in `conformance/semantic-coverage-baseline.txt` (70 non-comment
-  lines). 194 + 70 = 264, and the arithmetic is exact, not rounded.
-- **Level 3 (interactions between surfaces):** not enumerated. No number to report; see the
-  "correctness vs. cost" and "level 3" sections of `docs/coverage-levels.md` for why this is not
-  simply an unfinished count.
-- **Ordering:** 30 ordered lists with >= 2 members, 143 adjacent pairs total across them. Verified
+- **Unit layer, grammar-observable surfaces:** 264 total. Of those, 194 resolve to a verdict —
+  counted directly from `conformance/semantic-coverage-counterfactuals.tsv` (194 data rows, one
+  verdict column each): 106 `Evidenced`, 7 `EvidencedJointly`, 65 `RequiredByDtd`, 13
+  `RequiredByLoader`, 3 `Unobservable`. **The honest headline is 106 + 7 = 113 of 264**: only those
+  carry a real parse-time delta. `RequiredByDtd` and `RequiredByLoader` used to be reported as one
+  merged 78-surface `RequiredToLoad` bucket; that overstated the claim; splitting them apart made
+  `RequiredByDtd`'s 65 surfaces visible as re-deriving the DTD's own content model rather than
+  evidencing anything the loader or engine did. The remaining 70 are listed, unresolved, in
+  `conformance/semantic-coverage-baseline.txt` (70 non-comment lines). 194 + 70 = 264, and the
+  arithmetic is exact, not rounded.
+- **The exception list:** eleven of those surfaces are named exceptions rather than gaps — expressible
+  in the DTD and read by no engine code at all, across three feature areas (cyclic strata and
+  simultaneous phonological rule order; syntactic subcategorization, six surfaces; cross-word
+  phonological context — `PreviousWord`, `NextWord`, `Null`). They are machine-derived, not asserted:
+  two are `no-consumer` proofs in `conformance/semantic-coverage-proofs.tsv`, and nine are
+  `dead-schema` lines in `conformance/semantic-coverage-baseline.txt`. See `docs/coverage-strategy.md`
+  for the full list and the gate that keeps it from drifting.
+- **Integration/edge layer:** 60 `IDREF`/`IDREFS` interfaces declared across 28 DTD elements — a
+  DTD-fixed denominator, counted directly from `conformance/interface-inventory.tsv`. **42 exercised,
+  18 not.** Seven of the 18 belong to the dead subcategorization feature above and are correctly
+  uncovered; the rest are real gaps, one fixture each.
+- **Integration/chain layer:** not yet landed. `docs/coverage-strategy.md` estimates roughly 15
+  writer x reader chains through the two junctions where a type (`MorphologicalPhonologicalRuleFeature`
+  or `PartOfSpeech`) is both written and read, but no chain ledger is checked in yet, so there is no
+  number to report here beyond that estimate.
+- **Ordering:** 32 ordered lists with >= 2 members, 146 adjacent pairs total across them. Verified
   against the pinned assertions in
   `tests/SIL.Machine.Morphology.HermitCrab.Tests/SemanticCoverage/OrderingGeneratorTests.cs`
-  (`Assert.That(totalLists, Is.EqualTo(30))`, `Assert.That(totalPairs, Is.EqualTo(143))`).
-- **Fixtures:** 29 (8 `languages/`, 21 `edge-cases/`), 424 cases total. Verified by listing
-  `conformance/languages/*` and `conformance/edge-cases/*` and by summing `caseCount` across all 29
+  (`Assert.That(totalLists, Is.EqualTo(32))`, `Assert.That(totalPairs, Is.EqualTo(146))`). This is a
+  narrower, DTD-ordering-carrier-specific enumeration and is not the same denominator as
+  `conformance/rule-interaction-pairs.tsv` below.
+- **Fixtures:** 33 (8 `languages/`, 25 `edge-cases/`), 444 cases total. Verified by listing
+  `conformance/languages/*` and `conformance/edge-cases/*` and by summing `caseCount` across all 33
   entries in `conformance/generated/hc-conformance-manifest.v1.json`.
+- **Not a coverage denominator:** `conformance/rule-interaction-pairs.tsv` (1,305 rows, 1,217
+  `Undetermined` by construction) is a per-grammar pruning ledger, not an interaction-coverage count.
+  See `docs/coverage-strategy.md`'s "What this replaces" section. Do not cite its row count as
+  interaction coverage.
 
-Two proved-unreachable surfaces, cited above as the scoping example, are named exactly:
-`dtd:enum/Stratum/cyclicity/cyclic` and `dtd:enum/Stratum/phonologicalRuleOrder/simultaneous`, both
-`no-consumer` in `conformance/semantic-coverage-proofs.tsv`.
+Of the eleven exception-list surfaces above, the two cited earlier as the scoping example are named
+exactly: `dtd:enum/Stratum/cyclicity/cyclic` and `dtd:enum/Stratum/phonologicalRuleOrder/simultaneous`,
+both `no-consumer` in `conformance/semantic-coverage-proofs.tsv`.
 
 ## Preconditions on admissible grammars
 
@@ -172,7 +207,7 @@ building.
 
 Three coverage efforts exist that a reader might be tempted to reconcile into one number. Do not:
 
-- **This suite's 264 grammar-observable DTD surfaces** (level 2 above) — a census of the grammar
+- **This suite's 264 grammar-observable DTD surfaces** (unit layer above) — a census of the grammar
   format itself.
 - **The consumer's own 23 characteristics x 3 backends = 69 pairs** — a census of which
   (characteristic, compilation backend) combinations the consumer has witnessed, has a gap for, or

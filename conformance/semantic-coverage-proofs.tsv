@@ -11,7 +11,13 @@
 #                     for every document and writing it is indistinguishable from omitting it.
 #                     Recomputed from the inventory's own attribute-default surface.
 #   no-consumer       The engine contains no reference to the owning element, so no grammar can make it
-#                     influence a parse. Recomputed by scanning the engine source.
+#                     influence a parse. Recomputed by scanning the engine source. This file only ever
+#                     names a surface a fixture actually declares; the identical "no engine reference"
+#                     fact for a surface no fixture ever attempts is the `dead-schema` classification in
+#                     semantic-coverage-baseline.txt instead (it has no counterfactual verdict to be
+#                     IMPOSSIBLE about, so it can never enter this ledger without an orphaned-proof
+#                     failure in CoverageGapRatchetTests). conformance/README.md's exception list draws
+#                     on both, and ExceptionListTests.cs pins it against both.
 #   not-in-signature  The surface's data is carried by the model (loaded, copied, round-tripped) but
 #                     never reaches a control-flow decision or the parse-comparison signature, so no word
 #                     could ever discriminate it. Recomputed two ways: SignatureFormat.BuildSignature's

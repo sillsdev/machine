@@ -8,22 +8,42 @@ using System.Xml.Linq;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 
-/// <summary>The states a grammar-observable surface may end in; only the first two are evidence.</summary>
+/// <summary>The states a grammar-observable surface may end in; only the first three are evidence.</summary>
 public enum CounterfactualVerdict
 {
     /// <summary>Neutralizing the surface changed the result. The delta is the evidence.</summary>
     Evidenced,
 
-    /// <summary>Neutralizing the surface stopped the grammar loading at all. Equally conclusive.</summary>
-    RequiredToLoad,
+    /// <summary>
+    /// Neutralizing the surface made <c>XmlLanguageLoader</c>'s own code throw -- an IDREF lookup, a
+    /// feature/coercion failure, or similar -- after the document already passed generic XML/DTD
+    /// validation. This is a genuine engine-semantic witness: the failure could only happen because
+    /// HermitCrab's loader actually consulted the surface. Strictly weaker than <see cref="Evidenced"/>
+    /// (no word ever parses to show a delta) but a real parse-time observation, unlike
+    /// <see cref="RequiredByDtd"/>.
+    /// </summary>
+    RequiredByLoader,
 
     /// <summary>
     /// The surface only changed a result when jointly activated with an independent referencing
     /// declaration; flipping either alone did not. Strictly weaker than <see cref="Evidenced"/> and
-    /// <see cref="RequiredToLoad"/> -- it pins the delta on the PAIR, and the partner's own necessity
-    /// check (not just the target's) is what the pair's three-run record has to show.
+    /// <see cref="RequiredByLoader"/> -- it pins the delta on the PAIR, and the partner's own necessity
+    /// check (not just the target's) is what the pair's three-run record has to show. Stronger than
+    /// <see cref="RequiredByDtd"/>: it still comes from a real three-run parse, not a document that
+    /// never reached the engine at all.
     /// </summary>
     EvidencedJointly,
+
+    /// <summary>
+    /// Neutralizing the surface removed something the DTD's own content model requires -- an element
+    /// whose parent's declared sequence no longer validates, or (in the limit) the document's root, so
+    /// the document fails <c>XmlReader</c>'s generic DTD validation before <c>XmlLanguageLoader</c> runs
+    /// a single line. This re-derives what Level 1's static DTD enumeration already knows and is
+    /// <b>not</b> equally conclusive with <see cref="Evidenced"/>: no HermitCrab-specific code, and no
+    /// word, was ever reached. A Rust engine that loads every such grammar and then silently ignores the
+    /// construct at parse time is indistinguishable from a correct one on this verdict alone.
+    /// </summary>
+    RequiredByDtd,
 
     /// <summary>The mutant did not finish in time. A timing race is not a semantic delta.</summary>
     Timeout,
@@ -346,10 +366,19 @@ public static class CounterfactualGate
     }
 
     /// <summary>
+    /// An enum rewrite always targets an attribute value the DTD already permits (a declared sibling),
+    /// so it can never itself fail generic DTD validation -- a load failure reached this way is always
+    /// <see cref="CounterfactualVerdict.RequiredByLoader"/>, never <see
+    /// cref="CounterfactualVerdict.RequiredByDtd"/>.
+    /// </summary>
+    private static bool IsLoadFailureFromEnumRewrite(CounterfactualVerdict verdict) =>
+        verdict == CounterfactualVerdict.RequiredByLoader;
+
+    /// <summary>
     /// Folds one enum-sibling mutation result into the best found so far. <see
     /// cref="CounterfactualVerdict.Evidenced"/> (a word-level counter-example) always wins and stops
-    /// the search; <see cref="CounterfactualVerdict.RequiredToLoad"/> is kept only until something
-    /// stronger turns up. Word and LoadFailure are different strengths of evidence (see
+    /// the search; a load failure (see <see cref="IsLoadFailureFromEnumRewrite"/>) is kept only until
+    /// something stronger turns up. Word and LoadFailure are different strengths of evidence (see
     /// <see cref="CounterexampleKind"/>), so stopping at whichever verdict a caller happens to reach
     /// first in declared sibling order would make the recorded strength depend on the DTD's
     /// alphabetical value ordering rather than on what the grammar actually shows.
@@ -362,7 +391,7 @@ public static class CounterfactualGate
         ArgumentNullException.ThrowIfNull(candidate);
         if (candidate.Verdict == CounterfactualVerdict.Evidenced)
             return (candidate, EnumSiblingSearchAction.Stop);
-        if (candidate.Verdict == CounterfactualVerdict.RequiredToLoad && bestSoFar is null)
+        if (IsLoadFailureFromEnumRewrite(candidate.Verdict) && bestSoFar is null)
             return (candidate, EnumSiblingSearchAction.Continue);
         return (bestSoFar, EnumSiblingSearchAction.Continue);
     }
@@ -370,7 +399,7 @@ public static class CounterfactualGate
     /// <summary>
     /// Tries every declared sibling of an enum surface, preferring a word-level
     /// <see cref="CounterfactualVerdict.Evidenced"/> result over a <see
-    /// cref="CounterfactualVerdict.RequiredToLoad"/> one -- see <see cref="ConsiderEnumSiblingResult"/>.
+    /// cref="CounterfactualVerdict.RequiredByLoader"/> one -- see <see cref="ConsiderEnumSiblingResult"/>.
     /// Returns null (never a <see cref="CounterfactualVerdict.Unobservable"/> result) when there are
     /// no siblings to enumerate -- not an enum surface, absent from the document, or with no declared
     /// sibling at all -- so <see cref="Evaluate"/> falls back to <see cref="GrammarMutator.Mutate"/>'s
@@ -436,7 +465,7 @@ public static class CounterfactualGate
             return bestSoFar with
             {
                 Delta =
-                    $"sibling \"{bestSibling}\" of {candidates.Count} tried (RequiredToLoad; no sibling produced "
+                    $"sibling \"{bestSibling}\" of {candidates.Count} tried ({bestSoFar.Verdict}; no sibling produced "
                     + $"word-level evidence): {bestSoFar.Delta}",
             };
         }
@@ -545,7 +574,7 @@ public static class CounterfactualGate
 
         // Condition 1: the target alone must already be insufficient, or this is ordinary
         // single-surface evidence and reporting it as merely "joint" would UNDERSTATE it.
-        if (resultA.Verdict is CounterfactualVerdict.Evidenced or CounterfactualVerdict.RequiredToLoad)
+        if (resultA.Verdict is CounterfactualVerdict.Evidenced or CounterfactualVerdict.RequiredByLoader)
             return resultA;
         if (resultA.Verdict is not CounterfactualVerdict.Unobservable)
         {
@@ -562,7 +591,7 @@ public static class CounterfactualGate
 
         // Condition 3: the joint mutation must actually change something -- otherwise the pair proves
         // nothing either, honestly reported as still-unobservable rather than forced to a verdict.
-        if (resultJoint.Verdict is not (CounterfactualVerdict.Evidenced or CounterfactualVerdict.RequiredToLoad))
+        if (resultJoint.Verdict is not (CounterfactualVerdict.Evidenced or CounterfactualVerdict.RequiredByLoader))
         {
             return new CounterfactualResult(
                 surfaceId,
@@ -589,8 +618,8 @@ public static class CounterfactualGate
         }
 
         // Carries resultJoint's ExampleWord/ExampleOutcome/CounterexampleKind/CounterexampleOutcome
-        // forward rather than dropping them: resultJoint is already Evidenced or RequiredToLoad at this
-        // point, so RunMutation already populated a real counter-example, and EvidencedJointly is a
+        // forward rather than dropping them: resultJoint is already Evidenced or RequiredByLoader at
+        // this point, so RunMutation already populated a real counter-example, and EvidencedJointly is a
         // strength label on that same counter-example, not a different, weaker one that has none.
         return resultJoint with
         {
@@ -624,8 +653,9 @@ public static class CounterfactualGate
             IReadOnlyList<string> mutated;
             try
             {
-                // Neutralizing the root element leaves a document that will not even serialize, which is
-                // the strongest form of load-bearing there is.
+                // Neutralizing the root element leaves a document that will not even serialize -- the
+                // most extreme case of RequiredByDtd there is, since it fails before DTD validation
+                // itself gets a document to validate.
                 mutation.Mutated.Save(mutatedPath);
                 mutated = OutcomesWithTimeout(mutatedPath, words, timeout, onWordTimed);
             }
@@ -646,7 +676,7 @@ public static class CounterfactualGate
                 return new CounterfactualResult(
                     surfaceId,
                     fixture.Id,
-                    CounterfactualVerdict.RequiredToLoad,
+                    LoadFailureVerdict(mutation.Kind),
                     mutation.Detail,
                     loadFailure,
                     ExampleWord: words.Length != 0 ? words[0] : null,
@@ -696,6 +726,22 @@ public static class CounterfactualGate
             }
         }
     }
+
+    /// <summary>
+    /// Classifies a load failure by the neutralization <paramref name="mutationKind"/> that produced it,
+    /// mechanically rather than by inspecting the exception -- <see
+    /// cref="GrammarMutator.DeletedElements"/> and <see cref="GrammarMutator.EmptiedChildren"/> only ever
+    /// remove or hollow out an element (a <c>dtd:element/*</c> surface), which can fail only by tripping
+    /// generic DTD content-model validation before <c>XmlLanguageLoader</c> runs; every other kind
+    /// (<see cref="GrammarMutator.RewroteAttribute"/>, <see cref="GrammarMutator.RemovedAttribute"/>,
+    /// <see cref="GrammarMutator.ActivatedPartnerAlone"/>, <see cref="GrammarMutator.ActivatedJointly"/>)
+    /// only ever touches a <c>dtd:enum/*</c> attribute already legal under the DTD, so a failure there
+    /// can only come from HermitCrab's own loader.
+    /// </summary>
+    private static CounterfactualVerdict LoadFailureVerdict(string mutationKind) =>
+        mutationKind is GrammarMutator.DeletedElements or GrammarMutator.EmptiedChildren
+            ? CounterfactualVerdict.RequiredByDtd
+            : CounterfactualVerdict.RequiredByLoader;
 
     private static string Summarize(string message)
     {

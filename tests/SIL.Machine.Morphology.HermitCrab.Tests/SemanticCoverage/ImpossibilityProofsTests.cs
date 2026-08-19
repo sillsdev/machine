@@ -29,7 +29,8 @@ public sealed class ImpossibilityProofsTests
         var verdicts = new[]
         {
             Result("a", CounterfactualVerdict.Evidenced),
-            Result("b", CounterfactualVerdict.RequiredToLoad),
+            Result("b", CounterfactualVerdict.RequiredByDtd),
+            Result("e", CounterfactualVerdict.RequiredByLoader),
             Result("c", CounterfactualVerdict.Unobservable),
             Result("d", CounterfactualVerdict.Timeout),
         };
@@ -42,7 +43,8 @@ public sealed class ImpossibilityProofsTests
         Assert.That(
             unaccounted.Select(item => item.SurfaceId),
             Is.EqualTo(new[] { "d" }),
-            "a timeout is neither evidence nor a proof, so it must not pass unclaimed"
+            "a timeout is neither evidence nor a proof, so it must not pass unclaimed -- "
+                + "and neither required-to-load verdict (b, e) may appear here either"
         );
     }
 

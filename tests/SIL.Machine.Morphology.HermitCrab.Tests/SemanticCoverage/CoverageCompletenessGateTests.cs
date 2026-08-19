@@ -127,7 +127,7 @@ public sealed class CoverageCompletenessGateTests
     [Test]
     public void CountsAreReportedPerCounterexampleKindNeverBlended()
     {
-        Evidence loadFailure = new("b", "fx", "w", "ok", CounterexampleKind.LoadFailure, "threw", "removed root", CounterfactualVerdict.RequiredToLoad);
+        Evidence loadFailure = new("b", "fx", "w", "ok", CounterexampleKind.LoadFailure, "threw", "removed root", CounterfactualVerdict.RequiredByDtd);
 
         CompletenessReport report = CoverageCompletenessGate.Evaluate(
             new[] { Item("a"), Item("b") },
@@ -197,7 +197,8 @@ public sealed class CoverageCompletenessGateTests
     [TestCase(CounterfactualVerdict.Timeout, CounterexampleKind.Word)]
     [TestCase(CounterfactualVerdict.Unobservable, CounterexampleKind.Word)]
     [TestCase(CounterfactualVerdict.Evidenced, CounterexampleKind.LoadFailure)]
-    [TestCase(CounterfactualVerdict.RequiredToLoad, CounterexampleKind.Word)]
+    [TestCase(CounterfactualVerdict.RequiredByDtd, CounterexampleKind.Word)]
+    [TestCase(CounterfactualVerdict.RequiredByLoader, CounterexampleKind.Word)]
     public void AContradictoryVerdictAndCounterexampleKindDoesNotCountAsEvidence(
         CounterfactualVerdict verdict,
         CounterexampleKind counterexampleKind
@@ -245,6 +246,35 @@ public sealed class CoverageCompletenessGateTests
             "FormatException: mutant rejected",
             "joint mutation",
             CounterfactualVerdict.EvidencedJointly
+        );
+
+        CompletenessReport report = CoverageCompletenessGate.Evaluate(
+            new[] { Item("a") },
+            new[] { evidence },
+            Array.Empty<Proof>()
+        );
+
+        Assert.That(report.IsComplete, Is.True);
+        Assert.That(report.Items.Single().Resolution, Is.EqualTo(CoverageResolution.Evidenced));
+        Assert.That(report.EvidencedCountsByCounterexampleKind[CounterexampleKind.LoadFailure], Is.EqualTo(1));
+    }
+
+    // Both required-to-load verdicts still count as completeness evidence: RequiredByDtd is a weaker
+    // witness than RequiredByLoader (no HermitCrab-specific code was ever reached), but it is still a
+    // real, structural load-failure counter-example, not the absence of one.
+    [TestCase(CounterfactualVerdict.RequiredByDtd)]
+    [TestCase(CounterfactualVerdict.RequiredByLoader)]
+    public void ALoadFailureCounterexampleCountsAsEvidenceForEitherRequiredToLoadVerdict(CounterfactualVerdict verdict)
+    {
+        Evidence evidence = new(
+            "a",
+            "fx",
+            "w",
+            "before",
+            CounterexampleKind.LoadFailure,
+            "InvalidOperationException: mutant rejected",
+            "removed 1 element",
+            verdict
         );
 
         CompletenessReport report = CoverageCompletenessGate.Evaluate(

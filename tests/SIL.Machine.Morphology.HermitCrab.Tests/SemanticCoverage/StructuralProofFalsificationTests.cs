@@ -179,8 +179,8 @@ public sealed class StructuralProofFalsificationTests
                 }
                 catch (Exception ex)
                 {
-                    // A load failure IS a counterfactual delta (the strongest kind) and must count as
-                    // evidenced, exactly as CounterfactualVerdict.RequiredToLoad does.
+                    // A load failure IS a counterfactual delta and must count as evidenced here, exactly
+                    // as CounterfactualVerdict.RequiredByDtd/RequiredByLoader do for a Surface item.
                     TestContext.Out.WriteLine($"  *** LOAD FAILURE *** {item.Id}: {ex.GetType().Name}: {ex.Message}");
                     outcomes.Add(
                         new ItemOutcome(item, certification, proofReason, true, "<load-failure>", null, $"{ex.GetType().Name}: {ex.Message}")

@@ -65,7 +65,28 @@ public sealed class CoverageGapRatchetTests
     // suffixing-extension-slot-ordering pairs that were blocked only by their own or a sibling rule's
     // trivial posVn -> posVn output; cross-side, unrestricted, and CompoundingRule bridges still fail
     // closed.
-    private const int PinnedGapCount = 21;
+    //
+    // Raised 21 -> 23 (Surface still 3; Ordering 18 -> 20): f8199d69 ("Take the four fixtures
+    // conformance-framework added, without its harness") added edge-cases/{free-fluctuating-
+    // allomorph-pair, mpr-group-overwrite-without-realizational, process-morphology-in-place-mutation,
+    // stem-name-restricted-root-allomorph}. Three of the four contribute zero Ordering gaps -- every
+    // adjacent pair they declare is already evidenced or proven. The fourth,
+    // mpr-group-overwrite-without-realizational, contributes exactly two:
+    //   ordering:edge-cases/mpr-group-overwrite-without-realizational/morphologicalRules/mrThemeA~mrThemeB
+    //   ordering:edge-cases/mpr-group-overwrite-without-realizational/morphologicalRules/mrThemeB~mrEndC
+    // Both are genuinely order-sensitive (that is this fixture's entire point: mrThemeB's Overwrite
+    // MPR-group semantics drop mprA, so mrEndC's requiredMPRFeatures="mprA" gate only passes before
+    // mrThemeB runs -- see the fixture's own wudofq row, expect_fail: true). None of the seven
+    // recomputed Ordering proof kinds model MPR-feature accumulation at all (pos-disjoint comes
+    // closest but correctly reports Overlaps, not Disjoint, since all three rules share
+    // requiredPartsOfSpeech="posN" -- POS alone cannot show these are independent, and they are not).
+    // So neither pair can ever be closed by a *proof*; only real evidence from
+    // --write-coverage-evidence (a checked-in row in conformance/semantic-coverage-evidence.tsv) can
+    // resolve them, and generating that evidence is out of scope here -- semantic-coverage-evidence.tsv
+    // is a shared, concurrently-owned artifact this fix does not touch. Recorded here by name, not
+    // merely by count, so lowering this pin later means finding these two exact ids evidenced, not
+    // just watching the total drop.
+    private const int PinnedGapCount = 23;
 
     [Test]
     public void CorpusWideGapCountNeverIncreasesFromThePinnedValue()

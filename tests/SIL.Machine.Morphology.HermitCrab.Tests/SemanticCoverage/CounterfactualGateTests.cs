@@ -124,11 +124,13 @@ public sealed class CounterfactualGateTests
     }
 
     [Test]
-    public void DeletingTheRootLanguageElementIsRequiredToLoad()
+    public void DeletingTheRootLanguageElementIsRequiredByDtd()
     {
         Fixture fixture = ProbeFixture();
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
 
+        // Language is an element surface: removing it fails generic DTD content-model validation
+        // (HermitCrabInput's declared sequence) before XmlLanguageLoader ever runs.
         CounterfactualResult result = CounterfactualGate.Evaluate(
             fixture,
             "dtd:element/Language",
@@ -137,7 +139,7 @@ public sealed class CounterfactualGateTests
             _scratchDirectory
         );
 
-        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredToLoad));
+        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredByDtd));
     }
 
     [Test]
@@ -303,7 +305,7 @@ public sealed class CounterfactualGateTests
         Assert.That(joint.Delta, Does.Contain("partner alone"));
         Assert.That(
             joint.Delta,
-            Does.Contain("RequiredToLoad"),
+            Does.Contain("RequiredByLoader"),
             "the partner alone must throw, not silently drop the reference"
         );
         Assert.That(joint.Delta, Does.Contain("'b'"), "the joint delta must name the word that newly parses");
@@ -477,17 +479,17 @@ public sealed class CounterfactualGateTests
         Assert.That(result.Delta, Does.Contain("RED+KIMB"));
     }
 
-    // The enum-sibling search must not stop at the first RequiredToLoad it finds: Word and
+    // The enum-sibling search must not stop at the first RequiredByLoader it finds: Word and
     // LoadFailure are different strengths of evidence (CounterexampleKind), and a later sibling's
     // word-level contrast is stronger. Stopping early would make the recorded strength depend on the
     // DTD's alphabetical value ordering rather than on what the grammar shows.
     [Test]
-    public void FirstSiblingRequiredToLoadThenLaterSiblingEvidencedResultsInEvidencedWithWordCounterexample()
+    public void FirstSiblingRequiredByLoaderThenLaterSiblingEvidencedResultsInEvidencedWithWordCounterexample()
     {
         var requiredToLoad = new CounterfactualResult(
             "s",
             "fx",
-            CounterfactualVerdict.RequiredToLoad,
+            CounterfactualVerdict.RequiredByLoader,
             "rewrote to sibling A",
             "InvalidOperationException: boom",
             CounterexampleKind: CounterexampleKind.LoadFailure,
@@ -547,7 +549,7 @@ public sealed class CounterfactualGateTests
         var first = new CounterfactualResult(
             "s",
             "fx",
-            CounterfactualVerdict.RequiredToLoad,
+            CounterfactualVerdict.RequiredByLoader,
             "m1",
             "d1",
             CounterexampleKind: CounterexampleKind.LoadFailure
@@ -555,7 +557,7 @@ public sealed class CounterfactualGateTests
         var second = new CounterfactualResult(
             "s",
             "fx",
-            CounterfactualVerdict.RequiredToLoad,
+            CounterfactualVerdict.RequiredByLoader,
             "m2",
             "d2",
             CounterexampleKind: CounterexampleKind.LoadFailure

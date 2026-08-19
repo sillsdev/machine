@@ -299,7 +299,9 @@ Mirrors the existing `SegmentDefinition`/`zal` control in the same fixture exact
 
 ### BoundaryDefinition/isActive/yes
 
-**EVIDENCED, via `RequiredToLoad`.** Added `mrBoundaryPfx`, a new `MorphologicalRule` whose own output
+**EVIDENCED, via `RequiredToLoad`** (renamed `RequiredByLoader` when the verdict was later split into
+`RequiredByDtd`/`RequiredByLoader`; this is the loader-throws kind, not the DTD-validation kind — see
+`docs/coverage-levels.md`). Added `mrBoundaryPfx`, a new `MorphologicalRule` whose own output
 inserts the *live* boundary character itself (`InsertSegments` of `mo`, then a separate
 `InsertSegments` of `+`, then the copied stem — boundaries need their own `InsertSegments` element;
 concatenating `mo+` into one `PhoneticShape` string fails to tokenize even when both characters are
@@ -309,7 +311,7 @@ individually declared). Reachable through a new optional slot on `liveTemplate`.
 - After (mutated to `isActive="no"`): the grammar fails to **load** entirely — `Load Error: The
   shape, +, contains an undefined phoneme at 0` — because `mrBoundaryPfx`'s own `PhoneticShape` is
   parsed against the character inventory at rule-load time, not lazily at parse time. Per
-  `CounterfactualVerdict.RequiredToLoad`'s own docstring, this is "equally conclusive" evidence, the
+  `CounterfactualVerdict.RequiredByLoader`'s own docstring, this is "equally conclusive" evidence, the
   same category the pre-existing `CharacterDefinitionTable/isActive/yes` (`tableLive`) surface already
   uses in this fixture.
 

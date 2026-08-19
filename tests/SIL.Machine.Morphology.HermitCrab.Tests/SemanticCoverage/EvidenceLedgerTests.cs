@@ -47,7 +47,7 @@ public sealed class EvidenceLedgerTests
                 CounterexampleKind.LoadFailure,
                 "InvalidOperationException: the mutant would not load",
                 "removed 1 <AffixTemplate> element(s)",
-                CounterfactualVerdict.RequiredToLoad
+                CounterfactualVerdict.RequiredByDtd
             ),
             new EvidenceLedger.Row(
                 "ordering:edge-cases/feature-system-breadth/phonologicalRules/prAlpha~prHighTrigger",

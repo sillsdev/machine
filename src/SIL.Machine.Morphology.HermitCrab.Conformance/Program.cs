@@ -32,6 +32,8 @@ internal class Program
         bool writeCoverageEvidence = false;
         bool ruleInteractionPairs = false;
         bool writeRuleInteractionPairs = false;
+        bool interfaceInventory = false;
+        bool writeInterfaceInventory = false;
         string repositoryRoot = null;
 
         for (int i = 0; i < args.Length; i++)
@@ -94,6 +96,12 @@ internal class Program
                 case "--write-rule-interaction-pairs":
                     writeRuleInteractionPairs = true;
                     break;
+                case "--interface-inventory":
+                    interfaceInventory = true;
+                    break;
+                case "--write-interface-inventory":
+                    writeInterfaceInventory = true;
+                    break;
                 case "--propose-semantic-catalog":
                     proposeSemanticCatalog = true;
                     break;
@@ -154,6 +162,8 @@ internal class Program
             || writeCoverageEvidence
             || ruleInteractionPairs
             || writeRuleInteractionPairs
+            || interfaceInventory
+            || writeInterfaceInventory
         )
         {
             repositoryRoot ??= FindRepositoryRoot(Directory.GetCurrentDirectory());
@@ -173,6 +183,9 @@ internal class Program
 
                 if (ruleInteractionPairs || writeRuleInteractionPairs)
                     return RunRuleInteractionPairs(repositoryRoot, writeRuleInteractionPairs);
+
+                if (interfaceInventory || writeInterfaceInventory)
+                    return RunInterfaceInventory(repositoryRoot, writeInterfaceInventory);
 
                 return counterfactual || writeCounterfactual
                     ? RunCounterfactual(repositoryRoot, writeCounterfactual)
@@ -527,6 +540,53 @@ internal class Program
         if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
         {
             Console.Error.WriteLine($"{relative} is stale; regenerate with --write-rule-interaction-pairs");
+            return 1;
+        }
+
+        Console.WriteLine($"{relative} is current ({rows.Count} row(s))");
+        return 0;
+    }
+
+    /// <summary>Recomputes the DTD-derived interface inventory against the real corpus and checks it against the checked-in ledger, or rewrites it.</summary>
+    private static int RunInterfaceInventory(string repositoryRoot, bool writeLedger)
+    {
+        IReadOnlyList<SemanticCoverage.InterfaceInventoryLedger.Row> rows = SemanticCoverage.InterfaceInventoryLedger.Compute(
+            repositoryRoot
+        );
+        IReadOnlyList<SemanticCoverage.InterfaceJunction> junctions = SemanticCoverage.InterfaceInventoryLedger.ComputeJunctions(
+            rows
+        );
+        int exercisedCount = rows.Count(r => r.Exercised);
+        int typedEdgeCount = rows.Sum(r => r.ObservedTargetTypes.Count);
+
+        Console.WriteLine($"declared interfaces: {rows.Count}");
+        Console.WriteLine($"  exercised   {exercisedCount}");
+        Console.WriteLine($"  unexercised {rows.Count - exercisedCount}");
+        Console.WriteLine($"typed edges: {typedEdgeCount}");
+        Console.WriteLine($"junctions: {junctions.Count}");
+        foreach (SemanticCoverage.InterfaceJunction junction in junctions)
+            Console.WriteLine($"  {junction.TargetType} ({junction.WriterCount} writer(s), {junction.ReaderCount} reader(s))");
+
+        string relative = SemanticCoverage.InterfaceInventoryLedger.RelativePath;
+        string path = Path.Combine(repositoryRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        string fresh = SemanticCoverage.InterfaceInventoryLedger.ToText(rows);
+
+        if (writeLedger)
+        {
+            SemanticCoverage.InterfaceInventoryLedger.Write(repositoryRoot, rows);
+            Console.WriteLine($"wrote {relative} ({rows.Count} row(s))");
+            return 0;
+        }
+
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine($"{relative} is missing; regenerate with --write-interface-inventory");
+            return 1;
+        }
+
+        if (!string.Equals(File.ReadAllText(path).ReplaceLineEndings("\n"), fresh.ReplaceLineEndings("\n"), StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine($"{relative} is stale; regenerate with --write-interface-inventory");
             return 1;
         }
 
@@ -996,6 +1056,11 @@ internal class Program
                                                 rule-interaction pairs and check them against
                                                 conformance/rule-interaction-pairs.tsv; exits 1 if stale.
               --write-rule-interaction-pairs    Rewrite conformance/rule-interaction-pairs.tsv.
+              --interface-inventory             Recompute the DTD-declared IDREF/IDREFS interfaces,
+                                                resolved against the real corpus, and check them
+                                                against conformance/interface-inventory.tsv; exits 1
+                                                if stale.
+              --write-interface-inventory       Rewrite conformance/interface-inventory.tsv.
               --repository-root <path>          Repository root for the flags above.
                                                 (default: <fixtures>/constructs.txt).
               --propose                        Self-check only: on a signature mismatch, print

@@ -4,6 +4,27 @@ Status: design and initial source-derived inventory<br>
 Catalog profile: `sil.machine.hc-feature/v1`<br>
 Combination profile: `sil.machine.hc-combination/v1`
 
+> **Superseded, 2026-08-14.** `docs/coverage-strategy.md` is now the governing statement for this
+> suite's coverage claim, and it replaces this catalog's central design: the "Combination profile"
+> below — canonical hashed IDs over occurrence/schedule/interaction graphs, with full-coverage
+> obligations for "every compatible rule-category pair and connected triple, including repetition"
+> (§1) — was never implemented (`docs/superpowers/plans/2026-08-11-generated-hc-semantic-coverage-plan.md`'s
+> matching `ObligationGenerator`/`CanonicalIdentity` design is itself now marked superseded there, for
+> the same reason: an MPR `overwrite`-group defect needs four co-occurring, individually-`Evidenced`
+> ingredients, so a pairwise or triple-wise enumerator reports full coverage over exactly the
+> ingredients that produce the defect and still misses it — arity is not the axis, and enumerating to
+> arity 4 over 264 observable surfaces is ~198 million 4-tuples). `docs/coverage-strategy.md` replaces
+> it with two DTD/engine-derived layers sized very differently: integration/edge, 60 declared
+> `IDREF`/`IDREFS` interfaces (`conformance/interface-inventory.tsv`, landed), and integration/chain,
+> roughly 15 writer x reader chains through the two junctions where a type is both written and read
+> (in progress). **Section 1's "unbounded XML feature-combination denominator" framing and the
+> pair/triple/topology obligations in the rest of this document should not be read as current design
+> or as a remaining-work list.** The per-feature inventory in §4 (before combinations) is kept as a
+> source-derived enumeration exercise that informed later work; it was never machine-generated or
+> gated, and the shipped unit-layer denominator (264 grammar-observable surfaces, 113 evidenced) comes
+> from `DtdInventoryReader` and `conformance/semantic-coverage-counterfactuals.tsv` instead, not from
+> this catalog's hand-authored feature IDs.
+
 ## 1. Purpose and claim boundary
 
 Machine owns the semantic denominator for HermitCrab XML conformance. The denominator is the set of

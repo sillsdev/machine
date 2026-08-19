@@ -282,14 +282,20 @@ public static class CounterfactualLedger
         writer.WriteLine("# observed delta, and the structural counter-example fields CoverageEvidencePipeline");
         writer.WriteLine("# joins into an Evidence record (never re-derived from delta's free text). Absent");
         writer.WriteLine("# fields are \"-\".");
-        writer.WriteLine("#   Evidenced      neutralizing it changed a result");
-        writer.WriteLine("#   RequiredToLoad the mutant would not load at all");
+        writer.WriteLine("#   Evidenced        neutralizing it changed a result");
+        writer.WriteLine("#   RequiredByLoader the mutant would not load: HermitCrab's own loader threw (an");
+        writer.WriteLine("#                    IDREF/lookup/coercion failure) after passing DTD validation --");
+        writer.WriteLine("#                    a real engine-semantic witness, though not a word-level delta");
         writer.WriteLine("#   EvidencedJointly only a joint mutation with an independent partner changed a result;");
         writer.WriteLine(
-            "#                  weaker than Evidenced/RequiredToLoad, see CounterfactualGate.EvaluateJointly"
+            "#                    weaker than Evidenced/RequiredByLoader, see CounterfactualGate.EvaluateJointly"
         );
-        writer.WriteLine("#   Timeout        the mutant did not finish in time, which is not evidence");
-        writer.WriteLine("#   Unobservable   neutralizing it changed nothing, which is not evidence");
+        writer.WriteLine("#   RequiredByDtd    the mutant would not load: it failed generic DTD content-model");
+        writer.WriteLine("#                    validation before HermitCrab's loader ran at all -- this only");
+        writer.WriteLine("#                    re-derives Level 1's static DTD enumeration and is NOT equally");
+        writer.WriteLine("#                    conclusive with Evidenced; there is no parse-time witness");
+        writer.WriteLine("#   Timeout          the mutant did not finish in time, which is not evidence");
+        writer.WriteLine("#   Unobservable     neutralizing it changed nothing, which is not evidence");
         writer.WriteLine(
             "surface\tverdict\tfixture\tmutation\tdelta\texample_word\texample_outcome\tcounterexample_kind\tcounterexample_outcome"
         );

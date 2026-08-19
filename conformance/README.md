@@ -5,16 +5,41 @@ parser needs to get right, usable independently of this repo and of any one engi
 
 **The goal: any grammar expressible in the HermitCrab XML, parsed correctly — with a named
 asterisk.** That is the aspiration this suite is built to reach and to measure progress toward. The
-asterisk is short, exact, and machine-proven rather than hand-waved. Two surfaces are expressible in
-the DTD and consulted by **no** engine code path, proven `no-consumer` in
-`conformance/semantic-coverage-proofs.tsv`:
+asterisk is short, exact, and machine-proven rather than hand-waved: every surface named below is
+proven to have **no** engine consumer — the engine contains no reference to it, so no grammar can make
+it influence a parse. That single fact is recorded in two different ledgers depending on how a surface
+fails to earn a counterfactual verdict: `no-consumer` in `conformance/semantic-coverage-proofs.tsv` for
+a surface a fixture *does* declare but mutating it changes nothing, and `dead-schema` in
+`conformance/semantic-coverage-baseline.txt` for a surface no fixture ever attempts to declare because
+the engine never reads the owning element at all (recomputed by scanning
+`src/SIL.Machine.Morphology.HermitCrab` for the element name, never trusted from the ledger). Both are
+the same underlying claim — zero engine references — so both feed this one list.
 
-- `Stratum/cyclicity="cyclic"`
-- `Stratum/phonologicalRuleOrder="simultaneous"`
+<!-- exception-surfaces:start -->
+Eleven surfaces across three feature areas are expressible in the DTD and consulted by **no** engine
+code path:
 
-A grammar may declare either; the engine ignores both. Those are unimplemented formalism features,
-not coverage gaps, and they are the entire current exception list. Keeping it a list — rather than
-retreating from the claim — is what makes progress toward the goal measurable.
+- **Cyclic strata and simultaneous rule order** (`no-consumer`): `Stratum/cyclicity="cyclic"` and
+  `Stratum/phonologicalRuleOrder="simultaneous"`. `SynthesisStratumRule.Apply` and
+  `AnalysisStratumRule.Apply` build the rule cascade unconditionally, with no branch point that could
+  select either mode.
+- **Syntactic subcategorization** (`dead-schema`, six surfaces): the elements `SyntacticRule`,
+  `SyntacticRules`, `OutputSubcategorizationOverride`, `OutputSubcategorizationOverrides`, plus the
+  `OutputSubcategorizationOverride/isActive` enum (`yes` and `no`). The DTD wires these through the
+  `requiredSubcategorizedRules`, `subcategorizations`, `outputSubcategorization`,
+  `headSubcategorizedRules`, and `nonHeadSubcategorizedRules` IDREFS attributes on
+  `MorphologicalInput`, `MorphologicalRule`, and `CompoundingRule` — the entire feature is
+  unimplemented end to end, not just one element in isolation.
+- **Cross-word phonological context** (`dead-schema`, three surfaces): `PreviousWord`, `NextWord`, and
+  `Null`, the legal children of every `PhonologicalSubrule` describing an adjacent word's shape.
+<!-- exception-surfaces:end -->
+
+A grammar may declare any of these; the engine ignores all eleven. Those are unimplemented formalism
+features, not coverage gaps, and together they are the entire current exception list. Keeping it a
+list — rather than retreating from the claim — is what makes progress toward the goal measurable.
+`tests/SIL.Machine.Morphology.HermitCrab.Tests/SemanticCoverage/ExceptionListTests.cs` pins this list
+against both ledgers so a newly discovered `no-consumer` or `dead-schema` surface cannot silently drop
+out of it.
 
 **What passing means today.** An engine reproduces the reference implementation's observable parse
 behaviour — signature, status, pinned crash — on every fixture its declared capability profile

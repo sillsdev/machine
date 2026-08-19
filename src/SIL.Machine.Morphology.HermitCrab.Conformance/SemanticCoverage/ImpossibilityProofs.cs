@@ -94,7 +94,8 @@ public static class ImpossibilityProofs
                 verdict.Verdict
                     is not (
                         CounterfactualVerdict.Evidenced
-                        or CounterfactualVerdict.RequiredToLoad
+                        or CounterfactualVerdict.RequiredByDtd
+                        or CounterfactualVerdict.RequiredByLoader
                         or CounterfactualVerdict.EvidencedJointly
                     )
             )
@@ -118,7 +119,8 @@ public static class ImpossibilityProofs
             .Where(verdict =>
                 verdict.Verdict
                     is CounterfactualVerdict.Evidenced
-                        or CounterfactualVerdict.RequiredToLoad
+                        or CounterfactualVerdict.RequiredByDtd
+                        or CounterfactualVerdict.RequiredByLoader
                         or CounterfactualVerdict.EvidencedJointly
             )
             .Select(verdict => verdict.SurfaceId)

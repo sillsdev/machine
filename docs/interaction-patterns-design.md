@@ -1,5 +1,19 @@
 # Interaction patterns: schema and stress test
 
+**Where this landed, 2026-08-14.** This document's own conclusion — the general hyperedge-pattern
+schema below is "not adequate as a general level-3 interaction-pattern catalog," clean only for
+multi-declaration correctness hazards decidable from the grammar plus a trace witness — is exactly
+what `docs/coverage-strategy.md` (now the governing statement for this suite's coverage claim) acted
+on. Rather than building the general matcher this document found could not generalize (arbitrary
+roles, joins, reflexive self-joins, non-grammar role types, cost-shaped discriminators), the shipped
+design deliberately narrows to the one shape this document's own stress test showed *does*
+generalize cleanly: a structural writer/reader junction on a type that is both written and read
+(exactly the MPR worked example below, generalized only as far as "which other types share that
+write-then-read shape" — roughly 15 such chains through 2 junctions, `conformance/
+interaction-chains.tsv`, in progress). The eleven-hazard stress test, the schema's five open
+problems, and the worked MPR example below are kept in full: they are the reasoning that justified
+scoping down, not a design that shipped as drafted.
+
 `docs/coverage-levels.md` names level 3 — interactions between surfaces — and states why pairs
 cannot represent it: the MPR-overwrite hazard is a conjunction of four ingredients (an
 `overwrite` feature group, an `unordered` stratum, two rules writing that group, a downstream

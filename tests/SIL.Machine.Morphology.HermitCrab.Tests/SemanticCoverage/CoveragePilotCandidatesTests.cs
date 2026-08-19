@@ -112,9 +112,10 @@ public sealed class CoveragePilotCandidatesTests
     }
 
     // Candidate 3: counterexampleKind = LoadFailure, the weaker class that must not blend into the
-    // Word headline.
+    // Word headline. AffixTemplate is an element surface, so this fails generic DTD content-model
+    // validation (RequiredByDtd), not HermitCrab's own loader.
     [Test]
-    public void Candidate3AffixTemplateElementIsRequiredToLoad()
+    public void Candidate3AffixTemplateElementIsRequiredByDtd()
     {
         var item = new CoverageItem(
             "dtd:element/AffixTemplate",
@@ -126,7 +127,7 @@ public sealed class CoveragePilotCandidatesTests
         IReadOnlyList<string> baseline = CounterfactualGate.ComputeBaseline(fixture);
         CounterfactualResult result = CounterfactualGate.Evaluate(fixture, item.Id, Inventory(), baseline, _scratchDirectory);
 
-        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredToLoad));
+        Assert.That(result.Verdict, Is.EqualTo(CounterfactualVerdict.RequiredByDtd));
         Assert.That(result.CounterexampleKind, Is.EqualTo(CounterexampleKind.LoadFailure));
         Assert.That(result.ExampleWord, Is.Not.Null);
         Assert.That(result.ExampleOutcome, Does.StartWith("ok::"), "the item intact must still load and parse");

@@ -223,15 +223,19 @@ public static class CoverageCompletenessGate
     /// <summary>
     /// Returns whether an evidence record has the exact verdict/kind pairing and structural payload
     /// that can resolve an item: a word counter-example from an evidenced verdict, or a load failure
-    /// from the required-to-load or jointly-evidenced verdict. Other pairings, including
-    /// <see cref="CounterexampleKind.None"/>, are not completeness evidence.
+    /// from either required-to-load verdict (<see cref="CounterfactualVerdict.RequiredByDtd"/> or
+    /// <see cref="CounterfactualVerdict.RequiredByLoader"/> -- both are still a genuine, structural
+    /// load-failure counter-example for completeness purposes, even though they differ in strength) or
+    /// the jointly-evidenced verdict. Other pairings, including <see cref="CounterexampleKind.None"/>,
+    /// are not completeness evidence.
     /// </summary>
     private static bool IsCompletenessEvidence(Evidence evidence) =>
         (evidence.Verdict, evidence.CounterexampleKind) is
                 (CounterfactualVerdict.Evidenced, CounterexampleKind.Word)
                 or (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.Word)
                 or (CounterfactualVerdict.EvidencedJointly, CounterexampleKind.LoadFailure)
-                or (CounterfactualVerdict.RequiredToLoad, CounterexampleKind.LoadFailure)
+                or (CounterfactualVerdict.RequiredByDtd, CounterexampleKind.LoadFailure)
+                or (CounterfactualVerdict.RequiredByLoader, CounterexampleKind.LoadFailure)
         && !string.IsNullOrWhiteSpace(evidence.ExampleWord)
         && evidence.ExampleOutcome is not null
         && evidence.CounterexampleOutcome is not null

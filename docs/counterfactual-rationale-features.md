@@ -47,9 +47,11 @@ anything so it doesn't disturb `ak`'s existing phonology.
 
 - Before: grammar loads normally; all 9 original words parse as before.
 - After (both `<ComplexFeature>` elements deleted): `Reference to undeclared ID is 'cfAgr'` — the
-  document no longer validates. `RequiredToLoad`, which the gate accepts as evidence identically to
-  `Evidenced` (`CounterfactualGate.cs`'s `Unaccounted` filters on `Verdict is not (Evidenced or
-  RequiredToLoad)`).
+  document no longer validates. This is `RequiredToLoad` in the terminology current when this note was
+  written; the verdict was later split into `RequiredByDtd`/`RequiredByLoader`
+  (`docs/coverage-levels.md`), and a document that fails generic DTD content-model validation before
+  the loader runs at all — exactly this case — is `RequiredByDtd`. The gate accepts either split
+  verdict as evidence identically to `Evidenced`.
 
 ### ComplexFeature/isActive="no"
 

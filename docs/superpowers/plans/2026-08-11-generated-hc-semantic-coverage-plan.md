@@ -18,6 +18,44 @@ and fails on unmapped, multiply mapped, stale, unproved, crashed, or missing-C# 
 NJsonSchema 10.9.0, System.Text.Json, the existing HermitCrab conformance runner, and the existing
 XML fixtures.
 
+## Status update, 2026-08-14: the combination-ledger design (Tasks 3-5, 7-10) is superseded
+
+`docs/coverage-strategy.md` is now the governing statement for how this suite's coverage claim is
+built, and it replaces this plan's central mechanism where they disagree. Read it first.
+
+**What is superseded, and why.** Tasks 3 and 4 below build a `CoverageObligation` ledger over
+mechanically generated compatible pairs, repeated pairs, and connected triples of catalog features
+(`ObligationGenerator`, `DerivedProfileGenerator`), with Tasks 5, 8, and 9 generating discriminating
+counterfactuals and fixtures against that same ledger, and Task 7's reports/CLI publishing it. This
+whole chain is not merely undone — it is the wrong shape, for a reason this plan's own "Status: what
+was built instead" section below already gestures at (no `CanonicalIdentity`/`ObligationGenerator`
+exists) but did not yet have the counter-example for. `docs/coverage-levels.md`'s "Level 3 is not a
+level, and pairs are not enough" section supplies it: an MPR `overwrite` group evicted by
+unordered-stratum rule order needs four co-occurring ingredients, all four individually `Evidenced`,
+and a pairwise (or even triple-wise) enumerator reports every pair inside that conjunction as covered
+and still misses the defect. Arity is not the axis, and enumerating to arity 4 is not an option either
+(264 observable surfaces give 34,716 pairs, ~3.03 million triples, ~198 million 4-tuples).
+
+In its place, `docs/coverage-strategy.md` defines two mechanical layers above the unit layer that
+Tasks 0-2A here already ship: **integration/edge** — does data cross a declared handoff at all, from
+the DTD's own `IDREF`/`IDREFS` attributes, landed as `conformance/interface-inventory.tsv` (60
+interfaces, 42 exercised, 18 not) — and **integration/chain** — does a written payload survive to its
+reader, at the (structurally few, roughly 15) junctions where a type is both written and read, still
+being built as `conformance/interaction-chains.tsv`. Neither is a pair/triple/schedule ledger over the
+whole catalog; both are denominators sized from the DTD/engine's own structure, which is exactly this
+plan's own stated goal, achieved by a different and much smaller mechanism than Tasks 3-10 specify.
+
+**Task 6 is unaffected** — typed C# oracle outcomes and engine-owned convergence budgets are an
+orthogonal correctness concern (`budget_ms`/`expect_crash` currently granting an easy pass), not a
+coverage-denominator question, and remain open future work independent of this supersession.
+
+**Task bodies below are kept as the record of what was designed and why**, per this project's own
+rule that reasoning about a rejected approach outlives the approach. Do not resume Tasks 3, 4, 5, 7,
+8, 9, or 10 as specified; do not cite this plan's obligation/pair/triple counts (or its "governing
+complete-coverage plan" self-references) as the current coverage claim. For current numbers, read
+`docs/coverage-strategy.md`, `docs/pangloss-handoff.md`, `conformance/interface-inventory.tsv`, and
+`conformance/semantic-coverage-counterfactuals.tsv`.
+
 ---
 
 ## Scope, seams, and completion proof
@@ -360,6 +398,15 @@ a non-terminating mutant is killed rather than abandoned:
 | Timeout | 0 |
 | Unobservable | 41 |
 
+**This was an early sweep, since superseded by a larger fixture set and a finer verdict split; it is
+kept as the historical measurement that motivated the standard, not the current count.** The
+`RequiredToLoad` bucket above was later split into `RequiredByDtd`/`RequiredByLoader` because it
+overstated the evidence it represented (see `docs/coverage-levels.md`), and the grammar-observable
+denominator has since grown from 193 to 264. Current numbers: `docs/pangloss-handoff.md`'s "Current
+numbers" section and `conformance/semantic-coverage-counterfactuals.tsv` (106 `Evidenced` + 7
+`EvidencedJointly` = 113 of 264, plus 65 `RequiredByDtd`, 13 `RequiredByLoader`, 3 `Unobservable`, 70
+still unresolved).
+
 152 of 193 carry full mechanical evidence with a recorded delta. Of the 41 remaining, ONE is provable
 (`VariableFeature/name` is a symmetric alphabet) and 40 are fixture work, in four groups:
 
@@ -438,7 +485,7 @@ What is deliberately absent, and what that costs:
   `@morphologicalRules`, `@activeTemplates`) are IDREFS attributes, so they fall outside the 264
   observable surfaces entirely. No fixture can currently be demanded for ordering.
 
-### Task 3: Single curated catalog and exact-once audit
+### Task 3: Single curated catalog and exact-once audit — SUPERSEDED (see status update above)
 
 **Files:**
 - Create: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/SemanticCatalog.cs`
@@ -553,7 +600,7 @@ red.
 
 Commit: `feat(conformance): fail closed on unmapped HC surfaces`
 
-### Task 4: Canonical identities and obligation generation
+### Task 4: Canonical identities and obligation generation — SUPERSEDED (see status update above)
 
 **Files:**
 - Create: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/CanonicalIdentity.cs`
@@ -682,7 +729,7 @@ Task 9; it is not semantic completion.
 
 Commit: `docs(conformance): record generated HC denominator census`
 
-### Task 5: Fixture evidence and discriminating counterfactuals
+### Task 5: Fixture evidence and discriminating counterfactuals — SUPERSEDED (see status update above)
 
 **Files:**
 - Create: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/FixtureEvidenceReader.cs`
@@ -900,7 +947,7 @@ truth.
 Commits use `fix(hermitcrab): ...`; the final outcome-model commit is
 `feat(conformance): report typed C# oracle outcomes`.
 
-### Task 7: Deterministic reports, CLI, and staleness gate
+### Task 7: Deterministic reports, CLI, and staleness gate — SUPERSEDED (see status update above)
 
 **Files:**
 - Create: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/SemanticCoverageReport.cs`
@@ -957,7 +1004,7 @@ sections stored in the catalog. Add `--semantic-coverage check` to `local_check.
 
 Commit: `feat(conformance): add generated semantic coverage audit`
 
-### Task 8: Grammar recipes and bounded witness discovery
+### Task 8: Grammar recipes and bounded witness discovery — SUPERSEDED (see status update above)
 
 **Files:**
 - Create: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/GrammarRecipe.cs`
@@ -1026,7 +1073,7 @@ internal static class WitnessSearch
 
 Commit: `feat(conformance): generate HC fixture recipes and witnesses`
 
-### Task 9: Populate every obligation and make failures red
+### Task 9: Populate every obligation and make failures red — SUPERSEDED (see status update above)
 
 **Files:**
 - Modify: `conformance/semantic-catalog.yaml`
@@ -1076,7 +1123,14 @@ zero stale outputs, and zero blocked defects.
 
 Commit: `test(conformance): complete generated HC semantic coverage`
 
-### Task 10: Rebase and PanGloss consumption
+### Task 10: Rebase and PanGloss consumption — SUPERSEDED (see status update above)
+
+**Superseded, not merely reordered.** PanGloss consumption happened by a different route than this
+task describes: `docs/superpowers/plans/2026-08-13-hc-semantic-products-implementation-plan.md`
+shipped a manifest-based handoff (`conformance/generated/hc-conformance-manifest.v1.json`) with no
+catalog/obligation ledger involved, and `docs/pangloss-handoff.md` records what was actually handed
+over. The steps below describe rebasing a branch and a ledger that no longer exist as specified; kept
+as the record of the originally planned integration path.
 
 **Files:**
 - Machine: only conflict resolutions required by the other conformance branch
@@ -1107,6 +1161,15 @@ Commit Machine and PanGloss changes separately so either repository can identify
 boundary and revert independently.
 
 ## Final verification checklist
+
+**Superseded as a completion gate for this plan** along with Tasks 3-5 and 7-10: the checklist below
+was written against the obligation-ledger design and cannot be satisfied by it (no `CoverageObligation`
+exists to satisfy items 4, 5, 9, or 10). `docs/coverage-strategy.md`'s own layers — unit surfaces
+(113/264, `conformance/semantic-coverage-counterfactuals.tsv`), integration/edge
+(`conformance/interface-inventory.tsv`), integration/chain (in progress), and the capped hand-crafted
+set — are the current completion criteria. Items 1, 2, 3, 6, 7, and 8 remain meaningful statements
+about the unit layer and are already satisfied there; kept below unedited as the record of the
+original, broader completion bar.
 
 - [ ] Generated DTD counts match the source declaration census and every surface maps exactly once.
 - [ ] Every loader access, model rule kind, enum member, and marked execution branch maps exactly once.

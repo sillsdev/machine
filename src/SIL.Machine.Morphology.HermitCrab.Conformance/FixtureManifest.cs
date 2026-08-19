@@ -1,15 +1,14 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 /// <summary>
-/// Deserialized shape of a fixture's manifest.json (see conformance/README.md and
-/// docs/conformance-framework-plan.md section 4.2). Field names are camelCase in the JSON file;
-/// <see cref="JsonPropertyNameAttribute"/> pins each mapping explicitly rather than relying on a
-/// naming-policy convention, so the on-disk contract stays obvious from this class alone.
+/// In-memory adapter-mode fixture descriptor, built by <see cref="FixtureMaterializer"/> from a
+/// fixture's grammar.xml + words.yaml. <see cref="JsonPropertyNameAttribute"/> is retained on each
+/// field only because <see cref="Oracle"/> is a raw <see cref="JsonElement"/>; nothing in this
+/// codebase deserializes a <c>FixtureManifest</c> from JSON on disk.
 /// </summary>
 public class FixtureManifest
 {
@@ -44,15 +43,6 @@ public class FixtureManifest
 
     [JsonPropertyName("provenance")]
     public string Provenance { get; set; } = "";
-
-    private static readonly JsonSerializerOptions Options = new() { ReadCommentHandling = JsonCommentHandling.Skip };
-
-    public static FixtureManifest Load(string path)
-    {
-        string json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<FixtureManifest>(json, Options)
-            ?? throw new InvalidDataException($"manifest.json at '{path}' deserialized to null");
-    }
 }
 
 /// <summary>
