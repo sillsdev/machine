@@ -15,29 +15,41 @@ the payload is ABSENT and the gated form IS blocked.
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: paired witness: severing writer and reader both flip 'katumi' from failed to successful parse in edge-cases/compounding-breadth (conformance/interface-witness.tsv)
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- Claimed by word **'katumi'** in `edge-cases/compounding-breadth` (a `claimed_cells` entry in `words.yaml`).
 
 ## Exact mutation and before/after parse
 
-No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
+### Author's claim (edge-cases/compounding-breadth / 'katumi')
+
+- Severing: either crJoin's own CompoundingRule.outputPartOfSpeech="posOther" (the writer) or mrTplSuf's own MorphologicalRule.requiredPartsOfSpeech="posN" gate (the reader) -- severing either alone unblocks this word
+- Before: `ok::-`
+- After: `ok::KA+TU+TPLSUF|katumi`
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 4 <CompoundingRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
+- Reader (`MorphologicalRule.requiredPartsOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `edge-cases/compounding-breadth/grammar.xml`
+
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:79` = "posOther"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:104` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:128` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:148` = "posN"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:178` = "posN"
+
 ## Author's prose
 
-- No prose recorded: no claim, and no word is identified for this cell.
+- `proof:` (claimed_cells, 'katumi' in edge-cases/compounding-breadth): katumi is KA+TU (crJoin's compound, tagged posOther) attempting mrTplSuf; with both constructs intact the part-of-speech conflict (posOther vs. mrTplSuf's own required posN) blocks it, so this has zero parses. Removing either the writer (crJoin's own outputPartOfSpeech, so the compound's output keeps the head's own seeded posN instead of being overwritten to posOther) or the reader (mrTplSuf's requiredPartsOfSpeech) lets the rule apply anyway, producing KA+TU+TPLSUF|katumi -- the AbsentGatedForm arm: the required part of speech is ABSENT (overwritten away, though never from KA's own declaration) and the rule's requirement GATES on it.
 
 ## `distinct_from` counterpart
 
-No claim exists for this cell, so no `distinct_from` counterpart is recorded.
+- 'katumi' in edge-cases/compounding-breadth: `distinct_from` **'katu'** (expect_fail=False) vs. this word (expect_fail=True).

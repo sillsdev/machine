@@ -36,18 +36,18 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:291` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:301` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:308` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:315` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:322` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:330` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:338` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:346` = "posN"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:395` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:270` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:285` = "posN"
-- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:389` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:324` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:334` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:341` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:348` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:355` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:363` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:371` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:379` = "posN"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:428` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:303` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:318` = "posN"
+- Reader (gate declared here) `AffixTemplate.requiredPartsOfSpeech`: `grammar.xml:422` = "posN"
 
 ## Author's prose
 

@@ -36,8 +36,8 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `Allomorph.stemName`: `grammar.xml:589` = "snG5"
-- Reader (gate declared here) `MorphologicalRule.requiredStemName`: `grammar.xml:472` = "snG5"
+- Writer (payload declared here) `Allomorph.stemName`: `grammar.xml:701` = "snG5"
+- Reader (gate declared here) `MorphologicalRule.requiredStemName`: `grammar.xml:527` = "snG5"
 
 ## Author's prose
 

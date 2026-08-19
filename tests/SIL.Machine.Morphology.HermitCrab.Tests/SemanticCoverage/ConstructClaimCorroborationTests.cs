@@ -44,10 +44,10 @@ public sealed class ConstructClaimCorroborationTests
 
         TestContext.Out.WriteLine($"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}");
 
-        Assert.That(rows, Has.Count.EqualTo(445));
-        Assert.That(confirmed, Is.EqualTo(186));
+        Assert.That(rows, Has.Count.EqualTo(452));
+        Assert.That(confirmed, Is.EqualTo(187));
         Assert.That(contradicted, Is.EqualTo(15));
-        Assert.That(unmapped, Is.EqualTo(244));
+        Assert.That(unmapped, Is.EqualTo(250));
     }
 
     // All 15 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-

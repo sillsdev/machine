@@ -29,17 +29,18 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 3 <MorphologicalOutput> element(s)", example: 'kulbubidu': ok::KUL+MB+MA+MREQ|kulbubidu -> ok::-
+- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
 - Reader (`MorphologicalInput.requiredMPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Unobservable, mutation="removed requiredMPRFeatures from 1 <MorphologicalInput> element(s)"
 
 ## Grammar citations
 
 ### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
 
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:136` = "mprA"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:237` = "mprB"
-- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:248` = "mprA"
-- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:258` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:142` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:243` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:254` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:281` = "mprExclFlag"
+- Reader (gate declared here) `MorphologicalInput.requiredMPRFeatures`: `grammar.xml:264` = "mprB"
 
 ## Author's prose
 

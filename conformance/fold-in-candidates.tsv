@@ -80,7 +80,7 @@ Interface	AlphaVariable.variableFeature	NeverWitnessed	present in 3 fixture(s), 
 Interface	BoundaryMarker.boundary	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	CompoundingRule.nonHeadPartsOfSpeech	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	CompoundingRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	CompoundingRule.outputPartOfSpeech	NeverWitnessed	present in 2 fixture(s), witnessed by none
+Interface	CompoundingRule.outputPartOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-breadth
 Interface	CopyFromInput.index	NeverWitnessed	present in 24 fixture(s), witnessed by none
 Interface	FeatureValue.feature	NeverWitnessed	present in 23 fixture(s), witnessed by none
 Interface	FeatureValue.symbolValues	NeverWitnessed	present in 23 fixture(s), witnessed by none
@@ -91,7 +91,7 @@ Interface	MetathesisRule.rightSwitch	NeverWitnessed	present in 3 fixture(s), wit
 Interface	ModifyFromInput.index	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	MorphemeCoOccurrenceRule.otherMorphemes	NeverWitnessed	present in 3 fixture(s), witnessed by none
 Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 3 fixture(s), witnessed by none
-Interface	MorphologicalInput.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/mpr-gated-exception
+Interface	MorphologicalInput.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
 Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 5 fixture(s), witnessed by none
 Interface	MorphologicalRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	Segment.segment	NeverWitnessed	present in 17 fixture(s), witnessed by none

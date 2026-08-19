@@ -64,6 +64,54 @@ sources:
   - "conformance/semantic-coverage-baseline.txt morphotactic todo entries"
 requires: []
 words:
+  # Bucket-2 coverage (MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures):
+  # placed FIRST in file order deliberately, and the distinguishing (baseline-fail) word placed
+  # before its own control, for the same reason suffixing-extension-slot-ordering's own bucket-2
+  # words are ordered this way -- severing MorphologicalOutput.MPRFeatures fixture-wide ALSO affects
+  # mrMB/mrMA/mrMReq's own appendGroup interaction elsewhere in this file, and InterfaceWitnessLedger
+  # reports the FIRST word (in file order) whose outcome differs, not the first favorable one.
+  - word: topdori
+    note: >-
+      THE distinguishing row: TOP + mrConferExcl ("-do") + mrExclReader ("-ri"). mrConferExcl's own
+      MorphologicalOutput MPRFeatures="mprExclFlag" write is exactly what mrExclReader's
+      MorphologicalInput.excludedMPRFeatures="mprExclFlag" excludes, so mrExclReader can never apply
+      once mrConferExcl has -- zero parses. Removing either mrConferExcl's own
+      MorphologicalOutput.MPRFeatures write (the writer, so the exclusion is vacuously satisfied) or
+      mrExclReader's own excludedMPRFeatures (the reader, so there is no exclusion left to trip)
+      unblocks it independently, to the identical successful parse. topdo (below) is the control
+      showing mrConferExcl attaches normally on its own.
+    expect_fail: true
+    blocked_by: [mrExclReader]
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures::McDc:PresentGatedForm"
+        severing: >-
+          either mrConferExcl's own MorphologicalOutput.MPRFeatures="mprExclFlag" write (the writer)
+          or mrExclReader's own MorphologicalInput.excludedMPRFeatures="mprExclFlag" gate (the
+          reader) -- severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::TOP+CONFEREXCL+EXCLREADER|topdori"
+        distinct_from: topdo
+        proof: >-
+          topdori is TOP run through mrConferExcl (which confers mprExclFlag) then attempting
+          mrExclReader; with both constructs intact the exclusion blocks it, so this has zero parses.
+          Removing either the writer (mrConferExcl's own MorphologicalOutput.MPRFeatures) or the
+          reader (mrExclReader's excludedMPRFeatures) lets mrExclReader apply anyway, producing
+          TOP+CONFEREXCL+EXCLREADER|topdori -- the PresentGatedForm arm: the feature is PRESENT
+          (conferred by mrConferExcl, never a lexical property of TOP itself) and mrExclReader's
+          exclusion GATES on it.
+
+  - word: topdo
+    note: TOP + mrConferExcl ("-do") alone -- the control for topdori (above), showing mrConferExcl attaches normally.
+    parses:
+      - signature: "TOP+CONFEREXCL|topdo"
+        rules: [mrReal, mrConferExcl]
+
+  - word: topri
+    note: TOP + mrExclReader ("-ri") alone, no mrConferExcl -- TOP carries no mprExclFlag on its own, so mrExclReader's exclusion is vacuously satisfied.
+    parses:
+      - signature: "TOP+EXCLREADER|topri"
+        rules: [mrReal, mrExclReader]
+
   - word: kul
     note: Bare free root. The control that the grammar loads and admits a complete word at all.
     parses:

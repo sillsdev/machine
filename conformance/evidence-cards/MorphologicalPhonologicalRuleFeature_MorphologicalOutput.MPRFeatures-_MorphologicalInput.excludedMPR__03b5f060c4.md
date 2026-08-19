@@ -15,13 +15,13 @@ no mutator sits between the write and the read: blocking (Word.CheckBlocking reb
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: structurally hazardous: edge-cases/morphotactic-attribute-breadth declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/morphotactic-attribute-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,11 +29,19 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
+- Reader (`MorphologicalInput.excludedMPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed excludedMPRFeatures from 1 <MorphologicalInput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
+
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:142` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:243` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:254` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:281` = "mprExclFlag"
+- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:291` = "mprExclFlag"
+
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

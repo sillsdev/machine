@@ -17,7 +17,7 @@ no mutator sits between the write and the read: a part-of-speech priority-union 
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: structurally hazardous: edge-cases/compounding-breadth declares 4 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
+Ledger evidence: structurally hazardous: edge-cases/compounding-breadth declares 5 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
@@ -29,21 +29,21 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 4 <CompoundingRule> element(s)"
+- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 4 <CompoundingRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
 - Reader (`CompoundingRule.nonHeadPartsOfSpeech` in `edge-cases/compounding-breadth`): verdict=Unobservable, mutation="removed nonHeadPartsOfSpeech from 4 <CompoundingRule> element(s)"
 
 ## Grammar citations
 
 ### `edge-cases/compounding-breadth/grammar.xml`
 
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:73` = "posN"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:98` = "posN"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:122` = "posN"
-- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:142` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:73` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:98` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:122` = "posN"
-- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:142` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:79` = "posOther"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:104` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:128` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:148` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:79` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:104` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:128` = "posN"
+- Reader (gate declared here) `CompoundingRule.nonHeadPartsOfSpeech`: `grammar.xml:148` = "posN"
 
 ## Author's prose
 

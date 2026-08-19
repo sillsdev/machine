@@ -59,6 +59,147 @@ sources:
   - "typological literature on post-nasal mutation / post-nasal hardening-voicing"
 requires: [phonology]
 words:
+  # Bucket-2 coverage (LexicalEntry.ruleFeatures/MorphologicalOutput.MPRFeatures ->
+  # PhonologicalSubrule.{required,excluded}MPRFeatures): placed FIRST in file order deliberately, AND
+  # the "distinguishing" (baseline-fail) word placed BEFORE its own bare-form control in each pair.
+  # InterfaceWitnessLedger's severance sweep reports the FIRST word (in this file's own order) whose
+  # outcome changes AT ALL when an (element, attribute) pair is stripped fixture-wide -- not the first
+  # FAVORABLE flip -- and DataflowObligationLedger.FindPairedWitness only credits a cell when the
+  # writer's and the reader's reported words are the SAME word. Severing requiredMPRFeatures/
+  # excludedMPRFeatures affects BOTH members of a pair at once (the mutated word fail->pass, its own
+  # bare control pass->fail), so whichever sits earlier in file order wins the report; putting the
+  # fail->pass word first is what makes it (rather than its own control) the reported witness.
+  - word: mbe
+    note: >-
+      THE distinguishing row for LexicalEntry.ruleFeatures->PhonologicalSubrule.excludedMPRFeatures:
+      PPE ("root.ppe", posV3excl), mutated. PPE's own ruleFeatures="mprPhExcl" is exactly what
+      prPhonoExcl's excludedMPRFeatures="mprPhExcl" excludes, so the mutation can never fire for PPE --
+      zero parses. Removing either PPE's own LexicalEntry.ruleFeatures (the writer, so the exclusion is
+      vacuously satisfied) or prPhonoExcl's own excludedMPRFeatures (the reader, so there is no
+      exclusion left to trip) unblocks it independently, to the identical successful parse. mpe
+      (below) is the control showing the root's bare form is otherwise unaffected. Placed ahead of
+      nba/npa (below): severing LexicalEntry.ruleFeatures ALSO flips nba (PPO's own bare form,
+      pass->fail), and the sweep reports whichever word differs FIRST in file order, so mbe has to
+      sit earlier than nba for its own fail->pass flip to be the one reported.
+    expect_fail: true
+    blocked_by: [prPhonoExcl]
+    exercises:
+      - "MPR features/groups"
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::LexicalEntry.ruleFeatures->PhonologicalSubrule.excludedMPRFeatures::McDc:PresentGatedForm"
+        severing: >-
+          either PPE's own LexicalEntry.ruleFeatures="mprPhExcl" (the writer) or prPhonoExcl's own
+          PhonologicalSubrule.excludedMPRFeatures="mprPhExcl" gate (the reader) -- severing either
+          alone unblocks this word
+        before: "ok::-"
+        after: "ok::PPE|mbe"
+        distinct_from: mpe
+        proof: >-
+          mbe is PPE (carries mprPhExcl) attempting the post-nasal voicing minor rule; with both
+          constructs intact the mutation is blocked (zero parses). Removing either the writer (PPE's
+          ruleFeatures) or the reader (prPhonoExcl's excludedMPRFeatures) lets the same mutation
+          through, producing PPE|mbe -- the PresentGatedForm arm: the feature is PRESENT on the root
+          and the rule's exclusion GATES on it.
+
+  - word: mpe
+    note: >-
+      PPE bare root, underlying "mpe" -- PPE's own LexicalEntry.ruleFeatures presets mprPhExcl, and
+      prPhonoExcl's excludedMPRFeatures="mprPhExcl" gate blocks the post-nasal voicing minor rule
+      outright (a lexical exception, the *spinity shape of trisyllabic laxing in miniature) -- the
+      raw "mpe" surfaces unmutated. The control for mbe (above).
+    parses:
+      - signature: "PPE|mpe"
+        gloss: root.ppe
+        rules: []
+        exercises: []
+
+  - word: nbael
+    note: >-
+      THE distinguishing row for MorphologicalOutput.MPRFeatures->PhonologicalSubrule.requiredMPRFeatures:
+      PPO ("root.ppo", posV3req) + mrPhonoDestroy ("-el"), mutated. PPO's own LexicalEntry.ruleFeatures
+      presets mprPhX; mrPhonoDestroy's own MorphologicalOutput MPRFeatures="mprPhY" write shares
+      PhonoGroup (outputType="overwrite") with mprPhX, so MprFeatureSet.AddOutput drops PPO's preset
+      before prPhonoReq's requiredMPRFeatures="mprPhX" gate is ever checked -- the mutation cannot
+      fire, so this has zero parses despite PPO genuinely carrying mprPhX at the lexical entry -- the
+      exact ygofz/mrEndZ shape (fusional-realizational-morphology), here for a PhonologicalSubrule reader instead of a
+      MorphologicalInput one. Removing either mrPhonoDestroy's own MorphologicalOutput.MPRFeatures
+      write (so the overwrite-triggering write never happens, and PPO's preset survives) or
+      prPhonoReq's own requiredMPRFeatures (so the gate no longer needs mprPhX at all) unblocks it
+      independently, to the identical successful parse -- the same word, from two unrelated
+      severances. npael (below) is the control showing the affix attaches normally when the mutation
+      is not attempted.
+    expect_fail: true
+    blocked_by: [prPhonoReq]
+    exercises:
+      - "MPR features/groups"
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::MorphologicalOutput.MPRFeatures->PhonologicalSubrule.requiredMPRFeatures::McDc:AbsentGatedForm"
+        severing: >-
+          either mrPhonoDestroy's own MorphologicalOutput.MPRFeatures="mprPhY" write (the writer) or
+          prPhonoReq's own PhonologicalSubrule.requiredMPRFeatures="mprPhX" gate (the reader) --
+          severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::PPO+PHDESTROY|nbael"
+        distinct_from: npael
+        proof: >-
+          nbael is PPO (lexically preset with mprPhX) run through mrPhonoDestroy then prPhonoReq's
+          phonological gate; with both constructs intact, mrPhonoDestroy's write triggers PhonoGroup's
+          overwrite semantics (MprFeatureSet.AddOutput) and drops PPO's preset mprPhX before
+          prPhonoReq's gate is ever checked, so this has zero parses. Removing either the writer
+          (mrPhonoDestroy's own MorphologicalOutput.MPRFeatures, so the overwrite-triggering write
+          never happens) or the reader (prPhonoReq's requiredMPRFeatures, so the gate no longer needs
+          mprPhX) lets the mutation fire anyway, producing PPO+PHDESTROY|nbael -- the AbsentGatedForm
+          arm: the required feature is ABSENT (from the derivation's accumulated state, though never
+          from PPO's own declaration) and the rule's requirement GATES on it.
+
+  - word: npael
+    note: >-
+      PPO + mrPhonoDestroy ("-el"), unmutated -- the control for nbael (above): with the mutation
+      never firing (PPO's preset mprPhX destroyed by mrPhonoDestroy's own write before prPhonoReq's
+      gate is checked), the raw "npa" shape survives into "npael".
+    parses:
+      - signature: "PPO+PHDESTROY|npael"
+        gloss: root.ppo-PHDESTROY
+        rules: [mrPhonoDestroy]
+        exercises:
+          - "MPR features/groups"
+
+  - word: nba
+    note: >-
+      PPO bare root, underlying "npa" -- PPO's own LexicalEntry.ruleFeatures presets mprPhX with no
+      destroyer intervening, so prPhonoReq's requiredMPRFeatures="mprPhX" gate is satisfied and the
+      post-nasal voicing minor rule (same construct as prNasalMutation, MPR-gated instead of
+      POS-gated) fires obligatorily, exactly mirroring mba/mpa below.
+    parses:
+      - signature: "PPO|nba"
+        gloss: root.ppo
+        rules: [prPhonoReq]
+        exercises:
+          - "RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level"
+
+  - word: npa
+    note: The raw, un-mutated underlying shape -- prPhonoReq is obligatory once its MPR gate is satisfied (PPO's own preset mprPhX), so this surface can never be a valid analysis of PPO.
+    expect_fail: true
+    blocked_by: [prPhonoReq]
+    exercises:
+      - "RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level"
+
+  - word: lisez
+    note: >-
+      PHXROOT ("lis") + mrPhXSource ("-ez"): mrPhXSource's own MorphologicalOutput MPRFeatures="mprPhX"
+      write is what makes InteractionChainLedger count MorphologicalOutput.MPRFeatures->
+      PhonologicalSubrule.requiredMPRFeatures as exercised at all (the same id, mprPhX, appearing in
+      both a MorphologicalOutput and a PhonologicalSubrule attribute value somewhere in this fixture)
+      -- mirrors mrThemeX's own role for fusional-realizational-morphology's ygofz. "lis" has no
+      nasal+voiceless-bilabial sequence, so prPhonoReq's mutation never fires here even though its MPR
+      gate is satisfied; this word demonstrates the write, not the mutation.
+    parses:
+      - signature: "PHXROOT+PHXSRC|lisez"
+        gloss: root.phxroot-PHXSRC
+        rules: [mrPhXSource]
+        exercises:
+          - "MPR features/groups"
+
   - word: mba
     note: >-
       PAV ("hit", posV) bare root, underlying "mpa" -- prNasalMutation obligatorily voices the "p"

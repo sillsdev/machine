@@ -15,9 +15,9 @@ the payload is ABSENT, and the reader does NOT block (control case: normal opera
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: chain exercised (conformance/interaction-chains.tsv) but no same-word paired severance witness (writer+reader both Evidenced on the same example word in conformance/interface-witness.tsv) was found for this arm
 
 ## Fixture and word
 

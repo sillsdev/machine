@@ -59,9 +59,9 @@ public sealed class DataflowObligationLedgerTests
         // mrEndZ's requiredMPRFeatures gate is checked; severing either mrThemeY's own
         // MorphologicalOutput.MPRFeatures write (so the overwrite never triggers) or mrEndZ's own
         // requiredMPRFeatures (so the gate stops needing mprPedA) unblocks the SAME word identically.
-        Assert.That(satisfied, Is.EqualTo(4));
-        Assert.That(notSatisfied, Is.EqualTo(178));
-        Assert.That(unknown, Is.EqualTo(164));
+        Assert.That(satisfied, Is.EqualTo(9));
+        Assert.That(notSatisfied, Is.EqualTo(120));
+        Assert.That(unknown, Is.EqualTo(217));
     }
 
     // Mutator-class applicability is schema/engine-derived (payload type + writer + -- for
@@ -127,17 +127,14 @@ public sealed class DataflowObligationLedgerTests
         );
     }
 
-    // The four chains this generator has mechanically confirmed via a same-word PAIR witness (severing
+    // The nine chains this generator has mechanically confirmed via a same-word PAIR witness (severing
     // writer AND reader both flip the SAME word from a failed to a successful parse -- see
-    // DataflowObligationLedger.FindPairedWitness): the canonical mpr-gated-exception fixture
-    // (vokadan), a second the mechanical scan found independently in
-    // languages/polysynthetic-stratal-derivation-chain (nunavuq), a third, authored via the
-    // author-coverage-cell skill, in languages/metathesis-phase-isolation (idil -- ADIL's own bare
-    // root already sits in prNonContig's raising environment, but prNonContig is gated to a
-    // different part of speech, posNonContig), and a fourth, also authored via author-coverage-cell,
-    // in languages/fusional-realizational-morphology (ygofz -- GOF's own lexically-preset mprPedA is
-    // destroyed by mrThemeY's ThemeGroup Overwrite write before mrEndZ's requiredMPRFeatures gate is
-    // checked; severing either mrThemeY's own write or mrEndZ's own gate unblocks it identically).
+    // DataflowObligationLedger.FindPairedWitness). Two were found by the mechanical scan (vokadan in
+    // mpr-gated-exception, nunavuq in polysynthetic-stratal-derivation-chain); the rest were authored.
+    // The recurring shape worth knowing: a feature the ROOT presets cannot witness a required-gate
+    // chain, because severing it can only turn a passing word into a failing one. What works is a
+    // feature an AFFIX confers or destroys before the reader checks it -- ygofz established that against
+    // MorphologicalInput, and the PhonologicalSubrule pairs reuse it against a sound-rule reader.
     // Every other exercised chain stays Unknown -- deliberately: "writer witnessed somewhere, reader
     // witnessed somewhere" is not this bar.
     [Test]
@@ -147,16 +144,21 @@ public sealed class DataflowObligationLedgerTests
         IReadOnlyList<DataflowObligationLedger.Row> rows = DataflowObligationLedger.Compute(root);
         DataflowObligationLedger.Row[] satisfied = rows.Where(r => r.Status == ObligationStatus.Satisfied).ToArray();
 
-        Assert.That(satisfied, Has.Length.EqualTo(4));
+        Assert.That(satisfied, Has.Length.EqualTo(9));
         Assert.That(
             satisfied.Select(r => (r.WriterElement, r.WriterAttribute, r.ReaderElement, r.ReaderAttribute, r.Role)),
             Is.EquivalentTo(
                 new[]
                 {
                     ("LexicalEntry", "ruleFeatures", "MorphologicalInput", "excludedMPRFeatures", "PresentGatedForm"),
+                    ("LexicalEntry", "ruleFeatures", "PhonologicalSubrule", "excludedMPRFeatures", "PresentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
                     ("LexicalEntry", "partOfSpeech", "PhonologicalSubrule", "requiredPartsOfSpeech", "AbsentGatedForm"),
+                    ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput", "excludedMPRFeatures", "PresentGatedForm"),
                     ("MorphologicalOutput", "MPRFeatures", "MorphologicalInput", "requiredMPRFeatures", "AbsentGatedForm"),
+                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule", "excludedMPRFeatures", "PresentGatedForm"),
+                    ("MorphologicalOutput", "MPRFeatures", "PhonologicalSubrule", "requiredMPRFeatures", "AbsentGatedForm"),
+                    ("CompoundingRule", "outputPartOfSpeech", "MorphologicalRule", "requiredPartsOfSpeech", "AbsentGatedForm"),
                 }
             )
         );

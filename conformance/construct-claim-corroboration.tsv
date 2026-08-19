@@ -21,6 +21,7 @@ edge-cases/compounding-breadth	kamtu	-	CompoundingRule constraints (MaxApplicati
 edge-cases/compounding-breadth	kaptu	-	Element deactivation (isActive) across loader collections	Confirmed	isActive
 edge-cases/compounding-breadth	kati	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	katu	KA+TU|katu	CompoundingRule	Confirmed	CompoundingRule
+edge-cases/compounding-breadth	katumi	-	CompoundingRule	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	kutu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	patu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	tu	TU|tu	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
@@ -377,10 +378,16 @@ languages/suffixing-extension-slot-ordering	kimbiakimbia	KIMB+RED|kimbiakimbia	A
 languages/suffixing-extension-slot-ordering	limaile	LIM+RPAST|limaile	RealizationalAffixProcessRule	Unmapped	-
 languages/suffixing-extension-slot-ordering	limape	LIM+TENSE|limape	RealizationalAffixProcessRule	Unmapped	-
 languages/suffixing-extension-slot-ordering	limapeile	-	RealizationalAffixProcessRule	Unmapped	-
+languages/suffixing-extension-slot-ordering	lisez	PHXROOT+PHXSRC|lisez	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	mba	PAV|mba	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
+languages/suffixing-extension-slot-ordering	mbe	-	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	mpa	-	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	Unmapped	-
 languages/suffixing-extension-slot-ordering	nalh	-	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	nalw	-	MPR features/groups	Unmapped	-
+languages/suffixing-extension-slot-ordering	nba	PPO|nba	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
+languages/suffixing-extension-slot-ordering	nbael	-	MPR features/groups	Unmapped	-
+languages/suffixing-extension-slot-ordering	npa	-	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
+languages/suffixing-extension-slot-ordering	npael	PPO+PHDESTROY|npael	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekhw	-	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekwh	SEK+ENDW+ENDH|sekwh	MPR features/groups	Unmapped	-
 languages/suffixing-extension-slot-ordering	sekwz	-	MPR features/groups	Unmapped	-

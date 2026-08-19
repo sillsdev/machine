@@ -15,29 +15,41 @@ the payload IS present and the gated form IS blocked.
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: paired witness: severing writer and reader both flip 'topdori' from failed to successful parse in edge-cases/morphotactic-attribute-breadth (conformance/interface-witness.tsv)
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- Claimed by word **'topdori'** in `edge-cases/morphotactic-attribute-breadth` (a `claimed_cells` entry in `words.yaml`).
 
 ## Exact mutation and before/after parse
 
-No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
+### Author's claim (edge-cases/morphotactic-attribute-breadth / 'topdori')
+
+- Severing: either mrConferExcl's own MorphologicalOutput.MPRFeatures="mprExclFlag" write (the writer) or mrExclReader's own MorphologicalInput.excludedMPRFeatures="mprExclFlag" gate (the reader) -- severing either alone unblocks this word
+- Before: `ok::-`
+- After: `ok::TOP+CONFEREXCL+EXCLREADER|topdori`
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`MorphologicalOutput.MPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed MPRFeatures from 4 <MorphologicalOutput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
+- Reader (`MorphologicalInput.excludedMPRFeatures` in `edge-cases/morphotactic-attribute-breadth`): verdict=Evidenced, mutation="removed excludedMPRFeatures from 1 <MorphologicalInput> element(s)", example: 'topdori': ok::- -> ok::TOP+CONFEREXCL+EXCLREADER|topdori
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `edge-cases/morphotactic-attribute-breadth/grammar.xml`
+
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:142` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:243` = "mprB"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:254` = "mprA"
+- Writer (payload declared here) `MorphologicalOutput.MPRFeatures`: `grammar.xml:281` = "mprExclFlag"
+- Reader (gate declared here) `MorphologicalInput.excludedMPRFeatures`: `grammar.xml:291` = "mprExclFlag"
+
 ## Author's prose
 
-- No prose recorded: no claim, and no word is identified for this cell.
+- `proof:` (claimed_cells, 'topdori' in edge-cases/morphotactic-attribute-breadth): topdori is TOP run through mrConferExcl (which confers mprExclFlag) then attempting mrExclReader; with both constructs intact the exclusion blocks it, so this has zero parses. Removing either the writer (mrConferExcl's own MorphologicalOutput.MPRFeatures) or the reader (mrExclReader's excludedMPRFeatures) lets mrExclReader apply anyway, producing TOP+CONFEREXCL+EXCLREADER|topdori -- the PresentGatedForm arm: the feature is PRESENT (conferred by mrConferExcl, never a lexical property of TOP itself) and mrExclReader's exclusion GATES on it.
 
 ## `distinct_from` counterpart
 
-No claim exists for this cell, so no `distinct_from` counterpart is recorded.
+- 'topdori' in edge-cases/morphotactic-attribute-breadth: `distinct_from` **'topdo'** (expect_fail=False) vs. this word (expect_fail=True).

@@ -84,15 +84,17 @@ edge-cases/compounding-breadth	Surface	dtd:enum/CompoundingRule/multipleApplicat
 edge-cases/compounding-breadth	Surface	dtd:enum/CompoundingSubrule/isActive/no	witnessed	Evidenced
 edge-cases/compounding-breadth	Interface	CompoundingRule.headPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/compounding-breadth	Interface	CompoundingRule.nonHeadPartsOfSpeech	present-but-inert	Unobservable
-edge-cases/compounding-breadth	Interface	CompoundingRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/compounding-breadth	Interface	CompoundingRule.outputPartOfSpeech	witnessed	Evidenced
 edge-cases/compounding-breadth	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
 edge-cases/compounding-breadth	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/compounding-breadth	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/compounding-breadth	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 edge-cases/compounding-breadth	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/compounding-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
-edge-cases/compounding-breadth	Construct	CompoundingRule	claimed-confirmed	1 claim(s)
+edge-cases/compounding-breadth	Construct	CompoundingRule	claimed-confirmed	2 claim(s)
 edge-cases/compounding-breadth	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	7 claim(s)
 edge-cases/compounding-breadth	Construct	Element deactivation (isActive) across loader collections	claimed-confirmed	2 claim(s)
 edge-cases/deep-optional-affix-nesting	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
@@ -319,6 +321,7 @@ edge-cases/morphotactic-attribute-breadth	Interface	LexicalEntry.partOfSpeech	pr
 edge-cases/morphotactic-attribute-breadth	Interface	LexicalEntry.ruleFeatures	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	MorphemeCoOccurrenceRule.otherMorphemes	required-by-dtd	RequiredByDtd
 edge-cases/morphotactic-attribute-breadth	Interface	MorphemeCoOccurrenceRule.primaryMorpheme	required-by-dtd	RequiredByDtd
+edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalInput.excludedMPRFeatures	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalInput.requiredMPRFeatures	present-but-inert	Unobservable
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalOutput.MPRFeatures	witnessed	Evidenced
 edge-cases/morphotactic-attribute-breadth	Interface	MorphologicalPhonologicalRuleFeatureGroup.features	required-by-dtd	RequiredByDtd
@@ -343,8 +346,10 @@ edge-cases/mpr-gated-exception	Interface	FeatureValue.symbolValues	required-by-l
 edge-cases/mpr-gated-exception	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	LexicalEntry.ruleFeatures	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	MorphologicalInput.excludedMPRFeatures	witnessed	Evidenced
+edge-cases/mpr-gated-exception	Interface	MorphologicalOutput.MPRFeatures	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/mpr-gated-exception	Interface	PhonologicalSubrule.excludedMPRFeatures	witnessed	Evidenced
 edge-cases/mpr-gated-exception	Interface	PhonologicalSubrule.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/mpr-gated-exception	Interface	Segment.segment	required-by-dtd	RequiredByDtd
 edge-cases/mpr-gated-exception	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
@@ -582,9 +587,11 @@ languages/suffixing-extension-slot-ordering	Interface	MorphologicalOutput.MPRFea
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalPhonologicalRuleFeatureGroup.features	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.outputObligatoryFeatures	present-but-inert	Unobservable
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
-languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredPartsOfSpeech	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Interface	MorphologicalRule.requiredStemName	witnessed	Evidenced
-languages/suffixing-extension-slot-ordering	Interface	PhonologicalSubrule.requiredPartsOfSpeech	present-but-inert	Unobservable
+languages/suffixing-extension-slot-ordering	Interface	PhonologicalSubrule.excludedMPRFeatures	witnessed	Evidenced
+languages/suffixing-extension-slot-ordering	Interface	PhonologicalSubrule.requiredMPRFeatures	witnessed	Evidenced
+languages/suffixing-extension-slot-ordering	Interface	PhonologicalSubrule.requiredPartsOfSpeech	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	Slot.morphologicalRules	required-by-dtd	RequiredByDtd
 languages/suffixing-extension-slot-ordering	Interface	StemName.partsOfSpeech	required-by-dtd	RequiredByDtd
@@ -593,10 +600,11 @@ languages/suffixing-extension-slot-ordering	Interface	Stratum.morphologicalRules
 languages/suffixing-extension-slot-ordering	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 languages/suffixing-extension-slot-ordering	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	6 claim(s)
 languages/suffixing-extension-slot-ordering	Construct	AffixProcessRule: reduplication (ReduplicationHint)	claimed-unmapped	1 claim(s)
-languages/suffixing-extension-slot-ordering	Construct	MPR features/groups	claimed-unmapped	14 claim(s)
+languages/suffixing-extension-slot-ordering	Construct	MPR features/groups	claimed-unmapped	18 claim(s)
 languages/suffixing-extension-slot-ordering	Construct	Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)	claimed-confirmed	8 claim(s)
 languages/suffixing-extension-slot-ordering	Construct	RealizationalAffixProcessRule	claimed-unmapped	3 claim(s)
 languages/suffixing-extension-slot-ordering	Construct	RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)	claimed-unmapped	2 claim(s)
+languages/suffixing-extension-slot-ordering	Construct	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	claimed-unmapped	2 claim(s)
 languages/suffixing-extension-slot-ordering	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	6 claim(s)
 languages/suffixing-vowel-harmony	Surface	dtd:enum/PhoneticTemplate/initialBoundaryCondition/true	witnessed	Evidenced
 languages/suffixing-vowel-harmony	Interface	AffixTemplate.requiredPartsOfSpeech	witnessed	Evidenced

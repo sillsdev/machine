@@ -21,8 +21,8 @@ public sealed class InterfaceWitnessLedgerTests
     }
 
     // Pins the headline this whole split exists to produce: of the 42 interfaces
-    // InterfaceInventoryLedger marks present, only 16 ever reach a word-level Evidenced verdict
-    // ANYWHERE in the corpus -- the other 26 are present-but-never-witnessed (see
+    // InterfaceInventoryLedger marks present, only 19 ever reach a word-level Evidenced verdict
+    // ANYWHERE in the corpus -- the other 25 are present-but-never-witnessed (see
     // FoldInCandidateLedgerTests for that split by category). Presence overclaimed by nearly 3x.
     // timeout is pinned at 0 deliberately. Four rows here once recorded Timeout and were argued to be
     // genuinely slow rather than load-dependent; they later resolved on a quieter machine, two of them
@@ -51,13 +51,13 @@ public sealed class InterfaceWitnessLedgerTests
                 + $"distinctInterfacesEvidenced={distinctInterfacesEverEvidenced}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(362));
-        Assert.That(evidenced, Is.EqualTo(76));
+        Assert.That(rows, Has.Count.EqualTo(369));
+        Assert.That(evidenced, Is.EqualTo(85));
         Assert.That(requiredByDtd, Is.EqualTo(170));
         Assert.That(requiredByLoader, Is.EqualTo(24));
         Assert.That(timeout, Is.EqualTo(0));
-        Assert.That(unobservable, Is.EqualTo(92));
-        Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(16));
+        Assert.That(unobservable, Is.EqualTo(90));
+        Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(19));
     }
 
     // A concrete instance of the overclaim this ledger exists to catch: InterfaceInventoryLedger

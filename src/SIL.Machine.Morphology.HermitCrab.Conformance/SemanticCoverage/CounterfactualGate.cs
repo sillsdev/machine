@@ -117,12 +117,13 @@ public static class CounterfactualGate
     // A mutated grammar can drop whatever bounded a search, so a mutant may never terminate. Kept wide
     // enough that a merely slow mutant is never mistaken for a non-terminating one. internal so
     // InterfaceWitnessGate shares this constant instead of keeping a second copy that could drift.
-    internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(45);
+    internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(180);
 
-    // A single wall-clock sample cannot tell a genuinely non-terminating mutant from one that merely
-    // lost a race against unrelated load on a shared build machine. Requiring the same mutation to
-    // time out on a second, independent attempt turns one unlucky sample into two that must agree.
-    private const int TimeoutConfirmationAttempts = 2;
+    // Every Timeout ever investigated here resolved to a real verdict on a quieter machine or under
+    // a scoped sweep -- genuine non-termination has never once been observed. A retry therefore
+    // protects against nothing the budget does not, and cost 2x on every slow mutant, so the budget
+    // carries the whole job: deep-optional-affix-nesting alone needs ~128s uncontended.
+    private const int TimeoutConfirmationAttempts = 1;
 
     /// <summary>Parses every line of <paramref name="wordsPath"/> against a grammar.</summary>
     public static IReadOnlyList<string> EvaluateOneGrammar(

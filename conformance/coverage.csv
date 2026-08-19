@@ -9,6 +9,7 @@ BistratalOverlappingSegmentRepresentation,eds,,"CharacterDefinitionTable: more t
 CompoundingBreadth,ka,KA|ka,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,tu,TU|tu,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,katu,KA+TU|katu,CompoundingRule
+CompoundingBreadth,katumi,,CompoundingRule
 CompoundingBreadth,kaki,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,kati,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,kamtu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
@@ -345,6 +346,12 @@ SuffixingEvidentialAdjacencyChain,sipulupachikmi,,MorphemeCoOccurrenceRule/Allom
 SuffixingEvidentialAdjacencyChain,walaknkichikmi,WALAK+2SG+PL+DIR|walaknki(ch)ikmi,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,walakchik,,Affix template slots (obligatory/disjunctive/ordering)
 SuffixingEvidentialAdjacencyChain,walaknkicha,,MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+SuffixingExtensionSlotOrdering,mbe,,MPR features/groups
+SuffixingExtensionSlotOrdering,nbael,,MPR features/groups
+SuffixingExtensionSlotOrdering,npael,PPO+PHDESTROY|npael,MPR features/groups
+SuffixingExtensionSlotOrdering,nba,PPO|nba,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+SuffixingExtensionSlotOrdering,npa,,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+SuffixingExtensionSlotOrdering,lisez,PHXROOT+PHXSRC|lisez,MPR features/groups
 SuffixingExtensionSlotOrdering,mba,PAV|mba,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 SuffixingExtensionSlotOrdering,mpa,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 SuffixingExtensionSlotOrdering,limaile,LIM+RPAST|limaile,RealizationalAffixProcessRule

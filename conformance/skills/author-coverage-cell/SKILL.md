@@ -57,10 +57,69 @@ Search `conformance/languages/*/grammar.xml` for one that already declares **bot
 construct and the reader construct. `conformance/fold-in-candidates.tsv` marks obligations whose
 construct is already structurally present.
 
-- **Never edit `grammar.xml`.** If no language grammar hosts both, report `wrong-grammar` and stop.
-  That is a real finding about the corpus, not a failure of yours.
+- **Default: never edit `grammar.xml`.** If no language grammar hosts both, report `wrong-grammar`
+  and stop. That is a real finding about the corpus, not a failure of yours.
 - Prefer a grammar where the construct is already used for something, so the new words sit naturally
   among existing ones.
+
+### The one exception: a small, engine-justified grammar edit
+
+Some assignments (bucket-2 coverage obligations) explicitly license editing a grammar when the
+construct is absent from every fixture but HCLoader can genuinely produce it and real morphology
+exhibits it. That relaxation is narrow and directional — it does not turn Phase 2 into "invent
+whatever makes the cell green."
+
+**The rule.** An edit is legitimate only when all three hold:
+
+1. **HCLoader demonstrably emits the construct**, cited by file and line (e.g. `HCLoader.cs:2057`
+   for `PhonologicalSubrule.RequiredMprFeatures`).
+2. **Real morphology exhibits it** — the shape you are adding is a genuine, nameable linguistic
+   phenomenon (a minor rule, a lexically-conditioned exception, a category-changing derivation),
+   not a string manufactured to trip a check.
+3. **The reasoning runs from engine behaviour TO a grammar shape — never from a red cell to
+   whatever turns it green.** Write down the HCLoader citation and the engine mechanism *before*
+   deciding what to add. If you cannot state both before touching `grammar.xml`, do not make the
+   edit.
+
+The edit must still leave the grammar a coherent description of a plausible language: synthetic
+data only, never named after a real language, typological family in a comment only if at all.
+
+**The tell.** The direction of reasoning is everything. "This cell is red; if I add X the severance
+will flip" is illegitimate even if X is grammatically well-formed and even if it works — the
+grammar became a proof artifact for the cell instead of an independent thing the cell happens to
+measure. "HCLoader.cs:969/1717 read/write MPR features on an ordinary affix; a derivational suffix
+that marks a stem as already-derived and blocks a further derivation is ordinary morphology; let me
+add that pair and see what it demonstrates" is legitimate, because the construct and its
+justification exist before any cell's colour is consulted.
+
+**Worked legitimate example.** Bucket-2 item D (`MorphologicalOutput.MPRFeatures ->
+MorphologicalInput.excludedMPRFeatures`, "affix-conferred blocking"): HCLoader.cs:969
+(`AffixProcessAllomorph.OutMprFeatures`) writes an MPR payload onto a rule's own output;
+HCLoader.cs:1717 (`AffixProcessAllomorph.ExcludedMprFeatures`) reads it as an exclusion on a later
+rule's input. This is ordinary derivational morphology — a suffix that marks its own output as
+"already derived," making a further derivational step ineligible, exactly the shape English
+`-ize`/`-ization` chains resist re-`-ize`-ing. The engine mechanism (`AddOutput`'s MPR-feature
+write, `IsMatchExcluded`'s membership check) was read and cited *first*; only then were two new
+rules (`mrConferExcl`, `mrExclReader`) and a witness word (`topdori`) added, on an isolated root
+chosen specifically because it carries no family or co-occurrence constraints that could disturb
+anything already tested in that fixture.
+
+**Worked illegitimate example (do not do this).** Suppose `LexicalEntry.ruleFeatures ->
+PhonologicalSubrule.requiredMPRFeatures` is red, and the temptation is: "add a root with
+`ruleFeatures="mprX"` and a `PhonologicalSubrule` with `requiredMPRFeatures="mprX"`, run the
+severance sweep, and see if it flips." That is illegitimate even before checking whether it works,
+because the starting point was the red cell, not an engine citation — and in this specific case it
+provably cannot work regardless: `SynthesisRewriteSubruleSpec.IsApplicable`
+(`PhonologicalRules/SynthesisRewriteSubruleSpec.cs:47-49`) checks
+`_subrule.RequiredMprFeatures.IsMatchRequired(input.MprFeatures, ...)` — a plain set-membership
+test with no accumulation or overwrite semantics for a root-sourced feature. Severing
+`LexicalEntry.ruleFeatures` can only ever *remove* a feature that was satisfying the requirement
+(turning a pass into a fail — the wrong direction) or remove one that was already going to be
+destroyed by some other write (a no-op). There is no grammar shape that flips this specific pairing
+from fail to pass, so authoring words for it is `false-impossibility`'s mirror image: instead of
+wrongly declaring victory impossible, it would be wrongly declaring victory achieved by adding
+words to a chain the engine's own comparison logic forecloses. The fix when you hit this is to
+write down the proof (as this paragraph does) and report `no-witness`, not to keep trying words.
 
 ## Phase 3 — Design the minimal pair
 

@@ -17,11 +17,11 @@ a mutator sits between the write and the read: blocking (Word.CheckBlocking rebu
 
 **Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: no exercising fixture declares >=2 LexicalEntry sharing a family under the same Stratum -- Word.CheckBlocking (Word.cs:475-477) requires LexEntry.Family != null, so blocking cannot fire in any exercising fixture as authored
+Ledger evidence: structurally hazardous: languages/suffixing-extension-slot-ordering declares >=2 LexicalEntry sharing a family under the same Stratum (Word.CheckBlocking's family+stratum precondition, Word.cs:475-485); FeatureStruct subsumption and word-level witness of an actual block are not checked here
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `languages/suffixing-extension-slot-ordering` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,11 +29,33 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`MorphologicalRule.outputPartOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed outputPartOfSpeech from 16 <MorphologicalRule> element(s)"
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `languages/suffixing-extension-slot-ordering/grammar.xml`
+
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:359` = "posV2"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:382` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:392` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:402` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:413` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:423` = "posV3"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:438` = "posV5"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:450` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:460` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:470` = "posV4"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:486` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:498` = "posV6"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:514` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:527` = "posV7"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:563` = "posV3req"
+- Writer (payload declared here) `MorphologicalRule.outputPartOfSpeech`: `grammar.xml:581` = "posV3req"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:308` = "posV"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:325` = "posV3req"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:340` = "posV3excl"
+
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

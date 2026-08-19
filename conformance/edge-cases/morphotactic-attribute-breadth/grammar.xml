@@ -37,6 +37,12 @@
     <MorphologicalPhonologicalRuleFeatures>
       <MorphologicalPhonologicalRuleFeature id="mprA">A</MorphologicalPhonologicalRuleFeature>
       <MorphologicalPhonologicalRuleFeature id="mprB">B</MorphologicalPhonologicalRuleFeature>
+      <!-- Bucket-2 coverage (MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures):
+           an affix confers a flag that blocks a LATER affix - HCLoader.cs:969 (AffixProcessAllomorph.
+           OutMprFeatures) writes the payload, HCLoader.cs:1717 (AffixProcessAllomorph.
+           ExcludedMprFeatures) reads it. Ungrouped deliberately: this is a direct exclusion, not an
+           overwrite-group interaction (see mrConferExcl/mrExclReader below). -->
+      <MorphologicalPhonologicalRuleFeature id="mprExclFlag">ExclFlag</MorphologicalPhonologicalRuleFeature>
       <!-- outputType="append" adds to the stem's existing MPR features rather than replacing them;
            the default is overwrite. -->
       <MorphologicalPhonologicalRuleFeatureGroup matchType="all" outputType="append" features="mprA mprB">
@@ -88,7 +94,7 @@
            here rather than an observable ordering; the ledger records it accordingly. -->
       <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" cyclicity="cyclic"
                phonologicalRuleOrder="simultaneous"
-               morphologicalRules="mrRep0 mrRep2"
+               morphologicalRules="mrRep0 mrRep2 mrConferExcl mrExclReader"
                isActive="yes">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -261,6 +267,33 @@
             </MorphologicalSubrules>
             <MorphemeId>MREQ</MorphemeId>
             <Gloss>mreq</Gloss>
+          </MorphologicalRule>
+          <!-- Bucket-2 coverage: the affix-conferred-blocking pair. mrConferExcl's own
+               MorphologicalOutput.MPRFeatures write (mprExclFlag) is the writer under test; applying
+               it before mrExclReader means mrExclReader's own MorphologicalInput.excludedMPRFeatures
+               gate blocks - a later affix refusing to attach once an earlier one has marked the stem,
+               e.g. a derivational suffix that makes a further derivation ineligible. -->
+          <MorphologicalRule id="mrConferExcl" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>conferExcl</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subConferExcl">
+                <MorphologicalInput><PhoneticSequence id="stemConferExcl"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprExclFlag"><CopyFromInput index="stemConferExcl" /><InsertSegments><PhoneticShape>do</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>CONFEREXCL</MorphemeId>
+            <Gloss>conferexcl</Gloss>
+          </MorphologicalRule>
+          <MorphologicalRule id="mrExclReader" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
+            <Name>exclReader</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subExclReader">
+                <MorphologicalInput excludedMPRFeatures="mprExclFlag"><PhoneticSequence id="stemExclReader"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemExclReader" /><InsertSegments><PhoneticShape>ri</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>EXCLREADER</MorphemeId>
+            <Gloss>exclreader</Gloss>
           </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>

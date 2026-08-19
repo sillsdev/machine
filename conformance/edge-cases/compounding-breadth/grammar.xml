@@ -27,6 +27,12 @@
     <Name>CompoundingBreadth</Name>
     <PartsOfSpeech>
       <PartOfSpeech id="posN"><Name>n</Name></PartOfSpeech>
+      <!-- Bucket-2 coverage (CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech):
+           crJoin's own outputPartOfSpeech, deliberately DIFFERENT from posN (crJoin's own
+           headPartsOfSpeech) so mrTplSuf's requiredPartsOfSpeech="posN" genuinely CONFLICTS with it
+           rather than merely lacking it - see mrTplSuf below for why the polarity runs this
+           direction (posOther is the WRITTEN value, posN is the head's own fallback). -->
+      <PartOfSpeech id="posOther"><Name>other</Name></PartOfSpeech>
     </PartsOfSpeech>
     <HeadFeatures>
       <SymbolicFeature id="hfNum">
@@ -62,7 +68,7 @@
       <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
     </NaturalClasses>
     <Strata>
-      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crJoinInsert crNever crDecoy">
+      <Stratum characterDefinitionTable="tbl" morphologicalRuleOrder="linear" morphologicalRules="crJoin crJoinInsert crNever crDecoy mrTplSuf">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
           <!-- multipleApplication is deliberately NOT written here. Verified against the C# oracle
@@ -70,7 +76,7 @@
                analysis either way, so a cap of two is indistinguishable from the default of one and
                claiming it would be coverage with nothing behind it. The zero cap on crNever below IS
                discriminated, by "kamtu", and the ledger quotients the rest of the range against it. -->
-          <CompoundingRule id="crJoin" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posN">
+          <CompoundingRule id="crJoin" headPartsOfSpeech="posN" nonHeadPartsOfSpeech="posN" outputPartOfSpeech="posOther">
             <Name>joinTwice</Name>
             <CompoundingSubrules>
               <CompoundingSubrule>
@@ -158,6 +164,27 @@
               </CompoundingSubrule>
             </CompoundingSubrules>
           </CompoundingRule>
+          <!-- Bucket-2 coverage (CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech):
+               a compound gets a category (crJoin's own outputPartOfSpeech="posOther"), then a later
+               rule checks it - see words.yaml's "katumi" for the severance witness. Deliberately NOT
+               requiredPartsOfSpeech="posOther": SynthesisCompoundingRule.cs's own
+               HeadRequiredSyntacticFeatureStruct.Unify seeds the output's SyntacticFeatureStruct from
+               the HEAD's own required POS (headPartsOfSpeech="posN" here) BEFORE
+               OutSyntacticFeatureStruct's PriorityUnion applies outputPartOfSpeech over it - so
+               severing outputPartOfSpeech never leaves the result unset, it falls back to posN, the
+               head's own requirement. requiredPartsOfSpeech="posN" here is chosen to land exactly on
+               that fallback value, so severing the writer is what actually changes the observed
+               outcome (posOther->posN), not a vacuous-match trick as vokadan/idil use elsewhere. -->
+          <MorphologicalRule id="mrTplSuf" requiredPartsOfSpeech="posN" outputPartOfSpeech="posOther">
+            <Name>tplSuf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTplSuf">
+                <MorphologicalInput><PhoneticSequence id="stemTplSuf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemTplSuf" /><InsertSegments><PhoneticShape>mi</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>TPLSUF</MorphemeId>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
           <LexicalEntry id="eKa" partOfSpeech="posN">

@@ -15,9 +15,9 @@ a mutator sits between the write and the read: an MPR-feature overwrite group (a
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: structurally hazardous (conformance/interaction-chains.tsv: an exercising fixture has an overwrite-type MorphologicalPhonologicalRuleFeatureGroup covering the shared id) but word-level witness of the kill itself is not independently checked here
 
 ## Fixture and word
 

@@ -126,3 +126,63 @@ words:
     parses:
       - signature: "VOKAD+SUFALT|vokadi"
         rules: [mrSufAlt]
+
+  - word: menanukam
+    note: >-
+      THE distinguishing row for MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures:
+      TANUK + mrNPfx + mrDelExclSrc, with the obstruent DELETED ("menanukam" instead of
+      "mentanukam"). With both constructs intact, mrDelExclSrc's own MPR write triggers
+      prObstruentDeletion's excludedMPRFeatures="mprAffixDelExcl" gate and blocks the deletion, so
+      this surface has zero parses even though the nasal+voiceless-obstruent environment
+      (prNasalAssimAlveolar having already run) is otherwise identical to menulik's own deleting
+      case. Removing either mrDelExclSrc's own MorphologicalOutput.MPRFeatures write (so the
+      exclusion-triggering write never happens) or prObstruentDeletion's own excludedMPRFeatures (so
+      the gate no longer needs mprAffixDelExcl at all) unblocks it independently, to the identical
+      successful (deleting) parse -- the same word, from two unrelated severances. mentanukam
+      (below) is the control showing the affix combination is otherwise well-formed. Placed AHEAD of
+      mentanukam deliberately: severing either construct ALSO flips mentanukam (pass->fail), and the
+      sweep reports whichever word differs FIRST in file order, so menanukam has to sit earlier than
+      mentanukam for its own fail->pass flip to be the one reported.
+    expect_fail: true
+    blocked_by: [prObstruentDeletion]
+    claimed_cells:
+      - cell: "MorphologicalPhonologicalRuleFeature::MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures::McDc:PresentGatedForm"
+        severing: >-
+          either mrDelExclSrc's own MorphologicalOutput.MPRFeatures="mprAffixDelExcl" write (the
+          writer) or prObstruentDeletion's own PhonologicalSubrule.excludedMPRFeatures="mprAffixDelExcl"
+          gate (the reader) -- severing either alone unblocks this word
+        before: "ok::-"
+        after: "ok::NPFX+TANUK+DELEXCLSRC|menanukam;NPFX+TANUK+DELEXCLSRC|menanukam"
+        distinct_from: mentanukam
+        proof: >-
+          menanukam is TANUK run through mrNPfx and mrDelExclSrc (which confers mprAffixDelExcl) then
+          attempting prObstruentDeletion; with both constructs intact the deletion is blocked (zero
+          parses for the deleted surface). Removing either the writer (mrDelExclSrc's own
+          MorphologicalOutput.MPRFeatures) or the reader (prObstruentDeletion's excludedMPRFeatures)
+          lets the deletion through, producing NPFX+TANUK+DELEXCLSRC|menanukam -- the PresentGatedForm
+          arm: the feature is PRESENT (conferred by the affix, never by TANUK's own declaration) and
+          the rule's exclusion GATES on it.
+
+  - word: mentanukam
+    note: >-
+      TANUK + mrNPfx + mrDelExclSrc ("-am"): underlying "meN+tanuk+am" -- the placeholder nasal
+      assimilates to alveolar "n" (prNasalAssimAlveolar, root-initial "t" is alveolar), but
+      mrDelExclSrc's own MorphologicalOutput MPRFeatures="mprAffixDelExcl" write means
+      prObstruentDeletion's excludedMPRFeatures="mprAffixDelExcl" gate now blocks the deletion that
+      would otherwise fire on the following voiceless obstruent "t" -- so "t" survives:
+      "mentanukam", not "menanukam". The control for menanukam (above). Two identical entries below:
+      the Main stratum is morphologicalRuleOrder="unordered", so mrNPfx (prefix) and mrDelExclSrc
+      (suffix) -- independent of each other's position -- are reached via two distinct derivation
+      orders that happen to produce the byte-identical surface and signature, exactly like any other
+      pair of non-conflicting affixes under this stratum's own ordering discipline.
+    parses:
+      - signature: "NPFX+TANUK+DELEXCLSRC|mentanukam"
+        rules: [mrNPfx, mrDelExclSrc, prNasalAssimAlveolar]
+      - signature: "NPFX+TANUK+DELEXCLSRC|mentanukam"
+        rules: [mrDelExclSrc, mrNPfx, prNasalAssimAlveolar]
+
+  - word: tanuk
+    note: TANUK bare root, no prefix or suffix -- a plain control.
+    parses:
+      - signature: "TANUK|tanuk"
+        rules: []

@@ -15,13 +15,13 @@ a mutator sits between the write and the read: a part-of-speech priority-union c
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: structurally hazardous: edge-cases/compounding-breadth declares 5 outputPartOfSpeech-bearing MorphologicalRule/CompoundingRule element(s) -- SynthesisAffixProcessRule.cs:181-182/SynthesisCompoundingRule.cs:181-182's unconditional PriorityUnion gives each one a chance to clobber POS before this reader's gate; which element actually intervenes, and word-level witness of an actual clobber, are not checked here
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- No `claimed_cells` entry names this cell, and the ledger's evidence names no specific word -- only fixture `edge-cases/compounding-breadth` (extracted from this cell's dataflow-obligations.tsv evidence text (names a fixture, no specific word)).
 
 ## Exact mutation and before/after parse
 
@@ -29,11 +29,19 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`CompoundingRule.outputPartOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed outputPartOfSpeech from 4 <CompoundingRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
+- Reader (`MorphologicalRule.requiredPartsOfSpeech` in `edge-cases/compounding-breadth`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)", example: 'katumi': ok::- -> ok::KA+TU+TPLSUF|katumi
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `edge-cases/compounding-breadth/grammar.xml`
+
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:79` = "posOther"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:104` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:128` = "posN"
+- Writer (payload declared here) `CompoundingRule.outputPartOfSpeech`: `grammar.xml:148` = "posN"
+- Reader (gate declared here) `MorphologicalRule.requiredPartsOfSpeech`: `grammar.xml:178` = "posN"
+
 ## Author's prose
 
 - No prose recorded: no claim, and no word is identified for this cell.

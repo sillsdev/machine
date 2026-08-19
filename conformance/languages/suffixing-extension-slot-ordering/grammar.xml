@@ -20,6 +20,17 @@
       <PartOfSpeech id="posV6"><Name>vAgreement</Name></PartOfSpeech>
       <!-- G5 (code-coverage-driven, second sweep): mrRecurSuf/mrStemReq below. -->
       <PartOfSpeech id="posV7"><Name>vSecondSweep</Name></PartOfSpeech>
+      <!-- Bucket-2 coverage: two MORE phonological subrules (prPhonoReq/prPhonoExcl) both target
+           the SAME nasal+voiceless-bilabial environment prNasalMutation does, so each needs its OWN
+           dedicated POS - otherwise a root built for one MPR-gated test would spuriously satisfy the
+           OTHER test's rule once its intended gate abstains (e.g. a root lacking mprPhExcl vacuously
+           satisfies prPhonoExcl's excludedMPRFeatures test even though it exists to demonstrate
+           prPhonoReq). This mirrors why posV itself exists (see this element's own header comment)
+           but for phonological rules that share a target instead of differing morphological
+           sections. (A third such rule, prPhonoExclAffix, lives in edge-cases/mpr-gated-exception
+           instead of here - see that fixture's own header for why.) -->
+      <PartOfSpeech id="posV3req"><Name>vPhonoReq</Name></PartOfSpeech>
+      <PartOfSpeech id="posV3excl"><Name>vPhonoExcl</Name></PartOfSpeech>
     </PartsOfSpeech>
     <!-- A fully-specified PhonologicalFeatureSystem (the G2a finding, restated in templatic-root-modification's
          own header): prNasalMutation's Voiceless->Voiced subrule CHANGES a segment's identity via a
@@ -118,6 +129,18 @@
            other entry ever sets, per the mrAgr/dabez finding above, but requiredMPRFeatures is a
            genuine set-membership gate, not unification). -->
       <MorphologicalPhonologicalRuleFeature id="mprRRealTest">RRealTest</MorphologicalPhonologicalRuleFeature>
+      <!-- Bucket-2 coverage (LexicalEntry.ruleFeatures/MorphologicalOutput.MPRFeatures ->
+           PhonologicalSubrule.{required,excluded}MPRFeatures): a phonological "minor rule" gated by
+           an MPR flag, the same mechanism English trisyllabic laxing uses (divine/divinity vs.
+           spine/spiny) - HCLoader.cs:2057/2058 emit PhonologicalSubrule.RequiredMprFeatures/
+           ExcludedMprFeatures from FLEx's Required/Excluded rule features on a phonological rule.
+           mprPhX/mprPhY share an overwrite group so a later affix's own MPR write can destroy a
+           root's lexically-preset flag before the phonological gate is checked, mirroring
+           mrThemeY/mrEndZ's own ygofz proof for the MorphologicalInput reader (see fusional-realizational-morphology). -->
+      <MorphologicalPhonologicalRuleFeature id="mprPhX">PhX</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprPhY">PhY</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeature id="mprPhExcl">PhExcl</MorphologicalPhonologicalRuleFeature>
+      <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprPhX mprPhY"><Name>PhonoGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprExtA mprExtB"><Name>ExtGroup</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="all" outputType="overwrite" features="mprConcA mprConcB"><Name>AllConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
       <MorphologicalPhonologicalRuleFeatureGroup isActive="yes" matchType="any" outputType="overwrite" features="mprConcC mprConcD"><Name>AnyConc</Name></MorphologicalPhonologicalRuleFeatureGroup>
@@ -290,13 +313,45 @@
           </PhonologicalSubrule>
         </PhonologicalSubrules>
       </PhonologicalRule>
+      <!-- Bucket-2 coverage: same post-nasal-voicing minor rule as prNasalMutation, but MPR-feature
+           gated instead of POS-gated, on posV3 (the mpr-groups section) so it can never touch
+           posV/posV2's own material. prPhonoReq (requiredMPRFeatures) + prPhonoDestroy below
+           reproduce the exact overwrite-before-gate shape fusional-realizational-morphology's ygofz already proves for
+           MorphologicalInput's required reader, here for PhonologicalSubrule's. -->
+      <PhonologicalRule id="prPhonoReq">
+        <Name>phonoReq</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVoicelessBilabial" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posV3req" requiredMPRFeatures="mprPhX">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVoicedBilabial" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- Root-preset exception (LexicalEntry.ruleFeatures->excludedMPRFeatures): a root flagged
+           mprPhExcl is a lexical exception that RESISTS the minor rule - the spiny/*spinity shape,
+           in miniature. -->
+      <PhonologicalRule id="prPhonoExcl">
+        <Name>phonoExcl</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVoicelessBilabial" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posV3excl" excludedMPRFeatures="mprPhExcl">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVoicedBilabial" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
     </PhonologicalRuleDefinitions>
     <Strata>
       <Stratum
         characterDefinitionTable="table1"
         morphologicalRuleOrder="linear"
-        morphologicalRules="mrTense rrPast mrExtX mrExtY mrEndZ mrEndW mrEndH mrRedup mrCaus mrAppl mrFV mrNumPl mrAgr mrRecurSuf mrStemReq rrRRealTest"
-        phonologicalRules="prNasalMutation"
+        morphologicalRules="mrTense rrPast mrExtX mrExtY mrEndZ mrEndW mrEndH mrRedup mrCaus mrAppl mrFV mrNumPl mrAgr mrRecurSuf mrStemReq rrRRealTest mrPhonoDestroy mrPhXSource"
+        phonologicalRules="prNasalMutation prPhonoReq prPhonoExcl"
       >
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -499,6 +554,40 @@
             <RequiredHeadFeatures><FeatureValue feature="featG5" symbolValues="symG5B" /></RequiredHeadFeatures>
             <MorphemeId>RREALTEST</MorphemeId>
           </RealizationalRule>
+          <!-- Bucket-2 coverage: the destroyer for prPhonoReq's required-MPR test. Its OWN
+               MorphologicalOutput.MPRFeatures write (mprPhY) is the writer under test for
+               MorphologicalOutput.MPRFeatures->PhonologicalSubrule.requiredMPRFeatures - applying it
+               to a root that lexically presets mprPhX (PhonoGroup, outputType=overwrite) drops that
+               preset before prPhonoReq's own gate is ever checked, exactly as mrThemeY does to GOF's
+               mprPedA ahead of mrEndZ (fusional-realizational-morphology). -->
+          <MorphologicalRule id="mrPhonoDestroy" requiredPartsOfSpeech="posV3req" outputPartOfSpeech="posV3req">
+            <Name>phonoDestroy</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPhonoDestroy">
+                <MorphologicalInput><PhoneticSequence id="stemPhonoDestroy"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPhY"><CopyFromInput index="stemPhonoDestroy" /><InsertSegments><PhoneticShape>el</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PHDESTROY</MorphemeId>
+          </MorphologicalRule>
+          <!-- Bucket-2 coverage: an AFFIX-sourced writer of mprPhX itself (mirroring mrThemeX's own
+               role for fusional-realizational-morphology's ygofz), needed for
+               InteractionChainLedger to count MorphologicalOutput.MPRFeatures->PhonologicalSubrule.
+               requiredMPRFeatures as exercised at all (the same identifier, mprPhX, has to appear in
+               both a MorphologicalOutput and a PhonologicalSubrule attribute value SOMEWHERE in this
+               fixture) - nbael/npael's own pair witness only needs PPO's LexicalEntry-sourced mprPhX
+               destroyed by mrPhonoDestroy's DIFFERENT write (mprPhY); this rule supplies the
+               co-occurrence fact separately, on its own root, so it never touches nbael/npael/nba/npa. -->
+          <MorphologicalRule id="mrPhXSource" requiredPartsOfSpeech="posV3req" outputPartOfSpeech="posV3req">
+            <Name>phXSource</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPhXSource">
+                <MorphologicalInput><PhoneticSequence id="stemPhXSource"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprPhX"><CopyFromInput index="stemPhXSource" /><InsertSegments><PhoneticShape>ez</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PHXSRC</MorphemeId>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <AffixTemplates>
           <AffixTemplate requiredPartsOfSpeech="posV4">
@@ -539,6 +628,29 @@
             <Allomorphs><Allomorph id="aNal"><PhoneticShape>nal</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>NAL</MorphemeId>
             <Gloss>root.nal</Gloss>
+          </LexicalEntry>
+          <!-- Bucket-2 coverage (LexicalEntry.ruleFeatures/MorphologicalOutput.MPRFeatures ->
+               PhonologicalSubrule.{required,excluded}MPRFeatures): three nasal+voiceless-bilabial
+               roots feeding prPhonoReq/prPhonoExcl/prPhonoExclAffix - see words.yaml for the
+               severance-witness words these roots exist for. -->
+          <!-- Bucket-2 coverage: bare root for mrPhXSource (see that rule's own comment) - "lis" has
+               no nasal+voiceless-bilabial sequence, so prPhonoReq's mutation never fires here even
+               though its MPR gate is satisfied; this root exists purely for the chain-exercised
+               co-occurrence fact, not to demonstrate the mutation itself. -->
+          <LexicalEntry id="ePhXRoot" partOfSpeech="posV3req">
+            <Allomorphs><Allomorph id="aPhXRoot"><PhoneticShape>lis</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PHXROOT</MorphemeId>
+            <Gloss>root.phxroot</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePpo" partOfSpeech="posV3req" ruleFeatures="mprPhX">
+            <Allomorphs><Allomorph id="aPpo"><PhoneticShape>npa</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PPO</MorphemeId>
+            <Gloss>root.ppo</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePpe" partOfSpeech="posV3excl" ruleFeatures="mprPhExcl">
+            <Allomorphs><Allomorph id="aPpe"><PhoneticShape>mpe</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PPE</MorphemeId>
+            <Gloss>root.ppe</Gloss>
           </LexicalEntry>
           <!-- Ordering discriminator for mrEndZ/mrEndW/mrEndH: ruleFeatures preset every group member
                all three rules gate on (mprExtA, both AllConc members, one AnyConc member), so a

@@ -29,30 +29,35 @@ No `claimed_cells` entry recorded an author-reviewed severing/before/after for t
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-- Writer (`LexicalEntry.partOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed partOfSpeech from 16 <LexicalEntry> element(s)", example: 'mba': ok::PAV|mba -> ok::-
-- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Unobservable, mutation="removed requiredPartsOfSpeech from 1 <PhonologicalSubrule> element(s)"
+- Writer (`LexicalEntry.partOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed partOfSpeech from 19 <LexicalEntry> element(s)", example: 'mpe': ok::PPE|mpe -> ok::-
+- Reader (`PhonologicalSubrule.requiredPartsOfSpeech` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed requiredPartsOfSpeech from 3 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
 
 ## Grammar citations
 
 ### `languages/suffixing-extension-slot-ordering/grammar.xml`
 
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:515` = "posV"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:521` = "posV2"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:528` = "posV3"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:533` = "posV3"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:538` = "posV3"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:546` = "posV3"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:552` = "posV4"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:558` = "posV5"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:564` = "posV6"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:573` = "posV6"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:581` = "posV7"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:588` = "posV7"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:593` = "posV7"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:602` = "posV7"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:608` = "posV7"
-- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:614` = "posV7"
-- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:285` = "posV"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:604` = "posV"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:610` = "posV2"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:617` = "posV3"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:622` = "posV3"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:627` = "posV3"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:640` = "posV3req"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:645` = "posV3req"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:650` = "posV3excl"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:658` = "posV3"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:664` = "posV4"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:670` = "posV5"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:676` = "posV6"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:685` = "posV6"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:693` = "posV7"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:700` = "posV7"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:705` = "posV7"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:714` = "posV7"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:720` = "posV7"
+- Writer (payload declared here) `LexicalEntry.partOfSpeech`: `grammar.xml:726` = "posV7"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:308` = "posV"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:325` = "posV3req"
+- Reader (gate declared here) `PhonologicalSubrule.requiredPartsOfSpeech`: `grammar.xml:340` = "posV3excl"
 
 ## Author's prose
 

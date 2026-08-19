@@ -50,6 +50,42 @@ words:
         exercises:
           - "CompoundingRule"
 
+  - word: katumi
+    note: >-
+      THE distinguishing row for CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech:
+      KA+TU compounded (crJoin, outputPartOfSpeech="posOther") then attempting mrTplSuf ("-mi") --
+      mrTplSuf requires posN, and crJoin's compound is posOther, a genuine CONFLICT, so mrTplSuf can
+      never apply to it. This is NOT a vacuous-absence trick (SynthesisCompoundingRule.cs seeds the
+      output's syntactic features from the HEAD's own required POS -- posN here -- before
+      outputPartOfSpeech's PriorityUnion overwrites it, so a compound's result is never actually
+      "unset"): removing crJoin's own outputPartOfSpeech (the writer) lets that seeded posN survive
+      unoverwritten, which is EXACTLY what mrTplSuf requires, so it applies. Removing mrTplSuf's own
+      requiredPartsOfSpeech (the reader) instead lets it apply regardless of part of speech. Either
+      severance reaches the identical successful parse independently. katu (above) is the control
+      showing the compound is otherwise well-formed without mrTplSuf.
+    expect_fail: true
+    blocked_by: [crJoin]
+    exercises:
+      - "CompoundingRule"
+    claimed_cells:
+      - cell: "PartOfSpeech::CompoundingRule.outputPartOfSpeech->MorphologicalRule.requiredPartsOfSpeech::McDc:AbsentGatedForm"
+        severing: >-
+          either crJoin's own CompoundingRule.outputPartOfSpeech="posOther" (the writer) or
+          mrTplSuf's own MorphologicalRule.requiredPartsOfSpeech="posN" gate (the reader) -- severing
+          either alone unblocks this word
+        before: "ok::-"
+        after: "ok::KA+TU+TPLSUF|katumi"
+        distinct_from: katu
+        proof: >-
+          katumi is KA+TU (crJoin's compound, tagged posOther) attempting mrTplSuf; with both
+          constructs intact the part-of-speech conflict (posOther vs. mrTplSuf's own required posN)
+          blocks it, so this has zero parses. Removing either the writer (crJoin's own
+          outputPartOfSpeech, so the compound's output keeps the head's own seeded posN instead of
+          being overwritten to posOther) or the reader (mrTplSuf's requiredPartsOfSpeech) lets the
+          rule apply anyway, producing KA+TU+TPLSUF|katumi -- the AbsentGatedForm arm: the required
+          part of speech is ABSENT (overwritten away, though never from KA's own declaration) and the
+          rule's requirement GATES on it.
+
   - word: kaki
     note: Negative control for NonHeadRequiredHeadFeatures. "ki" is singular, not plural.
     expect_fail: true

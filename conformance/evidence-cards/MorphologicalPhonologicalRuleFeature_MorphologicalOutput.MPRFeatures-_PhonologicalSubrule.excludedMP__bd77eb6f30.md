@@ -15,9 +15,9 @@ no mutator sits between the write and the read: a compounding non-head drop (the
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Unknown** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: no exercising fixture declares a CompoundingRule -- the drop mechanism (SynthesisCompoundingRule.cs:236) cannot fire in any exercising fixture as authored
 
 ## Fixture and word
 

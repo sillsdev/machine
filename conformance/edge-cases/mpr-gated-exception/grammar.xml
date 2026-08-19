@@ -33,6 +33,9 @@
     </PhonologicalFeatureSystem>
     <MorphologicalPhonologicalRuleFeatures>
       <MorphologicalPhonologicalRuleFeature id="mprException">Exception</MorphologicalPhonologicalRuleFeature>
+      <!-- Bucket-2 coverage: affix-conferred (rather than root-preset) exception, feeding
+           prObstruentDeletion's own excludedMPRFeatures below. -->
+      <MorphologicalPhonologicalRuleFeature id="mprAffixDelExcl">AffixDelExcl</MorphologicalPhonologicalRuleFeature>
     </MorphologicalPhonologicalRuleFeatures>
     <CharacterDefinitionTable id="table1">
       <Name>Main</Name>
@@ -178,7 +181,15 @@
         <Name>obstruentDeletion</Name>
         <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVoicelessObstruent" /></PhoneticSequence></PhoneticInput>
         <PhonologicalSubrules>
-          <PhonologicalSubrule requiredPartsOfSpeech="posNasal">
+          <!-- Bucket-2 coverage (MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures):
+               excludedMPRFeatures="mprAffixDelExcl" is a lexical-exception-by-affix gate on this
+               same junction-deletion rule - see mrDelExclSrc below, the affix that confers it, and
+               eTanuk/words.yaml for the severance witness. HCLoader.cs:2058 emits
+               PhonologicalSubrule.ExcludedMprFeatures from FLEx's Excluded rule features on a
+               phonological rule; nothing about mprException (the root-sourced exception this fixture
+               already demonstrates on mrSuf's MorphologicalInput) changes this subrule's own
+               behavior, since mprException is never referenced here. -->
+          <PhonologicalSubrule requiredPartsOfSpeech="posNasal" excludedMPRFeatures="mprAffixDelExcl">
             <PhoneticOutput />
             <Environment>
               <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
@@ -189,7 +200,7 @@
     </PhonologicalRuleDefinitions>
     <Strata>
       <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
-        morphologicalRules="mrNPfx mrSuf mrSufAlt"
+        morphologicalRules="mrNPfx mrSuf mrSufAlt mrDelExclSrc"
         phonologicalRules="prNasalAssimBilabial prNasalAssimAlveolar prObstruentDeletion">
         <Name>Main</Name>
         <MorphologicalRuleDefinitions>
@@ -225,6 +236,20 @@
             </MorphologicalSubrules>
             <MorphemeId>SUFALT</MorphemeId>
           </MorphologicalRule>
+          <!-- Bucket-2 coverage: the affix-conferred-exception source for prObstruentDeletion's own
+               excludedMPRFeatures. Its OWN MorphologicalOutput.MPRFeatures write (mprAffixDelExcl)
+               is the writer under test for MorphologicalOutput.MPRFeatures->PhonologicalSubrule.
+               excludedMPRFeatures. -->
+          <MorphologicalRule id="mrDelExclSrc" requiredPartsOfSpeech="posNasal" outputPartOfSpeech="posNasal">
+            <Name>delExclSrc</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDelExclSrc">
+                <MorphologicalInput><PhoneticSequence id="stemDelExclSrc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprAffixDelExcl"><CopyFromInput index="stemDelExclSrc" /><InsertSegments><PhoneticShape>am</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DELEXCLSRC</MorphemeId>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
           
@@ -239,7 +264,15 @@
             <MorphemeId>BALO</MorphemeId>
             <Gloss>gather</Gloss>
           </LexicalEntry>
-          
+
+          <!-- Bucket-2 coverage: feeds mrDelExclSrc/prObstruentDeletion's own excludedMPRFeatures
+               test - see words.yaml for the severance witness. -->
+          <LexicalEntry id="eTanuk" partOfSpeech="posNasal">
+            <Allomorphs><Allomorph id="aTanuk"><PhoneticShape>tanuk</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TANUK</MorphemeId>
+            <Gloss>weave</Gloss>
+          </LexicalEntry>
+
           <LexicalEntry id="eSanit" partOfSpeech="posMPR">
             <Allomorphs><Allomorph id="aSanit"><PhoneticShape>sanit</PhoneticShape></Allomorph></Allomorphs>
             <MorphemeId>SANIT</MorphemeId>

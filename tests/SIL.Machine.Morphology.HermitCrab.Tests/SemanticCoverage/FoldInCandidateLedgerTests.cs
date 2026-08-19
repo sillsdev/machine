@@ -56,15 +56,15 @@ public sealed class FoldInCandidateLedgerTests
                 + $"surfacePresentElsewhere={surfacePresentElsewhere}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(93));
-        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(1));
-        Assert.That(interfaceNeverWitnessed, Is.EqualTo(27));
+        Assert.That(rows, Has.Count.EqualTo(92));
+        Assert.That(interfaceEdgeCaseOnly, Is.EqualTo(2));
+        Assert.That(interfaceNeverWitnessed, Is.EqualTo(25));
         Assert.That(surfaceEdgeCaseOnly, Is.EqualTo(57));
         Assert.That(surfacePresentElsewhere, Is.EqualTo(8));
     }
 
     [Test]
-    public void TheOneInterfaceFoldInCandidateIsExcludedMprFeatures()
+    public void InterfaceFoldInCandidatesAreTheEdgeCaseOnlyMprAndCompoundOutput()
     {
         string root = RepositoryRoot();
         IReadOnlyList<FoldInCandidateLedger.Row> rows = FoldInCandidateLedger.Read(root);
@@ -73,8 +73,8 @@ public sealed class FoldInCandidateLedgerTests
             .Where(r => r.Layer == ObligationLayer.Interface && r.Category == FoldInCategory.EdgeCaseOnly)
             .ToArray();
 
-        Assert.That(candidates, Has.Length.EqualTo(1));
-        Assert.That(candidates[0].Obligation, Is.EqualTo("MorphologicalInput.excludedMPRFeatures"));
+        Assert.That(candidates, Has.Length.EqualTo(2));
+        Assert.That(candidates.Select(r => r.Obligation), Is.EquivalentTo(new[] { "CompoundingRule.outputPartOfSpeech", "MorphologicalInput.excludedMPRFeatures" }));
     }
 
     // Cheap: reads InterfaceInventoryLedger/InterfaceWitnessLedger/EvidenceLedger back off disk plus a

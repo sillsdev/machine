@@ -15,29 +15,44 @@ the payload IS present and the gated form IS blocked.
 
 ## Machine status
 
-**NotSatisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
+**Satisfied** -- machine-established (`conformance/dataflow-obligations.tsv`), never a review verdict. A human sign-off is a separate fact and is never recorded here.
 
-Ledger evidence: chain unexercised: no fixture sets writer and reader to a shared id (conformance/interaction-chains.tsv)
+Ledger evidence: paired witness: severing writer and reader both flip 'mbe' from failed to successful parse in languages/suffixing-extension-slot-ordering (conformance/interface-witness.tsv)
 
 ## Fixture and word
 
-- No fixture or word is identified for this cell: no claim, and the ledger's evidence names none.
+- Claimed by word **'mbe'** in `languages/suffixing-extension-slot-ordering` (a `claimed_cells` entry in `words.yaml`).
 
 ## Exact mutation and before/after parse
 
-No `claimed_cells` entry recorded an author-reviewed severing/before/after for this cell.
+### Author's claim (languages/suffixing-extension-slot-ordering / 'mbe')
+
+- Severing: either PPE's own LexicalEntry.ruleFeatures="mprPhExcl" (the writer) or prPhonoExcl's own PhonologicalSubrule.excludedMPRFeatures="mprPhExcl" gate (the reader) -- severing either alone unblocks this word
+- Before: `ok::-`
+- After: `ok::PPE|mbe`
 
 ### Machine witness (`conformance/interface-witness.tsv`)
 
-No fixture is identified for this cell, so no witness row can be looked up.
+- Writer (`LexicalEntry.ruleFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed ruleFeatures from 7 <LexicalEntry> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
+- Reader (`PhonologicalSubrule.excludedMPRFeatures` in `languages/suffixing-extension-slot-ordering`): verdict=Evidenced, mutation="removed excludedMPRFeatures from 1 <PhonologicalSubrule> element(s)", example: 'mbe': ok::- -> ok::PPE|mbe
 
 ## Grammar citations
 
-No fixture is identified for this cell, so no `grammar.xml` lines can be cited.
+### `languages/suffixing-extension-slot-ordering/grammar.xml`
+
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:617` = "mprConcA mprConcB"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:622` = "mprConcA mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:645` = "mprPhX"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:650` = "mprPhExcl"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:658` = "mprExtA mprConcA mprConcB mprConcC"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:714` = "mprRRealTest"
+- Writer (payload declared here) `LexicalEntry.ruleFeatures`: `grammar.xml:720` = "mprRRealTest"
+- Reader (gate declared here) `PhonologicalSubrule.excludedMPRFeatures`: `grammar.xml:340` = "mprPhExcl"
+
 ## Author's prose
 
-- No prose recorded: no claim, and no word is identified for this cell.
+- `proof:` (claimed_cells, 'mbe' in languages/suffixing-extension-slot-ordering): mbe is PPE (carries mprPhExcl) attempting the post-nasal voicing minor rule; with both constructs intact the mutation is blocked (zero parses). Removing either the writer (PPE's ruleFeatures) or the reader (prPhonoExcl's excludedMPRFeatures) lets the same mutation through, producing PPE|mbe -- the PresentGatedForm arm: the feature is PRESENT on the root and the rule's exclusion GATES on it.
 
 ## `distinct_from` counterpart
 
-No claim exists for this cell, so no `distinct_from` counterpart is recorded.
+- 'mbe' in languages/suffixing-extension-slot-ordering: `distinct_from` **'mpe'** (expect_fail=False) vs. this word (expect_fail=True).
