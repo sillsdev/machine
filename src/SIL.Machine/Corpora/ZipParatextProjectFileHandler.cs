@@ -2,6 +2,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using SIL.IO;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Corpora
 {
@@ -26,9 +27,7 @@ namespace SIL.Machine.Corpora
             ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e =>
                 e.FullName.Equals(fileName, System.StringComparison.InvariantCultureIgnoreCase)
             );
-            if (entry == null)
-                return null;
-            return entry.Open();
+            return entry?.OpenBoundedStream();
         }
 
         public string Find(string extension)
@@ -36,9 +35,7 @@ namespace SIL.Machine.Corpora
             ZipArchiveEntry entry = _archive.Entries.FirstOrDefault(e =>
                 e.FullName.EndsWith(extension, System.StringComparison.InvariantCultureIgnoreCase)
             );
-            if (entry == null)
-                return null;
-            return entry.FullName;
+            return entry?.FullName;
         }
 
         public UsfmStylesheet CreateStylesheet(string fileName)
