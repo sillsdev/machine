@@ -12,9 +12,19 @@ public static class TestHelpers
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "data", "toy_corpus_fa");
     public static string ToyCorpusFastAlignConfigFileName => Path.Combine(ToyCorpusFastAlignFolderName, "smt.cfg");
 
-    public static IEnumerable<string> Split(this string segment)
+    public static IReadOnlyList<string> AlignmentStrings(
+        IParallelTextCorpus corpus,
+        IEnumerable<string>? textIds = null
+    )
     {
-        return segment.Split(' ');
+        return
+        [
+            .. corpus
+                .GetRows(textIds)
+                .SelectMany(row =>
+                    row.AlignedWordPairs.Select(wp => new AlignedWordPair(wp.SourceIndex, wp.TargetIndex).ToString())
+                ),
+        ];
     }
 
     public static ParallelTextCorpus CreateTestParallelCorpus()
@@ -22,8 +32,7 @@ public static class TestHelpers
         var srcCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[]
-                {
+                [
                     Row(1, "isthay isyay ayay esttay-N ."),
                     Row(2, "ouyay ouldshay esttay-V oftenyay ."),
                     Row(3, "isyay isthay orkingway ?"),
@@ -32,15 +41,14 @@ public static class TestHelpers
                     Row(6, "orkway-N ancay ebay ardhay !"),
                     Row(7, "ayay esttay-N ancay ebay ardhay ."),
                     Row(8, "isthay isyay ayay ordway !"),
-                }
+                ]
             )
         );
 
         var trgCorpus = new DictionaryTextCorpus(
             new MemoryText(
                 "text1",
-                new[]
-                {
+                [
                     Row(1, "this is a test N ."),
                     Row(2, "you should test V often ."),
                     Row(3, "is this working ?"),
@@ -49,11 +57,64 @@ public static class TestHelpers
                     Row(6, "work N can be hard !"),
                     Row(7, "a test N can be hard ."),
                     Row(8, "this is a word !"),
-                }
+                ]
             )
         );
 
         return new ParallelTextCorpus(srcCorpus, trgCorpus);
+    }
+
+    public static ThotSymmetrizedWordAlignmentModel CreateTrainedModel(
+        IParallelTextCorpus corpus,
+        ThotWordAlignmentModelType modelType = ThotWordAlignmentModelType.FastAlign
+    )
+    {
+        var model = ThotSymmetrizedWordAlignmentModel.Create(modelType);
+        model.Heuristic = SymmetrizationHeuristic.GrowDiagFinalAnd;
+        model.EmitTrainingAlignments = true;
+        using ITrainer trainer = model.CreateTrainer(corpus);
+        trainer.TrainAsync().GetAwaiter().GetResult();
+        trainer.SaveAsync().GetAwaiter().GetResult();
+        return model;
+    }
+
+    public static ParallelTextCorpus CreateTwoTextParallelCorpus()
+    {
+        var src = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                [
+                    new TextRow("text1", 1) { Segment = "el gato".Split(' ') },
+                    new TextRow("text1", 2) { Segment = "la casa".Split(' ') },
+                ]
+            ),
+            new MemoryText(
+                "text2",
+                [
+                    new TextRow("text2", 1) { Segment = "el perro corre".Split(' ') },
+                    new TextRow("text2", 2) { Segment = "la mesa".Split(' ') },
+                ]
+            )
+        );
+
+        var trg = new DictionaryTextCorpus(
+            new MemoryText(
+                "text1",
+                [
+                    new TextRow("text1", 1) { Segment = "the cat".Split(' ') },
+                    new TextRow("text1", 2) { Segment = "the house".Split(' ') },
+                ]
+            ),
+            new MemoryText(
+                "text2",
+                [
+                    new TextRow("text2", 1) { Segment = "the dog runs".Split(' ') },
+                    new TextRow("text2", 2) { Segment = "the table".Split(' ') },
+                ]
+            )
+        );
+
+        return new ParallelTextCorpus(src, trg);
     }
 
     private static TextRow Row(int rowRef, string segment)

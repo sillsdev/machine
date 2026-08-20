@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using SIL.Machine.Corpora;
 using SIL.Machine.Utils;
 
 namespace SIL.Machine.Translation.Thot;
@@ -175,5 +176,90 @@ public class ThotFastAlignWordAlignmentModelTests
         string modelPrefix = Path.Combine(tempDir.Path, "src_trg_invswm");
         File.WriteAllText(modelPrefix + ".src", "corrupted");
         Assert.Throws<InvalidOperationException>(() => new ThotFastAlignWordAlignmentModel(modelPrefix));
+    }
+
+    [Test]
+    public async Task EmitTrainingAlignments_SingleDirection()
+    {
+        ParallelTextCorpus corpus = TestHelpers.CreateTestParallelCorpus();
+        ParallelTextRow row = corpus.GetRows().First();
+        using var model = new ThotFastAlignWordAlignmentModel();
+        model.EmitTrainingAlignments = true;
+        ITrainer trainer = model.CreateTrainer(corpus);
+        await trainer.TrainAsync();
+        await trainer.SaveAsync();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model.TrainingAlignmentCount, Is.EqualTo(8));
+            // For a deterministic model, the retained training alignment matches the inference alignment,
+            // and it survives the trainer being closed.
+            Assert.That(
+                model.GetTrainingAlignment(0).ValueEquals(model.Align(row.SourceSegment, row.TargetSegment)),
+                Is.True
+            );
+        }
+    }
+
+    [Test]
+    public async Task EmitTrainingAlignments_Symmetrized()
+    {
+        ParallelTextCorpus corpus = TestHelpers.CreateTestParallelCorpus();
+        ParallelTextRow row = corpus.GetRows().First();
+        using var model = new ThotSymmetrizedWordAlignmentModel(
+            new ThotFastAlignWordAlignmentModel(),
+            new ThotFastAlignWordAlignmentModel()
+        );
+        model.EmitTrainingAlignments = true;
+        ITrainer trainer = model.CreateTrainer(corpus);
+        await trainer.TrainAsync();
+        await trainer.SaveAsync();
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model.TrainingAlignmentCount, Is.EqualTo(8));
+            // The C++ symmetrized transductive alignment matches the C++ symmetrized inference alignment.
+            Assert.That(
+                model.GetTrainingAlignment(0).ValueEquals(model.Align(row.SourceSegment, row.TargetSegment)),
+                Is.True
+            );
+        }
+    }
+
+    [Test]
+    public async Task EmitTrainingAlignments_Disabled()
+    {
+        ParallelTextCorpus corpus = TestHelpers.CreateTestParallelCorpus();
+        using var model = new ThotFastAlignWordAlignmentModel();
+        ITrainer trainer = model.CreateTrainer(corpus);
+        await trainer.TrainAsync();
+        await trainer.SaveAsync();
+        // When emission is not enabled, retrieval returns a degenerate result rather than raising.
+        WordAlignmentMatrix alignment = model.GetTrainingAlignment(0);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(alignment.ColumnCount, Is.Zero);
+            Assert.That(alignment.RowCount, Is.Zero);
+        }
+    }
+
+    [Test]
+    public void WordAlignCorpus_TransductiveTextIdsKeepIndexInSync()
+    {
+        // Filtering by text must not desync the training-alignment index: the rows for a requested text
+        // must get exactly the alignments they got in the unfiltered pass, not those of earlier rows.
+        // The model is trained up front so that both passes read the same training alignments.
+        IParallelTextCorpus parallelCorpus = TestHelpers.CreateTwoTextParallelCorpus();
+        using ThotSymmetrizedWordAlignmentModel model = TestHelpers.CreateTrainedModel(parallelCorpus);
+        IParallelTextCorpus corpus = parallelCorpus.WordAlign(model);
+        List<ParallelTextRow> full = [.. corpus.GetRows()];
+        IReadOnlyList<string> text2Expected =
+        [
+            .. full.Skip(2)
+                .SelectMany(row =>
+                    row.AlignedWordPairs.Select(wp => new AlignedWordPair(wp.SourceIndex, wp.TargetIndex).ToString())
+                ),
+        ];
+
+        IReadOnlyList<string> text2Actual = TestHelpers.AlignmentStrings(corpus, ["text2"]);
+        Assert.That(text2Actual, Is.EqualTo(text2Expected));
     }
 }
