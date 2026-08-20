@@ -16,7 +16,6 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
 internal static class CSharpInventoryReader
 {
     private const string Profile = "sil.machine.hc-semantic-catalog/v1";
-    private const string BranchMetadata = "SIL.Machine.Morphology.HermitCrab.SemanticBranch";
     private const string XElementMetadata = "System.Xml.Linq.XElement";
     private const string XContainerMetadata = "System.Xml.Linq.XContainer";
     private const string XNameMetadata = "System.Xml.Linq.XName";
@@ -152,7 +151,6 @@ internal static class CSharpInventoryReader
             var configured = new List<InventorySurface>();
             var configuredIds = new HashSet<string>(StringComparer.Ordinal);
             context.CollectModelSurfaces(configured, configuredIds);
-            context.CollectMarkers(configured, configuredIds);
             foreach (InventorySurface surface in configured)
                 Merge(models, surface.Id, surface, configuration.Name);
             foreach (ResolvedXml candidate in context.CollectXmlCandidates())
@@ -553,7 +551,6 @@ internal static class CSharpInventoryReader
         private readonly Dictionary<string, int> _anonymousFunctionOrdinals = new(StringComparer.Ordinal);
         private readonly List<XmlCandidate> _xml = new();
         private readonly List<DecisionCandidate> _decisions = new();
-        private readonly HashSet<string> _markers = new(StringComparer.Ordinal);
         private readonly HashSet<string> _reachable = new(StringComparer.Ordinal);
         private readonly List<InventoryDiagnostic> _diagnostics = new();
         private readonly Dictionary<ISymbol, DelegateTarget> _localDelegates = new(SymbolEqualityComparer.Default);
@@ -2080,60 +2077,6 @@ internal static class CSharpInventoryReader
                 .ToArray();
         }
 
-        public void CollectMarkers(List<InventorySurface> surfaces, HashSet<string> ids)
-        {
-            foreach (
-                (SyntaxTree tree, SourceInput source) in _sourceByTree.OrderBy(
-                    pair => pair.Value.Path,
-                    StringComparer.Ordinal
-                )
-            )
-            {
-                SemanticModel model = _models[tree];
-                foreach (
-                    InvocationExpressionSyntax invocation in tree.GetRoot()
-                        .DescendantNodes()
-                        .OfType<InvocationExpressionSyntax>()
-                )
-                {
-                    if (HasAuditedScopes && !Audited(model, invocation))
-                        continue;
-                    IMethodSymbol? method = model.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-                    if (!IsBranch(method))
-                    {
-                        if (IsUnresolvedBranchInvocation(model, invocation, method))
-                            throw new FormatException(
-                                $"{source.Path}:{Location(invocation, source)}: unresolved SemanticBranch.Hit target."
-                            );
-                        continue;
-                    }
-                    string marker =
-                        ConstantString(model, invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression)
-                        ?? throw new FormatException(
-                            $"{source.Path}:{Location(invocation, source)}: SemanticBranch.Hit requires a constant string ID."
-                        );
-                    if (marker.Length == 0)
-                        throw new FormatException(
-                            $"{source.Path}:{Location(invocation, source)}: SemanticBranch.Hit requires a non-empty string ID."
-                        );
-                    string id = $"branch:{marker}";
-                    if (!_markers.Add(id))
-                        throw new InvalidOperationException($"Duplicate semantic branch ID '{marker}'.");
-                    Add(
-                        surfaces,
-                        ids,
-                        new InventorySurface(
-                            id,
-                            "branch-marker",
-                            marker,
-                            ContainingId(model, invocation),
-                            Location(invocation, source)
-                        )
-                    );
-                }
-            }
-        }
-
         public IReadOnlyList<ResolvedDecision> CollectDecisionCandidates()
         {
             foreach (
@@ -2536,69 +2479,6 @@ internal static class CSharpInventoryReader
                 type.OriginalDefinition.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
             );
             return value is XElementMetadata or XContainerMetadata;
-        }
-
-        private bool IsBranch(IMethodSymbol? method) =>
-            method is not null
-            && method.Name == "Hit"
-            && method.Parameters.Length == 1
-            && method.Parameters[0].Type.SpecialType == SpecialType.System_String
-            && _compilation.GetTypeByMetadataName(BranchMetadata) is INamedTypeSymbol expected
-            && method.ContainingType is not null
-            && SymbolEqualityComparer.Default.Equals(method.ContainingType.OriginalDefinition, expected);
-
-        private bool IsUnresolvedBranchInvocation(
-            SemanticModel model,
-            InvocationExpressionSyntax invocation,
-            IMethodSymbol? resolvedMethod
-        )
-        {
-            if (resolvedMethod is not null || InvocationName(invocation) != "Hit")
-                return false;
-            if (model.GetSymbolInfo(invocation).CandidateSymbols.OfType<IMethodSymbol>().Any(IsBranch))
-                return true;
-            if (invocation.Expression is IdentifierNameSyntax)
-                return model
-                    .SyntaxTree.GetRoot()
-                    .DescendantNodes()
-                    .OfType<UsingDirectiveSyntax>()
-                    .Any(usingDirective =>
-                        usingDirective.StaticKeyword != default
-                        && usingDirective.Name is not null
-                        && IsUnresolvedSymbol(model.GetSymbolInfo(usingDirective.Name).Symbol)
-                        && (
-                            TerminalName(usingDirective.Name) == "SemanticBranch"
-                            || IsUnresolvedAlias(model, usingDirective.Name, "SemanticBranch")
-                        )
-                    );
-            if (invocation.Expression is not MemberAccessExpressionSyntax member)
-                return false;
-            if (model.GetTypeInfo(member.Expression).Type?.TypeKind == TypeKind.Dynamic)
-                return true;
-
-            INamedTypeSymbol? expected = _compilation.GetTypeByMetadataName(BranchMetadata);
-            ISymbol? receiverSymbol = model.GetSymbolInfo(member.Expression).Symbol;
-            if (
-                expected is not null
-                && receiverSymbol is INamedTypeSymbol receiverType
-                && SymbolEqualityComparer.Default.Equals(receiverType.OriginalDefinition, expected)
-            )
-                return true;
-
-            if (
-                member
-                    .Expression.DescendantNodesAndSelf()
-                    .OfType<TypeSyntax>()
-                    .Any(type =>
-                        model.GetSymbolInfo(type).Symbol is INamedTypeSymbol referenced
-                        && expected is not null
-                        && SymbolEqualityComparer.Default.Equals(referenced.OriginalDefinition, expected)
-                    )
-            )
-                return true;
-
-            return member.Expression.ToString().Split('.').Last() == "SemanticBranch"
-                || IsUnresolvedAlias(model, member.Expression, "SemanticBranch");
         }
 
         private static bool IsUnresolvedAliasReceiver(

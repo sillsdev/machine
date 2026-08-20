@@ -53,7 +53,6 @@ public static class CatalogBootstrap
         ["callable"] = new("loader", "A loader method. Load-time structure."),
         ["enum-member"] = new("loader", "A C# enum member of the loader model."),
         ["rule-implementation"] = new("loader", "A concrete rule type in the engine model."),
-        ["branch-marker"] = new("loader", "A runtime semantic marker."),
         ["decision-if"] = new(
             "unclassified",
             "A conditional branch in an audited C# scope; semantic phase effects require human classification."

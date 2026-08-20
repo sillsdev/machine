@@ -148,132 +148,6 @@ public sealed class CSharpInventoryReaderTests
     }
 
     [Test]
-    public void SemanticBranchResolutionSupportsAliasesGlobalQualificationAndUsingStatic()
-    {
-        const string Source = """
-            using BranchAlias = SIL.Machine.Morphology.HermitCrab.SemanticBranch;
-            using static SIL.Machine.Morphology.HermitCrab.SemanticBranch;
-            namespace Fixture;
-            public sealed class SemanticBranch
-            {
-                public static void Hit(string id) { }
-            }
-            public sealed class Loader
-            {
-                public void Run()
-                {
-                    BranchAlias.Hit("alias");
-                    global::SIL.Machine.Morphology.HermitCrab.SemanticBranch.Hit("global");
-                    Hit("static");
-                    SemanticBranch.Hit("unrelated");
-                }
-            }
-            """;
-
-        SemanticInventory inventory = SemanticCoverageInventory.Generate(
-            new SemanticCoverageSourceSet("fixture.dtd", Dtd, new[] { new CSharpInventoryInput("fixture.cs", Source) })
-        );
-        var markers = inventory
-            .Surfaces.Where(surface => surface.Kind == "branch-marker")
-            .Select(surface => surface.Name)
-            .ToArray();
-        Assert.That(markers, Is.EquivalentTo(new[] { "alias", "global", "static" }));
-    }
-
-    [Test]
-    public void DynamicSemanticBranchIdsFailClosed()
-    {
-        const string Source = """
-            using static SIL.Machine.Morphology.HermitCrab.SemanticBranch;
-            namespace Fixture;
-            public sealed class Loader
-            {
-                public void Run(string id) { Hit(id); }
-            }
-            """;
-
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("fixture.cs", Source) }
-                )
-            )
-        );
-
-        const string DynamicTarget = """
-            using SIL.Machine.Morphology.HermitCrab;
-            namespace Fixture;
-            public sealed class Loader
-            {
-                public void Run()
-                {
-                    dynamic branch = typeof(SemanticBranch);
-                    branch.Hit("dynamic");
-                }
-            }
-            """;
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("dynamic.cs", DynamicTarget) }
-                )
-            )
-        );
-
-        const string UnresolvedTarget =
-            "namespace Fixture; public sealed class Loader { public void Run() { SemanticBranch.Hit(\"missing\"); } }";
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("unresolved.cs", UnresolvedTarget) }
-                )
-            )
-        );
-
-        const string UnresolvedAlias =
-            "using SB = Missing.SemanticBranch; namespace Fixture; public sealed class Loader { public void Run() { SB.Hit(\"missing\"); } }";
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("alias.cs", UnresolvedAlias) }
-                )
-            )
-        );
-
-        const string UnresolvedStatic =
-            "using static Missing.SemanticBranch; namespace Fixture; public sealed class Loader { public void Run() { Hit(\"missing\"); } }";
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("static.cs", UnresolvedStatic) }
-                )
-            )
-        );
-
-        const string UnresolvedAliasChain =
-            "using A = Missing.SemanticBranch; using B = A; namespace Fixture; public sealed class Loader { public void Run() { B.Hit(\"missing\"); } }";
-        Assert.Throws<FormatException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[] { new CSharpInventoryInput("alias-chain.cs", UnresolvedAliasChain) }
-                )
-            )
-        );
-    }
-
-    [Test]
     public void RuleResolutionUsesExactSymbolsAndRejectsUnresolvedRelevantBases()
     {
         const string Source = """
@@ -644,7 +518,7 @@ public sealed class CSharpInventoryReaderTests
     }
 
     [Test]
-    public void SourceManifestEnumeratesXmlEnumsRulesMarkersAndAuditedDecisions()
+    public void SourceManifestEnumeratesXmlEnumsRulesAndAuditedDecisions()
     {
         const string Source = """
             using System;
@@ -671,11 +545,11 @@ public sealed class CSharpInventoryReaderTests
                     XElement dynamicElement = xml.Element(GetName(value));
                     if (test)
                     {
-                        SemanticBranch.Hit("fixture/if");
+                        value = value + 1;
                     }
                     else if (value > 1)
                     {
-                        SemanticBranch.Hit("fixture/else-if");
+                        value = value - 1;
                     }
                     switch (value)
                     {
@@ -749,7 +623,6 @@ public sealed class CSharpInventoryReaderTests
         Assert.That(ids, Does.Contain("model:rule/Fixture.ConcreteRule/IHCRule"));
         Assert.That(ids, Does.Contain("model:rule/Fixture.GenericRule/IRule"));
         Assert.That(ids, Does.Contain("model:rule/Fixture.Outer.NestedRule/IHCRule"));
-        Assert.That(ids, Does.Contain("branch:fixture/if"));
         Assert.That(
             ids.Any(id =>
                 id.StartsWith(
@@ -905,7 +778,7 @@ public sealed class CSharpInventoryReaderTests
     }
 
     [Test]
-    public void DuplicatePathsMarkersAndMalformedSourcesAreControlledErrors()
+    public void DuplicatePathsAndMalformedSourcesAreControlledErrors()
     {
         Assert.Throws<ArgumentException>(() =>
             SemanticCoverageInventory.Generate(
@@ -916,22 +789,6 @@ public sealed class CSharpInventoryReaderTests
                     {
                         new CSharpInventoryInput("same.cs", "class A {}"),
                         new CSharpInventoryInput("same.cs", "class B {}"),
-                    }
-                )
-            )
-        );
-
-        Assert.Throws<InvalidOperationException>(() =>
-            SemanticCoverageInventory.Generate(
-                new SemanticCoverageSourceSet(
-                    "fixture.dtd",
-                    Dtd,
-                    new[]
-                    {
-                        new CSharpInventoryInput(
-                            "marker.cs",
-                            "using SIL.Machine.Morphology.HermitCrab; class A { void M() { SemanticBranch.Hit(\"same\"); SemanticBranch.Hit(\"same\"); } }"
-                        ),
                     }
                 )
             )
@@ -973,51 +830,6 @@ public sealed class CSharpInventoryReaderTests
             inventory.Surfaces.Select(surface => surface.Id),
             Does.Contain("model:rule/Fixture.CrossRule/IHCRule")
         );
-    }
-
-    [Test]
-    public async Task SemanticBranchCapturesAreNestedAndAsyncLocal()
-    {
-        var outer = new HashSet<string>(StringComparer.Ordinal);
-        using (SemanticBranch.BeginCapture(outer))
-        {
-            SemanticBranch.Hit("outer");
-            var inner = new HashSet<string>(StringComparer.Ordinal);
-            using (SemanticBranch.BeginCapture(inner))
-            {
-                SemanticBranch.Hit("inner");
-            }
-
-            SemanticBranch.Hit("outer-again");
-            Assert.That(inner, Is.EquivalentTo(new[] { "inner" }));
-
-            var firstTask = Task.Run(() =>
-            {
-                var capture = new HashSet<string>(StringComparer.Ordinal);
-                using (SemanticBranch.BeginCapture(capture))
-                {
-                    SemanticBranch.Hit("first");
-                }
-
-                return capture;
-            });
-            var secondTask = Task.Run(() =>
-            {
-                var capture = new HashSet<string>(StringComparer.Ordinal);
-                using (SemanticBranch.BeginCapture(capture))
-                {
-                    SemanticBranch.Hit("second");
-                }
-
-                return capture;
-            });
-            HashSet<string>[] captures = await Task.WhenAll(firstTask, secondTask);
-            Assert.That(captures[0], Is.EquivalentTo(new[] { "first" }));
-            Assert.That(captures[1], Is.EquivalentTo(new[] { "second" }));
-        }
-
-        Assert.Throws<ArgumentNullException>(() => SemanticBranch.BeginCapture(null!));
-        Assert.Throws<ArgumentException>(() => SemanticBranch.Hit(""));
     }
 
     // HermitCrab compiles under SINGLE_THREADED and OUTPUT_ANALYSES; a single-configuration

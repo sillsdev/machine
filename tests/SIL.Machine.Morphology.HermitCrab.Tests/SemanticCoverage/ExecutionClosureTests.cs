@@ -39,7 +39,6 @@ public sealed class ExecutionClosureTests
                 {
                     if (value) { }
                     _ = new XElement("root").Element("reachable");
-                    SemanticBranch.Hit("reachable-marker");
                 }
 
                 private int Value { get { if (true) { } return 1; } }
@@ -47,7 +46,6 @@ public sealed class ExecutionClosureTests
                 {
                     if (value) { }
                     _ = new XElement("root").Element("dead");
-                    SemanticBranch.Hit("dead-marker");
                 }
             }
             public sealed class Built
@@ -71,8 +69,6 @@ public sealed class ExecutionClosureTests
             Assert.That(parents, Does.Contain("Fixture.Root.Value/get"));
             Assert.That(parents, Has.Some.Contains("/local/Local()"));
             Assert.That(parents, Does.Not.Contain("Fixture.Root.Dead(System.Boolean)"));
-            Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Contain("branch:reachable-marker"));
-            Assert.That(inventory.Surfaces.Select(surface => surface.Id), Does.Not.Contain("branch:dead-marker"));
             Assert.That(
                 inventory.Surfaces.Where(surface => surface.Kind == "xml-read").Select(surface => surface.Name),
                 Does.Contain("reachable")
@@ -287,7 +283,7 @@ public sealed class ExecutionClosureTests
     }
 
     [Test]
-    public void TypeReferencesDoNotExpandDeadMembersAndDeadUnresolvedMarkersAreIgnored()
+    public void TypeReferencesDoNotExpandDeadMembersAndDeadUnresolvedCallsAreIgnored()
     {
         const string Source = """
             using System;
@@ -295,7 +291,7 @@ public sealed class ExecutionClosureTests
             public sealed class Root
             {
                 public Type Run() => typeof(Dead);
-                private void DeadMarker(string value) { Missing.SemanticBranch.Hit(value); }
+                private void DeadCall(string value) { Missing.Telemetry.Record(value); }
             }
             public sealed class Dead { public void Body(bool value) { if (value) { } } }
             """;
