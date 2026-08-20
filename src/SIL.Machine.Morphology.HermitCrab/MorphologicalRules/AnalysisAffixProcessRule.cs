@@ -61,9 +61,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _morpher.TraceManager.MorphologicalRuleNotUnapplied(
                             _rule,
                             -1,
-                           input,
-                           FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
-                           null
+                            input,
+                            FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                            null
                         );
                     }
                     return Enumerable.Empty<Word>();
