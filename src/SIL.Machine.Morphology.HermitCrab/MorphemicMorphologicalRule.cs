@@ -7,6 +7,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     {
         public string Name { get; set; }
         public bool IsTemplateRule { get; set; }
+        public bool IsFinalTemplateRule { get; set; }
 
         public override MorphemeType MorphemeType
         {

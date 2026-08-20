@@ -65,6 +65,18 @@ namespace SIL.Machine.Morphology.HermitCrab
             RuleSelector = rule => true;
 
             _morphemes = new ReadOnlyObservableCollection<Morpheme>(morphemes);
+            IsPartial = GetPartialMorphemes().Count() > 0;
+        }
+
+        public IEnumerable<Morpheme> GetPartialMorphemes()
+        {
+            var morphemes = new HashSet<Morpheme>();
+            foreach (Morpheme morpheme in _morphemes)
+            {
+                if (morpheme.IsPartial)
+                    morphemes.Add(morpheme);
+            }
+            return morphemes;
         }
 
         public ITraceManager TraceManager
@@ -87,6 +99,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// Merged analyses will be expanded if lexical lookup succeeds.
         /// </summary>
         public bool MergeEquivalentAnalyses { get; set; }
+
+        /// <summary>
+        /// A Morpher is partial if any of the elements are partial.
+        /// </summary>
+        public bool IsPartial { get; set; }
 
         /// <summary>
         /// Caps the concurrency used within a single parse or generation -- analysis cascade,

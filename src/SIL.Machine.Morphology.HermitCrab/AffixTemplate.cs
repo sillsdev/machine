@@ -16,6 +16,8 @@ namespace SIL.Machine.Morphology.HermitCrab
         private Stratum _stratum;
         private readonly ObservableCollection<AffixTemplateSlot> _slots;
 
+        private bool _isFinal;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AffixTemplate"/> class.
         /// </summary>
@@ -37,6 +39,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         rule.Stratum = null;
                         rule.IsTemplateRule = false;
+                        rule.IsFinalTemplateRule = false;
                     }
                 }
             }
@@ -48,6 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     {
                         rule.Stratum = Stratum;
                         rule.IsTemplateRule = true;
+                        rule.IsFinalTemplateRule = IsFinal;
                     }
                 }
             }
@@ -55,7 +59,21 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         public FeatureStruct RequiredSyntacticFeatureStruct { get; set; }
 
-        public bool IsFinal { get; set; }
+        public bool IsFinal
+        {
+            get { return _isFinal; }
+            set
+            {
+                _isFinal = value;
+                foreach (AffixTemplateSlot slot in Slots)
+                {
+                    foreach (MorphemicMorphologicalRule rule in slot.Rules)
+                    {
+                        rule.IsFinalTemplateRule = value;
+                    }
+                }
+            }
+        }
 
         public IList<AffixTemplateSlot> Slots
         {
