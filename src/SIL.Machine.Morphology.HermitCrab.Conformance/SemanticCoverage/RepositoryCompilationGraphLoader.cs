@@ -1054,24 +1054,53 @@ internal sealed class RepositoryCompilationGraphLoader
 
     private static string NormalizeArgument(string value, LogicalPathRoots roots)
     {
-        if (Path.IsPathFullyQualified(value))
-            return LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(Path.GetFullPath(value), roots);
-        int separator = value.IndexOf(':');
-        if (separator > 0)
+        // On Unix every csc switch is syntactically an absolute path, so switch shape has to be
+        // decided before any path handling: /noconfig carries no value, /doc:/tmp/x.xml carries one.
+        if (IsCompilerSwitchPrefix(value))
         {
-            string prefix = value[..(separator + 1)];
-            string tail = value[(separator + 1)..];
-            string[] parts = tail.Split('=', 2);
-            if (Path.IsPathFullyQualified(parts[^1]))
-            {
-                parts[^1] = LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(
-                    Path.GetFullPath(parts[^1]),
-                    roots
-                );
-                return prefix + string.Join('=', parts);
-            }
+            int switchSeparator = value.IndexOf(':');
+            return switchSeparator > 0
+                ? value[..(switchSeparator + 1)] + NormalizeSwitchValue(value[(switchSeparator + 1)..], roots)
+                : value;
         }
-        return value;
+
+        if (Path.IsPathFullyQualified(value))
+        {
+            return LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(Path.GetFullPath(value), roots);
+        }
+
+        int separator = value.IndexOf(':');
+        return separator > 0 ? value[..(separator + 1)] + NormalizeSwitchValue(value[(separator + 1)..], roots) : value;
+    }
+
+    /// <summary>Normalises the value half of a token, which may be a path or an opaque setting.</summary>
+    /// <param name="tail">Everything after the first colon, possibly an <c>=</c>-joined pair.</param>
+    private static string NormalizeSwitchValue(string tail, LogicalPathRoots roots)
+    {
+        string[] parts = tail.Split('=', 2);
+        if (!Path.IsPathFullyQualified(parts[^1]))
+        {
+            return tail;
+        }
+
+        parts[^1] = LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(Path.GetFullPath(parts[^1]), roots);
+        return string.Join('=', parts);
+    }
+
+    /// <summary>Whether a token is a compiler switch rather than a path.</summary>
+    /// <param name="value">A single token from <c>CscCommandLineArgs</c>.</param>
+    /// <remarks>A leading slash is ambiguous on Unix, where it also begins an absolute path. What
+    /// separates them is what follows the switch name: nothing for a bare switch, a colon for one
+    /// carrying a value, and a further separator for a real path.</remarks>
+    private static bool IsCompilerSwitchPrefix(string value)
+    {
+        if (value.Length < 2 || (value[0] != '/' && value[0] != '-'))
+        {
+            return false;
+        }
+
+        int special = value.IndexOfAny(new[] { '/', '\\', ':' }, 1);
+        return special < 0 || value[special] == ':';
     }
 
     private static string NormalizeStablePath(string value, LogicalPathRoots roots)

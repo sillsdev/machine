@@ -81,10 +81,16 @@ public sealed class CompilationGraphHashingTests
             roots
         );
 
+        string unixShaped = LogicalPathTokens.FromAbsoluteAdmittingAncestorEditorConfig(
+            "/outer/machine/.editorconfig",
+            new LogicalPathRoots("/outer/machine/worktrees/squashed", "/opt/sdk", "/home/me/.nuget", "/tmp/generated")
+        );
+
         Assert.Multiple(() =>
         {
             Assert.That(logical, Is.EqualTo("ancestor-editorconfig:/2"));
             Assert.That(LogicalPathTokens.IsLogicalPath(logical), Is.True);
+            Assert.That(unixShaped, Is.EqualTo(logical));
         });
     }
 

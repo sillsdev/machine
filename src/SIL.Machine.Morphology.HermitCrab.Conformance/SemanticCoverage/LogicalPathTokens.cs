@@ -166,12 +166,19 @@ internal static class LogicalPathTokens
     )
     {
         logicalPath = null;
-        if (!string.Equals(Path.GetFileName(absolutePath), EditorConfigFileName, StringComparison.OrdinalIgnoreCase))
+        // Segment the path with this class's own separator handling rather than Path.GetFileName,
+        // whose notion of a separator is the host's: a Windows-shaped path is admitted on Unix too.
+        if (!IsAbsolute(absolutePath) || HasTraversalSegment(absolutePath))
             return false;
 
         string[] fileSegments = NormalizeAbsolute(absolutePath).Split('/');
-        if (fileSegments.Length < 2)
+        if (
+            fileSegments.Length < 2
+            || !string.Equals(fileSegments[^1], EditorConfigFileName, StringComparison.OrdinalIgnoreCase)
+        )
+        {
             return false;
+        }
         string[] parentSegments = fileSegments[..^1];
         string[] repositorySegments = repositoryRoot.Split('/');
         if (

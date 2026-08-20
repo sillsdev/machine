@@ -148,8 +148,23 @@ public static class MaterializedRunner
                     else
                     {
                         result.Outcome = FixtureOutcome.Failed;
-                        int failCount = diff.WordResults.Count(w => !w.Passed);
-                        result.Reason = $"{failCount}/{diff.WordResults.Count} word(s) mismatched";
+                        // Name the words. A bare count cannot be diagnosed from a CI log on a machine you cannot reach.
+
+                        WordResult[] mismatched = diff.WordResults.Where(word => !word.Passed).ToArray();
+
+                        string named = string.Join(
+                            "; ",
+                            mismatched.Take(5).Select(word => $"{word.Word}: {Truncate(word.Detail)}")
+                        );
+
+                        result.Reason =
+                            mismatched.Length > 5
+                                ? $"{mismatched.Length}/{
+diff.WordResults
+.Count} word(s) mismatched: {named}; and {mismatched.Length - 5} more"
+                                : $"{mismatched.Length}/{
+diff.WordResults
+.Count} word(s) mismatched: {named}";
                     }
                 }
             }
@@ -226,5 +241,18 @@ public static class MaterializedRunner
         if (!completed)
             throw new TimeoutException("watchdog timed out waiting for engine.Run");
         return task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>Shortens a per-word detail so a fixture reason stays readable in a log.</summary>
+    /// <param name="detail">The word detail, which may carry every expected and actual parse.</param>
+    private static string Truncate(string detail)
+    {
+        const int Limit = 160;
+        if (string.IsNullOrEmpty(detail) || detail.Length <= Limit)
+        {
+            return detail;
+        }
+
+        return detail[..Limit] + "...";
     }
 }

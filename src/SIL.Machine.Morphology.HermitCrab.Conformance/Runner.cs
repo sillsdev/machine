@@ -118,8 +118,23 @@ public static class Runner
                 else
                 {
                     result.Outcome = FixtureOutcome.Failed;
-                    int failCount = result.WordResults.Count(w => !w.Passed);
-                    result.Reason = $"{failCount}/{result.WordResults.Count} word(s) mismatched";
+                    // Name the words. A bare count cannot be diagnosed from a CI log on a machine you cannot reach.
+
+                    WordResult[] mismatched = result.WordResults.Where(word => !word.Passed).ToArray();
+
+                    string named = string.Join(
+                        "; ",
+                        mismatched.Take(5).Select(word => $"{word.Word}: {Truncate(word.Detail)}")
+                    );
+
+                    result.Reason =
+                        mismatched.Length > 5
+                            ? $"{mismatched.Length}/{
+result.WordResults
+.Count} word(s) mismatched: {named}; and {mismatched.Length - 5} more"
+                            : $"{mismatched.Length}/{
+result.WordResults
+.Count} word(s) mismatched: {named}";
                 }
             }
         }
@@ -327,5 +342,18 @@ public static class Runner
             }
         }
         return report;
+    }
+
+    /// <summary>Shortens a per-word detail so a fixture reason stays readable in a log.</summary>
+    /// <param name="detail">The word detail, which may carry every expected and actual parse.</param>
+    private static string Truncate(string detail)
+    {
+        const int Limit = 160;
+        if (string.IsNullOrEmpty(detail) || detail.Length <= Limit)
+        {
+            return detail;
+        }
+
+        return detail[..Limit] + "...";
     }
 }
