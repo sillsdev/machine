@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Xml.Linq;
 using SIL.IO;
+using SIL.Machine.Utils;
 
 namespace SIL.Machine.Corpora
 {
@@ -17,7 +18,7 @@ namespace SIL.Machine.Corpora
             using (ZipArchive archive = ZipFile.OpenRead(fileName))
             {
                 ZipArchiveEntry metadataEntry = archive.GetEntry("metadata.xml");
-                using (Stream stream = metadataEntry.Open())
+                using (Stream stream = metadataEntry.OpenBoundedStream())
                 {
                     var doc = XDocument.Load(stream);
                     var version = (string)doc.Root.Attribute("version");
