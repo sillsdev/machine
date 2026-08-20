@@ -69,12 +69,25 @@ public sealed class OwnedSymbolKeyTests
             tree.FilePath.EndsWith($"{Path.DirectorySeparatorChar}Morpher.cs", StringComparison.OrdinalIgnoreCase)
         );
         SemanticModel morpherModel = hcNode.Compilation.GetSemanticModel(morpherTree);
-        LocalFunctionStatementSyntax localSyntax = morpherTree
+        // The local-function specimen comes from a file this branch owns rather than from the engine,
+        // so that an upstream refactor removing an engine local function cannot fail a test about keying.
+        RoslynCompilationNode conformanceNode = graph.Nodes.Values.Single(item =>
+            item.Key.ProjectId == "hc-conformance" && item.Key.ProfileId == "base"
+        );
+        SyntaxTree attributorTree = conformanceNode.Compilation.SyntaxTrees.Single(tree =>
+            tree.FilePath.EndsWith(
+                $"{Path.DirectorySeparatorChar}FailureRuleAttributor.cs",
+                StringComparison.OrdinalIgnoreCase
+            )
+        );
+        LocalFunctionStatementSyntax localSyntax = attributorTree
             .GetRoot()
             .DescendantNodes()
             .OfType<LocalFunctionStatementSyntax>()
-            .Single(node => node.Identifier.ValueText == "GenerateSynthesis");
-        IMethodSymbol local = morpherModel.GetDeclaredSymbol(localSyntax)!;
+            .Single(node => node.Identifier.ValueText == "Walk");
+        IMethodSymbol local = conformanceNode
+            .Compilation.GetSemanticModel(attributorTree)
+            .GetDeclaredSymbol(localSyntax)!;
         OwnedSymbolKey localKey = bridge.KeyFor("base", local);
         IMethodSymbol[] lambdas = morpherTree
             .GetRoot()
@@ -116,8 +129,8 @@ public sealed class OwnedSymbolKeyTests
                 Does.EndWith("/SIL.Machine.Morphology.HermitCrab.Conformance.Fixture.Id/get")
             );
             Assert.That(SymbolEqualityComparer.Default.Equals(bridge.Resolve("base", localKey), local), Is.True);
-            Assert.That(localKey.Value, Does.Contain(".GenerateWords("));
-            Assert.That(localKey.Value, Does.Contain("/local/GenerateSynthesis("));
+            Assert.That(localKey.Value, Does.Contain(".WordLevelFailureRuleIds("));
+            Assert.That(localKey.Value, Does.Contain("/local/Walk("));
             Assert.That(lambdaKeys.Select(key => key.Value), Is.Unique);
             Assert.That(lambdaKeys.All(key => key.Value.Contains("/lambda@", StringComparison.Ordinal)), Is.True);
             Assert.That(lambdaKeys.All(key => bridge.Resolve("base", key) is IMethodSymbol), Is.True);
