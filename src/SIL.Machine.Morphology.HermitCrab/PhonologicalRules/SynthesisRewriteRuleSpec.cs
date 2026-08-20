@@ -14,8 +14,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
             MatcherSettings<ShapeNode> matcherSettings,
             bool isIterative,
             Pattern<Word, ShapeNode> lhs,
-            IEnumerable<RewriteSubrule> subrules,
-            string ruleName
+            IEnumerable<RewriteSubrule> subrules
         )
             : base(lhs.IsEmpty)
         {
@@ -67,7 +66,7 @@ namespace SIL.Machine.Morphology.HermitCrab.PhonologicalRules
                 else if (lhs.Children.Count == 0)
                 {
                     SubruleSpecs.Add(
-                        new EpenthesisSynthesisRewriteSubruleSpec(matcherSettings, isIterative, subrule, i, ruleName)
+                        new EpenthesisSynthesisRewriteSubruleSpec(matcherSettings, isIterative, subrule, i)
                     );
                 }
                 else
