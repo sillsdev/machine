@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>MetathesisPhaseIsolation</Name>
+    <PartsOfSpeech>
+      <!-- One POS per demo, the same isolation discipline templatic-root-modification/fusional-realizational-morphology
+           established. The metathesis MetathesisRules cannot be POS-scoped (a MetathesisRule has no
+           requiredPartsOfSpeech attribute, unlike a PhonologicalSubrule), so metathesis is isolated a
+           different way: each metathesis rule lives in its OWN deep Stratum, and every metathesis
+           root is rooted in that deep stratum. SynthesisStratumRule skips a stratum entirely for any
+           word whose root stratum is SHALLOWER than the stratum being applied (see
+           SynthesisStratumRule.cs line 51: `input.RootAllomorph.Morpheme.Stratum.Depth > _stratum.Depth`),
+           so the surface Morphology stratum's own roots never reach the deep metathesis strata, and
+           the deep-rooted metathesis words flow up through the Morphology stratum harmlessly (its
+           morphological rules and its one POS-scoped rewrite rule all skip a foreign POS). -->
+      <PartOfSpeech id="posComplexMeta"><Name>nComplexMeta</Name></PartOfSpeech>
+      <PartOfSpeech id="posSimpleMeta"><Name>nSimpleMeta</Name></PartOfSpeech>
+      <PartOfSpeech id="posNotUnapplied"><Name>nNotUnapplied</Name></PartOfSpeech>
+      <PartOfSpeech id="posInfix"><Name>vInfix</Name></PartOfSpeech>
+      <PartOfSpeech id="posCircum"><Name>vCircum</Name></PartOfSpeech>
+      <PartOfSpeech id="posRedup"><Name>vRedup</Name></PartOfSpeech>
+      <PartOfSpeech id="posTrunc"><Name>vTrunc</Name></PartOfSpeech>
+      <PartOfSpeech id="posLnk"><Name>nLnk</Name></PartOfSpeech>
+      <PartOfSpeech id="posNonContig"><Name>vNonContig</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- A fully-specified PhonologicalFeatureSystem (the G2a finding, restated in
+         suffixing-vowel-harmony/words.yaml and templatic-root-modification/grammar.xml): prNonContig CHANGES a
+         segment's identity (a->i via a FeatureNaturalClass output), so every segment in table1 gets a
+         unique, fully-specified feature bundle or self-check's analysis-direction reversal finds zero
+         parses / renders ambiguous bracketed classes even for segments no rule touches. featPlace +
+         featVoice make every one of the 11 consonants unique; featHigh/featLow/featBack/featRound are
+         filler "-" on consonants (irrelevant but full-specification requires an explicit value),
+         exactly templatic-root-modification's own filler precedent. The metathesis rules use SegmentNaturalClass
+         (identity reorder, no feature change), which is fine per the same finding. -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="fVocPlus">+</Symbol><Symbol id="fVocMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighPlus">+</Symbol><Symbol id="fHighMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featLow"><Name>low</Name><Symbols><Symbol id="fLowPlus">+</Symbol><Symbol id="fLowMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="fBackPlus">+</Symbol><Symbol id="fBackMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featRound"><Name>round</Name><Symbols><Symbol id="fRoundPlus">+</Symbol><Symbol id="fRoundMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="fPlaceBilabial">bilabial</Symbol>
+          <Symbol id="fPlaceAlveolar">alveolar</Symbol>
+          <Symbol id="fPlaceVelar">velar</Symbol>
+          <Symbol id="fPlaceGlottal">glottal</Symbol>
+          <Symbol id="fPlaceSibilant">sibilant</Symbol>
+          <Symbol id="fPlaceLateral">lateral</Symbol>
+          <Symbol id="fPlaceRhotic">rhotic</Symbol>
+          <Symbol id="fPlaceNasalLab">nasalLab</Symbol>
+          <Symbol id="fPlaceNasalAlv">nasalAlv</Symbol>
+          <Symbol id="fPlaceVocalic">vocalic</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <HeadFeatures />
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <!-- Vowels (cons-, voc+, place vocalic, voice+). Each unique via high/low/back/round. -->
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowPlus" />
+          <FeatureValue feature="featBack" symbolValues="fBackPlus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackPlus" /><FeatureValue feature="featRound" symbolValues="fRoundPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cW"><Representations><Representation>ɯ</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackPlus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+        </SegmentDefinition>
+        <!-- Consonants (cons+, voc-). high/low/back/round filler "-". Unique via place+voice. -->
+        <SegmentDefinition id="cP"><Representations><Representation>p</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceNasalLab" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cN"><Representations><Representation>n</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceNasalAlv" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceSibilant" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceLateral" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cR"><Representations><Representation>r</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featPlace" symbolValues="fPlaceRhotic" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cH"><Representations><Representation>h</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMinus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+          <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featPlace" symbolValues="fPlaceGlottal" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+      <BoundaryDefinitions>
+        <!-- The complex-metathesis "+" boundary marker (matches metathesis/complex_rule's own cBnd);
+             a BoundaryDefinition, never a plain SegmentDefinition (the compounding-join lesson from
+             the ledger applies to any visible seam marker). -->
+        <BoundaryDefinition id="cBnd"><Representations><Representation>+</Representation></Representations></BoundaryDefinition>
+      </BoundaryDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <FeatureNaturalClass id="ncConsonant"><Name>Consonant</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVowel"><Name>Vowel</Name>
+        <FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+      </FeatureNaturalClass>
+      <!-- prNonContig (affix-shapes/noncontiguous's allophonic rewrite): input low vowel "a"; output a
+           FULLY-SPECIFIED single "i" class (the G2a finding: a changing subrule's output must pin one
+           segment); env = a following voiced consonant. -->
+      <FeatureNaturalClass id="ncLowVowel"><Name>LowVowel</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featLow" symbolValues="fLowPlus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVowelI"><Name>VowelI</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+        <FeatureValue feature="featHigh" symbolValues="fHighPlus" /><FeatureValue feature="featLow" symbolValues="fLowMinus" />
+        <FeatureValue feature="featBack" symbolValues="fBackMinus" /><FeatureValue feature="featRound" symbolValues="fRoundMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVoicedCons"><Name>VoicedCons</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoicePlus" />
+      </FeatureNaturalClass>
+      <!-- Metathesis switch-role classes: literal single segments (identity reorder, no feature
+           change), matching metathesis/simple_rule + complex_rule + not_unapplied exactly. -->
+      <SegmentNaturalClass id="ncI"><Name>I</Name><Segment segment="cI" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncU"><Name>U</Name><Segment segment="cU" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <!-- affix-shapes/noncontiguous's allophonic rewrite (prule1): a -> i / _ [voiced consonant].
+           Scoped to posNonContig only so it fires exclusively on the KTB perf paradigm and never on
+           any other section's "a" (e.g. the infix root "sulat"). -->
+      <PhonologicalRule id="prNonContig">
+        <Name>nonContigRaising</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncLowVowel" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posNonContig">
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncVowelI" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncVoicedCons" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <!-- metathesis/simple_rule + metathesis/not_unapplied share this ONE rule (adjacent i-then-u ->
+           u-then-i swap; leftSwitch=segU, rightSwitch=segI, exactly as the two v1 fixtures). Lives in
+           the SimpleMeta stratum. The not_unapplied word never presents i-then-u adjacency, so the
+           same rule correctly never fires on it. -->
+      <MetathesisRule id="mrSimpleMeta" leftSwitch="segU" rightSwitch="segI">
+        <Name>metathesisSimple</Name>
+        <StructuralDescription>
+          <PhoneticTemplate>
+            <PhoneticSequence>
+              <SimpleContext id="segI" naturalClass="ncI" />
+              <SimpleContext id="segU" naturalClass="ncU" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+      <!-- metathesis/complex_rule: i +BND u -> u +BND i, final-anchored (finalBoundaryCondition),
+           a non-switch BoundaryMarker between the two switch roles. Lives in its OWN ComplexMeta
+           stratum (deeper than SimpleMeta) so it can never collide with mrSimpleMeta on a boundary-
+           transparency edge case. -->
+      <MetathesisRule id="mrComplexMeta" leftSwitch="segU2" rightSwitch="segI2">
+        <Name>metathesisComplex</Name>
+        <StructuralDescription>
+          <PhoneticTemplate finalBoundaryCondition="true">
+            <PhoneticSequence>
+              <SimpleContext id="segI2" naturalClass="ncI" />
+              <BoundaryMarker boundary="cBnd" />
+              <SimpleContext id="segU2" naturalClass="ncU" />
+            </PhoneticSequence>
+          </PhoneticTemplate>
+        </StructuralDescription>
+      </MetathesisRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <!-- Deepest stratum: complex metathesis + its "+u" suffix. Root "mi" rooted here. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrUSuffix" phonologicalRules="mrComplexMeta">
+        <Name>ComplexMeta</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrUSuffix" requiredPartsOfSpeech="posComplexMeta" outputPartOfSpeech="posComplexMeta">
+            <Name>uSuffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subUSuffix">
+                <MorphologicalInput><PhoneticSequence id="pUS"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="pUS" /><InsertSegments><PhoneticShape>+u</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>3SGU</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eMi" partOfSpeech="posComplexMeta">
+            <Allomorphs><Allomorph id="aMi"><PhoneticShape>mi</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>MI</MorphemeId>
+            <Gloss>come</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Middle stratum: simple metathesis (shared with the not-unapplied negative) + its "i"
+           suffix. Roots "miu" (simple) and "pu" (not-unapplied) rooted here. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrISuffix" phonologicalRules="mrSimpleMeta">
+        <Name>SimpleMeta</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrISuffix" requiredPartsOfSpeech="posNotUnapplied" outputPartOfSpeech="posNotUnapplied">
+            <Name>iSuffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subISuffix">
+                <MorphologicalInput><PhoneticSequence id="pIS"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="pIS" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>3SGI</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- Simple-metathesis root is "niu" (not "miu"): the complex-metathesis suffixed form
+               "mi"+"+u" surfaces as "mu+i" which, with the optional boundary, is string-equivalent to
+               "mui"/"miu"; a "miu" simple root would therefore collide with it (an extra ambiguous
+               parse AND a synthesis-confirm trace-union of mrComplexMeta onto mrSimpleMeta and vice
+               versa, exactly templatic-root-modification's gigugu/gigugi limitation). Choosing a disjoint
+               onset "n" keeps each metathesis word's rules: list crisp. -->
+          <LexicalEntry id="eNiu" partOfSpeech="posSimpleMeta">
+            <Allomorphs><Allomorph id="aNiu"><PhoneticShape>niu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>NIU</MorphemeId>
+            <Gloss>coconut</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePu" partOfSpeech="posNotUnapplied">
+            <Allomorphs><Allomorph id="aPu"><PhoneticShape>pu</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PU</MorphemeId>
+            <Gloss>fire</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <!-- Surface stratum: all morphotactic demos (infix -um-, circumfix ke-...-an, CV- and full
+           reduplication, truncation, isolated Copy/Insert linker, noncontiguous perf) + the
+           POS-scoped noncontiguous rewrite. Every morphology root is rooted here. -->
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrInfixUm mrCircum mrRedupCV mrRedupFull mrTrunc mrLnk mrPerf"
+        phonologicalRules="prNonContig">
+        <Name>Morphology</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- affix-shapes/infix: actor-voice -um- infixed after the first consonant. -->
+          <MorphologicalRule id="mrInfixUm" requiredPartsOfSpeech="posInfix" outputPartOfSpeech="posInfix">
+            <Name>infixUm</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subInfixUm">
+                <MorphologicalInput>
+                  <PhoneticSequence id="umFirst"><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                  <PhoneticSequence id="umRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="umFirst" />
+                  <InsertSegments><PhoneticShape>um</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="umRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>AV</MorphemeId>
+          </MorphologicalRule>
+          <!-- affix-shapes/circumfix: ke-...-an nominalizer. -->
+          <MorphologicalRule id="mrCircum" requiredPartsOfSpeech="posCircum" outputPartOfSpeech="posCircum">
+            <Name>circumKeAn</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subCircum">
+                <MorphologicalInput><PhoneticSequence id="circStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput>
+                  <InsertSegments><PhoneticShape>ke</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="circStem" />
+                  <InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NMLZ</MorphemeId>
+          </MorphologicalRule>
+          <!-- CV- reduplication (ReduplicationHint prefix): copy the first C-V twice, then the rest. -->
+          <MorphologicalRule id="mrRedupCV" requiredPartsOfSpeech="posRedup" outputPartOfSpeech="posRedup">
+            <Name>redupCV</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRedupCV">
+                <MorphologicalInput>
+                  <PhoneticSequence id="rcCV"><SimpleContext naturalClass="ncConsonant" /><SimpleContext naturalClass="ncVowel" /></PhoneticSequence>
+                  <PhoneticSequence id="rcRest"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput redupMorphType="prefix">
+                  <CopyFromInput index="rcCV" />
+                  <CopyFromInput index="rcCV" />
+                  <CopyFromInput index="rcRest" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>RDP</MorphemeId>
+          </MorphologicalRule>
+          <!-- Full reduplication (ReduplicationHint prefix): copy the whole stem twice. -->
+          <MorphologicalRule id="mrRedupFull" requiredPartsOfSpeech="posRedup" outputPartOfSpeech="posRedup">
+            <Name>redupFull</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subRedupFull">
+                <MorphologicalInput><PhoneticSequence id="rfStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput redupMorphType="prefix">
+                  <CopyFromInput index="rfStem" />
+                  <CopyFromInput index="rfStem" />
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>RDPL</MorphemeId>
+          </MorphologicalRule>
+          <!-- affix-shapes/truncate (subtraction): delete a literal trailing "e" (a subtractive
+               incomplete-phase / subtractive-perfective typological pattern, cited in provenance). -->
+          <MorphologicalRule id="mrTrunc" requiredPartsOfSpeech="posTrunc" outputPartOfSpeech="posTrunc">
+            <Name>truncateFinalE</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subTrunc">
+                <MorphologicalInput>
+                  <PhoneticSequence id="trKeep"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence>
+                  <PhoneticSequence id="trFinal"><Segment segment="cE" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="trKeep" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>INCP</MorphemeId>
+          </MorphologicalRule>
+          <!-- Isolated CopyFromInput/InsertSegments demo: a plain linker suffix "-in", nothing else
+               (no phonology, no infixation) so the Copy+Insert output actions are exercised on their
+               own. -->
+          <MorphologicalRule id="mrLnk" requiredPartsOfSpeech="posLnk" outputPartOfSpeech="posLnk">
+            <Name>linker</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subLnk">
+                <MorphologicalInput><PhoneticSequence id="lnkStem"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="lnkStem" /><InsertSegments><PhoneticShape>in</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>LNK</MorphemeId>
+          </MorphologicalRule>
+          <!-- affix-shapes/noncontiguous morphology: a triconsonantal root gets an "a" inserted after
+               C1 and C2 plus a trailing "ɯd" suffix (k+a+t+a+b+ɯd = katabɯd), then prNonContig raises
+               the "a" before the voiced "b" to "i" (katibɯd). -->
+          <MorphologicalRule id="mrPerf" requiredPartsOfSpeech="posNonContig" outputPartOfSpeech="posNonContig">
+            <Name>perfNonContig</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPerf">
+                <MorphologicalInput>
+                  <PhoneticSequence id="pfC1"><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                  <PhoneticSequence id="pfC2"><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                  <PhoneticSequence id="pfC3"><SimpleContext naturalClass="ncConsonant" /></PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="pfC1" />
+                  <InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="pfC2" />
+                  <InsertSegments><PhoneticShape>a</PhoneticShape></InsertSegments>
+                  <CopyFromInput index="pfC3" />
+                  <InsertSegments><PhoneticShape>ɯd</PhoneticShape></InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PERF</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <LexicalEntry id="eSulat" partOfSpeech="posInfix">
+            <Allomorphs><Allomorph id="aSulat"><PhoneticShape>sulat</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SULAT</MorphemeId>
+            <Gloss>write</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eAdil" partOfSpeech="posCircum">
+            <Allomorphs><Allomorph id="aAdil"><PhoneticShape>adil</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ADIL</MorphemeId>
+            <Gloss>just</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eTula" partOfSpeech="posRedup">
+            <Allomorphs><Allomorph id="aTula"><PhoneticShape>tula</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TULA</MorphemeId>
+            <Gloss>help</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePure" partOfSpeech="posTrunc">
+            <Allomorphs><Allomorph id="aPure"><PhoneticShape>pure</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>PURE</MorphemeId>
+            <Gloss>finish</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eBaha" partOfSpeech="posLnk">
+            <Allomorphs><Allomorph id="aBaha"><PhoneticShape>baha</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BAHA</MorphemeId>
+            <Gloss>flood</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eKtb" partOfSpeech="posNonContig">
+            <Allomorphs><Allomorph id="aKtb"><PhoneticShape>ktb</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>KTB</MorphemeId>
+            <Gloss>arrange</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

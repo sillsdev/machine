@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>Ranavu</Name>
+    
+    <PartsOfSpeech>
+      <PartOfSpeech id="posNasal"><Name>vNasalDemo</Name></PartOfSpeech>
+      <PartOfSpeech id="posMPR"><Name>vMprDemo</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featCons"><Name>cons</Name><Symbols><Symbol id="fConsPlus">+</Symbol><Symbol id="fConsMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoc"><Name>voc</Name><Symbols><Symbol id="fVocPlus">+</Symbol><Symbol id="fVocMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featVoice"><Name>voice</Name><Symbols><Symbol id="fVoicePlus">+</Symbol><Symbol id="fVoiceMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featNasal"><Name>nasal</Name><Symbols><Symbol id="fNasalPlus">+</Symbol><Symbol id="fNasalMinus">-</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featPlace">
+        <Name>place</Name>
+        <Symbols>
+          <Symbol id="fPlaceBilabial">bilabial</Symbol>
+          <Symbol id="fPlaceAlveolar">alveolar</Symbol>
+          <Symbol id="fPlaceLateral">lateral</Symbol>
+          <Symbol id="fPlaceVelar">velar</Symbol>
+          <Symbol id="fPlaceSibilant">sibilant</Symbol>
+          <Symbol id="fPlaceLabiodental">labiodental</Symbol>
+          <Symbol id="fPlaceDentalD">dentalD</Symbol>
+          <Symbol id="fPlaceOther">other</Symbol>
+          <Symbol id="fPlaceVocalic">vocalic</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      
+      <SymbolicFeature id="featHigh"><Name>high</Name><Symbols><Symbol id="fHighHigh">high</Symbol><Symbol id="fHighMid">mid</Symbol><Symbol id="fHighLow">low</Symbol><Symbol id="fHighNA">na</Symbol></Symbols></SymbolicFeature>
+      <SymbolicFeature id="featBack"><Name>back</Name><Symbols><Symbol id="fBackFront">front</Symbol><Symbol id="fBackBack">back</Symbol><Symbol id="fBackNA">na</Symbol></Symbols></SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <MorphologicalPhonologicalRuleFeatures>
+      <MorphologicalPhonologicalRuleFeature id="mprException">Exception</MorphologicalPhonologicalRuleFeature>
+      <!-- Bucket-2 coverage: affix-conferred (rather than root-preset) exception, feeding
+           prObstruentDeletion's own excludedMPRFeatures below. -->
+      <MorphologicalPhonologicalRuleFeature id="mprAffixDelExcl">AffixDelExcl</MorphologicalPhonologicalRuleFeature>
+    </MorphologicalPhonologicalRuleFeatures>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+          <FeatureValue feature="featHigh" symbolValues="fHighLow" /><FeatureValue feature="featBack" symbolValues="fBackBack" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMid" /><FeatureValue feature="featBack" symbolValues="fBackFront" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cI"><Representations><Representation>i</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+          <FeatureValue feature="featHigh" symbolValues="fHighHigh" /><FeatureValue feature="featBack" symbolValues="fBackFront" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cU"><Representations><Representation>u</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+          <FeatureValue feature="featHigh" symbolValues="fHighHigh" /><FeatureValue feature="featBack" symbolValues="fBackBack" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsMinus" /><FeatureValue feature="featVoc" symbolValues="fVocPlus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVocalic" />
+          <FeatureValue feature="featHigh" symbolValues="fHighMid" /><FeatureValue feature="featBack" symbolValues="fBackBack" />
+        </SegmentDefinition>
+        
+        <SegmentDefinition id="cNph"><Representations><Representation>N</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalPlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceOther" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cM"><Representations><Representation>m</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalPlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cNlv"><Representations><Representation>n</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalPlus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cB"><Representations><Representation>b</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceLateral" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceVelar" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoiceMinus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceSibilant" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cV"><Representations><Representation>v</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceLabiodental" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD"><Representations><Representation>d</Representation></Representations>
+          <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoc" symbolValues="fVocMinus" />
+          <FeatureValue feature="featVoice" symbolValues="fVoicePlus" /><FeatureValue feature="featNasal" symbolValues="fNasalMinus" />
+          <FeatureValue feature="featPlace" symbolValues="fPlaceDentalD" />
+          <FeatureValue feature="featHigh" symbolValues="fHighNA" /><FeatureValue feature="featBack" symbolValues="fBackNA" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny"><Name>Any</Name></FeatureNaturalClass>
+      <SegmentNaturalClass id="ncNph"><Name>NasalPlaceholder</Name><Segment segment="cNph" /></SegmentNaturalClass>
+      <FeatureNaturalClass id="ncBilabial"><Name>Bilabial</Name>
+        <FeatureValue feature="featPlace" symbolValues="fPlaceBilabial" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncAlveolar"><Name>Alveolar</Name>
+        <FeatureValue feature="featPlace" symbolValues="fPlaceAlveolar" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncVoicelessObstruent"><Name>VoicelessObstruent</Name>
+        <FeatureValue feature="featCons" symbolValues="fConsPlus" /><FeatureValue feature="featVoice" symbolValues="fVoiceMinus" />
+      </FeatureNaturalClass>
+      <FeatureNaturalClass id="ncNasal"><Name>Nasal</Name>
+        <FeatureValue feature="featNasal" symbolValues="fNasalPlus" />
+      </FeatureNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      
+      <PhonologicalRule id="prNasalAssimBilabial">
+        <Name>nasalAssimBilabial</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncNph" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posNasal">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cM" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncBilabial" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      <PhonologicalRule id="prNasalAssimAlveolar">
+        <Name>nasalAssimAlveolar</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncNph" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule requiredPartsOfSpeech="posNasal">
+            <PhoneticOutput><PhoneticSequence><Segment segment="cNlv" /></PhoneticSequence></PhoneticOutput>
+            <Environment>
+              <RightEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncAlveolar" /></PhoneticSequence></PhoneticTemplate></RightEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+      
+      <PhonologicalRule id="prObstruentDeletion">
+        <Name>obstruentDeletion</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncVoicelessObstruent" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <!-- Bucket-2 coverage (MorphologicalOutput.MPRFeatures->PhonologicalSubrule.excludedMPRFeatures):
+               excludedMPRFeatures="mprAffixDelExcl" is a lexical-exception-by-affix gate on this
+               same junction-deletion rule - see mrDelExclSrc below, the affix that confers it, and
+               eTanuk/words.yaml for the severance witness. HCLoader.cs:2058 emits
+               PhonologicalSubrule.ExcludedMprFeatures from FLEx's Excluded rule features on a
+               phonological rule; nothing about mprException (the root-sourced exception this fixture
+               already demonstrates on mrSuf's MorphologicalInput) changes this subrule's own
+               behavior, since mprException is never referenced here. -->
+          <PhonologicalSubrule requiredPartsOfSpeech="posNasal" excludedMPRFeatures="mprAffixDelExcl">
+            <PhoneticOutput />
+            <Environment>
+              <LeftEnvironment><PhoneticTemplate><PhoneticSequence><SimpleContext naturalClass="ncNasal" /></PhoneticSequence></PhoneticTemplate></LeftEnvironment>
+            </Environment>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered"
+        morphologicalRules="mrNPfx mrSuf mrSufAlt mrDelExclSrc"
+        phonologicalRules="prNasalAssimBilabial prNasalAssimAlveolar prObstruentDeletion">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <MorphologicalRule id="mrNPfx" requiredPartsOfSpeech="posNasal" outputPartOfSpeech="posNasal">
+            <Name>nPfx</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subNPfx">
+                <MorphologicalInput><PhoneticSequence id="stemNPfx"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><InsertSegments><PhoneticShape>meN</PhoneticShape></InsertSegments><CopyFromInput index="stemNPfx" /></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>NPFX</MorphemeId>
+          </MorphologicalRule>
+          
+          <MorphologicalRule id="mrSuf" requiredPartsOfSpeech="posMPR" outputPartOfSpeech="posMPR">
+            <Name>suf</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSuf">
+                <MorphologicalInput excludedMPRFeatures="mprException"><PhoneticSequence id="stemSuf"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSuf" /><InsertSegments><PhoneticShape>an</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUF</MorphemeId>
+          </MorphologicalRule>
+          
+          <MorphologicalRule id="mrSufAlt" requiredPartsOfSpeech="posMPR" outputPartOfSpeech="posMPR">
+            <Name>sufAlt</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subSufAlt">
+                <MorphologicalInput><PhoneticSequence id="stemSufAlt"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput><CopyFromInput index="stemSufAlt" /><InsertSegments><PhoneticShape>i</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>SUFALT</MorphemeId>
+          </MorphologicalRule>
+          <!-- Bucket-2 coverage: the affix-conferred-exception source for prObstruentDeletion's own
+               excludedMPRFeatures. Its OWN MorphologicalOutput.MPRFeatures write (mprAffixDelExcl)
+               is the writer under test for MorphologicalOutput.MPRFeatures->PhonologicalSubrule.
+               excludedMPRFeatures. -->
+          <MorphologicalRule id="mrDelExclSrc" requiredPartsOfSpeech="posNasal" outputPartOfSpeech="posNasal">
+            <Name>delExclSrc</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDelExclSrc">
+                <MorphologicalInput><PhoneticSequence id="stemDelExclSrc"><OptionalSegmentSequence min="1" max="-1"><SimpleContext naturalClass="ncAny" /></OptionalSegmentSequence></PhoneticSequence></MorphologicalInput>
+                <MorphologicalOutput MPRFeatures="mprAffixDelExcl"><CopyFromInput index="stemDelExclSrc" /><InsertSegments><PhoneticShape>am</PhoneticShape></InsertSegments></MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DELEXCLSRC</MorphemeId>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          
+          <LexicalEntry id="eTulik" partOfSpeech="posNasal">
+            <Allomorphs><Allomorph id="aTulik"><PhoneticShape>tulik</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TULIK</MorphemeId>
+            <Gloss>carve</Gloss>
+          </LexicalEntry>
+          
+          <LexicalEntry id="eBalo" partOfSpeech="posNasal">
+            <Allomorphs><Allomorph id="aBalo"><PhoneticShape>balo</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>BALO</MorphemeId>
+            <Gloss>gather</Gloss>
+          </LexicalEntry>
+
+          <!-- Bucket-2 coverage: feeds mrDelExclSrc/prObstruentDeletion's own excludedMPRFeatures
+               test - see words.yaml for the severance witness. -->
+          <LexicalEntry id="eTanuk" partOfSpeech="posNasal">
+            <Allomorphs><Allomorph id="aTanuk"><PhoneticShape>tanuk</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>TANUK</MorphemeId>
+            <Gloss>weave</Gloss>
+          </LexicalEntry>
+
+          <LexicalEntry id="eSanit" partOfSpeech="posMPR">
+            <Allomorphs><Allomorph id="aSanit"><PhoneticShape>sanit</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>SANIT</MorphemeId>
+            <Gloss>root.sanit</Gloss>
+          </LexicalEntry>
+          
+          <LexicalEntry id="eVokad" partOfSpeech="posMPR" ruleFeatures="mprException">
+            <Allomorphs><Allomorph id="aVokad"><PhoneticShape>vokad</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>VOKAD</MorphemeId>
+            <Gloss>root.vokad</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
+

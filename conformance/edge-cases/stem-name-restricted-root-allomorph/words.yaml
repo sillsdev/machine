@@ -1,0 +1,66 @@
+# Oracle: pangloss (`pg_parse::Morpher`, driven directly via a temporary probe test -- see
+# STAGING.md's "Verification" section), NOT the C# founding oracle. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+
+language: StemNameRestrictedRootAllomorph
+inspired_by: ["synthetic principal-parts / stem-alternation probe (not modeling any real language)"]
+sources:
+  - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::StemName's own doc"
+requires: []
+words:
+  - word: tam
+    note: The unrestricted default allomorph, bare -- no featPers assigned at all, which is outside snP1's region, so the excluded-match check is satisfied trivially.
+    parses:
+      - signature: "ROOT|tam"
+        gloss: root
+        rules: []
+        exercises:
+          - "Stem names"
+
+  - word: kap
+    note: >-
+      THE distinguishing row: the stemName="snP1" allomorph, bare -- its region requires
+      featPers=1 to be ASSIGNED, but a bare form has no person feature at all, so the
+      required-match fails. Zero parses. An engine that ignores RootAllomorphDef::stem_name
+      entirely (proposes every allomorph unconditionally, per capability.rs's own StemName doc)
+      would wrongly accept this.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: kapom
+    note: The stemName="snP1" allomorph + mrPers1 (assigns featPers=1) -- the word's FS now falls inside snP1's region, so the required-match succeeds.
+    provenance: "capability.rs, CharacteristicKind::StemName's own doc (RootAllomorphDef::stem_name / StemName.IsRequiredMatch)"
+    parses:
+      - signature: "ROOT+PERS1|kapom"
+        gloss: root-1
+        rules: [mrPers1]
+        exercises:
+          - "Stem names"
+
+  - word: tamom
+    note: >-
+      THE mirror-image distinguishing row: the DEFAULT allomorph + mrPers1 -- featPers=1 now
+      puts the word's FS INSIDE snP1's region, so the default's excluded-match check FAILS (it is
+      valid only outside every declared StemName's region). Zero parses. The same
+      flat-proposal bug would wrongly accept this too, using the wrong allomorph for this
+      person.
+    expect_fail: true
+    exercises:
+      - "Stem names"
+
+  - word: tamur
+    note: The default allomorph + mrPers2 (assigns featPers=2) -- outside snP1's region, so the excluded-match check succeeds.
+    provenance: "capability.rs, CharacteristicKind::StemName's own doc (RootAllomorphDef::stem_name / StemName.IsExcludedMatch)"
+    parses:
+      - signature: "ROOT+PERS2|tamur"
+        gloss: root-2
+        rules: [mrPers2]
+        exercises:
+          - "Stem names"
+
+  - word: kapur
+    note: The stemName="snP1" allomorph + mrPers2 -- featPers=2 is outside snP1's region, so the required-match fails (this allomorph is valid only inside its own region).
+    expect_fail: true
+    exercises:
+      - "Stem names"

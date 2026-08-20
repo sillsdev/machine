@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+	<Language>
+		<Name>N2-DefaultSymbol</Name>
+		<PartsOfSpeech>
+			<PartOfSpeech id="n">
+				<Name>Noun</Name>
+			</PartOfSpeech>
+		</PartsOfSpeech>
+		<PhonologicalFeatureSystem>
+			<!-- defaultSymbol="symNasPlus": an UNDER-SPECIFIED segment (one authored with no
+			     FeatureValue for "nas" at all) is, for UseDefaults-aware matching, treated as
+			     NASAL (+), not as "matches anything". The phonological rule below pins its
+			     target to Oral (nas=-); the opposite of the default; so a matcher that honors
+			     UseDefaults must NOT apply the rule to an unspecified segment, while a matcher
+			     that (like an unconstrained lane) treats "unspecified" as "matches anything"
+			     incorrectly applies it. -->
+			<SymbolicFeature id="nas" defaultSymbol="symNasPlus">
+				<Name>Nasal</Name>
+				<Symbols>
+					<Symbol id="symNasPlus">+</Symbol>
+					<Symbol id="symNasMinus">-</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+			<SymbolicFeature id="len">
+				<Name>Length</Name>
+				<Symbols>
+					<Symbol id="symShort">-</Symbol>
+					<Symbol id="symLong">+</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+			<!-- A fully disambiguating feature (one unique symbol per non-"aa" segment), same
+			     trick as the N1 fixture: keeps every UNTOUCHED segment's oracle signature down to
+			     its own literal character (as in the 3 real reference grammars) instead of the
+			     char-def-set bracket notation this feature-sparse a grammar would otherwise
+			     trigger for every position, touched or not. "aa" deliberately carries NO "id"
+			     value (stays unconstrained), so it is exactly the one segment the mutated
+			     (post-rule) node's now-cleared identity can still resolve to; see "aa"'s own
+			     comment below. -->
+			<SymbolicFeature id="id">
+				<Name>SegId</Name>
+				<Symbols>
+					<Symbol id="idB">b</Symbol>
+					<Symbol id="idT">t</Symbol>
+					<Symbol id="idA">a</Symbol>
+					<Symbol id="idD">d</Symbol>
+				</Symbols>
+			</SymbolicFeature>
+		</PhonologicalFeatureSystem>
+		<CharacterDefinitionTable id="t1">
+			<Name>N2 Orthography</Name>
+			<SegmentDefinitions>
+				<!-- Every segment below is FULLY pinned on every feature (id + nas + len) except
+				     the ONE deliberate gap on "a" (nas) and the ONE deliberate gap on "aa" (id,
+				     nas); this is required for C#'s ToRegexString/GetMatchingStrReps display
+				     (which recomputes char-def-set membership by feature-struct compatibility for
+				     EVERY node, touched or not, not just ones a rule mutated) to render each
+				     UNTOUCHED literal segment as itself instead of a bracket: any real gap beyond
+				     the one under test lets an unrelated segment "leak" into the rendered set via
+				     unconstrained-lane overlap (confirmed empirically; an earlier, less-pinned
+				     draft of this fixture rendered every position as "[x(aa)]"). -->
+				<!-- "b"/"t" are pinned NASAL (+), the SAME as the default, specifically so
+				     they do NOT satisfy ncOral themselves (the rule has no environment, so it
+				     would otherwise also fire on "b"/"t", corrupting the "bat"/"bdt" surface
+				     forms this fixture relies on staying recognizable). -->
+				<SegmentDefinition id="cB">
+					<Representations>
+						<Representation>b</Representation>
+					</Representations>
+					<FeatureValue feature="id" symbolValues="idB" />
+					<FeatureValue feature="nas" symbolValues="symNasPlus" />
+					<FeatureValue feature="len" symbolValues="symShort" />
+				</SegmentDefinition>
+				<SegmentDefinition id="cT">
+					<Representations>
+						<Representation>t</Representation>
+					</Representations>
+					<FeatureValue feature="id" symbolValues="idT" />
+					<FeatureValue feature="nas" symbolValues="symNasPlus" />
+					<FeatureValue feature="len" symbolValues="symShort" />
+				</SegmentDefinition>
+				<!-- "a": unspecified for "nas" (no FeatureValue); the segment finding N2 is
+				     about; fully pinned otherwise. -->
+				<SegmentDefinition id="cA">
+					<Representations>
+						<Representation>a</Representation>
+					</Representations>
+					<FeatureValue feature="id" symbolValues="idA" />
+					<FeatureValue feature="len" symbolValues="symShort" />
+				</SegmentDefinition>
+				<!-- "d": explicitly Oral (nas=-); the control case where the rule legitimately
+				     fires regardless of UseDefaults (an explicit value, not a default fallback);
+				     fully pinned otherwise. -->
+				<SegmentDefinition id="cD">
+					<Representations>
+						<Representation>d</Representation>
+					</Representations>
+					<FeatureValue feature="id" symbolValues="idD" />
+					<FeatureValue feature="nas" symbolValues="symNasMinus" />
+					<FeatureValue feature="len" symbolValues="symShort" />
+				</SegmentDefinition>
+				<!-- "aa": the ONLY segment pinned Long, and deliberately left unconstrained on
+				     "id"/"nas"; the rule's output signature when it fires: the mutated node
+				     clears its own char_def identity and re-renders via table-wide feature
+				     unification; "aa" is the sole char-def compatible with any mutated (len=Long)
+				     node regardless of which original segment ("a" or "d") it was (its own "id"
+				     pin no longer excludes it, since "aa" doesn't constrain "id" at all) and
+				     regardless of that node's "nas" value (also unconstrained on "aa"). -->
+				<SegmentDefinition id="cAA">
+					<Representations>
+						<Representation>aa</Representation>
+					</Representations>
+					<FeatureValue feature="len" symbolValues="symLong" />
+				</SegmentDefinition>
+			</SegmentDefinitions>
+		</CharacterDefinitionTable>
+		<NaturalClasses>
+			<FeatureNaturalClass id="ncOral">
+				<Name>Oral</Name>
+				<FeatureValue feature="nas" symbolValues="symNasMinus" />
+			</FeatureNaturalClass>
+			<FeatureNaturalClass id="ncLong">
+				<Name>Long</Name>
+				<FeatureValue feature="len" symbolValues="symLong" />
+			</FeatureNaturalClass>
+		</NaturalClasses>
+		<PhonologicalRuleDefinitions>
+			<PhonologicalRule id="pr1">
+				<Name>Lengthen oral segment</Name>
+				<PhoneticInput>
+					<PhoneticSequence>
+						<SimpleContext naturalClass="ncOral" />
+					</PhoneticSequence>
+				</PhoneticInput>
+				<PhonologicalSubrules>
+					<PhonologicalSubrule>
+						<PhoneticOutput>
+							<PhoneticSequence>
+								<SimpleContext naturalClass="ncLong" />
+							</PhoneticSequence>
+						</PhoneticOutput>
+					</PhonologicalSubrule>
+				</PhonologicalSubrules>
+			</PhonologicalRule>
+		</PhonologicalRuleDefinitions>
+		<Strata>
+			<Stratum characterDefinitionTable="t1" phonologicalRules="pr1">
+				<Name>main</Name>
+				<LexicalEntries>
+					<!-- Word "bat" (THE UseDefaults signal): the middle segment "a" is UNSPECIFIED
+					     for nas. C# (UseDefaults=true in the rewrite matcher): "a"'s effective
+					     nas is the default (+), which does NOT satisfy ncOral's nas=- pin; the
+					     rule must NOT fire during synthesis; the surface stays "bat" and the word
+					     parses as |bat. A defaults-unaware matcher (pre-fix Rust) treats the
+					     unspecified lane as "matches anything", fires the rule during the
+					     confirming synthesis, mutates "a" (len=long, char-def identity cleared),
+					     renders "baat", fails the surface-form match, and reports "-" (no parse)
+					     where C# reports |bat. -->
+					<LexicalEntry id="e1" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="a1">
+								<PhoneticShape>bat</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>bat</Gloss>
+					</LexicalEntry>
+					<!-- Word "bdt" (control, expected "-" in BOTH engines): the middle segment "d"
+					     is EXPLICITLY Oral (nas=-), an explicit value (not a default fallback),
+					     so pr1 legitimately fires on it during the confirming synthesis in both
+					     engines, mutating "d" so the resynthesized surface is no longer "bdt";
+					     the word therefore does NOT parse in either engine. This pins that
+					     UseDefaults handling does not over-suppress a rule whose pin is satisfied
+					     by an explicit value, and that the "bat" divergence above is really about
+					     defaultSymbol, not some other loader/matcher bug. -->
+					<LexicalEntry id="e2" partOfSpeech="n">
+						<Allomorphs>
+							<Allomorph id="a2">
+								<PhoneticShape>bdt</PhoneticShape>
+							</Allomorph>
+						</Allomorphs>
+						<Gloss>bdt</Gloss>
+					</LexicalEntry>
+				</LexicalEntries>
+			</Stratum>
+		</Strata>
+	</Language>
+</HermitCrabInput>
