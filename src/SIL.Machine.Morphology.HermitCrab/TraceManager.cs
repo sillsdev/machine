@@ -89,7 +89,8 @@
             int subruleIndex,
             Word input,
             FailureReason reason,
-            object failureObj)
+            object failureObj
+        )
         {
             ((Trace)input.CurrentTrace).Children.Add(
                 new Trace(TraceType.MorphologicalRuleAnalysis, rule)

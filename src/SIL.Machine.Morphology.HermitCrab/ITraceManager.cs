@@ -53,7 +53,7 @@
             Word input,
             FailureReason reason,
             object failureObj
-            );
+        );
 
         void CompoundingRuleNotUnapplied(
             IMorphologicalRule rule,
