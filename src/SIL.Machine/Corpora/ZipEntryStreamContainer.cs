@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using SIL.Machine.Utils;
 using SIL.ObjectModel;
 
 namespace SIL.Machine.Corpora
@@ -17,7 +18,7 @@ namespace SIL.Machine.Corpora
 
         public Stream OpenStream()
         {
-            return _entry.Open();
+            return _entry.OpenBoundedStream();
         }
 
         protected override void DisposeManagedResources()
