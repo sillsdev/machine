@@ -219,7 +219,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     if (_morpher.TraceManager.IsTracing)
                         _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
                     output.Add(outWord);
-                    SynthesisProbe.RecordApplication(input, _rule, outWord);
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
@@ -252,6 +251,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     SynthesisProbe.RecordDie(SynthesisDiePoint.RuleNotApplicableOrPatternMismatch);
                 }
             }
+
+            // Recorded once for the whole call, not per allomorph: several allomorphs of the same _rule
+            // can legitimately all pattern-match the same input before the disjunctive-environment break
+            // above, so (fingerprint, rule) is properly a set-valued fold step here -- exactly the shape
+            // the plan doc's second trap already calls out for realizational rules ("any stored partial
+            // must be a set, like MemoEntry.Results, not a value"). Recording per allomorph instead would
+            // make ordinary disjunctive fan-out look like a determinism violation.
+            if (output.Count > 0)
+                SynthesisProbe.RecordApplications(input, _rule, output);
 
             return output;
         }

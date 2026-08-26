@@ -165,7 +165,6 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
                     output.Add(outWord);
-                    SynthesisProbe.RecordApplication(input, _rule, outWord);
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
@@ -198,6 +197,12 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     SynthesisProbe.RecordDie(SynthesisDiePoint.RuleNotApplicableOrPatternMismatch);
                 }
             }
+
+            // Recorded once for the whole call, not per allomorph -- see the matching comment in
+            // SynthesisAffixProcessRule.Apply: several allomorphs can legitimately all pattern-match one
+            // input, so (fingerprint, rule) is a set-valued fold step here.
+            if (output.Count > 0)
+                SynthesisProbe.RecordApplications(input, _rule, output);
 
             return output;
         }

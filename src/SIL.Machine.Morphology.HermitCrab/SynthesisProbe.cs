@@ -119,7 +119,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         // below) plus the rule that was applied. Persists across a whole fixture (not reset per word) so
         // the distinct-pair count is a true count over the combined stream, not a sum of per-word counts
         // that would double-count a pair recurring across words of the same fixture.
-        private static readonly Dictionary<FoldStepKey, Word> _foldSteps = new Dictionary<FoldStepKey, Word>();
+        private static readonly Dictionary<FoldStepKey, List<Word>> _foldSteps = new Dictionary<FoldStepKey, List<Word>>();
         private static long _totalApplications;
         private static long _determinismViolations;
 
@@ -137,32 +137,68 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal static long DeterminismViolations => Interlocked.Read(ref _determinismViolations);
 
         /// <summary>
-        /// Records one successful synthesis morphological-rule/template application: <paramref name="rule"/>
-        /// was applied to <paramref name="input"/>, producing <paramref name="output"/>. Also runs the
-        /// determinism check: if this exact (fingerprint, rule) pair was already seen with a different
-        /// outcome fingerprint, that is a fingerprint-completeness bug (see the class remarks on
-        /// <see cref="Word"/>'s callers about the <c>Word.ValueEquals</c> trap this exists to avoid), and is
-        /// the single most important thing this probe can find.
+        /// Records one call's worth of successful synthesis morphological-rule/template applications:
+        /// <paramref name="rule"/> was applied to <paramref name="input"/>, producing every word in
+        /// <paramref name="outputs"/>. Grouped as one call, not one per output, because several allomorphs
+        /// of the same rule can legitimately all pattern-match the same input before a disjunctive break --
+        /// (fingerprint, rule) is properly a SET-valued fold step, exactly the shape the plan doc's second
+        /// trap already calls out for realizational rules ("any stored partial must be a set, like
+        /// MemoEntry.Results, not a value"). Recording per output instead of per set would make ordinary
+        /// disjunctive fan-out look like a determinism violation on every single-input, multi-allomorph
+        /// rule -- this was tried first and produced exactly that false-positive flood.
+        /// <para>
+        /// The determinism check: if this exact (fingerprint, rule) pair was already seen (from a different
+        /// call -- a different top-level candidate reaching the same state) with a different OUTCOME SET,
+        /// that is a fingerprint-completeness bug (see the class remarks on <see cref="Word"/>'s callers
+        /// about the <c>Word.ValueEquals</c> trap this exists to avoid), and is the single most important
+        /// thing this probe can find.
+        /// </para>
         /// </summary>
-        internal static void RecordApplication(Word input, IMorphologicalRule rule, Word output)
+        internal static void RecordApplications(Word input, IMorphologicalRule rule, IReadOnlyList<Word> outputs)
         {
-            if (!Enabled)
+            if (!Enabled || outputs.Count == 0)
                 return;
 
-            Interlocked.Increment(ref _totalApplications);
+            Interlocked.Add(ref _totalApplications, outputs.Count);
             var key = new FoldStepKey(input, rule);
             lock (_foldSteps)
             {
-                if (_foldSteps.TryGetValue(key, out Word priorOutcome))
+                if (_foldSteps.TryGetValue(key, out List<Word> priorOutcomes))
                 {
-                    if (!FingerprintEquals(priorOutcome, output))
+                    if (!OutcomeSetEquals(priorOutcomes, outputs))
                         Interlocked.Increment(ref _determinismViolations);
                 }
                 else
                 {
-                    _foldSteps[key] = output;
+                    _foldSteps[key] = new List<Word>(outputs);
                 }
             }
+        }
+
+        // Bipartite multiset comparison via FingerprintEquals membership. Outcome sets here are small (at
+        // most the number of allomorphs one rule declares), so the O(n*m) cost is negligible.
+        private static bool OutcomeSetEquals(List<Word> a, IReadOnlyList<Word> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+
+            var matched = new bool[b.Count];
+            foreach (Word x in a)
+            {
+                bool found = false;
+                for (int j = 0; j < b.Count; j++)
+                {
+                    if (!matched[j] && FingerprintEquals(x, b[j]))
+                    {
+                        matched[j] = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    return false;
+            }
+            return true;
         }
 
         internal static void ResetFoldSteps()
