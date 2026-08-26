@@ -58,11 +58,15 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         1
                     );
                 }
+                SynthesisProbe.RecordDie(SynthesisDiePoint.ApplicationCount);
                 return Enumerable.Empty<Word>();
             }
 
             if (!_rule.RealizationalFeatureStruct.Subsumes(input.RealizationalFeatureStruct))
+            {
+                SynthesisProbe.RecordDie(SynthesisDiePoint.RealizationalSubsumptionOrBlocking);
                 return Enumerable.Empty<Word>();
+            }
 
             if (
                 !_rule.RealizationalFeatureStruct.IsEmpty
@@ -73,6 +77,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 )
             )
             {
+                SynthesisProbe.RecordDie(SynthesisDiePoint.RealizationalSubsumptionOrBlocking);
                 return Enumerable.Empty<Word>();
             }
 
@@ -89,6 +94,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _rule.RequiredSyntacticFeatureStruct
                     );
                 }
+                SynthesisProbe.RecordDie(SynthesisDiePoint.FeatureUnification);
                 return Enumerable.Empty<Word>();
             }
 
@@ -113,6 +119,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             group
                         );
                     }
+                    SynthesisProbe.RecordDie(SynthesisDiePoint.MprFeatures);
                     continue;
                 }
                 if (
@@ -130,6 +137,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                             group
                         );
                     }
+                    SynthesisProbe.RecordDie(SynthesisDiePoint.MprFeatures);
                     continue;
                 }
 
@@ -157,6 +165,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         _morpher.TraceManager.MorphologicalRuleApplied(_rule, i, input, outWord);
 
                     output.Add(outWord);
+                    SynthesisProbe.RecordApplication(input, _rule, outWord);
 
                     // return all word syntheses that match subrules that are constrained by environments,
                     // HC violates the disjunctive property of allomorphs here because it cannot check the
@@ -174,9 +183,19 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         break;
                     }
                 }
-                else if (_morpher.TraceManager.IsTracing)
+                else
                 {
-                    _morpher.TraceManager.MorphologicalRuleNotApplied(_rule, i, input, FailureReason.Pattern, null);
+                    if (_morpher.TraceManager.IsTracing)
+                    {
+                        _morpher.TraceManager.MorphologicalRuleNotApplied(
+                            _rule,
+                            i,
+                            input,
+                            FailureReason.Pattern,
+                            null
+                        );
+                    }
+                    SynthesisProbe.RecordDie(SynthesisDiePoint.RuleNotApplicableOrPatternMismatch);
                 }
             }
 

@@ -404,6 +404,31 @@ namespace SIL.Machine.Morphology.HermitCrab
             return numApplies;
         }
 
+        /// <summary>
+        /// The full application-count table backing <see cref="GetApplicationCount"/>. Read-only exposure
+        /// for <see cref="SynthesisProbe"/>'s P1c fold-step fingerprint (see
+        /// docs/hermitcrab-synthesis-fold-probes.md section 3) -- mirrors how <see cref="UnappliedRuleCounts"/>
+        /// already exposes the analysis-side equivalent.
+        /// </summary>
+        internal IReadOnlyDictionary<IMorphologicalRule, int> AppliedRuleCounts => _mrulesApplied;
+
+        /// <summary>
+        /// The disjunctive-allomorph-application table, keyed by morph id. Read-only exposure for
+        /// <see cref="SynthesisProbe"/>'s P1c fingerprint: <see cref="Allomorph.IsWordValid"/> reads this
+        /// per morph, so two words that differ here can validly produce different outcomes even with
+        /// everything else equal, and a fingerprint that omitted it would be exactly the kind of
+        /// incomplete key <c>Word.ValueEquals</c> already is (see the class remarks at the top of this file's
+        /// callers).
+        /// </summary>
+        internal IReadOnlyDictionary<string, HashSet<int>> DisjunctiveAllomorphIndices => _disjunctiveAllomorphIndices;
+
+        /// <summary>
+        /// The trail index a synthesis step reads via <see cref="IsMorphologicalRuleApplicable"/>: how far
+        /// through <c>_mruleApps</c> this word has progressed. Exposed as "pending-trail position" for
+        /// <see cref="SynthesisProbe"/>'s P1c fingerprint.
+        /// </summary>
+        internal int PendingTrailPosition => _mruleAppIndex;
+
         internal Word CurrentNonHead
         {
             get

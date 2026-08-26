@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using SIL.Extensions;
 using SIL.Machine.Annotations;
@@ -93,7 +94,25 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
-            foreach (Word mruleOutWord in _mrulesRule.Apply(input))
+            // Materialized only when the probe is on: the P1a wall-time split needs a bracketed call to
+            // time, and this is the entry point to the whole morphological-rule-cascade subsystem for this
+            // node (the cascade's own internal recursion happens inside _mrulesRule.Apply, so this one call
+            // captures all of it with no double counting against the template-battery timer below, which
+            // brackets a disjoint call). Instrumentation only -- the same results are yielded either way.
+            IEnumerable<Word> mruleOutWords;
+            if (SynthesisProbe.Enabled)
+            {
+                long start = Stopwatch.GetTimestamp();
+                var materialized = _mrulesRule.Apply(input).ToList();
+                SynthesisProbe.AddCascadeTicks(Stopwatch.GetTimestamp() - start);
+                mruleOutWords = materialized;
+            }
+            else
+            {
+                mruleOutWords = _mrulesRule.Apply(input);
+            }
+
+            foreach (Word mruleOutWord in mruleOutWords)
             {
                 if (mruleOutWord.IsLastAppliedRuleFinal ?? false)
                 {
@@ -109,7 +128,20 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in _templatesRule.Apply(input))
+            IEnumerable<Word> templateOutWords;
+            if (SynthesisProbe.Enabled)
+            {
+                long start = Stopwatch.GetTimestamp();
+                var materialized = _templatesRule.Apply(input).ToList();
+                SynthesisProbe.AddTemplateBatteryTicks(Stopwatch.GetTimestamp() - start);
+                templateOutWords = materialized;
+            }
+            else
+            {
+                templateOutWords = _templatesRule.Apply(input);
+            }
+
+            foreach (Word tempOutWord in templateOutWords)
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {

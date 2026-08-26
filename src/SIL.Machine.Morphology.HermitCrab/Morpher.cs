@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -349,18 +350,59 @@ namespace SIL.Machine.Morphology.HermitCrab
             int alternativeCount = 0;
             foreach (Word analysisWord in analyses)
             {
-                foreach (Word synthesisWord in LexicalLookup(analysisWord))
+                // Materialized (rather than left lazy) so the P1a wall-time split can bracket exactly the
+                // work LexicalLookup itself does, separate from what the caller does with the results.
+                // Instrumentation only: SynthesisProbe.Enabled is false outside the P1 harness, and this
+                // still enumerates every result LexicalLookup would have yielded either way, so the set of
+                // words synthesis proceeds with is unchanged.
+                List<Word> lookups;
+                if (SynthesisProbe.Enabled)
+                {
+                    long lookupStart = Stopwatch.GetTimestamp();
+                    lookups = LexicalLookup(analysisWord).ToList();
+                    SynthesisProbe.AddLexicalLookupTicks(Stopwatch.GetTimestamp() - lookupStart);
+                    if (lookups.Count == 0)
+                        SynthesisProbe.RecordDie(SynthesisDiePoint.LexicalLookupMiss);
+                }
+                else
+                {
+                    lookups = LexicalLookup(analysisWord).ToList();
+                }
+
+                foreach (Word synthesisWord in lookups)
                 {
                     foreach (Word alternative in synthesisWord.ExpandAlternatives())
                     {
                         alternativeCount++;
                         if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
                             throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
+
+                        if (!SynthesisProbe.Enabled)
+                        {
+                            foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
+                            {
+                                if (IsMatch(word, validWord))
+                                    matches.Add(validWord);
+                            }
+                            continue;
+                        }
+
+                        // P1a's "forward synthesis" bucket is this call's wall time minus whatever the
+                        // cascade/template-battery timers (accumulated separately inside SynthesisStratumRule)
+                        // recorded during it -- the residual is _synthesisRule.Apply's own orchestration
+                        // plus IsWordValid and IsMatch, exactly as the plan defines the bucket.
+                        long cascadeBefore = SynthesisProbe.CascadeTicks;
+                        long batteryBefore = SynthesisProbe.TemplateBatteryTicks;
+                        long forwardStart = Stopwatch.GetTimestamp();
                         foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                         {
                             if (IsMatch(word, validWord))
                                 matches.Add(validWord);
                         }
+                        long forwardTotal = Stopwatch.GetTimestamp() - forwardStart;
+                        long cascadeDelta = SynthesisProbe.CascadeTicks - cascadeBefore;
+                        long batteryDelta = SynthesisProbe.TemplateBatteryTicks - batteryBefore;
+                        SynthesisProbe.AddForwardSynthesisTicks(forwardTotal - cascadeDelta - batteryDelta);
                     }
                 }
             }
@@ -640,6 +682,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (_traceManager.IsTracing)
                     _traceManager.Failed(_lang, word, FailureReason.PartialParse, null, null);
+                SynthesisProbe.RecordDie(SynthesisDiePoint.IsWordValid);
                 return false;
             }
 
@@ -654,9 +697,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 if (_traceManager.IsTracing)
                     _traceManager.Failed(_lang, word, FailureReason.ObligatorySyntacticFeatures, null, feature);
+                SynthesisProbe.RecordDie(SynthesisDiePoint.IsWordValid);
                 return false;
             }
 
+            // Sub-reasons (allomorph Environments vs. co-occurrence rules) are recorded inside
+            // Allomorph.IsWordValid itself, at the die point that actually fired -- not duplicated here,
+            // since a single word can carry several allomorphs and only some may reject.
             return word.Allomorphs.All(allo => allo.IsWordValid(this, word));
         }
 
@@ -672,6 +719,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 _traceManager.Failed(_lang, validWord, FailureReason.SurfaceFormMismatch, null, word);
             }
+            SynthesisProbe.RecordDie(SynthesisDiePoint.SurfaceFormMismatch);
             return false;
         }
 

@@ -121,6 +121,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                             Environments
                         );
                     }
+                    SynthesisProbe.RecordDie(SynthesisDiePoint.AllomorphEnvironment);
                     return false;
                 }
 
@@ -147,6 +148,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 disjunctiveAllomorph
                             );
                         }
+                        // Grouped with the Environments check above under "allomorph environment": this is
+                        // still deciding which allomorph's environment wins, not a co-occurrence rule.
+                        SynthesisProbe.RecordDie(SynthesisDiePoint.AllomorphEnvironment);
                         return false;
                     }
                 }
@@ -173,6 +177,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 rule
                             );
                         }
+                        SynthesisProbe.RecordDie(SynthesisDiePoint.IsWordValid);
                         return false;
                     }
                 }
@@ -195,6 +200,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 rule
                             );
                         }
+                        SynthesisProbe.RecordDie(SynthesisDiePoint.IsWordValid);
                         return false;
                     }
                 }
