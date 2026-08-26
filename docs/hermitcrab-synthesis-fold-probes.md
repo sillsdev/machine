@@ -174,4 +174,80 @@ Results land in section 6 of this file as they arrive.
 
 ## 6. Results
 
-_P1 pending._
+### 6.1 P1 — conformance breadth (33 fixtures)
+
+Full HermitCrab suite on this branch with the probe present: **582 passed, 1 skipped, 0 failed**,
+including every conformance fixture gate. The instrumentation is behaviour-neutral: all edits are
+insertions before existing `return`/`continue` statements, gated on a single
+`volatile bool SynthesisProbe.Enabled` that is false in normal operation.
+
+**Determinism violations across all 33 fixtures: 0.** Equal fingerprint plus equal applied rule
+never produced a different outcome multiset, across 8 typologies and 25 edge cases. This is the
+check that would have exposed an incomplete fingerprint, and it is clean — which is what licenses
+reading the P1c ratios below as real sharing rather than as collisions.
+
+**P1c fold-step sharing ratio, by fixture** (never pooled — sizes differ by three orders of
+magnitude):
+
+| fixture | applications | distinct | ratio |
+| --- | --- | --- | --- |
+| languages/suffixing-evidential-adjacency-chain | 640 | 79 | **8.10x** |
+| edge-cases/strrep-identity | 67 | 17 | 3.94x |
+| edge-cases/deep-optional-affix-nesting | 5,556 | 1,727 | **3.22x** |
+| edge-cases/diacritic-segments | 48 | 16 | 3.00x |
+| edge-cases/disjunctive-recheck | 12 | 4 | 3.00x |
+| languages/suffixing-vowel-harmony | 45 | 16 | 2.81x |
+| languages/suffixing-extension-slot-ordering | 88 | 41 | 2.15x |
+| languages/templatic-root-modification | 27 | 14 | 1.93x |
+| edge-cases/morphotactic-attribute-breadth | 131 | 83 | 1.58x |
+| languages/fusional-realizational-morphology | 59 | 40 | 1.48x |
+| languages/metathesis-phase-isolation | 10 | 9 | 1.11x |
+| languages/polysynthetic-stratal-derivation-chain | 5 | 5 | 1.00x |
+| edge-cases/mpr-overwrite-order-dependence | 19 | 19 | 1.00x |
+
+**Fold sharing is real and strongly typology-dependent.** Suffixing/agglutinative chains share
+heavily; metathesis and MPR-order-dependent grammars share nothing. That split is a sanity check
+in itself: the fixture literally built to be order-dependent
+(`mpr-overwrite-order-dependence`) reports exactly 1.00x, and the metathesis fixture 1.11x, while
+a suffix chain reports 8.10x. The measurement discriminates in the direction the mechanism
+predicts.
+
+This is precisely the information the predecessor branch lacked. Key narrowing looked general and
+was Sena-shaped; fold sharing is *not* general either, but here we know the shape of the
+dependence before building anything.
+
+**P1b die-point histogram** — consistent across unrelated typologies:
+`RuleNotApplicableOrPatternMismatch` 72–73%, `LexicalLookupMiss` 22–25%, everything else in the
+single digits.
+
+Two cautions on reading it:
+- These are rejection **events**, not distinct candidates — one candidate branches into many
+  internal attempts, each able to die at a different check. Documented in `SynthesisProbe`. It is
+  **not** the same denominator as the historical 218,847 figure, which counts candidates
+  *entering* synthesis (one per `ExpandAlternatives` output). The two numbers must not be
+  compared.
+- `RuleNotApplicableOrPatternMismatch` clears the 40% gate on count, but each such rejection is an
+  O(1) trail-position check (`IsMorphologicalRuleApplicable` is a list index plus a reference
+  compare). A count histogram overstates its cost share. **Cost-weighting is required before this
+  becomes a build decision** — see 6.3.
+
+**P1a wall-time split** is unreliable on these fixtures: most words run in well under 2 ms, where
+`Stopwatch` overhead and JIT warm-up swamp the signal, and the four buckets frequently sum to well
+under half of wall time. The one large-enough fixture is informative:
+`deep-optional-affix-nesting` at 2,393 ms with **battery = 67.4%**, forward synthesis 6.2% —
+matching the historical Sena finding that the affix-template battery dominates. Treat the split as
+meaningful only on the real corpora.
+
+### 6.2 P1 — real corpora
+
+_Sena (`atawirambo`, `kukucitirani`, `cinacemerwa`) running. This is where the ≥5x gate is decided._
+
+### 6.3 Follow-on required before any build decision
+
+- **Cost-weight P1b.** Count is not cost. Attribute wall time, not events, to each die point.
+- **The trail-position finding needs its own look.** If `RuleNotApplicableOrPatternMismatch` is
+  dominated by the synthesis cascade trying every rule at each node when the trail dictates exactly
+  one pending rule, that is the "~40x free" observation already recorded in
+  `docs/hermitcrab-parse-algorithm-analysis.md` (complexity-cap branch), independently
+  reconfirmed here across two typologies. Indexing synthesis rules by trail position is a much
+  smaller change than anything else in this plan. Cheap to measure, cheap to build.
