@@ -238,11 +238,71 @@ under half of wall time. The one large-enough fixture is informative:
 matching the historical Sena finding that the affix-template battery dominates. Treat the split as
 meaningful only on the real corpora.
 
-### 6.2 P1 — real corpora
+### 6.2 P1 — Sena, and a correction to how these numbers must be read
 
-_Sena (`atawirambo`, `kukucitirani`, `cinacemerwa`) running. This is where the ≥5x gate is decided._
+| word | wall | successful apps | new distinct |
+| --- | --- | --- | --- |
+| `atawirambo` | 19,987 ms | 268 | 32 |
+| `kukucitirani` | 89,679 ms | 39,270 | 112 |
+| `cinacemerwa` | 61,672 ms | 2,149 | 13 |
+| **total** | 171,338 ms | **41,687** | **157** |
 
-### 6.3 Follow-on required before any build decision
+**P1c = 265.5x. Determinism violations: 0.** The gate was ≥5x.
+
+And on Sena that does not matter, because of the split:
+
+`lookup 5.68 ms (0.0%) · synthesis cascade 2,629 ms (1.5%) · synthesis battery 5,677 ms (3.3%) ·
+forward synthesis 328 ms (0.2%)` — **four buckets totalling 5.0% of wall time.**
+
+Two separate findings are tangled here and must be kept apart.
+
+**(i) A measurement defect.** All four timers landed on the *synthesis* side —
+`AddCascadeTicks`/`AddTemplateBatteryTicks` are called from `SynthesisStratumRule.cs:107`/`:136`,
+and `AnalysisStratumRule`/`MemoizedCombinationRuleCascade` were never instrumented. That is an
+ambiguity in the brief: both a "morphological-rule cascade" and an "affix-template battery" exist
+on each side. Being fixed; the `unaccounted` column is the deliverable.
+
+**(ii) A real result about Sena.** Even granting the defect, forward synthesis plus lexical lookup
+plus the synthesis-side cascade and battery are **5% of Sena heavy-word time**. The 218,847
+synthesis inputs on `cinacemerwa` are real but cost ~0.5 µs each. Counting candidates told us
+where the *volume* was and never where the *time* was. This is exactly the row the predecessor
+plan required and the predecessor branch skipped, and skipping it cost two rounds of analysis
+built on a wrong denominator.
+
+Corroborating: **11,445,538 rejection events, 100.0% `RuleNotApplicableOrPatternMismatch`**,
+against 41,687 successful applications — 274 wasted rule attempts per real one, at ~29 ns each.
+Real waste, and the "~40x free" trail-position observation from
+`docs/hermitcrab-parse-algorithm-analysis.md` reconfirmed at scale — but at 29 ns it is not 95% of
+anything.
+
+#### The correction to the metric
+
+Sena being analysis-bound is a fact about Sena, not a verdict on the technique. HermitCrab runs on
+a very large number of languages; a technique inert on two grammars and worth 5x on a third is a
+useful technique. **The quantity that decides value, per grammar, is:**
+
+> **value = P1c sharing ratio × forward-synthesis share of wall time**
+
+We have the first across all 33 fixtures (1.00x–8.10x). We have the second only for Sena, where it
+is ~0.2%. **No conclusion about any other grammar is licensed until the second factor is measured
+per grammar.** Neither factor alone decides anything: high sharing in a phase that costs nothing
+is worthless, and an expensive synthesis phase with no sharing is unimprovable by this route.
+
+#### Why Amharic is the priority
+
+From the predecessor branch: `ሄዶ` has **212 analysis states and 186 synthesis inputs, and takes
+30 seconds** — roughly **160 ms per synthesis run**, against Sena's ~0.5 µs per synthesis input.
+Five orders of magnitude apart per unit of synthesis. If Amharic's wall time sits in forward
+synthesis, it is the grammar where fold sharing pays and Sena is the outlier rather than the rule.
+Templatic/Semitic morphology is not a niche. This is the measurement that matters most next.
+
+### 6.3 P1a fix — in progress
+
+Extending the timers across `_analysisRule.Apply`, the analysis cascade, the analysis template
+battery, and the phonological unapplication cascade, with an explicit `unaccounted` column; plus
+per-fixture synthesis share, and runs across all three real corpora rather than Sena alone.
+
+### 6.4 Follow-on required before any build decision
 
 - **Cost-weight P1b.** Count is not cost. Attribute wall time, not events, to each die point.
 - **The trail-position finding needs its own look.** If `RuleNotApplicableOrPatternMismatch` is
