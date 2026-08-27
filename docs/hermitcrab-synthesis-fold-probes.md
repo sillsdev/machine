@@ -319,55 +319,72 @@ a cascade already memoized and already at its state floor. Not state count, not 
 battery (4%), not phonology (0.002%), not synthesis (0.04%). What is expensive is what happens
 *inside* the cascade per node — pattern matching across the rule set.
 
-### 6.4 The answer to "does any grammar benefit?"
+### 6.4 The answer to "does any grammar benefit?" — CORRECTED
 
-Forward-synthesis share is **not** uniformly negligible. The real grammars are outliers:
+> **The ceiling table first published in this section was arithmetically wrong and has been
+> removed.** It divided by the wrong share. Found by adversarial review, confirmed in code.
 
-| grammar | P1c ratio | synForward share | **max possible speedup** |
+**The error.** `synForward` is explicitly *net* of the cascade and battery buckets —
+`Morpher.cs:424` records `forwardTotal - cascadeDelta - batteryDelta`. But every application P1c
+counts is recorded inside `SynthesisAffixProcessRule.Apply` /
+`SynthesisRealizationalAffixProcessRule.Apply`, which run **inside** the `synCascade` and
+`synBattery` brackets (template slot rules compile to those same classes via `RuleBatch`,
+`SynthesisAffixTemplateRule.cs:20-24`). So the shareable work lives in
+`synCascade + synBattery + synForward`, and the table divided by `synForward` alone — the one
+bucket that excludes it.
+
+**Corrected ceilings** (`share x (1 - 1/ratio)`, share = synCascade + synBattery + synForward):
+
+| grammar | ratio | corrected share | max possible speedup |
 | --- | --- | --- | --- |
-| edge-cases/feature-system-breadth | 1.60x | 60.1% | **22.5%** |
-| edge-cases/diacritic-segments | 3.00x | 33.6% | **22.4%** |
-| edge-cases/disjunctive-recheck | 3.00x | 26.5% | 17.7% |
-| edge-cases/stem-name-restricted-root-allomorph | 2.00x | 35.3% | 17.7% |
-| languages/suffixing-vowel-harmony | 2.81x | 24.2% | 15.6% |
-| languages/suffixing-evidential-adjacency-chain | **8.10x** | 15.6% | 13.7% |
-| edge-cases/strrep-identity | 3.94x | 18.0% | 13.4% |
-| languages/templatic-root-modification | 1.93x | 24.3% | 11.7% |
-| edge-cases/deep-optional-affix-nesting (largest, 2.4 s) | 3.22x | 6.1% | 4.2% |
-| **Sena** (real) | 265x | 0.2% | **0.2%** |
-| **Amharic** (real) | 2.15x | 0.1% | **0.07%** |
+| **Sena** | 265x | **5.0%** | **~4.98%** (was reported as 0.2% — understated 25x) |
+| **Amharic** | 2.15x | **0.3%** | **~0.16%** |
 
-The right formula is **not** ratio × share. Eliminating all redundant fold steps saves
-`share × (1 − 1/ratio)`. Sena's 265x is worth 0.2% because 265x of nothing is nothing; and
-`feature-system-breadth` beats it at 1.60x because 60% of its time is actually there.
+**The fixture ceiling column is withdrawn entirely**, for two reasons: the harness only emitted
+`forwardShare`, so correcting it needs a re-run; and section 6.1 already declared fixture timings
+unreliable at sub-2 ms scale, which makes the former "best anywhere 22.5%" headline
+self-contradictory by this document's own standard. Do not quote it.
 
-**Determinism violations across every run: 0.**
+**Determinism violations across every run: 0 — but that proves less than previously claimed here.**
+`RecordApplications` returns early when `outputs.Count == 0`, so a `(fingerprint, rule)` pair that
+succeeds in one occurrence and fails in another is never compared; any omitted state that only
+flips match to no-match is invisible to the check. And outcomes are compared with the same
+`FingerprintEquals` used to key them, which covers pending-trail *position* but not remaining-trail
+*content*. Zero violations licenses **per-step decision determinism**. It does not license "the
+sharing is sound": memoized output `Word`s embed trails, so a real build needs delta-storage or
+`ReplayOnto`-style re-anchoring. This makes a build harder, not easier.
 
 #### Reading this honestly
 
-Two competing explanations for why fixtures show 15–60% and real grammars show 0.1–0.2%:
+Two competing explanations for why fixtures show high synthesis share and real grammars show
+~0.3-5%:
 
 1. **Typology.** Some morphological types are genuinely synthesis-heavy.
 2. **Grammar size.** Analysis cost scales far worse with rule count and lexicon size than
-   synthesis does, so any small grammar looks synthesis-heavy regardless of type.
+   synthesis does.
 
-The evidence favours (2). Sena is agglutinative — the type that shares best in the fixture set —
-and is 0.2%. The largest fixture (`deep-optional-affix-nesting`, 2.4 s) has the lowest synthesis
-share of the high-ratio group at 6.1%, and its max speedup drops to 4.2%. Synthesis share falls
-monotonically as fixtures get bigger. **We have no large grammar with a high synthesis share, and
-the trend predicts none exists.**
+The doc previously asserted (2), on the grounds that Sena is agglutinative and "still 0.2%". **That
+premise used the wrong number** — Sena is ~5%. The size argument is now *directionally plausible
+but not established*: the large end of the trend is a single fixture whose size comes from an
+analysis-side stressor by construction, so size and analysis-pathology are confounded, and most
+fixture ratios rest on 12-131 applications.
 
-That is a claim the fixtures cannot settle, because they are correctness fixtures — sub-2 ms
-words, a handful each. Settling it needs a large real grammar of a suffixing-agglutinative type
-that is not Sena. If one is available, this is the measurement to run on it; the harness takes a
-grammar path and a word list.
+There is a concrete mechanism by which a synthesis-bound grammar could exist, and it is in this
+document's own trap #2: **realizational rules are trail-exempt**, so their branching is not bounded
+by the analysis trail and synthesis work can scale with paradigm size independently of analysis.
+The family that would show this — large position-class fusional systems with many realizational
+rules per slot and heavy blocking — is represented by none of Sena, Amharic, Indonesian, or any
+sub-2 ms fixture. Probe F1 below is designed to settle it.
 
-#### Verdict on the fold-sharing build
+#### Verdict on the fold-sharing build — scoped
 
-**Do not build it.** Its ceiling is ~22% on grammars that already finish in milliseconds and
-~0.2% on the grammars where users actually wait. The mechanism is real, the sharing is real and
-sound (0 determinism violations across 33 grammars plus 3 corpora), and it is aimed at a phase
-that does not cost anything at the scales that matter.
+**For parsing workloads: do not build it, provisionally.** Amharic's ~0.16% ceiling is robust
+under every attack found. **Sena's ~4.98% is provisional on probe N1** — the 20.1% unaccounted
+could move it.
+
+**This verdict does not cover generation.** `Morpher.GenerateWords` (`Morpher.cs:245-254, 805`) is
+pure synthesis with no analysis phase — share ~100%, so the P1c ratio applies at face value.
+Nothing in this round measured it.
 
 #### What replaces it
 
@@ -409,7 +426,7 @@ with the number of analysis/alternative pairs, which fits the per-word spread. *
 hypothesis, not a measurement** — one more bracket would settle it, and it should be settled
 before anyone quotes the Sena split as complete.
 
-### 6.4 Follow-on required before any build decision
+### 6.6 Follow-on notes
 
 - **Cost-weight P1b.** Count is not cost. Attribute wall time, not events, to each die point.
 - **The trail-position finding needs its own look.** If `RuleNotApplicableOrPatternMismatch` is
