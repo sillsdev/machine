@@ -174,6 +174,7 @@ public class SynthesisFoldProbe
         public double SynCascadeMs;
         public double SynBatteryMs;
         public double SynForwardMs;
+        public double SynExpandMs;
         public double AnTotalMs;
         public double AnCascadeMs;
         public double AnBatteryMs;
@@ -182,6 +183,14 @@ public class SynthesisFoldProbe
         public long[] DieCounts;
         public long ApplicationsThisWord;
         public long NewDistinctThisWord;
+
+        // N1 dedupe census (docs/hermitcrab-synthesis-fold-probes.md section 6.4's "one honest gap"):
+        // alternatives entering the fold this word, how many were new distinct fingerprints, and of the
+        // duplicates, how many trace their first occurrence to the same analysis word vs. a different one.
+        public long AlternativesThisWord;
+        public long NewDistinctAlternativesThisWord;
+        public long DupeSameThisWord;
+        public long DupeDifferentThisWord;
 
         // Forward-synthesis share of wall time -- the multiplier the P1c sharing ratio needs to turn into
         // an actual expected win (P1c ratio x this share; see the "value" column in PrintFixtureSummary).
@@ -204,6 +213,10 @@ public class SynthesisFoldProbe
         SynthesisProbe.ResetDiePoints();
         long applicationsBefore = SynthesisProbe.TotalApplications;
         long distinctBefore = SynthesisProbe.DistinctFoldSteps;
+        long alternativesBefore = SynthesisProbe.TotalAlternatives;
+        long distinctAltBefore = SynthesisProbe.DistinctAlternatives;
+        long dupeSameBefore = SynthesisProbe.DupeSameAnalysisWord;
+        long dupeDifferentBefore = SynthesisProbe.DupeDifferentAnalysisWord;
 
         int parseCount;
         var wall = Stopwatch.StartNew();
@@ -240,6 +253,7 @@ public class SynthesisFoldProbe
         double synCascadeMs = TicksToMs(SynthesisProbe.SynCascadeTicks);
         double synBatteryMs = TicksToMs(SynthesisProbe.SynBatteryTicks);
         double synForwardMs = TicksToMs(SynthesisProbe.SynForwardTicks);
+        double synExpandMs = TicksToMs(SynthesisProbe.SynExpandTicks);
         double anTotalMs = TicksToMs(SynthesisProbe.AnTotalTicks);
         double anCascadeMs = TicksToMs(SynthesisProbe.AnCascadeTicks);
         double anBatteryMs = TicksToMs(SynthesisProbe.AnBatteryTicks);
@@ -247,12 +261,14 @@ public class SynthesisFoldProbe
 
         // Top-level buckets are disjoint by construction (see SynthesisProbe's wall-time-split remarks):
         // AnTotalMs is the whole analysis phase (a nested/inclusive total that already contains
-        // AnCascade/AnBattery/AnPhono), and the syn*/lookup buckets are disjoint slices of the synthesis
-        // phase (SynForwardMs is already net of SynCascade/SynBattery, see Morpher.SynthesizeSequential).
-        // So unaccounted = wall - analysis phase - synthesis phase, i.e. ParseWord's own scaffolding
-        // (shape segmentation, Word construction/Freeze, AccumulateMemoDiagnostics, guessRoot) plus any
-        // region this probe does not yet bracket.
-        double unaccountedMs = wallMs - anTotalMs - lookupMs - synCascadeMs - synBatteryMs - synForwardMs;
+        // AnCascade/AnBattery/AnPhono), and the syn*/lookup/synExpand buckets are disjoint slices of the
+        // synthesis phase (SynForwardMs is already net of SynCascade/SynBattery, see
+        // Morpher.SynthesizeSequential; SynExpandMs is N1's new bracket around ExpandAlternatives() itself,
+        // also disjoint from all of those -- it wraps the call, not anything inside SynCascade/SynBattery/
+        // SynForward). So unaccounted = wall - analysis phase - synthesis phase, i.e. ParseWord's own
+        // scaffolding (shape segmentation, Word construction/Freeze, AccumulateMemoDiagnostics, guessRoot)
+        // plus any region this probe does not yet bracket.
+        double unaccountedMs = wallMs - anTotalMs - lookupMs - synCascadeMs - synBatteryMs - synForwardMs - synExpandMs;
 
         return new WordProbeResult
         {
@@ -263,6 +279,7 @@ public class SynthesisFoldProbe
             SynCascadeMs = synCascadeMs,
             SynBatteryMs = synBatteryMs,
             SynForwardMs = synForwardMs,
+            SynExpandMs = synExpandMs,
             AnTotalMs = anTotalMs,
             AnCascadeMs = anCascadeMs,
             AnBatteryMs = anBatteryMs,
@@ -271,6 +288,10 @@ public class SynthesisFoldProbe
             DieCounts = dieCounts,
             ApplicationsThisWord = SynthesisProbe.TotalApplications - applicationsBefore,
             NewDistinctThisWord = SynthesisProbe.DistinctFoldSteps - distinctBefore,
+            AlternativesThisWord = SynthesisProbe.TotalAlternatives - alternativesBefore,
+            NewDistinctAlternativesThisWord = SynthesisProbe.DistinctAlternatives - distinctAltBefore,
+            DupeSameThisWord = SynthesisProbe.DupeSameAnalysisWord - dupeSameBefore,
+            DupeDifferentThisWord = SynthesisProbe.DupeDifferentAnalysisWord - dupeDifferentBefore,
         };
     }
 
@@ -288,13 +309,19 @@ public class SynthesisFoldProbe
         // wall-time buckets.
         foreach (WordProbeResult r in rows)
         {
+            double wordRatio = r.NewDistinctAlternativesThisWord > 0
+                ? r.AlternativesThisWord / (double)r.NewDistinctAlternativesThisWord
+                : 0;
             TestContext.Out.WriteLine(
                 $"  {r.Word}\tparses={r.ParseCount}\twall={r.WallMs:F2}ms\t"
                     + $"lookup={r.LexicalLookupMs:F2}\tsynCascade={r.SynCascadeMs:F2}\t"
-                    + $"synBattery={r.SynBatteryMs:F2}\tsynForward={r.SynForwardMs:F2}\t"
+                    + $"synBattery={r.SynBatteryMs:F2}\tsynForward={r.SynForwardMs:F2}\tsynExpand={r.SynExpandMs:F2}\t"
                     + $"anTotal={r.AnTotalMs:F2} [anCascade={r.AnCascadeMs:F2} anBattery={r.AnBatteryMs:F2} anPhono={r.AnPhonoMs:F2}]\t"
                     + $"unaccounted={r.UnaccountedMs:F2}\t"
-                    + $"apps+={r.ApplicationsThisWord}\tnewDistinct+={r.NewDistinctThisWord}"
+                    + $"apps+={r.ApplicationsThisWord}\tnewDistinct+={r.NewDistinctThisWord}\t"
+                    + $"[N1] alternatives+={r.AlternativesThisWord}\tdistinctAlternatives+={r.NewDistinctAlternativesThisWord}"
+                    + $"\tdistinct/total={Pct(r.NewDistinctAlternativesThisWord, r.AlternativesThisWord)} (ratio={wordRatio:F2}x)"
+                    + $"\tdupeSame={r.DupeSameThisWord}\tdupeDifferent={r.DupeDifferentThisWord}"
             );
         }
 
@@ -309,6 +336,7 @@ public class SynthesisFoldProbe
         double sumSynCascade = rows.Sum(r => r.SynCascadeMs);
         double sumSynBattery = rows.Sum(r => r.SynBatteryMs);
         double sumSynForward = rows.Sum(r => r.SynForwardMs);
+        double sumSynExpand = rows.Sum(r => r.SynExpandMs);
         double sumAnTotal = rows.Sum(r => r.AnTotalMs);
         double sumAnCascade = rows.Sum(r => r.AnCascadeMs);
         double sumAnBattery = rows.Sum(r => r.AnBatteryMs);
@@ -320,6 +348,7 @@ public class SynthesisFoldProbe
                 + $"synCascade={sumSynCascade:F2}ms ({Pct(sumSynCascade, sumWall)}) "
                 + $"synBattery={sumSynBattery:F2}ms ({Pct(sumSynBattery, sumWall)}) "
                 + $"synForward={sumSynForward:F2}ms ({Pct(sumSynForward, sumWall)}) "
+                + $"synExpand={sumSynExpand:F2}ms ({Pct(sumSynExpand, sumWall)}) "
                 + $"anTotal={sumAnTotal:F2}ms ({Pct(sumAnTotal, sumWall)}) "
                 + $"unaccounted={sumUnaccounted:F2}ms ({Pct(sumUnaccounted, sumWall)})"
         );
@@ -361,6 +390,24 @@ public class SynthesisFoldProbe
         double ratio = distinct > 0 ? applications / (double)distinct : 0;
         TestContext.Out.WriteLine(
             $"  [P1c] applications={applications} distinct={distinct} ratio={ratio:F2}x "
+                + $"(cumulative for this fixture/corpus so far)"
+        );
+
+        // N1 dedupe census, cumulative (docs/hermitcrab-synthesis-fold-probes.md section 6.4's "one honest
+        // gap"). distinctAlternatives/totalAlternatives is the gate's "distinct/total" ratio; dupeSame vs.
+        // dupeDifferent is the decisive provenance split -- same-analysis-word duplication is interceptable
+        // BEFORE ExpandAlternatives' Clone/Unify/Freeze work, cross-analysis-word duplication only AFTER it.
+        long totalAlternatives = SynthesisProbe.TotalAlternatives;
+        long distinctAlternatives = SynthesisProbe.DistinctAlternatives;
+        long dupeSame = SynthesisProbe.DupeSameAnalysisWord;
+        long dupeDifferent = SynthesisProbe.DupeDifferentAnalysisWord;
+        double distinctOverTotal = totalAlternatives > 0 ? distinctAlternatives / (double)totalAlternatives : 0;
+        long totalDupes = dupeSame + dupeDifferent;
+        TestContext.Out.WriteLine(
+            $"  [N1] totalAlternatives={totalAlternatives} distinctAlternatives={distinctAlternatives} "
+                + $"distinct/total={distinctOverTotal:F3} ({Pct(distinctAlternatives, totalAlternatives)}) "
+                + $"dupeSameAnalysisWord={dupeSame} ({Pct(dupeSame, totalDupes)} of dupes) "
+                + $"dupeDifferentAnalysisWord={dupeDifferent} ({Pct(dupeDifferent, totalDupes)} of dupes) "
                 + $"(cumulative for this fixture/corpus so far)"
         );
     }

@@ -64,6 +64,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private static long _synCascadeTicks;
         private static long _synBatteryTicks;
         private static long _synForwardTicks;
+        private static long _synExpandTicks;
         private static long _anTotalTicks;
         private static long _anCascadeTicks;
         private static long _anBatteryTicks;
@@ -73,6 +74,15 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal static long SynCascadeTicks => Interlocked.Read(ref _synCascadeTicks);
         internal static long SynBatteryTicks => Interlocked.Read(ref _synBatteryTicks);
         internal static long SynForwardTicks => Interlocked.Read(ref _synForwardTicks);
+
+        // ---- N1: ExpandAlternatives bracket ----
+        // docs/hermitcrab-synthesis-fold-probes.md section 6.4's "one honest gap": Word.ExpandAlternatives
+        // (Word.cs:470) is called per synthesis word in Morpher.SynthesizeSequential OUTSIDE every timed
+        // region that existed before N1, doing recursive Clone/Unify/Subtract/Freeze work per alternative.
+        // This is a new EXCLUSIVE top-level slice (bracketed around the ExpandAlternatives() call itself,
+        // not around anything already covered by lookup/synCascade/synBattery/synForward/anTotal), so
+        // "unaccounted" in SynthesisFoldProbe shrinks by exactly what this bucket gains.
+        internal static long SynExpandTicks => Interlocked.Read(ref _synExpandTicks);
         internal static long AnTotalTicks => Interlocked.Read(ref _anTotalTicks);
         internal static long AnCascadeTicks => Interlocked.Read(ref _anCascadeTicks);
         internal static long AnBatteryTicks => Interlocked.Read(ref _anBatteryTicks);
@@ -100,6 +110,12 @@ namespace SIL.Machine.Morphology.HermitCrab
         {
             if (Enabled)
                 Interlocked.Add(ref _synForwardTicks, ticks);
+        }
+
+        internal static void AddSynExpandTicks(long ticks)
+        {
+            if (Enabled)
+                Interlocked.Add(ref _synExpandTicks, ticks);
         }
 
         internal static void AddAnTotalTicks(long ticks)
@@ -132,6 +148,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             Interlocked.Exchange(ref _synCascadeTicks, 0);
             Interlocked.Exchange(ref _synBatteryTicks, 0);
             Interlocked.Exchange(ref _synForwardTicks, 0);
+            Interlocked.Exchange(ref _synExpandTicks, 0);
             Interlocked.Exchange(ref _anTotalTicks, 0);
             Interlocked.Exchange(ref _anCascadeTicks, 0);
             Interlocked.Exchange(ref _anBatteryTicks, 0);
@@ -253,6 +270,82 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _foldSteps.Clear();
             Interlocked.Exchange(ref _totalApplications, 0);
             Interlocked.Exchange(ref _determinismViolations, 0);
+            ResetFoldEntries();
+        }
+
+        // ---- N1: dedupe census at fold entry ----
+        // docs/hermitcrab-synthesis-fold-probes.md section "What to build", item 2. For every Word
+        // ExpandAlternatives() produces that is about to enter _synthesisRule.Apply
+        // (Morpher.SynthesizeSequential), tracks how many are literal duplicates -- by the SAME P1c
+        // fingerprint used above, not a second one -- of an earlier alternative, and for each duplicate,
+        // whether its first occurrence traces back to the same outer analysis word or a different one.
+        // That split is the decisive one for the gates: same-analysis-word duplication is interceptable
+        // BEFORE the Clone/Unify/Freeze work ExpandAlternatives just did (a dedupe could sit ahead of
+        // ExpandAlternatives, keyed on the pre-expansion input); cross-analysis-word duplication is only
+        // detectable by fingerprinting the post-expansion output, so by the time it is caught the expensive
+        // work is already spent.
+        // <para>
+        // Same persistence lifecycle as _foldSteps (reset together, see ResetFoldSteps): accumulates across
+        // a whole fixture/corpus so DistinctAlternatives is a true count over the combined stream, not a sum
+        // of per-word counts that would double-count an alternative recurring across words.
+        // </para>
+        private static readonly Dictionary<AlternativeKey, Word> _foldEntries = new Dictionary<AlternativeKey, Word>();
+        private static long _totalAlternatives;
+        private static long _dupeSameAnalysisWord;
+        private static long _dupeDifferentAnalysisWord;
+
+        internal static long TotalAlternatives => Interlocked.Read(ref _totalAlternatives);
+
+        internal static long DistinctAlternatives
+        {
+            get
+            {
+                lock (_foldEntries)
+                    return _foldEntries.Count;
+            }
+        }
+
+        internal static long DupeSameAnalysisWord => Interlocked.Read(ref _dupeSameAnalysisWord);
+        internal static long DupeDifferentAnalysisWord => Interlocked.Read(ref _dupeDifferentAnalysisWord);
+
+        /// <summary>
+        /// Records one alternative arriving at the fold entry point (about to be passed to
+        /// <c>_synthesisRule.Apply</c>), with <paramref name="analysisWord"/> the outer analysis word whose
+        /// <c>LexicalLookup</c>/<c>ExpandAlternatives</c> chain produced it. Provenance is decided by
+        /// reference identity against the analysis word recorded on first sight of this fingerprint --
+        /// exactly the loop variable identity <c>Morpher.SynthesizeSequential</c> already has in scope, no
+        /// separate ID scheme needed.
+        /// </summary>
+        internal static void RecordFoldEntry(Word analysisWord, Word alternative)
+        {
+            if (!Enabled)
+                return;
+
+            Interlocked.Increment(ref _totalAlternatives);
+            var key = new AlternativeKey(alternative);
+            lock (_foldEntries)
+            {
+                if (_foldEntries.TryGetValue(key, out Word firstAnalysisWord))
+                {
+                    if (ReferenceEquals(firstAnalysisWord, analysisWord))
+                        Interlocked.Increment(ref _dupeSameAnalysisWord);
+                    else
+                        Interlocked.Increment(ref _dupeDifferentAnalysisWord);
+                }
+                else
+                {
+                    _foldEntries[key] = analysisWord;
+                }
+            }
+        }
+
+        internal static void ResetFoldEntries()
+        {
+            lock (_foldEntries)
+                _foldEntries.Clear();
+            Interlocked.Exchange(ref _totalAlternatives, 0);
+            Interlocked.Exchange(ref _dupeSameAnalysisWord, 0);
+            Interlocked.Exchange(ref _dupeDifferentAnalysisWord, 0);
         }
 
         internal static void ResetAll()
@@ -419,6 +512,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             public bool Equals(FoldStepKey other) => _rule == other._rule && FingerprintEquals(_word, other._word);
 
             public override bool Equals(object obj) => obj is FoldStepKey k && Equals(k);
+
+            public override int GetHashCode() => _hash;
+        }
+
+        // Same fingerprint as FoldStepKey, minus the rule component: N1's dedupe census keys on the
+        // alternative alone, since it runs at fold entry, before any rule has been chosen/applied.
+        private readonly struct AlternativeKey : IEquatable<AlternativeKey>
+        {
+            private readonly Word _word;
+            private readonly int _hash;
+
+            public AlternativeKey(Word word)
+            {
+                _word = word;
+                _hash = FingerprintHash(word);
+            }
+
+            public bool Equals(AlternativeKey other) => FingerprintEquals(_word, other._word);
+
+            public override bool Equals(object obj) => obj is AlternativeKey k && Equals(k);
 
             public override int GetHashCode() => _hash;
         }

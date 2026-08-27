@@ -390,7 +390,24 @@ namespace SIL.Machine.Morphology.HermitCrab
 
                 foreach (Word synthesisWord in lookups)
                 {
-                    foreach (Word alternative in synthesisWord.ExpandAlternatives())
+                    // N1 (docs/hermitcrab-synthesis-fold-probes.md section 6.4's "one honest gap"):
+                    // ExpandAlternatives() itself is bracketed here as its own exclusive top-level slice, so
+                    // the recursive Clone/Unify/Subtract/Freeze work it does is no longer part of
+                    // "unaccounted". Materialized either way (ExpandAlternatives already returns an IList,
+                    // not lazy), so this changes no behaviour when the probe is disabled.
+                    IList<Word> alternatives;
+                    if (SynthesisProbe.Enabled)
+                    {
+                        long expandStart = Stopwatch.GetTimestamp();
+                        alternatives = synthesisWord.ExpandAlternatives();
+                        SynthesisProbe.AddSynExpandTicks(Stopwatch.GetTimestamp() - expandStart);
+                    }
+                    else
+                    {
+                        alternatives = synthesisWord.ExpandAlternatives();
+                    }
+
+                    foreach (Word alternative in alternatives)
                     {
                         alternativeCount++;
                         if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
@@ -405,6 +422,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                             }
                             continue;
                         }
+
+                        // N1 dedupe census: this alternative is about to enter the fold
+                        // (_synthesisRule.Apply below). analysisWord is the outer loop's analysis word --
+                        // exactly the provenance identity the census needs, already in scope.
+                        SynthesisProbe.RecordFoldEntry(analysisWord, alternative);
 
                         // P1a's "forward synthesis" bucket is this call's wall time minus whatever the
                         // cascade/template-battery timers (accumulated separately inside SynthesisStratumRule)
