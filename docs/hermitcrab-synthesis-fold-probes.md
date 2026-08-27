@@ -490,3 +490,50 @@ fold-step build 6.4 already closed.
   `docs/hermitcrab-parse-algorithm-analysis.md` (complexity-cap branch), independently
   reconfirmed here across two typologies. Indexing synthesis rules by trail position is a much
   smaller change than anything else in this plan. Cheap to measure, cheap to build.
+
+
+---
+
+## 7. N1 correction — the census ratio repeats a retracted measurement
+
+The N1 hypothesis result stands and is valuable. The N1 *census* conclusion does not, and the
+"build is ON, ceiling 17.3%" line in section 6.5 must not be cited.
+
+### What stands
+
+`unaccounted` 20.1% -> **1.5%** pooled once `synExpand` is broken out, which absorbed 20.3%.
+**`Word.ExpandAlternatives` is 20.3% of Sena wall time**, invisible to every prior round of
+instrumentation. Census denominators cross-check exactly against an independent earlier run
+(`cinacemerwa` 218,847, `atawirambo` 17,699, `kukucitirani` 158,480). Determinism violations: 0.
+
+### What does not
+
+The census reports 395,026 alternatives collapsing to **61 distinct** (0.02%), giving a claimed
+~17.3% ceiling. That ratio is measured with the P1c fingerprint, which carries
+`PendingTrailPosition` — an integer index — and **no remaining-trail content**
+(`FingerprintHash`/`FingerprintEquals`, verified). For a fold *step* that is defensible because
+the continuation is re-anchored. For **fold-entry dedupe**, which is what the census measures,
+skipping an alternative because another shares its fingerprint discards its distinct
+continuation: lost parses. Completeness is the one thing that is never negotiable here.
+
+**This exact measurement has been made before**, at the same `ExpandAlternatives` call sites, with
+the same `cinacemerwa` denominator of 218,847, on branch `parse-forest-tandem`:
+
+| probe | key | ratio |
+| --- | --- | --- |
+| F1 v1 | naive | **9,774x** — proven unsound, 4/30 groups produced different outputs |
+| F1 v2 | + pending-rule multiset | 28.72x — 2 residual violations, genuine non-commutativity |
+| F2 as shipped | fully order-sound | **15–40% call reduction** |
+
+The 6,476x is the 9,774x again. The adversarial review predicted this failure mode by name one
+step earlier — trail position without trail content — and the probe used that fingerprint anyway.
+
+### Corrected ceiling
+
+**20.3% x (15–40% sound dedupe) ≈ 3–8% of Sena wall time.**
+
+Still the largest single opportunity this effort has surfaced, and on an axis nobody had
+instrumented. But a fifth of the claimed figure, and it needs a trail-complete key before any
+build. The same-analysis-word share (85% pooled) is the encouraging part: alternatives from one
+analysis word share a trail, so for *those* the existing fingerprint may already be adequate —
+that, not the headline ratio, is the thing worth re-measuring with a sound key.
