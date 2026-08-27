@@ -53,8 +53,7 @@ public class SynthesisFoldProbe
 
         SynthesisProbe.Enabled = true;
         long grandDeterminismViolations = 0;
-        var fixtureRatios =
-            new List<(string Id, double Ratio, long Applications, long Distinct, double ForwardShare, double Value)>();
+        var fixtureRatios = new List<FixtureSummaryRow>();
         try
         {
             foreach (Fixture fixture in fixtures)
@@ -84,33 +83,79 @@ public class SynthesisFoldProbe
                 long applications = SynthesisProbe.TotalApplications;
                 long distinct = SynthesisProbe.DistinctFoldSteps;
                 double ratio = distinct > 0 ? applications / (double)distinct : 0;
-                // Forward-synthesis share of wall time for this fixture (pooled across its words), and the
-                // "value" of P1c's fold-sharing ratio for this grammar: sharing that never reaches forward
-                // synthesis cannot be realized as a speedup by folding forward-synthesis steps, so ratio
-                // alone overstates the payoff on a grammar where forward synthesis is a small slice of wall
-                // time. See the scope-change note in the P1a follow-up: this is per-fixture, not pooled,
-                // because the payoff is grammar-specific.
+
+                // Corrected share for fold-step sharing (docs/hermitcrab-synthesis-fold-probes.md section
+                // 6.4): synForward is explicitly NET of the cascade/battery brackets (Morpher.cs:424), but
+                // every application P1c counts happens inside SynthesisAffixProcessRule.Apply /
+                // SynthesisRealizationalAffixProcessRule.Apply, which run INSIDE the synCascade/synBattery
+                // brackets (template slot rules compile to those same classes via RuleBatch). So the
+                // shareable work lives in synCascade + synBattery + synForward, not synForward alone --
+                // dividing by synForward alone is the error section 6.4 found and corrected.
                 double fixtureWall = rows.Sum(r => r.WallMs);
-                double fixtureForward = rows.Sum(r => r.SynForwardMs);
-                double forwardShare = fixtureWall > 0 ? fixtureForward / fixtureWall : 0;
-                double value = ratio * forwardShare;
-                fixtureRatios.Add((fixture.Id, ratio, applications, distinct, forwardShare, value));
+                double fixtureSynCascade = rows.Sum(r => r.SynCascadeMs);
+                double fixtureSynBattery = rows.Sum(r => r.SynBatteryMs);
+                double fixtureSynForward = rows.Sum(r => r.SynForwardMs);
+                double fixtureSynExpand = rows.Sum(r => r.SynExpandMs);
+                double synTotalShare =
+                    fixtureWall > 0
+                        ? (fixtureSynCascade + fixtureSynBattery + fixtureSynForward) / fixtureWall
+                        : 0;
+                double synExpandShare = fixtureWall > 0 ? fixtureSynExpand / fixtureWall : 0;
+                // share x (1 - 1/ratio), as a percentage (docs section 6.4's "corrected ceilings" formula).
+                double foldStepCeiling = ratio > 0 ? synTotalShare * (1 - 1 / ratio) * 100 : 0;
+
+                // N1 fold-entry census, per fixture (SynthesisProbe.ResetFoldSteps above also resets the
+                // fold-entry counters, so these are this fixture's own totals, not cumulative across
+                // fixtures -- see section 6.4's "one honest gap" / dedupe census).
+                long altTotal = SynthesisProbe.TotalAlternatives;
+                long altDistinct = SynthesisProbe.DistinctAlternatives;
+                double altDistinctPct = altTotal > 0 ? altDistinct / (double)altTotal * 100 : 0;
+                long dupeSame = SynthesisProbe.DupeSameAnalysisWord;
+                long dupeDifferent = SynthesisProbe.DupeDifferentAnalysisWord;
+                long totalDupes = dupeSame + dupeDifferent;
+                double dupeSameWordPct = totalDupes > 0 ? dupeSame / (double)totalDupes * 100 : 0;
+
+                fixtureRatios.Add(
+                    new FixtureSummaryRow
+                    {
+                        Id = fixture.Id,
+                        Ratio = ratio,
+                        Applications = applications,
+                        Distinct = distinct,
+                        SynTotalShare = synTotalShare,
+                        SynExpandShare = synExpandShare,
+                        FoldStepCeiling = foldStepCeiling,
+                        AltTotal = altTotal,
+                        AltDistinct = altDistinct,
+                        AltDistinctPct = altDistinctPct,
+                        DupeSameWordPct = dupeSameWordPct,
+                        WallMs = fixtureWall,
+                        Words = rows.Count,
+                    }
+                );
                 grandDeterminismViolations += SynthesisProbe.DeterminismViolations;
             }
 
+            fixtureRatios.Sort((a, b) => b.Ratio.CompareTo(a.Ratio));
+
             TestContext.Out.WriteLine();
             TestContext.Out.WriteLine(
-                "=== P1c ratio by fixture (not pooled -- fixtures vary wildly in size); "
-                    + "value = ratio x forward-synthesis share of wall time ==="
+                "=== P1c ratio by fixture (not pooled -- fixtures vary wildly in size), sorted by ratio "
+                    + "descending; synTotalShare = (synCascade+synBattery+synForward)/wall (the corrected "
+                    + "share, docs section 6.4); foldStepCeiling = synTotalShare x (1 - 1/ratio); "
+                    + "reliable = wallMs >= 50 ==="
             );
-            foreach (
-                (string id, double ratio, long applications, long distinct, double forwardShare, double value)
-                    in fixtureRatios
-            )
+            TestContext.Out.WriteLine(
+                "  id\tapplications\tdistinct\tratio\tsynTotalShare\tsynExpandShare\tfoldStepCeiling\t"
+                    + "altTotal\taltDistinct\taltDistinctPct\tdupeSameWordPct\twallMs\twords\treliable"
+            );
+            foreach (FixtureSummaryRow r in fixtureRatios)
             {
                 TestContext.Out.WriteLine(
-                    $"  {id}\tapplications={applications}\tdistinct={distinct}\tratio={ratio:F2}x\t"
-                        + $"forwardShare={forwardShare * 100:F1}%\tvalue={value:F2}"
+                    $"  {r.Id}\t{r.Applications}\t{r.Distinct}\t{r.Ratio:F2}x\t"
+                        + $"{r.SynTotalShare * 100:F1}%\t{r.SynExpandShare * 100:F1}%\t{r.FoldStepCeiling:F2}%\t"
+                        + $"{r.AltTotal}\t{r.AltDistinct}\t{r.AltDistinctPct:F2}%\t{r.DupeSameWordPct:F1}%\t"
+                        + $"{r.WallMs:F2}\t{r.Words}\t{(r.WallMs >= 50 ? "yes" : "no")}"
                 );
             }
             TestContext.Out.WriteLine();
@@ -163,6 +208,28 @@ public class SynthesisFoldProbe
             SynthesisProbe.Enabled = false;
             SynthesisProbe.ResetAll();
         }
+    }
+
+    /// <summary>
+    /// One row of the per-fixture summary table printed at the end of <see cref="Probe_ConformanceFixtures"/>.
+    /// See docs/hermitcrab-synthesis-fold-probes.md section 6.4 for the corrected share formula this
+    /// replaces the old (wrong) forwardShare/value columns with.
+    /// </summary>
+    private sealed class FixtureSummaryRow
+    {
+        public string Id;
+        public double Ratio;
+        public long Applications;
+        public long Distinct;
+        public double SynTotalShare;
+        public double SynExpandShare;
+        public double FoldStepCeiling;
+        public long AltTotal;
+        public long AltDistinct;
+        public double AltDistinctPct;
+        public double DupeSameWordPct;
+        public double WallMs;
+        public int Words;
     }
 
     private sealed class WordProbeResult

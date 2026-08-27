@@ -537,3 +537,57 @@ instrumented. But a fifth of the claimed figure, and it needs a trail-complete k
 build. The same-analysis-word share (85% pooled) is the encouraging part: alternatives from one
 analysis word share a trail, so for *those* the existing fingerprint may already be adequate —
 that, not the headline ratio, is the thing worth re-measuring with a sound key.
+
+
+---
+
+## 8. The corrected per-fixture table — the size argument is refuted
+
+Re-run with the correct denominator (`synTotalShare = (synCascade + synBattery + synForward) / wall`)
+and a reliability flag (`wallMs >= 50`). **This overturns section 6.4's size-vs-typology argument.**
+
+Reliable rows only (`wallMs >= 50`), sorted by fold-step ceiling:
+
+| fixture | ratio | synTotalShare | **foldStepCeiling** | wallMs | words |
+| --- | --- | --- | --- | --- | --- |
+| edge-cases/deep-optional-affix-nesting | 3.22x | **73.1%** | **50.4%** | 2,839 | 3 |
+| languages/suffixing-evidential-adjacency-chain | 8.10x | **59.3%** | **52.0%** | 107 | 28 |
+| languages/suffixing-extension-slot-ordering | 2.15x | 24.7% | 13.2% | 69 | 53 |
+| languages/fusional-realizational-morphology | 1.48x | 14.3% | 4.6% | 93 | 63 |
+
+**Two reliable fixtures show a ~50% wall-clock ceiling — a 2x speedup.**
+
+### What was wrong before
+
+Section 6.4 argued that fixtures only look synthesis-heavy because they are *small*, citing
+`deep-optional-affix-nesting` as the largest fixture with the lowest synthesis share (6.1%) among
+the high-ratio group. **That 6.1% was `forwardShare` — the wrong denominator.** Its correct
+`synTotalShare` is **73.1%**, the highest of any reliable row, and it is by far the largest and
+most trustworthy timing sample in the set (2.8 s, versus everything else under 110 ms).
+
+So the trend the size argument rested on does not exist. The largest, most reliable fixture is
+the *most* synthesis-bound, not the least. The argument was an artifact of the same wrong-share
+error corrected in section 6.4, and it should not have been used to discount the fixture evidence.
+
+### Bonus finding in the same table
+
+`deep-optional-affix-nesting`: `altTotal` 926 -> `altDistinct` 3 (**0.32%**), with
+`dupeSameWordPct` = **100.0%**. Every duplicate traces to the same analysis word, therefore shares
+a trail — which is exactly the case where the existing fingerprint is adequate, because what it
+omits (remaining-trail content) is identical across the group. The `ExpandAlternatives` dedupe is
+fully interceptable pre-expansion on this grammar.
+
+### Categories that clear the 2x bar
+
+| group | fixtures at >=2x | verdict |
+| --- | --- | --- |
+| **A. Affix template slots** (obligatory/disjunctive/ordering) | 5 of 6 — 8.10x, 3.22x, 3.00x, 2.81x, 2.15x | **Clears, with both reliable rows** |
+| **B. Disjunctive allomorphs / free fluctuation** | 2 of 2 — 3.00x, 2.00x | Clears; small samples, coherent mechanism |
+| **C. NaturalClass precision** | 1 of 1 — 3.94x (81.1% share) | Clears; single fixture, 11.9 ms |
+| **D. Stem names** | 1 of 1 — 2.00x (61.0% share) | Clears; single fixture, 2.1 ms |
+| E. Subrule gating | 2.00x from **2 applications** | Discarded — one observation |
+| F–K (compounding, MPR, metathesis/truncation, rewrite, loader, feature breadth) | none | Fail; retained as evidence for future grammars |
+
+Groups B, C and D rest on sub-12 ms fixtures and cannot carry a timing claim on their own. Their
+value is that the mechanism *engages* for those constructs — the wall-clock case is carried by
+group A, where both reliable rows sit.
