@@ -30,6 +30,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private long _nogoodHits;
         private long _templateMemoHits;
         private long _templateNogoodHits;
+        private long _synthesisFoldHits;
 
         public Morpher(ITraceManager traceManager, Language lang, int maxDegreeOfParallelism = 0)
         {
@@ -90,6 +91,19 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool MergeEquivalentAnalyses { get; set; }
 
         /// <summary>
+        /// Turns on the synthesis fold-step memo (docs/hermitcrab-synthesis-fold-probes.md), which shares
+        /// <see cref="MorphologicalRules.SynthesisAffixProcessRule"/>/
+        /// <see cref="MorphologicalRules.SynthesisRealizationalAffixProcessRule"/> applications across
+        /// candidates that reach an equal <see cref="SynthesisStateKey"/>. Defaults to <c>false</c>: this is
+        /// a plain A/B toggle so both configurations can be measured in one process, not a change to any
+        /// default behaviour. Only takes effect in <c>Morpher.SynthesizeSequential</c>
+        /// (<see cref="MaxDegreeOfParallelism"/> == 1, untraced) -- same restriction as the analysis-cascade
+        /// memo, and for the same reason: <see cref="SynthesisFoldScope"/>'s table is a plain
+        /// <see cref="Dictionary{TKey,TValue}"/>, not thread-safe.
+        /// </summary>
+        public bool UseSynthesisFoldMemo { get; set; }
+
+        /// <summary>
         /// Caps the concurrency used within a single parse or generation -- analysis cascade,
         /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
         /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see
@@ -125,6 +139,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal long NogoodHits => Interlocked.Read(ref _nogoodHits);
         internal long TemplateMemoHits => Interlocked.Read(ref _templateMemoHits);
         internal long TemplateNogoodHits => Interlocked.Read(ref _templateNogoodHits);
+        internal long SynthesisFoldHits => Interlocked.Read(ref _synthesisFoldHits);
+
+        // Interlocked because one Morpher may be parsing on several threads at once.
+        private void AccumulateSynthesisFoldDiagnostics(SynthesisFoldScope scope)
+        {
+            Interlocked.Add(ref _synthesisFoldHits, scope.Hits);
+        }
 
         // Interlocked because one Morpher may be parsing on several threads at once.
         private void AccumulateMemoDiagnostics(AnalysisScope scope)
@@ -366,6 +387,13 @@ namespace SIL.Machine.Morphology.HermitCrab
         private IEnumerable<Word> SynthesizeSequential(string word, IEnumerable<Word> analyses)
         {
             var matches = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
+            // One scope for the whole surface-word parse, shared across every analysis word's alternatives
+            // -- exactly the scope P1c/N1 measured sharing over (docs/hermitcrab-synthesis-fold-probes.md).
+            // Never while tracing, matching AnalysisScope's own restriction: traces must stay byte-identical
+            // to the unmemoized engine. This method is only ever reached when MaxDegreeOfParallelism == 1
+            // (see Synthesize), so no separate parallelism check is needed here.
+            SynthesisFoldScope foldScope =
+                UseSynthesisFoldMemo && !_traceManager.IsTracing ? new SynthesisFoldScope() : null;
             int alternativeCount = 0;
             foreach (Word analysisWord in analyses)
             {
@@ -413,6 +441,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                         if (MaxAlternatives > 0 && alternativeCount > MaxAlternatives)
                             throw new MaxAlternativesExceededException("MaxAlternatives exceeded");
 
+                        if (foldScope != null)
+                            alternative.SynthesisFoldScope = foldScope;
+
                         if (!SynthesisProbe.Enabled)
                         {
                             foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
@@ -447,6 +478,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                 }
             }
+            if (foldScope != null)
+                AccumulateSynthesisFoldDiagnostics(foldScope);
             return matches;
         }
 

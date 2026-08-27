@@ -40,12 +40,40 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
         public IEnumerable<Word> Apply(Word input)
         {
+            // The trail-position gate stays outside the memo unconditionally, on both the memoized and
+            // unmemoized paths: it is an O(1) index-plus-reference check (docs/hermitcrab-synthesis-fold-probes.md
+            // section 3's "~40x free" observation), so a SynthesisStateKey is never worth constructing for
+            // the ~72-73% of rejections that die here (section 6.1's P1b histogram).
             if (!input.IsMorphologicalRuleApplicable(_rule))
             {
                 SynthesisProbe.RecordDie(SynthesisDiePoint.RuleNotApplicableOrPatternMismatch);
                 return Enumerable.Empty<Word>();
             }
 
+            SynthesisFoldScope foldScope = _morpher.UseSynthesisFoldMemo ? input.SynthesisFoldScope : null;
+            if (foldScope == null)
+                return ApplyMatchingAllomorphs(input);
+
+            SynthesisStateKey key = SynthesisStateKey.PinAndKey(input);
+            if (foldScope.TryGet(key, _rule, out IReadOnlyList<Word> stored))
+            {
+                foldScope.Hits++;
+                var replayed = new List<Word>(stored.Count);
+                foreach (Word storedOutput in stored)
+                    replayed.Add(storedOutput.ReanchorSynthesisStep(input, trailConsuming: true));
+                return replayed;
+            }
+
+            var computed = ApplyMatchingAllomorphs(input).ToList();
+            foldScope.Store(key, _rule, computed);
+            return computed;
+        }
+
+        // Everything past the trail-position gate: this is the expensive part of the step (per-allomorph
+        // MPR checks, pattern matching, unification), and everything it reads is covered by
+        // SynthesisStateKey -- see that class's doc comment for the field-by-field audit.
+        private IEnumerable<Word> ApplyMatchingAllomorphs(Word input)
+        {
             if (input.GetApplicationCount(_rule) >= _rule.MaxApplicationCount)
             {
                 if (_morpher.TraceManager.IsTracing)

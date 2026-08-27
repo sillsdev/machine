@@ -43,6 +43,31 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (!_morpher.RuleSelector(_rule))
                 return Enumerable.Empty<Word>();
 
+            SynthesisFoldScope foldScope = _morpher.UseSynthesisFoldMemo ? input.SynthesisFoldScope : null;
+            if (foldScope == null)
+                return ApplyUncached(input);
+
+            SynthesisStateKey key = SynthesisStateKey.PinAndKey(input);
+            if (foldScope.TryGet(key, _rule, out IReadOnlyList<Word> stored))
+            {
+                foldScope.Hits++;
+                var replayed = new List<Word>(stored.Count);
+                foreach (Word storedOutput in stored)
+                    // Realizational rules are trail-exempt (no IsMorphologicalRuleApplicable gate), so a
+                    // successful application never advances PendingTrailPosition.
+                    replayed.Add(storedOutput.ReanchorSynthesisStep(input, trailConsuming: false));
+                return replayed;
+            }
+
+            var computed = ApplyUncached(input).ToList();
+            foldScope.Store(key, _rule, computed);
+            return computed;
+        }
+
+        // Everything SynthesisStateKey is audited against: the "at most once" and subsumption/blocking
+        // gates, per-allomorph MPR checks, pattern matching, unification.
+        private IEnumerable<Word> ApplyUncached(Word input)
+        {
             // RealizationalRule has no multipleApplication attribute, so it applies at most once per
             // word; otherwise a rule cascade that retries a matching rule against its own output would
             // never terminate.
