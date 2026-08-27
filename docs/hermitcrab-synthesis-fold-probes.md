@@ -626,3 +626,52 @@ Commit `1a7d484c` bundles the harness reporting change with the section 8 analys
 agent that wrote the reporting change stopped with it uncommitted and the work was swept in when
 the analysis was committed. Two concerns in one commit; flagged here rather than rewritten, since
 the PR body is the review artifact.
+---
+
+## 10. The build was made, and it does not pay — because the redundancy is not real
+
+`feature/synthesis-fold-sharing` (`1048c742`) implements the fold-step memo with a sound key:
+`SynthesisStateKey` carries the **ordered remaining trail**, not just its index, plus shape,
+syntactic FS, realizational FS, MPR set, root allomorph, disjunctive allomorph indices, applied
+counts, `IsPartial`, `IsLastAppliedRuleFinal` and stratum — each field justified against its reader.
+
+**Parity: 0 divergences across all 33 conformance fixtures.** The implementation is correct.
+
+**Measured (warm-up discarded, min of 5 interleaved samples per arm):**
+
+| fixture | predicted ceiling | realised | memo hits | off-arm spread |
+| --- | --- | --- | --- | --- |
+| deep-optional-affix-nesting | 50.4% (~2x) | **0.96x** (4.5% slower) | **0** | 38.6% |
+| suffixing-evidential-adjacency-chain | 52.0% (~2x) | 1.06x (5.4%) | 2,682 | 21.9% |
+
+**`hits = 0` on the fixture with the largest reliable sample and the highest predicted ceiling.**
+With a trail-complete key the memo never fires there at all; the 0.96x is pure key-construction
+overhead. On the evidential chain it does fire 2,682 times and returns 5.4% against 21.9% noise —
+nothing.
+
+### The structural finding
+
+This is the same result arriving a third time, by a third independent route:
+
+| measurement | key | apparent | sound |
+| --- | --- | --- | --- |
+| F1 synthesis-input dedupe | order-insensitive | 9,774x | 15–40% |
+| N1 fold-entry census | trail position only | 6,476x | not established |
+| **P1c fold-step sharing** | **trail position only** | **3.22x / 8.10x** | **hits=0 / 1.06x** |
+
+**The redundancy in HermitCrab's synthesis is apparent, not real. The trail is what makes each
+step distinct, and every measurement that shows large shareable work is measuring a key that omits
+it.** Three different boundaries, three spectacular ratios, three collapses under a complete key.
+
+That closes a family, not just a candidate: packed parse forests, fold-step sharing, and
+synthesis-input dedupe all depend on distinct derivations converging on a genuinely identical
+state, and in this engine they do not converge. It is the same fact that makes the rules
+non-order-invariant, seen from the other side.
+
+### Recommendation
+
+**Do not merge the fold-step memo as a performance feature.** It is correct, it is off by default,
+and it buys nothing — on the best case it is 4% slower. Keep the branch as the evidence that
+closes the family.
+
+The measurement infrastructure is the durable asset and should merge on its own.

@@ -41,15 +41,27 @@ namespace SIL.Machine.Morphology.HermitCrab
         /// <summary>Per-parse hit count, folded into the owning Morpher when the parse ends.</summary>
         public int Hits { get; set; }
 
+        // Diagnostic totals for the A/B harness: distinguishes "the memo never hits" (the idea is dead)
+        // from "the memo hits but the key costs more than the step it saves" (the key is the problem).
+        // Free-running; a harness reads the delta.
+        internal static long DiagHits;
+        internal static long DiagStores;
+        internal static long DiagLookups;
+
         public bool TryGet(SynthesisStateKey key, IMorphologicalRule rule, out IReadOnlyList<Word> outputs)
         {
-            return _memo.TryGetValue(new SynthesisFoldStepKey(key, rule), out outputs);
+            DiagLookups++;
+            bool hit = _memo.TryGetValue(new SynthesisFoldStepKey(key, rule), out outputs);
+            if (hit)
+                DiagHits++;
+            return hit;
         }
 
         public void Store(SynthesisStateKey key, IMorphologicalRule rule, IReadOnlyList<Word> outputs)
         {
             if (_memo.Count >= MaxMemoEntries)
                 return;
+            DiagStores++;
             _memo[new SynthesisFoldStepKey(key, rule)] = outputs;
         }
 
