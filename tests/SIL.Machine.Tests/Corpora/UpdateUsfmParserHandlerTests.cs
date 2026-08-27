@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using NUnit.Framework;
-using SIL.Scripture;
 
 namespace SIL.Machine.Corpora;
 
@@ -10,7 +9,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_CharStyle()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "First verse of the first chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
@@ -34,8 +33,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "Update 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "Update 3"),
         ];
         string usfm =
             @"\id MAT - Test
@@ -103,9 +102,9 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/1:rem"]), "New remark"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/3:ip"]), "Another new remark"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:rem"), "New remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "Another new remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
         ];
         string usfm =
             @"\id MAT
@@ -157,8 +156,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/1:rem"]), "Update remark"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:rem"), "Update remark"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
         ];
         string usfm =
             @"\id MAT
@@ -202,7 +201,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_ParagraphInVerse()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -248,8 +247,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         ];
         string usfm =
             @"\id MAT - Test
@@ -274,8 +273,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:6"]), "Text 6"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:7"]), "Text 7"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6"), "Text 6"),
+            new UpdateUsfmRow(ScrRef("MAT 1:7"), "Text 7"),
         ];
         string target = UpdateUsfm(rows, textBehavior: UpdateUsfmTextBehavior.PreferNew);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
@@ -286,7 +285,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_StripNote()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:1"]), "First verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:1"), "First verse of the second chapter.")];
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(target, Contains.Substring("\\v 1 First verse of the second chapter.\r\n"));
@@ -295,7 +294,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_ReplaceWithNote()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "updated text")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "updated text")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -313,7 +312,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RowVerseSegment()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:1a"]), "First verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:1a"), "First verse of the second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(
@@ -327,7 +326,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_UsfmVerseSegment()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:7"]), "Seventh verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:7"), "Seventh verse of the second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\v 7a Seventh verse of the second chapter.\r\n"));
@@ -336,7 +335,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_MultipleParas()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Second verse of the first chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:2"), "Second verse of the first chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(
@@ -350,7 +349,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Table()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:9"]), "Ninth verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:9"), "Ninth verse of the second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\v 9 Ninth verse of the second chapter. \\tcr2 \\tc3 \\tcr4\r\n"));
@@ -362,7 +361,7 @@ public class UpdateUsfmParserHandlerTests
         List<UpdateUsfmRow> rows =
         [
             new UpdateUsfmRow(
-                ScrRef(["MAT 2:11", "MAT 2:12"]),
+                ScrRef("MAT 2:11", "MAT 2:12"),
                 "Eleventh verse of the second chapter. Twelfth verse of the second chapter."
             ),
         ];
@@ -379,7 +378,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_RangeSingleRowSingleVerse()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:11"]), "Eleventh verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\v 11-12 Eleventh verse of the second chapter.\r\n"));
@@ -390,8 +389,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:11"]), "Eleventh verse of the second chapter."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:12"]), "Twelfth verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:11"), "Eleventh verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:12"), "Twelfth verse of the second chapter."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -408,9 +407,9 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:2"]), "Verse 2."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:2a"]), "Verse 2a."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:2b"]), "Verse 2b."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Verse 2."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2a"), "Verse 2a."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2b"), "Verse 2b."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -422,8 +421,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:2"]), "Second verse of the second chapter."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:3"]), "Third verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "Second verse of the second chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:3"), "Third verse of the second chapter."),
         ];
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
@@ -436,7 +435,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Milestone()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:10"]), "Tenth verse of the second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:10"), "Tenth verse of the second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(
@@ -448,7 +447,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_Unmatched()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "Third verse of the first chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:3"), "Third verse of the first chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\v 3 Third verse of the first chapter.\r\n"));
@@ -457,7 +456,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_CharStyle()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:0/3:s1"]), "The second chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:0/3:s1"), "The second chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s1 The second chapter.\r\n"));
@@ -466,7 +465,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Paragraph()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:0/8:s"]), "The first chapter.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:0/8:s"), "The first chapter.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s The first chapter.\r\n"));
@@ -477,11 +476,11 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/s"]), "The first chapter."),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "First verse of the first chapter."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:0/tr/tc1"]), "The first cell of the table."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:0/tr/tc2"]), "The second cell of the table."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:0/tr/tc1"]), "The third cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/s"), "The first chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "First verse of the first chapter."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The first cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc2"), "The second cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/tr/tc1"), "The third cell of the table."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -507,7 +506,7 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:3/1:esb/1:ms"]), "The first paragraph of the sidebar."),
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/1:ms"), "The first paragraph of the sidebar."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -519,8 +518,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:0/1:tr/1:tc1"]), "The first cell of the table."),
-            new UpdateUsfmRow(ScrRef(["MAT 2:0/2:tr/1:tc1"]), "The third cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/1:tr/1:tc1"), "The first cell of the table."),
+            new UpdateUsfmRow(ScrRef("MAT 2:0/2:tr/1:tc1"), "The third cell of the table."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -539,7 +538,7 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 2:3/1:esb/2:p"]), "The second paragraph of the sidebar."),
+            new UpdateUsfmRow(ScrRef("MAT 2:3/1:esb/2:p"), "The second paragraph of the sidebar."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -549,7 +548,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_Milestone()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 2:7a/1:s"]), "A new section header.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 2:7a/1:s"), "A new section header.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\s A new section header. \\ts-s\\*\r\n"));
@@ -558,7 +557,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_SkipNote()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:0/3:ip"]), "The introductory paragraph.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")];
 
         string target = UpdateUsfm(rows, embedBehavior: UpdateUsfmMarkerBehavior.Strip);
         Assert.That(target, Contains.Substring("\\ip The introductory paragraph.\r\n"));
@@ -567,7 +566,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_NonVerse_ReplaceWithNote()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:0/3:ip"]), "The introductory paragraph.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(
@@ -579,7 +578,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_DoubleVaVp()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 3:1"]), "Updating later in the book to start.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 3:1"), "Updating later in the book to start.")];
 
         string target = UpdateUsfm(rows);
         Assert.That(target, Contains.Substring("\\id MAT - Test\r\n"));
@@ -592,7 +591,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_Verse_LastSegment()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Updating the last verse.")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Updating the last verse.")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -617,12 +616,12 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["GEN 1:1"]), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef(["GEN 1:2"]), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef(["GEN 1:3"]), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef(["GEN 1:4"]), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef(["GEN 1:5"]), "Update rows before the start"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/3:ip"]), "The introductory paragraph."),
+            new UpdateUsfmRow(ScrRef("GEN 1:1"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:2"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:3"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:4"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("GEN 1:5"), "Update rows before the start"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/3:ip"), "The introductory paragraph."),
         ];
 
         string target = UpdateUsfm(rows);
@@ -637,8 +636,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/2:p"]), "Update Paragraph"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update Verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/2:p"), "Update Paragraph"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update Verse 1"),
         ];
 
         string usfm =
@@ -685,7 +684,7 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), @"Update all in one row \f \fr 1.1 \ft Some note \f*"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), @"Update all in one row \f \fr 1.1 \ft Some note \f*"),
         ];
 
         string usfm =
@@ -706,7 +705,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void GetUsfm_BeginningOfVerseEmbed()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Updated text")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Updated text")];
 
         string usfm =
             @"\id MAT - Test
@@ -724,292 +723,9 @@ public class UpdateUsfmParserHandlerTests
     }
 
     [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_OneFewerChapter()
-    {
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["MAL 1:1"], ScrVers.Original), "Updated verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAL 3:24"], ScrVers.Original), "Updated verse 2"),
-        ];
-        string usfm =
-            @"\id MAL
-\c 1
-\v 1-14
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\c 4
-\v 1-5
-\v 6
-";
-        string target = UpdateUsfm(rows, usfm, bookId: "MAL", versification: ScrVers.English);
-        string result =
-            @"\id MAL
-\c 1
-\v 1-14 Updated verse 1
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\c 4
-\v 1-5
-\v 6 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "MAL",
-            versification: ScrVers.English,
-            convertUsfmToUpdateRowVersification: true
-        );
-        result =
-            @"\id MAL
-\c 1
-\v 1-14 Updated verse 1
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\v 19-23
-\v 24 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_OneMoreChapter()
-    {
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["MAL 1:1"], ScrVers.English), "Updated verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAL 4:6"], ScrVers.English), "Updated verse 2"),
-        ];
-        string usfm =
-            @"\id MAL
-\c 1
-\v 1-14
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\v 19-23
-\v 24
-";
-
-        string target = UpdateUsfm(rows, usfm, bookId: "MAL", versification: ScrVers.Original);
-        string result =
-            @"\id MAL
-\c 1
-\v 1-14 Updated verse 1
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\v 19-23
-\v 24 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "MAL",
-            versification: ScrVers.Original,
-            convertUsfmToUpdateRowVersification: true
-        );
-        result =
-            @"\id MAL
-\c 1
-\v 1-14 Updated verse 1
-\c 2
-\v 1-17
-\c 3
-\v 1-18
-\c 4
-\v 1-5
-\v 6 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_OneFewerBook()
-    {
-        // Russian Orthodox vs. Original
-        // PSA 151:1-7 = PS2 1:1-7
-
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["PSA 150:1"], ScrVers.Original), "Updated verse 1"),
-            new UpdateUsfmRow(ScrRef(["PS2 1:1"], ScrVers.Original), "Updated verse 2"),
-        ];
-
-        string usfm =
-            @"\id PSA - Test
-\c 150
-\v 1-6
-\c 151
-\v 1-7
-";
-
-        string target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "PSA",
-            convertUsfmToUpdateRowVersification: false,
-            versification: ScrVers.RussianOrthodox
-        );
-        string result =
-            @"\id PSA - Test
-\c 150
-\v 1-6 Updated verse 1
-\c 151
-\v 1-7 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-
-        target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "PSA",
-            convertUsfmToUpdateRowVersification: true,
-            versification: ScrVers.RussianOrthodox
-        );
-        result =
-            @"\id PSA - Test
-\c 150
-\v 1-6 Updated verse 1
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_OneMoreBook()
-    {
-        // Russian Orthodox vs. Original
-        // DAN 3:24-90 = DAG 3:24-90
-        // DAN 3:91-100 = DAN 3:24-33
-
-        // Original
-        // S3Y 1:1-29 = DAG 3:24-52
-
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["DAN 3:1"], ScrVers.RussianOrthodox), "Updated verse 1"),
-            // This row will map to another book DAG so it will not appear in the updated DAN
-            new UpdateUsfmRow(ScrRef(["DAN 3:24"], ScrVers.RussianOrthodox), "Updated verse 2"),
-        ];
-
-        string usfm =
-            @"\id DAN - Test
-\c 3
-\v 1-23
-\c 4
-\v 1
-";
-
-        string target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "DAN",
-            convertUsfmToUpdateRowVersification: true,
-            versification: ScrVers.Original
-        );
-        string result =
-            @"\id DAN - Test
-\c 3
-\v 1-23 Updated verse 1
-\c 4
-\v 1
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_BackOneVerseToPreviousChapter()
-    {
-        // English vs. Original
-        // ISA 9:1 = ISA 8:23
-
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["ISA 9:1"], ScrVers.English), "Updated verse 1"),
-            new UpdateUsfmRow(ScrRef(["ISA 9:2"], ScrVers.English), "Updated verse 2"),
-        ];
-
-        string usfm =
-            @"\id ISA - Test
-\c 8
-\v 22
-\v 23
-\c 9
-\v 1
-";
-
-        string target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "ISA",
-            convertUsfmToUpdateRowVersification: true,
-            versification: ScrVers.Original
-        );
-        string result =
-            @"\id ISA - Test
-\c 8
-\v 22
-\c 9
-\v 1 Updated verse 1
-\v 2 Updated verse 2
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
-    public void GetUsfm_ConvertUsfmToUpdateRowVersification_ForwardOneVerseToNextChapter()
-    {
-        // Original vs. English
-        // ISA 8:23 = ISA 9:1
-
-        List<UpdateUsfmRow> rows =
-        [
-            new UpdateUsfmRow(ScrRef(["ISA 8:23"], ScrVers.Original), "Updated verse 23"),
-            new UpdateUsfmRow(ScrRef(["ISA 9:1"], ScrVers.Original), "Updated verse 1"),
-        ];
-
-        string usfm =
-            @"\id ISA - Test
-\c 8
-\v 22
-\c 9
-\v 1
-\v 2
-";
-
-        string target = UpdateUsfm(
-            rows,
-            usfm,
-            bookId: "ISA",
-            convertUsfmToUpdateRowVersification: true,
-            versification: ScrVers.English
-        );
-        string result =
-            @"\id ISA - Test
-\c 8
-\v 22
-\v 23 Updated verse 23
-\c 9
-\v 1 Updated verse 1
-";
-        AssertUsfmEquals(target, result);
-    }
-
-    [Test]
     public void CrossReferenceDontUpdate()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1/1:x"]), "Update the cross reference")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1/1:x"), "Update the cross reference")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1027,7 +743,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void PreserveFig()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1047,8 +763,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update text"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1/1:f"]), "Update note"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update text"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1/1:f"), "Update note"),
         ];
         string usfm =
             @"\id MAT - Test
@@ -1075,7 +791,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_PreserveParas()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1105,7 +821,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_StripParas()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1135,7 +851,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_Range()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1163,7 +879,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_Range_RightToLeftMarker()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1", "MAT 1:2", "MAT 1:3"]), "Update 1-3")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1", "MAT 1:2", "MAT 1:3"), "Update 1-3")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1194,7 +910,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Footnote_PreserveEmbeds()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1224,7 +940,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Footnote_StripEmbeds()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1254,7 +970,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_NonVerse()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:0/1:s"]), "Updated section Header")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:0/1:s"), "Updated section Header")];
         string usfm =
             @"\id MAT - Test
 \s Section header
@@ -1278,7 +994,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_PreserveStyles()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1310,7 +1026,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_StripStyles()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1342,7 +1058,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_SectionHeader()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1380,7 +1096,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_Verse_SectionHeaderInVerse()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1413,7 +1129,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_NonVerse_ParagraphEndOfVerse()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1")];
         string usfm =
             @"\id MAT - Test
 \c 1
@@ -1444,11 +1160,11 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "new verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "new verse 2"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "new verse 3"),
-            new UpdateUsfmRow(ScrRef(["MAT 2:1"]), "new verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 2:2"]), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 2:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 2:2"), "new verse 2"),
         ];
 
         string usfm =
@@ -1499,16 +1215,16 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "new verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "new verse 2"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "new verse 3"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:4"]), "new verse 4"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:5"]), "new verse 5"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:6a"]), "new verse 6a"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:6b"]), "new verse 6b"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:6b/1:s"]), "new section"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:7"]), "new verse 7"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:8"]), "new verse 8"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
+            new UpdateUsfmRow(ScrRef("MAT 1:5"), "new verse 5"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6a"), "new verse 6a"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6b"), "new verse 6b"),
+            new UpdateUsfmRow(ScrRef("MAT 1:6b/1:s"), "new section"),
+            new UpdateUsfmRow(ScrRef("MAT 1:7"), "new verse 7"),
+            new UpdateUsfmRow(ScrRef("MAT 1:8"), "new verse 8"),
         ];
 
         string usfm =
@@ -1558,10 +1274,10 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "new verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "new verse 2"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "new verse 3"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:4"]), "new verse 4"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
         ];
 
         string usfm =
@@ -1596,11 +1312,11 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:0/1:s"]), "new section header"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "new verse 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "new verse 2"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:3"]), "new verse 3"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:4"]), "new verse 4"),
+            new UpdateUsfmRow(ScrRef("MAT 1:0/1:s"), "new section header"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "new verse 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "new verse 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:3"), "new verse 3"),
+            new UpdateUsfmRow(ScrRef("MAT 1:4"), "new verse 4"),
         ];
 
         string usfm =
@@ -1641,8 +1357,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         ];
 
         string usfm =
@@ -1696,8 +1412,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         ];
 
         string usfm =
@@ -1749,8 +1465,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         ];
 
         string usfm =
@@ -1787,8 +1503,8 @@ public class UpdateUsfmParserHandlerTests
     {
         List<UpdateUsfmRow> rows =
         [
-            new UpdateUsfmRow(ScrRef(["MAT 1:1"]), "Update 1"),
-            new UpdateUsfmRow(ScrRef(["MAT 1:2"]), "Update 2"),
+            new UpdateUsfmRow(ScrRef("MAT 1:1"), "Update 1"),
+            new UpdateUsfmRow(ScrRef("MAT 1:2"), "Update 2"),
         ];
 
         string usfm =
@@ -1830,7 +1546,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_FootnoteInPublishedChapterNumber()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["ESG 1:0/2:s"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("ESG 1:0/2:s"), "Update 1")];
         string usfm =
             @"\id ESG - Test
 \c 1
@@ -1873,7 +1589,7 @@ public class UpdateUsfmParserHandlerTests
     [Test]
     public void UpdateBlock_FootnoteAtStartOfChapterWithPrecedingText()
     {
-        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef(["ESG 1:0/2:s"]), "Update 1")];
+        List<UpdateUsfmRow> rows = [new UpdateUsfmRow(ScrRef("ESG 1:0/2:s"), "Update 1")];
         string usfm =
             @"\id ESG - Test
 \c 1
@@ -2003,8 +1719,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         AssertUsfmEquals(target, result);
     }
 
-    private static ScriptureRef[] ScrRef(IEnumerable<string> refs, ScrVers? versification = null) =>
-        [.. refs.Select(r => ScriptureRef.Parse(r, versification))];
+    private static ScriptureRef[] ScrRef(params string[] refs) => [.. refs.Select(r => ScriptureRef.Parse(r))];
 
     private static string UpdateUsfm(
         IReadOnlyList<UpdateUsfmRow>? rows = null,
@@ -2018,18 +1733,15 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
         IEnumerable<string>? preserveParagraphStyles = null,
         IEnumerable<IUsfmUpdateBlockHandler>? usfmUpdateBlockHandlers = null,
         IEnumerable<(int, string)>? remarks = null,
-        bool compareSegments = false,
-        bool convertUsfmToUpdateRowVersification = false,
-        string? bookId = null,
-        ScrVers? versification = null
+        bool compareSegments = false
     )
     {
-        bookId ??= "MAT";
+        const string BookId = "MAT";
         if (source is null)
         {
             var updater = new FileParatextProjectTextUpdater(CorporaTestHelpers.UsfmTestProjectPath);
             return updater.UpdateUsfm(
-                bookId,
+                BookId,
                 rows,
                 chapters,
                 idText,
@@ -2041,23 +1753,17 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 usfmUpdateBlockHandlers,
                 remarks,
                 (_) => false,
-                compareSegments,
-                convertUsfmToUpdateRowVersification
+                compareSegments
             );
         }
         else
         {
             source = source.Trim().ReplaceLineEndings("\r\n") + "\r\n";
-            var settings = new DefaultParatextProjectSettings(
-                fileNameForm: "MAT",
-                fileNamePrefix: string.Empty,
-                fileNameSuffix: string.Empty,
-                versification: versification
-            );
-            var files = new Dictionary<string, string> { [bookId] = source };
+            var settings = new DefaultParatextProjectSettings(fileNameForm: BookId, fileNameSuffix: string.Empty);
+            var files = new Dictionary<string, string> { [BookId] = source };
             var updater = new MemoryParatextProjectTextUpdater(files, settings);
             return updater.UpdateUsfm(
-                bookId,
+                BookId,
                 rows,
                 chapters,
                 idText,
@@ -2069,8 +1775,7 @@ Text 1\f + \fr A.1-3: \ft Some note.\f*
                 usfmUpdateBlockHandlers,
                 remarks,
                 (_) => false,
-                compareSegments,
-                convertUsfmToUpdateRowVersification
+                compareSegments
             );
         }
     }
