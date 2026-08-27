@@ -591,3 +591,38 @@ fully interceptable pre-expansion on this grammar.
 Groups B, C and D rest on sub-12 ms fixtures and cannot carry a timing claim on their own. Their
 value is that the mechanism *engages* for those constructs — the wall-clock case is carried by
 group A, where both reliable rows sit.
+
+
+---
+
+## 9. Reproducibility: two independent runs
+
+The fixture pass was run twice, by two operators, on the same code. This is the check that decides
+which rows can carry a claim.
+
+| fixture | run A ceiling | run B ceiling | reliable |
+| --- | --- | --- | --- |
+| edge-cases/deep-optional-affix-nesting | 50.41% | **50.94%** | yes (2.4–2.8 s) |
+| languages/suffixing-evidential-adjacency-chain | 51.95% | **50.23%** | yes (96–107 ms) |
+| languages/suffixing-extension-slot-ordering | 13.17% | 10.16% | yes (62–69 ms) |
+| edge-cases/strrep-identity — `synTotalShare` | 81.1% | **65.8%** | no (9.7–11.9 ms) |
+| edge-cases/strrep-identity — `synExpandShare` | 1.3% | **14.5%** | no |
+
+**The two reliable ≥2x rows reproduce to within ~1.7 points, both at ~50%.** That is the
+load-bearing result and it is stable across runs.
+
+**The unreliable rows do not reproduce.** `strrep-identity`'s `synExpandShare` moved 1.3% -> 14.5%,
+an 11x swing on a 10 ms fixture. This is direct evidence for the `wallMs >= 50` flag rather than an
+assumption behind it: sub-50 ms fixtures cannot carry a timing claim, and groups C and D (both
+single sub-12 ms fixtures) must be read as "the mechanism engages for this construct", never as a
+speedup estimate.
+
+Deterministic counters — `applications`, `distinct`, `ratio`, `altTotal`, `altDistinct` — were
+byte-identical across both runs, as they must be. Determinism violations: 0 in both.
+
+### Commit hygiene note
+
+Commit `1a7d484c` bundles the harness reporting change with the section 8 analysis, because the
+agent that wrote the reporting change stopped with it uncommitted and the work was swept in when
+the analysis was committed. Two concerns in one commit; flagged here rather than rewritten, since
+the PR body is the review artifact.
