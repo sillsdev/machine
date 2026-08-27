@@ -371,12 +371,43 @@ that does not cost anything at the scales that matter.
 
 #### What replaces it
 
-**The analysis morphological-rule cascade is the target, and it is not where anyone has been
-looking.** It is 99.5% of Amharic and ~95% of Sena. It is already memoized, already at its state
-floor (2,555 expansions against a 2,546-state floor), and still costs ~170 ms per state on
-Amharic. The cost is per-node work inside the cascade — pattern matching across the rule set —
-not the number of nodes. Every optimization attempted so far has reduced node counts. **None has
-touched per-node cost.**
+**The analysis phase is the target on every real grammar — but which part of it differs by
+grammar.** Sena re-run with the fixed timers (143,303 ms over the three heavy words):
+
+| bucket | pooled % of Sena wall |
+| --- | --- |
+| **anBattery** (analysis affix-template battery) | **51.4%** |
+| anCascade (analysis mrule cascade) | 18.4% |
+| anOther (anTotal residual) | 5.1% |
+| anPhono | 0.0% |
+| synCascade + synBattery + synForward + lookup | ~5.0% |
+| unaccounted | 20.1% |
+
+Against Amharic, where `anCascade` is ~95% of `anTotal` and `anBattery` only 4%. **So there is no
+single hot spot across grammars — only a single hot *phase*.** Sena is template-battery-bound;
+Amharic is cascade-bound; neither is synthesis-bound. An earlier version of this section claimed
+the cascade was "the target" on the strength of Amharic alone. That was the Sena-shaped error in
+reverse, caught within one run.
+
+Two things worth carrying forward:
+
+- **The template battery is still 51.4% of Sena after being memoized.** Phase 3b measured it at
+  93% pre-memo and its memo bought a 5x. It remains the largest single bucket. The memo reduced
+  how often the battery runs; it did not reduce what a run costs.
+- **The common thread is per-node cost, not node count.** Amharic spends ~170 ms per analysis
+  state in a cascade already at its state floor. Every optimization attempted in this area —
+  memoization, key narrowing, lexical gating, tandem intersection — has reduced *how many* nodes
+  are visited. **None has touched what a node costs.** That is the unexplored axis.
+
+#### One honest gap
+
+Sena's `unaccounted` is **20.1%** (24.0% on `cinacemerwa`, 7.6% on `atawirambo`) — Amharic's is
+0.1%, so this is Sena-specific, not a broken bracket. The grounded hypothesis is
+`Word.ExpandAlternatives()` (`Word.cs:470`), called per synthesis word in `SynthesizeSequential`
+outside every timed region, doing `Clone`/`Unify`/`Subtract`/`Freeze` work per call. It scales
+with the number of analysis/alternative pairs, which fits the per-word spread. **This is a
+hypothesis, not a measurement** — one more bracket would settle it, and it should be settled
+before anyone quotes the Sena split as complete.
 
 ### 6.4 Follow-on required before any build decision
 
