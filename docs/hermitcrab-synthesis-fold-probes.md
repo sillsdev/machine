@@ -426,6 +426,61 @@ with the number of analysis/alternative pairs, which fits the per-word spread. *
 hypothesis, not a measurement** — one more bracket would settle it, and it should be settled
 before anyone quotes the Sena split as complete.
 
+### 6.5 N1 — the gap is `ExpandAlternatives`, confirmed; a second, larger build candidate
+
+**Hypothesis confirmed.** With `synExpand` broken out as its own exclusive bracket around
+`Word.ExpandAlternatives()` in `Morpher.SynthesizeSequential` (the only call site this harness
+reaches -- the harness always calls `ParseWord` with `guessRoot: false`, so the `guessRoot`
+`ExpandAlternatives` call at the time was never in scope), Sena's `unaccounted` collapses from
+20.1% to **1.5% pooled**, and per word: `atawirambo` 7.6% → **0.77%**, `kukucitirani` → **1.19%**,
+`cinacemerwa` 24.0% → **2.01%**. All comfortably under the 5% gate. `synExpand` itself absorbs
+almost exactly what `unaccounted` lost: **20.3% of wall pooled** (7.9% / 17.5% / 26.4% per word).
+Determinism violations: 0. Full suite reconfirmed green (582/1/0) with the new brackets in place.
+
+| word | wall | synExpand | unaccounted (old → new) |
+| --- | --- | --- | --- |
+| `atawirambo` | 12,101 ms | 950 ms (7.9%) | 7.6% → **0.77%** |
+| `kukucitirani` | 51,872 ms | 9,087 ms (17.5%) | (n/a) → **1.19%** |
+| `cinacemerwa` | 48,740 ms | 12,877 ms (26.4%) | 24.0% → **2.01%** |
+| **pooled** | 112,713 ms | 22,914 ms (20.3%) | 20.1% → **1.5%** |
+
+**This does not flip the 6.4 fold-sharing verdict for parsing.** `ExpandAlternatives` runs before
+`_synthesisRule.Apply`, i.e. outside the fold P1c measures -- the fold-step ratio recomputed on
+this same run is **265.52x**, matching the earlier 265.5x, and `synCascade + synBattery +
+synForward` is still ~5% of wall (6,017 ms / 112,713 ms = 5.34% pooled, ceiling `5.34% x (1 -
+1/265.52)` = **5.32%**, consistent with 6.4's 4.98%). The do-not-build verdict for the fold-step
+build stands, unchanged, for both grammars.
+
+**But the dedupe census at fold entry finds a second, distinct, and larger opportunity.** For
+every `Word` `ExpandAlternatives()` produces, right before it enters `_synthesisRule.Apply`:
+
+| word | alternatives | distinct | distinct/total | dupe: same analysis word | dupe: different |
+| --- | --- | --- | --- | --- | --- |
+| `atawirambo` | 17,699 | 12 | 0.07% | 17,380 (**98.3%**) | 307 (1.7%) |
+| `kukucitirani` | 158,480 | 18 | 0.01% | 158,462 (**100%**) | 0 (0%) |
+| `cinacemerwa` | 218,847 | 31 | 0.01% | 159,747 (**73.0%**) | 59,069 (27.0%) |
+| **pooled** | 395,026 | 61 | **0.02%** | 335,589 (**85.0%**) | 59,376 (15.0%) |
+
+**Gate: ON.** `distinct/total` (0.02% pooled, worst case 0.07%) is far under the 0.2 threshold,
+and the same-analysis-word share of duplicates is the majority on every word individually (73.0%
+- 100%) as well as pooled (85.0%) -- the OFF condition (duplicates predominantly cross-word) never
+fires anywhere in this data. Most of the redundancy `ExpandAlternatives` re-does (`Clone` +
+`Unify` + `Subtract` + `Freeze`, per Word.cs:470) is re-deriving an alternative already produced
+earlier in the *same* analysis word's expansion, which means it is interceptable with a
+per-analysis-word fingerprint cache checked before that work runs, not just after.
+
+Ceiling if the same-word share were fully intercepted (`synExpand` share x same-word fraction of
+alternatives, as a first-order estimate assuming roughly uniform per-alternative cost): pooled
+20.3% x 85.0% ≈ **17.3% of Sena wall time** -- an order of magnitude above the fold-step build's
+~5% ceiling, and a real, newly-identified target. `cinacemerwa`'s 27% cross-word remainder is the
+honest caveat: even a perfect pre-expansion dedupe leaves a residual only a post-expansion
+fingerprint (the existing P1c one) could catch, and that residual is real (59,069 events on this
+one word alone).
+
+**This is a measurement, not a build.** N1's brief was to settle the hypothesis and census, not to
+implement the cache; it is reported here as a scoped, gated, next candidate distinct from the
+fold-step build 6.4 already closed.
+
 ### 6.6 Follow-on notes
 
 - **Cost-weight P1b.** Count is not cost. Attribute wall time, not events, to each die point.
