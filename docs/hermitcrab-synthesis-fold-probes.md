@@ -296,11 +296,87 @@ Five orders of magnitude apart per unit of synthesis. If Amharic's wall time sit
 synthesis, it is the grammar where fold sharing pays and Sena is the outlier rather than the rule.
 Templatic/Semitic morphology is not a niche. This is the measurement that matters most next.
 
-### 6.3 P1a fix — in progress
+### 6.3 P1a fixed — where the time actually goes
 
-Extending the timers across `_analysisRule.Apply`, the analysis cascade, the analysis template
-battery, and the phonological unapplication cascade, with an explicit `unaccounted` column; plus
-per-fixture synthesis share, and runs across all three real corpora rather than Sena alone.
+Six exclusive slices now sum to wall. **Amharic `unaccounted` = 0.1%**, so the split is
+trustworthy.
+
+Amharic, 28 words: `anTotal` **99.5%** · lookup 0.1% · synCascade 0.1% · synBattery 0.1% ·
+synForward **0.1%** · unaccounted 0.1%.
+
+| word | wall | anCascade | anBattery | anPhono | synForward |
+| --- | --- | --- | --- | --- | --- |
+| `ሄዳችሁ` | 38,298 ms | **34,635** | 3,505 | 8.5 | 41 |
+| `ሄዶ` | 37,953 ms | **36,154** | 1,682 | 0.8 | **14** |
+| `ሁለተኛ` | 16,486 ms | **14,122** | 2,249 | 44 | 18 |
+
+**This refutes a claim made earlier in this document.** Section 6.2 argued `ሄዶ` was ~160 ms per
+synthesis run and therefore the likely synthesis-bound grammar. Its forward synthesis is **14 ms**.
+The 160 ms came from dividing 30 s by 186 synthesis inputs — arithmetic on an unmeasured
+denominator, the same error that produced the 218,847 framing. Amharic's 36 seconds are in the
+**analysis morphological-rule cascade**, for a word with 212 distinct states: ~170 ms per state, in
+a cascade already memoized and already at its state floor. Not state count, not the template
+battery (4%), not phonology (0.002%), not synthesis (0.04%). What is expensive is what happens
+*inside* the cascade per node — pattern matching across the rule set.
+
+### 6.4 The answer to "does any grammar benefit?"
+
+Forward-synthesis share is **not** uniformly negligible. The real grammars are outliers:
+
+| grammar | P1c ratio | synForward share | **max possible speedup** |
+| --- | --- | --- | --- |
+| edge-cases/feature-system-breadth | 1.60x | 60.1% | **22.5%** |
+| edge-cases/diacritic-segments | 3.00x | 33.6% | **22.4%** |
+| edge-cases/disjunctive-recheck | 3.00x | 26.5% | 17.7% |
+| edge-cases/stem-name-restricted-root-allomorph | 2.00x | 35.3% | 17.7% |
+| languages/suffixing-vowel-harmony | 2.81x | 24.2% | 15.6% |
+| languages/suffixing-evidential-adjacency-chain | **8.10x** | 15.6% | 13.7% |
+| edge-cases/strrep-identity | 3.94x | 18.0% | 13.4% |
+| languages/templatic-root-modification | 1.93x | 24.3% | 11.7% |
+| edge-cases/deep-optional-affix-nesting (largest, 2.4 s) | 3.22x | 6.1% | 4.2% |
+| **Sena** (real) | 265x | 0.2% | **0.2%** |
+| **Amharic** (real) | 2.15x | 0.1% | **0.07%** |
+
+The right formula is **not** ratio × share. Eliminating all redundant fold steps saves
+`share × (1 − 1/ratio)`. Sena's 265x is worth 0.2% because 265x of nothing is nothing; and
+`feature-system-breadth` beats it at 1.60x because 60% of its time is actually there.
+
+**Determinism violations across every run: 0.**
+
+#### Reading this honestly
+
+Two competing explanations for why fixtures show 15–60% and real grammars show 0.1–0.2%:
+
+1. **Typology.** Some morphological types are genuinely synthesis-heavy.
+2. **Grammar size.** Analysis cost scales far worse with rule count and lexicon size than
+   synthesis does, so any small grammar looks synthesis-heavy regardless of type.
+
+The evidence favours (2). Sena is agglutinative — the type that shares best in the fixture set —
+and is 0.2%. The largest fixture (`deep-optional-affix-nesting`, 2.4 s) has the lowest synthesis
+share of the high-ratio group at 6.1%, and its max speedup drops to 4.2%. Synthesis share falls
+monotonically as fixtures get bigger. **We have no large grammar with a high synthesis share, and
+the trend predicts none exists.**
+
+That is a claim the fixtures cannot settle, because they are correctness fixtures — sub-2 ms
+words, a handful each. Settling it needs a large real grammar of a suffixing-agglutinative type
+that is not Sena. If one is available, this is the measurement to run on it; the harness takes a
+grammar path and a word list.
+
+#### Verdict on the fold-sharing build
+
+**Do not build it.** Its ceiling is ~22% on grammars that already finish in milliseconds and
+~0.2% on the grammars where users actually wait. The mechanism is real, the sharing is real and
+sound (0 determinism violations across 33 grammars plus 3 corpora), and it is aimed at a phase
+that does not cost anything at the scales that matter.
+
+#### What replaces it
+
+**The analysis morphological-rule cascade is the target, and it is not where anyone has been
+looking.** It is 99.5% of Amharic and ~95% of Sena. It is already memoized, already at its state
+floor (2,555 expansions against a 2,546-state floor), and still costs ~170 ms per state on
+Amharic. The cost is per-node work inside the cascade — pattern matching across the rule set —
+not the number of nodes. Every optimization attempted so far has reduced node counts. **None has
+touched per-node cost.**
 
 ### 6.4 Follow-on required before any build decision
 
