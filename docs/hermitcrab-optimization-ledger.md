@@ -12,20 +12,17 @@ if the next person can find out cheaply that it is closed.
 (`hermitcrab-packed-forest-research.md`, `hermitcrab-forest-memo-plan.md`,
 `hermitcrab-forest-memo-ceiling.md`, `hermitcrab-synthesis-fold-probes.md`) are chronological
 process records containing retracted intermediate claims, and are deliberately **not** merged.
-They stay on the branches below, together with all instrumentation, as reproducible evidence:
+They are preserved only as this record. **The evidence branches were deleted after the round
+closed**, along with all instrumentation: research scaffolding is not worth maintaining in two
+product assemblies, since the probes gate on `volatile bool` reads inside `Matcher.cs`, a hot inner
+loop in `SIL.Machine` used by every consumer.
 
-| branch | holds |
-| --- | --- |
-| `feature/forest-memo` | key-narrowing measurement, `RuleLengthClassifier` + 12 tests |
-| `feature/synthesis-fold-probes` | the eight-bucket wall-time split, die-point histogram, sharing census, harness |
-| `feature/synthesis-fold-sharing` | `SynthesisStateKey` + fold memo, parity-clean, `hits = 0` |
-| `feature/per-node-cost` | `NodeCostProbe` (SIL.Machine layer) + the per-node decomposition |
-| `probe/p-nogood` | row 14 — nogood subsumption census |
-| `probe/p-expand` | row 16 — sound fold-entry census (trail-complete key) |
-| `probe/p-battery` | rows 17, 22 — remainder split, clone-discard, Sena battery |
-| `probe/p-corpus` | row 18 — corpus-scope memoization harness |
-| `probe/p-contexted` | row 19 — cost-weighted die-point histogram |
-| `probe/p-gen` | row 20 — generation harness |
+**`docs/hermitcrab-probe-design.md` is the replacement.** It carries the probe architecture and its
+two-assembly gate trap, the eight exclusive wall-time buckets and why `synForward` must be recorded
+net of cascade and battery, the per-node decomposition, the census designs, all three key designs
+with field-level audits, the classifier's direction trap, and the full A/B methodology with the
+three measurement failures that forced each part of it — enough to rebuild any probe in a day. The
+expensive part was never the code; it was learning what to measure and which measurements lie.
 
 **No instrumentation is merged, by design.** The probes gate on `volatile bool` reads inside
 `Matcher.cs` â€” a hot inner loop in `SIL.Machine` used by every consumer â€” which is an acceptable
