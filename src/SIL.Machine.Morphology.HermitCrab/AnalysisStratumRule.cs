@@ -125,7 +125,19 @@ namespace SIL.Machine.Morphology.HermitCrab
             input = input.Clone();
             input.Stratum = _stratum;
 
-            _prulesRule.Apply(input);
+            // AnPhonoTicks: the analysis phonological-rule cascade for this stratum. One call per
+            // AnalysisStratumRule.Apply invocation (i.e. per stratum transition), not recursive -- unlike
+            // the mrule cascade/template battery below, this call never re-enters AnalysisStratumRule.
+            if (SynthesisProbe.Enabled)
+            {
+                long phonoStart = Stopwatch.GetTimestamp();
+                _prulesRule.Apply(input);
+                SynthesisProbe.AddAnPhonoTicks(Stopwatch.GetTimestamp() - phonoStart);
+            }
+            else
+            {
+                _prulesRule.Apply(input);
+            }
             input.Freeze();
             IDictionary<Shape, Word> shapeWord = null;
             // Don't merge if tracing because it messes up the tracing.
@@ -170,7 +182,29 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyMorphologicalRules(Word input)
         {
-            foreach (Word mruleOutWord in _mrulesRule.Apply(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            // AnCascadeTicks: the analysis morphological-rule cascade entry point. This is the whole
+            // MemoizedCombinationRuleCascade (or PermutationRuleCascade/ParallelCombinationRuleCascade,
+            // depending on stratum.MorphologicalRuleOrder and Morpher.MaxDegreeOfParallelism) for this
+            // node -- its own internal recursion (e.g. MemoizedCombinationRuleCascade.ApplyRules) happens
+            // inside this one call, including its memo lookups/writes, so it is captured with no double
+            // counting against AnBatteryTicks below, which brackets a disjoint call (ApplyTemplateBattery
+            // never calls back into this cascade). Materialized only when the probe is on, same as the
+            // synthesis-side SynthesisStratumRule.ApplyMorphologicalRules -- the same results are yielded
+            // either way.
+            IEnumerable<Word> mruleOutWords;
+            if (SynthesisProbe.Enabled)
+            {
+                long start = Stopwatch.GetTimestamp();
+                var materialized = _mrulesRule.Apply(input).ToList();
+                SynthesisProbe.AddAnCascadeTicks(Stopwatch.GetTimestamp() - start);
+                mruleOutWords = materialized;
+            }
+            else
+            {
+                mruleOutWords = _mrulesRule.Apply(input);
+            }
+
+            foreach (Word mruleOutWord in mruleOutWords.Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {
@@ -218,7 +252,25 @@ namespace SIL.Machine.Morphology.HermitCrab
 
         private IEnumerable<Word> ApplyTemplates(Word input)
         {
-            foreach (Word tempOutWord in ApplyTemplateBattery(input).Distinct(FreezableEqualityComparer<Word>.Default))
+            // AnBatteryTicks: the analysis affix-template battery entry point (ApplyTemplateBattery), which
+            // internally either replays a memo hit or runs the full RuleBatch and stores it -- either way
+            // captured here with no double counting against AnCascadeTicks (ApplyTemplateBattery never
+            // calls back into the mrule cascade). Materialized only when the probe is on, mirroring
+            // SynthesisStratumRule.ApplyTemplates.
+            IEnumerable<Word> templateOutWords;
+            if (SynthesisProbe.Enabled)
+            {
+                long start = Stopwatch.GetTimestamp();
+                var materialized = ApplyTemplateBattery(input).ToList();
+                SynthesisProbe.AddAnBatteryTicks(Stopwatch.GetTimestamp() - start);
+                templateOutWords = materialized;
+            }
+            else
+            {
+                templateOutWords = ApplyTemplateBattery(input);
+            }
+
+            foreach (Word tempOutWord in templateOutWords.Distinct(FreezableEqualityComparer<Word>.Default))
             {
                 switch (_stratum.MorphologicalRuleOrder)
                 {

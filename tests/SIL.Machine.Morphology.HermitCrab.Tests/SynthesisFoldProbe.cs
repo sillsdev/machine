@@ -53,7 +53,8 @@ public class SynthesisFoldProbe
 
         SynthesisProbe.Enabled = true;
         long grandDeterminismViolations = 0;
-        var fixtureRatios = new List<(string Id, double Ratio, long Applications, long Distinct)>();
+        var fixtureRatios =
+            new List<(string Id, double Ratio, long Applications, long Distinct, double ForwardShare, double Value)>();
         try
         {
             foreach (Fixture fixture in fixtures)
@@ -83,16 +84,33 @@ public class SynthesisFoldProbe
                 long applications = SynthesisProbe.TotalApplications;
                 long distinct = SynthesisProbe.DistinctFoldSteps;
                 double ratio = distinct > 0 ? applications / (double)distinct : 0;
-                fixtureRatios.Add((fixture.Id, ratio, applications, distinct));
+                // Forward-synthesis share of wall time for this fixture (pooled across its words), and the
+                // "value" of P1c's fold-sharing ratio for this grammar: sharing that never reaches forward
+                // synthesis cannot be realized as a speedup by folding forward-synthesis steps, so ratio
+                // alone overstates the payoff on a grammar where forward synthesis is a small slice of wall
+                // time. See the scope-change note in the P1a follow-up: this is per-fixture, not pooled,
+                // because the payoff is grammar-specific.
+                double fixtureWall = rows.Sum(r => r.WallMs);
+                double fixtureForward = rows.Sum(r => r.SynForwardMs);
+                double forwardShare = fixtureWall > 0 ? fixtureForward / fixtureWall : 0;
+                double value = ratio * forwardShare;
+                fixtureRatios.Add((fixture.Id, ratio, applications, distinct, forwardShare, value));
                 grandDeterminismViolations += SynthesisProbe.DeterminismViolations;
             }
 
             TestContext.Out.WriteLine();
-            TestContext.Out.WriteLine("=== P1c ratio by fixture (not pooled -- fixtures vary wildly in size) ===");
-            foreach ((string id, double ratio, long applications, long distinct) in fixtureRatios)
+            TestContext.Out.WriteLine(
+                "=== P1c ratio by fixture (not pooled -- fixtures vary wildly in size); "
+                    + "value = ratio x forward-synthesis share of wall time ==="
+            );
+            foreach (
+                (string id, double ratio, long applications, long distinct, double forwardShare, double value)
+                    in fixtureRatios
+            )
             {
                 TestContext.Out.WriteLine(
-                    $"  {id}\tapplications={applications}\tdistinct={distinct}\tratio={ratio:F2}x"
+                    $"  {id}\tapplications={applications}\tdistinct={distinct}\tratio={ratio:F2}x\t"
+                        + $"forwardShare={forwardShare * 100:F1}%\tvalue={value:F2}"
                 );
             }
             TestContext.Out.WriteLine();
@@ -153,12 +171,23 @@ public class SynthesisFoldProbe
         public int ParseCount;
         public double WallMs;
         public double LexicalLookupMs;
-        public double CascadeMs;
-        public double TemplateBatteryMs;
-        public double ForwardSynthesisMs;
+        public double SynCascadeMs;
+        public double SynBatteryMs;
+        public double SynForwardMs;
+        public double AnTotalMs;
+        public double AnCascadeMs;
+        public double AnBatteryMs;
+        public double AnPhonoMs;
+        public double UnaccountedMs;
         public long[] DieCounts;
         public long ApplicationsThisWord;
         public long NewDistinctThisWord;
+
+        // Forward-synthesis share of wall time -- the multiplier the P1c sharing ratio needs to turn into
+        // an actual expected win (P1c ratio x this share; see the "value" column in PrintFixtureSummary).
+        // Sharing that never reaches forward synthesis (the cascade/battery/lookup buckets, or analysis
+        // time) cannot be realized by folding forward-synthesis steps.
+        public double SynForwardShare => WallMs > 0 ? SynForwardMs / WallMs : 0;
     }
 
     /// <summary>
@@ -206,15 +235,39 @@ public class SynthesisFoldProbe
         for (int i = 0; i < AllDiePoints.Length; i++)
             dieCounts[i] = SynthesisProbe.GetDieCount(AllDiePoints[i]);
 
+        double wallMs = wall.Elapsed.TotalMilliseconds;
+        double lookupMs = TicksToMs(SynthesisProbe.LexicalLookupTicks);
+        double synCascadeMs = TicksToMs(SynthesisProbe.SynCascadeTicks);
+        double synBatteryMs = TicksToMs(SynthesisProbe.SynBatteryTicks);
+        double synForwardMs = TicksToMs(SynthesisProbe.SynForwardTicks);
+        double anTotalMs = TicksToMs(SynthesisProbe.AnTotalTicks);
+        double anCascadeMs = TicksToMs(SynthesisProbe.AnCascadeTicks);
+        double anBatteryMs = TicksToMs(SynthesisProbe.AnBatteryTicks);
+        double anPhonoMs = TicksToMs(SynthesisProbe.AnPhonoTicks);
+
+        // Top-level buckets are disjoint by construction (see SynthesisProbe's wall-time-split remarks):
+        // AnTotalMs is the whole analysis phase (a nested/inclusive total that already contains
+        // AnCascade/AnBattery/AnPhono), and the syn*/lookup buckets are disjoint slices of the synthesis
+        // phase (SynForwardMs is already net of SynCascade/SynBattery, see Morpher.SynthesizeSequential).
+        // So unaccounted = wall - analysis phase - synthesis phase, i.e. ParseWord's own scaffolding
+        // (shape segmentation, Word construction/Freeze, AccumulateMemoDiagnostics, guessRoot) plus any
+        // region this probe does not yet bracket.
+        double unaccountedMs = wallMs - anTotalMs - lookupMs - synCascadeMs - synBatteryMs - synForwardMs;
+
         return new WordProbeResult
         {
             Word = word,
             ParseCount = parseCount,
-            WallMs = wall.Elapsed.TotalMilliseconds,
-            LexicalLookupMs = TicksToMs(SynthesisProbe.LexicalLookupTicks),
-            CascadeMs = TicksToMs(SynthesisProbe.CascadeTicks),
-            TemplateBatteryMs = TicksToMs(SynthesisProbe.TemplateBatteryTicks),
-            ForwardSynthesisMs = TicksToMs(SynthesisProbe.ForwardSynthesisTicks),
+            WallMs = wallMs,
+            LexicalLookupMs = lookupMs,
+            SynCascadeMs = synCascadeMs,
+            SynBatteryMs = synBatteryMs,
+            SynForwardMs = synForwardMs,
+            AnTotalMs = anTotalMs,
+            AnCascadeMs = anCascadeMs,
+            AnBatteryMs = anBatteryMs,
+            AnPhonoMs = anPhonoMs,
+            UnaccountedMs = unaccountedMs,
             DieCounts = dieCounts,
             ApplicationsThisWord = SynthesisProbe.TotalApplications - applicationsBefore,
             NewDistinctThisWord = SynthesisProbe.DistinctFoldSteps - distinctBefore,
@@ -227,12 +280,20 @@ public class SynthesisFoldProbe
     {
         TestContext.Out.WriteLine();
         TestContext.Out.WriteLine($"--- {fixtureId} ({rows.Count} word(s) measured) ---");
+        // Nesting scheme (P1a follow-up, docs/hermitcrab-synthesis-fold-probes.md section 3): anTotal is a
+        // NESTED/INCLUSIVE total for the whole analysis phase (it contains anCascade+anBattery+anPhono, so
+        // those three do not add on top of it). Every other column here -- lookup, synCascade, synBattery,
+        // synForward, anTotal, unaccounted -- is an EXCLUSIVE slice of wall time; those six sum to wall
+        // exactly (unaccounted is defined as the remainder). "apps+"/"newDistinct+" are P1c counters, not
+        // wall-time buckets.
         foreach (WordProbeResult r in rows)
         {
             TestContext.Out.WriteLine(
                 $"  {r.Word}\tparses={r.ParseCount}\twall={r.WallMs:F2}ms\t"
-                    + $"lookup={r.LexicalLookupMs:F2}\tcascade={r.CascadeMs:F2}\t"
-                    + $"battery={r.TemplateBatteryMs:F2}\tforward={r.ForwardSynthesisMs:F2}\t"
+                    + $"lookup={r.LexicalLookupMs:F2}\tsynCascade={r.SynCascadeMs:F2}\t"
+                    + $"synBattery={r.SynBatteryMs:F2}\tsynForward={r.SynForwardMs:F2}\t"
+                    + $"anTotal={r.AnTotalMs:F2} [anCascade={r.AnCascadeMs:F2} anBattery={r.AnBatteryMs:F2} anPhono={r.AnPhonoMs:F2}]\t"
+                    + $"unaccounted={r.UnaccountedMs:F2}\t"
                     + $"apps+={r.ApplicationsThisWord}\tnewDistinct+={r.NewDistinctThisWord}"
             );
         }
@@ -245,14 +306,30 @@ public class SynthesisFoldProbe
 
         double sumWall = rows.Sum(r => r.WallMs);
         double sumLookup = rows.Sum(r => r.LexicalLookupMs);
-        double sumCascade = rows.Sum(r => r.CascadeMs);
-        double sumBattery = rows.Sum(r => r.TemplateBatteryMs);
-        double sumForward = rows.Sum(r => r.ForwardSynthesisMs);
+        double sumSynCascade = rows.Sum(r => r.SynCascadeMs);
+        double sumSynBattery = rows.Sum(r => r.SynBatteryMs);
+        double sumSynForward = rows.Sum(r => r.SynForwardMs);
+        double sumAnTotal = rows.Sum(r => r.AnTotalMs);
+        double sumAnCascade = rows.Sum(r => r.AnCascadeMs);
+        double sumAnBattery = rows.Sum(r => r.AnBatteryMs);
+        double sumAnPhono = rows.Sum(r => r.AnPhonoMs);
+        double sumUnaccounted = rows.Sum(r => r.UnaccountedMs);
         TestContext.Out.WriteLine(
-            $"  [P1a totals] wall={sumWall:F2}ms lookup={sumLookup:F2}ms ({Pct(sumLookup, sumWall)}) "
-                + $"cascade={sumCascade:F2}ms ({Pct(sumCascade, sumWall)}) "
-                + $"battery={sumBattery:F2}ms ({Pct(sumBattery, sumWall)}) "
-                + $"forward={sumForward:F2}ms ({Pct(sumForward, sumWall)})"
+            $"  [P1a totals -- exclusive slices, sum to wall] wall={sumWall:F2}ms "
+                + $"lookup={sumLookup:F2}ms ({Pct(sumLookup, sumWall)}) "
+                + $"synCascade={sumSynCascade:F2}ms ({Pct(sumSynCascade, sumWall)}) "
+                + $"synBattery={sumSynBattery:F2}ms ({Pct(sumSynBattery, sumWall)}) "
+                + $"synForward={sumSynForward:F2}ms ({Pct(sumSynForward, sumWall)}) "
+                + $"anTotal={sumAnTotal:F2}ms ({Pct(sumAnTotal, sumWall)}) "
+                + $"unaccounted={sumUnaccounted:F2}ms ({Pct(sumUnaccounted, sumWall)})"
+        );
+        TestContext.Out.WriteLine(
+            $"  [anTotal breakdown -- nested inside anTotal, not on top of it] "
+                + $"anCascade={sumAnCascade:F2}ms ({Pct(sumAnCascade, sumAnTotal)} of anTotal) "
+                + $"anBattery={sumAnBattery:F2}ms ({Pct(sumAnBattery, sumAnTotal)} of anTotal) "
+                + $"anPhono={sumAnPhono:F2}ms ({Pct(sumAnPhono, sumAnTotal)} of anTotal) "
+                + $"anOther={sumAnTotal - sumAnCascade - sumAnBattery - sumAnPhono:F2}ms "
+                + $"({Pct(sumAnTotal - sumAnCascade - sumAnBattery - sumAnPhono, sumAnTotal)} of anTotal)"
         );
 
         var dieTotals = new long[AllDiePoints.Length];

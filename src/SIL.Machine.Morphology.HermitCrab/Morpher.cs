@@ -176,7 +176,26 @@ namespace SIL.Machine.Morphology.HermitCrab
             trace = input.CurrentTrace;
 
             // Unapply rules
-            var analyses = new ConcurrentQueue<Word>(_analysisRule.Apply(input));
+            // AnTotalTicks is the outer/nested bucket for the whole analysis phase (P1a follow-up, see
+            // SynthesisProbe's wall-time-split remarks): it brackets this one call, which -- via
+            // AnalysisLanguageRule.Apply -- recurses through every stratum's AnalysisStratumRule.Apply,
+            // inside which AnCascadeTicks/AnBatteryTicks/AnPhonoTicks accumulate disjoint slices. Those
+            // three sum to <= this bucket; the remainder is analysis-side orchestration the sub-timers
+            // don't individually cover (recursion glue, Clone/Freeze, Distinct, memo-key hashing outside
+            // the cascade/battery calls themselves).
+            IEnumerable<Word> analysisResults;
+            if (SynthesisProbe.Enabled)
+            {
+                long anStart = Stopwatch.GetTimestamp();
+                var materialized = _analysisRule.Apply(input).ToList();
+                SynthesisProbe.AddAnTotalTicks(Stopwatch.GetTimestamp() - anStart);
+                analysisResults = materialized;
+            }
+            else
+            {
+                analysisResults = _analysisRule.Apply(input);
+            }
+            var analyses = new ConcurrentQueue<Word>(analysisResults);
             if (scope != null)
                 AccumulateMemoDiagnostics(scope);
 
@@ -391,8 +410,8 @@ namespace SIL.Machine.Morphology.HermitCrab
                         // cascade/template-battery timers (accumulated separately inside SynthesisStratumRule)
                         // recorded during it -- the residual is _synthesisRule.Apply's own orchestration
                         // plus IsWordValid and IsMatch, exactly as the plan defines the bucket.
-                        long cascadeBefore = SynthesisProbe.CascadeTicks;
-                        long batteryBefore = SynthesisProbe.TemplateBatteryTicks;
+                        long cascadeBefore = SynthesisProbe.SynCascadeTicks;
+                        long batteryBefore = SynthesisProbe.SynBatteryTicks;
                         long forwardStart = Stopwatch.GetTimestamp();
                         foreach (Word validWord in _synthesisRule.Apply(alternative).Where(IsWordValid))
                         {
@@ -400,9 +419,9 @@ namespace SIL.Machine.Morphology.HermitCrab
                                 matches.Add(validWord);
                         }
                         long forwardTotal = Stopwatch.GetTimestamp() - forwardStart;
-                        long cascadeDelta = SynthesisProbe.CascadeTicks - cascadeBefore;
-                        long batteryDelta = SynthesisProbe.TemplateBatteryTicks - batteryBefore;
-                        SynthesisProbe.AddForwardSynthesisTicks(forwardTotal - cascadeDelta - batteryDelta);
+                        long cascadeDelta = SynthesisProbe.SynCascadeTicks - cascadeBefore;
+                        long batteryDelta = SynthesisProbe.SynBatteryTicks - batteryBefore;
+                        SynthesisProbe.AddSynForwardTicks(forwardTotal - cascadeDelta - batteryDelta);
                     }
                 }
             }

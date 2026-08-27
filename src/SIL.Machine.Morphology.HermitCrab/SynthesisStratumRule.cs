@@ -104,7 +104,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 long start = Stopwatch.GetTimestamp();
                 var materialized = _mrulesRule.Apply(input).ToList();
-                SynthesisProbe.AddCascadeTicks(Stopwatch.GetTimestamp() - start);
+                SynthesisProbe.AddSynCascadeTicks(Stopwatch.GetTimestamp() - start);
                 mruleOutWords = materialized;
             }
             else
@@ -133,7 +133,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             {
                 long start = Stopwatch.GetTimestamp();
                 var materialized = _templatesRule.Apply(input).ToList();
-                SynthesisProbe.AddTemplateBatteryTicks(Stopwatch.GetTimestamp() - start);
+                SynthesisProbe.AddSynBatteryTicks(Stopwatch.GetTimestamp() - start);
                 templateOutWords = materialized;
             }
             else

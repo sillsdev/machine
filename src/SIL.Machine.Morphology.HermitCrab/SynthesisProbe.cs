@@ -50,15 +50,33 @@ namespace SIL.Machine.Morphology.HermitCrab
         internal static volatile bool Enabled;
 
         // ---- P1a: wall-time split ----
+        // Two sides, kept as separate labelled buckets per the P1a follow-up (docs/hermitcrab-synthesis-fold-probes.md
+        // section 3): the "syn*" buckets bracket disjoint regions inside Morpher.Synthesize/SynthesisStratumRule
+        // (unchanged from the original P1a cut, just renamed so they read unambiguously next to the analysis
+        // side). The "an*" buckets are the new analysis-side instrumentation this follow-up adds. AnTotalTicks
+        // is a NESTED/INCLUSIVE total -- it brackets the whole of Morpher.ParseWord's `_analysisRule.Apply(input)`
+        // call, and AnCascadeTicks/AnBatteryTicks/AnPhonoTicks are disjoint slices taken from calls *within* that
+        // same call tree (see AnalysisStratumRule), so AnTotalTicks >= AnCascadeTicks + AnBatteryTicks + AnPhonoTicks.
+        // The three "an*" slice buckets are mutually disjoint from each other and from the "syn*"/lookup buckets,
+        // by the same non-overlapping-call-site construction the original synthesis-side buckets already used
+        // (see SynthesisStratumRule's ApplyMorphologicalRules/ApplyTemplates remarks).
         private static long _lexicalLookupTicks;
-        private static long _cascadeTicks;
-        private static long _templateBatteryTicks;
-        private static long _forwardSynthesisTicks;
+        private static long _synCascadeTicks;
+        private static long _synBatteryTicks;
+        private static long _synForwardTicks;
+        private static long _anTotalTicks;
+        private static long _anCascadeTicks;
+        private static long _anBatteryTicks;
+        private static long _anPhonoTicks;
 
         internal static long LexicalLookupTicks => Interlocked.Read(ref _lexicalLookupTicks);
-        internal static long CascadeTicks => Interlocked.Read(ref _cascadeTicks);
-        internal static long TemplateBatteryTicks => Interlocked.Read(ref _templateBatteryTicks);
-        internal static long ForwardSynthesisTicks => Interlocked.Read(ref _forwardSynthesisTicks);
+        internal static long SynCascadeTicks => Interlocked.Read(ref _synCascadeTicks);
+        internal static long SynBatteryTicks => Interlocked.Read(ref _synBatteryTicks);
+        internal static long SynForwardTicks => Interlocked.Read(ref _synForwardTicks);
+        internal static long AnTotalTicks => Interlocked.Read(ref _anTotalTicks);
+        internal static long AnCascadeTicks => Interlocked.Read(ref _anCascadeTicks);
+        internal static long AnBatteryTicks => Interlocked.Read(ref _anBatteryTicks);
+        internal static long AnPhonoTicks => Interlocked.Read(ref _anPhonoTicks);
 
         internal static void AddLexicalLookupTicks(long ticks)
         {
@@ -66,30 +84,58 @@ namespace SIL.Machine.Morphology.HermitCrab
                 Interlocked.Add(ref _lexicalLookupTicks, ticks);
         }
 
-        internal static void AddCascadeTicks(long ticks)
+        internal static void AddSynCascadeTicks(long ticks)
         {
             if (Enabled)
-                Interlocked.Add(ref _cascadeTicks, ticks);
+                Interlocked.Add(ref _synCascadeTicks, ticks);
         }
 
-        internal static void AddTemplateBatteryTicks(long ticks)
+        internal static void AddSynBatteryTicks(long ticks)
         {
             if (Enabled)
-                Interlocked.Add(ref _templateBatteryTicks, ticks);
+                Interlocked.Add(ref _synBatteryTicks, ticks);
         }
 
-        internal static void AddForwardSynthesisTicks(long ticks)
+        internal static void AddSynForwardTicks(long ticks)
         {
             if (Enabled)
-                Interlocked.Add(ref _forwardSynthesisTicks, ticks);
+                Interlocked.Add(ref _synForwardTicks, ticks);
+        }
+
+        internal static void AddAnTotalTicks(long ticks)
+        {
+            if (Enabled)
+                Interlocked.Add(ref _anTotalTicks, ticks);
+        }
+
+        internal static void AddAnCascadeTicks(long ticks)
+        {
+            if (Enabled)
+                Interlocked.Add(ref _anCascadeTicks, ticks);
+        }
+
+        internal static void AddAnBatteryTicks(long ticks)
+        {
+            if (Enabled)
+                Interlocked.Add(ref _anBatteryTicks, ticks);
+        }
+
+        internal static void AddAnPhonoTicks(long ticks)
+        {
+            if (Enabled)
+                Interlocked.Add(ref _anPhonoTicks, ticks);
         }
 
         internal static void ResetWallTime()
         {
             Interlocked.Exchange(ref _lexicalLookupTicks, 0);
-            Interlocked.Exchange(ref _cascadeTicks, 0);
-            Interlocked.Exchange(ref _templateBatteryTicks, 0);
-            Interlocked.Exchange(ref _forwardSynthesisTicks, 0);
+            Interlocked.Exchange(ref _synCascadeTicks, 0);
+            Interlocked.Exchange(ref _synBatteryTicks, 0);
+            Interlocked.Exchange(ref _synForwardTicks, 0);
+            Interlocked.Exchange(ref _anTotalTicks, 0);
+            Interlocked.Exchange(ref _anCascadeTicks, 0);
+            Interlocked.Exchange(ref _anBatteryTicks, 0);
+            Interlocked.Exchange(ref _anPhonoTicks, 0);
         }
 
         // ---- P1b: die-point histogram ----
