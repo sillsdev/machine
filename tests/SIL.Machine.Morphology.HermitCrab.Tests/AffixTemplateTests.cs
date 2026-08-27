@@ -465,7 +465,10 @@ public class AffixTemplateTests : HermitCrabTestBase
         morpher.IsPartial = false; // Override for testing purposes.
         TraceManager.IsTracing = true;
         AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
-        Assert.That(GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate), Is.EqualTo(2));
+        Assert.That(
+            GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+            Is.EqualTo(2)
+        );
         AssertMorphsEqual(morpher.ParseWord("sagdvs"));
         TraceManager.IsTracing = false;
 
