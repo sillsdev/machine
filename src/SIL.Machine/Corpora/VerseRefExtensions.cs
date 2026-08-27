@@ -53,5 +53,51 @@ namespace SIL.Machine.Corpora
             }
             return vr;
         }
+
+        public static bool TryChangeVersificationWithSegments(
+            this VerseRef verseRef,
+            ScrVers versification,
+            out VerseRef changedVerseRef
+        )
+        {
+            VerseRef vr = verseRef;
+
+            bool success = true;
+            if (vr.HasMultiple)
+                success = vr.ChangeVersificationWithRanges(versification);
+            else
+                vr.ChangeVersification(versification);
+
+            if (string.IsNullOrEmpty(vr.Segment()))
+            {
+                changedVerseRef = vr;
+                return success;
+            }
+
+            VerseRef verseRefWithoutSegments = verseRef.RemoveSegments();
+            if (verseRefWithoutSegments.HasMultiple)
+                success = verseRefWithoutSegments.ChangeVersificationWithRanges(versification);
+            else
+                verseRefWithoutSegments.ChangeVersification(versification);
+            if (!verseRefWithoutSegments.Equals(vr.RemoveSegments()))
+            {
+                IEnumerable<string> verses = verseRef
+                    .AllVerses()
+                    .Zip(
+                        verseRefWithoutSegments.AllVerses(),
+                        (verseWithSegments, verseWithCorrectNumber) => (verseWithSegments, verseWithCorrectNumber)
+                    )
+                    .Select(
+                        (verseTuple) => verseTuple.verseWithCorrectNumber.Verse + verseTuple.verseWithSegments.Segment()
+                    );
+                changedVerseRef = new VerseRef(
+                    $"{verseRefWithoutSegments.Book} {verseRefWithoutSegments.ChapterNum}:{string.Join(",", verses)}",
+                    versification
+                );
+                return success;
+            }
+            changedVerseRef = vr;
+            return success;
+        }
     }
 }
