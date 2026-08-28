@@ -374,6 +374,229 @@ public class ConvertUsfmVersificationHandlerTests
         AssertUsfmEquals(target, result);
     }
 
+    [Test]
+    public void GetUsfm_HeadingIntroducingKeptVerse_AfterDroppedVerse()
+    {
+        // Russian Orthodox vs. Original
+        // DAN 3:24-90 = DAG 3:24-90  (leaves the book, so it is dropped)
+        // DAN 3:91-100 = DAN 3:24-33 (stays in the book, so it is kept)
+        // The heading and paragraph marker between them introduce the verse that is kept.
+
+        string usfm =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\v 24-90 Dropped text
+\s1 Section
+\p
+\v 91-100 More text
+";
+
+        string target = UpdateUsfm(
+            "DAN",
+            usfm,
+            sourceVersification: ScrVers.RussianOrthodox,
+            targetVersification: ScrVers.Original
+        );
+        string result =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\s1 Section
+\p
+\v 24-33 More text
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_HeadingIntroducingDroppedVerse_IsDropped()
+    {
+        // Russian Orthodox vs. Original
+        // PSA 151:1-7 = PS2 1:1-7 (the whole chapter leaves the book)
+        // The heading introduces the dropped verse, so it goes with it. The \q belongs to the
+        // preceding verse and stays.
+
+        string usfm =
+            @"\id PSA - Test
+\c 150
+\v 1-5 Lines
+\v 6 Line
+\q Another line
+\c 151
+\s1 Section
+\p
+\v 1-7 More lines
+";
+
+        string target = UpdateUsfm(
+            "PSA",
+            usfm,
+            sourceVersification: ScrVers.RussianOrthodox,
+            targetVersification: ScrVers.Original
+        );
+        string result =
+            @"\id PSA - Test
+\c 150
+\v 1-5 Lines
+\v 6 Line
+\q Another line
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_DroppedVerseText_IsDroppedWhenKeptVerseFollows()
+    {
+        // Guards against rescuing the dropped verse's own text along with the markers that
+        // introduce the verse after it.
+
+        string usfm =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\v 24-90 Dropped text
+\v 91-100 More text
+";
+
+        string target = UpdateUsfm(
+            "DAN",
+            usfm,
+            sourceVersification: ScrVers.RussianOrthodox,
+            targetVersification: ScrVers.Original
+        );
+        string result =
+            @"\id DAN - Test
+\c 3
+\p
+\v 1-23 Text
+\v 24-33 More text
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_SynthesizedChapter_IsFollowedByParagraphMarker()
+    {
+        // English vs. Original
+        // MAL 4:1-6 = MAL 3:19-24
+        // Converting Original to English splits chapter 3 mid-paragraph, so the synthesized \c 4
+        // has no paragraph marker of its own. \nb continues the paragraph across the chapter break;
+        // without it the first verse of chapter 4 sits outside any paragraph.
+
+        string usfm =
+            @"\id MAL - Test
+\c 3
+\p
+\v 1-18 Text
+\v 19-23 More text
+\v 24 Last text
+";
+
+        string target = UpdateUsfm(
+            "MAL",
+            usfm,
+            sourceVersification: ScrVers.Original,
+            targetVersification: ScrVers.English
+        );
+        string result =
+            @"\id MAL - Test
+\c 3
+\p
+\v 1-18 Text
+\c 4
+\nb
+\v 1-5 More text
+\v 6 Last text
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_SynthesizedChapter_FromSplitVerseRange_IsFollowedByParagraphMarker()
+    {
+        // English vs. Original
+        // ISA 9:1 = ISA 8:23
+        // The range \v 22-23 straddles the mapped chapter boundary, so it is split and a chapter
+        // marker is synthesized between the two halves. That marker needs a paragraph too.
+        // The verses are left without text deliberately: where the text of a split range should
+        // end up is a separate question from whether the synthesized chapter has a paragraph.
+
+        string usfm =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22-23
+\c 9
+\p
+\v 1
+";
+
+        string target = UpdateUsfm(
+            "ISA",
+            usfm,
+            sourceVersification: ScrVers.Original,
+            targetVersification: ScrVers.English
+        );
+        string result =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22
+\c 9
+\nb
+\v 1
+\p
+\v 2
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
+    [Test]
+    public void GetUsfm_SplitVerseRange_TextStaysWithFirstVerse()
+    {
+        // English vs. Original
+        // ISA 9:1 = ISA 8:23
+        // \v 22-23 straddles the mapped chapter boundary and is split. The text covers both
+        // verses, and no single \v can express that, so it stays with the verse the range starts
+        // at rather than being carried into the next chapter.
+        //
+        // This expects the synthesized \c 9 to be followed by \nb as well, so it needs both that
+        // fix and the text placement fix to pass.
+
+        string usfm =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22-23 Verse twenty-two and twenty-three text
+\c 9
+\p
+\v 1 Chapter nine verse one text
+";
+
+        string target = UpdateUsfm(
+            "ISA",
+            usfm,
+            sourceVersification: ScrVers.Original,
+            targetVersification: ScrVers.English
+        );
+        string result =
+            @"\id ISA - Test
+\c 8
+\p
+\v 22 Verse twenty-two and twenty-three text
+\c 9
+\nb
+\v 1
+\p
+\v 2 Chapter nine verse one text
+";
+        AssertUsfmEqualsExactly(target, result);
+    }
+
     private static string UpdateUsfm(
         string bookId,
         string source,
@@ -400,5 +623,16 @@ public class ConvertUsfmVersificationHandlerTests
         string[] truthLines = truth.Split('\n');
         for (int i = 0; i < truthLines.Length; i++)
             Assert.That(targetLines[i].Trim(), Is.EqualTo(truthLines[i].Trim()), message: $"Line {i}");
+    }
+
+    // AssertUsfmEquals only walks the expected lines, so output that runs past the end of the
+    // expected USFM slips through. These cases turn on content being dropped, so they need the
+    // line count checked too.
+    private static void AssertUsfmEqualsExactly(string target, string truth)
+    {
+        AssertUsfmEquals(target, truth);
+        Assert.That(NonEmptyLineCount(target), Is.EqualTo(NonEmptyLineCount(truth)), message: "extra output");
+
+        static int NonEmptyLineCount(string usfm) => usfm.Split('\n').Count(l => l.Trim().Length > 0);
     }
 }
