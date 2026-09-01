@@ -51,7 +51,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             // Do not allow a final template to unapply if the grammar is not partial
             // and a non-template was last unapplied.
-            if (!_morpher.IsPartial && _rule.IsFinalTemplateRule && input.IsLastUnappliedRuleNonTemplate == true)
+            if (!_morpher.IsPartial && input.IsCurrentUnappliedRuleFinal && IsLastUnappliedRuleNonTemplate(input))
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
@@ -64,7 +64,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     );
                 }
                 return Enumerable.Empty<Word>();
-             }
+            }
 
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
@@ -88,6 +88,21 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                     _morpher.TraceManager.MorphologicalRuleNotUnapplied(_rule, i, input);
             }
             return output;
+        }
+
+        private bool IsLastUnappliedRuleNonTemplate(Word input)
+        {
+            if (input.MorphologicalRules.Count() == 0)
+            {
+                return false;
+            }
+            IMorphologicalRule lastRule = input.MorphologicalRules.Last();
+            if (lastRule is AffixProcessRule affixProcessRule && !affixProcessRule.IsTemplateRule)
+            {
+                return true;
+
+            }
+            return false;
         }
     }
 }

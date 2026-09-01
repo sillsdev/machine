@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private FeatureStruct _realizationalFS;
         private Stratum _stratum;
         private bool? _isLastAppliedRuleFinal;
-        private bool? _isLastUnappliedRuleNonTemplate;
+        private bool _isCurrentUnappliedRuleFinal;
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
@@ -48,7 +48,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
-            _isLastUnappliedRuleNonTemplate = null;
+            _isCurrentUnappliedRuleFinal = false;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
 
@@ -67,7 +67,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
-            _isLastUnappliedRuleNonTemplate = null;
+            _isCurrentUnappliedRuleFinal = false;
             _isPartial = false;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
@@ -96,7 +96,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
-            _isLastUnappliedRuleNonTemplate = word._isLastUnappliedRuleNonTemplate;
+            _isCurrentUnappliedRuleFinal = word._isCurrentUnappliedRuleFinal;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
             AnalysisScope = word.AnalysisScope;
@@ -350,8 +350,6 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _mruleApps.Add(mrule);
                 _mruleAppIndex++;
             }
-            _isLastUnappliedRuleNonTemplate =
-                (mrule is MorphemicMorphologicalRule morphRule) && !morphRule.IsTemplateRule;
         }
 
         /// <summary>
@@ -398,13 +396,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        internal bool? IsLastUnappliedRuleNonTemplate
+        internal bool IsCurrentUnappliedRuleFinal
         {
-            get { return _isLastUnappliedRuleNonTemplate; }
+            get { return _isCurrentUnappliedRuleFinal; }
             set
             {
                 CheckFrozen();
-                _isLastUnappliedRuleNonTemplate = value;
+                _isCurrentUnappliedRuleFinal = value;
             }
         }
 
@@ -637,7 +635,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _mruleApps.GetSequenceHashCode();
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
-            code = code * 31 + _isLastUnappliedRuleNonTemplate.GetHashCode();
+            code = code * 31 + _isCurrentUnappliedRuleFinal.GetHashCode();
             return code;
         }
 
@@ -658,7 +656,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
                 && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal
-                && _isLastUnappliedRuleNonTemplate == other._isLastUnappliedRuleNonTemplate;
+                && _isCurrentUnappliedRuleFinal == other._isCurrentUnappliedRuleFinal;
         }
 
         public Word Clone()

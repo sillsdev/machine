@@ -31,7 +31,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly FeatureStruct _realizationalFS;
         private readonly int _nonHeadCount;
         private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
-        private readonly bool? _isLastUnappliedRuleNonTemplate;
+        private readonly bool _isCurrentUnappliedRuleFinal;
         private readonly int _hashCode;
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _realizationalFS = word.RealizationalFeatureStruct;
             _nonHeadCount = word.NonHeadCount;
             _ruleCounts = word.UnappliedRuleCounts;
-            _isLastUnappliedRuleNonTemplate = word.IsLastUnappliedRuleNonTemplate;
+            _isCurrentUnappliedRuleFinal = word.IsCurrentUnappliedRuleFinal;
 
             // See PinAndKey for why the key pins these rather than just reading them.
             _shape.Freeze();
@@ -76,7 +76,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             hash = hash * 31 + _syntacticFS.GetFrozenHashCode();
             hash = hash * 31 + _realizationalFS.GetFrozenHashCode();
             hash = hash * 31 + _nonHeadCount;
-            hash = hash * 31 + _isLastUnappliedRuleNonTemplate.GetHashCode();
+            hash = hash * 31 + _isCurrentUnappliedRuleFinal.GetHashCode();
             if (_ruleCounts != null)
             {
                 // XOR rather than the usual *31 rolling combine: the multiset is unordered, so entries
@@ -103,7 +103,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 return false;
             if (!_syntacticFS.ValueEquals(other._syntacticFS) || !_realizationalFS.ValueEquals(other._realizationalFS))
                 return false;
-            if (_isLastUnappliedRuleNonTemplate != other._isLastUnappliedRuleNonTemplate)
+            if (_isCurrentUnappliedRuleFinal != other._isCurrentUnappliedRuleFinal)
                 return false;
             return RuleCountsEqual(_ruleCounts, other._ruleCounts);
         }
