@@ -1,0 +1,153 @@
+# Head and foot feature gating. See grammar.xml's header for why this small grammar exists alongside
+# the dense languages/ fixtures that already contain these constructs.
+#
+# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build of
+# src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run. The whole
+# fixture parses in 72ms, which is the point: a mutant that removes one of these constraints stays
+# tractable here, where in a dense grammar it does not.
+#
+# Each gate has its own failing word, so neither is credited by the other:
+#   tunka    RequiredHeadFeatures: "tun" is number=sg where the rule requires plural.
+#   molka    RequiredFootFeatures: "mol" is stress=unstressed where the rule requires stressed.
+#   nalnomu  OutputFootFeatures: mrLoud has no input gate and OVERRIDES an unstressed root's foot
+#            feature, and mrEmph, downstream, is gated on the overridden value. "nal" starts out
+#            unstressed, so this word only succeeds because mrLoud's own OutputFootFeatures ran; kal
+#            (already stressed on its own) could not have shown this, which is why mrAgr's own
+#            OutputFootFeatures, redundant with what it already requires as input, is not evidenced.
+
+language: FeatureGatingBreadth
+inspired_by: ["synthetic head/foot feature gating probe (not modeling any real language)"]
+sources:
+  - "conformance/semantic-coverage-counterfactuals.tsv unobservable feature-gating surfaces"
+requires: []
+words:
+  - word: kal
+    note: Bare root, plural and stressed, so it satisfies both of the rule's gates.
+    parses:
+      - signature: "KAL|kal"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kalka
+    note: The agreement suffix attaches only when both the head and the foot gate are satisfied.
+    parses:
+      - signature: "KAL+AGR|kalka"
+        rules: [mrAgr]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: tun
+    note: Singular root, unaffixed, parses on its own.
+    parses:
+      - signature: "TUN|tun"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: tunka
+    note: >-
+      Negative control for RequiredHeadFeatures. "tun" is singular, so the plural gate refuses the
+      suffix even though its foot feature matches.
+    expect_fail: true
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: mol
+    note: Plural but unstressed root, unaffixed, parses on its own.
+    parses:
+      - signature: "MOL|mol"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: molka
+    note: >-
+      Negative control for RequiredFootFeatures. "mol" is unstressed, so the foot gate refuses the
+      suffix even though its head feature matches. Paired with "tunka" this separates the two gates.
+    expect_fail: true
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kalid
+    note: The realizational rule realizes a head feature rather than gating on one.
+    parses:
+      - signature: "KAL+PAST|kalid"
+        rules: [rrPast]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: kalidka
+    note: The realizational suffix is outermost, so the agreement suffix cannot follow it.
+    expect_fail: true
+    exercises:
+      - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: nal
+    note: Bare root, plural but unstressed.
+    parses:
+      - signature: "NAL|nal"
+        rules: []
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: nalno
+    note: mrLoud has no input gate, so it attaches regardless of the root's own foot feature.
+    parses:
+      - signature: "NAL+LOUD|nalno"
+        rules: [mrLoud]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: nalnomu
+    note: >-
+      Positive control for OutputFootFeatures. "nal" starts out unstressed; mrLoud's own
+      OutputFootFeatures overrides the derived word to stressed, which is the only reason mrEmph's
+      RequiredFootFeatures gate can then succeed.
+    neutralizes:
+      - OutputFootFeatures
+    parses:
+      - signature: "NAL+LOUD+EMPH|nalnomu"
+        rules: [mrLoud, mrEmph]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kalkano
+    note: >-
+      KAL + mrAgr ("-ka") + mrLoud ("-no"), in that list order (mrAgr before mrLoud on Stratum
+      "Main"). The ordering discriminator for the mrAgr~mrLoud adjacent pair: "kalnoka" below is
+      the same two suffixes reversed, which only parses when the list order is swapped.
+    parses:
+      - signature: "KAL+AGR+LOUD|kalkano"
+        rules: [mrAgr, mrLoud]
+        exercises:
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kalnoka
+    note: >-
+      KAL + mrLoud + mrAgr, the reverse of "kalkano". Zero parses under the shipped list order
+      (mrAgr mrLoud): only reachable when mrLoud is transposed ahead of mrAgr.
+    expect_fail: true
+    exercises:
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
+
+  - word: kalmuid
+    note: >-
+      KAL + mrEmph ("-mu") + rrPast ("-id"), in that list order (mrEmph before rrPast on Stratum
+      "Main"). The ordering discriminator for the mrEmph~rrPast adjacent pair: "kalidmu" below is
+      the same two suffixes reversed, which only parses when the list order is swapped. "kal" is
+      already stressed on its own, so it satisfies mrEmph's RequiredFootFeatures without needing
+      mrLoud's override.
+    parses:
+      - signature: "KAL+EMPH+PAST|kalmuid"
+        rules: [mrEmph, rrPast]
+        exercises:
+          - "RealizationalAffixProcessRule"
+
+  - word: kalidmu
+    note: >-
+      KAL + rrPast + mrEmph, the reverse of "kalmuid". Zero parses under the shipped list order
+      (mrEmph rrPast): only reachable when rrPast is transposed ahead of mrEmph.
+    expect_fail: true
+    exercises:
+      - "RealizationalAffixProcessRule"

@@ -1,0 +1,201 @@
+# What this pins: PanGloss's hc-foma engine (an alternative FST-based analyzer, not part of this
+# repo) was found to return ZERO parses for any word containing a precomposed Latin diacritic (ñ,
+# é, ö, î), while the default engine (ported from this repo's own C# HermitCrab) and Cyrillic text
+# both parse those words fine. The bug is in hc-foma's own byte/token handling around Unicode
+# NFD-decomposition, not in HermitCrab or in the grammar-model constructs any of this suite's 8
+# typological languages exercise (they use invented lexemes with plain ASCII segment inventories by
+# design, so none of them can host this trigger naturalistically) -- per conformance/README.md's
+# growth policy, this is therefore an edge-case (option 3: "engine-internal... a rule shape no real
+# grammar would contain"), not a new word in an existing language.
+#
+# grammar.xml defines 4 roots, each carrying exactly one precomposed diacritic segment (é, ö, ñ, î
+# -- the bug report's exact set) at a different position:
+#   - año (ñ MEDIAL, not stem-final) / göl (ö MEDIAL, not stem-final)
+#   - café (é stem-FINAL) / kelî (î stem-FINAL)
+# Two optional, mutually-exclusive suffix rules exercise the affixed case (the actual bug affected
+# both bare AND affixed diacritic-bearing words alike):
+#   - rPl ("-s"): unconditional, applies after any root regardless of its final segment.
+#   - rDim ("-ta"): GATED by a LeftEnvironment requiring the stem's final segment to be a member of
+#     ncDiacritic. This is the real regression pin, not just a copy-through check: café/kelî
+#     (diacritic-final) satisfy the gate and take "-ta"; año/göl (diacritic MEDIAL, not final) do
+#     not, so the SAME rule correctly fires on one pair and fails on the other. A byte/NFD-handling
+#     bug that mishandles diacritic segments could plausibly get one direction right and the other
+#     wrong (e.g. losing the segment's NaturalClass membership entirely -- the gate never fires even
+#     where it should -- or over-matching -- the gate wrongly fires where it shouldn't).
+# One more word ("gül", built on "ü", a diacritic NOT declared anywhere in this grammar's
+# CharacterDefinitionTable) pins the SKIPPED path: an undeclared diacritic must still surface as a
+# clean InvalidShapeException/SKIPPED, not a silent zero-analysis "ok" or a crash.
+#
+# All signatures below are hand-derived (no multi-character segment representations exist in this
+# grammar, so no HermitCrabExtensions.ToRegexString parenthesization applies -- see
+# conformance/PROTOCOL.md section 3's addendum) and self-check-verified against the C# oracle before
+# being checked in, per this suite's authoring discipline (signatures are authored-and-verified,
+# never blindly regenerated).
+
+language: LatinDiacriticProbe
+inspired_by: ["synthetic Latin-diacritic-segment probe (not modeling any real language)"]
+sources:
+  - "PanGloss hc-foma engine: precomposed Latin diacritics (é/ö/ñ/î) yielding zero parses (NFD-decomposition / byte-handling bug in the alternative FST engine, not in HermitCrab)"
+requires: []
+words:
+  - word: año
+    note: >-
+      Bare root, diacritic (ñ) MEDIAL -- not stem-final. Plain control: no affix rule fires (the
+      optional suffix slot is simply skipped), surface is the root unmutated.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "YEAR|año"
+        gloss: year
+        rules: []
+        exercises: []
+
+  - word: café
+    note: >-
+      Bare root, diacritic (é) stem-FINAL. Plain control: no affix rule fires, surface is the root
+      unmutated.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "COFFEE|café"
+        gloss: coffee
+        rules: []
+        exercises: []
+
+  - word: göl
+    note: >-
+      Bare root, diacritic (ö) MEDIAL -- not stem-final. Plain control: no affix rule fires.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "LAKE|göl"
+        gloss: lake
+        rules: []
+        exercises: []
+
+  - word: kelî
+    note: >-
+      Bare root, diacritic (î) stem-FINAL. Plain control: no affix rule fires.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "WORD|kelî"
+        gloss: word
+        rules: []
+        exercises: []
+
+  - word: años
+    note: >-
+      año + rPl ("-s"), the unconditional suffix -- exercises the affixed case on a
+      diacritic-MEDIAL root: rPl does not care about the stem's final segment, so it fires
+      regardless of where in the stem the diacritic sits.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "YEAR+PL|años"
+        gloss: year-PL
+        rules: [rPl]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: cafés
+    note: >-
+      café + rPl ("-s") -- the affixed case on a diacritic-FINAL root: the suffix attaches directly
+      after the diacritic segment itself, exercising CopyFromInput's preservation of a diacritic
+      segment immediately adjacent to an inserted affix boundary.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "COFFEE+PL|cafés"
+        gloss: coffee-PL
+        rules: [rPl]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: göls
+    note: göl + rPl ("-s"), the diacritic-MEDIAL affixed case, mirroring años.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "LAKE+PL|göls"
+        gloss: lake-PL
+        rules: [rPl]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: kelîs
+    note: kelî + rPl ("-s"), the diacritic-FINAL affixed case, mirroring cafés.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "WORD+PL|kelîs"
+        gloss: word-PL
+        rules: [rPl]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+
+  - word: caféta
+    note: >-
+      THE distinguishing acceptance row: café + rDim ("-ta"), whose LeftEnvironment gate requires
+      the stem's final segment to be a ncDiacritic member -- "café" ends in "é", satisfying the
+      gate, so rDim correctly fires. Pins that a diacritic segment is recognized as a genuine
+      NaturalClass member at the exact boundary position, not just copied through literally.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "COFFEE+DIM|caféta"
+        gloss: coffee-DIM
+        rules: [rDim]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: kelîta
+    note: >-
+      The mirror-image acceptance row: kelî + rDim ("-ta") -- "kelî" ends in "î", satisfying the
+      LeftEnvironment gate, same as caféta.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    parses:
+      - signature: "WORD+DIM|kelîta"
+        gloss: word-DIM
+        rules: [rDim]
+        exercises:
+          - "AffixProcessRule: prefix/suffix/circumfix/infix"
+          - "MorphologicalOutputAction: CopyFromInput/InsertSegments"
+          - "Affix template slots (obligatory/disjunctive/ordering)"
+          - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: añota
+    note: >-
+      THE distinguishing rejection row: año + attempted rDim ("-ta") -- "año" ends in "o", NOT a
+      ncDiacritic member (the "ñ" is medial, not stem-final), so rDim's LeftEnvironment gate fails
+      and no valid derivation exists. Zero parses. An engine that over-matches (e.g. treats any
+      stem containing a diacritic ANYWHERE as gate-satisfying, rather than checking the exact
+      boundary-adjacent segment) would wrongly accept this.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    expect_fail: true
+    blocked_by: [rDim]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: gölta
+    note: >-
+      The mirror-image rejection row: göl + attempted rDim ("-ta") -- "göl" ends in "l", not a
+      ncDiacritic member ("ö" is medial), so the gate fails the same way as añota.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    expect_fail: true
+    blocked_by: [rDim]
+    exercises:
+      - "NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision"
+
+  - word: gül
+    note: >-
+      Built on "ü" (u-umlaut), a diacritic NOT declared anywhere in this grammar's
+      CharacterDefinitionTable (only é/ö/ñ/î are declared) -- the oracle's real status is SKIPPED
+      (InvalidShapeException), not a genuine zero-parse "ok". Pins that an undeclared diacritic
+      still surfaces as a clean SKIPPED rather than a silent "-" or a crash.
+    provenance: "PanGloss hc-foma Latin-diacritic zero-parse bug"
+    expect_skip: true
+    exercises:
+      - "Boundary markers (CharacterDefinitionTable)"

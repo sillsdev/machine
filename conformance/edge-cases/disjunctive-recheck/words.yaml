@@ -1,0 +1,180 @@
+# Converted from conformance/allomorphy/disjunctive-recheck (v1, removed after the v1->v2 migration's
+# parity proof). grammar.xml is the same file,
+# unmodified: deliberately NO <MorphemeId> element on either MorphologicalRule (ruleT, ruleD) -- the
+# v1 fixture pins signatures like "+|wokta" (an empty morph-chain component joined by "+"), which
+# would change if a MorphemeId were added, so this fixture cannot gain one without breaking its own
+# pin. This exposed a genuine GrammarRuleIndex gap while authoring this conversion (see the
+# cross-cutting finding below); fixed in the same commit as this fixture's authoring.
+#
+# What this pins (from the v1 fixture's README.md/manifest.json, carried forward verbatim): C#
+# Allomorph.IsWordValid's second loop (Allomorph.cs:127-152, introduced by history-matrix row 51
+# 987be2fd): a synthesized word is REJECTED when a passed-over disjunctive alternative -- an
+# earlier-indexed allomorph of the same morpheme that does not free-fluctuate with the used one --
+# would ALSO have matched (its environments are absent or satisfied at the same morph position, and
+# its other constraints hold).
+#
+#   - Root disjunctivity (eWalk): allomorph 0 "wok" requires a following "t"; allomorph 1 "wak" is
+#     the elsewhere case. ruleT (unconstrained suffix "-ta") supplies the following "t".
+#   - Affix disjunctivity (ruleD): subrule 0 "-za" requires a preceding "k" (environment-constrained,
+#     so C#'s synthesis loop does not break after it and subrule 1 "-da" also fires, recording
+#     subrule 0 as passed-over). Roots pak/pit make the candidate's environment satisfied/unsatisfied.
+#   - Free-fluctuation escape (eGray): gray/grey, both unconstrained -- identical constraint sets
+#     free-fluctuate (Allomorph.FreeFluctuatesWith), so the later-indexed "grey" is NOT rejected.
+#
+# Every segment carries a unique featPh symbol specifically so a SegmentNaturalClass constraint does
+# NOT degrade to "any segment" (the allomorphy/strrep-identity fixture is the deliberate opposite
+# case) -- this fixture isolates the disjunctive re-check only.
+#
+# CROSS-CUTTING FINDING (GrammarRuleIndex, affects this fixture AND edge-cases/strrep-identity):
+# both ruleT and ruleD genuinely fire during synthesis for several words below (e.g. ruleT fires for
+# every "-ta"-suffixed word), but GrammarRuleIndex.ResolveMorphologicalRuleId could not attribute
+# them at all before this commit -- it translates a runtime rule back to its grammar.xml id via
+# Morpheme.Id (sourced from <MorphemeId>), and neither rule declares one (see above). Self-check's
+# traced-rules verification (RunnerV2.RunAllWords) therefore reported an empty actual set for every
+# parse no matter what fired, which would force a dishonest "rules: []" on parses that visibly use
+# ruleT/ruleD -- and separately made both rule ids permanently "dead" in rules.csv (CoverageReportV2
+# computes dead-rule status from declared "rules:"/"blocked_by", not the trace), which the ledger's
+# floor forbids introducing. Fixed in GrammarRuleIndex.cs: when a MorphologicalRule/RealizationalRule
+# has no <MorphemeId> at all, its <Name> text is registered in the SAME name-keyed fallback dict
+# CompoundingRule/PhonologicalRule/MetathesisRule already use -- conservative because it only ever
+# gains an entry in the no-MorphemeId case, so all 8 existing language grammars (which assign
+# MorphemeId to every rule) are byte-for-byte unaffected. Confirmed empirically: before the fix, a
+# draft "rules: [ruleT]" declaration on "wokta" FAILed self-check with "declared rules [ruleT] !=
+# traced []"; after the fix, the same declaration passes and the traced set is the honest, non-empty
+# one used throughout this file.
+
+language: DisjunctiveRecheckProbe
+inspired_by: ["synthetic allomorph-disjunctivity probe (not modeling any real language)"]
+sources:
+  - "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+requires: []
+words:
+  - word: wak
+    note: >-
+      eWalk's elsewhere allomorph "wak" bare (no suffix) -- allomorph 0 "wok"'s RightEnvironment
+      (following ncT) fails at word end, so no disjunctive rejection applies.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    parses:
+      - signature: "|wak"
+        gloss: walk
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: wok
+    note: The used allomorph's OWN environment fails (no following "t" at all here) -- already-ported #5a own-environment gate, not the re-check this fixture adds.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    expect_fail: true
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: wakta
+    note: >-
+      THE distinguishing row (root disjunctivity): root allomorph "wak" (index 1) used with ruleT's
+      "-ta" suffix, but allomorph 0 "wok" (index 0)'s RightEnvironment (following ncT) is satisfied
+      at the root's own position (the "t" of "-ta" follows immediately) and the two allomorphs do
+      NOT free-fluctuate -- the disjunctive re-check REJECTS this synthesis. Zero parses, even
+      though "wak"+"-ta" concatenates cleanly and ruleT itself has no constraint against it.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    expect_fail: true
+    blocked_by: [ruleT]
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: wokta
+    note: >-
+      The mirror-image acceptance: root allomorph "wok" (index 0) used, its OWN RightEnvironment
+      (following ncT) satisfied by ruleT's "-ta" -- no disjunctive rejection applies (index 0 has no
+      earlier-indexed alternative to be rejected in favor of).
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    parses:
+      - signature: "+|wokta"
+        gloss: walk-TA
+        rules: [ruleT]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: pak
+    note: PAK bare root, no suffix -- a plain, unrestricted control (no disjunctive allomorphs at all on this lexical entry).
+    parses:
+      - signature: "|pak"
+        gloss: pak
+        rules: []
+        exercises: []
+
+  - word: pit
+    note: PIT bare root, no suffix -- the other plain control root used by the affix-disjunctivity rows below.
+    parses:
+      - signature: "|pit"
+        gloss: pit
+        rules: []
+        exercises: []
+
+  - word: pakza
+    note: >-
+      PAK + ruleD subrule 0 ("-za", environment-constrained: preceding ncK) -- "pak" ends in "k", so
+      subrule 0's own environment is satisfied and it fires directly (no disjunctive-rejection
+      question for the USED subrule's own environment; that is the #5a gate, already correct).
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    parses:
+      - signature: "+|pakza"
+        gloss: pak-D
+        rules: [ruleD]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: pakda
+    note: >-
+      THE distinguishing row (affix disjunctivity): ruleD subrule 1 ("-da", elsewhere) used on
+      "pak", but subrule 0's environment (preceding ncK) is ALSO satisfied at the same morph
+      position (the stem still ends in "k") and subrule 0 was recorded as passed-over during
+      synthesis (it is environment-constrained, so C#'s loop does not break after it) -- the
+      disjunctive re-check REJECTS this synthesis. Zero parses.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    expect_fail: true
+    blocked_by: [ruleD]
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: pitza
+    note: The used subrule's OWN environment fails ("pit" doesn't end in ncK) -- already-ported #5a own-environment gate, not the re-check this fixture adds.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    expect_fail: true
+    exercises:
+      - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: pitda
+    note: >-
+      The mirror-image acceptance: ruleD subrule 1 ("-da") used on "pit" -- subrule 0's candidate
+      environment (preceding ncK) fails ("pit" ends in "t", not "k"), so no disjunctive rejection
+      applies.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    parses:
+      - signature: "+|pitda"
+        gloss: pit-D
+        rules: [ruleD]
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: gray
+    note: eGray's first allomorph "gray", unconstrained, no suffix -- establishes the free-fluctuation pair's baseline before "grey" below.
+    parses:
+      - signature: "|gray"
+        gloss: gray
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"
+
+  - word: grey
+    note: >-
+      THE free-fluctuation escape: eGray's second allomorph "grey" -- allomorph 0 "gray" "would
+      also match" (both are totally unconstrained), but the two have IDENTICAL (empty) constraint
+      sets, so Allomorph.FreeFluctuatesWith recognizes them as free variants and short-circuits the
+      disjunctive rejection. "grey" is NOT rejected, unlike wakta/pakda above.
+    provenance: "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
+    parses:
+      - signature: "|grey"
+        gloss: gray
+        rules: []
+        exercises:
+          - "Disjunctive allomorphs / free-fluctuation"

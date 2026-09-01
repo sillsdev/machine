@@ -1,0 +1,120 @@
+# Synthetic construct-shaped mimic. Original oracle: pangloss (`pg_parse::Morpher`, driven
+# directly), NOT the C# founding oracle. ROOT3/eaaa/eeae/eeee were added later and their signatures
+# are transcribed from the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over
+# a Debug build of src/SIL.Machine.Morphology.HermitCrab.Tool), since that oracle is available in
+# this checkout; the earlier ROOT1/ROOT2 words were left as originally authored.
+#
+# prRtlAnchor's own anchored environment can only ever match the single word-final position, so its
+# multipleApplicationOrder value was never observable through it alone: rightToLeftIterative and
+# leftToRightIterative visit that one position identically. prSpread exists to give the fixture a
+# rule where direction actually changes the result: it spreads "e" onto an immediately-following "a"
+# iteratively, so a single pass can cascade further in the SCAN direction than against it. ROOT3
+# ("eaaa") is the word that shows this:
+#   eeae  rightToLeftIterative (this fixture's declared order): scanning right to left, the
+#         rightmost "a" is checked against its (still unmodified) left neighbor first and does not
+#         yet qualify, so only one "a" ends up adjacent to the seed "e" and rewrites.
+#   eeee  what leftToRightIterative would produce instead: scanning left to right, each rewrite
+#         updates the string before the next position to its right is checked, so the "e" cascades
+#         all the way across in one pass. Not a valid surface form here; kept as a negative control.
+
+language: RightToLeftAnchorEnvironment
+inspired_by: ["synthetic right-to-left word-boundary-anchored rewrite probe (not modeling any real language)"]
+sources:
+  - "openspec/changes/plan-construct-coverage-completion task 4.2 (RightToLeftRewrite: additional in-scope pattern shapes -- Anchor)"
+requires: [phonology]
+words:
+  - word: aae
+    note: >-
+      ROOT1's correctly-rewritten surface form: underlying "aaa" (three "a"s). The rule
+      (`prRtlAnchor`) rewrites "a" -> "e" only when the "a" is IMMEDIATELY followed by the end of
+      the word (`finalBoundaryCondition="true"`, a bare `PatternNode::Anchor` right environment, no
+      other context node). Only the THIRD (word-final) "a" satisfies that; the first two do not
+      (each is followed by another "a", never the boundary), so only the last one rewrites.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT1|aae"
+        rules: [prRtlAnchor]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: ae
+    note: >-
+      ROOT2's correctly-rewritten surface form: underlying "aa" (two "a"s). The second (word-final)
+      "a" rewrites to "e"; the first does not (followed by the second "a", not the boundary).
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    parses:
+      - signature: "ROOT2|ae"
+        rules: [prRtlAnchor]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aaa
+    note: >-
+      ROOT1's own RAW, un-rewritten underlying shape, queried directly as a surface string -- the
+      rule is obligatory wherever its environment matches (the word-final "a" always satisfies
+      `finalBoundaryCondition`), so this exact string is NOT a valid surface form for ROOT1 at all.
+      Proves the rule genuinely fires (obligatorily), rather than being vacuously inapplicable.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aa
+    note: ROOT2's own RAW underlying shape, queried directly -- same reasoning as "aaa" (should have rewritten to "ae").
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: eaa
+    note: >-
+      A WRONGLY-rewritten variant of ROOT1's underlying "aaa": if the anchor were mis-swapped to
+      "word-INITIAL" instead of "word-final" (exactly the mistake `crate::lower::Slot::Anchor`'s own
+      doc warns the mirror-and-reverse construction must not make), the FIRST "a" would rewrite
+      instead of the last, giving this string. Must have no analysis at all under either
+      hypothesis (it is not a valid surface form for ROOT1: the correct rewrite is "aae", and this
+      is neither the correct rewrite nor the raw underlying shape).
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: aea
+    note: >-
+      Another structurally-invalid variant of ROOT1's underlying "aaa" (the MIDDLE "a" rewritten
+      instead of the last) -- no position of the LHS class other than the true word-final one ever
+      satisfies the anchored environment, so this is never a valid surface form either.
+    provenance: "openspec/changes/plan-construct-coverage-completion task 4.2"
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: eaaa
+    note: ROOT3's own raw underlying shape. prRtlAnchor's final "a" and prSpread's cascade both fire obligatorily, so this exact string is not a valid surface form.
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"
+
+  - word: eeae
+    note: >-
+      ROOT3's correctly-rewritten surface form. prRtlAnchor rewrites the word-final "a" to "e" first
+      ("eaaa" -> "eaae"); prSpread then runs right-to-left over "eaae": the rightmost "a" (position 3)
+      checks its left neighbor (position 2, still "a") first and does not qualify, so only position 2
+      (adjacent to the original seed "e") rewrites.
+    neutralizes:
+      - prSpread
+    parses:
+      - signature: "ROOT3|eeae"
+        rules: [prRtlAnchor, prSpread]
+        exercises:
+          - "RewriteRule direction (Dir): right-to-left"
+
+  - word: eeee
+    note: >-
+      What prSpread would produce on "eaae" if it ran leftToRightIterative instead: scanning left to
+      right, each rewrite updates the string before the next "a" to its right is checked, so the "e"
+      cascades across the whole word in one pass. Not a valid surface form under this fixture's
+      declared rightToLeftIterative order; kept as the negative control that shows direction matters.
+    expect_fail: true
+    exercises:
+      - "RewriteRule direction (Dir): right-to-left"

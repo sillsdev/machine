@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>DisjunctiveRecheckProbe</Name>
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot">
+        <Name>root</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <!-- Every segment gets a UNIQUE symbol of one phonological feature: without features, a
+         SegmentNaturalClass constraint degrades to "any segment" in the Rust port (the documented
+         pre-existing Tier-1 #3 residual, hc-rules/src/bridge.rs::nat_class_lanes) - that residual
+         is NOT what this fixture probes, and letting it fire here would contaminate the
+         disjunctive-recheck rows (same fixture-authoring technique as affix-shapes/infix). -->
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featPh">
+        <Name>ph</Name>
+        <Symbols>
+          <Symbol id="symW">w</Symbol>
+          <Symbol id="symA">a</Symbol>
+          <Symbol id="symO">o</Symbol>
+          <Symbol id="symK">k</Symbol>
+          <Symbol id="symT">t</Symbol>
+          <Symbol id="symP">p</Symbol>
+          <Symbol id="symI">i</Symbol>
+          <Symbol id="symZ">z</Symbol>
+          <Symbol id="symD">d</Symbol>
+          <Symbol id="symG">g</Symbol>
+          <Symbol id="symR">r</Symbol>
+          <Symbol id="symE">e</Symbol>
+          <Symbol id="symY">y</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="charW"><Representations><Representation>w</Representation></Representations><FeatureValue feature="featPh" symbolValues="symW" /></SegmentDefinition>
+        <SegmentDefinition id="charA"><Representations><Representation>a</Representation></Representations><FeatureValue feature="featPh" symbolValues="symA" /></SegmentDefinition>
+        <SegmentDefinition id="charO"><Representations><Representation>o</Representation></Representations><FeatureValue feature="featPh" symbolValues="symO" /></SegmentDefinition>
+        <SegmentDefinition id="charK"><Representations><Representation>k</Representation></Representations><FeatureValue feature="featPh" symbolValues="symK" /></SegmentDefinition>
+        <SegmentDefinition id="charT"><Representations><Representation>t</Representation></Representations><FeatureValue feature="featPh" symbolValues="symT" /></SegmentDefinition>
+        <SegmentDefinition id="charP"><Representations><Representation>p</Representation></Representations><FeatureValue feature="featPh" symbolValues="symP" /></SegmentDefinition>
+        <SegmentDefinition id="charI"><Representations><Representation>i</Representation></Representations><FeatureValue feature="featPh" symbolValues="symI" /></SegmentDefinition>
+        <SegmentDefinition id="charZ"><Representations><Representation>z</Representation></Representations><FeatureValue feature="featPh" symbolValues="symZ" /></SegmentDefinition>
+        <SegmentDefinition id="charD"><Representations><Representation>d</Representation></Representations><FeatureValue feature="featPh" symbolValues="symD" /></SegmentDefinition>
+        <SegmentDefinition id="charG"><Representations><Representation>g</Representation></Representations><FeatureValue feature="featPh" symbolValues="symG" /></SegmentDefinition>
+        <SegmentDefinition id="charR"><Representations><Representation>r</Representation></Representations><FeatureValue feature="featPh" symbolValues="symR" /></SegmentDefinition>
+        <SegmentDefinition id="charE"><Representations><Representation>e</Representation></Representations><FeatureValue feature="featPh" symbolValues="symE" /></SegmentDefinition>
+        <SegmentDefinition id="charY"><Representations><Representation>y</Representation></Representations><FeatureValue feature="featPh" symbolValues="symY" /></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <FeatureNaturalClass id="ncAny">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <SegmentNaturalClass id="ncT">
+        <Name>Tclass</Name>
+        <Segment segment="charT" />
+      </SegmentNaturalClass>
+      <SegmentNaturalClass id="ncK">
+        <Name>Kclass</Name>
+        <Segment segment="charK" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="ruleT ruleD">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- ruleT: plain unconstrained suffix "-ta" (feeds the ROOT disjunctivity probe: it puts
+               a "t" immediately after the root morph, satisfying eWalk allomorph 0's environment). -->
+          <MorphologicalRule id="ruleT" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>ta-suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubT">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubT_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="msubT_stem" />
+                  <InsertSegments>
+                    <PhoneticShape>ta</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>TA</Gloss>
+          </MorphologicalRule>
+          <!-- ruleD: the AFFIX disjunctivity probe. Two disjunctive subrules (= two
+               AffixProcessAllomorphs of one rule): subrule 0 ("-za") is environment-constrained
+               (its morph must be preceded by k), so C#'s synthesis loop does NOT break after it
+               (SynthesisAffixProcessRule.cs:235-242) and subrule 1 ("-da", the elsewhere case)
+               also produces an output, which records subrule 0 in its passed-over set
+               (appliedAllomorphIndices, cs:138,201-202). At final validity
+               (Allomorph.IsWordValid's second loop, Allomorph.cs:127-152) a "-da" parse is
+               rejected whenever subrule 0's environment is ALSO satisfied at the same morph
+               position (i.e. after a k-final stem). -->
+          <MorphologicalRule id="ruleD" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>d-suffix</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="msubD0">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubD0_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="msubD0_stem" />
+                  <InsertSegments>
+                    <PhoneticShape>za</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment>
+                    <LeftEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <SimpleContext naturalClass="ncK" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </LeftEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+              <MorphologicalSubrule id="msubD1">
+                <MorphologicalInput>
+                  <PhoneticSequence id="msubD1_stem">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="msubD1_stem" />
+                  <InsertSegments>
+                    <PhoneticShape>da</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <Gloss>D</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <LexicalEntries>
+          <!-- eWalk: the ROOT disjunctivity probe. Allomorph 0 "wok" requires a following t;
+               allomorph 1 "wak" is the unconstrained elsewhere case. Per the disjunctive rule a
+               "wak" parse is rejected whenever "wok"'s environment is ALSO satisfied at the root's
+               position (i.e. when the "-ta" suffix follows), because the earlier-indexed
+               allomorph would have matched and the two do not free-fluctuate. -->
+          <LexicalEntry id="eWalk" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aWok"><PhoneticShape>wok</PhoneticShape>
+                <RequiredEnvironments>
+                  <Environment>
+                    <RightEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <SimpleContext naturalClass="ncT" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </RightEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </Allomorph>
+              <Allomorph id="aWak"><PhoneticShape>wak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>walk</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePak" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aPak"><PhoneticShape>pak</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>pak</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="ePit" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aPit"><PhoneticShape>pit</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>pit</Gloss>
+          </LexicalEntry>
+          <!-- eGray: the free-fluctuation ESCAPE. Two unconstrained allomorphs with identical
+               (empty) constraint sets free-fluctuate, so the later-indexed "grey" is NOT rejected
+               even though the earlier "gray" "would also have matched" - pins
+               Allomorph.FreeFluctuatesWith short-circuiting the rejection. -->
+          <LexicalEntry id="eGray" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aGray"><PhoneticShape>gray</PhoneticShape></Allomorph>
+              <Allomorph id="aGrey"><PhoneticShape>grey</PhoneticShape></Allomorph>
+            </Allomorphs>
+            <Gloss>gray</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
