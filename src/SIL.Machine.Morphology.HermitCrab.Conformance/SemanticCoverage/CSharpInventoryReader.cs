@@ -566,6 +566,7 @@ internal static class CSharpInventoryReader
             "CS0122",
             "CS0126",
             "CS0200",
+            "CS0117",
             "CS0246",
             "CS0311",
             "CS0535",
