@@ -42,9 +42,11 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
             Word inWord = input.Clone();
-            if ((!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+            if (
+                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
                 && inWord.FinalTemplateState == FinalTemplateState.NonTemplate
-                && _template.IsFinal)
+                && _template.IsFinal
+            )
             {
                 inWord.FinalTemplateState = FinalTemplateState.FinalTemplateAfterNonTemplate;
             }
@@ -56,6 +58,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             else
                 ParallelApplySlots(inWord, output);
 
+            foreach (Word outWord in output)
+                outWord.SyntacticFeatureStruct.Add(fs);
             return output;
         }
 

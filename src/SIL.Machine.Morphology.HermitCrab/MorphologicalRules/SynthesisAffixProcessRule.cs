@@ -63,8 +63,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
             if (
                 !_rule.IsTemplateRule
                 && (input.IsLastAppliedRuleFinal ?? false)
-                && !input.IsPartial
-                && !_rule.IsPartial
+                && ((!input.IsPartial && !_rule.IsPartial) || _morpher.AlwaysEnforceFinalTemplates)
             )
             {
                 if (_morpher.TraceManager.IsTracing)

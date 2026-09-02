@@ -62,7 +62,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
-            if ((input.IsLastAppliedRuleFinal ?? false) && !input.IsPartial)
+            if ((input.IsLastAppliedRuleFinal ?? false) && (!input.IsPartial || _morpher.AlwaysEnforceFinalTemplates))
             {
                 if (_morpher.TraceManager.IsTracing)
                 {

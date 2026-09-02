@@ -51,8 +51,10 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
 
             // Do not allow a final template to unapply if the grammar is not partial
             // and a non-template was last unapplied.
-            if ((!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
-                && input.FinalTemplateState == FinalTemplateState.FinalTemplateAfterNonTemplate)
+            if (
+                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                && input.FinalTemplateState == FinalTemplateState.FinalTemplateAfterNonTemplate
+            )
             {
                 if (_morpher.TraceManager.IsTracing)
                 {
