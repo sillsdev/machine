@@ -168,7 +168,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                     newMruleOutWord = mruleOutWord.Clone();
                     newMruleOutWord.FinalTemplateState = FinalTemplateState.None;
                     newMruleOutWord.Freeze();
-                 }
+                }
                 output.Add(newMruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
                     _morpher.TraceManager.EndUnapplyStratum(_stratum, newMruleOutWord);
