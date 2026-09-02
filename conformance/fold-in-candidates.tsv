@@ -82,8 +82,8 @@ Interface	CompoundingRule.nonHeadPartsOfSpeech	NeverWitnessed	present in 3 fixtu
 Interface	CompoundingRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	CompoundingRule.outputPartOfSpeech	EdgeCaseOnly	witnessed only by: edge-cases/compounding-breadth
 Interface	CopyFromInput.index	NeverWitnessed	present in 24 fixture(s), witnessed by none
-Interface	FeatureValue.feature	NeverWitnessed	present in 23 fixture(s), witnessed by none
-Interface	FeatureValue.symbolValues	NeverWitnessed	present in 23 fixture(s), witnessed by none
+Interface	FeatureValue.feature	NeverWitnessed	present in 25 fixture(s), witnessed by none
+Interface	FeatureValue.symbolValues	NeverWitnessed	present in 25 fixture(s), witnessed by none
 Interface	HeadMorphologicalInput.excludedMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	HeadMorphologicalInput.requiredMPRFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	MetathesisRule.leftSwitch	NeverWitnessed	present in 3 fixture(s), witnessed by none
@@ -94,10 +94,10 @@ Interface	MorphemeCoOccurrenceRule.primaryMorpheme	NeverWitnessed	present in 3 f
 Interface	MorphologicalInput.excludedMPRFeatures	EdgeCaseOnly	witnessed only by: edge-cases/morphotactic-attribute-breadth,edge-cases/mpr-gated-exception
 Interface	MorphologicalPhonologicalRuleFeatureGroup.features	NeverWitnessed	present in 5 fixture(s), witnessed by none
 Interface	MorphologicalRule.outputObligatoryFeatures	NeverWitnessed	present in 1 fixture(s), witnessed by none
-Interface	Segment.segment	NeverWitnessed	present in 17 fixture(s), witnessed by none
-Interface	SimpleContext.naturalClass	NeverWitnessed	present in 30 fixture(s), witnessed by none
+Interface	Segment.segment	NeverWitnessed	present in 19 fixture(s), witnessed by none
+Interface	SimpleContext.naturalClass	NeverWitnessed	present in 32 fixture(s), witnessed by none
 Interface	Slot.morphologicalRules	NeverWitnessed	present in 8 fixture(s), witnessed by none
 Interface	StemName.partsOfSpeech	NeverWitnessed	present in 4 fixture(s), witnessed by none
-Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 33 fixture(s), witnessed by none
+Interface	Stratum.characterDefinitionTable	NeverWitnessed	present in 35 fixture(s), witnessed by none
 Interface	SymbolicFeature.defaultSymbol	NeverWitnessed	present in 1 fixture(s), witnessed by none
 Interface	VariableFeature.phonologicalFeature	NeverWitnessed	present in 3 fixture(s), witnessed by none

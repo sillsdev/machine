@@ -155,6 +155,14 @@ MprGroupOverwriteWithoutRealizational,wudof,THEMEB+THEMEA+DOF|wudof,MPR features
 MprGroupOverwriteWithoutRealizational,udofq,THEMEA+DOF+ENDC|udofq,MPR features/groups
 MprGroupOverwriteWithoutRealizational,wudofq,,MPR features/groups
 ProcessMorphologyInPlaceMutation,a,ROOT+ABLAUT|a,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+RewriteAnalysisFeatureNeutralization,d,ROOT1|b,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+RewriteAnalysisFeatureNeutralization,d,ROOT1|b,"CharacterDefinitionTable: more than one table, one per stratum"
+RewriteAnalysisFeatureNeutralization,d,ROOT2|d,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+RewriteAnalysisFeatureNeutralization,d,ROOT2|d,"CharacterDefinitionTable: more than one table, one per stratum"
+RewriteAnalysisFeatureNeutralization,n,ROOT4|n,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+RewriteAnalysisFeatureNeutralization,p,,"CharacterDefinitionTable: more than one table, one per stratum"
+RewriteAnalysisFeatureNeutralization,b,,"CharacterDefinitionTable: more than one table, one per stratum"
+RewriteAnalysisFeatureNeutralization,bp,,"CharacterDefinitionTable: more than one table, one per stratum"
 RightToLeftAnchorEnvironment,aae,ROOT1|aae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,ae,ROOT2|ae,RewriteRule direction (Dir): right-to-left
 RightToLeftAnchorEnvironment,aaa,,RewriteRule direction (Dir): right-to-left
@@ -189,6 +197,10 @@ StrRepIdentityProbe,imat,+|i+?mat,NaturalClass: Segments vs FeatureNaturalClass/
 StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+SynthesisStratumRenderStaleTable,j,ROOTCROSS|,"CharacterDefinitionTable: more than one table, one per stratum"
+SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"
+SynthesisStratumRenderStaleTable,w,,"CharacterDefinitionTable: more than one table, one per stratum"
+SynthesisStratumRenderStaleTable,i,,"CharacterDefinitionTable: more than one table, one per stratum"
 TruncateRulesProbe,sag,|sag,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,sas,|sas,AffixProcessRule: subtraction/truncation
 TruncateRulesProbe,bubibi,|bubibi,AffixProcessRule: subtraction/truncation

@@ -85,6 +85,7 @@ MprOverwriteOrderDependence,mrSetQ,femopiqu;femoqupi;femopiquvo;femoqupivo
 MprOverwriteOrderDependence,mrSetX,daboxayu;daboyuxa;daboyuxazi
 MprOverwriteOrderDependence,mrSetY,daboxayu;daboyuxa;daboyuxazi
 ProcessMorphologyInPlaceMutation,mrAblaut,a
+RewriteAnalysisFeatureNeutralization,prPtoD,d
 RightToLeftAnchorEnvironment,prRtlAnchor,aae;ae;eeae
 RightToLeftAnchorEnvironment,prSpread,eeae
 IterativeEpenthesisCascadeProbe,prule4,
@@ -94,6 +95,7 @@ StrRepIdentityProbe,ruleObj,ndpat;!ndmat;imat;!ipat
 StrRepIdentityProbe,rulePfx,pat;mat;mupat;mumat;!mwpat;mwuta;!muuta;ndpat;imat
 SubruleMorphosyntacticGating,mrDerive,bat
 SubruleMorphosyntacticGating,prGate,pat;bat
+SynthesisStratumRenderStaleTable,prItoJ,j
 TruncateRulesProbe,mruleTruncLead,ag;as;gas
 TruncateRulesProbe,mruleTruncOptIns,gbubibi;gas
 TruncateRulesProbe,mruleTruncTrail,sa

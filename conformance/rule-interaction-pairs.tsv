@@ -256,6 +256,7 @@ edge-cases/mpr-overwrite-order-dependence	Main	Main	SameStage	MorphologicalRule	
 edge-cases/mpr-overwrite-order-dependence	Main	Main	SameStage	MorphologicalRule	mrSetY	MorphologicalRule	mrSetX	Undetermined
 edge-cases/mpr-overwrite-order-dependence	Main	Main	SameStage	MorphologicalRule	mrSetY	MorphologicalRule	mrSetY	Undetermined
 edge-cases/process-morphology-in-place-mutation	S	S	SameStage	MorphologicalRule	mrAblaut	MorphologicalRule	mrAblaut	Undetermined
+edge-cases/rewrite-analysis-feature-neutralization	Surface	Surface	SameStage	PhonologicalRule	prPtoD	PhonologicalRule	prPtoD	Overlaps
 edge-cases/right-to-left-anchor-environment	Main	Main	SameStage	PhonologicalRule	prRtlAnchor	PhonologicalRule	prRtlAnchor	Overlaps
 edge-cases/right-to-left-anchor-environment	Main	Main	SameStage	PhonologicalRule	prRtlAnchor	PhonologicalRule	prSpread	Overlaps
 edge-cases/right-to-left-anchor-environment	Main	Main	SameStage	PhonologicalRule	prSpread	PhonologicalRule	prSpread	Overlaps
@@ -271,6 +272,7 @@ edge-cases/strrep-identity	Main	Main	SameStage	MorphologicalRule	rulePfx	Morphol
 edge-cases/subrule-morphosyntactic-gating	Main	Main	SameStage	MorphologicalRule	mrDerive	MorphologicalRule	mrDerive	Undetermined
 edge-cases/subrule-morphosyntactic-gating	Main	Main	SameStage	PhonologicalRule	prGate	PhonologicalRule	prGate	Overlaps
 edge-cases/subrule-morphosyntactic-gating	Main	Main	CrossStage	MorphologicalRule	mrDerive	PhonologicalRule	prGate	Undetermined
+edge-cases/synthesis-stratum-render-stale-table	Face	Face	SameStage	PhonologicalRule	prItoJ	PhonologicalRule	prItoJ	Overlaps
 edge-cases/truncate-morphotactic	Main	Main	SameStage	MorphologicalRule	mruleTruncLead	MorphologicalRule	mruleTruncLead	Undetermined
 edge-cases/truncate-morphotactic	Main	Main	SameStage	MorphologicalRule	mruleTruncLead	MorphologicalRule	mruleTruncOptIns	Undetermined
 edge-cases/truncate-morphotactic	Main	Main	SameStage	MorphologicalRule	mruleTruncLead	MorphologicalRule	mruleTruncTrail	Undetermined

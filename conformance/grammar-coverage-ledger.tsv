@@ -391,6 +391,15 @@ edge-cases/process-morphology-in-place-mutation	Interface	SimpleContext.naturalC
 edge-cases/process-morphology-in-place-mutation	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/process-morphology-in-place-mutation	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/process-morphology-in-place-mutation	Construct	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	claimed-confirmed	1 claim(s)
+edge-cases/rewrite-analysis-feature-neutralization	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-analysis-feature-neutralization	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/rewrite-analysis-feature-neutralization	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/rewrite-analysis-feature-neutralization	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-analysis-feature-neutralization	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	5 claim(s)
+edge-cases/rewrite-analysis-feature-neutralization	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	witnessed	Evidenced
 edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhonologicalRule/multipleApplicationOrder/rightToLeftIterative	witnessed	Evidenced
 edge-cases/right-to-left-anchor-environment	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
@@ -445,6 +454,14 @@ edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.characterDefinitionT
 edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/subrule-morphosyntactic-gating	Interface	Stratum.phonologicalRules	witnessed	Evidenced
 edge-cases/subrule-morphosyntactic-gating	Construct	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	claimed-unmapped	2 claim(s)
+edge-cases/synthesis-stratum-render-stale-table	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/synthesis-stratum-render-stale-table	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/synthesis-stratum-render-stale-table	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/synthesis-stratum-render-stale-table	Interface	Segment.segment	required-by-dtd	RequiredByDtd
+edge-cases/synthesis-stratum-render-stale-table	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/synthesis-stratum-render-stale-table	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/synthesis-stratum-render-stale-table	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/synthesis-stratum-render-stale-table	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	4 claim(s)
 edge-cases/truncate-morphotactic	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader

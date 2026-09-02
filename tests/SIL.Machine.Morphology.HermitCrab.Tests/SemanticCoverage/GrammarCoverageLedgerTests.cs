@@ -20,14 +20,16 @@ public sealed class GrammarCoverageLedgerTests
         return string.Empty;
     }
 
-    // Every one of the 33 fixtures appears at least once -- a fixture with zero rows here would mean
+    // Every one of the 35 fixtures appears at least once -- a fixture with zero rows here would mean
     // the per-grammar view has nothing to say about it at all, which is exactly the gap this ledger
     // exists to close. Layer totals are pinned so a source ledger drifting silently changes this file
     // in a way CheckedInGrammarCoverageLedgerIsUpToDate below would also catch.
     //
     // Surface dropped 191 -> 189 (rows 641 -> 639) on a full --write-counterfactual +
     // --write-coverage-evidence re-sweep: BoundaryMarker and Gloss no longer reach Evidenced in any
-    // fixture (their sole prior witness, since neither is checked in EvidenceLedger anymore).
+    // fixture (their sole prior witness, since neither is checked in EvidenceLedger anymore). 33 ->
+    // 35 fixtures (rows 647 -> 664) when rewrite-analysis-feature-neutralization/
+    // synthesis-stratum-render-stale-table were added.
     [Test]
     public void CheckedInLedgerCoversAllFixturesWithTheMeasuredLayerCounts()
     {
@@ -43,11 +45,11 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(647));
-        Assert.That(distinctFixtures, Is.EqualTo(33));
+        Assert.That(rows, Has.Count.EqualTo(664));
+        Assert.That(distinctFixtures, Is.EqualTo(35));
         Assert.That(surface, Is.EqualTo(189));
-        Assert.That(@interface, Is.EqualTo(369));
-        Assert.That(construct, Is.EqualTo(89));
+        Assert.That(@interface, Is.EqualTo(383));
+        Assert.That(construct, Is.EqualTo(92));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

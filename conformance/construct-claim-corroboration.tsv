@@ -163,6 +163,14 @@ edge-cases/mpr-group-overwrite-without-realizational	udofq	THEMEA+DOF+ENDC|udofq
 edge-cases/mpr-group-overwrite-without-realizational	wudof	THEMEB+THEMEA+DOF|wudof	MPR features/groups	Unmapped	-
 edge-cases/mpr-group-overwrite-without-realizational	wudofq	-	MPR features/groups	Unmapped	-
 edge-cases/process-morphology-in-place-mutation	a	ROOT+ABLAUT|a	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	Confirmed	InsertSimpleContext,ModifyFromInput
+edge-cases/rewrite-analysis-feature-neutralization	b	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-analysis-feature-neutralization	bp	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-analysis-feature-neutralization	d	ROOT1|b	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-analysis-feature-neutralization	d	ROOT1|b	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/rewrite-analysis-feature-neutralization	d	ROOT2|d	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-analysis-feature-neutralization	d	ROOT2|d	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/rewrite-analysis-feature-neutralization	n	ROOT4|n	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
+edge-cases/rewrite-analysis-feature-neutralization	p	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/right-to-left-anchor-environment	aa	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	aaa	-	RewriteRule direction (Dir): right-to-left	Unmapped	-
 edge-cases/right-to-left-anchor-environment	aae	ROOT1|aae	RewriteRule direction (Dir): right-to-left	Unmapped	-
@@ -197,6 +205,10 @@ edge-cases/strrep-identity	pat	+|[(^0)∅]?+?pat	NaturalClass: Segments vs Featu
 edge-cases/strrep-identity	pat	|pat	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
 edge-cases/subrule-morphosyntactic-gating	bat	ROOT1+DERIVE|bat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
 edge-cases/subrule-morphosyntactic-gating	pat	ROOT1|pat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
+edge-cases/synthesis-stratum-render-stale-table	i	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/synthesis-stratum-render-stale-table	k	ROOTSAME|k	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/synthesis-stratum-render-stale-table	w	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/truncate-morphotactic	ag	+|ag	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	as	+|as	AffixProcessRule: subtraction/truncation	Unmapped	-
 edge-cases/truncate-morphotactic	bag	-	AffixProcessRule: subtraction/truncation	Unmapped	-

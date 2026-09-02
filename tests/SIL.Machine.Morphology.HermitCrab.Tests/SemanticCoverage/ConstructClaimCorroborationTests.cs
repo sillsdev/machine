@@ -31,7 +31,8 @@ public sealed class ConstructClaimCorroborationTests
     // AbsentGatedForm witness; 442 -> 444 when author-coverage-cell added `gofz`/`ygofz` to
     // languages/fusional-realizational-morphology, each claiming the prose construct "MPR
     // features/groups" -- both Unmapped, for `ygofz`'s MorphologicalOutput.MPRFeatures->
-    // MorphologicalInput.requiredMPRFeatures AbsentGatedForm witness.)
+    // MorphologicalInput.requiredMPRFeatures AbsentGatedForm witness. 452 -> 464 when
+    // rewrite-analysis-feature-neutralization/synthesis-stratum-render-stale-table were added.)
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -46,8 +47,8 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(452));
-        Assert.That(confirmed, Is.EqualTo(187));
+        Assert.That(rows, Has.Count.EqualTo(464));
+        Assert.That(confirmed, Is.EqualTo(199));
         Assert.That(contradicted, Is.EqualTo(15));
         Assert.That(unmapped, Is.EqualTo(250));
     }

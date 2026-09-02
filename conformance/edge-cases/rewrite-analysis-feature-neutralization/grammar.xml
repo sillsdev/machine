@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>RewriteAnalysisFeatureNeutralization</Name>
+    <!-- Synthetic construct-shaped mimic. Pins a founding-oracle (hc.dll) mechanism: a phonological
+         rewrite rule's ANALYSIS (unapply) side reconstructs the pre-rule feature struct by
+         AntiFeatureStruct subtraction (FeatureAnalysisRewriteRuleSpec.cs, around lines 56-58:
+         `fs = rhsConstraint.FeatureStruct.AntiFeatureStruct(); fs.Subtract(lhsConstraint.
+         FeatureStruct.AntiFeatureStruct());`), which can ERASE a feature outright rather than
+         reconstructing the rule's own target value. A SegmentNaturalClass's own FeatureStruct is the
+         UNION of its listed members' full feature structs (SegmentNaturalClass.cs constructor, lines
+         12-27) with no memory of which CharacterDefinitionTable those members came from, and
+         CharacterDefinitionTable.GetMatchingStrReps (around lines 96-106) matches candidate
+         representations by `FeatureStruct.IsUnifiable` alone - so once a feature is erased, ANY
+         segment anywhere in the grammar whose OTHER feature values still unify becomes an
+         indistinguishable pre-image, regardless of which stratum/table declared it. Two features are
+         declared here specifically so the erasure's reach can be bounded: `g` is the one the rule
+         changes (and that erasure touches); `k` is untouched by the rule and stays a genuine
+         distinguishing constraint, so a root whose `k` value differs from the rule's own natural
+         classes is immune to the erasure and must parse unambiguously - an implementation that
+         over-corrects by treating every segment as matching every character definition (regardless of
+         whether an erasure-causing rule ever touched it) would wrongly make that root ambiguous too.
+
+         Structural shape: two CharacterDefinitionTables, one per Stratum (tCore, first/non-final;
+         tSurf, second/final). tCore's only segment ("b") has the SAME full feature struct as tSurf's
+         rule-output segment ("d": `g`=hi, `k`=k1) - a genuine cross-table collision once `g` is
+         erased during analysis of a `d`-final surface. ROOT4 ("n", on tSurf) shares the rule's INPUT
+         value of `g` (lo, like "p") but carries `k`=k2, distinct from every other segment in the
+         grammar, so it can never satisfy the erasure-driven collision even though it shares the
+         rule-relevant feature. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posV"><Name>V</Name></PartOfSpeech>
+    </PartsOfSpeech>
+    <PhonologicalFeatureSystem>
+      <SymbolicFeature id="featG">
+        <Name>g</Name>
+        <Symbols>
+          <Symbol id="symHi">hi</Symbol>
+          <Symbol id="symLo">lo</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+      <SymbolicFeature id="featK">
+        <Name>k</Name>
+        <Symbols>
+          <Symbol id="symK1">k1</Symbol>
+          <Symbol id="symK2">k2</Symbol>
+        </Symbols>
+      </SymbolicFeature>
+    </PhonologicalFeatureSystem>
+    <CharacterDefinitionTable id="tCore">
+      <Name>Core</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cB">
+          <Representations><Representation>b</Representation></Representations>
+          <FeatureValue feature="featG" symbolValues="symHi" />
+          <FeatureValue feature="featK" symbolValues="symK1" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <CharacterDefinitionTable id="tSurf">
+      <Name>Surface</Name>
+      <SegmentDefinitions>
+        <SegmentDefinition id="cP">
+          <Representations><Representation>p</Representation></Representations>
+          <FeatureValue feature="featG" symbolValues="symLo" />
+          <FeatureValue feature="featK" symbolValues="symK1" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cD">
+          <Representations><Representation>d</Representation></Representations>
+          <FeatureValue feature="featG" symbolValues="symHi" />
+          <FeatureValue feature="featK" symbolValues="symK1" />
+        </SegmentDefinition>
+        <SegmentDefinition id="cN">
+          <Representations><Representation>n</Representation></Representations>
+          <FeatureValue feature="featG" symbolValues="symLo" />
+          <FeatureValue feature="featK" symbolValues="symK2" />
+        </SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <SegmentNaturalClass id="ncP"><Name>P</Name><Segment segment="cP" /></SegmentNaturalClass>
+      <SegmentNaturalClass id="ncD"><Name>D</Name><Segment segment="cD" /></SegmentNaturalClass>
+    </NaturalClasses>
+    <PhonologicalRuleDefinitions>
+      <PhonologicalRule id="prPtoD">
+        <Name>PtoD</Name>
+        <PhoneticInput><PhoneticSequence><SimpleContext naturalClass="ncP" /></PhoneticSequence></PhoneticInput>
+        <PhonologicalSubrules>
+          <PhonologicalSubrule>
+            <PhoneticOutput><PhoneticSequence><SimpleContext naturalClass="ncD" /></PhoneticSequence></PhoneticOutput>
+          </PhonologicalSubrule>
+        </PhonologicalSubrules>
+      </PhonologicalRule>
+    </PhonologicalRuleDefinitions>
+    <Strata>
+      <Stratum characterDefinitionTable="tCore" morphologicalRuleOrder="unordered">
+        <Name>Core</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot1" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot1"><PhoneticShape>b</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT1</MorphemeId>
+            <Gloss>root1</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+      <Stratum characterDefinitionTable="tSurf" morphologicalRuleOrder="unordered" phonologicalRules="prPtoD">
+        <Name>Surface</Name>
+        <LexicalEntries>
+          <LexicalEntry id="eRoot2" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot2"><PhoneticShape>p</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT2</MorphemeId>
+            <Gloss>root2</Gloss>
+          </LexicalEntry>
+          <LexicalEntry id="eRoot4" partOfSpeech="posV">
+            <Allomorphs><Allomorph id="aRoot4"><PhoneticShape>n</PhoneticShape></Allomorph></Allomorphs>
+            <MorphemeId>ROOT4</MorphemeId>
+            <Gloss>root4</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>
