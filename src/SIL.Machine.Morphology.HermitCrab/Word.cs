@@ -28,7 +28,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private FeatureStruct _realizationalFS;
         private Stratum _stratum;
         private bool? _isLastAppliedRuleFinal;
-        private bool _isCurrentUnappliedRuleFinal;
+        private FinalTemplateState _finalTemplateState;
         private bool _isPartial;
         private readonly Dictionary<string, HashSet<int>> _disjunctiveAllomorphIndices;
         private int _mruleAppCount = 0;
@@ -48,7 +48,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
-            _isCurrentUnappliedRuleFinal = false;
+            _finalTemplateState = FinalTemplateState.None;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
 
@@ -67,7 +67,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadApps = new List<Word>();
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>();
             _isLastAppliedRuleFinal = null;
-            _isCurrentUnappliedRuleFinal = false;
+            _finalTemplateState = FinalTemplateState.None;
             _isPartial = false;
             _disjunctiveAllomorphIndices = new Dictionary<string, HashSet<int>>();
         }
@@ -96,7 +96,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _nonHeadAppIndex = word._nonHeadAppIndex;
             _obligatorySyntacticFeatures = new IDBearerSet<Feature>(word._obligatorySyntacticFeatures);
             _isLastAppliedRuleFinal = word._isLastAppliedRuleFinal;
-            _isCurrentUnappliedRuleFinal = word._isCurrentUnappliedRuleFinal;
+            _finalTemplateState = word._finalTemplateState;
             _isPartial = word._isPartial;
             CurrentTrace = word.CurrentTrace;
             AnalysisScope = word.AnalysisScope;
@@ -396,13 +396,13 @@ namespace SIL.Machine.Morphology.HermitCrab
             }
         }
 
-        internal bool IsCurrentUnappliedRuleFinal
+        internal FinalTemplateState FinalTemplateState
         {
-            get { return _isCurrentUnappliedRuleFinal; }
+            get { return _finalTemplateState; }
             set
             {
                 CheckFrozen();
-                _isCurrentUnappliedRuleFinal = value;
+                _finalTemplateState = value;
             }
         }
 
@@ -635,7 +635,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             code = code * 31 + _mruleApps.GetSequenceHashCode();
             code = code * 31 + _mruleAppIndex.GetHashCode();
             code = code * 31 + _isLastAppliedRuleFinal.GetHashCode();
-            code = code * 31 + _isCurrentUnappliedRuleFinal.GetHashCode();
+            code = code * 31 + _finalTemplateState.GetHashCode();
             return code;
         }
 
@@ -656,7 +656,7 @@ namespace SIL.Machine.Morphology.HermitCrab
                 && _mruleApps.SequenceEqual(other._mruleApps)
                 && _mruleAppIndex == other._mruleAppIndex
                 && _isLastAppliedRuleFinal == other._isLastAppliedRuleFinal
-                && _isCurrentUnappliedRuleFinal == other._isCurrentUnappliedRuleFinal;
+                && _finalTemplateState == other._finalTemplateState;
         }
 
         public Word Clone()

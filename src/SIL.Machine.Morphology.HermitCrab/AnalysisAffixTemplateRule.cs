@@ -42,7 +42,12 @@ namespace SIL.Machine.Morphology.HermitCrab
                 _morpher.TraceManager.BeginUnapplyTemplate(_template, input);
 
             Word inWord = input.Clone();
-            inWord.IsCurrentUnappliedRuleFinal = _template.IsFinal;
+            if ((!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                && inWord.FinalTemplateState == FinalTemplateState.NonTemplate
+                && _template.IsFinal)
+            {
+                inWord.FinalTemplateState = FinalTemplateState.FinalTemplateAfterNonTemplate;
+            }
             inWord.Freeze();
 
             var output = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
@@ -51,16 +56,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             else
                 ParallelApplySlots(inWord, output);
 
-            var newOutput = new HashSet<Word>(FreezableEqualityComparer<Word>.Default);
-            foreach (Word outWord in output)
-            {
-                Word newOutWord = outWord.Clone();
-                newOutWord.SyntacticFeatureStruct.Add(fs);
-                newOutWord.IsCurrentUnappliedRuleFinal = false;
-                newOutWord.Freeze();
-                newOutput.Add(newOutWord);
-            }
-            return newOutput;
+            return output;
         }
 
         private void ApplySlots(Word inWord, int index, HashSet<Word> output)

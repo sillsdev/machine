@@ -161,9 +161,17 @@ namespace SIL.Machine.Morphology.HermitCrab
                     }
                     shapeWord[shape] = mruleOutWord;
                 }
-                output.Add(mruleOutWord);
+                Word newMruleOutWord = mruleOutWord;
+                if (mruleOutWord.FinalTemplateState != FinalTemplateState.None)
+                {
+                    // Clear FinalTemplateState to allow clitics.
+                    newMruleOutWord = mruleOutWord.Clone();
+                    newMruleOutWord.FinalTemplateState = FinalTemplateState.None;
+                    newMruleOutWord.Freeze();
+                 }
+                output.Add(newMruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
-                    _morpher.TraceManager.EndUnapplyStratum(_stratum, mruleOutWord);
+                    _morpher.TraceManager.EndUnapplyStratum(_stratum, newMruleOutWord);
             }
             return output;
         }

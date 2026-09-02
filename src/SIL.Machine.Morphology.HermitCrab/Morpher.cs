@@ -106,6 +106,11 @@ namespace SIL.Machine.Morphology.HermitCrab
         public bool IsPartial { get; set; }
 
         /// <summary>
+        /// Enforce final templates even if some of the morphemes were partial.
+        /// </summary>
+        public bool AlwaysEnforceFinalTemplates { get; set; }
+
+        /// <summary>
         /// Caps the concurrency used within a single parse or generation -- analysis cascade,
         /// affix-template unapplication and synthesis alike. A value of 1 runs the work fully
         /// sequentially, and is the only configuration eligible for the analysis-cascade memo (see
