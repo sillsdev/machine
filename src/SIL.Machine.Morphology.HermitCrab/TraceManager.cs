@@ -84,6 +84,24 @@
             );
         }
 
+        public void MorphologicalRuleNotUnapplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        )
+        {
+            ((Trace)input.CurrentTrace).Children.Add(
+                new Trace(TraceType.MorphologicalRuleAnalysis, rule)
+                {
+                    SubruleIndex = subruleIndex,
+                    Input = input,
+                    FailureReason = reason,
+                }
+            );
+        }
+
         public void CompoundingRuleNotUnapplied(
             IMorphologicalRule rule,
             int subruleIndex,

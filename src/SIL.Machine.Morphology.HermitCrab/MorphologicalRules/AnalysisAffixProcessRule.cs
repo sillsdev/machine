@@ -49,6 +49,26 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 return Enumerable.Empty<Word>();
             }
 
+            // Do not allow a final template to unapply if the grammar is not partial
+            // and a non-template was last unapplied.
+            if (
+                (!_morpher.IsPartial || _morpher.AlwaysEnforceFinalTemplates)
+                && input.FinalTemplateState == FinalTemplateState.FinalTemplateAfterNonTemplate
+            )
+            {
+                if (_morpher.TraceManager.IsTracing)
+                {
+                    _morpher.TraceManager.MorphologicalRuleNotUnapplied(
+                        _rule,
+                        -1,
+                        input,
+                        FailureReason.NonPartialRuleProhibitedAfterFinalTemplate,
+                        null
+                    );
+                }
+                return Enumerable.Empty<Word>();
+            }
+
             var output = new List<Word>();
             for (int i = 0; i < _rules.Count; i++)
             {
@@ -59,6 +79,9 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                         outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
                         outWord.SyntacticFeatureStruct.Clear();
+                    outWord.FinalTemplateState = !_rule.IsTemplateRule
+                        ? FinalTemplateState.NonTemplate
+                        : FinalTemplateState.None;
                     outWord.MorphologicalRuleUnapplied(_rule);
                     outWord.Freeze();
                     if (_morpher.TraceManager.IsTracing)

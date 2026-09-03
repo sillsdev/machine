@@ -349,6 +349,163 @@ public class AffixTemplateTests : HermitCrabTestBase
     }
 
     [Test]
+    public void EarlyPruningOfFinalTemplate()
+    {
+        var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;
+        var alvStop = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("strident-")
+            .Symbol("del_rel-")
+            .Symbol("alveolar")
+            .Value;
+        var voicelessCons = FeatureStruct
+            .New(Language.PhonologicalFeatureSystem)
+            .Symbol(HCFeatureSystem.Segment)
+            .Symbol("cons+")
+            .Symbol("vd-")
+            .Value;
+
+        var edSuffix = new AffixProcessRule { Name = "ed_suffix", Gloss = "PAST" };
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs =
+                {
+                    Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value,
+                    Pattern<Word, ShapeNode>.New("2").Annotation(alvStop).Value,
+                },
+                Rhs = { new CopyFromInput("1"), new CopyFromInput("2"), new InsertSegments(Table3, "ɯd") },
+            }
+        );
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Annotation(voicelessCons).Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "t") },
+            }
+        );
+        edSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "d") },
+            }
+        );
+
+        var verbTemplate = new AffixTemplate
+        {
+            Name = "verb",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+        };
+        verbTemplate.Slots.Add(new AffixTemplateSlot(edSuffix));
+        Morphophonemic.AffixTemplates.Add(verbTemplate);
+
+        var nominalizer = new AffixProcessRule
+        {
+            Name = "nominalizer",
+            Gloss = "NOM",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        nominalizer.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "v") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(nominalizer);
+
+        var crule = new CompoundingRule
+        {
+            Name = "rule1",
+            HeadRequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("V").Value,
+            NonHeadRequiredSyntacticFeatureStruct = FeatureStruct
+                .New(Language.SyntacticFeatureSystem)
+                .Symbol("N")
+                .Value,
+            OutSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        crule.Subrules.Add(
+            new CompoundingSubrule
+            {
+                HeadLhs = { Pattern<Word, ShapeNode>.New("head").Annotation(any).OneOrMore.Value },
+                NonHeadLhs = { Pattern<Word, ShapeNode>.New("nonHead").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("head"), new InsertSegments(Table3, "+"), new CopyFromInput("nonHead") },
+            }
+        );
+        Morphophonemic.MorphologicalRules.Add(crule);
+
+        var sSuffix = new AffixProcessRule
+        {
+            Name = "s_suffix",
+            Gloss = "PL",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        sSuffix.Allomorphs.Add(
+            new AffixProcessAllomorph
+            {
+                Lhs = { Pattern<Word, ShapeNode>.New("1").Annotation(any).OneOrMore.Value },
+                Rhs = { new CopyFromInput("1"), new InsertSegments(Table3, "s") },
+            }
+        );
+
+        var nounTemplate = new AffixTemplate
+        {
+            Name = "noun",
+            RequiredSyntacticFeatureStruct = FeatureStruct.New(Language.SyntacticFeatureSystem).Symbol("N").Value,
+        };
+        nounTemplate.Slots.Add(new AffixTemplateSlot(sSuffix) { Optional = true });
+        Morphophonemic.AffixTemplates.Add(nounTemplate);
+
+        // Verify early pruning of final template.
+        var morpher = new Morpher(TraceManager, Language);
+        morpher.IsPartial = false; // Override for testing purposes.
+        TraceManager.IsTracing = true;
+        AssertMorphsEqual(morpher.ParseWord("sagdv", out object trace));
+        Assert.That(
+            GetFailureDepth((Trace)trace, FailureReason.NonPartialRuleProhibitedAfterFinalTemplate),
+            Is.EqualTo(2)
+        );
+        AssertMorphsEqual(morpher.ParseWord("sagdvs"));
+        TraceManager.IsTracing = false;
+
+        // Verify correctness when non-partial and final.
+        AssertMorphsEqual(morpher.ParseWord("sagd"), "32 PAST");
+        AssertMorphsEqual(morpher.ParseWord("sagdv"));
+        AssertMorphsEqual(morpher.ParseWord("sagdvs"));
+        AssertMorphsEqual(morpher.ParseWord("sagdmi"));
+        AssertMorphsEqual(morpher.ParseWord("sagdmis"));
+
+        // Verify correctness when non-partial and non-final.
+        verbTemplate.IsFinal = false;
+        morpher = new Morpher(TraceManager, Language);
+        morpher.IsPartial = false;
+        AssertMorphsEqual(morpher.ParseWord("sagd"));
+        AssertMorphsEqual(morpher.ParseWord("sagdv"), "32 PAST NOM");
+        AssertMorphsEqual(morpher.ParseWord("sagdvs"), "32 PAST NOM PL");
+        AssertMorphsEqual(morpher.ParseWord("sagdmi"), "32 PAST 53");
+        AssertMorphsEqual(morpher.ParseWord("sagdmis"), "32 PAST 53 PL");
+    }
+
+    private static int GetFailureDepth(Trace trace, FailureReason reason)
+    {
+        if (trace == null)
+            return 0;
+        if (trace.FailureReason == reason)
+            return trace.Depth;
+        foreach (var child in trace.Children)
+        {
+            int depth = GetFailureDepth(child, reason);
+            if (depth > 0)
+                return depth;
+        }
+        return 0;
+    }
+
+    [Test]
     public void AffixTemplateAppliedAfterMorphologicalRule()
     {
         var any = FeatureStruct.New().Symbol(HCFeatureSystem.Segment).Value;

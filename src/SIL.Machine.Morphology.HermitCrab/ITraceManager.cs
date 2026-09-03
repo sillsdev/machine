@@ -47,6 +47,13 @@
 
         void MorphologicalRuleUnapplied(IMorphologicalRule rule, int subruleIndex, Word input, Word output);
         void MorphologicalRuleNotUnapplied(IMorphologicalRule rule, int subruleIndex, Word input);
+        void MorphologicalRuleNotUnapplied(
+            IMorphologicalRule rule,
+            int subruleIndex,
+            Word input,
+            FailureReason reason,
+            object failureObj
+        );
 
         void CompoundingRuleNotUnapplied(
             IMorphologicalRule rule,

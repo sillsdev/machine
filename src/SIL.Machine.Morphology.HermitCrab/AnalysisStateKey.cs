@@ -12,9 +12,11 @@ namespace SIL.Machine.Morphology.HermitCrab
     /// re-run whenever an <c>Analysis*.cs</c> rule changes:
     /// <list type="bullet">
     /// <item><see cref="MorphologicalRules.AnalysisAffixProcessRule"/>: Shape (FST pattern match),
-    /// <see cref="Word.SyntacticFeatureStruct"/> (unifiability gate), per-rule unapplication count.</item>
+    /// <see cref="Word.SyntacticFeatureStruct"/> (unifiability gate), per-rule unapplication count
+    /// and FinalTemplateState.</item>
     /// <item><see cref="MorphologicalRules.AnalysisCompoundingRule"/>: adds <see cref="Word.NonHeadCount"/>
-    /// (<c>MaxStemCount</c> gate) -- never the non-heads' own content, only the count.</item>
+    /// (<c>MaxStemCount</c> gate) -- never the non-heads' own content, only the count
+    /// and FinalTemplateState.</item>
     /// <item><see cref="MorphologicalRules.AnalysisRealizationalAffixProcessRule"/>: adds
     /// <see cref="Word.RealizationalFeatureStruct"/>.</item>
     /// </list>
@@ -31,6 +33,7 @@ namespace SIL.Machine.Morphology.HermitCrab
         private readonly FeatureStruct _realizationalFS;
         private readonly int _nonHeadCount;
         private readonly IReadOnlyDictionary<IMorphologicalRule, int> _ruleCounts;
+        private readonly FinalTemplateState _finalTemplateState;
         private readonly int _hashCode;
 
         /// <summary>
@@ -62,6 +65,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             _realizationalFS = word.RealizationalFeatureStruct;
             _nonHeadCount = word.NonHeadCount;
             _ruleCounts = word.UnappliedRuleCounts;
+            _finalTemplateState = word.FinalTemplateState;
 
             // See PinAndKey for why the key pins these rather than just reading them.
             _shape.Freeze();
@@ -74,6 +78,7 @@ namespace SIL.Machine.Morphology.HermitCrab
             hash = hash * 31 + _syntacticFS.GetFrozenHashCode();
             hash = hash * 31 + _realizationalFS.GetFrozenHashCode();
             hash = hash * 31 + _nonHeadCount;
+            hash = hash * 31 + _finalTemplateState.GetHashCode();
             if (_ruleCounts != null)
             {
                 // XOR rather than the usual *31 rolling combine: the multiset is unordered, so entries
@@ -99,6 +104,8 @@ namespace SIL.Machine.Morphology.HermitCrab
             if (!_shape.ValueEquals(other._shape))
                 return false;
             if (!_syntacticFS.ValueEquals(other._syntacticFS) || !_realizationalFS.ValueEquals(other._realizationalFS))
+                return false;
+            if (_finalTemplateState != other._finalTemplateState)
                 return false;
             return RuleCountsEqual(_ruleCounts, other._ruleCounts);
         }
