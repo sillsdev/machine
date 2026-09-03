@@ -17,6 +17,15 @@ CompoundingBreadth,kaptu,,Element deactivation (isActive) across loader collecti
 CompoundingBreadth,kaitu,,Element deactivation (isActive) across loader collections
 CompoundingBreadth,kutu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
 CompoundingBreadth,patu,,CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+CrossTableRootRespelling,t,ROOT1|m,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,t,ROOT1|m,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
+CrossTableRootRespelling,t,ROOT3|t,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,tu,ROOT1+SUF|m,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,tu,ROOT1+SUF|m,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
+CrossTableRootRespelling,tu,ROOT3+SUF|tu,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,q,,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,m,,"CharacterDefinitionTable: more than one table, one per stratum"
+CrossTableRootRespelling,s,,"CharacterDefinitionTable: more than one table, one per stratum"
 PathologicalDeepOptionalAffixNesting,k,K|k,Affix template slots (obligatory/disjunctive/ordering)
 PathologicalDeepOptionalAffixNesting,xxxxxxxxxxxxk,P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk,Affix template slots (obligatory/disjunctive/ordering)
 LatinDiacriticProbe,años,YEAR+PL|años,AffixProcessRule: prefix/suffix/circumfix/infix
@@ -157,6 +166,7 @@ MprGroupOverwriteWithoutRealizational,wudofq,,MPR features/groups
 ProcessMorphologyInPlaceMutation,a,ROOT+ABLAUT|a,MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 RewriteAnalysisFeatureNeutralization,d,ROOT1|b,"CharacterDefinitionTable: more than one table, one per stratum"
+RewriteAnalysisFeatureNeutralization,d,ROOT1|b,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 RewriteAnalysisFeatureNeutralization,d,ROOT2|d,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 RewriteAnalysisFeatureNeutralization,d,ROOT2|d,"CharacterDefinitionTable: more than one table, one per stratum"
 RewriteAnalysisFeatureNeutralization,n,ROOT4|n,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
@@ -198,6 +208,7 @@ StrRepIdentityProbe,ipat,,NaturalClass: Segments vs FeatureNaturalClass/SegmentN
 SubruleMorphosyntacticGating,pat,ROOT1|pat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SubruleMorphosyntacticGating,bat,ROOT1+DERIVE|bat,RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
 SynthesisStratumRenderStaleTable,j,ROOTCROSS|,"CharacterDefinitionTable: more than one table, one per stratum"
+SynthesisStratumRenderStaleTable,j,ROOTCROSS|,CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 SynthesisStratumRenderStaleTable,k,ROOTSAME|k,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,w,,"CharacterDefinitionTable: more than one table, one per stratum"
 SynthesisStratumRenderStaleTable,i,,"CharacterDefinitionTable: more than one table, one per stratum"

@@ -5,6 +5,7 @@ CompoundingBreadth,crJoin,katu;!katumi
 CompoundingBreadth,crJoinInsert,
 CompoundingBreadth,crNever,!kamtu
 CompoundingBreadth,mrTplSuf,
+CrossTableRootRespelling,mrSuffix,tu
 PathologicalDeepOptionalAffixNesting,mrP1,xxxxxxk;xxxxxxxxxxxxk
 PathologicalDeepOptionalAffixNesting,mrP10,xxxxxxk;xxxxxxxxxxxxk
 PathologicalDeepOptionalAffixNesting,mrP11,xxxxxxk;xxxxxxxxxxxxk

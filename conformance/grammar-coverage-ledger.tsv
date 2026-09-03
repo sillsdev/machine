@@ -97,6 +97,17 @@ edge-cases/compounding-breadth	Interface	Stratum.morphologicalRules	witnessed	Ev
 edge-cases/compounding-breadth	Construct	CompoundingRule	claimed-confirmed	2 claim(s)
 edge-cases/compounding-breadth	Construct	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	claimed-confirmed	7 claim(s)
 edge-cases/compounding-breadth	Construct	Element deactivation (isActive) across loader collections	claimed-confirmed	2 claim(s)
+edge-cases/cross-table-root-respelling	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
+edge-cases/cross-table-root-respelling	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd
+edge-cases/cross-table-root-respelling	Interface	FeatureValue.symbolValues	required-by-loader	RequiredByLoader
+edge-cases/cross-table-root-respelling	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
+edge-cases/cross-table-root-respelling	Interface	MorphologicalRule.outputPartOfSpeech	present-but-inert	Unobservable
+edge-cases/cross-table-root-respelling	Interface	MorphologicalRule.requiredPartsOfSpeech	present-but-inert	Unobservable
+edge-cases/cross-table-root-respelling	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
+edge-cases/cross-table-root-respelling	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
+edge-cases/cross-table-root-respelling	Interface	Stratum.morphologicalRules	witnessed	Evidenced
+edge-cases/cross-table-root-respelling	Construct	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	claimed-confirmed	2 claim(s)
+edge-cases/cross-table-root-respelling	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	7 claim(s)
 edge-cases/deep-optional-affix-nesting	Interface	AffixTemplate.requiredPartsOfSpeech	present-but-inert	Unobservable
 edge-cases/deep-optional-affix-nesting	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/deep-optional-affix-nesting	Interface	LexicalEntry.partOfSpeech	present-but-inert	Unobservable
@@ -398,6 +409,7 @@ edge-cases/rewrite-analysis-feature-neutralization	Interface	Segment.segment	req
 edge-cases/rewrite-analysis-feature-neutralization	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/rewrite-analysis-feature-neutralization	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	claimed-confirmed	1 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	5 claim(s)
 edge-cases/rewrite-analysis-feature-neutralization	Construct	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	claimed-confirmed	3 claim(s)
 edge-cases/right-to-left-anchor-environment	Surface	dtd:enum/PhoneticTemplate/finalBoundaryCondition/true	witnessed	Evidenced
@@ -461,6 +473,7 @@ edge-cases/synthesis-stratum-render-stale-table	Interface	Segment.segment	requir
 edge-cases/synthesis-stratum-render-stale-table	Interface	SimpleContext.naturalClass	required-by-dtd	RequiredByDtd
 edge-cases/synthesis-stratum-render-stale-table	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/synthesis-stratum-render-stale-table	Interface	Stratum.phonologicalRules	witnessed	Evidenced
+edge-cases/synthesis-stratum-render-stale-table	Construct	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	claimed-confirmed	1 claim(s)
 edge-cases/synthesis-stratum-render-stale-table	Construct	CharacterDefinitionTable: more than one table, one per stratum	claimed-confirmed	4 claim(s)
 edge-cases/truncate-morphotactic	Interface	CopyFromInput.index	required-by-dtd	RequiredByDtd
 edge-cases/truncate-morphotactic	Interface	FeatureValue.feature	required-by-dtd	RequiredByDtd

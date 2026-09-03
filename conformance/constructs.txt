@@ -33,6 +33,7 @@ Affix template slots (obligatory/disjunctive/ordering)
 NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
 Boundary markers (CharacterDefinitionTable)
 CharacterDefinitionTable: more than one table, one per stratum
+CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
 MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
 MPR features/groups
 Guesser/LexicalGuess

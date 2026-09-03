@@ -48,12 +48,14 @@ public sealed class InterfaceWitnessLedgerTests
                 + $"distinctInterfacesEvidenced={distinctInterfacesEverEvidenced}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(383));
-        Assert.That(evidenced, Is.EqualTo(87));
-        Assert.That(requiredByDtd, Is.EqualTo(178));
-        Assert.That(requiredByLoader, Is.EqualTo(26));
+        // 383 -> 392 with edge-cases/cross-table-root-respelling's nine present interfaces: one witnessed
+        // (Stratum.morphologicalRules), four required by the DTD, one by the loader, three inert.
+        Assert.That(rows, Has.Count.EqualTo(392));
+        Assert.That(evidenced, Is.EqualTo(88));
+        Assert.That(requiredByDtd, Is.EqualTo(182));
+        Assert.That(requiredByLoader, Is.EqualTo(27));
         Assert.That(timeout, Is.EqualTo(0));
-        Assert.That(unobservable, Is.EqualTo(92));
+        Assert.That(unobservable, Is.EqualTo(95));
         Assert.That(distinctInterfacesEverEvidenced, Is.EqualTo(19));
     }
 

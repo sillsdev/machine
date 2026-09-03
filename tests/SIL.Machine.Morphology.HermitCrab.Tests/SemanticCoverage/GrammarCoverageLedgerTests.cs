@@ -45,11 +45,13 @@ public sealed class GrammarCoverageLedgerTests
             $"rows={rows.Count} fixtures={distinctFixtures} surface={surface} interface={@interface} construct={construct}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(664));
-        Assert.That(distinctFixtures, Is.EqualTo(35));
+        // 664 -> 677 with edge-cases/cross-table-root-respelling (9 interface rows, 1 construct row) and
+        // the new cross-table respelling construct claimed by three fixtures (3 construct rows).
+        Assert.That(rows, Has.Count.EqualTo(677));
+        Assert.That(distinctFixtures, Is.EqualTo(36));
         Assert.That(surface, Is.EqualTo(189));
-        Assert.That(@interface, Is.EqualTo(383));
-        Assert.That(construct, Is.EqualTo(92));
+        Assert.That(@interface, Is.EqualTo(392));
+        Assert.That(construct, Is.EqualTo(96));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

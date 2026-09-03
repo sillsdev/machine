@@ -33,6 +33,7 @@ edge-cases/compounding-breadth	Main	Main	SameStage	MorphologicalRule	mrTplSuf	Mo
 edge-cases/compounding-breadth	Main	Main	SameStage	MorphologicalRule	mrTplSuf	MorphologicalRule	crJoinInsert	Undetermined
 edge-cases/compounding-breadth	Main	Main	SameStage	MorphologicalRule	mrTplSuf	MorphologicalRule	crNever	Undetermined
 edge-cases/compounding-breadth	Main	Main	SameStage	MorphologicalRule	mrTplSuf	MorphologicalRule	mrTplSuf	Undetermined
+edge-cases/cross-table-root-respelling	Final	Final	SameStage	MorphologicalRule	mrSuffix	MorphologicalRule	mrSuffix	Undetermined
 edge-cases/deep-optional-affix-nesting	Main	Main	SameStage	AffixTemplate	deepOptionalTemplate	AffixTemplate	deepOptionalTemplate	Undetermined
 edge-cases/diacritic-segments	Main	Main	SameStage	MorphologicalRule	rDim	MorphologicalRule	rDim	Undetermined
 edge-cases/diacritic-segments	Main	Main	SameStage	MorphologicalRule	rDim	MorphologicalRule	rPl	Undetermined

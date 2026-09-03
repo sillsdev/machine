@@ -468,7 +468,7 @@ public sealed class OrderingGeneratorTests
     {
         string root = RepositoryRoot();
         List<Fixture> fixtures = Fixture.DiscoverAll(Path.Combine(root, "conformance"));
-        Assert.That(fixtures, Has.Count.EqualTo(33));
+        Assert.That(fixtures, Has.Count.EqualTo(36));
 
         int totalLists = 0;
         int totalPairs = 0;
@@ -708,7 +708,7 @@ public sealed class OrderingGeneratorTests
     {
         string root = RepositoryRoot();
         List<Fixture> fixtures = Fixture.DiscoverAll(Path.Combine(root, "conformance"));
-        Assert.That(fixtures, Has.Count.EqualTo(33));
+        Assert.That(fixtures, Has.Count.EqualTo(36));
 
         List<RuleInteractionRow> rows = fixtures
             .SelectMany(fixture => RuleInteractionLedger.Compute(XDocument.Load(fixture.GrammarPath), fixture.Id))
@@ -720,13 +720,15 @@ public sealed class OrderingGeneratorTests
         foreach (var kv in rows.GroupBy(r => r.Relation))
             TestContext.Out.WriteLine($"  {kv.Key}: {kv.Count()}");
 
-        Assert.That(rows, Has.Count.EqualTo(1461));
-        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1267));
+        // 1461 -> 1464 with edge-cases/cross-table-root-respelling: one Final-stratum morphological rule against
+        // the corpus-wide pipeline yields three SameStage pairs (two Overlaps, one Undetermined).
+        Assert.That(rows, Has.Count.EqualTo(1464));
+        Assert.That(rows.Count(r => r.PairKind == StratumPairKind.SameStage), Is.EqualTo(1270));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStage), Is.EqualTo(166));
         Assert.That(rows.Count(r => r.PairKind == StratumPairKind.CrossStratum), Is.EqualTo(28));
         Assert.That(rows.Count(r => r.Relation == DomainRelation.Disjoint), Is.EqualTo(30));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(63));
-        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1368));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Overlaps), Is.EqualTo(65));
+        Assert.That(rows.Count(r => r.Relation == DomainRelation.Undetermined), Is.EqualTo(1369));
     }
 
     // Mirrors ConformanceFixtureGateTests.CheckedInCoverageTablesAreUpToDate: regenerate the ledger from the

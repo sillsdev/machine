@@ -32,7 +32,10 @@ public sealed class ConstructClaimCorroborationTests
     // languages/fusional-realizational-morphology, each claiming the prose construct "MPR
     // features/groups" -- both Unmapped, for `ygofz`'s MorphologicalOutput.MPRFeatures->
     // MorphologicalInput.requiredMPRFeatures AbsentGatedForm witness. 452 -> 464 when
-    // rewrite-analysis-feature-neutralization/synthesis-stratum-render-stale-table were added.)
+    // rewrite-analysis-feature-neutralization/synthesis-stratum-render-stale-table were added.
+    // 464 -> 475 when cross-table-root-respelling was added (7 rows) and the new "CharacterDefinitionTable:
+    // cross-table respelling" construct was claimed by four parses across three fixtures; all eleven
+    // corroborate on the CharacterDefinitionTable token, so confirmed rises by the same eleven.)
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -47,8 +50,8 @@ public sealed class ConstructClaimCorroborationTests
             $"rows={rows.Count} confirmed={confirmed} contradicted={contradicted} unmapped={unmapped}"
         );
 
-        Assert.That(rows, Has.Count.EqualTo(464));
-        Assert.That(confirmed, Is.EqualTo(199));
+        Assert.That(rows, Has.Count.EqualTo(475));
+        Assert.That(confirmed, Is.EqualTo(210));
         Assert.That(contradicted, Is.EqualTo(15));
         Assert.That(unmapped, Is.EqualTo(250));
     }

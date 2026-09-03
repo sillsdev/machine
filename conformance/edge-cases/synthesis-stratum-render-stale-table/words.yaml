@@ -42,6 +42,7 @@ words:
         rules: [prItoJ]
         exercises:
           - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
 
   - word: k
     note: >-

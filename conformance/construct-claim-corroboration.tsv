@@ -25,6 +25,15 @@ edge-cases/compounding-breadth	katumi	-	CompoundingRule	Confirmed	CompoundingRul
 edge-cases/compounding-breadth	kutu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	patu	-	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
 edge-cases/compounding-breadth	tu	TU|tu	CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)	Confirmed	CompoundingRule
+edge-cases/cross-table-root-respelling	m	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	q	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	s	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	t	ROOT1|m	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	t	ROOT1|m	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	t	ROOT3|t	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	tu	ROOT1+SUF|m	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	tu	ROOT1+SUF|m	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/cross-table-root-respelling	tu	ROOT3+SUF|tu	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/deep-optional-affix-nesting	k	K|k	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/deep-optional-affix-nesting	xxxxxxxxxxxxk	P12+P11+P10+P9+P8+P7+P6+P5+P4+P3+P2+P1+K|xxxxxxxxxxxxk	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
 edge-cases/diacritic-segments	años	YEAR+PL|años	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
@@ -165,6 +174,7 @@ edge-cases/mpr-group-overwrite-without-realizational	wudofq	-	MPR features/group
 edge-cases/process-morphology-in-place-mutation	a	ROOT+ABLAUT|a	MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext	Confirmed	InsertSimpleContext,ModifyFromInput
 edge-cases/rewrite-analysis-feature-neutralization	b	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/rewrite-analysis-feature-neutralization	bp	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/rewrite-analysis-feature-neutralization	d	ROOT1|b	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/rewrite-analysis-feature-neutralization	d	ROOT1|b	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/rewrite-analysis-feature-neutralization	d	ROOT1|b	NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision	Confirmed	FeatureNaturalClass,SegmentNaturalClass,Segments,naturalClass
 edge-cases/rewrite-analysis-feature-neutralization	d	ROOT2|d	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
@@ -206,6 +216,7 @@ edge-cases/strrep-identity	pat	|pat	NaturalClass: Segments vs FeatureNaturalClas
 edge-cases/subrule-morphosyntactic-gating	bat	ROOT1+DERIVE|bat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
 edge-cases/subrule-morphosyntactic-gating	pat	ROOT1|pat	RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level	Unmapped	-
 edge-cases/synthesis-stratum-render-stale-table	i	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
+edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	j	ROOTCROSS|	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	k	ROOTSAME|k	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
 edge-cases/synthesis-stratum-render-stale-table	w	-	CharacterDefinitionTable: more than one table, one per stratum	Confirmed	CharacterDefinitionTable,characterDefinitionTable
