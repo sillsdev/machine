@@ -127,11 +127,11 @@ namespace SIL.Machine.Morphology.HermitCrab
 
             _prulesRule.Apply(input);
             input.Freeze();
-            IDictionary<Shape, Word> shapeWord = null;
+            IDictionary<AnalysisStateKey, Word> wordCache = null;
             // Don't merge if tracing because it messes up the tracing.
             bool mergeEquivalentAnalyses = _morpher.MergeEquivalentAnalyses && !_morpher.TraceManager.IsTracing;
             if (mergeEquivalentAnalyses)
-                shapeWord = new Dictionary<Shape, Word>(FreezableEqualityComparer<Shape>.Default);
+                wordCache = new Dictionary<AnalysisStateKey, Word>();
 
             // AnalysisStratumRule.Apply should cover the inverse of SynthesisStratumRule.Apply.
             IEnumerable<Word> mruleOutWords = ApplyTemplates(input).Concat(ApplyMorphologicalRules(input));
@@ -152,14 +152,13 @@ namespace SIL.Machine.Morphology.HermitCrab
                 mruleOutWord.Source = origInput;
                 if (mergeEquivalentAnalyses)
                 {
-                    Shape shape = mruleOutWord.Shape;
-                    Word canonicalWord;
-                    if (shapeWord.TryGetValue(shape, out canonicalWord))
+                    var key = AnalysisStateKey.PinAndKey(mruleOutWord);
+                    if (wordCache.TryGetValue(key, out Word canonicalWord))
                     {
                         canonicalWord.Alternatives.Add(mruleOutWord);
                         continue;
                     }
-                    shapeWord[shape] = mruleOutWord;
+                    wordCache[key] = mruleOutWord;
                 }
                 output.Add(mruleOutWord);
                 if (_morpher.TraceManager.IsTracing)
