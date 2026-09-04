@@ -55,8 +55,7 @@ public static class EngineGateWitnessSweep
                 continue;
             }
 
-            var traceManager = new TraceManager { IsTracing = true };
-            var morpher = new Morpher(traceManager, language);
+            Morpher morpher = ConformanceMorpherFactory.CreateTracing(language);
 
             foreach (WordEntry word in fixture.Words.Words)
             {

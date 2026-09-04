@@ -31,7 +31,8 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput
+        TextWriter proposeOutput,
+        bool useMemoization = true
     )
     {
         var report = new RunReport();
@@ -42,7 +43,8 @@ public static class Runner
                 includePathological,
                 engineCapabilities,
                 propose,
-                proposeOutput
+                proposeOutput,
+                useMemoization
             );
             if (result == null)
                 report.ExcludedPathologicalCount++;
@@ -57,7 +59,8 @@ public static class Runner
         bool includePathological,
         IReadOnlySet<string> engineCapabilities,
         bool propose,
-        TextWriter proposeOutput
+        TextWriter proposeOutput,
+        bool useMemoization
     )
     {
         var result = new FixtureResult { FixtureId = fixture.Id };
@@ -94,7 +97,7 @@ public static class Runner
         var sw = Stopwatch.StartNew();
         try
         {
-            RunWithBudget(fixture, result, propose, proposeOutput);
+            RunWithBudget(fixture, result, propose, proposeOutput, useMemoization);
             sw.Stop();
             result.ElapsedMs = sw.ElapsedMilliseconds;
 
@@ -159,16 +162,22 @@ result.WordResults
 
     // Mirrors MaterializedRunner.RunWithBudget's watchdog shape (see that method's doc comment) -- a
     // budgeted fixture gets the same "background thread + Task.Wait" timeout enforcement.
-    private static void RunWithBudget(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
+    private static void RunWithBudget(
+        Fixture fixture,
+        FixtureResult result,
+        bool propose,
+        TextWriter proposeOutput,
+        bool useMemoization
+    )
     {
         if (!fixture.Words.BudgetMs.HasValue)
         {
-            RunAllWords(fixture, result, propose, proposeOutput);
+            RunAllWords(fixture, result, propose, proposeOutput, useMemoization);
             return;
         }
 
         long budgetMs = fixture.Words.BudgetMs.Value;
-        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput));
+        Task task = Task.Run(() => RunAllWords(fixture, result, propose, proposeOutput, useMemoization));
         long marginMs = Math.Max(budgetMs / 5, 1000);
         bool completed;
         try
@@ -183,22 +192,29 @@ result.WordResults
             throw new TimeoutException("watchdog timed out waiting for self-check engine");
     }
 
-    private static void RunAllWords(Fixture fixture, FixtureResult result, bool propose, TextWriter proposeOutput)
+    private static void RunAllWords(
+        Fixture fixture,
+        FixtureResult result,
+        bool propose,
+        TextWriter proposeOutput,
+        bool useMemoization
+    )
     {
         Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
-        var traceManager = new TraceManager { IsTracing = true };
-        var morpher = new Morpher(traceManager, language);
+        Morpher resultMorpher = ConformanceMorpherFactory.Create(language, useMemoization);
+        Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language);
         GrammarRuleIndex ruleIndex = GrammarRuleIndex.Load(fixture.GrammarPath);
 
         foreach (WordEntry word in fixture.Words.Words)
         {
             bool guessRoot = word.Parses.Any(p => p.Guess);
             List<Word> results;
-            object trace;
             bool wasSkipped = false;
             try
             {
-                results = morpher.ParseWord(word.Word, out trace, guessRoot).ToList();
+                // This is the conformance oracle. Memoization is enabled by the factory; a mismatch
+                // remains a failure rather than falling back to an unmemoized result.
+                results = resultMorpher.ParseWord(word.Word, out _, guessRoot).ToList();
             }
             catch (InvalidShapeException)
             {
@@ -208,7 +224,6 @@ result.WordResults
                 // status the materialized expected.tsv (and any real adapter) will actually diff on.
                 wasSkipped = true;
                 results = new List<Word>();
-                trace = null;
             }
 
             string actualSignature = SignatureFormat.BuildSignature(results);
@@ -270,12 +285,16 @@ result.WordResults
                 continue;
             }
 
-            // Signature set matched; now verify the traced "rules:" list per parse. Group actual
-            // results by their own individual signature so an ambiguous word's N declared parses
-            // can each be matched to the one result that produced it (signatureMatches above already
-            // proved this is a 1:1 correspondence at the SET level; duplicate signature strings
-            // across parses are not expected and, if they occurred, would just re-check the same
-            // result against every parse sharing that signature).
+            // Signature set matched. Run a separate, non-authoritative parse only to collect trace
+            // evidence for phonological and realizational rules. The result Words below remain the
+            // memoized oracle results, including their per-result morphological-rule histories.
+            tracingMorpher.ParseWord(word.Word, out object trace, guessRoot).ToList();
+
+            // Group memoized results by their own individual signature so an ambiguous word's N
+            // declared parses can each be matched to the one result that produced it (signatureMatches
+            // above already proved this is a 1:1 correspondence at the SET level; duplicate signature
+            // strings across parses are not expected and, if they occurred, would just re-check the
+            // same result against every parse sharing that signature).
             Dictionary<string, List<Word>> actualBySignature = results
                 .GroupBy(w => SignatureFormat.BuildSignature(new[] { w }))
                 .ToDictionary(g => g.Key, g => g.ToList());

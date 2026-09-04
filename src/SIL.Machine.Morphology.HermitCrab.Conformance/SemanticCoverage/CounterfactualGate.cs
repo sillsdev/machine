@@ -110,7 +110,7 @@ public static class CounterfactualGate
     )
     {
         Language language = XmlLanguageLoader.Load(grammarPath);
-        var morpher = new Morpher(new TraceManager(), language);
+        Morpher morpher = ConformanceMorpherFactory.Create(language);
         return words.Select(word => Outcome(morpher, word, onTimed)).ToArray();
     }
 
@@ -213,9 +213,8 @@ public static class CounterfactualGate
             start.ArgumentList.Add("--evaluate-mutant");
             start.ArgumentList.Add(grammarPath);
             start.ArgumentList.Add(wordsPath);
-            // Morpher.Synthesize's Parallel.ForEach sizes itself off Environment.ProcessorCount, which
-            // the CLR reads from this variable at startup: pinning it to 1 makes synthesis run its
-            // partitions on a single thread, so a mutant that races under real concurrency stops racing.
+            // Keep the whole child pinned alongside ConformanceMorpherFactory's sequential engine so
+            // any parallel work outside Morpher cannot make a mutant outcome race-dependent.
             start.EnvironmentVariables["DOTNET_PROCESSOR_COUNT"] = "1";
 
             using System.Diagnostics.Process child =

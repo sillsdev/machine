@@ -60,8 +60,11 @@ namespace SIL.Machine.Morphology.HermitCrab.Conformance;
 
 internal static class ConformanceMorpherFactory
 {
-    internal static Morpher Create(Language language) =>
-        new(new TraceManager(), language, maxDegreeOfParallelism: 1);
+    internal static Morpher Create(Language language, bool useMemoization = true) =>
+        new(new TraceManager(), language, maxDegreeOfParallelism: useMemoization ? 1 : 0);
+
+    internal static Morpher CreateTracing(Language language) =>
+        new(new TraceManager { IsTracing = true }, language, maxDegreeOfParallelism: 1);
 }
 ```
 
@@ -108,6 +111,21 @@ public sealed class ConformanceMorpherFactoryTests
             Assert.That(morpher.TraceManager.IsTracing, Is.False);
         });
     }
+
+    [Test]
+    public void DiagnosticMorpherDisablesMemoization()
+    {
+        Fixture fixture = Fixture.DiscoverAll(Path.Combine(RepositoryRoot(), "conformance")).First();
+        Language language = XmlLanguageLoader.Load(fixture.GrammarPath);
+
+        Morpher morpher = ConformanceMorpherFactory.Create(language, useMemoization: false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(morpher.MaxDegreeOfParallelism, Is.EqualTo(0));
+            Assert.That(morpher.TraceManager.IsTracing, Is.False);
+        });
+    }
 }
 ```
 
@@ -120,7 +138,12 @@ Run the Step 2 command. Expected: one passing test.
 **Files:**
 - Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/Runner.cs`
 - Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SelfCheckEngine.cs`
+- Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/Program.cs`
 - Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/CounterfactualGate.cs`
+- Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/EngineGateWitnessSweep.cs`
+- Modify: `src/SIL.Machine.Morphology.HermitCrab.Conformance/SemanticCoverage/GateObligationLedger.cs`
+- Test: `tests/SIL.Machine.Morphology.HermitCrab.Tests/ConformanceCommandLineTests.cs`
+- Test: `tests/SIL.Machine.Morphology.HermitCrab.Tests/ConformanceMorpherFactoryTests.cs`
 - Test: `tests/SIL.Machine.Morphology.HermitCrab.Tests/SemanticCoverage/ConformanceFixtureGateTests.cs`
 
 - [ ] **Step 1: Make result-producing paths use the default factory**
@@ -134,12 +157,13 @@ ConformanceMorpherFactory.Create(language)
 In `Runner.RunAllWords`, create both morphers:
 
 ```csharp
-var resultMorpher = ConformanceMorpherFactory.Create(language);
-var traceManager = new TraceManager { IsTracing = true };
-var tracingMorpher = new Morpher(traceManager, language);
+Morpher resultMorpher = ConformanceMorpherFactory.Create(language, useMemoization);
+Morpher tracingMorpher = ConformanceMorpherFactory.CreateTracing(language);
 ```
 
-Parse authoritative results with `resultMorpher`. After signature, skip, and expected-failure checks pass, call `tracingMorpher.ParseWord(word.Word, out object trace, guessRoot).ToList()` only to populate trace evidence. Keep `actualBySignature` based on authoritative `results`.
+Parse authoritative results with `resultMorpher`. After signature, skip, and expected-failure checks pass, call the sequential `CreateTracing` morpher's `ParseWord(word.Word, out object trace, guessRoot).ToList()` only to populate trace evidence. Keep `actualBySignature` based on authoritative `results`. Route tracing-only semantic coverage through `CreateTracing` because `TraceManager` mutates child collections and cannot safely collect a parallel trace.
+
+Add a `useMemoization` parameter, defaulting to `true`, to `SelfCheckEngine` and `Runner.RunSelfCheck`; pass it through private runner methods to the factory. Add a self-check-only `--no-memoization` CLI option that passes `false`, document it in help, and reject its combination with `--adapter`.
 
 - [ ] **Step 2: Run the conformance fixture gate**
 
