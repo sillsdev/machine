@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
+using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
 
 namespace SIL.Machine.Morphology.HermitCrab;
 
@@ -123,5 +124,62 @@ public class GrammarHealthCheckerTests
         language.Strata.Add(stratum);
 
         Assert.That(GrammarHealthChecker.Check(language), Is.Empty);
+    }
+
+    [Test]
+    public void Check_PartialLexicalEntry_ReportsActionableWarning()
+    {
+        var table = new CharacterDefinitionTable { Name = "table1" };
+        var stratum = new Stratum(table) { Name = "Surface" };
+        var entry = new LexEntry { Id = "entry1", IsPartial = true };
+        stratum.Entries.Add(entry);
+        var language = new Language();
+        language.Strata.Add(stratum);
+
+        GrammarHealthFinding finding = GrammarHealthChecker.Check(language).Single();
+
+        Assert.That(finding.Code, Is.EqualTo(GrammarHealthCodes.PartialMorpheme));
+        Assert.That(finding.Severity, Is.EqualTo(GrammarHealthSeverity.Warning));
+        Assert.That(finding.Message, Does.Contain("entry1"));
+        Assert.That(finding.Message, Does.Contain("partially analyzed"));
+        Assert.That(finding.Message, Does.Contain("final-template pruning"));
+        Assert.That(finding.Subjects, Is.EqualTo(new object[] { entry }));
+    }
+
+    [Test]
+    public void Check_PartialOrdinaryRule_ReportsRule()
+    {
+        var table = new CharacterDefinitionTable { Name = "table1" };
+        var stratum = new Stratum(table) { Name = "Surface" };
+        var rule = new AffixProcessRule { Name = "plural", IsPartial = true };
+        stratum.MorphologicalRules.Add(rule);
+        var language = new Language();
+        language.Strata.Add(stratum);
+
+        GrammarHealthFinding finding = GrammarHealthChecker.Check(language).Single();
+
+        Assert.That(finding.Code, Is.EqualTo(GrammarHealthCodes.PartialMorpheme));
+        Assert.That(finding.Message, Does.Contain("plural"));
+        Assert.That(finding.Subjects, Is.EqualTo(new object[] { rule }));
+    }
+
+    [Test]
+    public void Check_PartialTemplateRuleReferencedTwice_ReportsOnce()
+    {
+        var table = new CharacterDefinitionTable { Name = "table1" };
+        var stratum = new Stratum(table) { Name = "Surface" };
+        var rule = new AffixProcessRule { Name = "subject", IsPartial = true };
+        var template = new AffixTemplate { Name = "verb" };
+        template.Slots.Add(new AffixTemplateSlot(rule));
+        template.Slots.Add(new AffixTemplateSlot(rule));
+        stratum.AffixTemplates.Add(template);
+        var language = new Language();
+        language.Strata.Add(stratum);
+
+        IList<GrammarHealthFinding> findings = GrammarHealthChecker.Check(language);
+
+        Assert.That(findings, Has.Count.EqualTo(1));
+        Assert.That(findings[0].Code, Is.EqualTo(GrammarHealthCodes.PartialMorpheme));
+        Assert.That(findings[0].Subjects, Is.EqualTo(new object[] { rule }));
     }
 }
