@@ -26,12 +26,14 @@ namespace SIL.Machine.Morphology.HermitCrab
     public static class GrammarHealthCodes
     {
         public const string DuplicateFeatureBundle = "hc-duplicate-feature-bundle";
+        public const string PartialMorpheme = "hc-partial-morpheme";
         public const string UndeclaredSegment = "hc-undeclared-segment";
     }
 
     /// <summary>
-    /// One admissibility problem found in a <see cref="Language"/> by <see cref="GrammarHealthChecker"/>.
-    /// This is diagnostic only: producing a finding never changes how the grammar parses.
+    /// One problem or production-readiness risk found in a <see cref="Language"/> by
+    /// <see cref="GrammarHealthChecker"/>. This is diagnostic only: producing a finding never
+    /// changes how the grammar parses.
     /// </summary>
     public class GrammarHealthFinding
     {

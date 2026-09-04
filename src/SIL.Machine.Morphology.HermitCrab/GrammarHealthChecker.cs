@@ -4,25 +4,24 @@ using System.Linq;
 using SIL.Machine.Annotations;
 using SIL.Machine.FeatureModel;
 using SIL.Machine.Morphology.HermitCrab.MorphologicalRules;
+using SIL.ObjectModel;
 
 namespace SIL.Machine.Morphology.HermitCrab
 {
     /// <summary>
-    /// Checks a loaded <see cref="Language"/> against two admissibility preconditions HermitCrab
-    /// depends on but never enforces itself: every segment used by the grammar must be declared in
-    /// a <see cref="CharacterDefinitionTable"/> (an undeclared segment makes the engine refuse the
-    /// whole word, silently), and every declared segment in a table must have a phonological
-    /// feature bundle distinct from its neighbors (otherwise a segment-changing rule cannot tell
-    /// which one it is looking at). Both violations parse successfully today with no warning, so
-    /// this exists to surface them before the grammar ships. It is diagnostic only: it never
-    /// changes how a <see cref="Language"/> parses.
+    /// Checks a loaded <see cref="Language"/> for problems HermitCrab does not otherwise report:
+    /// segments used without a declaration, declared segments with duplicate phonological feature
+    /// bundles, and morphemes whose analysis is marked partial. These problems can silently refuse
+    /// words, make morpheme identification unreliable, or broaden analysis enough to disable safe
+    /// final-template pruning. This checker surfaces them before the grammar ships. It is diagnostic
+    /// only: it never changes how a <see cref="Language"/> parses.
     /// </summary>
     public static class GrammarHealthChecker
     {
         /// <summary>
         /// Runs every check against <paramref name="language"/> and returns the findings, in the
-        /// order the checks ran. An empty list means both preconditions hold, not that nothing was
-        /// checked -- see <see cref="GrammarHealthCodes"/> for what each finding's code means.
+        /// order the checks ran. An empty list means every registered check passed, not that nothing
+        /// was checked -- see <see cref="GrammarHealthCodes"/> for what each finding's code means.
         /// </summary>
         public static IList<GrammarHealthFinding> Check(Language language)
         {
@@ -32,7 +31,71 @@ namespace SIL.Machine.Morphology.HermitCrab
             var findings = new List<GrammarHealthFinding>();
             CheckDuplicateFeatureBundles(language, findings);
             CheckUndeclaredSegments(language, findings);
+            CheckPartialMorphemes(language, findings);
             return findings;
+        }
+
+        private static void CheckPartialMorphemes(Language language, List<GrammarHealthFinding> findings)
+        {
+            var seen = new HashSet<Morpheme>(new ReferenceEqualityComparer<Morpheme>());
+
+            foreach (Stratum stratum in language.Strata)
+            {
+                foreach (LexEntry entry in stratum.Entries)
+                    CheckPartialMorpheme(entry, seen, findings);
+
+                foreach (Morpheme rule in stratum.MorphologicalRules.OfType<Morpheme>())
+                    CheckPartialMorpheme(rule, seen, findings);
+
+                foreach (AffixTemplate template in stratum.AffixTemplates)
+                {
+                    foreach (MorphemicMorphologicalRule rule in template.Slots.SelectMany(slot => slot.Rules))
+                        CheckPartialMorpheme(rule, seen, findings);
+                }
+            }
+        }
+
+        private static void CheckPartialMorpheme(
+            Morpheme morpheme,
+            HashSet<Morpheme> seen,
+            List<GrammarHealthFinding> findings
+        )
+        {
+            if (!morpheme.IsPartial || !seen.Add(morpheme))
+                return;
+
+            string kind;
+            string name;
+            var rule = morpheme as MorphemicMorphologicalRule;
+            if (rule != null)
+            {
+                kind = "Morphological rule";
+                name = FirstNonEmpty(rule.Name, rule.Id, rule.Gloss);
+            }
+            else
+            {
+                kind = "Lexical entry";
+                name = FirstNonEmpty(morpheme.Id, morpheme.Gloss);
+            }
+
+            findings.Add(
+                new GrammarHealthFinding(
+                    GrammarHealthSeverity.Warning,
+                    GrammarHealthCodes.PartialMorpheme,
+                    string.Format(
+                        "{0} '{1}' is partially analyzed. Supply its missing category or template/slot analysis; "
+                            + "leaving it partial can broaden analysis and disable safe final-template pruning.",
+                        kind,
+                        name
+                    ),
+                    new object[] { morpheme }
+                )
+            );
+        }
+
+        private static string FirstNonEmpty(params string[] values)
+        {
+            return values.FirstOrDefault(value => !string.IsNullOrEmpty(value)) ?? "unnamed";
         }
 
         // Every table's segments must have distinct phonological feature bundles, or a segment-changing
