@@ -31,8 +31,9 @@ namespace SIL.Machine.Morphology.HermitCrab
     }
 
     /// <summary>
-    /// One admissibility problem found in a <see cref="Language"/> by <see cref="GrammarHealthChecker"/>.
-    /// This is diagnostic only: producing a finding never changes how the grammar parses.
+    /// One problem or production-readiness risk found in a <see cref="Language"/> by
+    /// <see cref="GrammarHealthChecker"/>. This is diagnostic only: producing a finding never
+    /// changes how the grammar parses.
     /// </summary>
     public class GrammarHealthFinding
     {
