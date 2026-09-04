@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE HermitCrabInput SYSTEM "HermitCrabInput.dtd">
+<HermitCrabInput>
+  <Language>
+    <Name>LatinDiacriticProbe</Name>
+    <!-- Engine-internal probe (conformance/README.md's growth-policy option 3): pins the
+         PanGloss hc-foma (alternative FST) engine's Latin-diacritic zero-parse bug (precomposed
+         é/ö/ñ/î, NFD-decomposition interacting badly with that engine's own byte/token handling —
+         not a HermitCrab bug, and not a phenomenon any of the 8 typological languages would
+         naturally need, since they use invented lexemes with plain ASCII segment inventories by
+         design). Four roots each carry exactly one precomposed diacritic segment, one medial
+         (año/göl) and one final (café/kelî) — the medial/final split lets rDim's NaturalClass
+         environment gate (below) distinguish "stem ends in a diacritic" from "stem merely contains
+         one somewhere", which a byte-level regression could get right for one position and wrong
+         for the other. DELIBERATELY NO PhonologicalFeatureSystem: this is a pure morphotactics
+         fixture (requires: [] holds), same idiom as edge-cases/strrep-identity and
+         languages/suffixing-evidential-adjacency-chain — SegmentNaturalClass lists members directly, no features
+         needed. -->
+    <PartsOfSpeech>
+      <PartOfSpeech id="posRoot">
+        <Name>root</Name>
+      </PartOfSpeech>
+    </PartsOfSpeech>
+    <CharacterDefinitionTable id="table1">
+      <Name>Main</Name>
+      <SegmentDefinitions>
+        <!-- Plain ASCII segments (root/affix material). -->
+        <SegmentDefinition id="cA"><Representations><Representation>a</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cC"><Representations><Representation>c</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cE"><Representations><Representation>e</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cF"><Representations><Representation>f</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cG"><Representations><Representation>g</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cK"><Representations><Representation>k</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cL"><Representations><Representation>l</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cO"><Representations><Representation>o</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cS"><Representations><Representation>s</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cT"><Representations><Representation>t</Representation></Representations></SegmentDefinition>
+        <!-- Precomposed Latin diacritics — the bug report's exact set (é, ö, ñ, î), each a single
+             Unicode codepoint (NFC precomposed), never split into base+combining-mark segments. -->
+        <SegmentDefinition id="cEAcute"><Representations><Representation>é</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cOUmlaut"><Representations><Representation>ö</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cNTilde"><Representations><Representation>ñ</Representation></Representations></SegmentDefinition>
+        <SegmentDefinition id="cICirc"><Representations><Representation>î</Representation></Representations></SegmentDefinition>
+      </SegmentDefinitions>
+    </CharacterDefinitionTable>
+    <NaturalClasses>
+      <!-- Universal "matches any segment" class, used only inside MorphologicalInput stem
+           patterns — same idiom as languages/suffixing-evidential-adjacency-chain's ncAny. -->
+      <FeatureNaturalClass id="ncAny">
+        <Name>Any</Name>
+      </FeatureNaturalClass>
+      <!-- The diacritic class itself, purely orthographic (no PhonologicalFeatureSystem needed,
+           same idiom as suffixing-evidential-adjacency-chain's ncVowel/ncConsonant): used ONLY as rDim's LeftEnvironment
+           gate below, so a stem-final diacritic segment is recognized as a genuine NaturalClass
+           member, not merely copied through literally. -->
+      <SegmentNaturalClass id="ncDiacritic">
+        <Name>Diacritic</Name>
+        <Segment segment="cEAcute" />
+        <Segment segment="cOUmlaut" />
+        <Segment segment="cNTilde" />
+        <Segment segment="cICirc" />
+      </SegmentNaturalClass>
+    </NaturalClasses>
+    <Strata>
+      <Stratum characterDefinitionTable="table1" morphologicalRuleOrder="unordered" morphologicalRules="rPl rDim">
+        <Name>Main</Name>
+        <MorphologicalRuleDefinitions>
+          <!-- rPl: unconditional suffix "-s", applies after any root regardless of its final
+               segment — exercises the affixed case for both diacritic-medial (año/göl) and
+               diacritic-final (café/kelî) roots, since the bug affected both bare and affixed
+               diacritic-bearing words alike. -->
+          <MorphologicalRule id="rPl" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>plural</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subPl">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stemPl">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemPl" />
+                  <InsertSegments>
+                    <PhoneticShape>s</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>PL</MorphemeId>
+            <Gloss>PL</Gloss>
+          </MorphologicalRule>
+          <!-- rDim: suffix "-ta", GATED by a LeftEnvironment requiring the stem's final segment to
+               be a ncDiacritic member — the actual regression pin. "café"/"kelî" (diacritic-final)
+               satisfy the gate and take "-ta"; "año"/"göl" (diacritic-medial, but NOT
+               diacritic-final) do not, so the same affix rule correctly fires on one pair and fails
+               on the other. A byte/NFD-handling bug that mishandles diacritic segments could easily
+               get one direction right and the other wrong (e.g. losing the segment's NaturalClass
+               membership entirely, which would make this gate never fire; or over-matching, which
+               would make it wrongly fire on año/göl too). -->
+          <MorphologicalRule id="rDim" requiredPartsOfSpeech="posRoot" outputPartOfSpeech="posRoot">
+            <Name>diminutive</Name>
+            <MorphologicalSubrules>
+              <MorphologicalSubrule id="subDim">
+                <MorphologicalInput>
+                  <PhoneticSequence id="stemDim">
+                    <OptionalSegmentSequence min="1" max="-1">
+                      <SimpleContext naturalClass="ncAny" />
+                    </OptionalSegmentSequence>
+                  </PhoneticSequence>
+                </MorphologicalInput>
+                <MorphologicalOutput>
+                  <CopyFromInput index="stemDim" />
+                  <InsertSegments>
+                    <PhoneticShape>ta</PhoneticShape>
+                  </InsertSegments>
+                </MorphologicalOutput>
+                <RequiredEnvironments>
+                  <Environment>
+                    <LeftEnvironment>
+                      <PhoneticTemplate>
+                        <PhoneticSequence>
+                          <SimpleContext naturalClass="ncDiacritic" />
+                        </PhoneticSequence>
+                      </PhoneticTemplate>
+                    </LeftEnvironment>
+                  </Environment>
+                </RequiredEnvironments>
+              </MorphologicalSubrule>
+            </MorphologicalSubrules>
+            <MorphemeId>DIM</MorphemeId>
+            <Gloss>DIM</Gloss>
+          </MorphologicalRule>
+        </MorphologicalRuleDefinitions>
+        <AffixTemplates>
+          <AffixTemplate requiredPartsOfSpeech="posRoot">
+            <Name>suffixTemplate</Name>
+            <!-- One optional, disjunctive slot: a word may take rPl OR rDim OR neither (bare
+                 root) — never both, keeping the analysis set small and each word's expected
+                 parse count easy to hand-verify. -->
+            <Slot optional="true" morphologicalRules="rPl rDim">
+              <Name>suffix1</Name>
+            </Slot>
+          </AffixTemplate>
+        </AffixTemplates>
+        <LexicalEntries>
+          <!-- año: diacritic (ñ) MEDIAL, not stem-final — rDim's gate must fail on this root. -->
+          <LexicalEntry id="eAno" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aAno">
+                <PhoneticShape>año</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>YEAR</MorphemeId>
+            <Gloss>year</Gloss>
+          </LexicalEntry>
+          <!-- café: diacritic (é) stem-FINAL — rDim's gate must succeed on this root. -->
+          <LexicalEntry id="eCafe" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aCafe">
+                <PhoneticShape>café</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>COFFEE</MorphemeId>
+            <Gloss>coffee</Gloss>
+          </LexicalEntry>
+          <!-- göl: diacritic (ö) MEDIAL, not stem-final — rDim's gate must fail on this root. -->
+          <LexicalEntry id="eGol" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aGol">
+                <PhoneticShape>göl</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>LAKE</MorphemeId>
+            <Gloss>lake</Gloss>
+          </LexicalEntry>
+          <!-- kelî: diacritic (î) stem-FINAL — rDim's gate must succeed on this root. -->
+          <LexicalEntry id="eKeli" partOfSpeech="posRoot">
+            <Allomorphs>
+              <Allomorph id="aKeli">
+                <PhoneticShape>kelî</PhoneticShape>
+              </Allomorph>
+            </Allomorphs>
+            <MorphemeId>WORD</MorphemeId>
+            <Gloss>word</Gloss>
+          </LexicalEntry>
+        </LexicalEntries>
+      </Stratum>
+    </Strata>
+  </Language>
+</HermitCrabInput>

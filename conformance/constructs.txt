@@ -1,0 +1,48 @@
+# HermitCrab grammar-model construct checklist
+#
+# This is the coverage-report key set: every conformance/languages/<name>/words.yaml and
+# conformance/edge-cases/<name>/words.yaml's per-parse and per-word "exercises:" entries are
+# expected to draw their values verbatim from this list. It is a data file, not compiled code, so a
+# new construct can be added here the moment a fixture needs it, without touching the harness.
+#
+# Format: one construct per line. Blank lines and lines starting with "#" are ignored. A line's
+# text (verbatim, including punctuation) is the key the coverage report (--coverage-report)
+# cross-references against every word's/parse's "exercises:" entries, emitting coverage.csv and
+# flagging both zero-coverage constructs and dead rules (grammar.xml rule ids no word exercises,
+# emitted in rules.csv). This file IS the grammar-model construct checklist; add a new row's
+# construct text here the moment a fixture needs it, so the report picks it up.
+#
+# The harness treats an "exercises:" value that ISN'T in this file as a soft warning (a genuinely
+# new construct, or a typo) -- never a hard error.
+
+Stratum (Linear/Unordered rule order)
+AffixProcessRule: prefix/suffix/circumfix/infix
+AffixProcessRule: reduplication (ReduplicationHint)
+AffixProcessRule: subtraction/truncation
+RealizationalAffixProcessRule
+CompoundingRule
+MorphologicalOutputAction: CopyFromInput/InsertSegments
+MorphologicalOutputAction: ModifyFromInput/InsertSimpleContext
+RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
+RewriteRule Simultaneous
+RewriteRule direction (Dir): left-to-right
+RewriteRule direction (Dir): right-to-left
+RewriteSubruleDef gating: required/excluded POS or MPR at the subrule level
+MetathesisRule
+Affix template slots (obligatory/disjunctive/ordering)
+NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
+Boundary markers (CharacterDefinitionTable)
+CharacterDefinitionTable: more than one table, one per stratum
+CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)
+MorphemeCoOccurrenceRule/AllomorphCoOccurrenceRule
+MPR features/groups
+Guesser/LexicalGuess
+Disjunctive allomorphs / free-fluctuation
+Stem names
+Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+Alpha-variable phonological environments (VariableFeature/AlphaVariables)
+CharacterDefinitionTable pattern shapes: optional group / Kleene star
+CompoundingRule constraints (MaxApplicationCount/Blockable/head-nonhead syntactic features)
+Ordinary/realizational rule constraints (MaxApplicationCount/RequiredStemName/Blockable)
+Tracing (TraceType)
+Element deactivation (isActive) across loader collections

@@ -33,6 +33,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
+            10.0.303
             10.0.x
 
       - name: Restore dotnet tools
@@ -64,6 +65,14 @@ jobs:
         run: dotnet build --no-restore -c Release
       - name: Test
         run: dotnet test --verbosity normal --collect:"Xplat Code Coverage"
+      # The semantic-coverage audit is gated by TheCheckedInCatalogMapsEveryRealSurfaceExactlyOnce
+      # under dotnet test, not here. That test can express what this CLI cannot: the catalog is
+      # deliberately an incomplete proposal backlog, so unclassified-mapping is the expected state
+      # rather than a regression, and the test pins it as the only diagnostic class allowed.
+      - name: Run conformance fixtures
+        run: dotnet run --no-build -c Release --project src/SIL.Machine.Morphology.HermitCrab.Conformance -- --fixtures conformance
+      - name: Check coarse construct parity
+        run: python conformance/parity-check.py
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         env:
@@ -81,6 +90,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
+            10.0.303
             10.0.x
 
       - uses: actions/download-artifact@v7

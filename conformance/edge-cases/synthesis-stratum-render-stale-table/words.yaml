@@ -1,0 +1,84 @@
+# oracle-provenance: founding-oracle
+# Verified against the C# founding oracle (hc.dll, via hc-conformance.exe self-check,
+# `dotnet run --project src/SIL.Machine.Morphology.HermitCrab.Conformance -c Release -- --fixtures
+# conformance --propose --include-pathological`) built from this worktree. Signatures below are
+# transcribed verbatim from that run, not hand-derived.
+#
+# Pins a founding-oracle mechanism: SynthesisStratumRule.Apply
+# (src/SIL.Machine.Morphology.HermitCrab/SynthesisStratumRule.cs) never reassigns a Word's own
+# `.Stratum` property as synthesis carries it forward through later strata -- unlike
+# AnalysisStratumRule.Apply, which DOES assign `input.Stratum = _stratum` on every stratum entry
+# (src/SIL.Machine.Morphology.HermitCrab/AnalysisStratumRule.cs, around line 126).
+# SignatureFormat.BuildSignature renders a parse's surface half against
+# `w.Stratum.CharacterDefinitionTable` (src/SIL.Machine.Morphology.HermitCrab.Tool/SignatureFormat.cs,
+# around line 56), so a root entered on a non-final stratum, whose material a LATER stratum's
+# obligatory phonological rule goes on to change, keeps rendering against its own stale (entry)
+# stratum's table all the way to the top -- if that table has no character definition for the
+# changed feature combination, the surface half renders empty even though the underlying analysis
+# (morpheme identity, rule application) is exactly right. word 'j' is the positive construct witness
+# (a word that crosses strata, rendering empty); word 'k' is the negative control (entry stratum IS
+# the surface stratum, renders normally).
+
+language: SynthesisStratumRenderStaleTable
+inspired_by: ["synthetic cross-stratum stale-render probe (not modeling any real language)"]
+sources:
+  - "src/SIL.Machine.Morphology.HermitCrab/SynthesisStratumRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab/AnalysisStratumRule.cs"
+  - "src/SIL.Machine.Morphology.HermitCrab.Tool/SignatureFormat.cs"
+requires: [phonology]
+words:
+  - word: j
+    note: >-
+      ROOTCROSS ("w", entered on the Root stratum, table tRoot), correctly changed by the Face
+      stratum's own obligatory "i -> j" rule (`z`: zA -> zB). The founding oracle's own analysis is
+      exactly right (ROOTCROSS, via prItoJ) but the SURFACE half of its signature renders EMPTY: the
+      resulting shape's feature combination (`z`=zB, `m`=mA) has no character definition anywhere in
+      tRoot (tRoot's only segment, "w", is `z`=zA) -- rendering happens against tRoot because
+      `Word.Stratum` was never reassigned as the derivation moved from Root to Face. This is the
+      positive construct witness: a word that genuinely crosses strata.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/SynthesisStratumRule.cs"
+    parses:
+      - signature: "ROOTCROSS|"
+        rules: [prItoJ]
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+          - "CharacterDefinitionTable: cross-table respelling (an inner-stratum root surfaces spelled by the final stratum's table)"
+
+  - word: k
+    note: >-
+      ROOTSAME ("k"), entered directly on the Face stratum (table tFace) -- its entry stratum IS the
+      surface stratum. Its own `m` value (mB) differs from the rule's own natural classes (`m`=mA),
+      so `ncI` never matches it and it passes through untouched. The negative control: even though
+      this grammar's cross-stratum rendering defect is real (see 'j' above), a word whose own material
+      never has to survive a stratum boundary renders normally regardless -- proving the defect is
+      about STALE stratum tracking specifically, not a blanket inability to render tFace's own
+      segments.
+    provenance: "src/SIL.Machine.Morphology.HermitCrab/AnalysisStratumRule.cs"
+    parses:
+      - signature: "ROOTSAME|k"
+        rules: []
+        exercises:
+          - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: w
+    note: >-
+      ROOTCROSS's own raw spelling, entered on the Root stratum (table tRoot, the grammar's FIRST/
+      non-final stratum). tFace (the grammar's LAST stratum) does not declare "w" as a character at
+      all, so the founding oracle cannot even tokenize this input string -- SKIPPED (invalid shape),
+      not a genuine zero-analysis "ok".
+    expect_skip: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: i
+    note: >-
+      A well-formed string over tFace's own alphabet (the rule's own INPUT segment, "i") that is not
+      any lexical entry's own shape and not a valid surface form either (the rule is obligatory, so a
+      bare "i" can never survive to the surface) -- a plain negative control.
+    expect_fail: true
+    exercises:
+      - "CharacterDefinitionTable: more than one table, one per stratum"
+
+  - word: jk
+    note: "Another well-formed non-entry string over tFace's own alphabet ('j'/'k' both legitimate tFace segments) -- a plain negative control proving tFace's inventory coverage alone doesn't manufacture spurious analyses."
+    expect_fail: true
