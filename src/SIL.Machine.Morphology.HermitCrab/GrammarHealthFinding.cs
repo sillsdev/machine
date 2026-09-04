@@ -26,6 +26,7 @@ namespace SIL.Machine.Morphology.HermitCrab
     public static class GrammarHealthCodes
     {
         public const string DuplicateFeatureBundle = "hc-duplicate-feature-bundle";
+        public const string PartialMorpheme = "hc-partial-morpheme";
         public const string UndeclaredSegment = "hc-undeclared-segment";
     }
 

@@ -182,4 +182,25 @@ public class GrammarHealthCheckerTests
         Assert.That(findings[0].Code, Is.EqualTo(GrammarHealthCodes.PartialMorpheme));
         Assert.That(findings[0].Subjects, Is.EqualTo(new object[] { rule }));
     }
+
+    [Test]
+    public void Check_PartialMorphemeAndExistingProblem_ReportsBoth()
+    {
+        FeatureSystem featSys = VocFeatureSystem();
+        var table = new CharacterDefinitionTable { Name = "table1" };
+        table.AddSegment("a", FeatureStruct.NewMutable(featSys).Symbol("voc+").Value);
+        table.AddSegment("b", FeatureStruct.NewMutable(featSys).Symbol("voc+").Value);
+        var stratum = new Stratum(table) { Name = "Surface" };
+        stratum.Entries.Add(new LexEntry { Id = "entry1", IsPartial = true });
+        var language = new Language { PhonologicalFeatureSystem = featSys };
+        language.CharacterDefinitionTables.Add(table);
+        language.Strata.Add(stratum);
+
+        IList<GrammarHealthFinding> findings = GrammarHealthChecker.Check(language);
+
+        Assert.That(
+            findings.Select(finding => finding.Code),
+            Is.EquivalentTo(new[] { GrammarHealthCodes.DuplicateFeatureBundle, GrammarHealthCodes.PartialMorpheme })
+        );
+    }
 }
