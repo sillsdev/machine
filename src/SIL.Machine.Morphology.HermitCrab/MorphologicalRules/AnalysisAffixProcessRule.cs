@@ -56,7 +56,7 @@ namespace SIL.Machine.Morphology.HermitCrab.MorphologicalRules
                 foreach (Word outWord in _rules[i].Apply(input).RemoveDuplicates())
                 {
                     if (!_rule.RequiredSyntacticFeatureStruct.IsEmpty)
-                        outWord.SyntacticFeatureStruct.Add(_rule.RequiredSyntacticFeatureStruct);
+                        outWord.SyntacticFeatureStruct.PriorityUnion(_rule.RequiredSyntacticFeatureStruct);
                     else if (_rule.OutSyntacticFeatureStruct.IsEmpty)
                         outWord.SyntacticFeatureStruct.Clear();
                     outWord.MorphologicalRuleUnapplied(_rule);
