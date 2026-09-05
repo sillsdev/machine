@@ -13,13 +13,17 @@
 
   A THIRD, hand-curated subject list (subject_kind = loader-gap) covers findings that are neither
   of the above shapes: a whole runtime construct HCLoader never builds at all (RealizationalRule),
-  or a structural fact about HOW HCLoader uses a construct that a single (element, attribute) pair
+  a structural fact about HOW HCLoader uses a construct that a single (element, attribute) pair
   cannot name (MorphologicalPhonologicalRuleFeatureGroup: HCLoader only ever builds three fixed,
   hardcoded groups and never sets a group's output policy away from its Overwrite default, so no
   custom-named group and no append-policy group can come from a FieldWorks project regardless of
-  what any single IDREF attribute on it says). Unlike the two mechanical lists, $LoaderGapSubjects
-  below has no repo-internal source to re-derive it from -- it is pinned by literal count, exactly
-  like every verdict's own research is.
+  what any single IDREF attribute on it says), or a host-configuration value with no IDREF/IDREFS
+  attribute of its own at all (morphologicalRuleOrder: HCLoader hardcodes every Stratum it builds
+  to Unordered -- HCLoader.cs:227,230,374 -- and can never emit `linear`, even though the DTD
+  defaults this attribute to `linear`, so "the fixture declares linear" is the wrong test; see the
+  verdict's own notes for the measurement that IS the right test). Unlike the two mechanical lists,
+  $LoaderGapSubjects below has no repo-internal source to re-derive it from -- it is pinned by
+  literal count, exactly like every verdict's own research is.
 
   The VERDICT for each subject (producible / hcloader_sites / notes) is NOT something a script can
   derive -- it required reading the whole of HCLoader.cs (FieldWorks repo, ~2837 lines) and cross-
@@ -406,7 +410,14 @@ Add-Verdict "interface-attribute" "MorphemeCoOccurrenceRule.primaryMorpheme" "Ye
 
 Add-Verdict "interface-attribute" "MorphologicalInput.excludedMPRFeatures" "Yes" @(
     "HCLoader.cs:1717 (AffixProcessAllomorph.ExcludedMprFeatures)"
-) "Ground-truth mapping via engine repo XmlLanguageLoader.cs:1057-1062."
+) (
+    "Producible only on a rule reached through an AffixTemplate Slot: HCLoader.cs:1717 is the sole " +
+    "assignment site, and it fires only inside LoadAffixTemplate's irregular-inflected-form slot-" +
+    "blocking loop, adding ILexEntryInflType-derived features to a rule already reached via that " +
+    "Slot. A stratum-level (non-templated) rule's excludedMPRFeatures has no HCLoader code path at " +
+    "all -- unlike requiredMPRFeatures (row above), which several non-templated rule loaders " +
+    "populate directly. Ground-truth mapping via engine repo XmlLanguageLoader.cs:1057-1062."
+)
 
 Add-Verdict "interface-attribute" "MorphologicalInput.requiredMPRFeatures" "Yes" @(
     "HCLoader.cs:968,1001,1069,1096,1123"
@@ -445,6 +456,26 @@ Add-Verdict "loader-gap" "MorphologicalPhonologicalRuleFeatureGroup" "No" @() (
     "outputType=`"append`" group, cannot come from a FieldWorks project regardless of the " +
     "producible MorphologicalPhonologicalRuleFeatureGroup.features attribute (above) it also " +
     "carries."
+)
+
+Add-Verdict "loader-gap" "morphologicalRuleOrder" "No" @(
+    "HCLoader.cs:227 (default Morphophonemic stratum)"
+    "HCLoader.cs:230 (default Clitics stratum)"
+    "HCLoader.cs:374 (CreateStrata, every custom stratum)"
+) (
+    "HCLoader hardcodes MorphologicalRuleOrder.Unordered at all three sites where it constructs a " +
+    "Stratum -- there is no fourth site, and no LibLCM-sourced value ever reaches this property -- " +
+    "so a FieldWorks project can never produce a linear-ordered stratum. The condition this " +
+    "verdict answers is NOT that the fixture's grammar.xml declares morphologicalRuleOrder as " +
+    "linear: HermitCrabInput.dtd:244 defaults that attribute to linear, so an absent or explicit " +
+    "linear declaration is the common case and is true of most fixtures regardless of whether their " +
+    "ground truth actually depends on it -- flagging on the declaration alone would condemn the " +
+    "large majority of fixtures in this suite that never exercise the difference. The real " +
+    "condition, established by measurement (copy the fixture, flip its Stratum to unordered, and " +
+    "re-run the C# founding oracle): a fixture is HC-engine-only for this reason only if that flip changes some " +
+    "word's found-analysis set -- a spurious extra parse, a lost one, or a duplicate -- not merely " +
+    "the search order or timing. Six fixtures were measured this way and found genuinely dependent; " +
+    "most linear/absent fixtures measured were inert under the flip and are unaffected by this row."
 )
 
 Add-Verdict "interface-attribute" "MorphologicalRule.outputObligatoryFeatures" "No" @() (
@@ -569,8 +600,8 @@ foreach ($attr in $interfaceAttrs) {
 
 # loader-gap subjects have no repo-internal source to enumerate them from (see header comment) --
 # this literal list IS the enumeration, pinned by count the same way the verdicts themselves are.
-$loaderGapSubjects = @("RealizationalRule", "MorphologicalPhonologicalRuleFeatureGroup")
-if ($loaderGapSubjects.Count -ne 2) { throw "Expected 2 loader-gap subjects, found $($loaderGapSubjects.Count)" }
+$loaderGapSubjects = @("RealizationalRule", "MorphologicalPhonologicalRuleFeatureGroup", "morphologicalRuleOrder")
+if ($loaderGapSubjects.Count -ne 3) { throw "Expected 3 loader-gap subjects, found $($loaderGapSubjects.Count)" }
 foreach ($subject in $loaderGapSubjects) {
     $key = "loader-gap|$subject"
     if (-not $Verdicts.ContainsKey($key)) { throw "No verdict recorded for loader-gap subject $subject -- add one to `$Verdicts before regenerating." }
@@ -596,7 +627,7 @@ if ($staleKeys) { throw "Verdict table has entries with no matching subject (sta
 $dupes = $rows | Group-Object subject_kind, subject | Where-Object { $_.Count -gt 1 }
 if ($dupes) { throw "Duplicate subjects in output: $($dupes.Name -join '; ')" }
 
-if ($rows.Count -ne 85) { throw "Expected 85 total rows (23 failure-reason + 60 interface-attribute + 2 loader-gap), got $($rows.Count)" }
+if ($rows.Count -ne 86) { throw "Expected 86 total rows (23 failure-reason + 60 interface-attribute + 3 loader-gap), got $($rows.Count)" }
 
 # ---------------------------------------------------------------------------
 # 5. Emit the TSV.
@@ -604,7 +635,7 @@ if ($rows.Count -ne 85) { throw "Expected 85 total rows (23 failure-reason + 60 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# GENERATED by conformance/tools/generate-fieldworks-producibility.ps1. One row per subject,")
 $lines.Add("# where subjects are every SIL.Machine.Morphology.HermitCrab.FailureReason enum member (except")
-$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv, plus two")
+$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv, plus three")
 $lines.Add("# hand-curated loader-gap subjects that are neither shape (a whole construct HCLoader never")
 $lines.Add("# builds, or a structural fact no single attribute names -- see the generator's own header")
 $lines.Add("# comment). Authority: FieldWorks' HCLoader.cs (Src/LexText/ParserCore/HCLoader.cs) -- the")

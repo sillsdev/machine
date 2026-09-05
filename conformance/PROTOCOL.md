@@ -391,9 +391,11 @@ the verdict in place.
 
 The verdict is human-authored, not mechanically re-derived the way `requires` is. It rests on
 `conformance/fieldworks-producibility.tsv` (a hand-researched, point-in-time snapshot of `HCLoader.cs`
-described in `conformance/docs/how-it-is-computed.md`) plus three usage-level checks no per-row TSV
-entry can express on its own, because each depends on *where* or *how* an otherwise-producible
-attribute is used, not merely on whether HCLoader ever writes it at all:
+described in `conformance/docs/how-it-is-computed.md`) plus four usage-level checks no per-row TSV
+entry can express on its own — three because each depends on *where* or *how* an otherwise-producible
+attribute is used, not merely on whether HCLoader ever writes it at all, and a fourth because it
+depends on whether a fixture's own committed ground truth is sensitive to a value HCLoader can never
+produce:
 
 - A rule reached only through an `AffixTemplate` `Slot` is necessarily inflectional, and
   `LoadInflAffixProcessRule` never sets `MorphologicalOutput`'s MPR features on an inflectional
@@ -407,6 +409,16 @@ attribute is used, not merely on whether HCLoader ever writes it at all:
   co-occurrence loaders build `Exclude` constraints only, sourced from LibLCM repositories that are
   prohibition-only by name, so `type="require"` has no FieldWorks equivalent regardless of how
   ordinary the surrounding rule is.
+- `MorphologicalRuleOrder` must not matter to a fixture's committed ground truth: HCLoader hardcodes
+  every `Stratum` it builds to `Unordered` (`HCLoader.cs:227,230,374`) and can never emit `linear`.
+  The check is NOT "the fixture's grammar.xml declares `linear`" — `HermitCrabInput.dtd:244` defaults
+  `morphologicalRuleOrder` to `linear`, so an absent-or-explicit `linear` declaration is the ordinary
+  case for most fixtures in this suite and flags nothing on its own; testing on the declaration alone
+  would condemn fixtures whose ground truth never actually depends on the ordering. Establish it the
+  way it was originally found: copy the fixture, flip its `Stratum` to `unordered`, and re-run the C#
+  founding oracle. Only if some word's found-analysis set changes — a spurious extra parse, a lost
+  one, or a duplicate, never merely a different search order or timing — does the fixture's ground
+  truth actually depend on the ordering, and only then is it HC-engine-only for this reason.
 
 Because the verdict is authored, not derived, any mechanical checker built against it may only
 prove a `true` verdict **wrong** — by finding a construct in a `true` fixture's `grammar.xml` that

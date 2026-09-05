@@ -26,7 +26,16 @@ inspired_by: ["synthetic head/foot feature gating probe (not modeling any real l
 sources:
   - "conformance/semantic-coverage-counterfactuals.tsv unobservable feature-gating surfaces"
 requires: []
-fieldworks_producible: true
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  MorphologicalRuleOrder: HCLoader hardcodes Unordered at every Stratum it builds (HCLoader.cs:227,
+  230,374) and can never emit `linear`. This fixture's Stratum is declared `morphologicalRuleOrder=
+  "linear"` (grammar.xml), and three words depend on that ordering rather than merely tolerating it:
+  flipping the stratum to `unordered` and re-running the C# founding oracle gives kalidka, kalnoka
+  and kalidmu each a spurious extra parse absent from the committed expectations above. Independent
+  of the rrPast RealizationalRule->MorphologicalRule conversion recorded in this file's own header --
+  that conversion stays, and fixed a different, now-closed gap -- this is a second, unrelated reason
+  the fixture remains HC-engine-only.
 words:
   - word: kal
     note: Bare root, plural and stressed, so it satisfies both of the rule's gates.
