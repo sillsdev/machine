@@ -8,6 +8,14 @@ inspired_by: ["synthetic bistratal shared-representation probe (not modeling any
 sources:
   - "docs/conformance/representative-typology-basis.md S1.2.5 (Multi-table: shared-representation-across-tables configuration)"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Core premise is two strata assigned two DISTINCT CharacterDefinitionTables (t1/t2); HCLoader
+  builds exactly one CharacterDefinitionTable per grammar (LoadCharacterDefinitionTable,
+  HCLoader.cs:2669-2742, invoked once at :204) and assigns that SAME table to every Stratum it
+  constructs (HCLoader.cs:227,230,233,374) -- two genuinely different tables in one grammar cannot
+  arise from a FieldWorks project. Also authored/verified only against pg_parse::Morpher (HC-Rust),
+  not the C# founding oracle -- see this fixture's own header note.
 words:
   - word: des
     note: >-

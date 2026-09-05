@@ -28,6 +28,13 @@ inspired_by: ["synthetic loader-semantics probe (not modeling any real language)
 sources:
   - "src/SIL.Machine.Morphology.HermitCrab/XmlLanguageLoader.cs IsActive call sites"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Probes isActive="no" on 13 collection kinds; HCLoader has a Disabled-filter equivalent for only
+  CompoundRule/AffixTemplate/PhonologicalRule+MetathesisRule/AllomorphCoOccurrenceRule/
+  MorphemeCoOccurrenceRule (HCLoader.cs:241,295,302,342,348) -- for every other kind this fixture
+  probes (LexicalEntry, Allomorph, Stratum, Language itself, etc.) an object is either in the LibLCM
+  project or it does not exist; there is no "present but inactive" state to produce.
 words:
   - word: kul
     note: >-

@@ -42,6 +42,7 @@ sources:
   - "typological literature on derivation strata and noun incorporation"
   - "typological literature on recursive derivational suffixation and postbase ordering"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: nuna
     note: NUNA ("land", posN) bare noun root -- no rule touches it, trivially valid.

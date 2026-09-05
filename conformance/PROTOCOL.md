@@ -360,3 +360,58 @@ These are the only settable, parse-affecting properties found on `Morpher`; `Xml
 (which builds the `Language` object from `grammar.xml`) does not read, set, or expose any of them —
 every one of the above is host-side configuration layered on top of the grammar, never something a
 grammar file itself can express or override.
+
+## 9. FieldWorks producibility
+
+Passing this suite proves an engine matches the founding oracle over `grammar.xml`; it says nothing
+by itself about whether any real project could have produced that `grammar.xml`. FieldWorks users
+never author `HermitCrabInput` XML directly — their grammars come out of `HCLoader.cs`
+(`Src/LexText/ParserCore/HCLoader.cs` in the FieldWorks repository), which builds a `Language`
+straight from a LibLCM project and has a materially narrower reach than the DTD or the engine it
+feeds. A fixture can therefore be a fully conformant, oracle-verified regression test of the engine
+and still describe a grammar shape no FieldWorks user will ever see.
+
+Every fixture's `words.yaml` front matter carries `fieldworks_producible: true|false` for exactly
+this reason, directly after `requires`:
+
+- `true` — every construct the fixture's `grammar.xml` exercises has a known HCLoader code path
+  that can emit it from a real project.
+- `false` — at least one construct the fixture exercises has no such path. `false` fixtures also
+  carry `fieldworks_producible_notes`, naming the offending construct(s) and citing the HCLoader
+  evidence (or its absence) that grounds the verdict.
+
+A `false` fixture is not deprecated and not lower quality — it stays exactly as conformance-gated as
+any other fixture, regression-testing the engine against the founding oracle precisely as designed.
+What `false` means is narrower: this fixture is **HC-engine-only**. Passing it is evidence the
+engine matches HermitCrab's own behavior; it is not evidence of FieldWorks-facing coverage, and
+citing it as such overstates what was tested. A fixture legitimately moves from `false` to `true`
+when its grammar is rewritten to drop the offending construct in favor of an equivalent FieldWorks
+can actually produce (see this suite's conversion history for a worked example) — never by relaxing
+the verdict in place.
+
+The verdict is human-authored, not mechanically re-derived the way `requires` is. It rests on
+`conformance/fieldworks-producibility.tsv` (a hand-researched, point-in-time snapshot of `HCLoader.cs`
+described in `conformance/docs/how-it-is-computed.md`) plus three usage-level checks no per-row TSV
+entry can express on its own, because each depends on *where* or *how* an otherwise-producible
+attribute is used, not merely on whether HCLoader ever writes it at all:
+
+- A rule reached only through an `AffixTemplate` `Slot` is necessarily inflectional, and
+  `LoadInflAffixProcessRule` never sets `MorphologicalOutput`'s MPR features on an inflectional
+  rule — so a template-slot rule that writes MPR features cannot come from FieldWorks even though
+  the same write is producible on a stratum-level (non-templated) rule.
+- `requiredMPRFeatures` must be identical across every subrule of one rule: HCLoader computes a
+  single `requiredMprFeatures` list per MSA and applies it to every subrule alike, so two subrules
+  of the same rule with *different* required MPR features cannot come from FieldWorks even though
+  the attribute itself is ordinarily producible.
+- A `MorphemeCoOccurrenceRule`/`AllomorphCoOccurrenceRule` must be `type="exclude"`: HCLoader's two
+  co-occurrence loaders build `Exclude` constraints only, sourced from LibLCM repositories that are
+  prohibition-only by name, so `type="require"` has no FieldWorks equivalent regardless of how
+  ordinary the surrounding rule is.
+
+Because the verdict is authored, not derived, any mechanical checker built against it may only
+prove a `true` verdict **wrong** — by finding a construct in a `true` fixture's `grammar.xml` that
+matches a `fieldworks-producibility.tsv` "No" row or one of the three checks above — never prove a
+`false` verdict wrong. A checker cannot see the absence of an HCLoader code path; it can only see
+that a construct is used, and that is sufficient to falsify `true` but never sufficient to certify
+it, since the research behind a `false` verdict is exactly the part no checker can redo by reading
+`grammar.xml` alone.

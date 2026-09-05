@@ -32,6 +32,7 @@ inspired_by: ["synthetic pathological-complexity probe (not modeling any real la
 sources:
   - "docs/conformance-framework-plan.md section 4.5 (pathological category); F3 worked example"
 requires: []
+fieldworks_producible: true
 budget_ms: 15000
 words:
   - word: "k"

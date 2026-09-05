@@ -37,6 +37,7 @@ inspired_by: ["synthetic StrRep-identity probe (not modeling any real language)"
 sources:
   - "P10, StrRep identity dimension on a feature-less grammar"
 requires: []
+fieldworks_producible: true
 words:
   - word: pat
     note: >-

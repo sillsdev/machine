@@ -57,6 +57,12 @@ sources:
   - "typological literature on suffix ordering (CARP hierarchy: Causative-Applicative-Reciprocal-Passive)"
   - "typological literature on post-nasal mutation / post-nasal hardening-voicing"
 requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Same three defects as fusional-realizational-morphology (LexicalEntry.family, RealizationalRule,
+  and CompoundingRule.outputObligatoryFeatures -- HCLoader never sets ObligatorySyntacticFeatures on
+  a CompoundingRule, HCLoader.cs:1842-2001), plus a MorphologicalOutput MPRFeatures write from inside
+  an AffixTemplate slot (same HCLoader.cs:976-1006 gap as prefixal-discontinuous-slot-dependency).
 words:
   # Bucket-2 coverage (LexicalEntry.ruleFeatures/MorphologicalOutput.MPRFeatures ->
   # PhonologicalSubrule.{required,excluded}MPRFeatures): placed FIRST in file order deliberately, AND

@@ -23,6 +23,13 @@ inspired_by: ["synthetic compounding-constraint probe (not modeling any real lan
 sources:
   - "conformance/semantic-coverage-baseline.txt compounding todo entries"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  crJoinInsert's own (sole) CompoundingSubrule is marked isActive="no" to test per-subrule
+  deactivation; LoadEndoCompoundingRule/LoadExoCompoundingRule (HCLoader.cs:1842-2001) always
+  synthesize exactly one CompoundingSubrule per CompoundingRule directly from the LibLCM compound
+  rule's own MSAs, with no per-subrule Disabled/isActive filter at all -- a FieldWorks compound rule
+  cannot have its own only subrule considered inactive while the rule itself stays active.
 words:
   - word: ka
     note: Bare head root, number=sg, class=a.

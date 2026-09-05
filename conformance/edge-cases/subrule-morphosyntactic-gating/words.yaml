@@ -16,6 +16,7 @@ inspired_by: ["synthetic subrule-level phonological gating probe (not modeling a
 sources:
   - "docs/conformance/representative-typology-basis.md S1.2.7 (Subrule-level phonological gating -- its own tagged phenomenon)"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: pat
     note: >-

@@ -50,6 +50,13 @@ inspired_by: ["synthetic feature-system and rule-deactivation probe (not modelin
 sources:
   - "conformance/semantic-coverage-baseline.txt feature-system todo entries"
 requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Most of its isActive="no" decoys (SymbolicFeature, ComplexFeature, FeatureValue,
+  SegmentNaturalClass, FeatureNaturalClass, LexicalEntry) sit on collection kinds HCLoader has no
+  Disabled/isActive filter for at all -- LoadFeatureSystem (HCLoader.cs:2650-2667) adds every feature
+  in FeaturesOC unconditionally, and no comparable filter exists for natural classes or entries
+  either. Only its PhonologicalRule/MetathesisRule decoys (HCLoader.cs:302-336) are producible.
 words:
   - word: ik
     note: >-

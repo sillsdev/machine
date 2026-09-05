@@ -7,6 +7,12 @@ inspired_by: ["synthetic MPR-group-overwrite probe (not modeling any real langua
 sources:
   - "languages/fusional-realizational-morphology's own MprGroups stratum (mrThemeX/mrThemeY/mrEndZ, ThemeGroup)"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Entire premise is a custom-named MorphologicalPhonologicalRuleFeatureGroup ("ThemeGroup" over
+  mprA/mprB); LoadLanguage (HCLoader.cs:168-192) only ever builds exactly three hardcoded groups
+  (inflClasses/exceptionFeatures/lexEntryInflTypes) -- a user-named group over user-chosen features
+  cannot come from a FieldWorks project regardless of its outputType.
 words:
   - word: dof
     note: DOF bare root, no prefix -- a plain control.

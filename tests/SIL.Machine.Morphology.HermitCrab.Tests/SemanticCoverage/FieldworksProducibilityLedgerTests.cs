@@ -8,11 +8,13 @@ namespace SIL.Machine.Morphology.HermitCrab;
 // lives in the separate FieldWorks repo, not this one) can ever produce each construct this suite's
 // other ledgers measure. That repo is not a dependency of this one, so nothing here may open it or
 // fail when its content drifts -- a deliberate, permanent limitation, not an oversight. What these
-// tests DO check is the file's own internal shape: well-formed, and every subject named by two sources
-// already inside this repo (the FailureReason enum and interface-inventory.tsv) appears exactly
-// once. That is exactly what conformance/tools/generate-fieldworks-producibility.ps1 already
-// enforces at generation time; these tests pin the same guarantee against the checked-in file so a
-// hand-edit that bypasses the generator is also caught.
+// tests DO check is the file's own internal shape: well-formed, and every subject named by two
+// mechanical sources already inside this repo (the FailureReason enum and interface-inventory.tsv),
+// plus two hand-curated "loader-gap" subjects with no repo-internal source to derive them from (see
+// the generator script's own header comment), appears exactly once. That is exactly what
+// conformance/tools/generate-fieldworks-producibility.ps1 already enforces at generation time; these
+// tests pin the same guarantee against the checked-in file so a hand-edit that bypasses the
+// generator is also caught.
 [TestFixture]
 public sealed class FieldworksProducibilityLedgerTests
 {
@@ -27,7 +29,17 @@ public sealed class FieldworksProducibilityLedgerTests
         "notes",
     };
     private static readonly HashSet<string> AllowedProducible = new() { "Yes", "No", "Conditional" };
-    private static readonly HashSet<string> AllowedKinds = new() { "failure-reason", "interface-attribute" };
+    private static readonly HashSet<string> AllowedKinds = new() { "failure-reason", "interface-attribute", "loader-gap" };
+
+    // loader-gap subjects are neither a FailureReason nor a single (element, attribute) pair (see
+    // the generator script's own header comment for why), so unlike the two lists below there is no
+    // repo-internal source to re-derive this from -- this literal list IS the enumeration, exactly
+    // as the generator script pins it.
+    private static readonly string[] ExpectedLoaderGapSubjects =
+    {
+        "RealizationalRule",
+        "MorphologicalPhonologicalRuleFeatureGroup",
+    };
 
     private sealed record Row(
         string SubjectKind,
@@ -165,10 +177,17 @@ public sealed class FieldworksProducibilityLedgerTests
         var actualInterfaceAttributes = rows.Where(r => r.SubjectKind == "interface-attribute")
             .Select(r => r.Subject)
             .ToArray();
+        var actualLoaderGapSubjects = rows.Where(r => r.SubjectKind == "loader-gap").Select(r => r.Subject).ToArray();
 
         Assert.That(actualFailureReasons, Is.EquivalentTo(expectedFailureReasons));
         Assert.That(actualInterfaceAttributes, Is.EquivalentTo(expectedInterfaceAttributes));
-        Assert.That(rows, Has.Count.EqualTo(expectedFailureReasons.Count + expectedInterfaceAttributes.Count));
+        Assert.That(actualLoaderGapSubjects, Is.EquivalentTo(ExpectedLoaderGapSubjects));
+        Assert.That(
+            rows,
+            Has.Count.EqualTo(
+                expectedFailureReasons.Count + expectedInterfaceAttributes.Count + ExpectedLoaderGapSubjects.Length
+            )
+        );
     }
 
     // Pins the headline counts reported alongside this ledger, so a silent hand-edit that flips a
@@ -185,9 +204,9 @@ public sealed class FieldworksProducibilityLedgerTests
 
         TestContext.Out.WriteLine($"producible: Yes={yes} No={no} Conditional={conditional}");
 
-        Assert.That(rows, Has.Count.EqualTo(83));
+        Assert.That(rows, Has.Count.EqualTo(85));
         Assert.That(yes, Is.EqualTo(61));
-        Assert.That(no, Is.EqualTo(22));
+        Assert.That(no, Is.EqualTo(24));
         Assert.That(conditional, Is.EqualTo(0));
     }
 }

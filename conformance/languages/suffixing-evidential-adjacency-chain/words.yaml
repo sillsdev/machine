@@ -92,6 +92,11 @@ sources:
   - "typological literature on verbal morphology and evidentiality"
   - "Aikhenvald, Evidentiality (2004)"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Four MorphemeCoOccurrenceRule type="require" elements; HCLoader's only co-occurrence loader
+  (LoadMorphemeCoOccurrenceRules, HCLoader.cs:2213-2239) builds Exclude constraints only, sourced
+  from a prohibition-only LibLCM repository -- "require" adjacency has no FieldWorks equivalent.
 words:
   - word: tupay
     note: >-

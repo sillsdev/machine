@@ -11,6 +11,16 @@
       src/SIL.Machine.Morphology.HermitCrab/ITraceManager.cs
     - every (element, attribute) row in conformance/interface-inventory.tsv
 
+  A THIRD, hand-curated subject list (subject_kind = loader-gap) covers findings that are neither
+  of the above shapes: a whole runtime construct HCLoader never builds at all (RealizationalRule),
+  or a structural fact about HOW HCLoader uses a construct that a single (element, attribute) pair
+  cannot name (MorphologicalPhonologicalRuleFeatureGroup: HCLoader only ever builds three fixed,
+  hardcoded groups and never sets a group's output policy away from its Overwrite default, so no
+  custom-named group and no append-policy group can come from a FieldWorks project regardless of
+  what any single IDREF attribute on it says). Unlike the two mechanical lists, $LoaderGapSubjects
+  below has no repo-internal source to re-derive it from -- it is pinned by literal count, exactly
+  like every verdict's own research is.
+
   The VERDICT for each subject (producible / hcloader_sites / notes) is NOT something a script can
   derive -- it required reading the whole of HCLoader.cs (FieldWorks repo, ~2837 lines) and cross-
   referencing this repo's own engine source (property definitions, XmlLanguageLoader.cs as the
@@ -412,6 +422,31 @@ Add-Verdict "interface-attribute" "MorphologicalPhonologicalRuleFeatureGroup.fea
     "HCLoader.cs:571-577 (LoadMprFeature, group.MprFeatures.Add(feat))"
 ) ""
 
+# --- Hand-curated loader-gap subjects (subject_kind = loader-gap) -----------
+# See the header comment: neither of these is a FailureReason or a single (element, attribute)
+# pair, so they cannot join the two mechanical lists above -- $LoaderGapSubjects below is what
+# stands in for "mechanically enumerated" for this third kind.
+
+Add-Verdict "loader-gap" "RealizationalRule" "No" @() (
+    "Every rule-building method in HCLoader.cs constructs AffixProcessRule, never " +
+    "RealizationalRule: LoadDerivAffixProcessRule (HCLoader.cs:928), LoadInflAffixProcessRule " +
+    "(:979 -- whose own comment at :977 says outright '// TODO: use realizational affix process " +
+    "rules'), LoadUnclassifiedAffixProcessRule (:1010), LoadCliticAffixProcessRule (:1032), " +
+    "LoadNullAffixProcessRule (:1773). RealizationalRule/TryLoadRealizationalRule exist only in " +
+    "the engine's own XmlLanguageLoader.cs:392-393,947 and XmlLanguageWriter.cs:623,753,760 -- " +
+    "never in HCLoader. No MSA shape reaches a RealizationalRule construction site."
+)
+
+Add-Verdict "loader-gap" "MorphologicalPhonologicalRuleFeatureGroup" "No" @() (
+    "LoadLanguage (HCLoader.cs:168-192) builds exactly three hardcoded groups -- inflClasses " +
+    "(matchType Any), exceptionFeatures (All), lexEntryInflTypes (All) -- never a user-named " +
+    "group over user-chosen features, and never touches MprFeatureGroup.Output away from its " +
+    "Overwrite default (MprFeatureGroup.cs:26-35). A grammar's own custom-named group, or an " +
+    "outputType=`"append`" group, cannot come from a FieldWorks project regardless of the " +
+    "producible MorphologicalPhonologicalRuleFeatureGroup.features attribute (above) it also " +
+    "carries."
+)
+
 Add-Verdict "interface-attribute" "MorphologicalRule.outputObligatoryFeatures" "No" @() (
     "Absence confirmed across all four AffixProcessRule loaders (HCLoader.cs:926-1046). " +
     "AffixProcessRule.ObligatorySyntacticFeatures (engine repo AffixProcessRule.cs:68) is never " +
@@ -532,10 +567,28 @@ foreach ($attr in $interfaceAttrs) {
     })
 }
 
+# loader-gap subjects have no repo-internal source to enumerate them from (see header comment) --
+# this literal list IS the enumeration, pinned by count the same way the verdicts themselves are.
+$loaderGapSubjects = @("RealizationalRule", "MorphologicalPhonologicalRuleFeatureGroup")
+if ($loaderGapSubjects.Count -ne 2) { throw "Expected 2 loader-gap subjects, found $($loaderGapSubjects.Count)" }
+foreach ($subject in $loaderGapSubjects) {
+    $key = "loader-gap|$subject"
+    if (-not $Verdicts.ContainsKey($key)) { throw "No verdict recorded for loader-gap subject $subject -- add one to `$Verdicts before regenerating." }
+    $v = $Verdicts[$key]
+    $rows.Add([PSCustomObject]@{
+        subject_kind   = "loader-gap"
+        subject        = $subject
+        producible     = $v.Producible
+        hcloader_sites = $v.Sites
+        notes          = $v.Notes
+    })
+}
+
 # Verify every verdict was actually consumed (catches a stale entry after a rename/removal).
 $expectedKeys = @()
 $expectedKeys += $failureReasons | ForEach-Object { "failure-reason|$_" }
 $expectedKeys += $interfaceAttrs | ForEach-Object { "interface-attribute|$($_.Element).$($_.Attribute)" }
+$expectedKeys += $loaderGapSubjects | ForEach-Object { "loader-gap|$_" }
 $staleKeys = $Verdicts.Keys | Where-Object { $expectedKeys -notcontains $_ }
 if ($staleKeys) { throw "Verdict table has entries with no matching subject (stale after a rename?): $($staleKeys -join ', ')" }
 
@@ -543,7 +596,7 @@ if ($staleKeys) { throw "Verdict table has entries with no matching subject (sta
 $dupes = $rows | Group-Object subject_kind, subject | Where-Object { $_.Count -gt 1 }
 if ($dupes) { throw "Duplicate subjects in output: $($dupes.Name -join '; ')" }
 
-if ($rows.Count -ne 83) { throw "Expected 83 total rows (23 failure-reason + 60 interface-attribute), got $($rows.Count)" }
+if ($rows.Count -ne 85) { throw "Expected 85 total rows (23 failure-reason + 60 interface-attribute + 2 loader-gap), got $($rows.Count)" }
 
 # ---------------------------------------------------------------------------
 # 5. Emit the TSV.
@@ -551,12 +604,15 @@ if ($rows.Count -ne 83) { throw "Expected 83 total rows (23 failure-reason + 60 
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("# GENERATED by conformance/tools/generate-fieldworks-producibility.ps1. One row per subject,")
 $lines.Add("# where subjects are every SIL.Machine.Morphology.HermitCrab.FailureReason enum member (except")
-$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv. Authority:")
-$lines.Add("# FieldWorks' HCLoader.cs (Src/LexText/ParserCore/HCLoader.cs) -- the component that turns a")
-$lines.Add("# real FieldWorks/LibLCM project into an HC grammar. producible=No means no FieldWorks user can")
-$lines.Add("# ever produce this construct, so covering it elsewhere in this suite proves nothing about real")
-$lines.Add("# use. See conformance/docs/how-it-is-computed.md for the full explanation, including why this")
-$lines.Add("# ledger is a point-in-time snapshot of an external repo that cannot be drift-checked here.")
+$lines.Add("# None) plus every (element, attribute) row in conformance/interface-inventory.tsv, plus two")
+$lines.Add("# hand-curated loader-gap subjects that are neither shape (a whole construct HCLoader never")
+$lines.Add("# builds, or a structural fact no single attribute names -- see the generator's own header")
+$lines.Add("# comment). Authority: FieldWorks' HCLoader.cs (Src/LexText/ParserCore/HCLoader.cs) -- the")
+$lines.Add("# component that turns a real FieldWorks/LibLCM project into an HC grammar. producible=No means")
+$lines.Add("# no FieldWorks user can ever produce this construct, so covering it elsewhere in this suite")
+$lines.Add("# proves nothing about real use. See conformance/docs/how-it-is-computed.md for the full")
+$lines.Add("# explanation, including why this ledger is a point-in-time snapshot of an external repo that")
+$lines.Add("# cannot be drift-checked here.")
 $lines.Add("subject_kind`tsubject`tproducible`thcloader_sites`tnotes")
 foreach ($row in $rows) {
     $lines.Add(("{0}`t{1}`t{2}`t{3}`t{4}" -f $row.subject_kind, $row.subject, $row.producible, $row.hcloader_sites, $row.notes))

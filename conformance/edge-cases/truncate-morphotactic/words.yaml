@@ -44,6 +44,7 @@ inspired_by: ["synthetic AffixProcessRule truncation probe (not modeling any rea
 sources:
   - "W9.1 probe, AffixProcessRuleTests.TruncateRules"
 requires: []
+fieldworks_producible: true
 words:
   - word: sag
     note: root32 ("sag") bare, no rule applied -- a plain control proving the root itself is valid before any truncation rule touches it.

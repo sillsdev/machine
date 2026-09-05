@@ -81,6 +81,13 @@ sources:
   - "WALS - Fusion, Exponence, Inflectional Synthesis in Inflectional Morphology chapters"
   - "typological literature on suppletion - inflectional classes, syncretism, principal parts"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  LexicalEntry.family (famCarry/famHNBlock/famCompBlock) has zero hits anywhere in HCLoader.cs;
+  RealizationalRule (rrPast) is never constructed by any HCLoader rule loader (all five
+  Load*AffixProcessRule methods build AffixProcessRule only); mrCompoundConstrained's two
+  CompoundingSubrules set HeadMorphologicalInput requiredMPRFeatures/excludedMPRFeatures, never
+  populated by LoadEndoCompoundingRule/LoadExoCompoundingRule (HCLoader.cs:1842-2001).
 words:
   - word: mun
     note: STEM's default (unrestricted) allomorph, bare -- no person feature assigned, so there is no StemName region to fail.

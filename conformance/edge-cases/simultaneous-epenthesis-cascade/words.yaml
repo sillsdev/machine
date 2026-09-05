@@ -28,6 +28,7 @@ inspired_by: ["synthetic RewriteRule Iterative-vs-Simultaneous stress probe (not
 sources:
   - "rust/docs/p13-simultaneous-design.md section 5"
 requires: [phonology]
+fieldworks_producible: true
 expect_crash: true
 words:
   - word: bubu

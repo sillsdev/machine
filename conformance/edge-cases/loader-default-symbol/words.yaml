@@ -27,6 +27,11 @@ inspired_by: ["synthetic loader-semantics probe (not modeling any real language)
 sources:
   - "rust/parity-out/audit/phase2/C-loader-parity.md (Phase-2 audit C finding N2)"
 requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Exercises SymbolicFeature.defaultSymbol; LoadFeatureSystem (HCLoader.cs:2650-2667) never sets a
+  default value on any SymbolicFeature it builds -- the engine's DefaultSymbolID/DefaultValue has no
+  HCLoader writer.
 words:
   - word: bat
     note: >-

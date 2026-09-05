@@ -7,6 +7,7 @@ inspired_by: ["synthetic principal-parts / stem-alternation probe (not modeling 
 sources:
   - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::StemName's own doc"
 requires: []
+fieldworks_producible: true
 words:
   - word: tam
     note: The unrestricted default allomorph, bare -- no featPers assigned at all, which is outside snP1's region, so the excluded-match check is satisfied trivially.

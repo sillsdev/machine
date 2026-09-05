@@ -37,6 +37,7 @@ inspired_by: ["synthetic Latin-diacritic-segment probe (not modeling any real la
 sources:
   - "PanGloss hc-foma engine: precomposed Latin diacritics (é/ö/ñ/î) yielding zero parses (NFD-decomposition / byte-handling bug in the alternative FST engine, not in HermitCrab)"
 requires: []
+fieldworks_producible: true
 words:
   - word: año
     note: >-

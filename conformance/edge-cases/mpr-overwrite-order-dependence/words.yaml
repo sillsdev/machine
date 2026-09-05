@@ -39,6 +39,12 @@ inspired_by: ["synthetic MPR-overwrite-group order-dependence probe (not modelin
 sources:
   - "conformance/edge-cases/morphotactic-attribute-breadth (outputType coverage this fixture extends: order-dependence on an unordered stratum, not pinned there)"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Entire premise is two custom-named MorphologicalPhonologicalRuleFeatureGroup elements (one
+  outputType="overwrite", one outputType="append"); HCLoader only ever builds three hardcoded groups
+  (HCLoader.cs:168-192) and never sets a group's Output away from its Overwrite default -- neither a
+  custom group nor an append-policy group can come from a FieldWorks project.
 words:
   - word: dabo
     note: Bare free root. The overwrite probe's own control that the grammar loads and admits a complete word at all.

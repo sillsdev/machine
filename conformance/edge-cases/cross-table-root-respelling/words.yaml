@@ -18,6 +18,12 @@ inspired_by: ["synthetic cross-table respelling probe, phonology-rule-free (not 
 sources:
   - "src/SIL.Machine.Morphology.HermitCrab/CharacterDefinitionTable.cs"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Core premise (cross-table respelling) requires two distinct CharacterDefinitionTables (tIn/tFin)
+  across strata; HCLoader builds exactly one table per grammar and reuses it for every stratum
+  (HCLoader.cs:204,227-233,374,2669-2742) -- same gap as
+  edge-cases/bistratal-overlapping-segment-representation.
 words:
   - word: t
     note: >-
