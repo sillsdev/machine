@@ -67,15 +67,15 @@ FeatureGatingBreadth,tun,TUN|tun,Syntactic feature agreement (RequiredHeadFeatur
 FeatureGatingBreadth,tunka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,mol,MOL|mol,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,molka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalid,KAL+PAST|kalid,RealizationalAffixProcessRule
+FeatureGatingBreadth,kalid,KAL+PAST|kalid,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalidka,,Affix template slots (obligatory/disjunctive/ordering)
 FeatureGatingBreadth,nal,NAL|nal,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,nalno,NAL+LOUD|nalno,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,nalnomu,NAL+LOUD+EMPH|nalnomu,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalkano,KAL+AGR+LOUD|kalkano,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureGatingBreadth,kalnoka,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
-FeatureGatingBreadth,kalmuid,KAL+EMPH+PAST|kalmuid,RealizationalAffixProcessRule
-FeatureGatingBreadth,kalidmu,,RealizationalAffixProcessRule
+FeatureGatingBreadth,kalmuid,KAL+EMPH+PAST|kalmuid,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
+FeatureGatingBreadth,kalidmu,,Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)
 FeatureSystemBreadth,ik,AK|ik,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureSystemBreadth,ak,,RewriteRule Iterative (epenthesis/deletion/feature/expansion/merge)
 FeatureSystemBreadth,at,AT|at,NaturalClass: Segments vs FeatureNaturalClass/SegmentNaturalClass precision
