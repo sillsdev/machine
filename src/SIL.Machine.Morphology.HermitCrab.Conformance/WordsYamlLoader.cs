@@ -25,6 +25,8 @@ public static class WordsYamlLoader
         "requires",
         "budget_ms",
         "expect_crash",
+        "fieldworks_producible",
+        "fieldworks_producible_notes",
         "words",
     };
     private static readonly HashSet<string> WordKeys = new(StringComparer.Ordinal)
@@ -137,6 +139,28 @@ public static class WordsYamlLoader
             doc.BudgetMs = long.Parse(RequireScalarNode(budgetNode, path, "front matter.budget_ms"));
         if (map.TryGetValue("expect_crash", out YamlNode crashNode))
             doc.ExpectCrash = ParseBool(RequireScalarNode(crashNode, path, "front matter.expect_crash"), path);
+        if (map.TryGetValue("fieldworks_producible", out YamlNode fwProducibleNode))
+        {
+            doc.FieldworksProducible = ParseBool(
+                RequireScalarNode(fwProducibleNode, path, "front matter.fieldworks_producible"),
+                path
+            );
+        }
+        if (map.TryGetValue("fieldworks_producible_notes", out YamlNode fwNotesNode))
+        {
+            doc.FieldworksProducibleNotes = RequireScalarNode(
+                fwNotesNode,
+                path,
+                "front matter.fieldworks_producible_notes"
+            );
+        }
+        if (doc.FieldworksProducible == false && doc.FieldworksProducibleNotes.Length == 0)
+        {
+            throw new WordsYamlException(
+                path,
+                "front matter: 'fieldworks_producible: false' requires a non-empty 'fieldworks_producible_notes'"
+            );
+        }
 
         if (!map.TryGetValue("words", out YamlNode wordsNode) || wordsNode is not YamlSequenceNode wordsSeq)
             throw new WordsYamlException(path, "front matter must have a 'words' sequence");

@@ -48,6 +48,7 @@ inspired_by: ["synthetic allomorph-disjunctivity probe (not modeling any real la
 sources:
   - "W3.2, history row 51 (987be2fd) deferred disjunctive-allomorph re-check half"
 requires: []
+fieldworks_producible: true
 words:
   - word: wak
     note: >-

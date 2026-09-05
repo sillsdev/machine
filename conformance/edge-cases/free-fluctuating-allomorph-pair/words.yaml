@@ -8,6 +8,7 @@ sources:
   - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::FreeFluctuation's own doc"
   - "machine/conformance/edge-cases/disjunctive-recheck (the free-fluctuation escape half of that fixture, isolated here)"
 requires: []
+fieldworks_producible: true
 words:
   - word: pol
     note: eAlt's first allomorph, unconstrained, bare -- establishes the free-fluctuation pair's baseline before "pel" below.

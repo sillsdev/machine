@@ -295,9 +295,15 @@ Everything above measures two layers: what the HC **engine** does, and what HC's
 single component that turns a LibLCM-backed FieldWorks project into an HC grammar — it is the only
 place that integrates both the LibLCM data model and what is reachable from it, so it is the right
 authority for this third layer. `conformance/fieldworks-producibility.tsv` records, for every
-`FailureReason` the engine can report (`ITraceManager.cs`, 23 members besides `None`) and every
+`FailureReason` the engine can report (`ITraceManager.cs`, 23 members besides `None`), every
 IDREF/IDREFS attribute this suite's own DTD inventory tracks (`interface-inventory.tsv`, 60 rows —
-same 60 as layer 2 above), whether `HCLoader` can ever produce it.
+same 60 as layer 2 above), and two hand-curated `loader-gap` subjects that are neither shape — a
+whole runtime construct `HCLoader` never builds at all (`RealizationalRule`), and a structural fact
+no single attribute can name (`MorphologicalPhonologicalRuleFeatureGroup`: `HCLoader` only ever
+builds three fixed, hardcoded groups and never sets a group's output policy away from its
+`Overwrite` default, so neither a custom-named group nor an `outputType="append"` group can come
+from a FieldWorks project, regardless of the ordinarily-producible `.features` attribute a group
+also carries) — whether `HCLoader` can ever produce it.
 
 **Why a `No` here is an exclusion, not a gap.** Layers 1–4 are all in the business of finding gaps to
 close — an unwitnessed surface is something a future fixture could still demonstrate. This layer is
@@ -305,8 +311,8 @@ the opposite kind of fact: if `HCLoader` never emits a construct, no FieldWorks 
 produce it, no matter how the grammar is authored, so no fixture — however cleverly written — can make
 covering that construct say anything about real FieldWorks use. A `No` here does not mean "not yet
 covered"; it means the coverage question is moot for that subject, and the honest response is to
-retire it from the "should the suite cover this" conversation rather than keep chasing it. 22 of the
-83 subjects landed there. About a third of those (9 of 22, on the interface side) are constructs the
+retire it from the "should the suite cover this" conversation rather than keep chasing it. 24 of the
+85 subjects landed there. About a third of those (9 of 22, on the interface side) are constructs the
 *engine* fully implements and even the engine's own reference XML loader reads — `HCLoader` simply
 never wires them up from LibLCM (`CompoundingRule.outputObligatoryFeatures`, `.outputProdRestrictions
 MprFeatures`, `HeadMorphologicalInput.requiredMPRFeatures`/`excludedMPRFeatures`, `InsertSegments.` /
@@ -314,7 +320,18 @@ MprFeatures`, `HeadMorphologicalInput.requiredMPRFeatures`/`excludedMPRFeatures`
 outputObligatoryFeatures`, `SymbolicFeature.defaultSymbol`) — a FieldWorks-specific exclusion layered
 on top of an engine that could support them. The rest were already dead schema even in the engine's
 own loader (the subcategorization/`SyntacticRule` family, plus `LexicalEntry.morphologicalRules` and
-the two `obligatory*Features` attributes), so `HCLoader`'s absence there is inherited, not new.
+the two `obligatory*Features` attributes), so `HCLoader`'s absence there is inherited, not new. The
+remaining 2 are the `loader-gap` subjects described above (`RealizationalRule`,
+`MorphologicalPhonologicalRuleFeatureGroup`) — neither a `FailureReason` nor a single interface
+attribute, so they sit outside the 22/83 count from before this pair was added, but they answer
+exactly the same producibility question the rest of this ledger asks.
+
+A `fieldworks_producible: true|false` field on each conformance fixture's own `words.yaml` front
+matter (`conformance/PROTOCOL.md`'s dedicated section) applies this same ledger, plus three
+usage-level checks a per-row TSV entry cannot express on its own (a template-slot rule may not set
+MPR features; `requiredMPRFeatures` must be identical across a rule's subrules; co-occurrence rules
+must be `type="exclude"`), fixture by fixture — naming which fixtures are HC-engine-only regression
+tests rather than evidence of FieldWorks-facing coverage.
 
 **Method.** Every verdict required reading the whole of `HCLoader.cs` (~2837 lines) and tracing each
 subject to the specific runtime property it would need to set on this repo's own engine classes,

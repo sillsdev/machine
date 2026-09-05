@@ -26,6 +26,11 @@ sources:
   - "src/SIL.Machine.Morphology.HermitCrab/AnalysisStratumRule.cs"
   - "src/SIL.Machine.Morphology.HermitCrab.Tool/SignatureFormat.cs"
 requires: [phonology]
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Core premise requires two distinct CharacterDefinitionTables (tRoot/tFace) across strata; same
+  HCLoader single-table gap (HCLoader.cs:204,227-233,374,2669-2742) as
+  edge-cases/bistratal-overlapping-segment-representation.
 words:
   - word: j
     note: >-

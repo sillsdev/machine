@@ -22,6 +22,16 @@ public class WordsYaml
     /// as manifest.json's expectCrash).</summary>
     public bool ExpectCrash;
 
+    /// <summary>Whether a real FieldWorks project (via HCLoader) could ever produce every construct this
+    /// fixture's grammar.xml exercises -- see conformance/PROTOCOL.md's own section on this field. Human-
+    /// authored, not mechanically re-derived the way <see cref="Requires"/> is. Null when the fixture
+    /// predates this field.</summary>
+    public bool? FieldworksProducible;
+
+    /// <summary>Required and non-empty when <see cref="FieldworksProducible"/> is false: names the
+    /// offending construct(s) and cites the HCLoader evidence grounding the verdict.</summary>
+    public string FieldworksProducibleNotes = "";
+
     public List<WordEntry> Words { get; } = new();
 }
 

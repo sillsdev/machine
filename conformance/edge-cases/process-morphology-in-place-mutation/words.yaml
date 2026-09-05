@@ -7,6 +7,7 @@ inspired_by: ["synthetic ablaut/mutation-as-sole-exponent probe (not modeling an
 sources:
   - "rust/crates/pg-foma/src/capability.rs, CharacteristicKind::ProcessMorphology's own doc and ABLAUT_PROCESS_XML unit fixture"
 requires: []
+fieldworks_producible: true
 words:
   - word: i
     note: The mutable root, bare -- no tense feature assigned, mrAblaut has nothing to apply to (it requires the target segment itself, not the whole word, and this IS the whole word already in the right shape only if mrAblaut fired, which it hasn't).

@@ -89,6 +89,7 @@ sources:
   - "WALS - Vowel Harmony chapters (backness harmony typology)"
   - "WALS - consonant gradation / alternation typology"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: semitide
     note: >-

@@ -54,6 +54,7 @@ sources:
   - "typological literature on root-and-pattern phonology and morphology, and the Obligatory Contour Principle"
   - "typological literature on templatic verbal morphology and the HermitCrab reference corpus"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: katab
     note: KTB bare root, no suffix -- no C_C seam exists, so prEpenthesis has no site to fire at.

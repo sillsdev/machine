@@ -22,6 +22,7 @@ inspired_by: ["synthetic right-to-left word-boundary-anchored rewrite probe (not
 sources:
   - "openspec/changes/plan-construct-coverage-completion task 4.2 (RightToLeftRewrite: additional in-scope pattern shapes -- Anchor)"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: aae
     note: >-

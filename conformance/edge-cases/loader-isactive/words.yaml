@@ -16,6 +16,12 @@ inspired_by: ["synthetic loader-semantics probe (not modeling any real language)
 sources:
   - "rust/parity-out/audit/phase2/C-loader-parity.md (Phase-2 audit C finding N1)"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  Exercises PhonologicalFeatureSystem isActive="no" via a SECOND PhonologicalFeatureSystem block;
+  HCLoader loads exactly one phonological feature system per grammar directly from LibLCM
+  (HCLoader.cs:198, LoadFeatureSystem at :2650-2667, unconditional over FeaturesOC) -- there is no
+  "a second, inactive feature-system block" state a FieldWorks project can produce.
 words:
   - word: kat
     note: Plain lexical root, no affixes -- proves the grammar loaded at all (the active PhonologicalFeatureSystem block's "voi" feature resolved) and that its signature renders as a plain literal string.

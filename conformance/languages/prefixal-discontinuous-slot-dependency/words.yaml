@@ -87,6 +87,13 @@ sources:
   - "typological literature on verb prefix position classes"
   - "typological literature on morpheme order and semantic scope: discontinuous/fused prefix dependencies"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  mrModeTrans writes MorphologicalOutput MPRFeatures from inside an AffixTemplate slot;
+  LoadInflAffixProcessRule (HCLoader.cs:976-1006) never sets OutMprFeatures on an inflectional rule.
+  mrSubj's two subrules (subSubjA/subSubjB) carry different requiredMPRFeatures, but
+  LoadInflAffixProcessRule computes one requiredMprFeatures list per MSA and applies it identically
+  to every subrule of that rule (HCLoader.cs:994-1002).
 words:
   - word: shiyidkal
     note: >-

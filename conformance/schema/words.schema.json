@@ -13,12 +13,25 @@
     "requires": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
     "budget_ms": { "type": "integer", "minimum": 1 },
     "expect_crash": { "type": "boolean" },
+    "fieldworks_producible": { "type": "boolean" },
+    "fieldworks_producible_notes": { "type": "string", "minLength": 1 },
     "words": {
       "type": "array",
       "minItems": 1,
       "items": { "$ref": "#/$defs/word" }
     }
   },
+  "allOf": [
+    {
+      "description": "fieldworks_producible: false requires notes naming the offending construct(s) and citing HCLoader evidence -- see conformance/PROTOCOL.md's FieldWorks producibility section.",
+      "if": {
+        "type": "object",
+        "properties": { "fieldworks_producible": { "const": false } },
+        "required": ["fieldworks_producible"]
+      },
+      "then": { "required": ["fieldworks_producible_notes"] }
+    }
+  ],
   "$defs": {
     "word": {
       "type": "object",

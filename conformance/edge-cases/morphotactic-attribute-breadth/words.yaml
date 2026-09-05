@@ -63,6 +63,13 @@ inspired_by: ["synthetic morphotactic-attribute probe (not modeling any real lan
 sources:
   - "conformance/semantic-coverage-baseline.txt morphotactic todo entries"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  mrUnblockable/mrMB/mrMA write MorphologicalOutput MPRFeatures from inside finalTemplate slots
+  (HCLoader.cs:976-1006 gap); one MorphemeCoOccurrenceRule and four AllomorphCoOccurrenceRule
+  type="require" elements (HCLoader.cs:2163-2239, Exclude-only); mrReal/mrRealDecoy are
+  RealizationalRule, never constructed by HCLoader; and its MorphologicalPhonologicalRuleFeatureGroup
+  elements are custom-named, but HCLoader only ever builds 3 fixed groups (HCLoader.cs:168-192).
 words:
   # Bucket-2 coverage (MorphologicalOutput.MPRFeatures->MorphologicalInput.excludedMPRFeatures):
   # placed FIRST in file order deliberately, and the distinguishing (baseline-fail) word placed

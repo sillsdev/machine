@@ -19,6 +19,7 @@ inspired_by: ["synthetic metathesis-ordering crash reduction (not modeling any r
 sources:
   - "reduced from conformance/edge-cases/feature-system-breadth while covering MetathesisRule@multipleApplicationOrder"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: ti
     note: >-

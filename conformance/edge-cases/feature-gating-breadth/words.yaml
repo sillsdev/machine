@@ -20,6 +20,13 @@ inspired_by: ["synthetic head/foot feature gating probe (not modeling any real l
 sources:
   - "conformance/semantic-coverage-counterfactuals.tsv unobservable feature-gating surfaces"
 requires: []
+fieldworks_producible: false
+fieldworks_producible_notes: >-
+  rrPast is a RealizationalRule, never constructed by any HCLoader rule loader (checked
+  LoadDerivAffixProcessRule/LoadInflAffixProcessRule/LoadUnclassifiedAffixProcessRule/
+  LoadCliticAffixProcessRule/LoadNullAffixProcessRule, all of which build AffixProcessRule only).
+  Every other construct in this fixture is ordinarily producible; see this repo's history for the
+  conversion that clears this note.
 words:
   - word: kal
     note: Bare root, plural and stressed, so it satisfies both of the rule's gates.

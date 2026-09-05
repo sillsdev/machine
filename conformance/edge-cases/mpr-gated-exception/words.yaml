@@ -21,6 +21,7 @@ inspired_by: ["synthetic agglutinative-Austronesian nasal-assimilation/deletion 
 sources:
   - "docs/conformance-staging-plan.md pathology catalog (agglutinative-Austronesian row)"
 requires: [phonology]
+fieldworks_producible: true
 words:
   - word: tulik
     note: TULIK bare root, no prefix -- a plain control.
