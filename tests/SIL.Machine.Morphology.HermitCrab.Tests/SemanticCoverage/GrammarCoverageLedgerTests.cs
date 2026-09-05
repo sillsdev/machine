@@ -47,11 +47,16 @@ public sealed class GrammarCoverageLedgerTests
 
         // 664 -> 677 with edge-cases/cross-table-root-respelling (9 interface rows, 1 construct row) and
         // the new cross-table respelling construct claimed by three fixtures (3 construct rows).
-        Assert.That(rows, Has.Count.EqualTo(677));
+        // 677 -> 676 (construct 96 -> 95) when edge-cases/feature-gating-breadth's rrPast converted
+        // from RealizationalRule to an ordinary MorphologicalRule: the RealizationalAffixProcessRule
+        // claimed-unmapped row (3 claims) is gone, and kalid/kalmuid/kalidmu merge into the fixture's
+        // existing "Syntactic feature agreement (...)" claimed-confirmed row (11 -> 14 claims) instead
+        // of adding a new one -- a net row removed, not replaced.
+        Assert.That(rows, Has.Count.EqualTo(676));
         Assert.That(distinctFixtures, Is.EqualTo(36));
         Assert.That(surface, Is.EqualTo(189));
         Assert.That(@interface, Is.EqualTo(392));
-        Assert.That(construct, Is.EqualTo(96));
+        Assert.That(construct, Is.EqualTo(95));
     }
 
     // This is a JOIN over three already-checked-in ledgers (EvidenceLedger, InterfaceInventoryLedger +

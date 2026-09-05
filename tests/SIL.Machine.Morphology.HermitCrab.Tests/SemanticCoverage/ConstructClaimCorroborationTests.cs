@@ -35,7 +35,12 @@ public sealed class ConstructClaimCorroborationTests
     // rewrite-analysis-feature-neutralization/synthesis-stratum-render-stale-table were added.
     // 464 -> 475 when cross-table-root-respelling was added (7 rows) and the new "CharacterDefinitionTable:
     // cross-table respelling" construct was claimed by four parses across three fixtures; all eleven
-    // corroborate on the CharacterDefinitionTable token, so confirmed rises by the same eleven.)
+    // corroborate on the CharacterDefinitionTable token, so confirmed rises by the same eleven.
+    // 210/250 -> 213/247 (rows unchanged at 475) when edge-cases/feature-gating-breadth's rrPast
+    // converted from RealizationalRule to an ordinary MorphologicalRule: kalid/kalmuid/kalidmu's
+    // RealizationalAffixProcessRule claims (prose, Unmapped) became "Syntactic feature agreement (...)"
+    // claims instead, which corroborate on OutputHeadFeatures (Confirmed) -- three rows move status,
+    // none are added or removed.
     [Test]
     public void CheckedInLedgerHasTheMeasuredClaimAndStatusCounts()
     {
@@ -51,9 +56,9 @@ public sealed class ConstructClaimCorroborationTests
         );
 
         Assert.That(rows, Has.Count.EqualTo(475));
-        Assert.That(confirmed, Is.EqualTo(210));
+        Assert.That(confirmed, Is.EqualTo(213));
         Assert.That(contradicted, Is.EqualTo(15));
-        Assert.That(unmapped, Is.EqualTo(250));
+        Assert.That(unmapped, Is.EqualTo(247));
     }
 
     // All 15 Contradicted claims trace to one (fixture, construct) pair: edge-cases/morphotactic-
