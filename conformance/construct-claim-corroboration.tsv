@@ -70,12 +70,12 @@ edge-cases/disjunctive-recheck	wakta	-	Disjunctive allomorphs / free-fluctuation
 edge-cases/disjunctive-recheck	wok	-	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/disjunctive-recheck	wokta	+|wokta	Disjunctive allomorphs / free-fluctuation	Unmapped	-
 edge-cases/feature-gating-breadth	kal	KAL|kal	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
-edge-cases/feature-gating-breadth	kalid	KAL+PAST|kalid	RealizationalAffixProcessRule	Unmapped	-
+edge-cases/feature-gating-breadth	kalid	KAL+PAST|kalid	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalidka	-	Affix template slots (obligatory/disjunctive/ordering)	Unmapped	-
-edge-cases/feature-gating-breadth	kalidmu	-	RealizationalAffixProcessRule	Unmapped	-
+edge-cases/feature-gating-breadth	kalidmu	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalka	KAL+AGR|kalka	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalkano	KAL+AGR+LOUD|kalkano	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
-edge-cases/feature-gating-breadth	kalmuid	KAL+EMPH+PAST|kalmuid	RealizationalAffixProcessRule	Unmapped	-
+edge-cases/feature-gating-breadth	kalmuid	KAL+EMPH+PAST|kalmuid	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	kalnoka	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	mol	MOL|mol	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures
 edge-cases/feature-gating-breadth	molka	-	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	Confirmed	OutputFootFeatures,OutputHeadFeatures,RequiredFootFeatures,RequiredHeadFeatures

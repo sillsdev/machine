@@ -173,8 +173,7 @@ edge-cases/feature-gating-breadth	Interface	SimpleContext.naturalClass	required-
 edge-cases/feature-gating-breadth	Interface	Stratum.characterDefinitionTable	required-by-dtd	RequiredByDtd
 edge-cases/feature-gating-breadth	Interface	Stratum.morphologicalRules	witnessed	Evidenced
 edge-cases/feature-gating-breadth	Construct	Affix template slots (obligatory/disjunctive/ordering)	claimed-unmapped	1 claim(s)
-edge-cases/feature-gating-breadth	Construct	RealizationalAffixProcessRule	claimed-unmapped	3 claim(s)
-edge-cases/feature-gating-breadth	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	11 claim(s)
+edge-cases/feature-gating-breadth	Construct	Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)	claimed-confirmed	14 claim(s)
 edge-cases/feature-system-breadth	Surface	dtd:element/ComplexFeature	required-by-dtd	RequiredByDtd
 edge-cases/feature-system-breadth	Surface	dtd:element/ExcludedEnvironments	witnessed	Evidenced
 edge-cases/feature-system-breadth	Surface	dtd:element/MetathesisRule	required-by-dtd	RequiredByDtd

@@ -119,8 +119,12 @@
             <MorphemeId>EMPH</MorphemeId>
             <Gloss>EMPH</Gloss>
           </MorphologicalRule>
-          <!-- Realizes a head feature rather than gating on one. -->
-          <RealizationalRule id="rrPast">
+          <!-- An ordinary rule that WRITES a head feature (OutputHeadFeatures), rather than a
+               RealizationalRule that realizes one: FieldWorks' HCLoader never constructs a
+               RealizationalRule (conformance/fieldworks-producibility.tsv, subject_kind=loader-gap),
+               so this fixture's own point (head/foot feature gating) is expressed the way a
+               FieldWorks-produced grammar actually can. -->
+          <MorphologicalRule id="rrPast" requiredPartsOfSpeech="posN" outputPartOfSpeech="posN">
             <Name>past</Name>
             <MorphologicalSubrules>
               <MorphologicalSubrule id="subPast">
@@ -128,10 +132,10 @@
                 <MorphologicalOutput><CopyFromInput index="stemPast" /><InsertSegments><PhoneticShape>id</PhoneticShape></InsertSegments></MorphologicalOutput>
               </MorphologicalSubrule>
             </MorphologicalSubrules>
-            <RealizationalFeatures><FeatureValue feature="featTense" symbolValues="tnsPast" /></RealizationalFeatures>
+            <OutputHeadFeatures><FeatureValue feature="featTense" symbolValues="tnsPast" /></OutputHeadFeatures>
             <MorphemeId>PAST</MorphemeId>
             <Gloss>PAST</Gloss>
-          </RealizationalRule>
+          </MorphologicalRule>
         </MorphologicalRuleDefinitions>
         <LexicalEntries>
           <!-- Satisfies both gates. -->

@@ -203,7 +203,7 @@ MorphologicalRule	outputPartOfSpeech	edge-cases/cross-table-root-respelling	Unob
 MorphologicalRule	outputPartOfSpeech	edge-cases/deep-optional-affix-nesting	Unobservable	removed outputPartOfSpeech from 12 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/diacritic-segments	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 13 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/disjunctive-recheck	Unobservable	removed outputPartOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
-MorphologicalRule	outputPartOfSpeech	edge-cases/feature-gating-breadth	Unobservable	removed outputPartOfSpeech from 3 <MorphologicalRule> element(s)	all 15 word(s) unchanged	-	-	None	-
+MorphologicalRule	outputPartOfSpeech	edge-cases/feature-gating-breadth	Unobservable	removed outputPartOfSpeech from 4 <MorphologicalRule> element(s)	all 15 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/feature-system-breadth	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 18 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/free-fluctuating-allomorph-pair	Unobservable	removed outputPartOfSpeech from 1 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	outputPartOfSpeech	edge-cases/loader-isactive-breadth	Unobservable	removed outputPartOfSpeech from 6 <MorphologicalRule> element(s)	all 18 word(s) unchanged	-	-	None	-
@@ -228,7 +228,7 @@ MorphologicalRule	requiredPartsOfSpeech	edge-cases/cross-table-root-respelling	U
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/deep-optional-affix-nesting	Unobservable	removed requiredPartsOfSpeech from 12 <MorphologicalRule> element(s)	all 3 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/diacritic-segments	Unobservable	removed requiredPartsOfSpeech from 2 <MorphologicalRule> element(s)	all 13 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/disjunctive-recheck	Unobservable	removed requiredPartsOfSpeech from 2 <MorphologicalRule> element(s)	all 12 word(s) unchanged	-	-	None	-
-MorphologicalRule	requiredPartsOfSpeech	edge-cases/feature-gating-breadth	Unobservable	removed requiredPartsOfSpeech from 3 <MorphologicalRule> element(s)	all 15 word(s) unchanged	-	-	None	-
+MorphologicalRule	requiredPartsOfSpeech	edge-cases/feature-gating-breadth	Unobservable	removed requiredPartsOfSpeech from 4 <MorphologicalRule> element(s)	all 15 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/feature-system-breadth	Unobservable	removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)	all 18 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/free-fluctuating-allomorph-pair	Unobservable	removed requiredPartsOfSpeech from 1 <MorphologicalRule> element(s)	all 6 word(s) unchanged	-	-	None	-
 MorphologicalRule	requiredPartsOfSpeech	edge-cases/loader-isactive-breadth	Unobservable	removed requiredPartsOfSpeech from 6 <MorphologicalRule> element(s)	all 18 word(s) unchanged	-	-	None	-

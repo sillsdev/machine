@@ -1,10 +1,16 @@
 # Head and foot feature gating. See grammar.xml's header for why this small grammar exists alongside
 # the dense languages/ fixtures that already contain these constructs.
 #
-# Oracle: the C# founding oracle (conformance/adapters/hc-dotnet-wrapper.sh batch over a Debug build of
-# src/SIL.Machine.Morphology.HermitCrab.Tool). Every signature is transcribed from that run. The whole
-# fixture parses in 72ms, which is the point: a mutant that removes one of these constraints stays
-# tractable here, where in a dense grammar it does not.
+# Oracle: the C# founding oracle, self-check mode (in-process Morpher, the same engine self-check
+# always uses): `src/SIL.Machine.Morphology.HermitCrab.Conformance/bin/Release/net10.0/hc-conformance.exe
+# --fixtures conformance --propose --include-pathological`. Re-verified after rrPast's conversion from
+# RealizationalRule to an ordinary MorphologicalRule (see grammar.xml's own note on that rule): every
+# word, including kalid/kalmuid/kalidmu, still passes with its signature and traced rules UNCHANGED --
+# the conversion is transparent to both. The RealizationalAffixProcessRule exercises claim on those
+# three words is dropped below since nothing producible can back it any more (rrPast is now an ordinary
+# rule); no other word's expectations changed. The whole fixture parses in 72ms, which is the point: a
+# mutant that removes one of these constraints stays tractable here, where in a dense grammar it does
+# not.
 #
 # Each gate has its own failing word, so neither is credited by the other:
 #   tunka    RequiredHeadFeatures: "tun" is number=sg where the rule requires plural.
@@ -20,13 +26,7 @@ inspired_by: ["synthetic head/foot feature gating probe (not modeling any real l
 sources:
   - "conformance/semantic-coverage-counterfactuals.tsv unobservable feature-gating surfaces"
 requires: []
-fieldworks_producible: false
-fieldworks_producible_notes: >-
-  rrPast is a RealizationalRule, never constructed by any HCLoader rule loader (checked
-  LoadDerivAffixProcessRule/LoadInflAffixProcessRule/LoadUnclassifiedAffixProcessRule/
-  LoadCliticAffixProcessRule/LoadNullAffixProcessRule, all of which build AffixProcessRule only).
-  Every other construct in this fixture is ordinarily producible; see this repo's history for the
-  conversion that clears this note.
+fieldworks_producible: true
 words:
   - word: kal
     note: Bare root, plural and stressed, so it satisfies both of the rule's gates.
@@ -77,15 +77,15 @@ words:
       - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
 
   - word: kalid
-    note: The realizational rule realizes a head feature rather than gating on one.
+    note: rrPast writes a head feature (OutputHeadFeatures) rather than gating on one.
     parses:
       - signature: "KAL+PAST|kalid"
         rules: [rrPast]
         exercises:
-          - "RealizationalAffixProcessRule"
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
 
   - word: kalidka
-    note: The realizational suffix is outermost, so the agreement suffix cannot follow it.
+    note: rrPast is outermost, so the agreement suffix cannot follow it.
     expect_fail: true
     exercises:
       - "Affix template slots (obligatory/disjunctive/ordering)"
@@ -149,7 +149,7 @@ words:
       - signature: "KAL+EMPH+PAST|kalmuid"
         rules: [mrEmph, rrPast]
         exercises:
-          - "RealizationalAffixProcessRule"
+          - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
 
   - word: kalidmu
     note: >-
@@ -157,4 +157,4 @@ words:
       (mrEmph rrPast): only reachable when rrPast is transposed ahead of mrEmph.
     expect_fail: true
     exercises:
-      - "RealizationalAffixProcessRule"
+      - "Syntactic feature agreement (RequiredHeadFeatures/OutputHeadFeatures/RequiredFootFeatures/OutputFootFeatures)"
