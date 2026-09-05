@@ -415,3 +415,53 @@ matches a `fieldworks-producibility.tsv` "No" row or one of the three checks abo
 that a construct is used, and that is sufficient to falsify `true` but never sufficient to certify
 it, since the research behind a `false` verdict is exactly the part no checker can redo by reading
 `grammar.xml` alone.
+
+## 10. FieldWorks source witnesses
+
+Section 9's `fieldworks_producible: true` is a claim about `grammar.xml` shape; it does not itself
+prove a real FieldWorks project can be authored and round-tripped to that shape. A fixture MAY carry
+a `fieldworks/` directory alongside `grammar.xml`/`words.yaml`, holding the actual LibLCM project the
+claim is about:
+
+- `fieldworks/project.fwdata` — a real FieldWorks project, backed out of the fixture's own
+  `grammar.xml` via LibLCM (not hand-edited), and `fieldworks/WritingSystemStore/*.ldml` — the
+  writing-system definitions that project needs to open.
+- `fieldworks/phonology-mutations.yaml` — a small, versioned manifest of scripted phoneme-inventory
+  counterfactuals against that same project, for a consumer that wants to probe what a narrower or
+  wider phoneme inventory does to the project's own FieldWorks-side projections without hand-editing
+  a project itself.
+
+Only a `fieldworks_producible: true` fixture is eligible to carry a `fieldworks/` directory — a
+`false` fixture has no real project behind it by construction, so there is nothing for one to
+contain.
+
+This repository never opens, parses, or executes anything under `fieldworks/`: `.fwdata` is a
+FieldWorks/LibLCM format, and nothing in this suite's own conformance runner, self-check engine, or
+adapter protocol reads it. It exists for a consumer that already speaks that format (today, this
+project's own `xample-projector` tool) to read directly. What this repository DOES enforce is the
+directory's shape — see `ConformanceFixtureGateTests` — and, since `project.fwdata` is opaque here,
+that enforcement is necessarily structural rather than semantic: file names, a schema version, and a
+hash, not a check that the project actually opens or actually contains what the manifest claims.
+
+A consumer must verify `phonology-mutations.yaml`'s `base_sha256` against the actual SHA-256 of
+`fieldworks/project.fwdata` before trusting anything else in the manifest — the two files can drift
+independently (a fixture updated in place, a manifest hand-edited, a partial checkout), and a mutation
+op naming a guid that isn't even in the project it's about to run against is a worse failure mode
+than a mismatched hash caught up front.
+
+`phonology-mutations.yaml`'s v1 vocabulary is exactly:
+
+- Two operations: `remove_phoneme` (`guid`, `assert_representations`, `require_unreferenced`) and
+  `remove_all_phonemes` (`require_unreferenced`) — see `xample-projector`'s `mutate` command for
+  what each does to a cloned copy of the project.
+- Two `expect` fields whose only defined value is the literal string `same_as_base`:
+  `xample_projection` and `hc_analyses`. `same_as_base` means equal up to LibLCM's own hvo
+  renumbering (every M3-dump `Id`/`dst` attribute is a raw, per-load-session object handle —
+  `bMorphnameIsMsaId` in FieldWorks' own XSL transforms — so two projections of two different LibLCM
+  sessions are never byte-identical even when nothing meaningful changed), **never** byte-equality.
+- `expect.inferred_segments` — the phoneme representations a consumer should expect to no longer be
+  producible after the case's operations run.
+
+A manifest field outside this vocabulary, or an `expect.xample_projection`/`expect.hc_analyses` value
+other than `same_as_base`, is not yet defined — a consumer encountering one should refuse rather than
+guess at a meaning this repository has not specified.

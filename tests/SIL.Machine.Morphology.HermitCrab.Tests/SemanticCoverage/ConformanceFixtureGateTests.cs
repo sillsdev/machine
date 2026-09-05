@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using SIL.Machine.Morphology.HermitCrab.Conformance;
 using SIL.Machine.Morphology.HermitCrab.Conformance.SemanticCoverage;
@@ -166,5 +168,128 @@ public sealed class ConformanceFixtureGateTests
             Is.Empty,
             "these declare morphological rules but no parse names one, so nothing they contain can be trace-verified"
         );
+    }
+
+    // A fieldworks/ directory is opaque here (this repo never opens a .fwdata), so the only thing a
+    // mechanical gate can check is its SHAPE: eligibility, file set, and that the manifest's own
+    // claimed hash actually matches the project bytes sitting beside it.
+    [Test]
+    public void FieldWorksWitnessDirectoriesAreShapedCorrectly()
+    {
+        var allowedManifestKeys = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "version",
+            "base_sha256",
+            "cases",
+            "id",
+            "operations",
+            "expect",
+            "remove_phoneme",
+            "remove_all_phonemes",
+            "guid",
+            "assert_representations",
+            "require_unreferenced",
+            "xample_projection",
+            "hc_analyses",
+            "inferred_segments",
+        };
+
+        var errors = new List<string>();
+        foreach (Fixture fixture in Discover())
+        {
+            string fieldworksDir = Path.Combine(fixture.Directory, "fieldworks");
+            if (!Directory.Exists(fieldworksDir))
+                continue;
+
+            if (fixture.Words.FieldworksProducible != true)
+            {
+                errors.Add($"{fixture.Id}: has a fieldworks/ directory but is not 'fieldworks_producible: true'");
+                continue;
+            }
+
+            var expectedEntries = new HashSet<string>(StringComparer.Ordinal)
+            {
+                "project.fwdata",
+                "phonology-mutations.yaml",
+                "WritingSystemStore",
+            };
+            string[] actualEntries = Directory
+                .GetFileSystemEntries(fieldworksDir)
+                .Select(Path.GetFileName)
+                .ToArray()!;
+            foreach (string extra in actualEntries.Where(e => !expectedEntries.Contains(e!)))
+                errors.Add($"{fixture.Id}: fieldworks/ contains an unexpected entry '{extra}'");
+            foreach (string missing in expectedEntries.Where(e => !actualEntries.Contains(e)))
+                errors.Add($"{fixture.Id}: fieldworks/ is missing '{missing}'");
+
+            string writingSystemDir = Path.Combine(fieldworksDir, "WritingSystemStore");
+            if (Directory.Exists(writingSystemDir))
+            {
+                string[] nonLdml = Directory
+                    .GetFiles(writingSystemDir)
+                    .Select(Path.GetFileName)
+                    .Where(name => !name!.EndsWith(".ldml", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(name => name, StringComparer.Ordinal)
+                    .ToArray()!;
+                if (nonLdml.Length > 0)
+                    errors.Add($"{fixture.Id}: WritingSystemStore/ contains non-.ldml entries: {string.Join(", ", nonLdml)}");
+            }
+
+            string projectPath = Path.Combine(fieldworksDir, "project.fwdata");
+            string manifestPath = Path.Combine(fieldworksDir, "phonology-mutations.yaml");
+            if (!File.Exists(projectPath) || !File.Exists(manifestPath))
+                continue; // already recorded as missing above
+
+            string manifestText = File.ReadAllText(manifestPath);
+
+            Match versionMatch = Regex.Match(manifestText, @"^version:\s*(\d+)\s*$", RegexOptions.Multiline);
+            if (!versionMatch.Success || versionMatch.Groups[1].Value != "1")
+                errors.Add($"{fixture.Id}: phonology-mutations.yaml has no 'version: 1'");
+
+            Match shaMatch = Regex.Match(manifestText, @"^base_sha256:\s*([0-9a-f]{64})\s*$", RegexOptions.Multiline);
+            if (!shaMatch.Success)
+            {
+                errors.Add($"{fixture.Id}: phonology-mutations.yaml has no 64-character lowercase-hex 'base_sha256'");
+            }
+            else
+            {
+                using var sha256 = SHA256.Create();
+                using FileStream stream = File.OpenRead(projectPath);
+                string actual = Convert.ToHexString(sha256.ComputeHash(stream)).ToLowerInvariant();
+                if (!string.Equals(actual, shaMatch.Groups[1].Value, StringComparison.Ordinal))
+                {
+                    errors.Add(
+                        $"{fixture.Id}: phonology-mutations.yaml base_sha256 {shaMatch.Groups[1].Value} "
+                            + $"does not match project.fwdata's actual sha256 {actual}"
+                    );
+                }
+            }
+
+            foreach (Match keyMatch in Regex.Matches(manifestText, @"^\s*-?\s*([A-Za-z_][A-Za-z0-9_]*):", RegexOptions.Multiline))
+            {
+                string key = keyMatch.Groups[1].Value;
+                if (!allowedManifestKeys.Contains(key))
+                    errors.Add($"{fixture.Id}: phonology-mutations.yaml uses a key outside the v1 vocabulary: '{key}'");
+            }
+
+            foreach (
+                Match valueMatch in Regex.Matches(
+                    manifestText,
+                    @"(xample_projection|hc_analyses):\s*(\S+)\s*$",
+                    RegexOptions.Multiline
+                )
+            )
+            {
+                if (valueMatch.Groups[2].Value != "same_as_base")
+                {
+                    errors.Add(
+                        $"{fixture.Id}: phonology-mutations.yaml has {valueMatch.Groups[1].Value}: "
+                            + $"{valueMatch.Groups[2].Value}, but only 'same_as_base' is defined"
+                    );
+                }
+            }
+        }
+
+        Assert.That(errors, Is.Empty, string.Join("\n  ", errors));
     }
 }
